@@ -9,9 +9,10 @@ remain proposals. Inspection combines `spec` with system-owned `status`; configu
 writes reject `status`, and configuration-only export omits it. Metadata has per-field
 ownership, combining editable naming/labels with system-owned identity/version information.
 Updates require expected ID and configuration version, covering `spec` and editable metadata
-but excluding status-only changes. Exact fields, precondition encoding and other import/export
-rules remain open. This report investigates how to express the model without turning Conduit
-into another deployment framework. The research
+but excluding status-only changes. Preconditions are separate update-operation inputs;
+reusable configuration export omits status and system-owned identity/version values.
+Exact fields and remaining import/export rules are open. This report investigates how to
+express the model without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 
 Read alongside [the Pi re-review](PI_CONNECTORS.md) and the

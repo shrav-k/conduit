@@ -7,8 +7,9 @@ Profiles, Sessions, Resources, Pools and Conduits.
 
 The accepted envelope, identity/reference rules, local naming boundary, per-field metadata
 ownership, inspection/write distinction and checked configuration updates are recorded in
-[DESIGN.md](DESIGN.md#configuration-language). Detailed fields, precondition encoding,
-import/export semantics, composition and interaction operations remain for review.
+[DESIGN.md](DESIGN.md#configuration-language). Update preconditions are separate operation
+inputs; object YAML remains reusable. Detailed request fields, remaining import/export
+semantics, composition and interaction operations remain for review.
 The [connected YAML](research/five-concepts.proposal.yaml) remains a design fixture,
 not a complete accepted schema or implemented format.
 
@@ -50,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with how preconditions accompany YAML and the remaining import/export,
-field and reference details. Updates now require expected identity and configuration
-version; status-only changes do not invalidate that version.
+Continue round 1 with configuration authority and the remaining import/export, field and
+reference details. Updates carry expected identity/configuration version separately from
+reusable YAML; the editing workflow must preserve the original baseline.
 
 ### Shared example
 
@@ -88,12 +89,12 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** a clear update-request representation and explicit import/export operations.
+direction:** explicit configuration authority and import/export operations.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How do preconditions accompany reusable YAML? | Decide whether expected ID/version are separate operation inputs or echoed metadata interpreted as checks. Define how editing preserves the original baseline, how portable configuration export differs from an edit of an existing object, and how no-op writes behave. |
+| How does an editing workflow retain its baseline? | With separate precondition inputs accepted, define capture, association with the edited document, recovery after interruption and behavior when the baseline is missing. Specify no-op writes and how a reusable configuration becomes an explicit edit of an existing object. |
 | What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which identity/reference details remain? | Decide optional direct-ID forms, ID encoding and metadata placement, handling of unresolved references, and which explicit operations create or rebind a relationship. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |

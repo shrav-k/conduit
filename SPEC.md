@@ -92,7 +92,8 @@ Profiles, Sessions, Resources, Pools and Conduits share the authoring envelope
 and version information is system-owned. Inspection adds system-owned `status` for
 reported resolution and observed state. Normal authoring omits `status`; changes are
 requested through configuration or operations. Normal configuration writes reject an
-included `status` field; configuration-only export omits it. The actual version identifier,
+included `status` field; configuration-only export omits it and system-owned identity/version
+values, retaining reusable object configuration. The actual version identifier,
 detailed status fields and other import/export rules remain open.
 
 Each configuration object has a system-assigned stable ID independent of its name. Renames
@@ -110,7 +111,9 @@ live selector membership remains separate.
 Normal configuration updates require the expected stable ID and the configuration version
 the edit was based on, rejecting mismatches. That version covers `spec` and editable
 metadata; status-only changes do not invalidate edits. Clients can reconcile and retry
-under current permissions. Exact field names and request representation remain open.
+under current permissions. Expected ID/version are separate update-operation inputs, carried
+by the CLI/editor/API with the original edit baseline rather than embedded in reusable object
+YAML. Exact request fields and baseline-storage details remain open.
 
 | Requirement | Meaning |
 | --- | --- |

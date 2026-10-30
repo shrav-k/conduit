@@ -25,7 +25,7 @@ All five kinds share this authoring envelope:
 Metadata ownership is defined per field: authors control naming and labels within their
 permissions, while Conduit assigns and maintains identity/version information. Placing a
 field in `metadata` does not make it editable. Identity and configuration-version checks
-govern updates as described below; exact field names and request encoding remain open.
+govern updates as described below; exact field names and operation schemas remain open.
 
 Inspection returns the object with a system-owned `status` section alongside its authored
 `spec`. Status reports resolution and observed state appropriate to the kind, such as a
@@ -34,9 +34,10 @@ and agents request changes through configuration or operations rather than decla
 observed state to be true.
 
 Normal configuration writes reject an included `status` field rather than silently
-ignoring it. Conduit provides a configuration-only export that omits `status`, distinct
-from inspection. Update preconditions check system-owned identity/version information;
-they do not authorize clients to assign those values. Their input representation remains open.
+ignoring it. Configuration-only export contains reusable, authorable object configuration,
+omitting `status` and system-owned identity/version values. Inspection can still return
+those system values. Update preconditions are separate operation inputs; they do not
+authorize clients to assign system-owned values through object YAML.
 
 The shared envelope does not give every kind the same configuration or status fields.
 Exact metadata/status fields, ID encoding and remaining import/export semantics are open.
@@ -87,8 +88,12 @@ does not freeze live permissions or replace authorization at the time of the ope
 
 Clients may reread, reconcile and retry within their permissions without mandatory human
 approval. Simply substituting a newly read version does not reconcile an older edit.
-Exact field names, how preconditions accompany YAML, creation/import/export behavior and
-handling of no-op writes remain open.
+
+The expected ID and configuration version accompany the update as separate operation inputs,
+not as fields in the reusable object YAML. The CLI, editor or API client carries the edit's
+original baseline alongside that document. An operation request is not an additional core
+object kind. Exact request fields, baseline storage/recovery, creation/import/export details
+and handling of no-op writes remain open.
 
 ### Objects, representations and contracts
 

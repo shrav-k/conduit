@@ -36,16 +36,18 @@ These names have distinct meanings throughout the specification.
 
 | Concept | Definition | Example |
 | --- | --- | --- |
-| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on the access supplied by scopes. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
-| **Session** | One continuing Conduit conversation, configured from a role and using selected scopes, with at most one active primary agent. | A review conversation that later resumes using another account. |
+| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on access supplied through attachments. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
+| **Session** | One continuing Conduit conversation, configured from a role with selected access attachments and filters, with at most one active primary agent. | A review conversation that later resumes using another account. |
 | **Resource** | An addressable object exposed through a defined contract. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
 | **Pool** | A named, extensible collection of resources relevant to interacting with a domain. It replaces Conduit's former project grouping and can provide convenient access defaults. Membership alone grants no access. | An Euphony pool collecting the resources relevant to that domain across different providers. |
-| **Scope** | A reusable selection of shared connections, resources, and permitted operations, with optional exclusions. It references connection definitions; a session chooses scopes within its role's limits. | Select a tracker connection and its permitted tools, read project notes, and update selected knowledge. |
+| **Filter** | A reusable constraint that narrows an existing selection or grant. It can restrict resources or operations but cannot grant access. Its target and composition rules belong to the attachment contract. | Restrict access to frontend-related resources and read operations. |
+| **Attachment** *(working term)* | An authorized relationship supplying a session with selected resource/connection access and permitted operations, constrained by filters and role limits. Its final name and schema remain open. | Attach selected access to the Euphony pool for a review session. |
 
-A role defines execution configuration and limits; a scope supplies connections and
-selected access for particular work. Connection definitions describe setup without
-granting access. A pool organizes resources; memory is one kind of retained information
+A role defines execution configuration and limits. Attachments supply authorized access;
+filters only narrow it. A filter grants nothing on its own. This replaces the former
+scope object's combination of selection and grants. Connection definitions describe
+setup without granting access. A pool organizes resources; memory is one kind of retained information
 those resources expose. Pool membership supports explicit resource references and label
 selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
@@ -56,9 +58,10 @@ Communication concepts will be defined after the deferred review; they are not i
 ```mermaid
 flowchart LR
     Role -->|configures and limits| Session
-    Session -->|selects| Scope
-    Scope -->|grants operations on| Resource
-    Scope -->|selects| Connection
+    Session -->|selects| Attachment
+    Filter -->|narrows| Attachment
+    Attachment -->|grants operations on| Resource
+    Attachment -->|selects| Connection
     Connection -->|exposes| Resource
     Pool -->|groups| Resource
     Memory -->|exposed as| Resource
@@ -80,11 +83,11 @@ flowchart LR
 
 A pool groups resources for an application domain, including its repository and knowledge.
 A Claude implementation role and a Codex review role select different skills and permission
-limits. Each starts a separate session with scopes appropriate to its work.
-Their scopes can reference the same connections with different grants;
+limits. Each starts a separate session with access appropriate to its work.
+Their attachments can reference the same connections with different grants and filters;
 Conduit prepares its runtime clients, or an external-agent adapter prepares native setup.
 
-Claude saves a finding to shared memory. Codex can retrieve it if its scope permits
+Claude saves a finding to shared memory. Codex can retrieve it if its effective access permits
 and check the evidence. Both keep their own working context. The memory record
 preserves the finding, and the repository holds the actual files. A Linear issue can
 track the work through provider-native operations. This example does not prescribe
@@ -116,20 +119,21 @@ requirement may use either mode. The isolation backend remains open;
 
 Isolated execution allows declared network destinations by default: required runtime
 model/login services, selected connection endpoints, and extra destinations explicitly
-granted through scopes, within role limits and exclusions. Local/private services need
-explicit access. Network reachability does not grant provider-operation permissions.
+granted through attachments, within filters, role limits and exclusions. Local/private
+services need explicit access. Network reachability does not grant provider-operation permissions.
 
-Each session has its own effective scopes and authenticated access to shared memory.
-Sharing a model account does not merge scopes or grant access to another session's
+Each session has its own effective access and authenticated access to shared memory.
+Sharing a model account does not merge permissions or grant access to another session's
 private context through Conduit. Runtime state reuse must respect the receiving context.
 Stored conversation history and agent-maintained private memory are
 session-owned, even for sessions sharing a role/account. Resume can reuse the session's
 compatible state; fresh sessions do not inherit it automatically. Reusable knowledge
 is shared through scoped Conduit memory; credential reuse remains separate.
 
-At pool launch, omitted scope selection uses the pool's configured defaults.
-Explicit scope selection replaces those defaults; an explicit add action can extend
-them. Role limits and exclusions still constrain the resulting access.
+At pool launch, omitted access selection uses the pool's configured defaults.
+Explicit access selection replaces those defaults; an explicit add action can extend
+them. Filters, role limits and exclusions still constrain the resulting access.
+The attachment/default configuration schema remains open.
 
 Use YAML for Conduit's local configuration, with versioned, named objects, explicit
 references, and schema validation. Kubernetes object structure, extensibility and
@@ -144,8 +148,8 @@ format. How pool resources are activated alongside role selections remains open.
 Roles explicitly select reusable user-level native
 settings, skills, and plugins; the default agent profile is not automatically inherited.
 An existing setup can be selected once, preserving native formats. Shared MCP
-connections remain scope-selected; authentication/history are separate, and mandatory
-host/organization policies still apply. Skills/plugins may be runtime-specific.
+connections remain selected through access attachments; authentication/history are
+separate, and mandatory host/organization policies still apply. Skills/plugins may be runtime-specific.
 Conduit may supply small defaults explaining its capabilities; a custom skill format
 or automatic cross-runtime conversion is not required. Use existing ecosystem tooling
 for selected skill/plugin installation and updates where compatible; Conduit adapters
@@ -154,7 +158,7 @@ Claude Code, or Codex plugin needs a compatible runtime adapter or an explicit p
 using the same model or terminal components does not make it compatible.
 
 A custom Conduit terminal inspired by Pi is the first conversation frontend. Its CLI selects
-roles/pools/scopes and launches or attaches frontends. Conduit owns the execution
+roles/pools/access and launches or attaches frontends. Conduit owns the execution
 loop, provider requests, tool dispatch, working context, and execution observations.
 Its shared-memory service remains independently usable by other agent integrations.
 
@@ -199,8 +203,8 @@ V0 cross-context sharing uses direct live read-only shares, revocable by authori
 share managers. The original keeps its owner and identity; recipients see updates
 through their selected incoming shares, within their effective access.
 
-Memory search defaults to all Conduit memory permitted by the session's selected
-scopes, with optional narrowing by context, record kind, or classification labels.
+Memory search defaults to all Conduit memory permitted by the session's effective
+access, with optional narrowing by context, record kind, or classification labels.
 Results contain bounded excerpts, record/revision references, and permitted provenance.
 Search uses configurable defaults and caps for result count and total returned text;
 agents may request different limits within those caps, and responses identify limits reached.
@@ -226,16 +230,18 @@ unresolved outcomes remain explicitly unknown.
 
 ### Control access and explain coverage
 
-Select scopes per session, combine their grants, apply role limits, and honor explicit
-exclusions. The same configured connection can serve sessions with different access.
-Scope changes apply to subsequent Conduit-managed requests and must be visible.
+Select authorized access attachments per session. Apply their narrowing filters,
+role limits and explicit exclusions; filters cannot create or expand a grant. The
+same configured connection can serve sessions with different effective access.
+Attachment, filter and role-limit changes apply to subsequent Conduit-managed requests
+and must be visible. Detailed attachment/filter composition remains for review.
 If a running isolated execution cannot revoke removed access live, stop it and require
 an explicit restart under current rules. Preserve the logical session identity.
 
 Proceed with usable capabilities while reporting missing or unsupported access.
 An unavailable restriction cannot silently become broader access. V0 guarantees must
-be limited to the paths actually controlled; selecting a scope does not establish
-agent-wide isolation. The [design](DESIGN.md#access-and-sharing) defines the access
+be limited to the paths actually controlled; configuring an attachment or filter does
+not establish agent-wide isolation. The [design](DESIGN.md#access-and-sharing) defines the access
 contract and its staged implementation.
 
 V0 usage reporting attributes observations to their execution/account and reporting
@@ -251,13 +257,13 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 
 | Scenario | Observable outcome |
 | --- | --- |
-| **Four accounts run concurrently** | Conduit's CLI launches four sessions across two Codex/OpenAI and two Claude subscription identities, using the custom Conduit terminal and Conduit-owned execution. Permitted knowledge is retrievable with independent private context and scopes. Supported subscription access and actual identity must be verified; native Claude Code/Codex interoperability is a separate adapter check. |
+| **Four accounts run concurrently** | Conduit's CLI launches four sessions across two Codex/OpenAI and two Claude subscription identities, using the custom Conduit terminal and Conduit-owned execution. Permitted knowledge is retrievable with independent private context and permissions. Supported subscription access and actual identity must be verified; native Claude Code/Codex interoperability is a separate adapter check. |
 | **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted sessions retain their logical identity; usage is attributed to the producing execution and account where available. |
-| **Different scopes share selected knowledge** | A shared record is available to intended sessions; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Isolated-mode OS access checks are additional acceptance cases to specify. |
+| **Different access selections share selected knowledge** | A shared record is available to intended sessions; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Isolated-mode OS access checks are additional acceptance cases to specify. |
 | **Frontend independence** | The custom terminal presents a Conduit-owned execution; another frontend can observe or assume control of the same logical session. The Pi agent loop is not involved. Stock Pi UI parity is unnecessary. |
 | **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. A role's optional isolation requirement rejects native launch overrides. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
 | **Resume across accounts or agents** | The logical session remains stable, actual execution settings are recorded, and the resumed execution gets the permitted checkpoint or explicit context gaps. |
-| **Start fresh** | A new session has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
+| **Start fresh** | A new session has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within effective access. |
 | **Access changes** | Managed retrieval/context loading uses current permissions. If an isolated execution cannot revoke removed access live, it stops pending explicit restart; session identity remains intact. Inaccessible content is omitted without revealing restricted provenance; already loaded native context is not claimed to be erased. |
 | **Integration gaps** | Unavailable sources, unknown runtime state, and missing usage data are visible rather than reported as successful, empty, running, or zero by default. |
 

@@ -15,7 +15,7 @@ not a required collection of processes or crates.
 | Owner | Responsibility |
 | --- | --- |
 | Conduit runtime | Session supervision, execution loop, context construction, provider/tool dispatch, lifecycle, recovery and available observations, implemented in Rust. Models supply reasoning within that runtime. |
-| Conduit shared services | Roles/connections, logical identities, scopes, knowledge/checkpoints and managed resource access. Communication will be refined in the deferred review. |
+| Conduit shared services | Roles/connections, logical identities, access attachments/filters, knowledge/checkpoints and managed resource access. Communication will be refined in the deferred review. |
 | Provider/account adapter | Model request/response conversion, capabilities, supported authentication, account selection and usage evidence. |
 | External-agent adapter | Connect a separate runtime such as Claude Code/Codex, which retains its own loop and private native state. Report the lifecycle/access/telemetry capabilities actually supported. |
 | Resource or tracker provider | Source content and native operations; Linear issue fields, assignments, status, and workflow. |
@@ -24,13 +24,13 @@ not a required collection of processes or crates.
 
 Plugins may integrate models, runtimes, frontends, resources, trackers, and storage/search.
 A connection definition describes reusable local setup for a service/backend; it does
-not represent an already-open MCP client. Scopes select
-connection definitions and grant their permitted tools/resources; roles
+not represent an already-open MCP client. Authorized attachments select connection
+definitions and grant resource operations; filters only narrow that access. Roles
 supply execution settings, native skills, and optional permission ceilings. A role
 does not need a second list of shared connections. Definition alone grants no access.
 
-Resolve selected scopes against role limits for each session. Conduit's runtime owns
-its MCP clients; external-agent adapters prepare native registration where needed.
+Resolve selected attachments and filters against role limits for each session.
+Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration where needed.
 Keep host-specific transport/configuration/authentication in the relevant adapter and
 report unsupported capabilities. Changing the model alone need not change registration.
 Shared definitions do not merge permissions or promise shared authentication/client state;
@@ -99,7 +99,7 @@ to Conduit's contracts; Kubernetes machinery is not required. The version identi
 scheme, exact fields, file layout, precedence and merge rules remain open. Keep schema
 versions distinct from application releases, record revisions, MCP and plugin versions.
 
-For a pool launch, use its configured default scopes only when no explicit scope
+For a pool launch, use its configured access defaults only when no explicit access
 selection is supplied. An explicit selection replaces those defaults; extending the
 defaults requires an explicit add action. Apply role limits and exclusions to the
 result in every case. This keeps convenient pool setup from silently retaining
@@ -110,7 +110,7 @@ reuses; do not automatically inherit the user's default agent profile. An existi
 setup may be selected once for convenience, preserving its native formats. This makes
 role composition explicit without requiring a replacement skill/plugin framework.
 Shared MCP connections, including definitions bundled with selected plugins, still
-participate in scope selection; selecting a source grants no additional access.
+participate in access selection; selecting a source grants no additional access.
 Authentication and private history remain separately managed, and mandatory host or
 organization policies still apply. Adapters must validate native loading/precedence.
 
@@ -123,7 +123,7 @@ users to manage their selected sources through Conduit.
 ## Account separation and execution isolation
 
 Concurrent account separation is required in v0. Keep a role's reusable configuration,
-an account's persistent login, and an execution's effective scopes/state distinct.
+an account's persistent login, and an execution's effective access/state distinct.
 Never implement switching by swapping credentials in one global agent directory.
 Bind Conduit requests to authenticated session/execution identity rather than trusting
 a caller-supplied role or session label. Model-provider credentials do not select
@@ -146,8 +146,7 @@ Conduit session, even when sessions use the same role or subscription. Resume ma
 that session's compatible state; fresh sessions do not inherit it automatically, and
 forks use the already-defined checkpoint semantics. Reusable knowledge is shared through
 scoped Conduit memory. Credential reuse is a separate concern and does not authorize
-sharing private state. This keeps role/account reuse from crossing different session
-scopes. Adapters must validate the storage/loading separation; native mode does not
+sharing private state. This keeps role/account reuse from crossing session access boundaries. Adapters must validate the storage/loading separation; native mode does not
 thereby acquire an OS boundary against otherwise accessible host files.
 
 For external native-agent adapters, [Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
@@ -163,7 +162,7 @@ particular agent runtime. Both Conduit-owned and external-agent execution need e
 coverage. Make the role's configured mode and each execution's effective mode visible
 and record the latter.
 Isolated execution is an explicit option for additional protection. Both modes retain
-the account-separation and Conduit-access guarantees above; neither merges scopes.
+the account-separation and Conduit-access guarantees above; neither merges permissions.
 
 A role may require isolated execution. Launch overrides cannot select native mode for
 that role; unavailable required isolation causes a clear launch failure. Without that
@@ -178,8 +177,8 @@ while an explicit requirement preserves the role's boundary across launch interf
 
 Isolated execution defaults to declared network destinations: required model/login
 services, endpoints for selected connections, and extra destinations granted through
-scopes, subject to role limits and exclusions. Make runtime endpoint requirements
-visible; selecting a runtime must not silently override a restriction. Package
+attachments, constrained by filters, role limits and exclusions. Make runtime endpoint
+requirements visible; selecting a runtime must not silently override a restriction. Package
 registries, research sites, and local/private services require explicit inclusion.
 An allowed destination does not authorize every operation or object at that service.
 
@@ -319,7 +318,7 @@ advance declaration. Optional definitions are scoped knowledge records linked ex
 matching names do not bind automatically. Background extraction/classifier interfaces
 are deferred.
 
-Memory search defaults to all Conduit memory permitted by the session's selected scopes,
+Memory search defaults to all Conduit memory permitted by the session's effective access,
 with optional narrowing by context, record kind, or classification labels. This lets
 agents discover relevant knowledge without knowing its location first. Narrowing never
 expands access; a memory query does not automatically search every connected repository
@@ -343,17 +342,26 @@ search backend.
 
 ## Access and sharing
 
-Effective access is the union of selected scope grants, constrained by declared role
-limits and explicit exclusions. Missing role limits add no grants. Permissions name
-operations per resource type; convenience bundles expand into visible grants. Permitted
-operations do not require an extra human confirmation merely because permissions exist.
+Attachments supply authorized resource/connection access and operation grants.
+Filters are narrowing-only: they may remove resources or operations from a target
+selection, but cannot introduce grants. A filter alone supplies no access. Declared
+role limits and explicit exclusions constrain effective access; missing role limits
+add no grants. Permissions name operations per resource type, with convenience bundles
+expanding into visible grants. Permitted operations do not require an extra human
+confirmation merely because permissions exist.
 
-Selectors support IDs, named ownership contexts, simple filters, and path patterns
-where integrations support them. Resource matching and authorized scope/role-limit
-changes apply live to subsequent managed requests, with effective changes recorded
-and shown. They do not change model/account defaults or automatically inject context.
+This separates the former scope object's grant and constraint responsibilities.
+“Attachment” is a working name; whether it becomes a conduit and how filters target
+and compose across attachments remain for review. Removing a constraint may expose
+an underlying existing grant again; it does not create a new grant.
 
-If a scope change removes access that an active isolated execution cannot revoke live,
+Resource selectors support IDs, named ownership contexts, metadata predicates, and
+path patterns where integrations support them. Pool membership also supports explicit
+references and label selectors; membership does not authorize access. Resource matching
+and authorized attachment/filter/role-limit changes apply live to subsequent managed
+requests, with effective changes recorded and shown. They do not change model/account defaults or automatically inject context.
+
+If an access-rule change removes access that an active isolated execution cannot revoke live,
 stop the affected execution and report that an explicit restart is required. Preserve
 the logical session; do not automatically launch a replacement.
 Restart resolves the current rules. This prevents continued execution with obsolete
@@ -375,7 +383,7 @@ derived records. Permission changes cannot erase already-delivered native contex
 
 V0 supports direct live read-only shares between contexts, managed and revocable by
 authorized share managers. The source keeps its ID and owner; recipients select incoming
-shares through their scopes and see current content within their effective access.
+shares through their effective access selections and see current content within their effective access.
 Revoking a share removes that grant on subsequent managed requests; independent grants
 remain valid. This supports selective reuse without delegated grant chains.
 
@@ -421,7 +429,7 @@ user/project TOML; [Claude Code](https://code.claude.com/docs/en/mcp) supports p
 registrations and launch-specific `--mcp-config` with `--strict-mcp-config`.
 [Codex configuration overrides](https://learn.chatgpt.com/docs/config-file/config-basic#configuration-precedence)
 can supply launch values, but are not by themselves an isolated configuration source.
-Generate native launch configuration from effective scopes without
+Generate native launch configuration from effective access without
 repeatedly rewriting global settings. Validate inherited/plugin servers, concurrent
 accounts, credential reuse, and host lifecycle before selecting the binding mechanism.
 Do not assume a separate live client per conversation or cross-host OAuth portability.
@@ -439,7 +447,7 @@ remains core. Each mode must state observed activity, enforced restrictions, and
 uncovered paths. Preventing bypass requires more than configuring MCP connections;
 isolating local processes does not replace provider authorization or MCP mediation.
 
-Conduit's sessions, ownership, and scope semantics are application contracts.
+Conduit's session, ownership, attachment and filter semantics are application contracts.
 Bind requests to effective session identity/access; do not equate an MCP connection
 with a Conduit session. Protocol authorization does not supply Conduit's complete
 access policy.

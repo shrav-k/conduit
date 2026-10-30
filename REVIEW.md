@@ -26,16 +26,20 @@ core kinds or pool fields. The generic resource/membership contract should accom
 new kinds. Pools support both explicit resource references and label selectors. The
 prior project access-default behavior now applies to pools.
 
-**Still proposed:** scopes may become **filters**, with grants and composition to be
-settled. Review these relationships next:
+**Accepted:** filters only narrow selections/grants; they never grant access. This
+separates the former scope object's responsibilities: an authorized attachment supplies
+access, filters constrain it, and role limits remain the ceiling. “Attachment” remains
+a working term; its final name, representation and composition are not yet selected.
+
+Review these relationships next:
 
 - Specify reference/selector resolution and update behavior; decide overlapping/nested
   membership separately. Membership, ownership, access and activation
   remain distinct. Resolve how domain resources such as skills compose with role selections
   through general resource contracts, rather than special fields for each use case.
-- A filter could narrow selected resources, operations or exchanges. Current scopes combine
-  positive grants; narrowing filters would instead constrain a separately authorized attachment.
-  This changes composition, not just vocabulary. Decide where grants live before renaming.
+- Define where filters attach and how multiple filters/attachments compose. Keep
+  pool membership selectors distinct from access constraints; filters cannot add grants.
+  Preserve visible effective access and current-rule checks as the schema evolves.
 - A conduit could represent a typed relationship with explicit endpoints and supported
   operations/exchanges. Discuss whether resource access and intersession communication use
   this same concept or distinct relationships with common metadata. Do not assume one
@@ -156,7 +160,7 @@ Discuss concrete examples together before freezing a schema or implementing:
   experiment.
 - Specify managed-worktree creation settings: base revision, branch selection, directory
   placement, and treatment of any existing local changes.
-- Express roles, account references, shared connection definitions, scopes/filters, pools,
+- Express roles, account references, shared connection definitions, attachments/filters, pools,
   and execution policy. Keep runtime, frontend, model and account selections distinct.
   Show resolved launch settings and adapter output; classify supported skill/plugin
   resources without copying every Pi setting. Keep credentials out of shareable

@@ -192,9 +192,16 @@ session read positions. Participants may retain local copies. A room has no shar
 editable working-memory document; separately scoped memory/checkpoints can be linked
 or quoted. Retention is independent of immutability and remains to be selected.
 
+Room access is governed by effective scopes. A session may explicitly join any room
+its scopes permit, without a separate invitation requirement. Joining records
+participation and enables unread notices; it does not grant read/post access or merge
+permissions. Discovery, reading, and posting remain subject to their current scope
+permissions. This reuses the common access model without a second room authorization
+system; gaining scope access alone does not automatically join a room.
+
 Posts do not automatically load their contents into every participant's context.
 The default is a next-normal-turn unread notice where supported. Optional automatic
-wake hooks are future work. Room membership, cursor initialization/advancement,
+wake hooks are future work. Cursor initialization/advancement,
 addressing, retries, and delivery acknowledgements need concrete contracts.
 
 Keep room identity independent of the linked tracker issue. Initial tests can omit

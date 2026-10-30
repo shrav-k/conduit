@@ -159,6 +159,10 @@ Messages are immutable after acceptance; corrections are follow-up posts. Condui
 retains shared room history, with independent progress for each session and optional
 local copies. Reading does not consume another participant's unread messages.
 
+Sessions explicitly join rooms permitted by their effective scopes; v0 requires no
+separate invitations. Joining establishes participation and unread notices, while
+read/post permissions remain separately controlled. Membership grants no extra access.
+
 By default, a brief unread notice appears on the next normal agent turn when the
 integration supports it; content is retrieved as needed. Posts do not wake idle,
 paused, or closed sessions or create extra model turns. Role-specific wake hooks

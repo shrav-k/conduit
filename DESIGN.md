@@ -375,7 +375,14 @@ optional MCP skill-discovery support. No host/SDK compatibility has been tested.
 Record and attribute available token usage across agents, preserve available transcripts,
 and associate observations with session/execution identity. Initial coverage depends
 on integrations; comprehensive tools/subagent tracking, MCP inspection, and user hooks
-remain broader goals. Payload retention and exact cost accounting remain open.
+remain broader goals. Payload retention remains open; exact cost accounting is deferred.
+
+V0 usage observations identify their execution/account and reporting source, distinguishing
+reported counts, estimates, unknown data, and observed zero. Sum only observations known
+not to overlap. Keep parent/subagent figures separate when overlap cannot be resolved,
+so totals do not silently double-count usage. Missing native telemetry remains a visible
+integration gap. Adapter validation must establish available attribution and aggregation
+coverage; the common contract does not imply exhaustive collection.
 
 For an open session after an unexpected interruption, reconnect to its existing execution
 when the integration verifies that it is still running and supports reconnection. A
@@ -383,9 +390,6 @@ confirmed stopped execution requires explicit resume before starting a replaceme
 Preserve the logical session and workspace; report unknown execution status without
 launching another execution. Recovery restores supported continuity without automatically
 starting new agent work. This does not change explicit pause/reopen semantics.
-
-The proposed v0 evidence distinguishes measured usage, estimates, unknown coverage,
-and observed zero; native child attribution and deduplication need adapter validation.
 
 For operations Conduit controls, retries reuse the same operation ID and return a
 recorded result when available, subject to current access. Distinguish confirmed effects,

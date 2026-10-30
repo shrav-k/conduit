@@ -207,6 +207,12 @@ be limited to the paths actually controlled; selecting a scope does not establis
 agent-wide isolation. The [design](DESIGN.md#access-and-sharing) defines the access
 contract and its staged implementation.
 
+V0 usage reporting attributes observations to their execution/account and reporting
+source, distinguishing reported counts, estimates, unknown data, and observed zero.
+Totals combine only observations known not to overlap; unresolved parent/subagent
+figures remain separate. Missing telemetry is a visible gap, and exact cost accounting
+is deferred.
+
 ## Acceptance scenarios
 
 These express observable behavior for review, not completed tests or a frozen release

@@ -21,9 +21,10 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 ## Active non-communication review
 
-Remaining choices concern retention for knowledge/checkpoints/native history/observations
-and operation outcomes, plus usable account/token/context evidence. Communication delivery,
-cursors, and acknowledgements are deferred below.
+The remaining non-communication policy is retention for knowledge/checkpoints/native
+history/observations and operation outcomes. Actual account/usage/context coverage still
+needs adapter validation in the experiment. Communication delivery, cursors, and
+acknowledgements are deferred below.
 
 The active review is complete when these behaviors have concrete v0 contracts or an explicit
 deferral compatible with the four-account objective. Unverified adapter behavior becomes

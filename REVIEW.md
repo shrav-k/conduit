@@ -51,10 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with creation/update intent and the remaining import/export, field and
-reference details. The registry holds active configuration; updates carry expected identity
-and configuration version separately from reusable YAML. The editing workflow must preserve
-the original baseline.
+Continue round 1 with update semantics and the remaining import/export, field and reference
+details. Creation and update intent are explicit; the editing workflow must preserve the
+original identity/version baseline separately from reusable YAML.
 
 ### Shared example
 
@@ -90,15 +89,15 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** explicit creation/update intent and the editing workflow.
+direction:** define what an update submits and how the editing workflow retains its baseline.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How does application express creation versus update? | Define whether the caller explicitly targets creation or an existing object, or application resolves that intent from current name matches. Keep ID/version checks for updates and specify conflicts if the target appears, disappears or is replaced before commit. Decide deletion and rename intent without inferring it from file synchronization. |
+| What does an update submit? | Choose complete authored-configuration replacement or partial changes that retain omitted fields. Recommend complete replacement for v0, preserving system-owned fields; clients can edit a retrieved document before submitting it. Defaults and omission still need field-specific semantics, and configuration acceptance remains separate from runtime effects. |
 | How does an editing workflow retain its baseline? | With separate precondition inputs accepted, define capture, association with the edited document, recovery after interruption and behavior when the baseline is missing. Specify no-op writes and how a reusable configuration becomes an explicit edit of an existing object. |
 | What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
-| Which identity/reference details remain? | Decide optional direct-ID forms, ID encoding and metadata placement, handling of unresolved references, and which explicit operations create or rebind a relationship. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
+| Which identity/reference details remain? | Decide optional direct-ID forms, ID/version field names and encoding, handling of unresolved references, and explicit rename, delete and rebind operations. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
 | Who owns actual Conduit bindings? | Recommend Session-owned binding instances with reverse views on declarations, rather than independently editable binding lists on both objects. How does a reusable declaration target `self` without letting a caller assert another Session's identity? |
 | How are discovered and external objects represented? | Recommend independently identified Resources with attachment/management metadata; a service Resource can expose native items without one YAML object per file, ticket or tool. Decide whether inline declarations add enough value to justify identity rules. |

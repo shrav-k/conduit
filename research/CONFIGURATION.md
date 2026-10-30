@@ -12,7 +12,8 @@ Updates require expected ID and configuration version, covering `spec` and edita
 but excluding status-only changes. Preconditions are separate update-operation inputs;
 reusable configuration export omits status and system-owned identity/version values.
 The registry holds active configuration through explicit YAML application/export; input
-files are not automatically watched or silently rewritten by CLI/API changes.
+files are not automatically watched or silently rewritten by CLI/API changes. Submissions
+explicitly select create or update intent, rather than deriving it from name matches.
 Exact fields and remaining import/export rules are open. This report investigates how to
 express the model without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
@@ -346,11 +347,12 @@ target unavailable, and replacement requires explicit rebinding. This does not p
 versions or permissions. Exact rebind operations and live selector behavior remain for review.
 
 Registry authority and explicit configuration updates are accepted; storage technology and
-Resource-content updates are separate. The following creation/import mechanics remain proposals.
-Import/export must distinguish “create a new object from this configuration” from “update
-this existing object.” Exporting a Session snapshot must not make applying it restart work,
-clone credentials or create a duplicate execution. Session creation is normally a CLI/API
-operation; a YAML file per conversation is optional.
+Resource-content updates are separate. Explicit create/update intent is also accepted:
+creation conflicts on an existing kind/name; an update requires an existing target and its
+expected ID/version. Neither silently becomes the other. Detailed commands, batch handling
+and remaining import mechanics are proposals. Exporting a Session snapshot must not make
+applying it restart work, clone credentials or create a duplicate execution. Session creation
+is normally a CLI/API operation; a YAML file per conversation is optional.
 
 ## How the five objects connect
 

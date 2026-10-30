@@ -84,6 +84,11 @@ bidirectional synchronization. This defines configuration authority, not the reg
 storage technology or the update behavior of data exposed through Resources. Accepted live
 access rules still apply when the registry configuration changes.
 
+Configuration submissions explicitly select create or update intent. Creation reports a
+conflict if that kind/name already exists. Updating a missing target reports a conflict
+instead of creating it. Neither operation silently switches intent based on name matches;
+exact commands and batch handling remain open.
+
 Normal updates to an existing configuration object require its expected stable ID and
 the configuration version the edit was based on. Reject the update if either differs
 from the current object. This prevents stale edits from silently overwriting newer

@@ -111,6 +111,8 @@ live selector membership remains separate.
 The registry holds active configuration in v0, with explicit YAML application/export.
 Editing an input file alone does not change active objects; CLI/API edits do not silently
 rewrite source files. Registry storage technology and Resource-content updates remain separate.
+Submissions explicitly select create or update intent: creation conflicts on an occupied
+kind/name, and an update requires an existing target rather than becoming a creation.
 
 Normal configuration updates require the expected stable ID and the configuration version
 the edit was based on, rejecting mismatches. That version covers `spec` and editable

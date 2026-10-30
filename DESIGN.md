@@ -81,8 +81,9 @@ role-only bundles; compatible activation and composition rules remain for review
 
 Membership does not by itself copy content, change its owner, grant operations, or
 load information into a model. Existing record ownership and access contracts still
-apply. Explicit references, selectors, overlapping membership and any nesting semantics
-belong to the upcoming membership review; introducing pools does not settle those rules.
+apply. Pool membership supports both explicit resource references and label selectors.
+Exact selector syntax, update behavior, overlapping membership and any nesting semantics
+remain to be specified. Membership selection is distinct from session access filtering.
 
 ### Configuration
 

@@ -46,7 +46,8 @@ These names have distinct meanings throughout the specification.
 A role defines execution configuration and limits; a scope supplies connections and
 selected access for particular work. Connection definitions describe setup without
 granting access. A pool organizes resources; memory is one kind of retained information
-those resources expose. Pool contents are not a fixed set of categories: new kinds
+those resources expose. Pool membership supports explicit resource references and label
+selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
 does not establish a dedicated core resource kind or pool field. Membership, access,
 and activation/context loading are separate concerns; activation rules remain open.

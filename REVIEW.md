@@ -23,13 +23,14 @@ interacting with a domain, replacing the former Conduit project grouping. It inc
 both data and capabilities. Examples such as tools, skills and documents do not define
 a closed list; use-specific names such as “onboarding” should not become dedicated
 core kinds or pool fields. The generic resource/membership contract should accommodate
-new kinds. The prior project access-default behavior now applies to pools.
+new kinds. Pools support both explicit resource references and label selectors. The
+prior project access-default behavior now applies to pools.
 
 **Still proposed:** scopes may become **filters**, with grants and composition to be
 settled. Review these relationships next:
 
-- Define pool membership through explicit references, selectors, or both; decide
-  overlapping/nested membership separately. Membership, ownership, access and activation
+- Specify reference/selector resolution and update behavior; decide overlapping/nested
+  membership separately. Membership, ownership, access and activation
   remain distinct. Resolve how domain resources such as skills compose with role selections
   through general resource contracts, rather than special fields for each use case.
 - A filter could narrow selected resources, operations or exchanges. Current scopes combine

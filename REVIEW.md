@@ -6,11 +6,41 @@ here; prior room choices below are material to reconsider, not implementation re
 
 ## Review order
 
-1. Review the [Pi and Durable investigation](RESEARCH_PI.md) and settle the focused
-   runtime/frontend choices below. Conduit owns its Rust runtime; Pi is the first frontend.
-2. Design in detail what it means to establish a “conduit” between sessions, without
-   assuming the former room model.
-3. Review concrete YAML examples, then the initial experiment in detail, before implementation.
+1. Refine the concepts and relationships below, using the Pi investigation as evidence.
+   Review illustrative YAML alongside those concepts before selecting implementation details.
+2. Design what it means to establish a “conduit,” without assuming the former room model.
+3. Resolve runtime depth/account integration, finalize initial YAML contracts, then design
+   the experiment before implementation.
+
+## Concepts and configuration review
+
+**Accepted frontend clarification:** a custom Conduit terminal inspired by Pi is sufficient.
+Full stock-UI preservation is unnecessary; selective component reuse remains an implementation
+choice. Conduit owns its runtime.
+
+**Proposed, not yet renamed in the specification:** projects may become **pools**, and
+scopes may become **filters**. First settle their semantics and connectivity:
+
+- A pool could group references to resources and exposed capabilities across multiple
+  connections/backends. Membership need not copy data, transfer ownership, or grant access.
+  Decide whether overlapping pools are allowed and how current project defaults carry over.
+- A filter could narrow selected resources, operations or exchanges. Current scopes combine
+  positive grants; narrowing filters would instead constrain a separately authorized attachment.
+  This changes composition, not just vocabulary. Decide where grants live before renaming.
+- A conduit could represent a typed relationship with explicit endpoints and supported
+  operations/exchanges. Discuss whether resource access and intersession communication use
+  this same concept or distinct relationships with common metadata. Do not assume one
+  transport, topology, delivery guarantee or automatic context injection.
+
+Use pi-ai for provider/capability contracts, pi-mcp for protocol/transport separation,
+pi-telemetry for explicit operation attribution, and Chord for typed references, caller-aware
+interfaces and observable state. Keep retained exchanges and execution outcomes distinct
+from transient state subscriptions. These are design inputs, not selected dependencies.
+
+Use concrete examples to test references, selection, composition, ownership, lifecycle
+and effective access. YAML authoring should describe intended configuration; discovered
+capabilities, live sessions, credentials and observed state need their own treatment.
+Keep proposals here until ruled, then incorporate them into SPEC.md/DESIGN.md.
 
 The four-account objective remains: two Codex/OpenAI and two Claude subscription
 identities running concurrently with separate private state and scoped shared knowledge.
@@ -21,8 +51,9 @@ means running on the host, not selecting Pi's or another external agent's runtim
 
 ## Runtime and frontend review
 
-**Settled by the user's clarification:** Conduit implements its runtime in Rust. Pi
-is one frontend among many. Pi's agent loop and Pi Durable are research references,
+**Settled by the user's clarification:** Conduit implements its runtime in Rust. A Pi-inspired
+custom terminal is the first of multiple possible frontends. Pi's agent loop and Pi Durable
+are research references,
 not execution dependencies. The earlier stock-Pi/thin-Conduit recommendation is removed.
 This does not abandon external native agent adapters or imply a replacement skills
 framework, tracker, or search engine.
@@ -30,11 +61,10 @@ framework, tracker, or search engine.
 The [research report](RESEARCH_PI.md) contains the detailed source evidence and
 [proposed runtime boundaries](RESEARCH_PI.md#proposed-rust-runtime). It distinguishes
 frontend rendering, provider adapters, execution recovery and shared memory. Resolve
-these three larger choices before returning to communication:
+these two implementation-scope choices after the concept/configuration discussion:
 
 | Choice | Recommendation and implication |
 | --- | --- |
-| **Pi frontend fidelity** | Start with `pi-tui` plus selected presentation components against Conduit's runtime API. This is a Pi-derived frontend. Preserving the full stock coding-agent UI instead requires a broader adaptation of its direct `AgentSession`, settings, auth and extension dependencies. Choose the interaction features that matter before promising stock command/plugin parity. |
 | **First runtime depth** | Own the turn/tool loop, private history, bounded context, durable input/tool intents and outcomes, explicit recovery and usage from the start. Defer general workflows, background scheduling/compaction, deterministic Code Mode replay and hot reload. Confirm the minimum recovery and long-session behavior before defining concrete state/storage schemas. |
 | **Subscription/account path** | Keep supported native login delegation for external Claude Code/Codex adapters; establish supported provider/account adapters for Conduit-owned execution. Verify distinct identities, refresh ownership and eligibility. Pi OAuth source does not prove those requirements or authorize token reuse. Unsupported subscription access must be surfaced, not replaced silently by API billing or an external runtime. |
 
@@ -137,8 +167,8 @@ No account registration, implementation start or live experiment is implied by t
 
 Comprehensive MCP operation inspection/enforcement, advanced memory-sharing delivery,
 automatic classification/extraction, automatic expiry, exact cost accounting, plugin ABI, and crate
-layout remain staged. Communication delivery order is reopened above. Pi is the first
-frontend; Conduit's own chat and external native runtime integrations remain goals.
+layout remain staged. Communication delivery order is reopened above. A custom terminal
+is first; other frontends and external native runtime integrations remain goals.
 General durable workflows, recoverable script execution and comprehensive Pi plugin
 compatibility are not prerequisites for the first Conduit-owned runtime.
 

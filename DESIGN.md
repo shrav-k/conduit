@@ -40,12 +40,11 @@ Xerj remains a candidate behind a replaceable storage/search plugin. No database
 plugin ABI, transport, process model, or hosting arrangement is selected. Authoritative
 records, observations of external state, and search projections have different meanings.
 
-Pi is the first frontend for the experiment; its agent loop and Pi Durable are not
-Conduit's runtime dependencies. The stock terminal directly uses Pi runtime services,
-so frontend-only reuse requires adaptation. The research recommends `pi-tui` and selected
-presentation components first; adapting the full stock UI is a larger alternative.
-That selection remains in REVIEW.md. Pi Durable, Chord and pi-env inform our own
-implementation; they do not determine Conduit's state model or public contracts.
+The first frontend is a custom Conduit terminal inspired by Pi. Pi's agent loop and
+Pi Durable are not runtime dependencies. The stock terminal directly uses Pi runtime
+services, so selective reuse of `pi-tui` and presentation components is a candidate
+for our frontend. Full stock-UI preservation is unnecessary; exact dependencies remain
+open. Pi Durable, Chord and pi-env inform our own implementation; they do not determine Conduit's state model or public contracts.
 
 ### Runtime and presentation
 

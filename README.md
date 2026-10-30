@@ -4,8 +4,9 @@ Conduit connects models and agents through shared memory, scoped resource access
 and communication between sessions. It preserves native tools and skills while
 adding continuity and, progressively, observation and enforcement.
 
-Conduit owns its runtime in Rust. Pi is the first frontend for the v0 experiment;
-Pi's agent loop and Pi Durable are implementation references, not runtime dependencies.
+Conduit owns its runtime in Rust. The first frontend is a custom Conduit terminal
+inspired by Pi, with selective component reuse where useful. Pi's agent loop and
+Pi Durable are implementation references, not runtime dependencies.
 The communication model is being reconsidered in [REVIEW.md](REVIEW.md#deferred-communication-redesign).
 
 **Status:** current specification for collaborator review; no implementation yet.

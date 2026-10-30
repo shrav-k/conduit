@@ -15,7 +15,8 @@ its model and acceptance criteria are [deferred for redesign](REVIEW.md#deferred
   private working context, alongside portable memory and continuity. Models supply
   reasoning; frontends present interaction. External agent adapters can separately
   connect runtimes such as Claude Code and Codex.
-- **Frontend independence:** Pi is the first frontend, not Conduit's execution engine.
+- **Frontend independence:** the first frontend is a custom Conduit terminal inspired
+  by Pi; preserving Pi's complete UI is unnecessary.
   Pi's agent runtime and Pi Durable are references for our implementation, not runtime
   dependencies.
 - **Native compatibility:** preserve provider tools, schemas, and workflows. Users
@@ -143,15 +144,15 @@ can invoke it on request and record source/version information. An executable Pi
 Claude Code, or Codex plugin needs a compatible runtime adapter or an explicit port;
 using the same model or terminal components does not make it compatible.
 
-Pi is the first conversation frontend for the v0 experiment. Conduit's CLI selects
+A custom Conduit terminal inspired by Pi is the first conversation frontend. Its CLI selects
 roles/projects/scopes and launches or attaches frontends. Conduit owns the execution
 loop, provider requests, tool dispatch, working context, and execution observations.
 Its shared-memory service remains independently usable by other agent integrations.
 
 Pi's stock terminal is coupled to its runtime. The [research report](RESEARCH_PI.md)
-compares adapting that UI against building a Pi-derived frontend from `pi-tui` and
-selected components. The exact frontend adaptation remains open; neither approach
-uses Pi's agent loop or Pi Durable to execute Conduit sessions. Model/account adapters
+supports selective reuse of `pi-tui` and presentation components in our custom terminal.
+Full stock-UI compatibility is not required; exact dependencies remain open. The frontend
+does not use Pi's agent loop or Pi Durable to execute Conduit sessions. Model/account adapters
 and external Claude Code/Codex adapters remain distinct. Additional frontends and
 Conduit's own chat remain goals.
 
@@ -241,10 +242,10 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 
 | Scenario | Observable outcome |
 | --- | --- |
-| **Four accounts run concurrently** | Conduit's CLI launches four sessions across two Codex/OpenAI and two Claude subscription identities, using the first Pi-derived frontend and Conduit-owned execution. Permitted knowledge is retrievable with independent private context and scopes. Supported subscription access and actual identity must be verified; native Claude Code/Codex interoperability is a separate adapter check. |
+| **Four accounts run concurrently** | Conduit's CLI launches four sessions across two Codex/OpenAI and two Claude subscription identities, using the custom Conduit terminal and Conduit-owned execution. Permitted knowledge is retrievable with independent private context and scopes. Supported subscription access and actual identity must be verified; native Claude Code/Codex interoperability is a separate adapter check. |
 | **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted sessions retain their logical identity; usage is attributed to the producing execution and account where available. |
 | **Different scopes share selected knowledge** | A shared record is available to intended sessions; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Isolated-mode OS access checks are additional acceptance cases to specify. |
-| **Frontend independence** | The Pi-derived frontend presents a Conduit-owned execution; another frontend can observe or assume control of the same logical session. The Pi agent loop is not involved. Exact UI parity is a review choice. |
+| **Frontend independence** | The custom terminal presents a Conduit-owned execution; another frontend can observe or assume control of the same logical session. The Pi agent loop is not involved. Stock Pi UI parity is unnecessary. |
 | **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. A role's optional isolation requirement rejects native launch overrides. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
 | **Resume across accounts or agents** | The logical session remains stable, actual execution settings are recorded, and the resumed execution gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new session has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |

@@ -1,8 +1,8 @@
 # Pi and Pi Durable: a Conduit-owned runtime
 
-Research date: 2026-10-30. **Accepted direction: Conduit owns its runtime in Rust;
-Pi is one of several frontends. Neither Pi's agent loop nor Pi Durable is the runtime
-underneath Conduit.** Specific implementation proposals below await review. No Conduit
+Research date: 2026-10-30. **Accepted direction: Conduit owns its runtime in Rust.
+The first frontend is a custom Conduit terminal inspired by Pi. Neither Pi's agent
+loop nor Pi Durable is the runtime underneath Conduit.** Specific implementation proposals below await review. No Conduit
 implementation, account enrollment, or live provider experiment was performed.
 
 For collaborator review, start with [the recommendation](#recommendation),
@@ -80,12 +80,17 @@ services. Registering Conduit as a custom model provider would leave Pi's tool l
 context, and lifecycle in charge, so it would not meet the requested boundary.
 [RPC][rpc] · [RPC implementation][rpc-source] · [SDK][sdk]
 
-### Two genuine UI-only reuse options
+### UI-only reuse options
 
 | Option | What is reused | Cost and limitation |
 | --- | --- | --- |
 | **Pi-derived frontend using `pi-tui`** — recommended first | Terminal renderer, editor, Markdown, images, completion/keybinding primitives, and selected presentation components | Implement Conduit command routing, runtime views, dialogs, and status. It is an adapted Pi frontend, not the entire stock coding-agent UI unchanged. |
 | Adapt/fork the stock coding-agent frontend | More of Pi's commands, layouts, selectors, and tool presentation | Introduce an explicit backend interface and remove direct runtime dependencies. Audit every command; maintain the adaptation or contribute the separation upstream. |
+
+**Subsequent user clarification:** preserving the full stock UI is unnecessary. A custom
+Conduit terminal is sufficient; the first option is the relevant direction, with exact
+component dependencies still open. The comparison explains the tradeoff rather than
+leaving UI fidelity as an unresolved decision.
 
 The standalone [`pi-tui` package][tui] is a clean UI reuse boundary: its package does
 not require the coding-agent execution loop. Assistant-message rendering and tool
@@ -463,9 +468,9 @@ isolation, portable checkpoints, safe retries, and honest usage. Here “native�
 execution on the host without Conduit's full OS sandbox; it does not mean choosing
 Pi or another external agent runtime.
 
-**Needs focused review:** how much stock Pi UI to preserve, which runtime durability
-features gate v0, and supported subscription/account integration for Conduit-owned
-execution. Native sign-in delegation remains suitable for external Claude Code/Codex
+**Needs focused review:** the concepts/configuration relationships, which runtime
+durability features gate v0, and supported subscription/account integration for
+Conduit-owned execution. Native sign-in delegation remains suitable for external Claude Code/Codex
 adapters; it does not automatically authenticate our own provider adapter.
 
 ## Accounts, skills, MCP, and ecosystem lessons
@@ -635,7 +640,7 @@ Pi message transformation/usage functions at the earlier revision passed using N
 The shell's Node 21.5.0 is below Pi's declared Node >=22.19.0 requirement.
 
 The largest remaining uncertainties are supported subscription authentication and
-identity evidence, desired stock-Pi UI parity, runtime delivery scope, and actual
+identity evidence, runtime delivery scope, and actual
 isolation/extension compatibility. Recommendations above are grounded in source and
 failure analysis, not performance benchmarks or a completed integration.
 

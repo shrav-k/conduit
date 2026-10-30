@@ -3,16 +3,104 @@
 Updated: 2026-10-30. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) contain accepted
 contracts. A conduit is now the common relationship for both resource access and
 session communication, and the project's central concept. Its specific interaction
-contracts are the next deep research priority; previous room choices remain unselected.
+contracts remain a deep research priority after the role/session and pool definitions;
+previous room choices remain unselected.
 
 ## Review order
 
-1. Research communication and resource-access strategies against the conduit model,
-   using the brief below. Produce a comparison and proposed contract boundaries.
-2. Review the recommended interaction kinds and YAML examples together, including how
-   conduits connect pools/resources and sessions through filters and role limits.
-3. Resolve runtime depth/account integration, finalize initial YAML contracts, then design
-   the experiment before implementation. Do not freeze a transport or library first.
+1. Define role templates and sessions: naming, configuration responsibilities, resolved
+   settings, update behavior and their relationship to pools. Review example YAML now.
+2. Complete pool semantics and resource/configuration composition.
+3. Research filters and conduits together using the existing brief. Determine whether
+   filters are inline rules, reusable resources, or both; narrowing-only behavior is fixed.
+4. Review interaction contracts/YAML, resolve runtime depth/account integration and
+   design the experiment before implementation. Do not freeze a transport or library first.
+
+## Role and session review
+
+**Established:** the reusable template can create any number of independent sessions,
+each with a defined profile. A session has its own identity, resolved configuration,
+private history/context and conduit relationships. Sessions attach to pool resources
+and other sessions through conduits. Existing account separation, explicit overrides,
+one-primary-agent and lifecycle rules continue to apply.
+
+**Naming proposal:** use **Profile** for the template and retain **Session** for the
+durable instance. Profile describes an execution configuration without implying a task
+responsibility; role can remain an ordinary description such as reviewer/planner.
+Account remains the credential identity referenced by a profile. Agent is less precise
+as a schema name because it can refer to a model/runtime or an active participant.
+Do not rename the accepted specification until this proposal is ruled.
+
+| Responsibility | Template/profile | Session |
+| --- | --- | --- |
+| Execution choices | Default runtime/model/account and compatible settings | Resolved choices plus explicit overrides and actual execution evidence. |
+| Behavior/configuration | Explicit instruction, skill and native-configuration references | Resolved sources and any supported session-specific changes. Pool resources do not silently rewrite template settings. |
+| Constraints | Role-level access ceilings and execution requirements | Current effective constraints; a session override cannot weaken required limits. |
+| Identity/history | Reusable template identity, without a shared conversation | Stable session ID, private state, lifecycle and execution lineage. |
+| Connectivity/workspace | No access merely from possessing the template | Authorized conduits to selected resources/other sessions; workspace association stays distinct from ownership. |
+| Presentation | Frontend-independent execution configuration | One controlling frontend and optional observers; detachment does not end the session. |
+
+**Proposed default-update behavior:** resolve and record the template revision and
+configuration sources at creation. Changes to behavioral defaults affect new sessions;
+existing sessions adopt them only through explicit reconfiguration. Access constraints
+remain live as already agreed. Record resolution and actual settings rather than relying
+on a mutable profile name to explain an old execution. Template layering, deletion,
+reconfiguration boundaries and provenance fields remain to be specified.
+
+**Proposed representation:** author profiles in YAML. A session has a persisted runtime
+record that can be created through CLI/API and inspected/exported as YAML; users need
+not author a file for every session. A session request's `spec` and observed `status`
+remain separate. Lifecycle state is not execution activity. These examples illustrate
+the split; kind/field names, references and `apiVersion` values are not frozen schemas.
+The reference names below are illustrative local aliases, not provider model IDs.
+
+```yaml
+apiVersion: conduit/v1alpha1
+kind: Profile
+metadata:
+  name: engineering
+spec:
+  defaults:
+    runtimeRef: conduit
+    modelRef: claude-default
+    accountRef: claude-work
+    configurationRefs: [engineering-baseline]
+    executionMode: native
+  limitsRef: engineering-limits
+```
+
+`configurationRefs` illustrates references to compatible authored configuration,
+including instruction/skill selections; the exact reference and limits schemas remain
+open. Credentials stay outside these files. Generic referenced resources remain extensible.
+
+```yaml
+apiVersion: conduit/v1alpha1
+kind: Session
+metadata:
+  name: api-review
+spec:
+  profileRef: engineering
+  overrides:
+    accountRef: claude-personal
+status:
+  lifecycle: open
+  executionState: idle
+```
+
+A runtime assigns stable session identity and retains resolved configuration/execution
+provenance. Conduit declarations should reference that session and the relevant endpoint;
+we must choose one authoritative representation of those relationships instead of two
+independently editable lists on both Session and Conduit. The endpoint schema remains
+for the joint filter/conduit review.
+
+Pi provides useful separation between model/account resolution, per-conversation
+configuration, retained history and current model context. Its inheritance/update rules
+are reference behavior, not automatically Conduit's rules. Kubernetes `spec`/`status`
+provides an authoring/observation distinction without implying automatic agent restart.
+
+Next rulings: the template name; default binding/update behavior; and configuration
+composition. Then apply the same resource model to pool-supplied configuration before
+settling filters and conduits. Preserve prior decisions unless explicitly revisited.
 
 ## Concepts and configuration review
 
@@ -111,7 +199,7 @@ or accepted requirement to reproduce every Pi feature.
 
 ## Conduit interaction research
 
-**Direction established; detailed research is next.** This brief defines what the
+**Direction established; research follows the role/session and pool review.** This brief defines what the
 investigation must answer. It is not a completed research report or a selected set of
 conduit types. Access and communication are one design problem with different interaction
 contracts, rather than independent features to bolt together after implementation.

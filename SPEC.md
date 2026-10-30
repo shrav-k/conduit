@@ -43,8 +43,8 @@ These names have distinct meanings throughout the specification.
 
 | Concept | Definition | Example |
 | --- | --- | --- |
-| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
-| **Session** | One continuing Conduit conversation, configured from a role with selected conduits and filters, with at most one active primary agent. | A review conversation that later resumes using another account. |
+| **Role** *(name under review)* | A reusable template from which any number of independent sessions can be created, selecting runtime/model/account defaults and compatible configuration. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
+| **Session** | A durable, independently identified instance created from a role template, with its own resolved configuration, private history/context and conduit relationships. It has at most one active primary agent. | A review conversation that later resumes using another account. |
 | **Resource** | An addressable object exposed through a defined contract. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
 | **Pool** | A named, extensible collection of resources relevant to interacting with a domain. It replaces Conduit's former project grouping and can provide convenient access defaults. Membership alone grants no access. | An Euphony pool collecting the resources relevant to that domain across different providers. |
@@ -61,7 +61,8 @@ selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
 does not establish a dedicated core resource kind or pool field. Membership, access,
 and activation/context loading are separate concerns; activation rules remain open.
-Conduit interaction specifics are the next research priority. The shared concept does
+Role/session and pool contracts are the immediate review priority, followed by conduit
+and filter research. The shared concept does
 not require every kind to expose identical operations or guarantees.
 
 ```mermaid

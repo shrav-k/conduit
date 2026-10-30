@@ -3,7 +3,8 @@
 Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for vocabulary and expected behavior.
 This describes current boundaries; [REVIEW.md](REVIEW.md) contains unresolved choices.
 Conduits are the accepted common relationship model for resource access and session
-communication. Their detailed contracts are the next research priority in REVIEW.md,
+communication. Role/session and pool definitions precede the detailed conduit/filter
+research in REVIEW.md,
 building on the [Pi investigation](RESEARCH_PI.md).
 
 ## Conduits as the core interaction model
@@ -248,6 +249,16 @@ may omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
 
 ## Sessions and workspaces
+
+A role is a reusable template, not a running participant or a shared conversation.
+Any number of independent sessions can be created from the same template. Each session
+has its own identity, resolved configuration, private history/context and conduit
+relationships. Sessions connect to selected pool resources and other sessions through
+conduits; sharing a template does not merge state or establish communication.
+
+The name “Profile” is proposed for the template in REVIEW.md; “Session” remains the
+instance concept. Exact YAML shapes and how template-default edits affect existing
+sessions remain open. Existing explicit overrides and live access-limit rules remain.
 
 One logical session can span multiple executions, with their runtime/model/account
 bindings recorded separately. It has at most one active primary agent; independently

@@ -220,7 +220,14 @@ Knowledge is saved explicitly by users/agents. Classification is optional and en
 user-defined, supports multiple dimensions and labels per dimension, and requires no
 advance declaration. Optional definitions are scoped knowledge records linked explicitly;
 matching names do not bind automatically. Background extraction/classifier interfaces
-are deferred. Retrieval/search operations and budgets remain open.
+are deferred.
+
+Memory search returns bounded excerpts with record/revision references and permitted
+provenance; full content requires an explicit read. This lets agents evaluate relevance
+before spending context on a whole record. Both search and subsequent reads apply
+current access rules, including restrictions on provenance. Search defaults, exact
+budgets, freshness reporting, and partial-result behavior remain open; this contract
+does not select a storage or search backend.
 
 ## Access and sharing
 

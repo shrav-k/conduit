@@ -145,6 +145,10 @@ agents write knowledge explicitly within their access; work and personal knowled
 stay separate unless shared. Available transcripts support continuity, but complete
 normalized conversation history is not guaranteed.
 
+Memory search returns bounded excerpts, record/revision references, and permitted
+provenance. Agents retrieve full content through explicit reads, choosing what enters
+their context under the session's current access rules.
+
 Resume keeps the logical session and loads its applicable permitted checkpoint.
 Fresh starts a new session without automatically loading prior conversation or
 checkpoint content; stored records and files remain available to retrieve. Fork

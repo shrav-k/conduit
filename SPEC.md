@@ -38,16 +38,19 @@ These names have distinct meanings throughout the specification.
 | --- | --- | --- |
 | **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on the access supplied by scopes. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
 | **Session** | One continuing Conduit conversation, configured from a role and using selected scopes, with at most one active primary agent. | A review conversation that later resumes using another account. |
-| **Resource** | An exposed source, object, or service that can be accessed through defined operations. A resource can contain other objects. This is broader than the MCP protocol's specific resource primitive. | A folder, repository, graph, knowledge record, or provider service. |
+| **Resource** | An addressable object exposed through a defined contract. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
-| **Project** | A named grouping of related resources for a body of work. It can span repositories, folders, and memory and provide convenient scope presets. Grouping alone grants no access. | An application with its repository, design notes, and related services. |
+| **Pool** | A named, extensible collection of resources relevant to interacting with a domain. It replaces Conduit's former project grouping and can provide convenient access defaults. Membership alone grants no access. | An Euphony pool collecting the resources relevant to that domain across different providers. |
 | **Scope** | A reusable selection of shared connections, resources, and permitted operations, with optional exclusions. It references connection definitions; a session chooses scopes within its role's limits. | Select a tracker connection and its permitted tools, read project notes, and update selected knowledge. |
 
 A role defines execution configuration and limits; a scope supplies connections and
 selected access for particular work. Connection definitions describe setup without
-granting access. A project organizes resources; memory is one kind of retained
-information those resources expose. Communication concepts will be defined after
-the deferred review; they are not implicit in these resource or session definitions.
+granting access. A pool organizes resources; memory is one kind of retained information
+those resources expose. Pool contents are not a fixed set of categories: new kinds
+should not require a new pool field. A document's use for onboarding, for example,
+does not establish a dedicated core resource kind or pool field. Membership, access,
+and activation/context loading are separate concerns; activation rules remain open.
+Communication concepts will be defined after the deferred review; they are not implicit in these resource or session definitions.
 
 ```mermaid
 flowchart LR
@@ -56,7 +59,7 @@ flowchart LR
     Scope -->|grants operations on| Resource
     Scope -->|selects| Connection
     Connection -->|exposes| Resource
-    Project -->|groups| Resource
+    Pool -->|groups| Resource
     Memory -->|exposed as| Resource
 ```
 
@@ -74,8 +77,8 @@ flowchart LR
 
 ### Example
 
-A project groups an application repository and saved engineering notes. A Claude
-implementation role and a Codex review role select different skills and permission
+A pool groups resources for an application domain, including its repository and knowledge.
+A Claude implementation role and a Codex review role select different skills and permission
 limits. Each starts a separate session with scopes appropriate to its work.
 Their scopes can reference the same connections with different grants;
 Conduit prepares its runtime clients, or an external-agent adapter prepares native setup.
@@ -123,16 +126,21 @@ session-owned, even for sessions sharing a role/account. Resume can reuse the se
 compatible state; fresh sessions do not inherit it automatically. Reusable knowledge
 is shared through scoped Conduit memory; credential reuse remains separate.
 
-At project launch, omitted scope selection uses the project's configured defaults.
+At pool launch, omitted scope selection uses the pool's configured defaults.
 Explicit scope selection replaces those defaults; an explicit add action can extend
 them. Role limits and exclusions still constrain the resulting access.
 
 Use YAML for Conduit's local configuration, with versioned, named objects, explicit
-references, and schema validation. Runtime integrations translate it into native
-configuration where needed. The version identifier scheme and exact schemas remain open.
+references, and schema validation. Kubernetes object structure, extensibility and
+versioning, plus networking API relationships, are explicit design references. Runtime
+integrations translate configuration into native forms where needed. The version
+identifier scheme and exact schemas remain open.
 
 Users can import or select skills from Superpowers, jxp-skills, personal libraries,
-and other compatible sources. Roles explicitly select reusable user-level native
+and other compatible sources. Pools can reference domain-relevant skill resources;
+this extends availability beyond role-only bundles without imposing a custom skill
+format. How pool resources are activated alongside role selections remains open.
+Roles explicitly select reusable user-level native
 settings, skills, and plugins; the default agent profile is not automatically inherited.
 An existing setup can be selected once, preserving native formats. Shared MCP
 connections remain scope-selected; authentication/history are separate, and mandatory
@@ -145,7 +153,7 @@ Claude Code, or Codex plugin needs a compatible runtime adapter or an explicit p
 using the same model or terminal components does not make it compatible.
 
 A custom Conduit terminal inspired by Pi is the first conversation frontend. Its CLI selects
-roles/projects/scopes and launches or attaches frontends. Conduit owns the execution
+roles/pools/scopes and launches or attaches frontends. Conduit owns the execution
 loop, provider requests, tool dispatch, working context, and execution observations.
 Its shared-memory service remains independently usable by other agent integrations.
 
@@ -175,7 +183,7 @@ preserves the worktree with an explanation.
 
 ### Share knowledge and continue work
 
-Memory covers tasks, projects, and personal knowledge across projects. Users and
+Memory covers tasks, pools, and personal knowledge across domains. Users and
 agents write knowledge explicitly within their access; work and personal knowledge
 stay separate unless shared. V0 knowledge records support create, read/search,
 revision-checked updates, archive/restore, and explicit purge, each governed by its

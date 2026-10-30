@@ -1,8 +1,9 @@
 # Conduit
 
 Conduit connects models and agents through shared memory, scoped resource access,
-and communication between sessions. It preserves native tools and skills while
-adding continuity and, progressively, observation and enforcement.
+and communication between sessions. Pools organize extensible collections of resources
+for a domain. Conduit preserves native tools and skills while adding continuity and,
+progressively, observation and enforcement.
 
 Conduit owns its runtime in Rust. The first frontend is a custom Conduit terminal
 inspired by Pi, with selective component reuse where useful. Pi's agent loop and

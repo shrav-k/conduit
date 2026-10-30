@@ -18,12 +18,20 @@ here; prior room choices below are material to reconsider, not implementation re
 Full stock-UI preservation is unnecessary; selective component reuse remains an implementation
 choice. Conduit owns its runtime.
 
-**Proposed, not yet renamed in the specification:** projects may become **pools**, and
-scopes may become **filters**. First settle their semantics and connectivity:
+**Accepted:** a **pool** is a named, extensible collection of resources relevant to
+interacting with a domain, replacing the former Conduit project grouping. It includes
+both data and capabilities. Examples such as tools, skills and documents do not define
+a closed list; use-specific names such as “onboarding” should not become dedicated
+core kinds or pool fields. The generic resource/membership contract should accommodate
+new kinds. The prior project access-default behavior now applies to pools.
 
-- A pool could group references to resources and exposed capabilities across multiple
-  connections/backends. Membership need not copy data, transfer ownership, or grant access.
-  Decide whether overlapping pools are allowed and how current project defaults carry over.
+**Still proposed:** scopes may become **filters**, with grants and composition to be
+settled. Review these relationships next:
+
+- Define pool membership through explicit references, selectors, or both; decide
+  overlapping/nested membership separately. Membership, ownership, access and activation
+  remain distinct. Resolve how domain resources such as skills compose with role selections
+  through general resource contracts, rather than special fields for each use case.
 - A filter could narrow selected resources, operations or exchanges. Current scopes combine
   positive grants; narrowing filters would instead constrain a separately authorized attachment.
   This changes composition, not just vocabulary. Decide where grants live before renaming.
@@ -36,6 +44,21 @@ Use pi-ai for provider/capability contracts, pi-mcp for protocol/transport separ
 pi-telemetry for explicit operation attribution, and Chord for typed references, caller-aware
 interfaces and observable state. Keep retained exchanges and execution outcomes distinct
 from transient state subscriptions. These are design inputs, not selected dependencies.
+
+Use Kubernetes and networking APIs heavily as design references, including Kubernetes
+versioning. Candidate patterns are common identity/metadata, kind-specific schemas,
+references/selectors, intended configuration versus observed status, and explicit
+relationship contracts. Exact field names and the version scheme remain undecided.
+API/schema versions, record revisions and application/plugin releases describe different
+changes and must not be conflated. Source references:
+[objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/),
+[labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/),
+[API groups/versioning](https://kubernetes.io/docs/reference/using-api/),
+[custom-resource versions/conversion](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/),
+[Gateway relationships](https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/), and
+[cross-namespace reference grants](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/).
+These inform Conduit; they do not select its deployment machinery, namespace semantics,
+full conversion infrastructure or automatic agent-restart behavior.
 
 Use concrete examples to test references, selection, composition, ownership, lifecycle
 and effective access. YAML authoring should describe intended configuration; discovered
@@ -53,8 +76,7 @@ means running on the host, not selecting Pi's or another external agent's runtim
 
 **Settled by the user's clarification:** Conduit implements its runtime in Rust. A Pi-inspired
 custom terminal is the first of multiple possible frontends. Pi's agent loop and Pi Durable
-are research references,
-not execution dependencies. The earlier stock-Pi/thin-Conduit recommendation is removed.
+are research references, not execution dependencies. The earlier stock-Pi/thin-Conduit recommendation is removed.
 This does not abandon external native agent adapters or imply a replacement skills
 framework, tracker, or search engine.
 
@@ -110,7 +132,7 @@ Start with what a line of communication is for, how it is opened/closed, and wha
 sessions need to exchange. Compare addressing and topology, directionality, message
 or event/request semantics, lifecycle, extensibility, and compatibility with native
 agent interfaces. Then choose identity/authority, persistence, attention, delivery
-assurances, and relationships to work, projects, trackers, and shared knowledge.
+assurances, and relationships to work, pools, trackers, and shared knowledge.
 Do not constrain that analysis to group chat, a single log, or the previous membership model.
 
 Use the local `agentwatch` reference for concrete communication behavior and the
@@ -133,7 +155,7 @@ Discuss concrete examples together before freezing a schema or implementing:
   experiment.
 - Specify managed-worktree creation settings: base revision, branch selection, directory
   placement, and treatment of any existing local changes.
-- Express roles, account references, shared connection definitions, scopes, projects,
+- Express roles, account references, shared connection definitions, scopes/filters, pools,
   and execution policy. Keep runtime, frontend, model and account selections distinct.
   Show resolved launch settings and adapter output; classify supported skill/plugin
   resources without copying every Pi setting. Keep credentials out of shareable

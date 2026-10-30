@@ -66,19 +66,42 @@ Pi/Claude/Codex extensions that call native runtime APIs require an adapter or p
 Frontend reuse does not supply that compatibility. Preserve source/version information
 and report unsupported hooks rather than loading an implicit second agent runtime.
 
+### Pools and resource extensibility
+
+A pool is a named, extensible collection of resources relevant to interacting with a
+domain. It replaces the former Conduit project grouping. Resource contracts describe
+what each member exposes; the pool organizes references without requiring a common
+backend or a fixed catalog of content categories. New resource kinds should fit the
+same membership mechanism rather than require fields added to every pool schema.
+
+Data, tools, skills and documents illustrate possible members, not an exhaustive type
+system. A use such as onboarding is ordinary resource content/metadata rather than a
+special core kind or pool field. Pool-provided skills extend BYOS availability beyond
+role-only bundles; compatible activation and composition rules remain for review.
+
+Membership does not by itself copy content, change its owner, grant operations, or
+load information into a model. Existing record ownership and access contracts still
+apply. Explicit references, selectors, overlapping membership and any nesting semantics
+belong to the upcoming membership review; introducing pools does not settle those rules.
+
 ### Configuration
 
 YAML is the authoring format for versioned, named configuration objects with explicit
 references and schema validation. Keep authored configuration separate from observed
 runtime state. [Kubernetes object structure](https://kubernetes.io/docs/concepts/overview/working-with-objects/)
-is an inspiration; its tooling and role model are not dependencies. The version
-identifier scheme, exact fields, file layout, precedence, and merge rules remain open.
-Conduit configuration versions are separate from MCP protocol and plugin versions.
+and [API versioning](https://kubernetes.io/docs/reference/using-api/#api-versioning)
+are explicit inspirations, alongside networking APIs such as
+[Gateway API](https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/).
+Study generic identity/metadata, typed references, selectors, desired versus observed
+state, extensible resource kinds, API groups and schema evolution. Apply those patterns
+to Conduit's contracts; Kubernetes machinery is not required. The version identifier
+scheme, exact fields, file layout, precedence and merge rules remain open. Keep schema
+versions distinct from application releases, record revisions, MCP and plugin versions.
 
-For a project launch, use its configured default scopes only when no explicit scope
+For a pool launch, use its configured default scopes only when no explicit scope
 selection is supplied. An explicit selection replaces those defaults; extending the
 defaults requires an explicit add action. Apply role limits and exclusions to the
-result in every case. This keeps convenient project setup from silently retaining
+result in every case. This keeps convenient pool setup from silently retaining
 access the caller intended to replace. Exact authoring and CLI syntax remain open.
 
 A role explicitly selects the user-level native settings, skills, and plugins it
@@ -254,7 +277,7 @@ optional. Type-specific payloads share small metadata for identity, ownership, r
 provenance, and links; external provider objects need not adopt this schema.
 
 - **Identity:** stable record IDs survive renames and moves. Each record has one owning
-  context, meaning a task, project, or personal collection used as its ownership anchor.
+  context, meaning a task, pool, or personal collection used as its ownership anchor.
   This is distinct from an agent's working context. References can be live or pinned
   to a revision; unavailable pinned content is never silently replaced.
 - **Updates:** mutable kinds create immutable revisions. A stale base revision returns
@@ -357,7 +380,7 @@ remain valid. This supports selective reuse without delegated grant chains.
 
 Update rights through shares, pinned shares, onward delegation, and independent publication
 are deferred. Revision-pinned record references remain supported and do not grant access
-themselves. Agents can edit common project knowledge through their own scoped update
+themselves. Agents can edit common pool knowledge through their own scoped update
 grants. The table defines sharing semantics as each capability is introduced.
 
 | Operation | Contract |

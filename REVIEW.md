@@ -42,6 +42,22 @@ Resolve these connected questions for that workflow:
 | Room and work | Membership and visibility, addressing, relation to task/workspace/issue, and the transition to mandatory tracker linkage. Start without a tracker for room testing; Linear remains the first integration. |
 | Memory retrieval | Search/read/save contract, relevance and context budgets, source freshness, and handling partial results. Available content must remain distinct from automatically loaded context. |
 
+**Current discussion — connection selection and configuration:** the proposed split
+of role settings and project defaults is not yet accepted. Reconsider whether scopes
+should select tool connections as well as resources/operations, replacing mandatory
+connection selection in each role. Connection definitions would remain reusable;
+roles would retain execution settings, skills, and optional permission ceilings.
+Runtime integrations would bind the selected connections to the agent's native MCP
+setup, with authentication and compatibility gaps reported. This is a proposal,
+not a change to the current role contract.
+
+YAML is the preferred candidate under discussion. Consider Kubernetes-inspired
+[versioned, named objects and spec/status separation](https://kubernetes.io/docs/concepts/overview/working-with-objects/),
+explicit references, and schema validation. Its [permission bindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+are an analogy, not Conduit's role model. [Kustomize-style overlays](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
+are possible later input; neither Kubernetes nor its tooling is selected as a
+dependency. File layout, schemas, merge rules, and the format choice remain open.
+
 Preserve native provider operations. The shared layer should not require an internal
 ticket engine, replacement skill language, or generic wrapper around every provider tool.
 

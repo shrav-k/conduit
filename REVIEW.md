@@ -46,12 +46,14 @@ Shared connection selection is settled in the [integration contract](DESIGN.md#o
 scopes select reusable connections and grants, roles set limits, and runtime integrations
 prepare native setup. Project defaults and launch-override precedence remain open.
 
-YAML is the preferred candidate under discussion. Consider Kubernetes-inspired
-[versioned, named objects and spec/status separation](https://kubernetes.io/docs/concepts/overview/working-with-objects/),
-explicit references, and schema validation. Its [permission bindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
-are an analogy, not Conduit's role model. [Kustomize-style overlays](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
-are possible later input; neither Kubernetes nor its tooling is selected as a
-dependency. File layout, schemas, merge rules, and the format choice remain open.
+YAML and [versioned, named objects](DESIGN.md#configuration) are settled. Choose the
+Conduit schema-version convention, fields, file layout, and precedence/merge rules.
+
+Reusable connection definitions do not require shared live MCP clients. Review the
+[native registration findings](DESIGN.md#mcp-and-native-compatibility), then choose
+per-launch configuration and authentication handling for concurrent Claude/Codex roles.
+Native configuration must account for inherited and plugin-provided servers; a launch
+override alone does not establish an exclusive server list or agent-wide enforcement.
 
 Preserve native provider operations. The shared layer should not require an internal
 ticket engine, replacement skill language, or generic wrapper around every provider tool.

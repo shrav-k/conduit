@@ -18,21 +18,30 @@ are responsibilities, not a required collection of processes or crates.
 | Frontend/runtime integration | Presentation, launch/attachment, account selection, input/control, and supported lifecycle/events. |
 
 Plugins may integrate models, runtimes, frontends, resources, trackers, storage/search,
-and room transports. A connection is a reusable local instance of such an integration.
-Scopes select shared connections and grant their permitted tools/resources; roles
+and room transports. A connection definition describes reusable local setup for a
+service/backend; it does not represent an already-open MCP client. Scopes select
+connection definitions and grant their permitted tools/resources; roles
 supply execution settings, native skills, and optional permission ceilings. A role
 does not need a second list of shared connections. Definition alone grants no access.
 
 Resolve the selected scopes against role limits for each session, then let its runtime
 integration prepare native MCP setup. Keep host-specific transport, configuration, or
-authentication handling in that integration; report unsupported capabilities. A model
-change alone need not create a new logical connection, while a runtime change can
-require different native setup. Shared definitions do not merge permissions or imply
-that every host can reuse the same authenticated client state.
+authentication handling in that integration; report unsupported capabilities. Changing
+the model alone need not change registration. Each native host manages its MCP clients;
+shared definitions do not merge permissions or promise shared authentication/client state.
 
 Xerj remains a candidate behind a replaceable storage/search plugin. No database,
 plugin ABI, transport, process model, or hosting arrangement is selected. Authoritative
 records, observations of external state, and search projections have different meanings.
+
+### Configuration
+
+YAML is the authoring format for versioned, named configuration objects with explicit
+references and schema validation. Keep authored configuration separate from observed
+runtime state. [Kubernetes object structure](https://kubernetes.io/docs/concepts/overview/working-with-objects/)
+is an inspiration; its tooling and role model are not dependencies. The version
+identifier scheme, exact fields, file layout, precedence, and merge rules remain open.
+Conduit configuration versions are separate from MCP protocol and plugin versions.
 
 ## Sessions and workspaces
 
@@ -154,6 +163,22 @@ MCP is the default external capability contract and preferred plugin boundary. U
 standard tools, resources, prompts, and supported extensions before inventing a generic
 Conduit protocol. Native adapters address concrete lifecycle/account/hook or non-MCP
 needs and should expose MCP where practical. Internal Rust modules need not be servers.
+
+Registration configures a native host to launch a server command or contact an endpoint;
+authentication is a separate concern. [MCP's architecture](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture)
+supports multiple clients of an HTTP service, while stdio usually connects a client to
+its launched subprocess. Reusing a definition or endpoint does not pool live clients.
+Multiple server processes need a shared backend to expose common durable state.
+
+[Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) stores registrations in
+user/project TOML; [Claude Code](https://code.claude.com/docs/en/mcp) supports persistent
+registrations and launch-specific `--mcp-config` with `--strict-mcp-config`.
+[Codex configuration overrides](https://learn.chatgpt.com/docs/config-file/config-basic#configuration-precedence)
+can supply launch values, but are not by themselves an isolated configuration source.
+**Proposal:** generate native launch configuration from effective scopes without
+repeatedly rewriting global settings. Validate inherited/plugin servers, concurrent
+accounts, credential reuse, and host lifecycle before selecting the binding mechanism.
+Do not assume a separate live client per conversation or cross-host OAuth portability.
 
 Preserve native provider tool names, descriptions, schemas, results, and workflows
 wherever possible; identify necessary adaptations. The target is interception of all

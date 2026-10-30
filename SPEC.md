@@ -59,7 +59,7 @@ flowchart LR
 | --- | --- |
 | **Model / agent runtime** | The model produces responses; the runtime supplies the execution loop, native tools, skills, and lifecycle. Compatibility depends on the runtime as well as the model. |
 | **Account** | A separately selectable identity/credential reference, including subscription logins or API credentials. Model-provider and resource-provider accounts are distinct. |
-| **Connection / plugin** | A connection is reusable local setup for a service or backend, including endpoint/process and authentication references as applicable. A plugin supplies integration behavior. Scopes select shared connections; runtime integrations prepare the native setup. |
+| **Connection definition / plugin** | A connection definition is reusable local setup for a service or backend: endpoint/process, transport, and authentication references. It is distinct from a live MCP client connection. A plugin supplies integration behavior; runtime integrations prepare native setup from selected definitions. |
 | **Tool / skill** | A tool performs an operation; a skill provides instructions and potentially helpers in a compatible native format. A skill does not grant additional permissions. |
 | **Execution / frontend** | An execution is a native agent run within a logical session. A frontend presents and controls interaction, such as Conduit's CLI/chat or Pi. |
 | **Working context / checkpoint** | Working context is the information an agent currently uses. A checkpoint is an explicit portable snapshot of task state, not the agent's full native state. |
@@ -88,6 +88,10 @@ Support separate Claude subscription logins, simultaneous sessions using differe
 accounts, and explicit account/model changes when continuing work. Record each
 execution's actual settings and session overrides. Resource credentials remain
 separate from the model account.
+
+Use YAML for Conduit's local configuration, with versioned, named objects, explicit
+references, and schema validation. Runtime integrations translate it into native
+configuration where needed. The version identifier scheme and exact schemas remain open.
 
 Users can import or select skills from Superpowers, jxp-skills, personal libraries,
 and other compatible sources. Initially, skills/plugins may be tied to Claude,
@@ -170,5 +174,5 @@ rooms, role/connection configuration, native skills, and basic managed access.
 Remote communication, optional wake hooks, comprehensive call interception, broader
 sandbox tiers, and automated memory extraction/classification are later work.
 Advanced sharing semantics guide compatible implementations but do not require the
-whole feature set in v0. Storage engines, wire schemas, configuration syntax, crate
-layout, and plugin packaging remain unselected.
+whole feature set in v0. Storage engines, wire schemas, YAML field/version conventions
+and file layout, crate layout, and plugin packaging remain unselected.

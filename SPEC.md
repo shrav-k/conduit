@@ -96,7 +96,12 @@ preserve the ID; deletion and recreation under the same name produce a different
 Authored references normally use `kind` and `name`; Conduit records the resolved object's
 stable ID. V0 uses one local registry with names unique per kind; underlying resources may
 remain local or remote. Namespaces and cross-registry references are deferred. ID encoding,
-reference extensions and rebinding behavior remain for review.
+reference extensions and exact rebind operations remain for review.
+
+Established bindings from explicit references retain their resolved IDs through renames.
+A deleted target becomes unavailable; a replacement using the same name requires explicit
+rebinding. This preserves identity without freezing content versions or current permissions;
+live selector membership remains separate.
 
 | Requirement | Meaning |
 | --- | --- |

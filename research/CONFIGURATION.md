@@ -332,8 +332,10 @@ Stable IDs preserved through rename and renewed on delete/recreate are accepted,
 default kind/name references with the resolved ID recorded. `metadata.uid` remains an
 illustrative encoding. V0's single local registry and names unique per kind are accepted;
 namespaces and cross-registry references are deferred. Duplicate-definition handling and
-recording configuration generation during resolution remain proposals. Recommend that name
-reuse not silently retarget existing bindings; exact rebinding behavior remains for review.
+recording configuration generation during resolution remain proposals. Established bindings
+from explicit references now retain resolved identity across renames; deletion makes the
+target unavailable, and replacement requires explicit rebinding. This does not pin content
+versions or permissions. Exact rebind operations and live selector behavior remain for review.
 
 Import/export must distinguish “create a new object from this configuration” from “update
 this existing object.” Exporting a Session snapshot must not make applying it restart work,

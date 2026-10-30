@@ -7,7 +7,8 @@ Profiles, Sessions, Resources, Pools and Conduits.
 
 The direction, common `apiVersion`/`kind`/`metadata`/`spec` envelope, stable object IDs and
 default kind/name references with recorded resolved IDs are accepted. V0 uses one local
-registry with names unique per kind. Detailed fields, identifier encoding, schemas,
+registry with names unique per kind. Established bindings from explicit references retain
+resolved identity until explicitly rebound. Detailed fields, identifier encoding, schemas,
 reference extensions, composition rules and operations remain open. The
 [connected YAML](research/five-concepts.proposal.yaml) is a design fixture, not a specification
 or implemented format.
@@ -50,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-The common envelope, stable identity, default reference form and v0 naming boundary are
-settled. Continue round 1 with rebinding and the authoring/observation boundary. Do not choose
-merge syntax or activation steps before we know what is being referenced and who owns its state.
+The common envelope, stable identity, default references, v0 naming boundary and binding
+identity behavior are settled. Continue round 1 with the authoring/observation boundary and
+remaining reference details before choosing merge syntax or activation steps.
 
 ### Shared example
 
@@ -88,13 +89,16 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 The common envelope and [identity/reference rules](DESIGN.md#object-identity) are settled:
 rename preserves the ID; delete/recreate produces a new one; authored references normally
 use kind/name and resolution records the selected ID. V0 uses one local registry with names
-unique per kind; namespaces and cross-registry references are deferred. **Recommended next
-direction:** explicit rules for rebinding and system-owned state. Those details remain proposals.
+unique per kind; namespaces and cross-registry references are deferred. Established bindings
+from explicit references follow the resolved ID through renames; deletion makes the target
+unavailable and replacement requires explicit rebinding. This does not pin content or
+permissions, or settle live selectors. **Recommended next direction:** a clear system-owned
+state representation and explicit configuration operations. Those details remain proposals.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How do resolved references respond to changes? | Decide rename behavior and whether existing bindings require explicit rebinding after a name is reused by a replacement object. Optional direct-ID forms, ID encoding and metadata placement also remain open. |
 | Which fields are authored and which are system-owned? | Within the accepted envelope, define editable metadata and kind-specific spec fields. Consider `status` for returned observations, but decide whether it is a separate representation or included read-only view. Specify what import/create/update may set. |
+| Which identity/reference details remain? | Decide optional direct-ID forms, ID encoding and metadata placement, handling of unresolved references, and which explicit operations create or rebind a relationship. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
 | Where is configuration authoritative? | If a user edits YAML and another client edits the registry, which operation reconciles them? Recommend explicit import/update/export with concurrency checks over silent bidirectional file synchronization; decide who owns deletion and rename intent. |
 | Who owns actual Conduit bindings? | Recommend Session-owned binding instances with reverse views on declarations, rather than independently editable binding lists on both objects. How does a reusable declaration target `self` without letting a caller assert another Session's identity? |

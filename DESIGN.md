@@ -49,10 +49,15 @@ Pool membership does not create a separate naming boundary. Registry membership 
 access grant, and this naming rule does not require every exposed native item to have a
 registry-wide name. Namespaces and cross-registry references are deferred.
 
-The ID format, serialized field, cross-registry identity policy and import/export treatment
-remain open, along with optional direct-ID reference forms and the behavior of existing
-references/bindings after rename or replacement. Recording a resolved ID does not by itself
-choose when a relationship may resolve again or move to another object.
+An established binding created from an explicit kind/name reference retains its resolved
+stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting
+the target makes it unavailable; a new object using its old name is not substituted
+automatically. Rebinding remains subject to current authority.
+
+This fixes object identity, not content revisions or permissions. Current access checks
+continue to apply; live selector membership remains a separate contract. The ID format,
+serialized field, cross-registry identity policy, optional direct-ID forms, import/export
+handling and exact rebind operations remain open.
 
 ### Objects, representations and contracts
 

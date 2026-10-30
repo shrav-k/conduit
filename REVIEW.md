@@ -51,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with export behavior after a rename, then delete/rebind operations and remaining
-metadata/reference details. V0 resolves current names only; registry object-name aliases are
-deferred. Baseline storage/lifecycle remains in round 6; field-level comparison follows later.
+Continue round 1 with delete/rebind operations and remaining metadata/reference details.
+Export preserves authored names with explicit refresh in the copy; define remaining failure
+details alongside diagnostics. Baseline storage/lifecycle remains in round 6.
 
 ### Shared example
 
@@ -89,12 +89,12 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** define export behavior for outdated authored references, then delete/rebind behavior.
+direction:** define deletion preconditions, then deletion effects and rebind behavior.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| Which identity/reference operations remain? | Decide whether configuration-only export preserves authored reference names or uses current names of resolved targets. Recommend preserving authored names by default, reporting known mismatches and offering explicit refresh in an exported copy where target identity is unambiguous, without changing stored objects. Define delete/rebind operations, optional direct-ID references and unresolved-reference handling. |
+| Which identity/reference operations remain? | Define delete/rebind requests, preconditions and effects on dependent objects/bindings. Recommend requiring expected ID and configuration version for deletion, rather than ID alone. Decide optional direct-ID references, unresolved-reference handling and export-refresh diagnostics for unavailable or ambiguous targets. |
 | What are the remaining metadata/status fields? | Define `metadata.name` syntax, label rules, system-owned identity/version field names/types and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
 | Who owns actual Conduit bindings? | Recommend Session-owned binding instances with reverse views on declarations, rather than independently editable binding lists on both objects. How does a reusable declaration target `self` without letting a caller assert another Session's identity? |

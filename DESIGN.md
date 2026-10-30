@@ -76,8 +76,12 @@ must be available for that kind or the update conflicts.
 
 Other registry objects retain their authored kind/name references after a rename. Report
 known mismatches between a written name and its resolved target, and offer explicit checked
-reference updates. The rename does not rewrite source YAML files. Export behavior for outdated
-authored references remains a separate decision.
+reference updates. The rename does not rewrite source YAML files.
+
+Configuration-only export preserves authored reference names by default and reports known
+mismatches. An explicit option refreshes names from known, unambiguous resolved IDs in the
+exported copy only; it does not update registry objects or rebind anything. An old exported
+name can still fail or identify a different object on a fresh import.
 
 An established binding created from an explicit kind/name reference retains its resolved
 stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting

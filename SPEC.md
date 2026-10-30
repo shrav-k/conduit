@@ -109,8 +109,10 @@ A rename frees the old name for reuse, so a fresh lookup may later resolve to a 
 Renames use normal checked updates to `metadata.name`, targeting the original ID/version.
 The new name must be available for that kind. Other registry objects keep their authored
 references until explicitly updated; known mismatches with resolved targets are reported and
-checked reference updates are offered. Source YAML files remain unchanged; export behavior
-for outdated authored references remains open.
+checked reference updates are offered. Source YAML files remain unchanged. Configuration-only
+export preserves authored reference names by default and reports known mismatches. Explicit
+refresh uses known, unambiguous resolved IDs to update names only in the exported copy,
+without changing registry objects or bindings.
 
 Established bindings from explicit references retain their resolved IDs through renames.
 A deleted target becomes unavailable; a replacement using the same name requires explicit

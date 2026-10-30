@@ -353,7 +353,10 @@ until explicitly updated; Conduit reports known mismatches with resolved targets
 checked reference updates. Source YAML files remain unchanged. V0 kind/name lookups use only
 current object names; registry object-name aliases are deferred. A rename frees the old name
 for reuse, so fresh lookups can later resolve to a different ID while established bindings
-retain their resolved identity. Export behavior for outdated authored references is open.
+retain their resolved identity. Configuration-only export preserves authored reference names
+by default and reports known mismatches. An explicit refresh uses known, unambiguous resolved
+IDs to update names only in the exported copy, without updating registry objects or rebinding.
+Old exported names can still fail or identify different objects on a fresh import.
 `metadata.uid` remains an illustrative encoding. V0's single local registry and names unique
 per kind are accepted; namespaces and cross-registry references are deferred. Duplicate-definition
 handling and recording configuration generation during resolution remain proposals. Established bindings

@@ -1,8 +1,11 @@
 # Conduit
 
-Conduit connects models and agents through shared memory, rooms, and scoped resource
-access. It preserves native tools and skills while adding a common layer for
-continuity, communication, and eventually observation and enforcement.
+Conduit connects models and agents through shared memory, scoped resource access,
+and communication between sessions. It preserves native tools and skills while
+adding continuity and, progressively, observation and enforcement.
+
+The communication model is being reconsidered. Its prior assumptions and the planned
+Pi research are consolidated in [REVIEW.md](REVIEW.md#deferred-communication-redesign).
 
 **Status:** current specification for collaborator review; no implementation yet.
 The core will be native Rust, initially for personal use with private local

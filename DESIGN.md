@@ -2,24 +2,25 @@
 
 Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for vocabulary and expected behavior.
 This describes current boundaries; [REVIEW.md](REVIEW.md) contains unresolved choices.
+Intersession communication contracts are deferred there for redesign after Pi research.
 
 ## Ownership and extension boundaries
 
-The native Rust core coordinates identity, sessions, shared records, room history,
+The native Rust core coordinates identity, sessions, shared records,
 and managed resource access. Integrations preserve provider-native behavior. These
 are responsibilities, not a required collection of processes or crates.
 
 | Owner | Responsibility |
 | --- | --- |
-| Conduit | Local roles/connections, logical sessions, scopes, shared knowledge/checkpoints, room communication, and available observations. |
+| Conduit | Local roles/connections, logical sessions, scopes, shared knowledge/checkpoints, and available observations. Communication responsibilities will be refined in the deferred review. |
 | Native agent | Planning, execution loop, private working context, native skills/tools, and native subagents. |
 | Resource or tracker provider | Source content and native operations; Linear issue fields, assignments, status, and workflow. |
 | Storage/search plugin | Persistence and retrieval under Conduit's supported record/access contracts, with explicit capability and freshness limits. |
 | Frontend/runtime integration | Presentation, launch/attachment, account selection, input/control, and supported lifecycle/events. |
 
-Plugins may integrate models, runtimes, frontends, resources, trackers, storage/search,
-and room transports. A connection definition describes reusable local setup for a
-service/backend; it does not represent an already-open MCP client. Scopes select
+Plugins may integrate models, runtimes, frontends, resources, trackers, and storage/search.
+A connection definition describes reusable local setup for a service/backend; it does
+not represent an already-open MCP client. Scopes select
 connection definitions and grant their permitted tools/resources; roles
 supply execution settings, native skills, and optional permission ceilings. A role
 does not need a second list of shared connections. Definition alone grants no access.
@@ -70,8 +71,8 @@ Concurrent account separation is required in v0. Keep a role's reusable configur
 an account's persistent login, and an execution's effective scopes/state distinct.
 Never implement switching by swapping credentials in one global agent directory.
 Bind Conduit requests to authenticated session/execution identity rather than trusting
-a caller-supplied role or session label. Shared room access does not merge participants'
-permissions. Model-provider credentials do not select resource-provider credentials.
+a caller-supplied role or session label. Model-provider credentials do not select
+resource-provider credentials.
 
 For v0 Claude/Codex subscriptions, native runtimes own sign-in and token refresh.
 Conduit manages named account references, selects the intended profile, and verifies
@@ -145,7 +146,7 @@ record access distinct: each controls a different path. Visibility of the select
 and actual coverage prevents profile separation from being mistaken for OS security.
 Account, role, and execution also remain distinct so reusing a subscription does not
 automatically load another role's private context. These boundaries preserve native
-workflows while leaving room for stronger, replaceable isolation backends.
+workflows while allowing stronger, replaceable isolation backends.
 
 An isolated mode cannot rely only on native command sandbox flags:
 [Claude's Bash sandbox](https://code.claude.com/docs/en/sandboxing#what-runs-outside-the-sandbox)
@@ -167,8 +168,7 @@ Filesystem isolation does not itself restrict operations at an allowed remote se
 
 One logical session can span multiple native executions. It has at most one active
 primary agent; independently coordinated workers have separate sessions. Native
-subagents may remain inside their parent's execution. The logical session identifies
-a room participant; each message identifies its producing execution.
+subagents may remain inside their parent's execution.
 
 One frontend controls direct input, cancellation, and configuration changes; other
 frontends observe. Continuing in another frontend transfers control without a separate
@@ -182,42 +182,16 @@ defined in the [specification](SPEC.md#share-knowledge-and-continue-work).
 
 A task or experiment owns its workspace/worktree; sessions attach to it. Changing
 agent, account, or frontend need not create a checkout. Forking a conversation does
-not fork files, and a worktree does not imply isolation. The binding among task,
-room, issue, and workspace, concurrent editing rules, and cleanup remain open.
+not fork files, and a worktree does not imply isolation. Concurrent editing rules,
+workspace attachment, and cleanup remain open.
 
-## Rooms and tracker boundaries
-
-Rooms store append-only communication with durable shared history and independent
-session read positions. Participants may retain local copies. A room has no shared
-editable working-memory document; separately scoped memory/checkpoints can be linked
-or quoted. Retention is independent of immutability and remains to be selected.
-
-Messages form one shared room timeline, with reply-to links and optional recipient
-hints naming Conduit sessions. Keep one read position per session per room; replies
-and addressing do not create separate inboxes or thread cursors. These references
-connect requests and responses without changing access permissions or waking agents.
-
-Room access is governed by effective scopes. A session may explicitly join any room
-its scopes permit, without a separate invitation requirement. Joining records
-participation and enables unread notices; it does not grant read/post access or merge
-permissions. Discovery, reading, and posting remain subject to their current scope
-permissions. This reuses the common access model without a second room authorization
-system; gaining scope access alone does not automatically join a room.
-
-Posts do not automatically load their contents into every participant's context.
-The default is a next-normal-turn unread notice where supported. Optional automatic
-wake hooks are future work. Cursor initialization/advancement, retries, and delivery
-acknowledgements need concrete contracts.
-
-Keep room identity independent of the linked tracker issue. Initial tests can omit
-tracking; the eventual linkage requirement has no selected transition milestone or
-cardinality. Provider-owned tracking is sufficient, initially Linear. Synchronization
-may use provider-native operations without a full replica. Room posts do not by
-themselves authorize publication as external issue comments; exchange rules remain open.
+Linear is the first tracker direction. Providers own issue fields, assignments,
+status, and workflow; Conduit does not require an internal ticket engine or full
+replica. Tracker relationships to communication are deferred to REVIEW.md.
 
 ## Memory and record lifecycle
 
-Conduit retains knowledge, checkpoints, room messages, usage observations, and artifact
+Conduit retains knowledge, checkpoints, usage observations, and artifact
 references. Plugins may add namespaced record kinds. An internal work-item engine is
 optional. Type-specific payloads share small metadata for identity, ownership, revision,
 provenance, and links; external provider objects need not adopt this schema.
@@ -227,8 +201,7 @@ provenance, and links; external provider objects need not adopt this schema.
   This is distinct from an agent's working context. References can be live or pinned
   to a revision; unavailable pinned content is never silently replaced.
 - **Updates:** mutable kinds create immutable revisions. A stale base revision returns
-  a conflict; agents may reconcile and retry without mandatory human approval. Room
-  posts remain immutable and use follow-up messages for corrections.
+  a conflict; agents may reconcile and retry without mandatory human approval.
 - **Evidence:** distinguish original source/author, revision writer, and derivation
   inputs. Local recording time differs from labeled source times. Unknown provenance
   stays unknown and does not certify truth or approval.
@@ -263,7 +236,7 @@ and shown. They do not change model/account defaults or automatically inject con
 
 If a scope change removes access that an active isolated execution cannot revoke live,
 stop the affected execution and report that an explicit restart is required. Preserve
-the logical session and room participant; do not automatically launch a replacement.
+the logical session; do not automatically launch a replacement.
 Restart resolves the current rules. This prevents continued execution with obsolete
 access while making the interruption visible. Conduit-managed requests use the new
 rules immediately, independently of the restart.
@@ -273,10 +246,10 @@ shares need explicit inclusion, which presets can provide. Ordinary links grant 
 access. Unsupported/restricted bindings remain unavailable while other usable access
 proceeds; integrations must not silently drop restrictions.
 
-Check whole-record access using the recipient's current permissions immediately before
-managed delivery, including queued messages/handoffs, retries, replays, and retrieval.
-Mixed-access content is withheld as a whole; narrower delivery requires a separately
-authorized extract. Apply the same access rules to search, caches, transcripts, and
+Check whole-record access using the session's current permissions when retrieving or
+loading memory/context, including checkpoint reuse. Mixed-access content is withheld
+as a whole; narrower context requires a separately authorized extract. Apply the same
+access rules to search, caches, transcripts, and
 derived records. Permission changes cannot erase already-delivered native context.
 
 ### Sharing semantics
@@ -332,14 +305,13 @@ remains core. Each mode must state observed activity, enforced restrictions, and
 uncovered paths. Preventing bypass requires more than configuring MCP connections;
 isolating local processes does not replace provider authorization or MCP mediation.
 
-Conduit's sessions, ownership, scope, and room semantics are application contracts.
+Conduit's sessions, ownership, and scope semantics are application contracts.
 Bind requests to effective session identity/access; do not equate an MCP connection
-with a Conduit session. Resources/notifications do not provide durable room history,
-and protocol authorization does not supply Conduit's complete access policy.
+with a Conduit session. Protocol authorization does not supply Conduit's complete
+access policy.
 
-Candidate mappings are tools for room posts/reads and memory search/writes, resources
-for readable records/history, prompts for reusable instructions, and notifications
-for supported unread signaling. Exact schemas and the protocol/extension baseline
+Candidate mappings are tools for memory search/writes, resources for readable records,
+and prompts for reusable instructions. Exact schemas and the protocol/extension baseline
 must be verified with the selected hosts. Native BYOS remains usable regardless of
 optional MCP skill-discovery support. No host/SDK compatibility has been tested.
 
@@ -369,6 +341,6 @@ References inform the design; they do not select dependencies or prove compatibi
 - [Superpowers](https://github.com/obra/superpowers),
   [Matt Pocock's skills](https://github.com/mattpocock/skills), and
   [Ponytail](https://github.com/DietrichGebert/ponytail): native skills and integration references.
-- Local `agentwatch`, `jxp-skills`, and `pstack-pi` checkouts informed room history,
-  independent consumers, usage accounting, work coordination, and native integration.
-  Their storage, deployment, and skill-package designs are not Conduit requirements.
+- Local `jxp-skills` and `pstack-pi` checkouts inform usage accounting and native
+  integration. Their storage, deployment, and skill-package designs are not Conduit
+  requirements. Communication references, including `agentwatch`, are in REVIEW.md.

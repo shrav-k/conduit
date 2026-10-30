@@ -120,7 +120,7 @@ unsupported required isolation rather than silently downgrade.
 Use private execution state and only intended credentials/resources. Do not mount an
 account's entire native history into every role using it. Keep auth refresh coordinated
 instead of blindly cloning rotating credentials. The exact credential/state layout
-and handling of live scope changes need review. For YAML authoring, explicitly writing
+needs review. For YAML authoring, explicitly writing
 the mode in generated roles is recommended; whether handwritten configurations may
 omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
@@ -210,6 +210,13 @@ Selectors support IDs, named ownership contexts, simple filters, and path patter
 where integrations support them. Resource matching and authorized scope/role-limit
 changes apply live to subsequent managed requests, with effective changes recorded
 and shown. They do not change model/account defaults or automatically inject context.
+
+If a scope change removes access that an active isolated execution cannot revoke live,
+stop the affected execution and report that an explicit restart is required. Preserve
+the logical session and room participant; do not automatically launch a replacement.
+Restart resolves the current rules. This prevents continued execution with obsolete
+access while making the interruption visible. Conduit-managed requests use the new
+rules immediately, independently of the restart.
 
 Selecting a context covers directly owned records by default. Descendants and incoming
 shares need explicit inclusion, which presets can provide. Ordinary links grant no

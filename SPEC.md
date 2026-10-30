@@ -160,6 +160,8 @@ direction; Conduit does not require an internal ticket engine or full tracker re
 Select scopes per session, combine their grants, apply role limits, and honor explicit
 exclusions. The same configured connection can serve sessions with different access.
 Scope changes apply to subsequent Conduit-managed requests and must be visible.
+If a running isolated execution cannot revoke removed access live, stop it and require
+an explicit restart under current rules. Preserve the logical session and room identity.
 
 Proceed with usable capabilities while reporting missing or unsupported access.
 An unavailable restriction cannot silently become broader access. V0 guarantees must
@@ -181,7 +183,7 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 | **Resume across accounts or agents** | The logical session/room participant remains stable, actual execution settings are recorded, and the receiver gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new participant has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
 | **Independent catch-up** | One participant reads room history without advancing another's position. A restarted session can retrieve retained history; missing/expired content is reported. |
-| **Access changes** | A subsequent managed retrieval or queued delivery uses current permissions. Inaccessible content is omitted without revealing restricted provenance. Already delivered native context is not claimed to be erased. |
+| **Access changes** | Managed retrieval/delivery uses current permissions. If an isolated execution cannot revoke removed access live, it stops pending explicit restart; session/room identity remains intact. Inaccessible content is omitted without revealing restricted provenance; already delivered native context is not claimed to be erased. |
 | **Integration gaps** | Unsupported notifications, unavailable sources, unknown runtime state, and missing usage data are visible rather than reported as successful, empty, running, or zero by default. |
 
 Success for the initial demonstration means all four agents exchange useful retained

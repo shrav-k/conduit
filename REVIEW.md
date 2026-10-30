@@ -15,6 +15,8 @@ Isolated executions use declared network destinations, including explicit grants
 local/private services; network reachability and provider-operation permissions remain distinct.
 Required isolation must never silently fall back to native execution. The
 [isolation rationale](DESIGN.md#why-both-modes-with-native-as-the-default) explains why.
+If removed access cannot be revoked live in an isolated execution, stop it pending
+explicit restart while retaining session/room identity; managed requests use current rules.
 
 Roles provide execution settings, native skills, and limits; scopes select reusable
 connection definitions and resource/operation grants. Integrations prepare native
@@ -23,17 +25,16 @@ agents retain their own working context. YAML is the configuration format.
 
 ## Remaining behavioral review
 
-These five groups bound the decisions needed for the first workflow. The existing
+These four groups contain the remaining behavioral decisions for the first workflow. The existing
 contracts remain the starting point; resolve concrete gaps rather than reopening
 settled definitions or adding speculative features.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Execution policy** | Which files, declared services, and native capabilities does the initial workflow need? Decide what scope changes require stopping/restarting an execution, while managed requests continue to use current rules. Exact path/endpoint matching and enforcement need configuration/backend validation. |
-| **2. Role, account, and resource binding** | Project scope defaults and launch precedence; enrollment/identity verification, credential-refresh ownership, and private state when one account serves differently scoped sessions. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Exact credential/state layout needs adapter validation. |
-| **3. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
-| **4. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
-| **5. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |
+| **1. Role, account, and resource binding** | Project scope defaults and launch precedence; enrollment/identity verification, credential-refresh ownership, and private state when one account serves differently scoped sessions. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Exact credential/state layout needs adapter validation. |
+| **2. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
+| **3. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
+| **4. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |
 
 Keep local isolation, network access, provider-operation permissions, and Conduit
 record access distinct. A useful first implementation can have different coverage
@@ -50,7 +51,7 @@ After the behavioral review, discuss concrete examples together before freezing 
 schema or writing implementation code:
 
 - Choose the configuration schema-version convention, object shapes, names/references,
-  file layout, validation, and merge/override rules. Keep configuration versions distinct
+  file layout, validation, path/endpoint matching, and merge/override rules. Keep configuration versions distinct
   from MCP protocol and plugin versions.
 - Express the four roles, account references, shared connection definitions, scopes,
   project, and execution policy. Show the resolved launch settings and native adapter
@@ -65,7 +66,8 @@ schema or writing implementation code:
 Review the experiment in detail after the first YAML examples. Select supported host
 platform/runtime versions, account enrollment, the minimal room/memory backend, and
 an isolation backend to evaluate. These are choices for the experiment, not universal
-plugin requirements.
+plugin requirements. Derive the needed file/service grants and native capabilities,
+then verify that the backend enforces the agreed execution policy.
 
 Define setup, expected observations, failure criteria, restart/cleanup, and the order
 of trials. Cover four simultaneous identities, room catch-up, permitted/shared and

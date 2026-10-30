@@ -94,8 +94,10 @@ Resource credentials remain separate from the model account. Account separation
 alone does not establish OS isolation. Native execution is the v0 default; isolated
 execution adds a boundary around the runtime and its children. Show each role's
 configured mode and show/record each execution's effective mode and coverage. Never
-silently downgrade a requested isolation guarantee. Backend, network policy, and
-role-required minima remain open; [the design explains the rationale](DESIGN.md#why-both-modes-with-native-as-the-default).
+silently downgrade a requested isolation guarantee. A role may require isolated
+execution, which a launch override cannot weaken to native. Roles without that
+requirement may use either mode. Backend and network policy remain open;
+[the design explains the rationale](DESIGN.md#why-both-modes-with-native-as-the-default).
 
 Each session has its own effective scopes and authenticated access to shared memory
 and rooms. Sharing a room or model account does not merge scopes or grant access to
@@ -170,7 +172,7 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 | **Four accounts collaborate** | Conduit's CLI launches two Codex and two Claude sessions simultaneously, each using a distinct subscription account, in their native interfaces. All four discuss work in one room; permitted knowledge is retrievable with independent context, scopes, and read progress. Actual account selection is verified rather than inferred from role labels. |
 | **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted participants retain their identity and read progress; usage is attributed to the producing execution and account where available. |
 | **Different scopes in one room** | A shared record is available to the intended participants; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Room membership grants no additional memory access. Isolated-mode OS access checks are additional acceptance cases to specify. |
-| **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
+| **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. A role's optional isolation requirement rejects native launch overrides. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
 | **Resume across accounts or agents** | The logical session/room participant remains stable, actual execution settings are recorded, and the receiver gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new participant has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
 | **Independent catch-up** | One participant reads room history without advancing another's position. A restarted session can retrieve retained history; missing/expired content is reported. |

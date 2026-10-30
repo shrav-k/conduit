@@ -64,6 +64,12 @@ configured mode and each execution's effective mode visible and record the latte
 Isolated execution is an explicit option for additional protection. Both modes retain
 the account-separation and Conduit-access guarantees above; neither merges scopes.
 
+A role may require isolated execution. Launch overrides cannot select native mode for
+that role; unavailable required isolation causes a clear launch failure. Without that
+requirement, either mode may be selected, with native remaining the general default.
+The requirement is separate from a preferred mode: defaults support convenient setup,
+while an explicit requirement preserves the role's boundary across launch interfaces.
+
 | Mode | Boundary and tradeoff |
 | --- | --- |
 | Native with separate profiles | Keeps each account's setup and state separate while retaining host integration. Native tools still have their actual host privileges; this is not an OS security boundary. |
@@ -102,8 +108,8 @@ starting work; reject unsupported required isolation rather than silently downgr
 Use private execution state and only intended credentials/resources. Do not mount an
 account's entire native history into every role using it. Keep auth refresh coordinated
 instead of blindly cloning rotating credentials. The exact credential/state layout,
-role-required minima, mode overrides, network restrictions, and handling of live scope
-changes need review. For YAML authoring, explicitly writing the mode in generated roles
+network restrictions, and handling of live scope changes need review. For YAML authoring,
+explicitly writing the mode in generated roles
 is recommended; whether handwritten configurations may omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
 

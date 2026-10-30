@@ -77,6 +77,13 @@ handling and exact rebind operations remain open.
 
 ### Configuration updates
 
+The local registry holds active configuration in v0. YAML is explicitly applied or exported;
+editing an input configuration file alone does not change registry objects, and CLI/API edits
+do not silently rewrite that file. Files may remain in Git without automatic watching or
+bidirectional synchronization. This defines configuration authority, not the registry's
+storage technology or the update behavior of data exposed through Resources. Accepted live
+access rules still apply when the registry configuration changes.
+
 Normal updates to an existing configuration object require its expected stable ID and
 the configuration version the edit was based on. Reject the update if either differs
 from the current object. This prevents stale edits from silently overwriting newer

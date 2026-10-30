@@ -11,6 +11,8 @@ ownership, combining editable naming/labels with system-owned identity/version i
 Updates require expected ID and configuration version, covering `spec` and editable metadata
 but excluding status-only changes. Preconditions are separate update-operation inputs;
 reusable configuration export omits status and system-owned identity/version values.
+The registry holds active configuration through explicit YAML application/export; input
+files are not automatically watched or silently rewritten by CLI/API changes.
 Exact fields and remaining import/export rules are open. This report investigates how to
 express the model without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
@@ -343,6 +345,8 @@ from explicit references now retain resolved identity across renames; deletion m
 target unavailable, and replacement requires explicit rebinding. This does not pin content
 versions or permissions. Exact rebind operations and live selector behavior remain for review.
 
+Registry authority and explicit configuration updates are accepted; storage technology and
+Resource-content updates are separate. The following creation/import mechanics remain proposals.
 Import/export must distinguish “create a new object from this configuration” from “update
 this existing object.” Exporting a Session snapshot must not make applying it restart work,
 clone credentials or create a duplicate execution. Session creation is normally a CLI/API

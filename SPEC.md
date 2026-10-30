@@ -108,6 +108,10 @@ A deleted target becomes unavailable; a replacement using the same name requires
 rebinding. This preserves identity without freezing content versions or current permissions;
 live selector membership remains separate.
 
+The registry holds active configuration in v0, with explicit YAML application/export.
+Editing an input file alone does not change active objects; CLI/API edits do not silently
+rewrite source files. Registry storage technology and Resource-content updates remain separate.
+
 Normal configuration updates require the expected stable ID and the configuration version
 the edit was based on, rejecting mismatches. That version covers `spec` and editable
 metadata; status-only changes do not invalidate edits. Clients can reconcile and retry

@@ -131,12 +131,17 @@ or automatic cross-runtime conversion is not required. Native ecosystem tooling 
 skill/plugin installation and updates; Conduit adapters can invoke it on request and
 record available source/version information.
 
-The first interaction surface is Conduit's CLI: select a role, project, and scopes,
-then launch the agent in its native interface. Claude and Codex run as separate
-sessions while Conduit supplies shared memory and scoped resources. Their native
-interfaces remain the conversation surfaces; launch/configuration behavior still needs design.
-Pi integration and Conduit's own chat remain goals. Pi research precedes the deferred
-communication review. The core must remain independent of any one frontend.
+Pi is the first conversation frontend for the v0 experiment. Conduit's CLI remains
+the planned role/project/scope selection and launch surface; its exact relationship
+to Pi's terminal and runtime is under review. Conduit supplies shared memory and
+scoped resources while each session retains its own working context.
+
+Pi can supply both a frontend and its own agent runtime. Using Claude or OpenAI
+subscription models through Pi does not establish compatibility with Claude Code or
+the Codex CLI. The [research report](RESEARCH_PI.md) recommends testing Pi's native
+providers first; the exact runtime composition of the four-account experiment remains
+to be reviewed. Native Claude Code/Codex integrations and Conduit's own chat remain
+goals. The core stays independent of any one frontend or runtime.
 
 ### Work in task-owned workspaces
 

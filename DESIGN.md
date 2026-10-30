@@ -2,7 +2,8 @@
 
 Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for vocabulary and expected behavior.
 This describes current boundaries; [REVIEW.md](REVIEW.md) contains unresolved choices.
-Intersession communication contracts are deferred there for redesign after Pi research.
+Intersession communication contracts are deferred there for redesign after reviewing
+the [Pi research](RESEARCH_PI.md).
 
 ## Ownership and extension boundaries
 
@@ -34,6 +35,13 @@ shared definitions do not merge permissions or promise shared authentication/cli
 Xerj remains a candidate behind a replaceable storage/search plugin. No database,
 plugin ABI, transport, process model, or hosting arrangement is selected. Authoritative
 records, observations of external state, and search projections have different meanings.
+
+Pi is the selected first frontend for the experiment. It also contains an agent runtime,
+so frontend choice must not be confused with native Claude Code/Codex compatibility.
+The research recommends reusing stock Pi with a thin integration, keeping Conduit's
+shared records and access contracts independent. The adapter shape, process supervision,
+and exact experiment runtimes remain proposals in REVIEW.md; Pi Durable, Chord, and
+pi-env are research candidates, not selected core dependencies.
 
 ### Configuration
 
@@ -344,6 +352,12 @@ supports multiple clients of an HTTP service, while stdio usually connects a cli
 its launched subprocess. Reusing a definition or endpoint does not pool live clients.
 Multiple server processes need a shared backend to expose common durable state.
 
+[Pi's native MCP support](https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/coding-agent/docs/mcp.md)
+supports stdio/Streamable HTTP, user/project configuration, and dynamic extension
+registration. Tool exposure/discovery and resource access are distinct from Conduit's
+authorization rules; the research identifies adapter checks for nested calls, inherited
+configuration, and resource credentials.
+
 [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) stores registrations in
 user/project TOML; [Claude Code](https://code.claude.com/docs/en/mcp) supports persistent
 registrations and launch-specific `--mcp-config` with `--strict-mcp-config`.
@@ -423,6 +437,8 @@ References inform the design; they do not select dependencies or prove compatibi
 - [Superpowers](https://github.com/obra/superpowers),
   [Matt Pocock's skills](https://github.com/mattpocock/skills), and
   [Ponytail](https://github.com/DietrichGebert/ponytail): native skills and integration references.
+- [Pi research report](RESEARCH_PI.md): pinned source findings, ecosystem comparisons,
+  optional Durable/Chord/Rust execution components, and proposed adapter validation.
 - Local `jxp-skills` and `pstack-pi` checkouts inform usage accounting and native
   integration. Their storage, deployment, and skill-package designs are not Conduit
   requirements. Communication references, including `agentwatch`, are in REVIEW.md.

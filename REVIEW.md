@@ -6,7 +6,8 @@ here; prior room choices below are material to reconsider, not implementation re
 
 ## Review order
 
-1. Review the user's Pi coding-agent research and its implications for integration.
+1. Review the completed [Pi investigation](RESEARCH_PI.md) and settle the focused
+   integration choices below. Pi is the user-selected first frontend.
 2. Design in detail what it means to establish a “conduit” between sessions, without
    assuming the former room model.
 3. Review concrete YAML examples, then the initial experiment in detail, before implementation.
@@ -15,27 +16,38 @@ The four-account objective remains: two Codex and two Claude subscription accoun
 running concurrently with separate native state and scoped shared knowledge. The
 communication portion of that objective will be specified after its redesign. Native
 execution remains the default with optional/required isolation as already defined.
-The non-communication policy review is complete. Actual account, context, usage, and
+The preceding non-communication policy review is complete; Pi research adds the
+specific integration questions below. Actual account, context, usage, and
 recovery behavior still needs adapter validation in the experiment. Storage engines,
 exact schemas, and test cases remain implementation-planning choices; the accepted
 contracts do not prescribe an intersession communication model.
 
 ## Pi coding-agent research
 
-Review the user's research before returning to communication. Sources and specific
-questions are still to be supplied; do not assume conclusions from the earlier Pi
-integration example. Revisit the local `pstack-pi` reference alongside that material.
+The supplied [Pi docs](https://pi.dev/docs/latest) and
+[repository index](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/index.md)
+have been investigated alongside source/tests, pstack, and representative ecosystem
+packages. [RESEARCH_PI.md](RESEARCH_PI.md) records the evidence, release/development
+distinctions, limited offline checks, and proposed experiment. Its recommendations
+are separate from accepted contracts.
 
-Useful questions to connect to the design include Pi's roles as runtime and interface,
-extension and event hooks, session/context ownership, account handling, native tools,
-and MCP compatibility. Determine which capabilities an adapter can preserve and which
-need Conduit support. These are research topics, not new requirements or a decision to
-make Pi the core runtime. Revisit integration boundaries or delivery order only if the
-evidence warrants an explicit change.
+Resolve these larger choices before returning to communication:
+
+| Choice | Recommendation and implication |
+| --- | --- |
+| First runtime composition | Start with four Pi sessions using two Anthropic and two OpenAI subscription identities, then validate native Claude Code/Codex integrations. This tests different models/accounts first; it does not yet prove different runtime interoperability. |
+| Integration boundary | Reuse stock Pi's terminal/runtime with a thin extension and Rust Conduit services. Use RPC for headless cases; avoid building a replacement frontend or model/skill framework. Choose a supervision approach before promising detach/reconnect. |
+| Account evidence | Keep separate stores/profiles and session-private state. Determine supported identity evidence; Pi login alone does not meet our verified-identity requirement. User-attested enrollment would need an explicit ruling, not silent acceptance. |
+| Durable scope | Keep Pi Durable optional and evaluate later for recoverable unattended execution. Reuse its intent/outcome and conformance patterns without making its storage or terminology canonical for Conduit. |
+
+The existing memory lifecycle, scoped retrieval, BYOS, native-default execution,
+portable checkpoint, and honest usage contracts remain applicable. The report proposes
+targeted validation rather than another exhaustive decision ledger. Exact package
+versions, native loading controls, and a minimal backend belong to experiment planning.
 
 ## Deferred communication redesign
 
-**Status: reopened, after Pi research.** This is the sole review home for room-specific
+**Status: reopened, after review of the Pi findings.** This is the sole review home for room-specific
 and intersession communication choices. The user wants a more extensible way to open
 lines of communication between sessions and explore a “conduit” as the abstraction.
 The term is provisional: this is a semantic redesign, not a rename of the room API.
@@ -68,8 +80,12 @@ agent interfaces. Then choose identity/authority, persistence, attention, delive
 assurances, and relationships to work, projects, trackers, and shared knowledge.
 Do not constrain that analysis to group chat, a single log, or the previous membership model.
 
-Use the local `agentwatch` reference for concrete communication behavior and the Pi
-research for integration possibilities. `jxp-skills` and provider-native tracking remain
+Use the local `agentwatch` reference for concrete communication behavior and the
+[Pi communication research](RESEARCH_PI.md#communication-research-for-the-upcoming-redesign)
+for native input timing, pi-messenger delivery, and pi-chat supervision. Separate
+addressing, authorization, retained exchange, attention, and execution when comparing
+options; this is a discussion frame, not a selected object model.
+`jxp-skills` and provider-native tracking remain
 useful coordination references. Bring the conclusions back into SPEC.md and DESIGN.md
 only after review, replacing this provisional material rather than creating a decision ledger.
 
@@ -94,6 +110,7 @@ Discuss concrete examples together before freezing a schema or implementing:
 
 ## Then: initial experiment design
 
+Use the [proposed trial sequence](RESEARCH_PI.md#proposed-experiment-sequence) as input.
 Select supported host/runtime versions, account enrollment, a minimal memory backend,
 and an isolation backend to evaluate. Derive file/service grants and native capabilities,
 then verify the agreed contracts. Review setup, expected observations, failure criteria,
@@ -110,8 +127,8 @@ is implied by this documentation review.
 
 Comprehensive MCP operation inspection/enforcement, advanced memory-sharing delivery,
 automatic classification/extraction, automatic expiry, exact cost accounting, plugin ABI, and crate
-layout remain staged. Communication delivery order is reopened above. Conduit's own
-chat and Pi integration remain goals; Pi research now precedes communication review.
+layout remain staged. Communication delivery order is reopened above. Pi is the first
+frontend; Conduit's own chat and additional native runtime integrations remain goals.
 
 Keep reasoning beside accepted contracts in DESIGN.md. Remove answered questions here
 and use Git history for earlier versions. The communication material above is a focused

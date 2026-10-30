@@ -42,14 +42,9 @@ Resolve these connected questions for that workflow:
 | Room and work | Membership and visibility, addressing, relation to task/workspace/issue, and the transition to mandatory tracker linkage. Start without a tracker for room testing; Linear remains the first integration. |
 | Memory retrieval | Search/read/save contract, relevance and context budgets, source freshness, and handling partial results. Available content must remain distinct from automatically loaded context. |
 
-**Current discussion — connection selection and configuration:** the proposed split
-of role settings and project defaults is not yet accepted. Reconsider whether scopes
-should select tool connections as well as resources/operations, replacing mandatory
-connection selection in each role. Connection definitions would remain reusable;
-roles would retain execution settings, skills, and optional permission ceilings.
-Runtime integrations would bind the selected connections to the agent's native MCP
-setup, with authentication and compatibility gaps reported. This is a proposal,
-not a change to the current role contract.
+Shared connection selection is settled in the [integration contract](DESIGN.md#ownership-and-extension-boundaries):
+scopes select reusable connections and grants, roles set limits, and runtime integrations
+prepare native setup. Project defaults and launch-override precedence remain open.
 
 YAML is the preferred candidate under discussion. Consider Kubernetes-inspired
 [versioned, named objects and spec/status separation](https://kubernetes.io/docs/concepts/overview/working-with-objects/),

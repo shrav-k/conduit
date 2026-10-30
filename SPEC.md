@@ -26,16 +26,17 @@ These names have distinct meanings throughout the specification.
 
 | Concept | Definition | Example |
 | --- | --- | --- |
-| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, native skills, and tool connections. It can declare permission limits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
+| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on the access supplied by scopes. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
 | **Session** | One continuing Conduit conversation, configured from a role and using selected scopes. It is the stable participant in rooms, with at most one active primary agent. | A review conversation that later resumes using another account. |
 | **Resource** | An exposed source, object, or service that can be accessed through defined operations. A resource can contain other objects. This is broader than the MCP protocol's specific resource primitive. | A folder, repository, graph, knowledge record, room, or provider service. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
 | **Project** | A named grouping of related resources for a body of work. It can span repositories, folders, and memory and provide convenient scope presets. Grouping alone grants no access. | An application with its repository, design notes, and related services. |
-| **Scope** | A reusable selection of resources and permitted operations, with optional exclusions. A session chooses scopes within its role's limits. | Read project notes, edit one repository, and read/post in a selected room. |
+| **Scope** | A reusable selection of shared connections, resources, and permitted operations, with optional exclusions. It references connection definitions; a session chooses scopes within its role's limits. | Select a tracker connection and its permitted tools, read project notes, and read/post in a room. |
 | **Room** | A durable, append-only message board for collaboration around work. Sessions exchange messages and maintain independent read positions and working contexts. | Claude and Codex discussing one review task. |
 
-A role defines configuration and limits; a scope supplies the selected access for
-particular work. A project organizes resources; memory is one kind of retained
+A role defines execution configuration and limits; a scope supplies connections and
+selected access for particular work. Connection definitions describe setup without
+granting access. A project organizes resources; memory is one kind of retained
 information those resources expose. A room communicates between sessions rather
 than maintaining a shared editable working-memory document.
 
@@ -44,6 +45,8 @@ flowchart LR
     Role -->|configures and limits| Session
     Session -->|selects| Scope
     Scope -->|grants operations on| Resource
+    Scope -->|selects| Connection
+    Connection -->|exposes| Resource
     Project -->|groups| Resource
     Memory -->|exposed as| Resource
     Session -->|participates in| Room
@@ -56,7 +59,7 @@ flowchart LR
 | --- | --- |
 | **Model / agent runtime** | The model produces responses; the runtime supplies the execution loop, native tools, skills, and lifecycle. Compatibility depends on the runtime as well as the model. |
 | **Account** | A separately selectable identity/credential reference, including subscription logins or API credentials. Model-provider and resource-provider accounts are distinct. |
-| **Connection / plugin** | A connection is reusable local setup for a service or backend; a plugin supplies integration behavior. Roles reference connections rather than duplicating setup. |
+| **Connection / plugin** | A connection is reusable local setup for a service or backend, including endpoint/process and authentication references as applicable. A plugin supplies integration behavior. Scopes select shared connections; runtime integrations prepare the native setup. |
 | **Tool / skill** | A tool performs an operation; a skill provides instructions and potentially helpers in a compatible native format. A skill does not grant additional permissions. |
 | **Execution / frontend** | An execution is a native agent run within a logical session. A frontend presents and controls interaction, such as Conduit's CLI/chat or Pi. |
 | **Working context / checkpoint** | Working context is the information an agent currently uses. A checkpoint is an explicit portable snapshot of task state, not the agent's full native state. |
@@ -65,9 +68,10 @@ flowchart LR
 ### Example
 
 A project groups an application repository and saved engineering notes. A Claude
-implementation role and a Codex review role reference the same resource connections
-but select different skills and permission limits. Each starts a separate session
-with scopes appropriate to its work and joins the same room.
+implementation role and a Codex review role select different skills and permission
+limits. Each starts a separate session with scopes appropriate to its work and joins
+the same room. Their scopes can reference the same connections with different grants;
+each runtime integration prepares the native connection setup.
 
 Claude saves a finding to shared memory and posts a reference. Codex retrieves it
 if its scope permits, checks the evidence, and replies. Both keep their own working

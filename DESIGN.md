@@ -18,9 +18,17 @@ are responsibilities, not a required collection of processes or crates.
 | Frontend/runtime integration | Presentation, launch/attachment, account selection, input/control, and supported lifecycle/events. |
 
 Plugins may integrate models, runtimes, frontends, resources, trackers, storage/search,
-and room transports. A connection is a reusable local instance of such an integration,
-selected by roles. Model/account/skill settings and resource access are resolved for
-each session; shared connection configuration does not merge permissions.
+and room transports. A connection is a reusable local instance of such an integration.
+Scopes select shared connections and grant their permitted tools/resources; roles
+supply execution settings, native skills, and optional permission ceilings. A role
+does not need a second list of shared connections. Definition alone grants no access.
+
+Resolve the selected scopes against role limits for each session, then let its runtime
+integration prepare native MCP setup. Keep host-specific transport, configuration, or
+authentication handling in that integration; report unsupported capabilities. A model
+change alone need not create a new logical connection, while a runtime change can
+require different native setup. Shared definitions do not merge permissions or imply
+that every host can reuse the same authenticated client state.
 
 Xerj remains a candidate behind a replaceable storage/search plugin. No database,
 plugin ABI, transport, process model, or hosting arrangement is selected. Authoritative

@@ -22,9 +22,15 @@ All five kinds share this authoring envelope:
 | `metadata` | Naming, labels and other object metadata under a common convention. |
 | `spec` | Configuration defined by that kind's contract. |
 
-The shared envelope does not give every kind the same configuration fields. Exact metadata
-fields, ID encoding and observation representations remain open; the envelope ruling does
-not yet select `status` or determine which system fields may appear on import/export.
+Inspection returns the object with a system-owned `status` section alongside its authored
+`spec`. Status reports resolution and observed state appropriate to the kind, such as a
+Session's bindings, preparation and execution. Normal authored YAML omits `status`; users
+and agents request changes through configuration or operations rather than declaring an
+observed state to be true.
+
+The shared envelope does not give every kind the same configuration or status fields.
+Exact metadata/status fields, ID encoding and import/export handling remain open, including
+what happens when inspection output is submitted as configuration.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
 in the research. In particular, the API group/version, registry storage layout, reference
@@ -71,6 +77,10 @@ top-level concepts:
 | Resolved configuration | Effective behavioral values and selected references, with defaults/overrides and origins explainable. A Session retains resolved behavior under the rules below. |
 | Observed state | Current binding, compatibility, authentication, preparation and execution information, including unknown or unsupported coverage. |
 | Operation evidence | Actual attempts, effects, results and unresolved outcomes attributed to the Session/execution and integration. |
+
+The combined inspection view presents authored configuration and system-reported state
+together without merging their meanings. Detailed status contents and references to retained
+operation evidence remain kind-specific design choices.
 
 Identity, editable names, source paths, configuration change versions, retained-record
 revisions, plugin releases and provider protocol versions have different meanings. Their

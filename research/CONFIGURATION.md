@@ -5,7 +5,8 @@ The five concepts, Profile-owned activation, typed-object semantics, stable obje
 default kind/name references with recorded resolved IDs, one local registry with names
 unique per kind, and the common `apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
 [DESIGN.md](../DESIGN.md#configuration-language). Detailed fields and algorithms below
-remain proposals. This report investigates how to express the model
+remain proposals. Inspection's combined `spec`/system-owned `status` view is also accepted;
+exact status fields and import/export handling remain open. This report investigates how to express the model
 without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 

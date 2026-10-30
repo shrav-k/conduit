@@ -88,8 +88,10 @@ be able to trace that result without knowing an adapter's implementation.
 
 Profiles, Sessions, Resources, Pools and Conduits share the authoring envelope
 `apiVersion`, `kind`, `metadata` and `spec`. Each kind defines its own configuration within
-`spec`; naming and labels belong in `metadata`. The actual version identifier and the
-representation of system-owned state remain open.
+`spec`; naming and labels belong in `metadata`. Inspection adds system-owned `status` for
+reported resolution and observed state. Normal authoring omits `status`; changes are
+requested through configuration or operations. The actual version identifier, detailed
+status fields and import/export handling remain open.
 
 Each configuration object has a system-assigned stable ID independent of its name. Renames
 preserve the ID; deletion and recreation under the same name produce a different ID.

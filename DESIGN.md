@@ -108,8 +108,13 @@ does not freeze live permissions or replace authorization at the time of the ope
 After authorization and the required ID/version checks pass, submitting unchanged authored
 configuration reports an unchanged result and retains the current configuration version.
 Record the operation outcome without invalidating other edits. Stale submissions still
-conflict even if their submitted configuration matches the current values. The exact
-comparison rules remain open.
+conflict even if their submitted configuration matches the current values.
+
+Equality compares parsed authored values, ignoring presentation-only formatting, comments
+and mapping-key order. An omitted field remains distinct from explicitly setting its default,
+even if both currently resolve to the same value. Lists follow their field-specific order
+rules. Scalar normalization, individual list contracts and version-transition details remain
+to be specified; equality does not compare resolved runtime state.
 
 Clients may reread, reconcile and retry within their permissions without mandatory human
 approval. Simply substituting a newly read version does not reconcile an older edit.
@@ -117,8 +122,8 @@ approval. Simply substituting a newly read version does not reconcile an older e
 The expected ID and configuration version accompany the update as separate operation inputs,
 not as fields in the reusable object YAML. The CLI, editor or API client carries the edit's
 original baseline alongside that document. An operation request is not an additional core
-object kind. Exact request fields, baseline storage/recovery, creation/import/export details
-and configuration-comparison rules remain open.
+object kind. Exact request fields, baseline storage/recovery and remaining creation/import/export
+details remain open.
 
 ### Objects, representations and contracts
 

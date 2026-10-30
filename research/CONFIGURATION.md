@@ -11,7 +11,9 @@ ownership, combining editable naming/labels with system-owned identity/version i
 Updates replace complete authored configuration; partial patches are deferred. Expected
 ID/version checks are required; the configuration version covers `spec` and editable metadata
 but excludes status-only changes. Unchanged submissions retain their version after the
-required checks and record an unchanged outcome; exact comparison rules remain open.
+required checks and record an unchanged outcome. Equality compares parsed authored values,
+ignoring presentation differences while preserving omission versus an explicit default;
+list order follows field contracts, with detailed normalization still open.
 Preconditions are separate update-operation inputs; reusable configuration export omits
 status and system-owned identity/version values.
 The registry holds active configuration through explicit YAML application/export; input
@@ -357,10 +359,13 @@ configuration; omitted optional fields follow their omission/default/validation 
 than retaining old explicit values. Identity is preserved, system-owned fields remain managed
 by Conduit, and partial patches are deferred. Unchanged submissions retain the configuration
 version after authorization and ID/version checks, with an unchanged operation outcome;
-stale submissions still conflict. Comparison rules, detailed commands, batch handling and
-remaining import mechanics are proposals. Exporting a Session snapshot must not make applying
-it restart work, clone credentials or create a duplicate execution. Session creation is
-normally a CLI/API operation; a YAML file per conversation is optional.
+stale submissions still conflict. Equality compares parsed authored values, ignoring
+presentation-only formatting, comments and mapping-key order while distinguishing omission
+from an explicit default. Lists follow their field-specific order rules. Normalization,
+version-transition details, commands, batch handling and remaining import mechanics are
+proposals. Exporting a Session snapshot must not make applying it restart work, clone
+credentials or create a duplicate execution. Session creation is normally a CLI/API operation;
+a YAML file per conversation is optional.
 
 ## How the five objects connect
 

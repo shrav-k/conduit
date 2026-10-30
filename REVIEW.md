@@ -51,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with configuration comparison, the editing workflow and remaining import/export,
-field and reference details. Unchanged submissions retain their version after the required
-checks; define equality without losing authored intent or the edit's original baseline.
+Continue round 1 with the editing workflow and remaining import/export, field and reference
+details. Preserve the original edit baseline separately from reusable YAML; field-level
+normalization and list comparison will be specified with their contracts in later rounds.
 
 ### Shared example
 
@@ -89,13 +89,12 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** define configuration equality and how the editing workflow retains its baseline.
+direction:** define how the editing workflow retains and recovers its baseline.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How is unchanged configuration identified? | Recommend comparing parsed authored values, ignoring presentation differences while distinguishing omission from an explicit default. Compare lists according to their field contracts. Define normalization and version-interpretation rules without equating authored intent with currently resolved values or runtime state. |
-| How does an editing workflow retain its baseline? | With separate precondition inputs accepted, define capture, association with the edited document, recovery after interruption and behavior when the baseline is missing. Specify how reusable configuration becomes an explicit edit of an existing object. |
+| How does an editing workflow retain its baseline? | Recommend that CLI/editor workflows retain a recoverable local baseline containing the original configuration and ID/version, associated with the edited document but separate from reusable YAML. Decide its lifecycle and recovery when missing, and how reusable configuration becomes an explicit edit of an existing object. API clients still supply the required preconditions. |
 | What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which identity/reference details remain? | Decide optional direct-ID forms, ID/version field names and encoding, handling of unresolved references, and explicit rename, delete and rebind operations. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
@@ -119,7 +118,7 @@ out of the initial authoring path unless an example demonstrates the need.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| Which YAML features and scalar domains are accepted? | Decide string keys, duplicate-key rejection, boolean/number rules, aliases, custom tags and unknown fields. Define durations and byte/text/token budgets with units; do not let `0`, `null` or an empty filter acquire implicit special meaning. |
+| Which YAML features and scalar domains are accepted? | Decide string keys, duplicate-key rejection, boolean/number rules, aliases, custom tags and unknown fields. Define scalar normalization and durations/byte/text/token budgets with units; do not let `0`, `null` or an empty filter acquire implicit special meaning. |
 | Which input locations and ambient values affect resolution? | How are roots selected, directories traversed and relative paths based? Recommend declaring-file/native-package-relative paths, explicit external inputs and no implicit shell/environment interpolation. Decide whether duplicate object definitions fail the batch. |
 | How do Profile defaults, Pool defaults and explicit Session choices compose? | A Profile names toolkit access, a selected application Pool has access defaults, and launch supplies its own list. Define all combinations. Explicit choices already replace Pool defaults unless add is requested; Profile-versus-Pool precedence remains unresolved. |
 | What do absent, empty, null, add and reset mean? | Recommend omission uses resolved defaults; an explicit empty replacement selects none; add extends deliberately; unsupported null fails. Decide per field rather than treating this example as a universal rule. Reset, if supported, needs an explicit temporal meaning. |

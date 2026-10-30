@@ -91,9 +91,12 @@ Codex, or another native runtime. Conduit may supply small defaults explaining i
 own capabilities. A custom skill format or automatic cross-runtime conversion is
 not required.
 
-Conduit's own CLI/chat, native agent launching, and selectable frontends including
-Pi are product directions. The first delivered interaction surface is still to be
-selected; the core must not depend on Pi.
+The first interaction surface is Conduit's CLI: select a role, project, and scopes,
+then launch the agent in its native interface. Claude and Codex run as separate
+sessions while Conduit supplies shared memory and rooms. Their native interfaces
+remain the conversation surfaces; launch/configuration behavior still needs design.
+Pi integration and Conduit's own chat follow later, with their relative order open.
+The core must remain independent of any one frontend.
 
 ### Share knowledge and continue work
 
@@ -143,7 +146,7 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 
 | Scenario | Observable outcome |
 | --- | --- |
-| **Claude and Codex collaborate** | Two role sessions use one project and room. One saves knowledge and posts a reference; the other retrieves permitted content and replies. Both retain their own context and read progress. |
+| **Claude and Codex collaborate** | Conduit's CLI launches two role sessions in their native agent interfaces, using one project and room. One saves knowledge and posts a reference; the other retrieves permitted content and replies. Both retain their own context and read progress. |
 | **Resume across accounts or agents** | The logical session/room participant remains stable, actual execution settings are recorded, and the receiver gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new participant has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
 | **Independent catch-up** | One participant reads room history without advancing another's position. A restarted session can retrieve retained history; missing/expired content is reported. |

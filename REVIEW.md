@@ -25,11 +25,11 @@ shared knowledge. A proposed demonstration is: Claude investigates a change, sav
 its finding, and asks for review; Codex retrieves the finding/evidence and replies.
 Then demonstrate checkpoint-based continuation with visible gaps if capture fails.
 
-Select the runtime/account configurations, first frontend, and minimal memory backend.
-The recommendation is to exercise native agents and a thin CLI path first; own chat
-and Pi remain product goals, with delivery order to be agreed. Choose the exact memory
-read/write/search operations and their returned evidence before selecting a graph,
-vector engine, ontology, or broad plugin schema.
+The [first interaction surface](SPEC.md#configure-and-reuse-roles) is settled:
+Conduit's CLI launches native agent interfaces. Resolve launch configuration and
+account handling, then the minimal memory backend. Choose exact memory read/write/search
+operations and their returned evidence before selecting a graph, vector engine,
+ontology, or broad plugin schema. Pi and own chat follow the initial workflow.
 
 ### 3. Bind collaboration to resources
 

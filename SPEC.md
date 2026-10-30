@@ -107,6 +107,11 @@ A deleted target becomes unavailable; a replacement using the same name requires
 rebinding. This preserves identity without freezing content versions or current permissions;
 live selector membership remains separate.
 
+Normal configuration updates require the expected stable ID and the configuration version
+the edit was based on, rejecting mismatches. That version covers `spec` and editable
+metadata; status-only changes do not invalidate edits. Clients can reconcile and retry
+under current permissions. Exact field names and request representation remain open.
+
 | Requirement | Meaning |
 | --- | --- |
 | Typed object graph | The five objects have explicit identities, references and contracts. New integrations extend Resource/Conduit contracts without adding a core concept for every provider. |

@@ -8,8 +8,10 @@ unique per kind, and the common `apiVersion`/`kind`/`metadata`/`spec` envelope a
 remain proposals. Inspection combines `spec` with system-owned `status`; configuration
 writes reject `status`, and configuration-only export omits it. Metadata has per-field
 ownership, combining editable naming/labels with system-owned identity/version information.
-Exact fields, update preconditions and other import/export rules remain open. This report
-investigates how to express the model without turning Conduit into another deployment framework. The research
+Updates require expected ID and configuration version, covering `spec` and editable metadata
+but excluding status-only changes. Exact fields, precondition encoding and other import/export
+rules remain open. This report investigates how to express the model without turning Conduit
+into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 
 Read alongside [the Pi re-review](PI_CONNECTORS.md) and the
@@ -320,7 +322,7 @@ Keep these identifiers and versions separate:
 | `apiVersion` | How to interpret the authored/exported object. |
 | Resource/Conduit `contract` version | The payload/operation contract implemented by a plugin or built-in adapter. |
 | `metadata.uid` | Registry-assigned durable identity, stable across an explicit rename. |
-| `metadata.resourceVersion` | Opaque optimistic-concurrency token for an object update. |
+| `metadata.resourceVersion` | Illustrative spelling for the configuration-update version; status-only changes do not invalidate it. |
 | `metadata.generation` | Which desired configuration the system should evaluate. |
 | Recorded source revision/digest | Which skill, document, model catalog or external object was actually used. |
 | Provider/MCP version | Wire compatibility negotiated with an external service. |

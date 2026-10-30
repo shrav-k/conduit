@@ -24,8 +24,8 @@ All five kinds share this authoring envelope:
 
 Metadata ownership is defined per field: authors control naming and labels within their
 permissions, while Conduit assigns and maintains identity/version information. Placing a
-field in `metadata` does not make it editable. Exact field names and rules for accepting
-returned system values as update preconditions remain open.
+field in `metadata` does not make it editable. Identity and configuration-version checks
+govern updates as described below; exact field names and request encoding remain open.
 
 Inspection returns the object with a system-owned `status` section alongside its authored
 `spec`. Status reports resolution and observed state appropriate to the kind, such as a
@@ -35,8 +35,8 @@ observed state to be true.
 
 Normal configuration writes reject an included `status` field rather than silently
 ignoring it. Conduit provides a configuration-only export that omits `status`, distinct
-from inspection. Identity and concurrency metadata have separate input rules still to be
-defined; this does not authorize clients to assign system-owned values.
+from inspection. Update preconditions check system-owned identity/version information;
+they do not authorize clients to assign those values. Their input representation remains open.
 
 The shared envelope does not give every kind the same configuration or status fields.
 Exact metadata/status fields, ID encoding and remaining import/export semantics are open.
@@ -73,6 +73,22 @@ This fixes object identity, not content revisions or permissions. Current access
 continue to apply; live selector membership remains a separate contract. The ID format,
 serialized field, cross-registry identity policy, optional direct-ID forms, import/export
 handling and exact rebind operations remain open.
+
+### Configuration updates
+
+Normal updates to an existing configuration object require its expected stable ID and
+the configuration version the edit was based on. Reject the update if either differs
+from the current object. This prevents stale edits from silently overwriting newer
+configuration and prevents a reused name from redirecting an update to a replacement.
+
+The configuration version covers `spec` and author-editable metadata. Changes to those
+values invalidate the prior version for updates; status-only changes do not. The check
+does not freeze live permissions or replace authorization at the time of the operation.
+
+Clients may reread, reconcile and retry within their permissions without mandatory human
+approval. Simply substituting a newly read version does not reconcile an older edit.
+Exact field names, how preconditions accompany YAML, creation/import/export behavior and
+handling of no-op writes remain open.
 
 ### Objects, representations and contracts
 

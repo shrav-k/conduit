@@ -6,8 +6,8 @@ accepted contracts. This agenda contains the remaining language and system choic
 Profiles, Sessions, Resources, Pools and Conduits.
 
 The accepted envelope, identity/reference rules, local naming boundary, per-field metadata
-ownership and inspection/write distinction are recorded in
-[DESIGN.md](DESIGN.md#configuration-language). Detailed fields, update preconditions,
+ownership, inspection/write distinction and checked configuration updates are recorded in
+[DESIGN.md](DESIGN.md#configuration-language). Detailed fields, precondition encoding,
 import/export semantics, composition and interaction operations remain for review.
 The [connected YAML](research/five-concepts.proposal.yaml) remains a design fixture,
 not a complete accepted schema or implemented format.
@@ -50,9 +50,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with update preconditions and remaining import/export, field and reference
-details. Metadata now has per-field ownership; `status` remains system-owned and is rejected
-by normal configuration writes.
+Continue round 1 with how preconditions accompany YAML and the remaining import/export,
+field and reference details. Updates now require expected identity and configuration
+version; status-only changes do not invalidate that version.
 
 ### Shared example
 
@@ -86,13 +86,14 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 ## Round 1 — Objects and references
 
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
-[metadata/inspection contract](DESIGN.md#configuration-language). **Recommended next
-direction:** checked configuration updates and explicit import/export operations. Identity
-pinning does not pin content or permissions, or settle live selector membership.
+[metadata/inspection contract](DESIGN.md#configuration-language) and
+[configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
+direction:** a clear update-request representation and explicit import/export operations.
+Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How do configuration updates use system-owned identity/version information? | Recommend checking the expected stable ID and the configuration version an edit was based on, rejecting mismatches. Define what advances that version, how clients supply preconditions and how stale edits are reconciled. |
+| How do preconditions accompany reusable YAML? | Decide whether expected ID/version are separate operation inputs or echoed metadata interpreted as checks. Define how editing preserves the original baseline, how portable configuration export differs from an edit of an existing object, and how no-op writes behave. |
 | What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which identity/reference details remain? | Decide optional direct-ID forms, ID encoding and metadata placement, handling of unresolved references, and which explicit operations create or rebind a relationship. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
@@ -252,7 +253,7 @@ Rust, API/MCP, CLI and frontend tooling. The exact schema/code generation path i
 | What can an explicit probe do? | An MCP probe may start a process; authentication may refresh credentials. Require declared effects and current authority. Define what preview observes and what must be rechecked before applying changes or dispatching work. |
 | What are the error and status contracts? | Specify stable categories, source locations/field paths, explanation, suggested repair, redaction and evaluated versions/timestamps. Define independent validity, resolution, compatibility, preparation and runtime conditions rather than one universal ready flag. |
 | What is the supported schema/version policy? | Choose API group/version and progression, plugin schema dialect, conversion and migration boundaries. Decide treatment of unknown fields/versions and which changes to defaults/composition require migration. Start with one supported authoring version if sufficient. |
-| How do edits stay consistent across clients? | Define concurrency tokens, batch validation/commit, stale-update errors and import/export semantics. Decide source preservation, canonicalization and source/resolved digests without mistaking a digest for identity or permission. |
+| How do edits stay consistent across clients? | Use the accepted ID/configuration-version checks; define batch validation/commit, conflict diagnostics and import/export mechanics. Decide source preservation, canonicalization and source/resolved digests without mistaking a digest for identity or permission. |
 | What evidence is durable and what is a view? | Define operation/activation outcomes, context-source records, transcripts, usage and subagent attribution versus transient frontend updates/traces. Preserve existing unknown/zero and non-overlapping-total rules; specify gaps and recovery. |
 | What makes an implementation conform? | Require the same fixture to resolve identically through CLI/API/frontends, and adapters to report unsupported behavior. Identify where live compatibility tests are required beyond schema and fake-provider fixtures. |
 

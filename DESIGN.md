@@ -67,8 +67,12 @@ registry-wide name. Namespaces and cross-registry references are deferred.
 
 A rename uses the normal checked configuration update, changing `metadata.name` while
 preserving the object's ID. The original ID/version identifies the target; the new name
-must be available for that kind or the update conflicts. Propagation to authored references
-in other objects remains a separate decision.
+must be available for that kind or the update conflicts.
+
+Other registry objects retain their authored kind/name references after a rename. Report
+known mismatches between a written name and its resolved target, and offer explicit checked
+reference updates. The rename does not rewrite source YAML files. Alias and export behavior
+remain separate decisions.
 
 An established binding created from an explicit kind/name reference retains its resolved
 stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting

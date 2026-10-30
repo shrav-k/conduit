@@ -104,7 +104,10 @@ remain local or remote. Namespaces and cross-registry references are deferred. I
 reference extensions and exact rebind operations remain for review.
 
 Renames use normal checked updates to `metadata.name`, targeting the original ID/version.
-The new name must be available for that kind; propagation to other authored references is open.
+The new name must be available for that kind. Other registry objects keep their authored
+references until explicitly updated; known mismatches with resolved targets are reported and
+checked reference updates are offered. Source YAML files remain unchanged; aliases and export
+behavior remain open.
 
 Established bindings from explicit references retain their resolved IDs through renames.
 A deleted target becomes unavailable; a replacement using the same name requires explicit

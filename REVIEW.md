@@ -21,8 +21,8 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 ## Active non-communication review
 
-Remaining choices concern recovery and observability: runtime restart and unknown
-outcomes, retry/deduplication for workspace/memory/resource operations, retention for
+Remaining choices concern recovery and observability: unknown operation outcomes,
+retry/deduplication for workspace/memory/resource operations, retention for
 knowledge/checkpoints/native history/observations, and usable account/token/context
 evidence. Communication delivery, cursors, and acknowledgements are deferred below.
 

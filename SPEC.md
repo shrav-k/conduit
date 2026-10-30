@@ -183,6 +183,11 @@ checkpoint content; stored records and files remain available to retrieve. Fork
 creates a new session from a chosen checkpoint with an origin reference. Neither
 fresh nor fork implicitly clones or deletes workspace files.
 
+After an unexpected interruption of an open session, reconnect to its existing execution
+when the integration verifies it is still running and supports reconnection. Starting a
+replacement for a stopped execution requires explicit resume. Unknown execution status
+is reported without launching a duplicate; the logical session and workspace remain.
+
 ### Control access and explain coverage
 
 Select scopes per session, combine their grants, apply role limits, and honor explicit

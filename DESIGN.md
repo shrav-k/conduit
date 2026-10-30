@@ -377,11 +377,18 @@ and associate observations with session/execution identity. Initial coverage dep
 on integrations; comprehensive tools/subagent tracking, MCP inspection, and user hooks
 remain broader goals. Payload retention and exact cost accounting remain open.
 
+For an open session after an unexpected interruption, reconnect to its existing execution
+when the integration verifies that it is still running and supports reconnection. A
+confirmed stopped execution requires explicit resume before starting a replacement.
+Preserve the logical session and workspace; report unknown execution status without
+launching another execution. Recovery restores supported continuity without automatically
+starting new agent work. This does not change explicit pause/reopen semantics.
+
 The proposed v0 evidence distinguishes measured usage, estimates, unknown coverage,
 and observed zero; native child attribution and deduplication need adapter validation.
 Likewise distinguish confirmed effects, failures, and unknown outcomes. A timeout
 does not establish that a provider action failed. Retry identity, duplicate handling,
-restart behavior, and retention must be chosen for the first workflow.
+and retention must be chosen for the first workflow.
 
 ## Design references
 

@@ -58,6 +58,12 @@ participate in scope selection; selecting a source grants no additional access.
 Authentication and private history remain separately managed, and mandatory host or
 organization policies still apply. Adapters must validate native loading/precedence.
 
+V0 uses each ecosystem's native tooling to install and update selected skills/plugins.
+Conduit adapters may invoke that tooling on request and record available source/version
+information and the outcome. Conduit does not introduce its own package manager for
+these native sources. This preserves existing installation conventions while allowing
+users to manage their selected sources through Conduit.
+
 ## Account separation and execution isolation
 
 Concurrent account separation is required in v0. Keep a role's reusable configuration,

@@ -129,7 +129,9 @@ An existing setup can be selected once, preserving native formats. Shared MCP
 connections remain scope-selected; authentication/history are separate, and mandatory
 host/organization policies still apply. Skills/plugins may be runtime-specific.
 Conduit may supply small defaults explaining its capabilities; a custom skill format
-or automatic cross-runtime conversion is not required.
+or automatic cross-runtime conversion is not required. Native ecosystem tooling owns
+skill/plugin installation and updates; Conduit adapters can invoke it on request and
+record available source/version information.
 
 The first interaction surface is Conduit's CLI: select a role, project, and scopes,
 then launch the agent in its native interface. Claude and Codex run as separate

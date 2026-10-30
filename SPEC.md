@@ -90,7 +90,9 @@ V0 supports concurrent, separately authenticated Codex and Claude subscription
 accounts. Login, refresh, logout, configuration, and private native history for one
 account must not switch or overwrite another's state. Record each execution's actual
 settings and session overrides; do not silently substitute an account or API billing.
-Resource credentials remain separate from the model account. Account separation
+Native runtimes own subscription sign-in and token refresh; Conduit owns account
+references, profile selection, and identity verification. Resource credentials remain
+separate from the model account. Account separation
 alone does not establish OS isolation. Native execution is the v0 default; isolated
 execution adds a boundary around the runtime and its children. Show each role's
 configured mode and show/record each execution's effective mode and coverage. Never

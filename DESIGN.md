@@ -58,6 +58,14 @@ Bind Conduit requests to authenticated session/execution identity rather than tr
 a caller-supplied role or session label. Shared room access does not merge participants'
 permissions. Model-provider credentials do not select resource-provider credentials.
 
+For v0 Claude/Codex subscriptions, native runtimes own sign-in and token refresh.
+Conduit manages named account references, selects the intended profile, and verifies
+the selected identity through supported runtime evidence. Keep provider authentication
+behind runtime adapters instead of implementing a separate subscription OAuth system.
+This preserves native account behavior while giving Conduit responsibility for correct
+selection and attribution. Concurrent accounts and credential reuse with session-private
+state still require adapter validation; successful native login alone proves neither.
+
 Stored native conversation history and agent-maintained private memory belong to the
 Conduit session, even when sessions use the same role or subscription. Resume may reuse
 that session's compatible state; fresh sessions do not inherit it automatically, and
@@ -133,11 +141,11 @@ containers, or VMs are candidates, not selected dependencies.
 Resolve the chosen mode and required capabilities before starting work; reject
 unsupported required isolation rather than silently downgrade.
 Use the session's private native state and only intended credentials/resources. Do not
-mount an account's entire native history into every role using it. Keep auth refresh coordinated
-instead of blindly cloning rotating credentials. The exact credential/state layout
-needs review. For YAML authoring, explicitly writing
-the mode in generated roles is recommended; whether handwritten configurations may
-omit it remains a schema choice.
+mount an account's entire native history into every role using it. Coordinate native
+credential access instead of blindly cloning rotating credentials. The exact
+credential/state layout needs adapter validation. For YAML authoring, explicitly
+writing the mode in generated roles is recommended; whether handwritten configurations
+may omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
 
 ## Sessions and workspaces

@@ -25,6 +25,9 @@ selection replaces them, with an explicit add action to extend defaults. Rooms
 preserve append-only messages and independent read positions. Private native history
 and agent-maintained memory belong to each session, independently of role/account reuse;
 shared knowledge goes through scoped Conduit memory. YAML is the configuration format.
+Native runtimes own subscription authentication/refresh; Conduit selects account
+profiles and verifies identity. Concurrent authentication and private-state separation
+remain explicit adapter checks for the experiment.
 
 ## Remaining behavioral review
 
@@ -34,7 +37,7 @@ settled definitions or adding speculative features.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Role, account, and resource binding** | Enrollment/identity verification and credential-refresh ownership. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Credential reuse with session-private native state, exact storage layout, and native configuration precedence need adapter validation. |
+| **1. Role, account, and resource binding** | Define handling of inherited native settings/MCP servers/plugins and BYOS selection/update behavior. Native enrollment/identity evidence, credential reuse with session-private state, exact storage layout, and configuration precedence need adapter validation, with unsupported capabilities reported. |
 | **2. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
 | **3. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
 | **4. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |

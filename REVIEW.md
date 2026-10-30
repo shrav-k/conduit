@@ -27,7 +27,7 @@ reopening settled definitions or adding speculative features.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Rooms and workspaces** | Addressing/replies and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
+| **1. Rooms and workspaces** | The relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
 | **2. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
 | **3. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |
 

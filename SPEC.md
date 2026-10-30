@@ -159,6 +159,10 @@ Messages are immutable after acceptance; corrections are follow-up posts. Condui
 retains shared room history, with independent progress for each session and optional
 local copies. Reading does not consume another participant's unread messages.
 
+One shared timeline supports reply-to links and optional recipient-session hints,
+with one read position per session per room. Replies and hints do not change access
+permissions or wake agents.
+
 Sessions explicitly join rooms permitted by their effective scopes; v0 requires no
 separate invitations. Joining establishes participation and unread notices, while
 read/post permissions remain separately controlled. Membership grants no extra access.

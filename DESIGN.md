@@ -192,6 +192,11 @@ session read positions. Participants may retain local copies. A room has no shar
 editable working-memory document; separately scoped memory/checkpoints can be linked
 or quoted. Retention is independent of immutability and remains to be selected.
 
+Messages form one shared room timeline, with reply-to links and optional recipient
+hints naming Conduit sessions. Keep one read position per session per room; replies
+and addressing do not create separate inboxes or thread cursors. These references
+connect requests and responses without changing access permissions or waking agents.
+
 Room access is governed by effective scopes. A session may explicitly join any room
 its scopes permit, without a separate invitation requirement. Joining records
 participation and enables unread notices; it does not grant read/post access or merge
@@ -201,8 +206,8 @@ system; gaining scope access alone does not automatically join a room.
 
 Posts do not automatically load their contents into every participant's context.
 The default is a next-normal-turn unread notice where supported. Optional automatic
-wake hooks are future work. Cursor initialization/advancement,
-addressing, retries, and delivery acknowledgements need concrete contracts.
+wake hooks are future work. Cursor initialization/advancement, retries, and delivery
+acknowledgements need concrete contracts.
 
 Keep room identity independent of the linked tracker issue. Initial tests can omit
 tracking; the eventual linkage requirement has no selected transition milestone or

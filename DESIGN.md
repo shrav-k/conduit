@@ -121,8 +121,11 @@ configuration and prevents a reused name from redirecting an update to a replace
 
 Registry-object deletion requires the same expected ID and configuration-version checks.
 An intervening configuration change makes deletion conflict; the caller may reread and
-reconcile before retrying. Effects on dependent objects, running executions and external
-resources remain separate decisions.
+reconcile before retrying. Incoming references alone do not block an otherwise permitted
+checked deletion. Retain referring objects and their authored references, reporting affected
+relationships as unavailable; do not prune those references or cascade removal to referring
+objects. For example, deleting a Resource leaves the Pool that referenced it intact.
+Further restrictions for running executions and external-data cleanup remain separate decisions.
 
 The configuration version covers `spec` and author-editable metadata. Changes to those
 values invalidate the prior version for updates; status-only changes do not. The check

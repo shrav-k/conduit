@@ -146,7 +146,9 @@ Missing edit history cannot be reconstructed; stale baselines still require reco
 Exact request fields and baseline storage/lifecycle remain open.
 
 Registry-object deletion also requires expected ID and configuration version, rejecting
-mismatches. Effects on dependent objects, running executions and external resources remain open.
+mismatches. Incoming references alone do not block an otherwise permitted deletion: referring
+objects and their authored references remain, with affected relationships reported as unavailable.
+Running-execution restrictions and external-data cleanup remain open.
 
 | Requirement | Meaning |
 | --- | --- |

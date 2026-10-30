@@ -366,7 +366,10 @@ versions or permissions. Exact rebind operations and live selector behavior rema
 
 Registry-object deletion requires expected stable ID and configuration version; an intervening
 configuration change produces a conflict, allowing the caller to reread and reconcile before
-retrying. Effects on dependent objects, running executions and external resources remain open.
+retrying. Incoming references alone do not block an otherwise permitted deletion. Referring
+objects and their authored references remain, with affected relationships reported as unavailable;
+deletion does not prune those references or cascade to referring objects. Running-execution
+restrictions and external-data cleanup remain open.
 
 Registry authority and explicit configuration updates are accepted; storage technology and
 Resource-content updates are separate. Explicit create/update intent is also accepted:

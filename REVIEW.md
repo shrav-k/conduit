@@ -1,372 +1,223 @@
-# Collaborator review
+# Review agenda
 
-Updated: 2026-10-30. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) contain accepted
-contracts. A conduit is now the common relationship for both resource access and
-session communication, and the project's central concept. Its specific interaction
-contracts remain a deep research priority after the profile/session and pool definitions;
-previous room choices remain unselected.
+Updated: 2026-10-30. The working model is **Profiles, Sessions, Resources, Pools,
+and Conduits**. [SPEC.md](SPEC.md) defines their relationships; [DESIGN.md](DESIGN.md)
+contains accepted contracts. This document contains only unresolved choices, research
+and experiment planning within that model.
 
-## Review order
+## Review method
 
-1. Complete Profile/Session configuration: composition, references, reconfiguration
-   boundaries and their relationship to pools. Names and default-update behavior are settled.
-   Review example YAML now.
-2. Complete pool semantics and resource/configuration composition.
-3. Research filters and conduits together using the existing brief. Determine whether
-   filters are inline rules, reusable resources, or both; narrowing-only behavior is fixed.
-4. Review interaction contracts/YAML, resolve runtime depth/account integration and
-   design the experiment before implementation. Do not freeze a transport or library first.
+Work through concrete configurations and interactions before implementation. Define the
+minimum Resource/Pool authoring contract, complete Profile/Session configuration, then
+research Conduit access and communication together. Activation details can remain open
+until those interactions are concrete, but their owner is settled: **Profile instructions
+are applied by Sessions to the Resources their Conduits permit**.
 
-## Profile and session review
+Use one YAML object/version/reference convention across the five concepts, informed by
+Kubernetes and networking APIs. Settle identity/name resolution, schema versions, file
+layout, validation and authored-versus-observed state together. Keep schema versions,
+record revisions, plugin releases and protocol versions distinct. Exact fields below are
+illustrative; no `apiVersion` value has been chosen.
 
-**Established:** the reusable template can create any number of independent sessions,
-each with a defined profile. A session has its own identity, resolved configuration,
-private history/context and conduit relationships. Sessions attach to pool resources
-and other sessions through conduits. Existing account separation, explicit overrides,
-one-primary-agent and lifecycle rules continue to apply.
+Resolve consequential choices in groups and incorporate them into DESIGN.md. Remove
+answered questions here. Git history preserves superseded material; no separate decision
+ledger or alternate conceptual model is needed.
 
-**Accepted names:** **Profile** is the reusable template; **Session** is the durable
-instance. Profile describes configuration without implying a task responsibility such
-as reviewer/planner. Account remains a separately referenced credential identity.
-A native agent's login profile is an adapter detail, distinct from a Conduit Profile.
+## Profiles
 
-| Responsibility | Template/profile | Session |
-| --- | --- | --- |
-| Execution choices | Default runtime/model/account and compatible settings | Resolved choices plus explicit overrides and actual execution evidence. |
-| Behavior/configuration | Default conduit references; compatible loading defaults remain to be specified | Resolved bindings and Pool-supplied configuration. Resources do not silently rewrite template settings. |
-| Constraints | Profile-level access ceilings and execution requirements | Current effective constraints; a session override cannot weaken required limits. |
-| Identity/history | Reusable template identity, without a shared conversation | Stable session ID, private state, lifecycle and execution lineage. |
-| Connectivity/workspace | No access merely from possessing the template | Authorized conduits to selected resources/other sessions; workspace association stays distinct from ownership. |
-| Presentation | Frontend-independent execution configuration | One controlling frontend and optional observers; detachment does not end the session. |
+**Configuration and reuse.** Specify the runtime/model/account references, default Conduit
+references, activation instructions and limits a Profile can author. How are reusable
+loading conventions supplied without Profile inheritance? Define Session overrides,
+Profile deletion and explicit reconfiguration without freezing live permission limits.
 
-**Accepted default-update behavior:** resolve behavioral settings at creation. Changes
-to profile defaults affect new sessions; existing sessions adopt them only through
-explicit reconfiguration. Access constraints remain live. Record configuration origins
-and actual settings rather than relying on a mutable profile name to explain an old
-execution. The exact provenance fields, reconfiguration boundaries and handling of
-profile deletion remain open. Whether referenced configuration/skill content follows
-source updates or is pinned is a separate resource-versioning decision.
+**Activation instructions.** Investigate Pi's resource loaders, skills/packages, prompts,
+extensions and MCP setup. Determine what Profile/model/runtime defaults handle, how an
+author overrides them in the template, and how a Session applies them to permitted
+Resources. Separate discovery, compatible import/registration and context loading. Resolve
+conflicts, duplicates, required versus optional preparation, budgets, errors and update
+behavior. A Conduit filters the available set; it does not carry activation instructions.
 
-**Accepted resource path:** each Session starts from one Profile. Profiles reference
-reusable default conduit declarations, bound independently for each Session. Pools are
-the sole route for supplying resources through Conduit, including baseline skills and
-configuration. Resource definitions remain independent and reusable across Pools;
-membership does not copy content or change ownership. V0 defers Profile inheritance.
-Runtime/model/account bootstrap settings and limits remain in the Profile.
+**Account and execution policy.** Validate supported subscription enrollment, verifiable
+identity, refresh ownership, credential reuse and private-state separation for two Claude
+and two Codex/OpenAI accounts. Distinguish own-runtime provider support from external-agent
+adapters. Select an isolation backend and define capability/network matching; native
+execution remains the default, with optional Profile-required isolation. Decide how
+configuration authors see resolved policy and whether generated files always state the mode.
 
-**Accepted activation direction; details deferred:** explicit, reusable activation rules
-belong in the conduit review. The design should include a conduit type that selects and
-prepares compatible Pool resources for a Session, such as Claude-compatible skills and
-selected MCP connections. Profile/model/runtime defaults may handle standard imports;
-the conduit may specify additional selection/loading behavior. The type name, division
-of responsibilities, precedence and exact activation contract remain open. Model choice
-alone does not establish compatibility with a native agent's plugins or hooks.
-
-Resource labels are optional selection metadata, not required Pool membership declarations.
-Explicit references need no labels. Shared definitions, inline declarations and provider
-discovery still need an authoring contract. Reusing a conduit declaration grants no access
-beyond current authority, Profile limits and filters; the declaration/instance schema
-remains open.
-
-**Proposed representation:** author profiles in YAML. A session has a persisted runtime
-record that can be created through CLI/API and inspected/exported as YAML; users need
-not author a file for every session. A session request's `spec` and observed `status`
-remain separate. Lifecycle state is not execution activity. These examples illustrate
-the split; Profile/Session names are accepted; fields, references and `apiVersion` values are
-still illustrative, not frozen schemas.
-The reference names below are illustrative local aliases, not provider model IDs.
+A minimal shape to refine, using illustrative local aliases:
 
 ```yaml
-apiVersion: conduit/v1alpha1
 kind: Profile
 metadata:
-  name: engineering
+  name: frontend-engineer
 spec:
   defaults:
     runtimeRef: conduit
-    modelRef: claude-default
-    accountRef: claude-work
-    conduitRefs: [frontend-kit]
+    modelRef: preferred-coding-model
+    accountRef: work
+    conduitRefs: [frontend-toolkit]
     executionMode: native
+  activation:
+    instructions: |
+      Prepare compatible skills from the permitted resources.
+      Register the permitted MCP capabilities using this runtime's adapter.
   limitsRef: engineering-limits
 ```
 
-`conduitRefs` illustrates the accepted reference relationship: `frontend-kit` identifies
-a reusable conduit declaration targeting a Pool. Each Session gets its own binding.
-Exact declaration/reference/limits fields and activation semantics remain open.
-Credentials stay outside these files.
+The example establishes placement, not a selected policy language. Define how instructions
+become observable preparation behavior before relying on them for a runnable Session.
+Credentials stay outside these files; actual skill/document content comes through Pools.
+
+## Sessions
+
+**Configuration record and execution.** Define the persisted Session shape: Profile origin,
+resolved settings, explicit overrides, private history and Conduit binding references.
+Choose one authoritative representation of bindings rather than two independently editable
+lists. Specify when reconfiguration takes effect during an active execution, how actual
+settings are attributed, and which changes require a new execution.
+
+**Own runtime and frontends.** Select the smallest Rust runtime that supports the first
+workflow. The Pi research proposes persisted input/tool intent/outcome, child ownership,
+bounded state updates and context-source records. Decide v0 recovery granularity,
+context construction/compaction and the control/state API. Frontend commands, observations
+and controller transfer must preserve the accepted Session lifecycle. Component reuse
+from `pi-tui` is optional; stock UI parity and Pi runtime adoption are not open goals.
+
+**Continuity and evidence.** Specify checkpoint capture and native-history conversion
+per integration, supported reconnect behavior, subagent attribution and usage coverage.
+Determine how the Session records Profile activation results and supplied Resource versions.
+Retained behavior, current access and changing Resource content need separate treatment.
+
+Proposed inspectable request/state split:
 
 ```yaml
-apiVersion: conduit/v1alpha1
 kind: Session
 metadata:
-  name: api-review
+  name: frontend-review
 spec:
-  profileRef: engineering
+  profileRef: frontend-engineer
   overrides:
-    accountRef: claude-personal
+    accountRef: alternate-work
 status:
   lifecycle: open
   executionState: idle
 ```
 
-A runtime assigns stable session identity and retains resolved configuration/execution
-provenance. Conduit declarations should reference that session and the relevant endpoint;
-we must choose one authoritative representation of those relationships instead of two
-independently editable lists on both Session and Conduit. The endpoint schema remains
-for the joint filter/conduit review.
+Conduit assigns stable identity and records actual resolution/execution evidence. Creating
+a Session through CLI/API should not require manually authoring a file for every conversation;
+exact authoring/export semantics remain to be settled.
 
-Pi provides useful separation between model/account resolution, per-conversation
-configuration, retained history and current model context. Its inheritance/update rules
-are reference behavior, not automatically Conduit's rules. Kubernetes `spec`/`status`
-provides an authoring/observation distinction without implying automatic agent restart.
+## Resources
 
-Activation is deferred to the joint conduit/filter review. Build on the
-[Pi skills/package and MCP findings](RESEARCH_PI.md#bring-your-own-skills-with-explicit-compatibility)
-and inspect its resource loaders to resolve these connected questions:
+**Definition and discovery.** Specify the common identity/metadata contract and extensible
+kind schemas. Decide how local declarations, inline definitions and provider discovery
+coexist; how references survive renames; and the useful granularity of packages, directories,
+services and individual objects. Preserve provider-native operations without requiring a
+handwritten object for every external item. Resource kinds need not share one payload schema.
 
-- What comes from Profile/model/runtime loading defaults, and what must the conduit
-  declare? Specify which runtime capabilities make a selected resource compatible.
-- How do discovery, resource selection, native registration and context loading differ?
-  Compare skill metadata with full instructions, prompt use and MCP tool exposure;
-  preserve provider-native schemas and Conduit's own runtime ownership.
-- How should duplicate/conflicting resources, required/optional activation, context
-  budgets and unavailable integrations behave? Make the resolved result inspectable.
-- How do source changes, Session reconfiguration and conduit teardown affect loaded
-  configuration? Keep these distinct from live permission changes.
+**Compatibility and versions.** Describe supported operations and runtime/plugin requirements
+in a form that Conduits can select and Profile activation can use. Decide live versus pinned
+source selection, source updates and unavailable versions. Keep names, labels, compatibility
+and authority distinct. Determine which metadata is authored and which adapters discover.
 
-Resolve these with concrete examples during conduit design. The Pool/resource access path
-is settled; exact activation sequencing and YAML remain open. Precedence between Profile
-default conduits, Pool defaults and explicit Session choices also needs review.
+**First Resource contracts.** Pick a memory backend and search-limit values/units; preserve
+the accepted lifecycle, revision, provenance, sharing and coverage behavior. Specify workspace
+base/branch/directory settings and adapter cleanup evidence. Define Linear integration and
+work references while retaining the provider's workflow ownership. Choose the first native
+skills/MCP sources needed to exercise Profile activation, using their existing tooling.
 
-## Concepts and configuration review
+Advanced sharing/publication, background classification/extraction, automatic expiry and
+exact cost accounting remain later capabilities. Their relevant constraints are in DESIGN.md;
+they should not dominate the first experiment.
 
-**Accepted frontend clarification:** a custom Conduit terminal inspired by Pi is sufficient.
-Full stock-UI preservation is unnecessary; selective component reuse remains an implementation
-choice. Conduit owns its runtime.
+## Pools
 
-**Accepted:** a **pool** is a named, extensible collection of resources relevant to
-interacting with a domain, replacing the former Conduit project grouping. It includes
-both data and capabilities. Examples such as tools, skills and documents do not define
-a closed list; use-specific names such as “onboarding” should not become dedicated
-core kinds or pool fields. The generic resource/membership contract should accommodate
-new kinds. Pools support both explicit resource references and label selectors. The
-prior project access-default behavior now applies to pools.
+**Membership and lifecycle.** Define explicit reference and label-selector syntax, names,
+resolution boundaries and the consequences of membership edits. Decide whether nesting
+is needed, how missing members are reported, and how overlap is represented without
+copying Resource identity or ownership. Pool lifecycle must distinguish removing a collection
+from deleting any referenced content.
 
-**Accepted:** filters only narrow selections/grants; they never grant access. This
-separates grant and constraint responsibilities: an authorized conduit supplies access,
-filters constrain it, and profile limits remain the ceiling.
+**Defaults and composition.** Complete precedence between Profile default Conduits, Pool
+access defaults and explicit Session choices. Preserve the accepted rule that explicit
+selection replaces Pool defaults unless an add action is requested. Define how a Session
+can see the resolved collection and the filtered resources it can actually use.
 
-**Accepted:** “conduit” covers resource access and session communication. This interaction
-strategy is the project's core. It replaces the provisional access “attachment” term;
-its exact kinds, endpoints, representation and guarantees require deep research.
+**Concrete examples.** Author a reusable frontend-engineering Pool and an application Pool
+that reference some of the same Resources. Test explicit membership without labels, selector
+membership, different backend kinds and unsupported capabilities. These are uses of one
+extensible Pool contract, not fixed Pool categories.
 
-Review these relationships next:
+## Conduits
 
-- Specify reference/selector resolution and update behavior; decide duplicate handling
-  across overlapping Pools and any nesting semantics. Membership, ownership, access
-  and activation remain distinct. Resolve how domain resources such as skills compose with profile selections
-  through general resource contracts, rather than special fields for each use case.
-- Define where filters attach and how multiple filters/conduits compose. Keep
-  pool membership selectors distinct from access constraints; filters cannot add grants.
-  Preserve visible effective access and current-rule checks as the schema evolves.
-- Determine the common conduit contract and the interaction-specific extensions.
-  Establish endpoint/addressing, lifecycle, authority and observation semantics without
-  assuming one transport, topology, delivery guarantee or automatic context injection.
+**Declarations and bindings.** Define how a reusable declaration becomes an independently
+authenticated Session binding. Specify endpoints, grants, filters, opening/closing and
+observed state. Resource selections resolve through Pools; communication links Sessions.
+Keep declaration lifecycle, active bindings and underlying client/process lifecycles distinct.
 
-Use pi-ai for provider/capability contracts, pi-mcp for protocol/transport separation,
-pi-telemetry for explicit operation attribution, and Chord for typed references, caller-aware
-interfaces and observable state. Keep retained exchanges and execution outcomes distinct
-from transient state subscriptions. These are design inputs, not selected dependencies.
+**Filtering and authority.** Define resource/operation filtering and composition across
+multiple Conduits within live Profile limits and exclusions. Decide whether filter rules
+are inline, reusable or both without promoting them to a sixth core concept. Cover selectors,
+current-rule checks, missing permissions and revocation. Resource selection feeds Profile
+activation; it does not determine context loading by itself.
 
-Use Kubernetes and networking APIs heavily as design references, including Kubernetes
-versioning. Candidate patterns are common identity/metadata, kind-specific schemas,
-references/selectors, intended configuration versus observed status, and explicit
-relationship contracts. Exact field names and the version scheme remain undecided.
-API/schema versions, record revisions and application/plugin releases describe different
-changes and must not be conflated. Source references:
-[objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/),
-[labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/),
-[API groups/versioning](https://kubernetes.io/docs/reference/using-api/),
-[custom-resource versions/conversion](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/),
-[Gateway relationships](https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/), and
-[cross-namespace reference grants](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/).
-These inform Conduit; they do not select its deployment machinery, namespace semantics,
-full conversion infrastructure or automatic agent-restart behavior.
+### Interaction research
 
-Use concrete examples to test references, selection, composition, ownership, lifecycle
-and effective access. YAML authoring should describe intended configuration; discovered
-capabilities, live sessions, credentials and observed state need their own treatment.
-Keep proposals here until ruled, then incorporate them into SPEC.md/DESIGN.md.
+Research access and communication as related Conduit contracts. Activation research concerns
+the receiving Profile/Session's use of the filtered Resource set; communication research
+concerns the exchange between Sessions. Their boundaries must agree without forcing identical
+operations, persistence or attention behavior.
 
-The four-account objective remains: two Codex/OpenAI and two Claude subscription
-identities running concurrently with separate private state and scoped shared knowledge.
-The own-runtime authentication path needs validation; native Claude Code/Codex integration
-is a separate compatibility claim. Communication will be specified after its redesign.
-Native execution remains the default with optional/required isolation; “native” here
-means running on the host, not selecting Pi's or another external agent's runtime.
-
-## Runtime and frontend review
-
-**Settled by the user's clarification:** Conduit implements its runtime in Rust. A Pi-inspired
-custom terminal is the first of multiple possible frontends. Pi's agent loop and Pi Durable
-are research references, not execution dependencies. The earlier stock-Pi/thin-Conduit recommendation is removed.
-This does not abandon external native agent adapters or imply a replacement skills
-framework, tracker, or search engine.
-
-The [research report](RESEARCH_PI.md) contains the detailed source evidence and
-[proposed runtime boundaries](RESEARCH_PI.md#proposed-rust-runtime). It distinguishes
-frontend rendering, provider adapters, execution recovery and shared memory. Resolve
-these two implementation-scope choices after the concept/configuration discussion:
-
-| Choice | Recommendation and implication |
+| Contract area | Questions to resolve |
 | --- | --- |
-| **First runtime depth** | Own the turn/tool loop, private history, bounded context, durable input/tool intents and outcomes, explicit recovery and usage from the start. Defer general workflows, background scheduling/compaction, deterministic Code Mode replay and hot reload. Confirm the minimum recovery and long-session behavior before defining concrete state/storage schemas. |
-| **Subscription/account path** | Keep supported native login delegation for external Claude Code/Codex adapters; establish supported provider/account adapters for Conduit-owned execution. Verify distinct identities, refresh ownership and eligibility. Pi OAuth source does not prove those requirements or authorize token reuse. Unsupported subscription access must be surfaced, not replaced silently by API billing or an external runtime. |
+| Interaction patterns | Which contracts are needed for resource invocation/read/query, requests/results, asynchronous exchange, publication/subscription, state observation and handoff? Derive a small v0 set rather than adopting a broker's entire vocabulary. |
+| Addressing and topology | How are Sessions and Pool selections addressed? Compare direct/routed and one-to-one/one-to-many relationships, discovery and independent recipient state. |
+| Delivery and outcomes | Define ordering boundaries, correlation, durable acceptance, acknowledgement, replay, duplication and unknown outcomes. Separate receipt, execution and completion. |
+| Attention and lifecycle | How do exchange, notification, queued input and starting an agent turn differ? Handle offline/paused/closed Sessions, cancellation, timeouts, backpressure and reconnect. |
+| Context and references | When is content retained, referenced, retrieved or delivered? Preserve provenance and private Session context, with current recipient access checks. |
+| Protocol and extension boundaries | Map contracts to MCP and other suitable protocols. Preserve native capabilities; compare local-first operation with remote extension and Rust integration. |
+| Observation and tracking | Attribute operations and coverage, retain useful diagnostics and associate provider-native tracker items without making a tracker define every interaction. |
 
-The frontend control/state contract should expose Conduit's existing one-controller,
-detach, resume/fresh/fork and coverage semantics. Evaluate MCP where it fits and a thin
-versioned control/event API where necessary; choose exact transport and schemas during
-implementation planning. UI reuse must not accidentally introduce another agent loop.
+Use primary documentation, pinned source and focused tests. These are research references,
+not selected dependencies:
 
-Memory lifecycle, scoped retrieval, BYOS, execution modes, portable checkpoints and
-usage contracts remain applicable. Runtime-specific plugins need compatibility checks
-or ports. The research's implementation details are proposals, not a new decision ledger
-or accepted requirement to reproduce every Pi feature.
-
-## Conduit interaction research
-
-**Direction established; research follows the profile/session and pool review.** This brief defines what the
-investigation must answer. It is not a completed research report or a selected set of
-conduit types. Access and communication are one design problem with different interaction
-contracts, rather than independent features to bolt together after implementation.
-
-### Questions and comparison criteria
-
-| Area | What the research must resolve |
+| Reference | Relationship it informs |
 | --- | --- |
-| Interaction patterns | Compare capability/resource invocation, query/read, request/reply, asynchronous messages, publish/subscribe, retained streams, state observation and handoff. Identify a small common contract and where distinct semantics are necessary. This is a candidate list, not a closed taxonomy. |
-| Endpoints and topology | What may be addressed: session, resource, pool selection, service or other endpoint? Compare direct and routed links, one-to-one and one-to-many exchange, discovery and binding. Keep profile presets separate from running participants. |
-| Contract and transport | Which semantics belong to Conduit, which map to existing protocols, and which require adapters? Preserve provider-native operations and distinguish configured relationships from sockets/processes. Compare local-first operation with remote extension and Rust integration. |
-| Authority and filtering | Who may establish or accept a relationship and grant operations? How do endpoint authority, profile ceilings and narrowing filters compose? Cover current-rule checks and revocation without presupposing comprehensive v0 sandboxing. |
-| Delivery and failures | Ordering scope, correlation, durable acceptance, acknowledgement meaning, replay/cursors, duplicates, idempotency and unknown outcomes. Compare offline endpoints, storage failures, retries, reconnect and cancellation; separate delivery from execution and completion. |
-| State and context | Retained exchange versus current state snapshots, payloads versus references/artifacts, query versus unsolicited delivery, and optional context inclusion. Preserve provenance and private working context; observing state does not automatically require shared editable memory. |
-| Lifecycle and attention | Authored declaration versus active instance, opening/closing, pause/resume, timeouts, expiry, backpressure and participant turnover. Distinguish a message notification from permission to start a model turn. |
-| Extensibility and observability | Common identity/schema/version rules, interaction-specific extensions, capability negotiation and unsupported behavior. Carry operation/execution/account attribution across boundaries without conflating traces with retained outcomes. |
-| Configuration and usability | Demonstrate Profile default conduits, Pool references/selectors, endpoints, grants/filters and observed status through YAML. Design the resource-loading conduit type using Pi as a reference; separate compatible import defaults, conduit-specific selection and context loading. Make resolution and omissions inspectable. |
+| [Pi investigation](RESEARCH_PI.md), including loaders, pi-ai, pi-mcp, pi-telemetry, Durable and Chord | Profile activation, Session execution, Resource compatibility and Conduit contracts. |
+| [Kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/), [labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/), [API versions](https://kubernetes.io/docs/reference/using-api/), [CRD versioning](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/) | Common authoring conventions, references, extensibility and version evolution across the model. |
+| [Gateway API](https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/) and [reference grants](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/) | Declared relationships, selection, authority and observed binding status. |
+| [MCP architecture](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture) and [A2A](https://a2a-protocol.org/v1.0.1/specification/) | Resource capability exchange and Session interaction; distinguish protocol guarantees from application contracts. |
+| [NATS/JetStream](https://docs.nats.io/concepts/jetstream), [Zenoh](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html), [gRPC](https://grpc.io/docs/what-is-grpc/core-concepts/) and HTTP/JSON-RPC | Routing, streams, queries, requests, persistence, cancellation and transport tradeoffs. |
+| Local agentwatch, pstack-pi and jxp-skills; inspected pi-messenger/pi-chat | Practical coordination, runtime integration, replay, attention, work associations and usage evidence. |
+| [Xerj](https://github.com/xerj-org/xerj), native skill sources such as [Superpowers](https://github.com/obra/superpowers), [Matt Pocock's skills](https://github.com/mattpocock/skills), and [Ponytail](https://github.com/DietrichGebert/ponytail) | Replaceable Resource backends and native packages; no mandated storage or skill framework. |
+| [Spec Kit](https://github.com/github/spec-kit) | Concrete scenarios and reviewable requirements separated from implementation planning. |
 
-### Reference families to investigate
+Produce a focused comparison and recommendations using the same flows: four independent
+Sessions accessing shared Pools; a review request and result; a finding sent to multiple
+permitted recipients including one reconnecting later; a slow observer; a permission change
+during queued work; and continuation across model/account/frontend changes. Include failure
+examples, candidate YAML, a small v0 contract set and what to reuse/adapt/build in Rust.
+Return a short set of consequential rulings. No communication topology, transport or automatic
+wake policy is selected yet.
 
-Use primary documentation, specifications, source and focused tests. Pin inspected
-versions and distinguish source evidence, executed checks and proposed adaptations.
-These are starting points to compare, not dependencies or an exhaustive source list.
+## Experiment across the five concepts
 
-| Family | Starting references | Investigative purpose |
-| --- | --- | --- |
-| Typed object/capability interaction | Pi Chord and its local source; capability-oriented RPC designs | Caller-aware interfaces, typed references, observable state, lifecycle and local/remote consistency. |
-| Existing model/agent protocols | [MCP](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture), [A2A specification](https://a2a-protocol.org/v1.0.1/specification/) | Resource/tool interaction, agent discovery, work exchanges, status and artifacts; establish where protocol guarantees end. |
-| Messaging and retained exchange | [NATS/JetStream](https://docs.nats.io/concepts/jetstream), [Zenoh specification](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html); compare topic and queue designs as needed | Routing, query versus publication, independent consumers, persistence, replay, acknowledgements and backpressure. |
-| RPC and streams | [gRPC concepts](https://grpc.io/docs/what-is-grpc/core-concepts/), relevant HTTP/JSON-RPC streaming contracts | Request boundaries, cancellation, deadlines, streaming and transport limitations. |
-| Declarative connectivity | Kubernetes objects/selectors/versioning and Gateway API references above | References, attachment/route concepts, grants, policy placement, extension points and observable resolution. |
-| Execution ownership and recovery | Pi Durable, actor/mailbox/supervision designs, durable-execution systems | Work ownership, scheduling boundaries, cancellation propagation, recovery and why message receipt differs from completed work. |
-| Practical agent coordination | Local agentwatch, pstack-pi, jxp-skills; previously inspected pi-messenger/pi-chat | Actual multi-session/account workflows, retained history, attention, failures and provider-native tracking. |
+Design the experiment before starting implementation or enrolling accounts. Keep own-runtime
+subscription feasibility early so UI work does not conceal a blocking integration assumption.
+The [Pi trial proposal](RESEARCH_PI.md#proposed-experiment-sequence) supplies fault cases,
+not a fixed implementation order.
 
-### Scenarios to use throughout
+| Interaction to exercise | Evidence required |
+| --- | --- |
+| Profile → Session | Four independently authenticated Sessions from reusable templates, across two Claude and two Codex/OpenAI subscriptions; actual identities and refresh/logout isolation. |
+| Session execution and presentation | A minimal Rust-owned model/tool loop with intent/outcome evidence, controller transfer, detachment and reconnect. A fake provider can test mechanics but not subscription eligibility. |
+| Resource → Pool | Reuse one Resource across collections; exercise native skills/configuration and one memory backend without copied ownership or a required new package format. |
+| Session → Conduit → Pool | Apply current grants/filters, then Profile activation to the permitted set. Show what was prepared, skipped or unavailable and preserve actual runtime compatibility. |
+| Session ↔ Conduit ↔ Session | Demonstrate the selected communication contract, including attention, interruption and reconnect behavior once that contract is agreed. |
+| Changes and failures | Profile edits, live access removal, stale record writes, uncertain tool effects, source/backend failures, lost frontend updates and non-overlapping usage totals. |
 
-Compare approaches against the same concrete cases:
-
-1. Four sessions across two Claude and two Codex/OpenAI accounts use one domain pool
-   with different allowed operations and narrowing filters, retaining private state.
-2. One session requests a review from another and can distinguish acceptance, progress,
-   result, cancellation and an unknown outcome after interruption.
-3. A session exposes a finding or artifact to several permitted recipients, including
-   a recipient that reconnects later. Determine delivery and context inclusion separately.
-4. A frontend or session observes progress without receiving every retained payload or
-   gaining permission to execute work; a slow observer cannot create unbounded buffering.
-5. Access changes while work is queued or reconnecting; retrying a provider write must
-   respect the existing uncertain-outcome contract.
-6. Work continues after a model/account/frontend change with permitted context and
-   provenance, without confusing a profile preset, session, execution and provider identity.
-7. A tracker integration associates exchanges with provider-native work records without
-   requiring every interaction to be a room or adopting an internal ticket engine.
-
-### Required research output
-
-Produce one focused report with a comparison matrix, concrete flow/failure examples,
-and recommendations. Include candidate conduit contracts and illustrative YAML, a small
-v0 set versus later extensions, and what to reuse, adapt or implement in Rust. Explain
-which designs were rejected and why only where it clarifies a live tradeoff. Return a
-short list of consequential rulings rather than a new exhaustive decision ledger.
-
-No backend, broker, transport, topology, room model or automatic-wake policy is selected
-by this direction. Existing account/access, explicit session lifecycle, retention and
-safe-retry contracts remain constraints. Configuration and contract design precede code.
-
-### Prior room ideas as comparison material
-
-Earlier room discussions are hypotheses for comparison, not current requirements:
-append-only group history with per-session cursors; session identity across executions;
-reply links and recipient hints; scope-authorized participation; passive unread notices
-with possible later wake hooks; tracker linkage; and local-first transport. The former
-model avoided a shared editable room scratchpad. Research should explain which ideas
-fit particular conduit contracts and which should be replaced. None establishes the
-new model's topology, identity, membership, tracker cardinality or delivery guarantees.
-
-The [Pi communication investigation](RESEARCH_PI.md#communication-research-for-the-upcoming-redesign)
-provides initial evidence, including input timing and mailbox/supervision behavior.
-Use Git history for the full earlier discussion; keep accepted results in SPEC.md and
-DESIGN.md as the review progresses.
-
-## After the review: first YAML design
-
-Discuss concrete examples together before freezing a schema or implementing:
-
-- Choose the configuration schema-version convention, object shapes, names/references,
-  file layout, validation, path/endpoint matching, and merge/override rules. Keep versions
-  distinct from MCP protocol and plugin versions.
-- Define search-limit settings and text-size units; tune default values and caps in the
-  experiment.
-- Specify managed-worktree creation settings: base revision, branch selection, directory
-  placement, and treatment of any existing local changes.
-- Express profiles, account references, shared connection definitions, conduits/filters, pools,
-  and execution policy. Keep runtime, frontend, model and account selections distinct.
-  Show resolved launch settings and adapter output; classify supported skill/plugin
-  resources without copying every Pi setting. Keep credentials out of shareable
-  configuration. Derive interaction-specific objects from the research review.
-- Consider explicitly writing execution mode in generated profile files; decide whether
-  handwritten files may omit it and use the native default.
-- Check ordinary use and conflicting/incomplete configurations. Preserve native tooling;
-  do not require Kubernetes machinery, a replacement skills language, or an internal ticket engine.
-
-## Then: initial experiment design
-
-Use the [proposed trial sequence](RESEARCH_PI.md#proposed-experiment-sequence) and its
-fault cases as input. First demonstrate a Pi-derived frontend against a fake Conduit
-control/state service, then a minimal Rust-owned model/tool loop. Neither proves live
-subscription access; account feasibility should be investigated before extensive UI work.
-No experiment should use Pi's runtime to make the own-runtime requirement appear met.
-
-Then select host/provider versions, account enrollment, a minimal memory backend and an
-isolation backend to evaluate. Define setup, expected observations, failure criteria,
-restart/cleanup and trial order before running anything. Cover four identities,
-permitted/shared and private knowledge, independent account lifecycle, session continuity,
-frontend replacement, execution modes and honest usage. Add communication after redesign.
-
-Use fixture failures around tool intent/effect/result boundaries, storage acknowledgements,
-permission changes, stale workers and frontend reconnect. Evaluate actual subscription
-identity/refresh separately from fake-account labels. Native external-agent interoperability
-and OS isolation require their own checks; a Conduit provider call does not prove either.
-No account registration, implementation start or live experiment is implied by this review.
-
-## Deferred implementation scope
-
-Comprehensive MCP operation inspection/enforcement, advanced memory-sharing delivery,
-automatic classification/extraction, automatic expiry, exact cost accounting, plugin ABI, and crate
-layout remain staged. Conduit interaction kinds and their delivery order follow research. A custom terminal
-is first; other frontends and external native runtime integrations remain goals.
-General durable workflows, recoverable script execution and comprehensive Pi plugin
-compatibility are not prerequisites for the first Conduit-owned runtime.
-
-Keep reasoning beside accepted contracts in DESIGN.md. Remove answered questions here
-and use Git history for earlier versions. The communication material above is a focused
-redesign brief, not an additional historical decision register.
+Specify expected observations, failure criteria, restart and cleanup. Evaluate native and
+isolated execution explicitly; external Claude Code/Codex adapters require their own checks.
+General durable workflows, recoverable scripts, comprehensive MCP interception and broad
+plugin compatibility can follow a demonstrated core. ABI, crates, storage engine and host
+process layout are implementation choices downstream of these contracts.

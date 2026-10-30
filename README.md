@@ -1,32 +1,35 @@
 # Conduit
 
-Conduit is built around **conduits**: typed, authorized relationships for both resource
-access and communication between sessions. This interaction model is the project's core.
-Pools organize extensible collections of resources; filters narrow what a conduit permits;
-profiles create sessions with default conduit declarations. Session resources are supplied
-through Pools; resource definitions can be reused across Pools. Shared memory, native tools
-and skills, continuity and observation operate through this common model.
+Conduit's working model has five concepts: **Profiles, Sessions, Resources, Pools,
+and Conduits**. Their interactions define the system.
 
-Conduit owns its runtime in Rust. The first frontend is a custom Conduit terminal
-inspired by Pi, with selective component reuse where useful. Pi's agent loop and
-Pi Durable are implementation references, not runtime dependencies.
-The common concept is established. Specific interaction contracts and YAML relationships
-are the next [research and review priority](REVIEW.md#conduit-interaction-research).
+- **Profiles** are reusable templates for creating Sessions.
+- **Sessions** are durable, independent participants with private context and resolved settings.
+- **Resources** are independently defined data or capabilities.
+- **Pools** collect references to Resources and supply them to Sessions through Conduits.
+- **Conduits** establish authorized resource access and communication between Sessions.
 
-**Status:** current specification for collaborator review; no implementation yet.
-The core will be native Rust, initially for personal use with private local
-configuration and shareable code.
+Profiles reference default Conduit declarations. Each Session establishes its own
+bindings to Pools and other Sessions. Resources can be reused across Pools; membership,
+access and activation have distinct meanings.
 
-Read these documents in order:
+Conduit owns its runtime in Rust. Its first frontend is a custom terminal inspired by
+Pi. Providers, external agent runtimes, native skills, MCP services, trackers and memory
+backends connect through replaceable integrations. Pi supplies design evidence and
+potential UI components; Conduit owns execution and shared contracts.
 
-1. [SPEC.md](SPEC.md) — purpose, terminology, expected behavior, and acceptance scenarios.
-2. [DESIGN.md](DESIGN.md) — ownership, architecture, and behavioral contracts.
-3. [REVIEW.md](REVIEW.md) — the remaining choices before implementation.
+**Status:** documentation and contract design; implementation has not started. The first
+experiment targets four concurrent Sessions across two Claude and two Codex/OpenAI
+subscription identities, with separate private state and selected shared resources.
+Subscription compatibility and the communication contract still need validation/design.
 
-[RESEARCH_PI.md](RESEARCH_PI.md) investigates frontend-only Pi reuse, Pi Durable's
-execution/recovery mechanisms, the proposed Rust runtime, ecosystem lessons and experiments.
-It is supporting evidence; proposals there do not become requirements until reviewed.
+Read in order:
 
-These files describe the current design. Update the relevant section when a choice
-changes; use Git history for past versions. Keep recommendations visibly separate
-from requirements. Implementation planning follows agreement on the first workflow.
+1. [SPEC.md](SPEC.md) — the five-concept model, interactions and intended outcomes.
+2. [DESIGN.md](DESIGN.md) — accepted contracts organized by those concepts.
+3. [REVIEW.md](REVIEW.md) — open questions, research and experiment planning within the model.
+
+[RESEARCH_PI.md](RESEARCH_PI.md) contains supporting source evidence and proposed
+adaptations. Research proposals are not requirements until incorporated into the design.
+Update these documents in place; Git history preserves earlier designs. Keep resolved
+contracts out of the open-question list and settle schemas before implementation.

@@ -1,577 +1,354 @@
-# Conduit architecture and contracts
+# Conduit design contracts
 
-Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for vocabulary and expected behavior.
-This describes current boundaries; [REVIEW.md](REVIEW.md) contains unresolved choices.
-Conduits are the accepted common relationship model for resource access and session
-communication. Profile/session and pool definitions precede the detailed conduit/filter
-research in REVIEW.md,
-building on the [Pi investigation](RESEARCH_PI.md).
+Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the five-concept model. This document
+records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
+Field names, transports, storage engines and implementation layout remain unselected.
 
-## Conduits as the core interaction model
+## Profiles
 
-A conduit is a typed, authorized relationship for accessing resources or exchanging
-information between sessions. This is the central organizing concept of the project,
-replacing the provisional access “attachment” term and extending beyond the former
-room model. Access and communication share a conceptual foundation; they need not
-share every operation, persistence rule or delivery guarantee.
+A Profile is a reusable template for any number of independent Sessions. It specifies
+runtime/model/account defaults, execution preferences and requirements, optional permission
+limits, default Conduit declarations, and activation instructions. A Session starts from
+one Profile; v0 defers Profile inheritance and composition.
 
-Pools collect domain resources; profiles configure sessions; conduits establish permitted
-interactions; filters only narrow them. Profiles reference default conduit declarations,
-which are bound independently for each Session. Conduit-managed session resources are
-supplied exclusively through Pools, including baseline configuration resources. Resource
-identity and source remain independent of Pool membership; multiple Pools can reference
-the same resource. This does not merge Session state or resource ownership.
+Resolve behavioral defaults at Session creation and retain them until explicit
+reconfiguration. Later Profile edits affect new Sessions. Record configuration origins,
+overrides and actual execution settings. Permission limits remain live; behavioral
+snapshots never freeze access or allow overrides to weaken required limits. Whether
+referenced resource content follows source updates is a separate open choice.
 
-Connection definitions describe the service setup a conduit may use, while plugins
-implement supported protocols and resource
-contracts. A conduit is not synonymous with an MCP client, socket, frontend attachment,
-or active model turn. Common concepts do not require a single gateway or transport.
+### Activation instructions
 
-Research must establish endpoint identity, addressing, interaction contracts, lifecycle,
-authority, observation and failure semantics before fixing conduit kinds or YAML fields.
-Distinguish authored declarations from runtime instances and observed status. The
-requirements for account separation, current managed-access checks, explicit session
-lifecycle and honest usage remain applicable. The common concept does not itself
-restore earlier room rules or authorize automatic wakeups.
+Activation instructions live in the Profile template. They tell a Session how to prepare
+and use Resources made available through its Conduits. Resource-access Conduits select
+and filter; they do not own import or context-loading instructions. The Session performs
+activation through compatible integrations, within current permissions.
 
-## Ownership and extension boundaries
+Activation behavior is distinct from the Resource content it consumes. Skills, documents,
+prompts, tools and configuration bundles are supplied through Pools; the Profile describes
+how to use the permitted selection. Discovering a skill, importing it, exposing a tool
+and placing instructions in model context can require different behavior.
 
-The Rust core owns Conduit's runtime as well as identity, sessions, shared records,
-and managed resource access. Frontends express that runtime through a control/state
-boundary. Integrations preserve provider-native behavior. These are responsibilities,
-not a required collection of processes or crates.
+Profile/model/runtime defaults can handle conventional imports. Exact representations,
+compatibility rules, sequencing, duplicate handling, failure behavior and source updates
+remain open. Pi's resource loaders, package support and MCP setup are research inputs.
+Model preference alone does not establish native plugin or hook compatibility.
 
-| Owner | Responsibility |
-| --- | --- |
-| Conduit runtime | Session supervision, execution loop, context construction, provider/tool dispatch, lifecycle, recovery and available observations, implemented in Rust. Models supply reasoning within that runtime. |
-| Conduit shared services | Conduit relationships, profiles/connections, logical identities, filters, knowledge/checkpoints and managed resource access. Interaction-specific communication contracts follow the research review. |
-| Provider/account adapter | Model request/response conversion, capabilities, supported authentication, account selection and usage evidence. |
-| External-agent adapter | Connect a separate runtime such as Claude Code/Codex, which retains its own loop and private native state. Report the lifecycle/access/telemetry capabilities actually supported. |
-| Resource or tracker provider | Source content and native operations; Linear issue fields, assignments, status, and workflow. |
-| Storage/search plugin | Persistence and retrieval under Conduit's supported record/access contracts, with explicit capability and freshness limits. |
-| Frontend | Presentation, input and supported interaction; request launch/attachment/settings changes through Conduit. It does not own credentials, tools, model calls, or authoritative runtime state. |
+### Account selection
 
-Plugins may integrate models, runtimes, frontends, resources, trackers, and storage/search.
-A connection definition describes reusable local setup for a service/backend; it does
-not represent an already-open MCP client. Authorized conduits for resource access select connection
-definitions and grant resource operations; filters only narrow that access. Profiles
-supply execution settings, default conduit references and optional permission ceilings.
-Skills and selected connections are supplied from Pools through those conduits. Definition
-alone grants no access.
+Profile account references select identities without embedding credentials. Model-provider
+and resource-service credentials remain distinct. Conduit verifies the account actually
+selected; no silent account or API-billing fallback is permitted. Concurrent subscription
+accounts must not overwrite one another's login, refresh, logout or private state.
 
-Resolve selected conduits and filters against profile limits for each session.
-Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration where needed.
-Keep host-specific transport/configuration/authentication in the relevant adapter and
-report unsupported capabilities. Changing the model alone need not change registration.
-Shared definitions do not merge permissions or promise shared authentication/client state;
-a frontend does not independently connect selected upstream services.
+External-agent integrations delegate authentication to their native runtimes. Conduit's
+own runtime needs supported provider/account adapters, with validated subscription
+eligibility, identity evidence, credential namespaces and refresh ownership. Successful
+login alone does not prove concurrent-account correctness.
 
-Xerj remains a candidate behind a replaceable storage/search plugin. No database,
-plugin ABI, transport, process model, or hosting arrangement is selected. Authoritative
-records, observations of external state, and search projections have different meanings.
+Coordinate credential reuse separately from Session history. Do not switch accounts by
+swapping one global credential directory or blindly cloning rotating credentials. A
+Conduit Profile is distinct from a native agent's login profile. The credential/state
+layout is an adapter validation task, not a prescribed filesystem schema.
 
-The first frontend is a custom Conduit terminal inspired by Pi. Pi's agent loop and
-Pi Durable are not runtime dependencies. The stock terminal directly uses Pi runtime
-services, so selective reuse of `pi-tui` and presentation components is a candidate
-for our frontend. Full stock-UI preservation is unnecessary; exact dependencies remain
-open. Pi Durable, Chord and pi-env inform our own implementation; they do not determine Conduit's state model or public contracts.
+### Execution policy
+
+Native execution is the v0 default: the runtime runs on the host without Conduit's full
+OS sandbox. Isolated execution is selectable, and a Profile may require it. Required
+isolation cannot be weakened by launch overrides; unavailable required isolation causes
+a visible launch failure. Show the configured mode and record actual enforcement coverage.
+
+Native mode preserves host integrations and suits users granting broad local access.
+Account/Session state separation addresses configuration collisions without the setup
+cost of mandatory isolation. It is not an OS security boundary. Isolated mode covers
+the runtime and its child processes; host tooling, keychains, IDE sockets and local
+services may require explicit bridges or remain unavailable. This is why both modes exist.
+
+Isolated execution defaults to declared network destinations: required model/login
+services, selected connections, and extra destinations authorized through Conduits.
+Profile limits and exclusions still apply; local/private services require explicit
+access. Network reachability does not authorize every operation at a provider. Exact
+sandbox technology and matching rules remain open. Native host access, network policy,
+provider authorization and Conduit-managed access have different coverage.
+
+## Sessions
+
+A Session has a durable identity, resolved configuration, private context/history and
+independent Conduit bindings. Sharing a Profile or account does not share private state
+or establish communication. One Session may span multiple executions with different
+runtime/model/account settings; record the settings actually used in each execution.
+
+There is at most one active primary agent per Session. Independently coordinated parallel
+workers use separate Sessions. Runtime-managed subagents may remain within their parent's
+execution, with ownership and usage attributed where available.
 
 ### Runtime and presentation
 
-Conduit-owned execution resolves configuration, admits input, assembles authorized
-context, calls the selected provider, dispatches tools, records outcomes and continues
-until settled or waiting for input. Private execution history, model-request context,
-frontend state and shared knowledge have separate responsibilities. Replacing a memory
-backend or frontend must not replace the execution loop.
+Conduit implements its own runtime in Rust: Session supervision, model/tool execution,
+context construction, provider dispatch, recovery and observations. Provider adapters
+handle request/response conversion and supported authentication. External-agent adapters
+connect separate runtimes and report their actual lifecycle/access/telemetry capabilities.
 
-Existing lifecycle, safe-retry, access and usage contracts apply to our runtime as well
-as managed external integrations. The research proposes persisted tool intents/results,
-explicit child ownership, bounded frontend snapshots/updates and context source manifests.
-Exact internal states, recovery granularity, frontend transport and storage engine remain
-review/implementation choices. We need the smallest runtime that satisfies the first
-workflow, not every Pi/Durable feature.
+The first frontend is a custom terminal inspired by Pi. Presentation is replaceable;
+it does not own credentials, model calls or authoritative execution state. Pi terminal
+components may be reused, but Pi's agent loop and Pi Durable are research references.
+A memory backend or frontend change must not replace Conduit's execution loop.
 
-BYOS remains an input compatibility goal. Plain instructions may be reusable; executable
-Pi/Claude/Codex extensions that call native runtime APIs require an adapter or port.
-Frontend reuse does not supply that compatibility. Preserve source/version information
-and report unsupported hooks rather than loading an implicit second agent runtime.
+One frontend controls direct input, cancellation and settings; others observe. Moving
+control to another frontend requires no extra confirmation. Disconnecting detaches and
+preserves supported ongoing execution. Keep persisted history, current model context,
+frontend state and shared Resource content distinct.
 
-### Pools and resource extensibility
+### Lifecycle and continuity
 
-A pool is a named, extensible collection of resources relevant to interacting with a
-domain. It replaces the former Conduit project grouping. Resource contracts describe
-what each member exposes; the pool organizes references without requiring a common
-backend or a fixed catalog of content categories. New resource kinds should fit the
-same membership mechanism rather than require fields added to every pool schema.
-
-Data, tools, skills and documents illustrate possible members, not an exhaustive type
-system. A use such as onboarding is ordinary resource content/metadata rather than a
-special core kind or pool field. A Pool may collect a skill package, project resources
-or another useful grouping using the same extensible membership contract. Resources
-can be reused across Pools; a Pool does not exclusively own the definitions it references.
-
-Activation uses explicit, reusable rules. The design direction includes a conduit type
-that selects and prepares compatible resources from a Pool, such as supported skills and
-MCP connections. Profile/model/runtime defaults can inform loading, with conduit-specific
-selection and behavior; their exact boundaries and precedence remain open. Runtime/plugin
-compatibility must be established independently of model preference. Use Pi's loading,
-package and MCP patterns as research inputs before specifying this type or its activation
-contract. Opening a conduit does not imply loading all Pool content into model context.
-
-Membership does not by itself copy content, change its owner, grant operations, or
-load information into a model. Existing record ownership and access contracts still
-apply. Pool membership supports both explicit resource references and label selectors.
-Exact selector syntax, update behavior, duplicate resolution across overlapping Pools,
-and any nesting semantics remain to be specified. Membership selection is distinct
-from session access filtering.
-
-### Configuration
-
-YAML is the authoring format for versioned, named configuration objects with explicit
-references and schema validation. Keep authored configuration separate from observed
-runtime state. [Kubernetes object structure](https://kubernetes.io/docs/concepts/overview/working-with-objects/)
-and [API versioning](https://kubernetes.io/docs/reference/using-api/#api-versioning)
-are explicit inspirations, alongside networking APIs such as
-[Gateway API](https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/).
-Study generic identity/metadata, typed references, selectors, desired versus observed
-state, extensible resource kinds, API groups and schema evolution. Apply those patterns
-to Conduit's contracts; Kubernetes machinery is not required. The version identifier
-scheme, exact fields, file layout, precedence and merge rules remain open. Keep schema
-versions distinct from application releases, record revisions, MCP and plugin versions.
-
-For a pool launch, use its configured access defaults only when no explicit access
-selection is supplied. An explicit selection replaces those defaults; extending the
-defaults requires an explicit add action. Apply profile limits and exclusions to the
-result in every case. This keeps convenient pool setup from silently retaining
-access the caller intended to replace. Exact authoring and CLI syntax remain open.
-
-A profile selects default conduits to Pools containing explicitly chosen user-level
-native settings, skills and plugins. Do not automatically inherit the user's default
-agent profile. An existing setup may be selected once for convenience, preserving its
-native formats. This keeps composition explicit without requiring a replacement
-skill/plugin framework.
-Shared MCP connections, including definitions bundled with selected plugins, still
-participate in access selection; selecting a source grants no additional access.
-Authentication and private history remain separately managed, and mandatory host or
-organization policies still apply. Adapters must validate native loading/precedence.
-
-V0 uses existing ecosystem tooling to install and update compatible selected skills/plugins.
-Conduit adapters may invoke that tooling on request and record available source/version
-information and the outcome. Conduit does not introduce its own package manager for
-these native sources. This preserves existing installation conventions while allowing
-users to manage their selected sources through Conduit.
-
-## Account separation and execution isolation
-
-Concurrent account separation is required in v0. Keep a profile's reusable configuration,
-an account's persistent login, and an execution's effective access/state distinct.
-Never implement switching by swapping credentials in one global agent directory.
-Bind Conduit requests to authenticated session/execution identity rather than trusting
-a caller-supplied profile or session label. Model-provider credentials do not select
-resource-provider credentials.
-
-For external Claude Code/Codex integrations, native runtimes continue to own sign-in
-and token refresh. Conduit-owned execution needs a supported provider/account adapter
-instead; the previous native-auth delegation does not automatically cover that path.
-Keep authentication out of frontends and shareable YAML. Validate subscription eligibility,
-identity evidence, credential namespaces and refresh ownership before the live experiment;
-do not assume Pi's implementation can simply be copied or native tokens reused.
-
-Conduit manages named account references and verifies the identity actually selected.
-Concurrent accounts and credential reuse with session-private state still require
-validation. A successful login alone proves neither distinct-account selection nor
-independent refresh. No silent API-billing or account fallback is permitted.
-
-Stored conversation history and agent-maintained private memory belong to the
-Conduit session, even when sessions use the same profile or subscription. Resume may reuse
-that session's compatible state; fresh sessions do not inherit it automatically, and
-forks use the already-defined checkpoint semantics. Reusable knowledge is shared through
-scoped Conduit memory. Credential reuse is a separate concern and does not authorize
-sharing private state. This keeps profile/account reuse from crossing session access boundaries. Adapters must validate the storage/loading separation; native mode does not
-thereby acquire an OS boundary against otherwise accessible host files.
-
-A Conduit Profile is a template, not a native login profile or a credential directory.
-For external native-agent adapters, [Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
-through `CLAUDE_CONFIG_DIR`. [Codex state locations](https://learn.chatgpt.com/docs/config-file/environment-variables)
-use `CODEX_HOME`; its [credential backend](https://learn.chatgpt.com/docs/auth#credential-storage)
-can be a file, OS store, or process memory. These are adapter primitives, not proof
-of OS isolation. Validate credential namespaces, refresh behavior, inherited environment,
-native memory, plugins, and daemon attachment for each supported runtime/version.
-
-V0 offers both modes below, with **native execution as the default**. Here native
-means execution on the host without Conduit's full OS sandbox, not selection of a
-particular agent runtime. Both Conduit-owned and external-agent execution need explicit
-coverage. Make the profile's configured mode and each execution's effective mode visible
-and record the latter.
-Isolated execution is an explicit option for additional protection. Both modes retain
-the account-separation and Conduit-access guarantees above; neither merges permissions.
-
-A profile may require isolated execution. Launch overrides cannot select native mode for
-that profile; unavailable required isolation causes a clear launch failure. Without that
-requirement, either mode may be selected, with native remaining the general default.
-The requirement is separate from a preferred mode: defaults support convenient setup,
-while an explicit requirement preserves the profile's boundary across launch interfaces.
-
-| Mode | Boundary and tradeoff |
+| Operation/state | Contract |
 | --- | --- |
-| Native with separate account/session state | Keeps each account's setup and state separate while retaining host integration. Tools and plugins still have their actual host privileges; this is not an OS security boundary. |
-| Isolated execution | Encloses the runtime and its child processes with explicit access to selected files/services and declared network destinations, excluding other accounts' state and privileged host controls. Some host integrations need bridges or remain unavailable. The isolation backend remains unselected. |
+| Open, paused, closed | Session lifecycle is separate from running/idle execution and frontend attachment. Paused Sessions require explicit resume; closed Sessions can be explicitly reopened. Closing does not complete work or delete resources. |
+| Resume | Keep the logical Session and reuse compatible native state and the applicable permitted checkpoint. Record any transformations or gaps. |
+| Fresh | Create a new Session without automatically loading prior conversation/checkpoint content. Existing records and files remain retrievable through permitted access. |
+| Fork | Create an independent Session from a selected portable checkpoint with an origin reference. The source Session is unchanged. |
+| Unexpected interruption | Reconnect only when the integration verifies the execution is still running and supports reconnection. A stopped execution requires explicit resume to start a replacement. Unknown status never launches a duplicate. |
 
-Isolated execution defaults to declared network destinations: required model/login
-services, endpoints for selected connections, and extra destinations granted through
-conduits, constrained by filters, profile limits and exclusions. Make runtime endpoint
-requirements visible; selecting a runtime must not silently override a restriction. Package
-registries, research sites, and local/private services require explicit inclusion.
-An allowed destination does not authorize every operation or object at that service.
+Fresh/fork do not clone or delete workspace files. Changing accounts or frontends does
+not by itself create a checkout. Reusing an account must not expose another Session's
+private history, memory or provider-specific state.
 
-This default gives deliberately isolated executions a defined network boundary while
-native mode preserves broad host compatibility. Exact endpoint matching and enforcement
-mechanisms belong to backend/configuration design; provider-operation inspection remains
-a separate capability.
+Portable checkpoints contain optional objective/constraints, decisions, progress/evidence,
+remaining work/questions, and artifact/source references. The active agent writes them
+at planned handoff, explicit pause, task completion or on demand; Conduit requests and
+saves them with known provenance. Failed capture continues with available permitted
+context and explicit gaps, including absence of any checkpoint. That is distinct from
+choosing fresh. Transcripts are retained when available; complete normalized history is
+not guaranteed. Runtime recovery state and compaction summaries are not automatically
+portable task checkpoints.
 
-### Why both modes, with native as the default
+### Observation
 
-The first workflow needs multiple subscriptions to coexist reliably. Separate account
-and session state address identity/configuration collisions without requiring every
-user to isolate their entire development environment. Native execution preserves host integrations and suits
-users who deliberately grant broad local access. Making full isolation mandatory would
-add setup and compatibility costs to that common case, so v0 defaults to native.
+Attribute available token usage, tool activity, transcripts and subagent observations
+to Session/execution identity. Usage records identify account and reporting source, and
+distinguish reported counts, estimates, unknown data and observed zero. Sum only figures
+known not to overlap; unresolved parent/subagent totals remain separate. Missing telemetry
+is a visible integration gap. Exact cost accounting and comprehensive external coverage
+remain staged work.
 
-Account/session state separation does not stop native tools from reaching other accessible host files.
-Isolated execution supplies that stronger boundary for users who need it. It covers
-the runtime and children because a command-only sandbox leaves other tool paths outside
-the boundary. IDE sockets, browser authentication, keychains, Docker, local services,
-and native OS tooling may need explicit access or bridges. Supporting native mode keeps
-these compatibility gaps from excluding an otherwise useful agent integration.
+Frontend progress and optional trace exports are not the only evidence of completed work.
+Conduit observes the operations it dispatches; external integrations declare coverage.
+Retention follows the Resource contracts below. User hooks and broader interception
+remain extension goals rather than assumptions about every runtime.
 
-Keep local isolation, network destinations, provider-operation permissions, and Conduit
-record access distinct: each controls a different path. Visibility of the selected mode
-and actual coverage prevents state separation from being mistaken for OS security.
-Account, Profile, Session and Execution remain distinct: reusing a subscription does
-not automatically load another session's private context. These boundaries preserve native
-workflows while allowing stronger, replaceable isolation backends.
+## Resources
 
-An isolated mode cannot rely only on native command sandbox flags:
-[Claude's Bash sandbox](https://code.claude.com/docs/en/sandboxing#what-runs-outside-the-sandbox)
-excludes file tools, MCP servers, and hooks; [Codex command permissions](https://learn.chatgpt.com/docs/permissions)
-also leave other surfaces under separate controls. Whole-process OS wrappers,
-containers, or VMs are candidates, not selected dependencies.
+Resources are independently addressable data or capabilities with extensible contracts.
+They can be referenced by several Pools without copying content or transferring ownership.
+A repository, knowledge collection, skill, document or provider capability is an example,
+not a required closed taxonomy. A Resource need not be a copied payload or a separately
+authored YAML file; declaration, discovery and granularity remain for review.
 
-Resolve the chosen mode and required capabilities before starting work; reject
-unsupported required isolation rather than silently downgrade.
-Use the session's private execution state and only intended credentials/resources. Do not
-mount an account's entire native history into every session using it. Coordinate native
-credential access instead of blindly cloning rotating credentials. The exact
-credential/state layout needs adapter validation. For YAML authoring, explicitly
-writing the mode in generated profiles is recommended; whether handwritten configurations
-may omit it remains a schema choice.
-Filesystem isolation does not itself restrict operations at an allowed remote service.
+Resources carry enough identity and contract information to resolve their source and
+supported operations. Labels are optional selection metadata, not identity or authority.
+Exact metadata and kind schemas are open. Provider-owned objects retain native contracts;
+they need not adopt Conduit's retained-record schema.
 
-## Sessions and workspaces
+### Native resources and integrations
 
-A profile is a reusable template, not a running participant or a shared conversation.
-Any number of independent sessions can be created from the same template. Each session
-has its own identity, resolved configuration, private history/context and conduit
-relationships. Sessions connect to selected pool resources and other sessions through
-conduits; sharing a template does not merge state or establish communication.
+Users bring compatible skills/plugins through Pools and Conduits. User-level native
+settings are selected explicitly; an existing setup can be selected once, but the user's
+default agent profile is not automatically inherited. Mandatory host/organization policies
+still apply. Selecting a package does not grant extra MCP or resource access.
 
-Each session starts from one Profile. Its default conduit declarations establish
-Session-specific bindings to Pools containing reusable configuration and other resources;
-v0 defers profile-to-profile inheritance and composition. This preserves modular reuse
-while avoiding chains of template overrides and their precedence rules. Resource composition and activation still need explicit
-contracts; references do not bypass access limits.
+Use ecosystem tooling for compatible skill/plugin installation and updates. Adapters may
+invoke it on request and record source/version information and outcomes. Conduit does
+not require a new skill format or package manager. Executable native extensions need a
+compatible runtime adapter or port; report unsupported hooks. Profile activation instructions
+control preparation of the selected resources.
 
-Resolve behavioral defaults at session creation and retain those settings until explicit
-reconfiguration. Profile edits change defaults for new sessions. Record the configuration
-origins and actual execution settings so a mutable profile name is not the only explanation
-of past behavior. Exact provenance fields and reconfiguration boundaries remain for review.
+Resource providers retain source content and operations. Linear is the first tracker
+integration; the provider owns issue fields, assignments, status and workflow. Conduit
+supports work associations without requiring an internal ticket engine or full replica.
+Storage, search and graph backends are replaceable; Xerj is a candidate plugin backend.
+Authoritative records, observations of external state and search projections are distinct.
 
-Profile access limits remain live alongside conduit/filter rules. Retained behavioral
-settings never freeze permission grants or exempt an existing session from current limits.
-This decision does not pin the content of every referenced skill/configuration resource;
-source-version selection and update behavior remain open.
+### Retained memory and evidence
 
-One logical session can span multiple executions, with their runtime/model/account
-bindings recorded separately. It has at most one active primary agent; independently
-coordinated workers have separate sessions. Runtime-owned subagents may remain inside
-their parent's execution, with attributable ownership and usage where available.
+Knowledge, checkpoints, usage observations and artifact references share small record
+metadata while retaining type-specific content and operations. Plugins may introduce
+namespaced record kinds. Memory is exposed as Resources through Pools and Conduits.
+Work and personal knowledge remain separate unless explicitly shared.
 
-One frontend controls direct input, cancellation, and configuration changes; other
-frontends observe. Continuing in another frontend transfers control without a separate
-confirmation. Disconnecting detaches while preserving the session and supported ongoing
-execution; unknown/interrupted state must be reported without launching a duplicate.
-
-Session lifecycle is **open**, **paused**, or **closed**, separate from execution state
-and frontend attachment. Paused/closed sessions need explicit resume/reopen. Closing
-a session does not complete its task or delete records. Resume/fresh/fork behavior is
-defined in the [specification](SPEC.md#share-knowledge-and-continue-work).
-
-A task or experiment owns its workspaces/worktrees; sessions attach to them. Changing
-agent, account, or frontend need not create a checkout. Forking a conversation does
-not fork files, and a worktree does not imply isolation.
-
-V0 can attach an existing checkout/folder or create a Conduit-managed Git worktree,
-recording the management status. Attachment preserves existing files and Git state
-without granting deletion authority. Supporting both preserves existing workflows
-while providing managed creation for new work. Exact creation settings belong to
-the YAML review.
-
-For concurrent coding sessions on Git projects, independent writers use separate
-task-owned worktrees by default; sequential handoffs reuse a workspace. This separates
-concurrent edits while keeping workspace ownership independent of profiles and accounts.
-Shared-workspace editing is available through explicit selection, without a guarantee
-of automatic merging or file locking.
-
-Workspaces remain after session closure or task completion until an explicit cleanup
-operation. Cleanup of an attached directory only unregisters it from Conduit, leaving
-its files intact. Before removing a managed worktree, check that no execution is using
-it and no unique local work would be lost. If either cannot be established, preserve
-the worktree and report why. This keeps cleanup separate from conversation/task lifecycle
-and preserves work when its recovery status is uncertain.
-
-Linear is the first tracker direction. Providers own issue fields, assignments,
-status, and workflow; Conduit does not require an internal ticket engine or full
-replica. Tracker relationships to communication are deferred to REVIEW.md.
-
-## Memory and record lifecycle
-
-Conduit retains knowledge, checkpoints, usage observations, and artifact
-references. Plugins may add namespaced record kinds. An internal work-item engine is
-optional. Type-specific payloads share small metadata for identity, ownership, revision,
-provenance, and links; external provider objects need not adopt this schema.
-
-- **Identity:** stable record IDs survive renames and moves. Each record has one owning
-  context, meaning a task, pool, or personal collection used as its ownership anchor.
-  This is distinct from an agent's working context. References can be live or pinned
-  to a revision; unavailable pinned content is never silently replaced.
-- **Updates:** mutable kinds create immutable revisions. A stale base revision returns
-  a conflict; agents may reconcile and retry without mandatory human approval.
-- **Evidence:** distinguish original source/author, revision writer, and derivation
-  inputs. Local recording time differs from labeled source times. Unknown provenance
-  stays unknown and does not certify truth or approval.
-- **Cleanup:** archive excludes ordinary retrieval while preserving explicit scoped
-  access; restore returns it to ordinary retrieval under current access rules. Explicit
-  purge removes retained content/history with a minimal deletion marker. Removing an
-  artifact reference does not delete its referenced file. Artifact records are
-  independently searchable/linkable; a reference does not promise a snapshot.
-
-V0 knowledge records support create, read/search, revision-checked update, archive,
-restore, and explicit purge, each governed by its operation permissions. This gives
-agents a way to correct and retire knowledge as well as save it. Bulk administration
-and advanced sharing remain separate; other record kinds retain their type-specific
-operations and update rules.
-
-V0 retains records, their revisions, and captured history under Conduit's retention
-control until explicit purge. This includes knowledge, checkpoints, captured transcripts,
-usage observations, and operation outcomes. Archive changes ordinary retrieval, not
-retention. Automatic expiry is deferred so the initial experiment preserves continuity
-and evidence. Integrations must report native-runtime or backend retention limits outside
-Conduit's control; this policy does not promise preservation of unavailable source history.
-
-A checkpoint contains optional objective/constraints, decisions, progress/evidence,
-remaining work/questions, and artifact/source references. The active agent writes it
-at planned handoff, explicit pause, task completion, or on demand; Conduit requests
-and saves it with known provenance. Failed capture continues with available permitted
-context and clearly marked gaps rather than requiring a separate summarizer. This
-portable task checkpoint is distinct from internal execution recovery state and from
-a model-context compaction summary; neither automatically satisfies its content contract.
-
-Knowledge is saved explicitly by users/agents. Classification is optional and entirely
-user-defined, supports multiple dimensions and labels per dimension, and requires no
-advance declaration. Optional definitions are scoped knowledge records linked explicitly;
-matching names do not bind automatically. Background extraction/classifier interfaces
-are deferred.
-
-Memory search defaults to all Conduit memory permitted by the session's effective access,
-with optional narrowing by context, record kind, or classification labels. This lets
-agents discover relevant knowledge without knowing its location first. Narrowing never
-expands access; a memory query does not automatically search every connected repository
-or external service.
-
-Results contain bounded excerpts with record/revision references and permitted
-provenance; full content requires an explicit read. This lets agents evaluate relevance
-before spending context on a whole record. Common configurable defaults and caps bound
-result count and total returned text across backends. Agents may request different
-limits within those caps; responses identify when a limit was reached. This keeps
-context use predictable without fixing one response size for every query. Both search
-and subsequent reads apply current access rules, including restrictions on provenance.
-
-When some selected memory cannot be searched, return available results with an explicit
-incomplete-search status. Report known coverage gaps and backend-supplied freshness;
-unknown coverage or freshness remains unknown. Diagnostic details respect the reader's
-permissions. An unavailable backend is never reported as “no matches,” so agents do not
-mistake missing evidence for an empty search. Exact limit values and text-size units
-belong to the YAML review and experiment. These contracts do not select a storage or
-search backend.
-
-## Access and sharing
-
-Conduits supply authorized resource/connection access and operation grants according
-to their interaction contracts.
-Filters are narrowing-only: they may remove resources or operations from a target
-selection, but cannot introduce grants. A filter alone supplies no access. Declared
-profile limits and explicit exclusions constrain effective access; missing profile limits
-add no grants. Permissions name operations per resource type, with convenience bundles
-expanding into visible grants. Permitted operations do not require an extra human
-confirmation merely because permissions exist.
-
-This separates grant and constraint responsibilities. How filters target and compose
-across conduits remains for review. Removing a constraint may expose an underlying
-existing grant again; it does not create a new grant. Resource access and session
-exchange share the conduit concept without granting one another's permissions implicitly.
-
-Resource selectors support IDs, named ownership contexts, metadata predicates, and
-path patterns where integrations support them. Pool membership also supports explicit
-references and label selectors; membership does not authorize access. Resource matching
-and authorized conduit/filter/profile-limit changes apply live to subsequent managed
-requests, with effective changes recorded and shown. They do not change model/account defaults or automatically inject context.
-
-If an access-rule change removes access that an active isolated execution cannot revoke live,
-stop the affected execution and report that an explicit restart is required. Preserve
-the logical session; do not automatically launch a replacement.
-Restart resolves the current rules. This prevents continued execution with obsolete
-access while making the interruption visible. Conduit-managed requests use the new
-rules immediately, independently of the restart.
-
-Selecting a context covers directly owned records by default. Descendants and incoming
-shares need explicit inclusion, which presets can provide. Ordinary links grant no
-access. Unsupported/restricted bindings remain unavailable while other usable access
-proceeds; integrations must not silently drop restrictions.
-
-Check whole-record access using the session's current permissions when retrieving or
-loading memory/context, including checkpoint reuse. Mixed-access content is withheld
-as a whole; narrower context requires a separately authorized extract. Apply the same
-access rules to search, caches, transcripts, and
-derived records. Permission changes cannot erase already-delivered native context.
-
-### Sharing semantics
-
-V0 supports direct live read-only shares between contexts, managed and revocable by
-authorized share managers. The source keeps its ID and owner; recipients select incoming
-shares through their effective access selections and see current content within their effective access.
-Revoking a share removes that grant on subsequent managed requests; independent grants
-remain valid. This supports selective reuse without delegated grant chains.
-
-Update rights through shares, pinned shares, onward delegation, and independent publication
-are deferred. Revision-pinned record references remain supported and do not grant access
-themselves. Agents can edit common pool knowledge through their own scoped update
-grants. The table defines sharing semantics as each capability is introduced.
-
-| Operation | Contract |
+| Concern | Contract |
 | --- | --- |
-| Live or pinned share | Default to read access to the original with its ID/owner intact; live follows updates, pinned selects a source revision. Additional operations are explicit, subject to recipient limits. |
-| Share management | Separate authority from read/update. A manager may grant only operations it currently holds. Creating, changing, and withdrawing shares are managed operations. |
-| Onward delegation | Explicit permission permits grants within received rights, linked to the parent. A recipient manages its onward shares, not the incoming grant. Parent restrictions propagate; other valid grants remain independent. |
-| Grant lifecycle | Issued grants survive changes to their creator's session/profile. Parent-constrained access recovers when the same chain permits it; explicit withdrawal requires authorized restoration/reissue. New parent grants do not silently replace old links. |
-| Derived knowledge or copy | Require read access to the record and all declared source inputs. A copy has its own ID/owner and editable content but retains access dependencies. |
-| Independent publication | Create a separate extract/audience with retained provenance. Require read/publication authority for each released restricted input plus destination creation rights. It does not follow source updates and retains its own access/lifecycle after source restriction or deletion. |
-| Published updates | Normal edits use update permission; newly introduced restricted inputs require current read/publication authority and destination update rights. Prior publication does not release other source content. |
-| Missing evidence or authority | A missing source payload does not block stored derived content if current access remains verifiable. Unverifiable required permissions withhold content without deleting it. Historical provenance gaps alone do not block otherwise permitted use. |
-| Provenance display | Restrict source identifiers, titles, paths, URLs, and previews to authorized readers; show a generic notice for hidden lineage. Explicitly published attribution remains readable. |
+| Identity and ownership | Stable internal record IDs survive names/paths/external-key changes. Each record has one owning context, such as a task, Pool or personal collection. Ownership metadata is distinct from Pool membership and from a Session's working context. |
+| References | Support live and revision-pinned references. Missing pinned content is reported unavailable, never silently substituted with a newer revision. References alone grant no access. |
+| Revision and concurrency | Each accepted mutable-record update creates an immutable revision. Updates name their base revision; stale writes conflict. Agents may reconcile and retry without mandatory human approval. |
+| Provenance and time | Separate original source/author, revision writer and derivation links. Preserve local recording time separately from labelled source times. Unknown provenance remains unknown. |
+| Lifecycle | V0 knowledge supports create, read/search, revision-checked update, archive/restore and explicit purge under operation permissions. Archive removes ordinary retrieval, not explicit authorized access. Purge removes retained content/history with a minimal deletion marker. |
+| Retention | Records, revisions and captured history under Conduit's control remain until explicit purge; automatic expiry is deferred. Report native/backend limits outside that control. A missing payload is not a promise of recoverability. |
+| Artifacts | References are searchable/linkable independently of their files. Removing an artifact record does not delete the referenced file or imply that a snapshot existed. |
 
-## MCP and native compatibility
+Users and agents write knowledge explicitly. Classification is optional, entirely
+user-defined and may use multiple dimensions/labels without advance declaration. Optional
+definitions are ordinary accessible knowledge records referenced explicitly; matching
+names do not bind automatically. Background extraction and classifier interfaces are deferred.
 
-MCP is the default external capability contract and preferred plugin boundary. Use
-standard tools, resources, prompts, and supported extensions before inventing a generic
-Conduit protocol. Native adapters address concrete lifecycle/account/hook or non-MCP
-needs and should expose MCP where practical. Internal Rust modules need not be servers.
+Memory search defaults to all memory permitted by the Session's current Conduits and
+limits. Queries may narrow by owning context, kind or classification; narrowing cannot
+expand access or implicitly search every repository/service. Results contain bounded
+excerpts, record/revision references and permitted provenance. Full content requires an
+explicit read. Configurable defaults/caps bound result count and total returned text;
+agents can adjust within caps, and responses identify limits reached.
 
-Registration configures an MCP client host to launch a server command or contact an endpoint;
-authentication is a separate concern. [MCP's architecture](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture)
-supports multiple clients of an HTTP service, while stdio usually connects a client to
-its launched subprocess. Reusing a definition or endpoint does not pool live clients.
-Multiple server processes need a shared backend to expose common durable state.
+Partial search returns available results with an incomplete status, known coverage gaps
+and backend-supplied freshness. Unknown coverage/freshness stays unknown. An unavailable
+backend is not “no matches.” Reads, search, caches, transcripts and derived content use
+current access checks and reveal only permitted diagnostic/provenance details.
 
-[Pi's native MCP support](https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/coding-agent/docs/mcp.md)
-supports stdio/Streamable HTTP, user/project configuration, and dynamic extension
-registration. It is a reference for Conduit's own runtime clients, not functionality
-provided by importing Pi's frontend. Tool exposure/discovery and resource access are
-distinct from Conduit's authorization rules; nested calls, inherited configuration,
-and resource credentials need explicit handling.
+### Sharing and derived content
 
-[Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) stores registrations in
-user/project TOML; [Claude Code](https://code.claude.com/docs/en/mcp) supports persistent
-registrations and launch-specific `--mcp-config` with `--strict-mcp-config`.
-[Codex configuration overrides](https://learn.chatgpt.com/docs/config-file/config-basic#configuration-precedence)
-can supply launch values, but are not by themselves an isolated configuration source.
-Generate native launch configuration from effective access without
-repeatedly rewriting global settings. Validate inherited/plugin servers, concurrent
-accounts, credential reuse, and host lifecycle before selecting the binding mechanism.
-Do not assume a separate live client per conversation or cross-host OAuth portability.
+V0 supports authorized, revocable, direct live read-only shares between owning contexts.
+The source retains its ID and owner; recipients explicitly select incoming shares through
+their access configuration. Other independent grants remain valid after one share is
+withdrawn. Common knowledge can be updated through separately granted update rights.
+Pool membership alone does not create a share.
 
-Preserve native provider tool names, descriptions, schemas, results, and workflows
-wherever possible; identify necessary adaptations. The target is interception of all
-outgoing MCP calls from managed profile sessions, with attribution and eventual permission
-checks that allow, limit, or block calls. This does not require one combined endpoint:
-a common gateway or multiple provider endpoints can provide mediation.
+Share management is separate from read/update permission. A manager may grant only rights
+it currently holds. Selecting a context covers directly owned records by default;
+descendants and incoming shares require explicit inclusion, which presets may provide.
 
-V0 need not implement comprehensive inspection or enforcement of individual upstream
-operations. Its account separation and execution-isolation choices are addressed
-[above](#account-separation-and-execution-isolation). Access to Conduit-managed resources
-remains core. Each mode must state observed activity, enforced restrictions, and
-uncovered paths. Preventing bypass requires more than configuring MCP connections;
-isolating local processes does not replace provider authorization or MCP mediation.
+Derived records and ordinary copies require read access to the record and all declared
+source inputs. Copies retain those dependencies despite independent identity/content.
+Unverifiable required permissions withhold content without deleting it. Missing source
+payloads do not block stored derived content when current access remains verifiable;
+historical provenance gaps alone do not block otherwise permitted use. Hidden source IDs,
+titles, paths, URLs and previews are withheld with a generic notice.
 
-Conduit's session, ownership, conduit and filter semantics are application contracts.
-Bind requests to effective session identity/access; do not equate an MCP connection
-with a Conduit session. Protocol authorization does not supply Conduit's complete
-access policy.
+The following preserve agreed extension semantics; they are not v0 delivery requirements:
 
-Candidate mappings are tools for memory search/writes, resources for readable records,
-and prompts for reusable instructions. Exact schemas and the protocol/extension baseline
-must be verified with the selected hosts. Native BYOS remains usable regardless of
-optional MCP skill-discovery support. No host/SDK compatibility has been tested.
+| Extension | Contract |
+| --- | --- |
+| Richer shares | Pinned shares expose an exact revision; additional operations are explicit and bounded by current authority. Revision-pinned references remain usable in v0 without granting access. |
+| Onward delegation | Explicit permission allows grants within received rights, linked to the parent. Recipients manage their own onward grants, not the incoming grant. Parent restrictions, including loss of delegation permission, constrain dependent grants; other independent grants remain valid. |
+| Grant lifetime | Issued grants survive changes to their creator's Session/Profile. Parent-constrained access recovers when that same chain permits it. Explicitly withdrawn grants require authorized restoration/reissue; a new parent does not replace an old parent link implicitly. |
+| Independent publication | A separate record may release source-access dependencies only with read/publication authority for each released restricted input and destination creation rights. Retain source/version provenance. The published record has its own audience/lifecycle and does not follow source changes or withdrawal. |
+| Published edits | Edits using already-published content need ordinary update rights. New restricted material requires current read/publication authority for those inputs and destination update rights. Explicitly released attribution remains readable. |
 
-## Observation and recovery
+### Workspace resources
 
-Record and attribute available token usage across agents, preserve available transcripts,
-and associate observations with session/execution identity. Conduit's own runtime can
-observe the provider/tool work it dispatches; provider-reported usage and external-agent
-telemetry still have limits. Comprehensive interception, external subagent coverage and
-user hooks remain broader goals. Exact cost accounting is deferred. Frontend progress
-and optional trace exports must not be the only retained evidence of completed work.
+A task or experiment owns workspaces/worktrees; Sessions attach through permitted resource
+access. V0 supports existing folders/checkouts and Conduit-managed Git worktrees, recording
+management status. Attachment preserves existing files and Git state and grants no deletion
+authority. Concurrent independent writers use separate task-owned worktrees by default;
+sequential handoffs can reuse a workspace. Shared editing is opt-in, without automatic
+merge/file-lock guarantees. A worktree is not an isolation boundary.
 
-V0 usage observations identify their execution/account and reporting source, distinguishing
-reported counts, estimates, unknown data, and observed zero. Sum only observations known
-not to overlap. Keep parent/subagent figures separate when overlap cannot be resolved,
-so totals do not silently double-count usage. Missing native telemetry remains a visible
-integration gap. Adapter validation must establish available attribution and aggregation
-coverage; the common contract does not imply exhaustive collection.
+Retain workspaces after Session closure or task completion until explicit cleanup.
+Cleanup of attached folders only unregisters them. Remove a managed worktree only when
+no execution uses it and no unique local work would be lost; uncertainty preserves it
+with an explanation. Exact creation/base/branch/path settings remain open.
 
-For an open session after an unexpected interruption, reconnect to its existing execution
-when the integration verifies that it is still running and supports reconnection. A
-confirmed stopped execution requires explicit resume before starting a replacement.
-Preserve the logical session and workspace; report unknown execution status without
-launching another execution. Recovery restores supported continuity without automatically
-starting new agent work. This does not change explicit pause/reopen semantics.
+## Pools
 
-For operations Conduit controls, retries reuse the same operation ID and return a
-recorded result when available, subject to current access. Distinguish confirmed effects,
-failures, and unknown outcomes; a timeout alone does not establish failure. Automatically
-retry only when repetition is known safe. After an uncertain write, check local/provider
-state before reissuing it; unresolved outcomes remain unknown. Agents may reconcile
-within their permissions without mandatory human approval.
+Pools are named, extensible collections of Resource references. They are the sole route
+for supplying Resources to Sessions through Conduit, including baseline configuration,
+skills and tool connections. The same Resource can appear in multiple Pools; membership
+does not copy content, grant access, change ownership or automatically activate it.
 
-This avoids repeating completed work without claiming universal duplicate prevention.
-External integrations promise only the guarantees they support; native operations outside
-Conduit's control remain outside this contract. A purged or unavailable operation result
-does not prove that the operation never ran; the same reconciliation rule still applies.
+Membership supports explicit references and label selectors. Pool schemas must accommodate
+new Resource kinds without a new field per category. A skill collection, application domain
+or document collection is a use of the same Pool mechanism. Pool labels and Resource
+selection are organizational metadata, not implicit permission grants.
 
-## Design references
+Pool membership selection, Conduit filtering and Profile activation instructions have
+different jobs. Pool selectors collect candidates. Conduits expose authorized selections.
+Sessions apply Profile instructions to those permitted resources. Multiple memberships do
+not imply multiple copies or automatic duplicate activation; resolution remains for review.
 
-References inform the design; they do not select dependencies or prove compatibility.
+When launching against a Pool, its access defaults apply only if no explicit selection
+is supplied. Explicit selection replaces those defaults; extending them requires an
+explicit add action. Profile limits and exclusions always constrain the result. How this
+combines with Profile default Conduits is open; neither form of default can bypass limits.
 
-- [Spec Kit](https://github.com/github/spec-kit): structure around scenarios, requirements,
-  and a separate technical plan. No toolkit installation or generated workflow is required.
-- [MCP architecture](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture)
-  and [tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools):
-  standard capability exchange and provider tool contracts; actual host support needs verification.
-- [Xerj](https://github.com/xerj-org/xerj): a replaceable memory/search backend candidate.
-- [Superpowers](https://github.com/obra/superpowers),
-  [Matt Pocock's skills](https://github.com/mattpocock/skills), and
-  [Ponytail](https://github.com/DietrichGebert/ponytail): native skills and integration references.
-- [Pi research report](RESEARCH_PI.md): frontend-only feasibility, detailed Durable
-  recovery/context/storage mechanisms, proposed Rust runtime boundaries and validation.
-- Local `jxp-skills` and `pstack-pi` checkouts inform usage accounting and native
-  integration. Their storage, deployment, and skill-package designs are not Conduit
-  requirements. Communication references, including `agentwatch`, are in REVIEW.md.
+Exact selector syntax, membership update behavior, duplicate resolution and nesting remain
+open. The resource-authoring layout and Pool lifecycle must preserve the distinction
+between resource existence, ownership, membership, access and activation.
+
+## Conduits
+
+Conduits establish typed, authorized relationships for resource access through Pools and
+communication between Sessions. Profiles reference default declarations; each Session
+binds them independently. Shared declarations do not merge Session state, authentication,
+permissions or live clients. A Conduit is a logical relationship, not a socket, MCP
+connection, frontend attachment or automatic model turn.
+
+For resource access, the Conduit selects and filters available Resources and operations.
+Activation instructions belong to the Profile and are applied by the Session. Filters
+are narrowing-only: removing a constraint can reveal an existing grant, but a filter
+cannot create one. Exact type names, endpoint forms, lifecycle and composition remain open.
+
+### Authority and current access
+
+Permissions name operations per Resource contract, with convenience bundles expanding
+into visible grants. Profile limits and explicit exclusions constrain effective access;
+missing limits add no authority. Permitted operations require no extra confirmation merely
+because permission rules exist. Resource and communication permissions do not imply each other.
+
+Selection supports IDs, owning contexts, metadata predicates and path patterns where the
+integration supports them. Matches within established access rules are live. Authorized
+Conduit/filter/Profile-limit changes apply to subsequent managed requests and are shown
+and recorded; they do not silently change model/account defaults or inject context.
+Pool membership rebinding and behavioral activation updates remain separate open questions.
+
+If an isolated execution cannot revoke removed access live, stop it and require explicit
+restart under current rules, preserving Session identity. Managed requests use new rules
+immediately. Unsupported/restricted bindings remain unavailable while usable capabilities
+proceed; an integration must not silently discard a restriction to enable broader access.
+
+Check whole-record content against current recipient access at retrieval and delivery,
+including queued operations, retries, replays and checkpoint reuse. Mixed-access content
+is withheld as a whole; narrower content requires an authorized extract. Already-delivered
+native context cannot be erased by subsequent checks. Details follow Resource ownership,
+derivation and provenance rules.
+
+### Protocol and provider compatibility
+
+MCP is the preferred external capability contract. Use standard tools, resources, prompts
+and supported extensions where applicable; native adapters address concrete runtime,
+account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP servers.
+
+Connection definitions describe reusable endpoint/process/transport/authentication setup.
+Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration
+from effective selections. Registration, provider authentication and Conduit Session
+authority are distinct. Reusing a definition does not promise shared live clients, OAuth
+state or backend persistence. Avoid rewriting global settings for each launch and validate
+inherited/plugin connections and host configuration behavior.
+
+Preserve provider-native tool names, schemas, descriptions, results and workflows where
+possible. A common gateway or separate provider endpoints can provide mediation; no one
+combined endpoint is required. Integration capabilities must cover nested calls and actual
+dispatch rather than treating discovery lists as enforcement.
+
+The long-term direction is attribution and inspection of outgoing MCP calls, with permission
+checks that can allow, limit or block them. V0 need not implement comprehensive upstream
+operation enforcement. Conduit-managed resource checks remain core. Each mode reports
+observed activity, enforced restrictions and uncovered paths; configuring a connection or
+filter alone does not establish agent-wide isolation.
+
+### Outcomes and recovery
+
+For operations Conduit controls, retries reuse an operation ID and return an available
+recorded result under current access. Distinguish confirmed effects, failure and unknown
+outcomes; timeout alone does not prove failure. Automatically retry only when repetition
+is known safe. After an uncertain write, inspect local/provider state before reissuing;
+unresolved outcomes stay unknown. Agents can reconcile within their permissions.
+
+External integrations promise only guarantees they support. Operations outside Conduit's
+control remain outside this contract. A purged/unavailable operation result does not prove
+the operation never ran. These rules support future communication contracts without
+selecting a delivery guarantee, broker, ordering scheme or automatic-wake policy.
+
+### Communication research boundary
+
+Communication is an interaction between Sessions through Conduits, with Resources and
+Pools supplying authorized shared material. The type-specific contracts still need to
+settle addressing, acceptance, results, retention/replay, attention, cancellation and
+tracker associations. Keep receipt, execution and completion distinct. Research should
+produce concrete flows and failure cases before protocol or implementation selection.

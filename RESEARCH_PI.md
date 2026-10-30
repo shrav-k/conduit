@@ -1,15 +1,22 @@
-# Pi and Pi Durable: a Conduit-owned runtime
+# Pi research for Conduit's five-concept model
 
-Research date: 2026-10-30. **Accepted direction: Conduit owns its runtime in Rust.
-The first frontend is a custom Conduit terminal inspired by Pi. Neither Pi's agent
-loop nor Pi Durable is the runtime underneath Conduit.** Specific implementation proposals below await review. No Conduit
-implementation, account enrollment, or live provider experiment was performed.
+Source investigation: 2026-10-30. This report provides evidence for **Profiles, Sessions,
+Resources, Pools and Conduits**. Current contracts live in [SPEC.md](SPEC.md) and
+[DESIGN.md](DESIGN.md); open decisions are in [REVIEW.md](REVIEW.md). The report's
+implementation proposals remain proposals. No Conduit implementation, account enrollment
+or live provider experiment was performed.
 
-For collaborator review, start with [the recommendation](#recommendation),
-[frontend feasibility](#frontend-only-pi-is-feasible-but-needs-adaptation), and
-[the runtime proposal](#proposed-rust-runtime). The detailed [Durable investigation](#pi-durable-in-depth)
-explains the mechanisms and failure cases behind that proposal. Existing memory,
-account, scope, and lifecycle contracts remain in SPEC.md and DESIGN.md.
+| Concept | Relevant Pi evidence |
+| --- | --- |
+| Profiles | Provider/account resolution, native configuration and resource-loading defaults. Activation instructions belong in Conduit's Profile template. |
+| Sessions | Turn execution, private history/context, frontend state, Durable recovery, child ownership and telemetry. |
+| Resources | Skills/packages, tools, MCP capabilities, memory backends and runtime compatibility. |
+| Pools | Resource discovery and configuration selection as inputs to Conduit's independent, reusable collections. Pi's native grouping rules do not define Pool semantics. |
+| Conduits | MCP/Chord contracts, filtered capability exposure, caller attribution and communication patterns between Sessions. |
+
+Read [the recommendation](#recommendation), [frontend evidence](#frontend-components-for-session-interfaces)
+and [the runtime proposal](#proposed-rust-runtime) first. The [Durable investigation](#pi-durable-in-depth)
+contains the source mechanisms and failure cases behind those proposals.
 
 ## Recommendation
 
@@ -20,7 +27,7 @@ Pi/Durable behavior in Conduit rather than installing a second agent loop undern
 
 This makes Conduit's access and continuity rules part of execution itself. It also
 creates real work: model streaming, tool-call assembly, cancellation, provider-specific
-history conversion, compaction, authentication, and recovery now need implementations
+history conversion, compaction, authentication, and recovery need implementations
 or suitable lower-level libraries. A terminal UI does not provide those capabilities.
 Start with the selected Anthropic/OpenAI workflows; do not promise Pi's provider or
 extension coverage on day one.
@@ -35,7 +42,7 @@ The strongest lessons to absorb are:
 6. Preserve provider-native tools while checking managed access at actual dispatch.
 
 Conduit should improve on the reference **for our requirements**: account-bound execution,
-current scope checks on retries, explicit activation, reconnectable frontend control,
+current access checks on retries, explicit execution restart, reconnectable frontend control,
 and usage evidence that distinguishes unknown data from zero. This is not a claim
 that Pi Durable should serve those same product requirements.
 
@@ -62,7 +69,7 @@ combine that contract with an older callback/publication description.
 “Test evidence” means an upstream test was inspected unless explicitly listed as run
 in [validation](#validation-and-limits). Rust designs and experiment criteria are proposals.
 
-## Frontend-only Pi is feasible, but needs adaptation
+## Frontend components for Session interfaces
 
 ### The stock coding-agent TUI is not an independent runtime client
 
@@ -77,20 +84,15 @@ terminal renderer consuming a remote session API. [Interactive mode][interactive
 Pi RPC controls **Pi's runtime** from another process. It does not make the stock TUI
 connect to an arbitrary replacement backend. The SDK likewise constructs Pi runtime
 services. Registering Conduit as a custom model provider would leave Pi's tool loop,
-context, and lifecycle in charge, so it would not meet the requested boundary.
+context, and lifecycle in charge, so it would not meet Conduit’s runtime ownership contract.
 [RPC][rpc] · [RPC implementation][rpc-source] · [SDK][sdk]
 
-### UI-only reuse options
+### Component reuse
 
-| Option | What is reused | Cost and limitation |
-| --- | --- | --- |
-| **Pi-derived frontend using `pi-tui`** — recommended first | Terminal renderer, editor, Markdown, images, completion/keybinding primitives, and selected presentation components | Implement Conduit command routing, runtime views, dialogs, and status. It is an adapted Pi frontend, not the entire stock coding-agent UI unchanged. |
-| Adapt/fork the stock coding-agent frontend | More of Pi's commands, layouts, selectors, and tool presentation | Introduce an explicit backend interface and remove direct runtime dependencies. Audit every command; maintain the adaptation or contribute the separation upstream. |
-
-**Subsequent user clarification:** preserving the full stock UI is unnecessary. A custom
-Conduit terminal is sufficient; the first option is the relevant direction, with exact
-component dependencies still open. The comparison explains the tradeoff rather than
-leaving UI fidelity as an unresolved decision.
+The selected direction is a custom Conduit terminal. Pi's renderer, editor, Markdown,
+images, completion/keybindings and selected presentation components are reuse candidates.
+Conduit must implement command routing, Session state views and controls. Exact dependencies
+remain open; full stock-UI preservation is unnecessary.
 
 The standalone [`pi-tui` package][tui] is a clean UI reuse boundary: its package does
 not require the coding-agent execution loop. Assistant-message rendering and tool
@@ -130,7 +132,7 @@ internal classes as Conduit's permanent API. Exact transport/schema is a review 
 | --- | --- | --- |
 | `pi-tui` / UI components | Rendering, editing, status and tool-result presentation | Optional frontend dependency; runtime remains Rust. |
 | `pi-ai` | Provider capability descriptions, streaming, message conversion, usage and authentication edge cases | Conduit provider/account adapters, with lower-level libraries evaluated separately. No Pi agent loop. |
-| `pi-agent-core` / coding-agent | Turn/tool loop, queued input, resource loading, compaction, session behavior | Reimplement the needed behavior under Conduit's lifecycle and scope contracts. |
+| `pi-agent-core` / coding-agent | Turn/tool loop, queued input, resource loading, compaction, session behavior | Reimplement the needed behavior under Conduit's Session lifecycle and Conduit access contracts. |
 | `pi-durable` | Transactional execution records, recovery, task ownership, context projections and backend conformance | Architectural/test reference; no Pi Durable runtime dependency. |
 | `pi-mcp` / discovery | Provider-native tools/resources, discovery budgets, connection lifecycle | Conduit-managed MCP clients for its runtime; separate native-host adapters for external agents. |
 | `pi-telemetry` | Structured spans, metrics, propagation and conformance | Conduit observations are authoritative; exporters are replaceable. |
@@ -200,6 +202,9 @@ of arbitrary tool outputs. Distinguish memory-cache eviction from permanent rete
 
 ### 3. Submissions, queues, and activation
 
+Here Pi Durable activation means scheduling execution. It is distinct from Conduit's
+Profile instructions for preparing permitted Resources.
+
 Durable persists submissions with queued/placed/settled outcomes, supports steering and
 follow-up placement, and makes cancellation of a waiter distinct from cancellation of
 work. Withdrawing an already placed submission does not retroactively unplace its
@@ -246,7 +251,7 @@ A timeout or absent receipt is not proof that nothing happened.
   must not be an incidental side effect of reconfiguration.
 - Check current managed permissions at every dispatch and retry. Durable's recovery
   path enters the execute phase after `beforeTool`; an initial hook alone would not
-  implement Conduit's live scope changes.
+  implement Conduit's live access changes.
 - Distinguish rejected, completed-with-error, interrupted-with-unknown-effect, cancelled,
   and confirmed outcomes. Do not collapse them into one `isError` flag for recovery.
 - Keep mandatory access checks in the runtime/broker path. Optional extension selection
@@ -333,11 +338,11 @@ foreground boundary. [Compaction source][compaction-source] · [Specification][d
 | Retained execution history | What was submitted, generated, attempted, and observed, with provenance and outcomes. |
 | Request context | The authorized content selected for a particular model request, after compatibility transformations. |
 | Frontend projection | Human-readable history and transient progress appropriate to that frontend's access. |
-| Shared knowledge | Explicit records retrieved/written through scopes; not an automatically merged session scratchpad. |
+| Shared knowledge | Explicit Resource records retrieved/written through authorized Pool access; not an automatically merged Session scratchpad. |
 
 Record source references/revisions and transformations with a request-context manifest,
 without requiring another full text copy of every prompt. Pin source bounds; apply
-current scopes when assembling and dispatching; report omitted/incompatible content.
+current Conduit access and Profile limits when assembling and dispatching; report omitted/incompatible content.
 Start compaction at a safe turn boundary if needed for long sessions. Keep background
 compaction, arbitrary history editing, and sophisticated branch operations later.
 
@@ -421,21 +426,25 @@ plugin framework. Keep the first implementation local and small.
 
 ```mermaid
 flowchart TB
-    UI[Pi-derived terminal and other frontends] --> API[Conduit control and state API]
-    API --> Runtime[Conduit Rust session supervisor and turn loop]
-    Runtime --> Context[Context builder and private execution history]
+    UI[Terminal and other frontends] --> API[Session control and state API]
+    Profiles[Resolved Profile settings and activation instructions] --> Runtime
+    API --> Runtime[Rust Session supervisor and turn loop]
+    Runtime --> Context[Private context builder]
     Runtime --> Providers[Provider and account adapters]
-    Runtime --> Broker[Tool broker and execution environments]
-    Runtime --> Store[Durable intents, outcomes and usage]
-    Context --> Memory[Scoped memory API]
-    Broker --> MCP[Selected provider-native MCP services]
-    Broker --> Files[Selected workspaces and processes]
-    Broker --> Memory
-    Memory --> Backends[Replaceable storage, search and graph plugins]
-    External[Optional external agent adapters] --> Memory
+    Runtime --> Broker[Tool dispatch]
+    Runtime --> Store[Execution intents, outcomes and usage]
+    Context --> Bindings[Conduit bindings and current access checks]
+    Broker --> Bindings
+    External[External agent adapters] --> Bindings
+    Bindings --> Pools[Pool resource resolution]
+    Pools --> Adapters[Resource adapters]
+    Adapters --> MCP[Provider-native MCP services]
+    Adapters --> Files[Workspaces and processes]
+    Adapters --> Memory[Memory and search backends]
 ```
 
-An execution resolves profile/account/access selections and workspace, admits input, builds authorized
+An execution resolves its Profile and Conduit bindings, applies activation instructions
+to permitted Pool resources, admits input, builds authorized
 context, streams a provider response, validates/dispatches tool calls, persists outcomes,
 and advances until it settles or needs input. Provider-specific messages stay inside
 adapters; Conduit's public identity, access and lifecycle rules remain independent.
@@ -456,22 +465,17 @@ need another language can live behind process/protocol boundaries without owning
 agent loop. Selection of an ABI, WASM host, RPC transport, or particular async/database
 library remains implementation planning.
 
-### What changes in the design now
+### Fit to the model
 
-**Accepted by the user's correction:** Conduit owns the runtime; Pi frontend selection
-is independent; Pi Durable supplies research rather than an execution dependency.
-The earlier recommendation to run stock Pi with a thin Conduit extension is removed.
+These components implement the five-concept model; they are not additional domain concepts.
+Profiles supply execution and activation instructions. Sessions own private execution state.
+Resources are exposed through Pools and selected through Conduits. Frontends present the
+Session, and native adapters supply integration-specific behavior.
 
-**Still accepted:** BYOS, replaceable memory backends, conduit-selected connections,
-private session state, account separation, native-default execution with optional
-isolation, portable checkpoints, safe retries, and honest usage. Here “native” means
-execution on the host without Conduit's full OS sandbox; it does not mean choosing
-Pi or another external agent runtime.
-
-**Needs focused review:** the concepts/configuration relationships, which runtime
-durability features gate v0, and supported subscription/account integration for
-Conduit-owned execution. Native sign-in delegation remains suitable for external Claude Code/Codex
-adapters; it does not automatically authenticate our own provider adapter.
+Remaining implementation choices concern Session durability depth, supported Profile account
+bindings, Resource compatibility and Conduit behavior. Native authentication delegation is
+appropriate for external-agent adapters; Conduit's own provider adapter needs a supported
+path. Native host execution and isolated execution remain distinct from runtime selection.
 
 ## Accounts, skills, MCP, and ecosystem lessons
 
@@ -506,10 +510,11 @@ it will not work just because the frontend uses `pi-tui`. Claude/Codex native pl
 hooks likewise require a compatible runtime or a specific port. Report compatibility
 at the instruction, helper/tool, extension-hook, and presentation layers. Adapters can
 use native installation tooling. Conduit's accepted direction supplies resources through
-Pools and Profile-selected default conduits; the resource-loading conduit contract remains
-for review. Its division between Profile/model/runtime defaults and conduit-specific
-activation should draw on these Pi patterns. Do not import an entire native default
-profile implicitly.
+Pools and Profile-selected default Conduits. Profile activation instructions describe
+how a Session imports/prepares the permitted selection; the Conduit filters available
+Resources and operations. Pi's loaders, metadata-first discovery and registration patterns
+inform those instructions, with compatibility, precedence and updates still open. Do not
+import an entire native default profile implicitly.
 
 The local pstack reference contributes bounded subprocess workers, process-group
 cleanup, explicit tool sets, branch-aware views, version manifests, and loopback model
@@ -543,7 +548,7 @@ upstream operation inspection remains staged; current memory access checks remai
 [Memory A][memory-a] · [Memory B][memory-b-inject] · [Writeback][memory-b-writeback].
 A minimal transactional store with lexical search is a reasonable first experiment;
 Xerj, embeddings and knowledge graphs remain replaceable backend candidates. Our
-revision, scope, coverage and lifecycle contract applies regardless of search engine.
+Resource revision, access, coverage and lifecycle contract applies regardless of search engine.
 
 ### Rust execution and isolation
 
@@ -559,13 +564,12 @@ host runtime can access more than a selected tool environment unless the archite
 actually confines it. The isolation backend and supervision/reconnection behavior
 must be evaluated independently; a remote process protocol alone proves neither.
 
-## Communication research for the upcoming redesign
+## Communication between Sessions through Conduits
 
-The user has established conduits as the common relationship for resource access and
-session communication. The [next research brief](REVIEW.md#conduit-interaction-research)
-will refine their specific contracts. This investigation does not restore rooms or
-choose a topology. Separate addressing, authorization, retained exchange, attention
-and execution when comparing candidate conduit kinds.
+Conduits support resource access and communication between Sessions. The
+[interaction research brief](REVIEW.md#interaction-research) defines the remaining work.
+Separate addressing, authorization, retained exchange, attention and execution when
+comparing candidate contracts; a source library's topology does not choose Conduit's.
 
 Pi's queued input, steering, follow-up and next-turn delivery show useful attention
 boundaries. Its process-local extension bus is not interprocess transport. Durable
@@ -599,15 +603,15 @@ Keep account/provider feasibility early so a polished UI does not conceal a bloc
 
 | Stage | Future experiment | Evidence required |
 | --- | --- | --- |
-| 1. UI separation | Minimal `pi-tui` client and simple CLI observer against a fake Conduit state/control service | No `pi-coding-agent`, `pi-agent-core` or `pi-durable` execution dependency; controller transfer, detach and reconnect. Stock-UI adaptation can be evaluated separately. |
+| 1. UI separation | Minimal `pi-tui` client and simple CLI observer against a fake Conduit state/control service | No `pi-coding-agent`, `pi-agent-core` or `pi-durable` execution dependency; controller transfer, detach and reconnect. Resource loading and model calls remain outside presentation. |
 | 2. Rust runtime slice | Scripted model stream, one tool, one session and persisted intent/result | The Rust loop owns provider/tool calls; accepted versus completed input, cancellation, bounded output and explicit pending recovery. |
 | 3. Supported accounts | Conduit-owned provider/account adapters for two Claude and two OpenAI subscription identities | Verified identity evidence, independent refresh/logout/restart, no implicit API fallback; fixture labels do not count as verification. Resolve unsupported subscription flows explicitly. |
-| 4. Scoped memory | One minimal backend used by differently scoped sessions | Search excerpts/caps/coverage, explicit reads, denied private direct-ID/search access, CAS conflict, lifecycle, direct live read-only sharing. |
+| 4. Memory Resources | One minimal backend exposed through Pools and differently filtered Conduits | Search excerpts/caps/coverage, explicit reads, denied private direct-ID/search access, CAS conflict, lifecycle, direct live read-only sharing. |
 | 5. Context continuity | Model/account changes, resume, fresh, checkpoint fork, compaction | Stable logical identity, permitted content only, provider-state separation, visible transformations and gaps. |
-| 6. MCP and tools | Selected upstream service plus controlled fake server | Familiar schemas, resource-account attribution, current checks on nested/retried calls, honest interception coverage. |
+| 6. Resource preparation and use | Profile activation of permitted skill/MCP Resources, including a controlled fake server | Compatible imports, familiar schemas, resource-account attribution, current checks on nested/retried calls and honest interception coverage. |
 | 7. Faults and usage | Kill at each intent/effect/result boundary; disconnect UI; fail storage and telemetry | No unsafe automatic replay or duplicate execution, unknown outcomes explicit, usage not double-counted or defaulted to zero. |
 | 8. External runtimes / isolation | Native Claude Code/Codex adapters and isolated mode as separate checks | Shared-capability interoperability versus model-provider support; actual OS boundary, declared network policy and explicit restart after non-revocable access removal. |
-| Communication | Add after redesign | Chosen identity, delivery, ordering, acknowledgement, attention and lifecycle semantics. |
+| Session communication | Add after its Conduit contract is agreed | Chosen identity, delivery, ordering, acknowledgement, attention and lifecycle semantics. |
 
 The first usable runtime need not contain general workflow scheduling, deterministic
 script replay, arbitrary hot reload, distributed storage ownership, automatic memory
@@ -619,7 +623,7 @@ be explicit before those features are added.
 - Crash before tool intent: no effect may have been dispatched; after effect but before
   receipt: reconcile or show unknown, rather than automatically repeat an unsafe call.
 - Same operation ID with changed arguments: reject mismatched reuse.
-- Scope revocation between queueing and execution/retry: current checks govern dispatch.
+- Access revocation between queueing and execution/retry: current checks govern dispatch.
 - Stale worker result after replacement: retain provenance without advancing the new run.
 - Storage commit followed by acknowledgement failure: inspect committed state on reopen.
 - Slow/lost frontend updates: bounded memory, explicit gaps, authorized snapshot recovery.
@@ -632,13 +636,13 @@ be explicit before those features are added.
 
 ## Validation and limits
 
-The follow-up inspected the newer frontend and Durable source/specification, including
+The Oct 30 investigation inspected frontend and Durable source/specification, including
 writer/transaction behavior, submissions, tool recovery, nested Code Mode, task ownership,
 context/compaction, views, usage, storage and failure tests. The source checkout is pinned
 at the revision above. **The Durable test suite and UI/runtime replacement were not run.**
 No Pi package was installed into the user's profile; no credentials or accounts changed.
 
-Earlier offline checks remain useful but narrower evidence: 40 existing tests from
+Offline checks against the Oct 29 ecosystem snapshot provide narrower evidence: 40 existing tests from
 `josephkern/pi-memory`, five pstack loopback-provider tests, and eight assertions against
 Pi message transformation/usage functions at the earlier revision passed using Node
 24.22.1. They do not validate Durable at the newer revision or a Conduit runtime.

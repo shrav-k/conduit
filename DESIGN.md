@@ -230,15 +230,19 @@ or external service.
 
 Results contain bounded excerpts with record/revision references and permitted
 provenance; full content requires an explicit read. This lets agents evaluate relevance
-before spending context on a whole record. Both search and subsequent reads apply
-current access rules, including restrictions on provenance.
+before spending context on a whole record. Common configurable defaults and caps bound
+result count and total returned text across backends. Agents may request different
+limits within those caps; responses identify when a limit was reached. This keeps
+context use predictable without fixing one response size for every query. Both search
+and subsequent reads apply current access rules, including restrictions on provenance.
 
 When some selected memory cannot be searched, return available results with an explicit
 incomplete-search status. Report known coverage gaps and backend-supplied freshness;
 unknown coverage or freshness remains unknown. Diagnostic details respect the reader's
 permissions. An unavailable backend is never reported as “no matches,” so agents do not
-mistake missing evidence for an empty search. Exact budgets remain open; these contracts
-do not select a storage or search backend.
+mistake missing evidence for an empty search. Exact limit values and text-size units
+belong to the YAML review and experiment. These contracts do not select a storage or
+search backend.
 
 ## Access and sharing
 

@@ -148,6 +148,8 @@ normalized conversation history is not guaranteed.
 Memory search defaults to all Conduit memory permitted by the session's selected
 scopes, with optional narrowing by context, record kind, or classification labels.
 Results contain bounded excerpts, record/revision references, and permitted provenance.
+Search uses configurable defaults and caps for result count and total returned text;
+agents may request different limits within those caps, and responses identify limits reached.
 Agents retrieve full content through explicit reads, choosing what enters their context
 under the session's current access rules. Partial searches return available results
 with explicit coverage gaps; an unavailable source is never reported as “no matches.”

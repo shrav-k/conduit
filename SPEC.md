@@ -128,8 +128,11 @@ from an explicit default. Lists follow their field-specific order rules. Clients
 and retry under current permissions. Expected ID/version are separate update-operation
 inputs rather than fields in reusable object YAML. V0 CLI/editor workflows retain a recoverable
 local baseline of the original configuration and ID/version so interrupted edits keep their
-original checks. Direct API clients supply those preconditions themselves. Exact request fields,
-baseline storage/lifecycle and missing-baseline recovery remain open.
+original checks. Direct API clients supply those preconditions themselves. Without a usable
+baseline, preserve the YAML and explicitly prepare a new one against the selected target:
+compare current configuration and capture its ID/version before a checked replacement.
+Missing edit history cannot be reconstructed; stale baselines still require reconciliation.
+Exact request fields and baseline storage/lifecycle remain open.
 
 | Requirement | Meaning |
 | --- | --- |

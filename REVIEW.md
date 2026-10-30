@@ -51,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with missing-baseline recovery and remaining import/export, field and reference
-details. Recoverable CLI/editor baselines are accepted; define how portable YAML without one
-becomes an explicit update. Field-level normalization and list comparison follow in later rounds.
+Continue round 1 with rename/delete/rebind operations and the remaining metadata, reference
+and import/export details. Missing-baseline recovery is settled; storage/lifecycle details
+remain with the editing workflow in round 6. Field-level comparison follows in later rounds.
 
 ### Shared example
 
@@ -89,14 +89,13 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** define missing-baseline recovery and preparation of updates from portable YAML.
+direction:** define how rename, delete and rebind use the accepted identity/update contracts.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How are baselines recovered or established? | Local baseline persistence is accepted. Define handling of a missing/unreadable baseline and portable YAML without one; recommend preserving the edited YAML and explicitly establishing a new baseline against the selected target rather than silently adopting its current version. Existing stale baselines still require reconciliation. Specify association, storage and lifecycle without adding a sixth core kind. |
+| Which identity/reference operations remain? | Recommend renaming through a normal checked update to `metadata.name`, preserving identity and checking per-kind name uniqueness; a dedicated rename operation is the alternative. Define delete/rebind operations and effects on authored references after a rename without changing the accepted binding-identity rule. Decide optional direct-ID references and unresolved-reference handling. |
 | What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
-| Which identity/reference details remain? | Decide optional direct-ID forms, ID/version field names and encoding, handling of unresolved references, and explicit rename, delete and rebind operations. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
 | Who owns actual Conduit bindings? | Recommend Session-owned binding instances with reverse views on declarations, rather than independently editable binding lists on both objects. How does a reusable declaration target `self` without letting a caller assert another Session's identity? |
 | How are discovered and external objects represented? | Recommend independently identified Resources with attachment/management metadata; a service Resource can expose native items without one YAML object per file, ticket or tool. Decide whether inline declarations add enough value to justify identity rules. |
@@ -253,7 +252,7 @@ Rust, API/MCP, CLI and frontend tooling. The exact schema/code generation path i
 | What can an explicit probe do? | An MCP probe may start a process; authentication may refresh credentials. Require declared effects and current authority. Define what preview observes and what must be rechecked before applying changes or dispatching work. |
 | What are the error and status contracts? | Specify stable categories, source locations/field paths, explanation, suggested repair, redaction and evaluated versions/timestamps. Define independent validity, resolution, compatibility, preparation and runtime conditions rather than one universal ready flag. |
 | What is the supported schema/version policy? | Choose API group/version and progression, plugin schema dialect, conversion and migration boundaries. Decide treatment of unknown fields/versions and which changes to defaults/composition require migration. Start with one supported authoring version if sufficient. |
-| How do edits stay consistent across clients? | Use the accepted ID/configuration-version checks; define batch validation/commit, conflict diagnostics and import/export mechanics. Decide source preservation, canonicalization and source/resolved digests without mistaking a digest for identity or permission. |
+| How do edits stay consistent across clients? | Use the accepted ID/configuration-version checks and baseline-recovery rules; define batch validation/commit, conflict diagnostics and remaining import/export mechanics. Specify baseline storage/association/lifecycle, source preservation, canonicalization and source/resolved digests without mistaking a digest for identity or permission. |
 | What evidence is durable and what is a view? | Define operation/activation outcomes, context-source records, transcripts, usage and subagent attribution versus transient frontend updates/traces. Preserve existing unknown/zero and non-overlapping-total rules; specify gaps and recovery. |
 | What makes an implementation conform? | Require the same fixture to resolve identically through CLI/API/frontends, and adapters to report unsupported behavior. Identify where live compatibility tests are required beyond schema and fake-provider fixtures. |
 

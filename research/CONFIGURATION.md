@@ -17,6 +17,8 @@ list order follows field contracts, with detailed normalization still open.
 Preconditions are separate update-operation inputs; reusable configuration export omits
 status and system-owned identity/version values. CLI/editor workflows retain a recoverable
 local baseline of original configuration and ID/version; direct API clients supply their checks.
+Without a usable baseline, preserve YAML and explicitly compare with the selected target to
+prepare a new baseline; missing history remains unknown and stale edits require reconciliation.
 The registry holds active configuration through explicit YAML application/export; input
 files are not automatically watched or silently rewritten by CLI/API changes. Submissions
 explicitly select create or update intent, rather than deriving it from name matches.
@@ -364,11 +366,14 @@ stale submissions still conflict. Equality compares parsed authored values, igno
 presentation-only formatting, comments and mapping-key order while distinguishing omission
 from an explicit default. Lists follow their field-specific order rules. CLI/editor workflows
 retain the original configuration and its ID/version in recoverable local editing state,
-separate from reusable YAML; direct API clients supply the required preconditions. Storage/lifecycle,
-missing-baseline recovery, normalization, version-transition details, commands, batch handling
-and remaining import mechanics are proposals. Exporting a Session snapshot must not make applying
-it restart work, clone credentials or create a duplicate execution. Session creation is normally
-a CLI/API operation; a YAML file per conversation is optional.
+separate from reusable YAML; direct API clients supply the required preconditions. Without a
+usable baseline, preserve the YAML and explicitly compare with the selected target's current
+configuration, capturing its ID/version before a checked replacement. Missing history cannot
+be reconstructed, and stale baselines still require reconciliation. Storage/lifecycle,
+normalization, version-transition details, commands, batch handling and remaining import
+mechanics are proposals. Exporting a Session snapshot must not make applying it restart work,
+clone credentials or create a duplicate execution. Session creation is normally a CLI/API
+operation; a YAML file per conversation is optional.
 
 ## How the five objects connect
 

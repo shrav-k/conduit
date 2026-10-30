@@ -124,8 +124,15 @@ not as fields in the reusable object YAML. V0 CLI/editor workflows retain a reco
 baseline containing the original configuration and its ID/version, associated with the edit
 but separate from its YAML. An interrupted edit can resume with its original conflict checks.
 Direct API clients supply the required preconditions themselves. An operation request or local
-edit baseline is not an additional core object kind. Exact request fields, baseline storage
-format/lifecycle, recovery when missing and remaining creation/import/export details remain open.
+edit baseline is not an additional core object kind.
+
+When no usable baseline is available, preserve the YAML and require explicit preparation of
+a new baseline against the selected target. A user or agent can perform a recovery/import
+operation that compares with current configuration and captures its ID/version before a
+checked replacement. This cannot reconstruct missing edit history. An existing stale baseline
+still requires reconciliation; it must not be silently replaced with the current version.
+Exact request fields, baseline storage format/lifecycle and remaining creation/import/export
+details remain open.
 
 ### Objects, representations and contracts
 

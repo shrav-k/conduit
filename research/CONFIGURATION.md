@@ -346,8 +346,11 @@ record's immutable content revision is also not automatically the configuration 
 resourceVersion. [API concurrency](https://kubernetes.io/docs/reference/using-api/api-concepts/)
 
 Stable IDs preserved through rename and renewed on delete/recreate are accepted, as are
-default kind/name references with the resolved ID recorded. `metadata.uid` remains an
-illustrative encoding. V0's single local registry and names unique per kind are accepted;
+default kind/name references with the resolved ID recorded. Renames use normal checked
+updates to `metadata.name`, targeting the original ID/version and requiring the new name
+to be available for that kind. Propagation to other authored references remains open.
+`metadata.uid` remains an illustrative encoding. V0's single local registry and names unique
+per kind are accepted;
 namespaces and cross-registry references are deferred. Duplicate-definition handling and
 recording configuration generation during resolution remain proposals. Established bindings
 from explicit references now retain resolved identity across renames; deletion makes the

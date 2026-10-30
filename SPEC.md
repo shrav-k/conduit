@@ -103,6 +103,9 @@ stable ID. V0 uses one local registry with names unique per kind; underlying res
 remain local or remote. Namespaces and cross-registry references are deferred. ID encoding,
 reference extensions and exact rebind operations remain for review.
 
+Renames use normal checked updates to `metadata.name`, targeting the original ID/version.
+The new name must be available for that kind; propagation to other authored references is open.
+
 Established bindings from explicit references retain their resolved IDs through renames.
 A deleted target becomes unavailable; a replacement using the same name requires explicit
 rebinding. This preserves identity without freezing content versions or current permissions;

@@ -65,6 +65,11 @@ Pool membership does not create a separate naming boundary. Registry membership 
 access grant, and this naming rule does not require every exposed native item to have a
 registry-wide name. Namespaces and cross-registry references are deferred.
 
+A rename uses the normal checked configuration update, changing `metadata.name` while
+preserving the object's ID. The original ID/version identifies the target; the new name
+must be available for that kind or the update conflicts. Propagation to authored references
+in other objects remains a separate decision.
+
 An established binding created from an explicit kind/name reference retains its resolved
 stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting
 the target makes it unavailable; a new object using its old name is not substituted

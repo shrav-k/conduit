@@ -386,9 +386,18 @@ starting new agent work. This does not change explicit pause/reopen semantics.
 
 The proposed v0 evidence distinguishes measured usage, estimates, unknown coverage,
 and observed zero; native child attribution and deduplication need adapter validation.
-Likewise distinguish confirmed effects, failures, and unknown outcomes. A timeout
-does not establish that a provider action failed. Retry identity, duplicate handling,
-and retention must be chosen for the first workflow.
+
+For operations Conduit controls, retries reuse the same operation ID and return a
+recorded result when available, subject to current access. Distinguish confirmed effects,
+failures, and unknown outcomes; a timeout alone does not establish failure. Automatically
+retry only when repetition is known safe. After an uncertain write, check local/provider
+state before reissuing it; unresolved outcomes remain unknown. Agents may reconcile
+within their permissions without mandatory human approval.
+
+This avoids repeating completed work without claiming universal duplicate prevention.
+External integrations promise only the guarantees they support; native operations outside
+Conduit's control remain outside this contract. Operation-result retention remains to be
+chosen alongside other retention policies.
 
 ## Design references
 

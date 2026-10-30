@@ -188,6 +188,11 @@ when the integration verifies it is still running and supports reconnection. Sta
 replacement for a stopped execution requires explicit resume. Unknown execution status
 is reported without launching a duplicate; the logical session and workspace remain.
 
+Retries of operations Conduit controls reuse an operation ID and return recorded results
+when available, subject to current access. Automatic retry requires repetition to be
+known safe. Uncertain writes are checked against local/provider state before reissuing;
+unresolved outcomes remain explicitly unknown.
+
 ### Control access and explain coverage
 
 Select scopes per session, combine their grants, apply role limits, and honor explicit

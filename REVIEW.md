@@ -23,7 +23,7 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Workspaces** | How sessions attach to task/experiment workspaces; concurrent file-editing, separate worktrees where needed, and cleanup/recovery. Resolve these independently of any messaging topology or tracker-to-communication binding. |
+| **1. Workspaces** | How sessions attach to existing workspaces or create managed worktrees, plus cleanup/recovery. Resolve these independently of any messaging topology or tracker-to-communication binding. |
 | **2. Recovery and observability** | Runtime restart and unknown-outcome behavior, retry/deduplication for memory/resource operations, retention for knowledge/checkpoints/native history/observations, and usable account/token/context evidence. Communication delivery, cursors, and acknowledgements are deferred below. |
 
 The active review is complete when each group has a concrete v0 contract or an explicit

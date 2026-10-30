@@ -180,10 +180,16 @@ and frontend attachment. Paused/closed sessions need explicit resume/reopen. Clo
 a session does not complete its task or delete records. Resume/fresh/fork behavior is
 defined in the [specification](SPEC.md#share-knowledge-and-continue-work).
 
-A task or experiment owns its workspace/worktree; sessions attach to it. Changing
+A task or experiment owns its workspaces/worktrees; sessions attach to them. Changing
 agent, account, or frontend need not create a checkout. Forking a conversation does
-not fork files, and a worktree does not imply isolation. Concurrent editing rules,
-workspace attachment, and cleanup remain open.
+not fork files, and a worktree does not imply isolation.
+
+For concurrent coding sessions on Git projects, independent writers use separate
+task-owned worktrees by default; sequential handoffs reuse a workspace. This separates
+concurrent edits while keeping workspace ownership independent of roles and accounts.
+Shared-workspace editing is available through explicit selection, without a guarantee
+of automatic merging or file locking. Workspace attachment, creation, and cleanup
+remain open.
 
 Linear is the first tracker direction. Providers own issue fields, assignments,
 status, and workflow; Conduit does not require an internal ticket engine or full

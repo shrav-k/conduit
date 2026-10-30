@@ -64,7 +64,7 @@ flowchart LR
 | **Tool / skill** | A tool performs an operation; a skill provides instructions and potentially helpers in a compatible native format. A skill does not grant additional permissions. |
 | **Execution / frontend** | An execution is a native agent run within a logical session. A frontend presents and controls interaction, such as Conduit's CLI/chat. |
 | **Working context / checkpoint** | Working context is the information an agent currently uses. A checkpoint is an explicit portable snapshot of task state, not the agent's full native state. |
-| **Task / issue / workspace** | A task is the work being pursued; an external issue tracks it in a provider such as Linear. A task or experiment owns a workspace: its local working directory or worktree. |
+| **Task / issue / workspace** | A task is the work being pursued; an external issue tracks it in a provider such as Linear. A task or experiment owns one or more workspaces: local working directories or worktrees to which sessions attach. |
 
 ### Example
 
@@ -137,6 +137,14 @@ sessions while Conduit supplies shared memory and scoped resources. Their native
 interfaces remain the conversation surfaces; launch/configuration behavior still needs design.
 Pi integration and Conduit's own chat remain goals. Pi research precedes the deferred
 communication review. The core must remain independent of any one frontend.
+
+### Work in task-owned workspaces
+
+For concurrent coding sessions on a Git project, independent writers use separate
+task-owned worktrees by default. Sequential handoffs reuse a workspace. Shared-workspace
+editing is an explicit choice, without a guarantee of automatic merging or file locking.
+Worktrees belong to the task or experiment, independently of roles and accounts;
+they do not establish a security boundary.
 
 ### Share knowledge and continue work
 

@@ -6,44 +6,47 @@ here; prior room choices below are material to reconsider, not implementation re
 
 ## Review order
 
-1. Review the completed [Pi investigation](RESEARCH_PI.md) and settle the focused
-   integration choices below. Pi is the user-selected first frontend.
+1. Review the [Pi and Durable investigation](RESEARCH_PI.md) and settle the focused
+   runtime/frontend choices below. Conduit owns its Rust runtime; Pi is the first frontend.
 2. Design in detail what it means to establish a “conduit” between sessions, without
    assuming the former room model.
 3. Review concrete YAML examples, then the initial experiment in detail, before implementation.
 
-The four-account objective remains: two Codex and two Claude subscription accounts
-running concurrently with separate native state and scoped shared knowledge. The
-communication portion of that objective will be specified after its redesign. Native
-execution remains the default with optional/required isolation as already defined.
-The preceding non-communication policy review is complete; Pi research adds the
-specific integration questions below. Actual account, context, usage, and
-recovery behavior still needs adapter validation in the experiment. Storage engines,
-exact schemas, and test cases remain implementation-planning choices; the accepted
-contracts do not prescribe an intersession communication model.
+The four-account objective remains: two Codex/OpenAI and two Claude subscription
+identities running concurrently with separate private state and scoped shared knowledge.
+The own-runtime authentication path needs validation; native Claude Code/Codex integration
+is a separate compatibility claim. Communication will be specified after its redesign.
+Native execution remains the default with optional/required isolation; “native” here
+means running on the host, not selecting Pi's or another external agent's runtime.
 
-## Pi coding-agent research
+## Runtime and frontend review
 
-The supplied [Pi docs](https://pi.dev/docs/latest) and
-[repository index](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/index.md)
-have been investigated alongside source/tests, pstack, and representative ecosystem
-packages. [RESEARCH_PI.md](RESEARCH_PI.md) records the evidence, release/development
-distinctions, limited offline checks, and proposed experiment. Its recommendations
-are separate from accepted contracts.
+**Settled by the user's clarification:** Conduit implements its runtime in Rust. Pi
+is one frontend among many. Pi's agent loop and Pi Durable are research references,
+not execution dependencies. The earlier stock-Pi/thin-Conduit recommendation is removed.
+This does not abandon external native agent adapters or imply a replacement skills
+framework, tracker, or search engine.
 
-Resolve these larger choices before returning to communication:
+The [research report](RESEARCH_PI.md) contains the detailed source evidence and
+[proposed runtime boundaries](RESEARCH_PI.md#proposed-rust-runtime). It distinguishes
+frontend rendering, provider adapters, execution recovery and shared memory. Resolve
+these three larger choices before returning to communication:
 
 | Choice | Recommendation and implication |
 | --- | --- |
-| First runtime composition | Start with four Pi sessions using two Anthropic and two OpenAI subscription identities, then validate native Claude Code/Codex integrations. This tests different models/accounts first; it does not yet prove different runtime interoperability. |
-| Integration boundary | Reuse stock Pi's terminal/runtime with a thin extension and Rust Conduit services. Use RPC for headless cases; avoid building a replacement frontend or model/skill framework. Choose a supervision approach before promising detach/reconnect. |
-| Account evidence | Keep separate stores/profiles and session-private state. Determine supported identity evidence; Pi login alone does not meet our verified-identity requirement. User-attested enrollment would need an explicit ruling, not silent acceptance. |
-| Durable scope | Keep Pi Durable optional and evaluate later for recoverable unattended execution. Reuse its intent/outcome and conformance patterns without making its storage or terminology canonical for Conduit. |
+| **Pi frontend fidelity** | Start with `pi-tui` plus selected presentation components against Conduit's runtime API. This is a Pi-derived frontend. Preserving the full stock coding-agent UI instead requires a broader adaptation of its direct `AgentSession`, settings, auth and extension dependencies. Choose the interaction features that matter before promising stock command/plugin parity. |
+| **First runtime depth** | Own the turn/tool loop, private history, bounded context, durable input/tool intents and outcomes, explicit recovery and usage from the start. Defer general workflows, background scheduling/compaction, deterministic Code Mode replay and hot reload. Confirm the minimum recovery and long-session behavior before defining concrete state/storage schemas. |
+| **Subscription/account path** | Keep supported native login delegation for external Claude Code/Codex adapters; establish supported provider/account adapters for Conduit-owned execution. Verify distinct identities, refresh ownership and eligibility. Pi OAuth source does not prove those requirements or authorize token reuse. Unsupported subscription access must be surfaced, not replaced silently by API billing or an external runtime. |
 
-The existing memory lifecycle, scoped retrieval, BYOS, native-default execution,
-portable checkpoint, and honest usage contracts remain applicable. The report proposes
-targeted validation rather than another exhaustive decision ledger. Exact package
-versions, native loading controls, and a minimal backend belong to experiment planning.
+The frontend control/state contract should expose Conduit's existing one-controller,
+detach, resume/fresh/fork and coverage semantics. Evaluate MCP where it fits and a thin
+versioned control/event API where necessary; choose exact transport and schemas during
+implementation planning. UI reuse must not accidentally introduce another agent loop.
+
+Memory lifecycle, scoped retrieval, BYOS, execution modes, portable checkpoints and
+usage contracts remain applicable. Runtime-specific plugins need compatibility checks
+or ports. The research's implementation details are proposals, not a new decision ledger
+or accepted requirement to reproduce every Pi feature.
 
 ## Deferred communication redesign
 
@@ -101,8 +104,10 @@ Discuss concrete examples together before freezing a schema or implementing:
 - Specify managed-worktree creation settings: base revision, branch selection, directory
   placement, and treatment of any existing local changes.
 - Express roles, account references, shared connection definitions, scopes, projects,
-  and execution policy. Show resolved launch settings and native adapter output. Keep
-  credentials out of shareable configuration. Add communication objects only after redesign.
+  and execution policy. Keep runtime, frontend, model and account selections distinct.
+  Show resolved launch settings and adapter output; classify supported skill/plugin
+  resources without copying every Pi setting. Keep credentials out of shareable
+  configuration. Add communication objects only after redesign.
 - Consider explicitly writing execution mode in generated role files; decide whether
   handwritten files may omit it and use the native default.
 - Check ordinary use and conflicting/incomplete configurations. Preserve native tooling;
@@ -110,25 +115,32 @@ Discuss concrete examples together before freezing a schema or implementing:
 
 ## Then: initial experiment design
 
-Use the [proposed trial sequence](RESEARCH_PI.md#proposed-experiment-sequence) as input.
-Select supported host/runtime versions, account enrollment, a minimal memory backend,
-and an isolation backend to evaluate. Derive file/service grants and native capabilities,
-then verify the agreed contracts. Review setup, expected observations, failure criteria,
-restart/cleanup, and trial order before running anything.
+Use the [proposed trial sequence](RESEARCH_PI.md#proposed-experiment-sequence) and its
+fault cases as input. First demonstrate a Pi-derived frontend against a fake Conduit
+control/state service, then a minimal Rust-owned model/tool loop. Neither proves live
+subscription access; account feasibility should be investigated before extensive UI work.
+No experiment should use Pi's runtime to make the own-runtime requirement appear met.
 
-Cover four simultaneous identities, permitted/shared and private knowledge, independent
-account lifecycle, session continuity, visible execution modes, and honest usage coverage.
-Add the communication scenario after its redesign. Specify isolation negative checks
-and compatibility gaps, and decide which checks gate the first usable version. A native
-run does not establish that isolation works. No account registration or live experiment
-is implied by this documentation review.
+Then select host/provider versions, account enrollment, a minimal memory backend and an
+isolation backend to evaluate. Define setup, expected observations, failure criteria,
+restart/cleanup and trial order before running anything. Cover four identities,
+permitted/shared and private knowledge, independent account lifecycle, session continuity,
+frontend replacement, execution modes and honest usage. Add communication after redesign.
+
+Use fixture failures around tool intent/effect/result boundaries, storage acknowledgements,
+permission changes, stale workers and frontend reconnect. Evaluate actual subscription
+identity/refresh separately from fake-account labels. Native external-agent interoperability
+and OS isolation require their own checks; a Conduit provider call does not prove either.
+No account registration, implementation start or live experiment is implied by this review.
 
 ## Deferred implementation scope
 
 Comprehensive MCP operation inspection/enforcement, advanced memory-sharing delivery,
 automatic classification/extraction, automatic expiry, exact cost accounting, plugin ABI, and crate
 layout remain staged. Communication delivery order is reopened above. Pi is the first
-frontend; Conduit's own chat and additional native runtime integrations remain goals.
+frontend; Conduit's own chat and external native runtime integrations remain goals.
+General durable workflows, recoverable script execution and comprehensive Pi plugin
+compatibility are not prerequisites for the first Conduit-owned runtime.
 
 Keep reasoning beside accepted contracts in DESIGN.md. Remove answered questions here
 and use Git history for earlier versions. The communication material above is a focused

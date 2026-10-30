@@ -7,17 +7,20 @@ the [Pi research](RESEARCH_PI.md).
 
 ## Ownership and extension boundaries
 
-The native Rust core coordinates identity, sessions, shared records,
-and managed resource access. Integrations preserve provider-native behavior. These
-are responsibilities, not a required collection of processes or crates.
+The Rust core owns Conduit's runtime as well as identity, sessions, shared records,
+and managed resource access. Frontends express that runtime through a control/state
+boundary. Integrations preserve provider-native behavior. These are responsibilities,
+not a required collection of processes or crates.
 
 | Owner | Responsibility |
 | --- | --- |
-| Conduit | Local roles/connections, logical sessions, scopes, shared knowledge/checkpoints, and available observations. Communication responsibilities will be refined in the deferred review. |
-| Native agent | Planning, execution loop, private working context, native skills/tools, and native subagents. |
+| Conduit runtime | Session supervision, execution loop, context construction, provider/tool dispatch, lifecycle, recovery and available observations, implemented in Rust. Models supply reasoning within that runtime. |
+| Conduit shared services | Roles/connections, logical identities, scopes, knowledge/checkpoints and managed resource access. Communication will be refined in the deferred review. |
+| Provider/account adapter | Model request/response conversion, capabilities, supported authentication, account selection and usage evidence. |
+| External-agent adapter | Connect a separate runtime such as Claude Code/Codex, which retains its own loop and private native state. Report the lifecycle/access/telemetry capabilities actually supported. |
 | Resource or tracker provider | Source content and native operations; Linear issue fields, assignments, status, and workflow. |
 | Storage/search plugin | Persistence and retrieval under Conduit's supported record/access contracts, with explicit capability and freshness limits. |
-| Frontend/runtime integration | Presentation, launch/attachment, account selection, input/control, and supported lifecycle/events. |
+| Frontend | Presentation, input and supported interaction; request launch/attachment/settings changes through Conduit. It does not own credentials, tools, model calls, or authoritative runtime state. |
 
 Plugins may integrate models, runtimes, frontends, resources, trackers, and storage/search.
 A connection definition describes reusable local setup for a service/backend; it does
@@ -26,22 +29,43 @@ connection definitions and grant their permitted tools/resources; roles
 supply execution settings, native skills, and optional permission ceilings. A role
 does not need a second list of shared connections. Definition alone grants no access.
 
-Resolve the selected scopes against role limits for each session, then let its runtime
-integration prepare native MCP setup. Keep host-specific transport, configuration, or
-authentication handling in that integration; report unsupported capabilities. Changing
-the model alone need not change registration. Each native host manages its MCP clients;
-shared definitions do not merge permissions or promise shared authentication/client state.
+Resolve selected scopes against role limits for each session. Conduit's runtime owns
+its MCP clients; external-agent adapters prepare native registration where needed.
+Keep host-specific transport/configuration/authentication in the relevant adapter and
+report unsupported capabilities. Changing the model alone need not change registration.
+Shared definitions do not merge permissions or promise shared authentication/client state;
+a frontend does not independently connect selected upstream services.
 
 Xerj remains a candidate behind a replaceable storage/search plugin. No database,
 plugin ABI, transport, process model, or hosting arrangement is selected. Authoritative
 records, observations of external state, and search projections have different meanings.
 
-Pi is the selected first frontend for the experiment. It also contains an agent runtime,
-so frontend choice must not be confused with native Claude Code/Codex compatibility.
-The research recommends reusing stock Pi with a thin integration, keeping Conduit's
-shared records and access contracts independent. The adapter shape, process supervision,
-and exact experiment runtimes remain proposals in REVIEW.md; Pi Durable, Chord, and
-pi-env are research candidates, not selected core dependencies.
+Pi is the first frontend for the experiment; its agent loop and Pi Durable are not
+Conduit's runtime dependencies. The stock terminal directly uses Pi runtime services,
+so frontend-only reuse requires adaptation. The research recommends `pi-tui` and selected
+presentation components first; adapting the full stock UI is a larger alternative.
+That selection remains in REVIEW.md. Pi Durable, Chord and pi-env inform our own
+implementation; they do not determine Conduit's state model or public contracts.
+
+### Runtime and presentation
+
+Conduit-owned execution resolves configuration, admits input, assembles authorized
+context, calls the selected provider, dispatches tools, records outcomes and continues
+until settled or waiting for input. Private execution history, model-request context,
+frontend state and shared knowledge have separate responsibilities. Replacing a memory
+backend or frontend must not replace the execution loop.
+
+Existing lifecycle, safe-retry, access and usage contracts apply to our runtime as well
+as managed external integrations. The research proposes persisted tool intents/results,
+explicit child ownership, bounded frontend snapshots/updates and context source manifests.
+Exact internal states, recovery granularity, frontend transport and storage engine remain
+review/implementation choices. We need the smallest runtime that satisfies the first
+workflow, not every Pi/Durable feature.
+
+BYOS remains an input compatibility goal. Plain instructions may be reusable; executable
+Pi/Claude/Codex extensions that call native runtime APIs require an adapter or port.
+Frontend reuse does not supply that compatibility. Preserve source/version information
+and report unsupported hooks rather than loading an implicit second agent runtime.
 
 ### Configuration
 
@@ -67,7 +91,7 @@ participate in scope selection; selecting a source grants no additional access.
 Authentication and private history remain separately managed, and mandatory host or
 organization policies still apply. Adapters must validate native loading/precedence.
 
-V0 uses each ecosystem's native tooling to install and update selected skills/plugins.
+V0 uses existing ecosystem tooling to install and update compatible selected skills/plugins.
 Conduit adapters may invoke that tooling on request and record available source/version
 information and the outcome. Conduit does not introduce its own package manager for
 these native sources. This preserves existing installation conventions while allowing
@@ -82,15 +106,19 @@ Bind Conduit requests to authenticated session/execution identity rather than tr
 a caller-supplied role or session label. Model-provider credentials do not select
 resource-provider credentials.
 
-For v0 Claude/Codex subscriptions, native runtimes own sign-in and token refresh.
-Conduit manages named account references, selects the intended profile, and verifies
-the selected identity through supported runtime evidence. Keep provider authentication
-behind runtime adapters instead of implementing a separate subscription OAuth system.
-This preserves native account behavior while giving Conduit responsibility for correct
-selection and attribution. Concurrent accounts and credential reuse with session-private
-state still require adapter validation; successful native login alone proves neither.
+For external Claude Code/Codex integrations, native runtimes continue to own sign-in
+and token refresh. Conduit-owned execution needs a supported provider/account adapter
+instead; the previous native-auth delegation does not automatically cover that path.
+Keep authentication out of frontends and shareable YAML. Validate subscription eligibility,
+identity evidence, credential namespaces and refresh ownership before the live experiment;
+do not assume Pi's implementation can simply be copied or native tokens reused.
 
-Stored native conversation history and agent-maintained private memory belong to the
+Conduit manages named account references and verifies the identity actually selected.
+Concurrent accounts and credential reuse with session-private state still require
+validation. A successful login alone proves neither distinct-account selection nor
+independent refresh. No silent API-billing or account fallback is permitted.
+
+Stored conversation history and agent-maintained private memory belong to the
 Conduit session, even when sessions use the same role or subscription. Resume may reuse
 that session's compatible state; fresh sessions do not inherit it automatically, and
 forks use the already-defined checkpoint semantics. Reusable knowledge is shared through
@@ -99,15 +127,18 @@ sharing private state. This keeps role/account reuse from crossing different ses
 scopes. Adapters must validate the storage/loading separation; native mode does not
 thereby acquire an OS boundary against otherwise accessible host files.
 
-[Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
+For external native-agent adapters, [Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
 through `CLAUDE_CONFIG_DIR`. [Codex state locations](https://learn.chatgpt.com/docs/config-file/environment-variables)
 use `CODEX_HOME`; its [credential backend](https://learn.chatgpt.com/docs/auth#credential-storage)
 can be a file, OS store, or process memory. These are adapter primitives, not proof
 of OS isolation. Validate credential namespaces, refresh behavior, inherited environment,
 native memory, plugins, and daemon attachment for each supported runtime/version.
 
-V0 offers both modes below, with **native execution as the default**. Make the role's
-configured mode and each execution's effective mode visible and record the latter.
+V0 offers both modes below, with **native execution as the default**. Here native
+means execution on the host without Conduit's full OS sandbox, not selection of a
+particular agent runtime. Both Conduit-owned and external-agent execution need explicit
+coverage. Make the role's configured mode and each execution's effective mode visible
+and record the latter.
 Isolated execution is an explicit option for additional protection. Both modes retain
 the account-separation and Conduit-access guarantees above; neither merges scopes.
 
@@ -119,7 +150,7 @@ while an explicit requirement preserves the role's boundary across launch interf
 
 | Mode | Boundary and tradeoff |
 | --- | --- |
-| Native with separate profiles | Keeps each account's setup and state separate while retaining host integration. Native tools still have their actual host privileges; this is not an OS security boundary. |
+| Native with separate account/session state | Keeps each account's setup and state separate while retaining host integration. Tools and plugins still have their actual host privileges; this is not an OS security boundary. |
 | Isolated execution | Encloses the runtime and its child processes with explicit access to selected files/services and declared network destinations, excluding other accounts' state and privileged host controls. Some host integrations need bridges or remain unavailable. The isolation backend remains unselected. |
 
 Isolated execution defaults to declared network destinations: required model/login
@@ -164,7 +195,7 @@ containers, or VMs are candidates, not selected dependencies.
 
 Resolve the chosen mode and required capabilities before starting work; reject
 unsupported required isolation rather than silently downgrade.
-Use the session's private native state and only intended credentials/resources. Do not
+Use the session's private execution state and only intended credentials/resources. Do not
 mount an account's entire native history into every role using it. Coordinate native
 credential access instead of blindly cloning rotating credentials. The exact
 credential/state layout needs adapter validation. For YAML authoring, explicitly
@@ -174,9 +205,10 @@ Filesystem isolation does not itself restrict operations at an allowed remote se
 
 ## Sessions and workspaces
 
-One logical session can span multiple native executions. It has at most one active
-primary agent; independently coordinated workers have separate sessions. Native
-subagents may remain inside their parent's execution.
+One logical session can span multiple executions, with their runtime/model/account
+bindings recorded separately. It has at most one active primary agent; independently
+coordinated workers have separate sessions. Runtime-owned subagents may remain inside
+their parent's execution, with attributable ownership and usage where available.
 
 One frontend controls direct input, cancellation, and configuration changes; other
 frontends observe. Continuing in another frontend transfers control without a separate
@@ -254,7 +286,9 @@ A checkpoint contains optional objective/constraints, decisions, progress/eviden
 remaining work/questions, and artifact/source references. The active agent writes it
 at planned handoff, explicit pause, task completion, or on demand; Conduit requests
 and saves it with known provenance. Failed capture continues with available permitted
-context and clearly marked gaps rather than requiring a separate summarizer.
+context and clearly marked gaps rather than requiring a separate summarizer. This
+portable task checkpoint is distinct from internal execution recovery state and from
+a model-context compaction summary; neither automatically satisfies its content contract.
 
 Knowledge is saved explicitly by users/agents. Classification is optional and entirely
 user-defined, supports multiple dimensions and labels per dimension, and requires no
@@ -346,7 +380,7 @@ standard tools, resources, prompts, and supported extensions before inventing a 
 Conduit protocol. Native adapters address concrete lifecycle/account/hook or non-MCP
 needs and should expose MCP where practical. Internal Rust modules need not be servers.
 
-Registration configures a native host to launch a server command or contact an endpoint;
+Registration configures an MCP client host to launch a server command or contact an endpoint;
 authentication is a separate concern. [MCP's architecture](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture)
 supports multiple clients of an HTTP service, while stdio usually connects a client to
 its launched subprocess. Reusing a definition or endpoint does not pool live clients.
@@ -354,9 +388,10 @@ Multiple server processes need a shared backend to expose common durable state.
 
 [Pi's native MCP support](https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/coding-agent/docs/mcp.md)
 supports stdio/Streamable HTTP, user/project configuration, and dynamic extension
-registration. Tool exposure/discovery and resource access are distinct from Conduit's
-authorization rules; the research identifies adapter checks for nested calls, inherited
-configuration, and resource credentials.
+registration. It is a reference for Conduit's own runtime clients, not functionality
+provided by importing Pi's frontend. Tool exposure/discovery and resource access are
+distinct from Conduit's authorization rules; nested calls, inherited configuration,
+and resource credentials need explicit handling.
 
 [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) stores registrations in
 user/project TOML; [Claude Code](https://code.claude.com/docs/en/mcp) supports persistent
@@ -394,9 +429,11 @@ optional MCP skill-discovery support. No host/SDK compatibility has been tested.
 ## Observation and recovery
 
 Record and attribute available token usage across agents, preserve available transcripts,
-and associate observations with session/execution identity. Initial coverage depends
-on integrations; comprehensive tools/subagent tracking, MCP inspection, and user hooks
-remain broader goals. Exact cost accounting is deferred.
+and associate observations with session/execution identity. Conduit's own runtime can
+observe the provider/tool work it dispatches; provider-reported usage and external-agent
+telemetry still have limits. Comprehensive interception, external subagent coverage and
+user hooks remain broader goals. Exact cost accounting is deferred. Frontend progress
+and optional trace exports must not be the only retained evidence of completed work.
 
 V0 usage observations identify their execution/account and reporting source, distinguishing
 reported counts, estimates, unknown data, and observed zero. Sum only observations known
@@ -437,8 +474,8 @@ References inform the design; they do not select dependencies or prove compatibi
 - [Superpowers](https://github.com/obra/superpowers),
   [Matt Pocock's skills](https://github.com/mattpocock/skills), and
   [Ponytail](https://github.com/DietrichGebert/ponytail): native skills and integration references.
-- [Pi research report](RESEARCH_PI.md): pinned source findings, ecosystem comparisons,
-  optional Durable/Chord/Rust execution components, and proposed adapter validation.
+- [Pi research report](RESEARCH_PI.md): frontend-only feasibility, detailed Durable
+  recovery/context/storage mechanisms, proposed Rust runtime boundaries and validation.
 - Local `jxp-skills` and `pstack-pi` checkouts inform usage accounting and native
   integration. Their storage, deployment, and skill-package designs are not Conduit
   requirements. Communication references, including `agentwatch`, are in REVIEW.md.

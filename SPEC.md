@@ -7,12 +7,17 @@ Updated: 2026-10-30 · Current design for review · Implementation has not start
 Conduit lets users work with different models, agents, accounts, and interfaces while
 sharing relevant knowledge and coordinating work. Its first acceptance scenario is
 four simultaneous sessions using two distinct Codex subscription accounts and two
-distinct Claude subscription accounts on one machine, with private native state and
+distinct Claude subscription accounts on one machine, with private session state and
 scoped access to shared knowledge. Communication between sessions remains a core goal;
 its model and acceptance criteria are [deferred for redesign](REVIEW.md#deferred-communication-redesign).
 
-- **Shared continuity:** Conduit owns portable memory and context continuity;
-  each agent owns its planning, execution loop, and working context.
+- **Runtime ownership:** Conduit owns its runtime in Rust, including execution and
+  private working context, alongside portable memory and continuity. Models supply
+  reasoning; frontends present interaction. External agent adapters can separately
+  connect runtimes such as Claude Code and Codex.
+- **Frontend independence:** Pi is the first frontend, not Conduit's execution engine.
+  Pi's agent runtime and Pi Durable are references for our implementation, not runtime
+  dependencies.
 - **Native compatibility:** preserve provider tools, schemas, and workflows. Users
   bring compatible skills and plugins into local role configurations.
 - **Small, replaceable boundaries:** use MCP broadly and keep backend, runtime,
@@ -58,11 +63,11 @@ flowchart LR
 
 | Term | Meaning |
 | --- | --- |
-| **Model / agent runtime** | The model produces responses; the runtime supplies the execution loop, native tools, skills, and lifecycle. Compatibility depends on the runtime as well as the model. |
+| **Model / agent runtime** | The model produces responses; Conduit's Rust runtime supplies its execution loop, context, tools and lifecycle. An external-agent adapter connects a separate runtime such as Claude Code. A model family alone does not establish runtime/plugin compatibility. |
 | **Account** | A separately selectable identity/credential reference, including subscription logins or API credentials. Model-provider and resource-provider accounts are distinct. |
 | **Connection definition / plugin** | A connection definition is reusable local setup for a service or backend: endpoint/process, transport, and authentication references. It is distinct from a live MCP client connection. A plugin supplies integration behavior; runtime integrations prepare native setup from selected definitions. |
 | **Tool / skill** | A tool performs an operation; a skill provides instructions and potentially helpers in a compatible native format. A skill does not grant additional permissions. |
-| **Execution / frontend** | An execution is a native agent run within a logical session. A frontend presents and controls interaction, such as Conduit's CLI/chat. |
+| **Execution / frontend** | An execution is a run within a logical session, bound to an actual runtime/model/account and effective settings. A frontend presents and controls interaction; it does not select runtime ownership implicitly. |
 | **Working context / checkpoint** | Working context is the information an agent currently uses. A checkpoint is an explicit portable snapshot of task state, not the agent's full native state. |
 | **Task / issue / workspace** | A task is the work being pursued; an external issue tracks it in a provider such as Linear. A task or experiment owns one or more workspaces: local working directories or worktrees to which sessions attach. |
 
@@ -72,7 +77,7 @@ A project groups an application repository and saved engineering notes. A Claude
 implementation role and a Codex review role select different skills and permission
 limits. Each starts a separate session with scopes appropriate to its work.
 Their scopes can reference the same connections with different grants;
-each runtime integration prepares the native connection setup.
+Conduit prepares its runtime clients, or an external-agent adapter prepares native setup.
 
 Claude saves a finding to shared memory. Codex can retrieve it if its scope permits
 and check the evidence. Both keep their own working context. The memory record
@@ -85,13 +90,18 @@ how sessions notify or address one another.
 ### Configure and reuse roles
 
 V0 supports concurrent, separately authenticated Codex and Claude subscription
-accounts. Login, refresh, logout, configuration, and private native history for one
+accounts. Login, refresh, logout, configuration, and private history for one
 account must not switch or overwrite another's state. Record each execution's actual
 settings and session overrides; do not silently substitute an account or API billing.
-Native runtimes own subscription sign-in and token refresh; Conduit owns account
-references, profile selection, and identity verification. Resource credentials remain
-separate from the model account. Account separation alone does not establish OS
-isolation. Native execution is the v0 default; isolated
+Conduit owns account references, selection, and identity verification. External native
+agent adapters delegate sign-in/refresh to those runtimes. Conduit-owned execution
+needs supported provider/account adapters; subscription eligibility, refresh ownership,
+and identity evidence must be validated before that experiment. Pi login support alone
+does not establish this compatibility. Resource credentials remain separate from the
+model account. Account separation alone does not establish OS isolation.
+
+Native execution is the v0 default; here native means running on the host without
+Conduit's full OS sandbox, independently of which runtime or frontend is chosen. Isolated
 execution adds a boundary around the runtime and its children. Show each role's
 configured mode and show/record each execution's effective mode and coverage. Never
 silently downgrade a requested isolation guarantee. A role may require isolated
@@ -106,8 +116,8 @@ explicit access. Network reachability does not grant provider-operation permissi
 
 Each session has its own effective scopes and authenticated access to shared memory.
 Sharing a model account does not merge scopes or grant access to another session's
-private context through Conduit. Native state reuse must respect the receiving context.
-Stored native history and agent-maintained private memory are
+private context through Conduit. Runtime state reuse must respect the receiving context.
+Stored conversation history and agent-maintained private memory are
 session-owned, even for sessions sharing a role/account. Resume can reuse the session's
 compatible state; fresh sessions do not inherit it automatically. Reusable knowledge
 is shared through scoped Conduit memory; credential reuse remains separate.
@@ -127,21 +137,23 @@ An existing setup can be selected once, preserving native formats. Shared MCP
 connections remain scope-selected; authentication/history are separate, and mandatory
 host/organization policies still apply. Skills/plugins may be runtime-specific.
 Conduit may supply small defaults explaining its capabilities; a custom skill format
-or automatic cross-runtime conversion is not required. Native ecosystem tooling owns
-skill/plugin installation and updates; Conduit adapters can invoke it on request and
-record available source/version information.
+or automatic cross-runtime conversion is not required. Use existing ecosystem tooling
+for selected skill/plugin installation and updates where compatible; Conduit adapters
+can invoke it on request and record source/version information. An executable Pi,
+Claude Code, or Codex plugin needs a compatible runtime adapter or an explicit port;
+using the same model or terminal components does not make it compatible.
 
-Pi is the first conversation frontend for the v0 experiment. Conduit's CLI remains
-the planned role/project/scope selection and launch surface; its exact relationship
-to Pi's terminal and runtime is under review. Conduit supplies shared memory and
-scoped resources while each session retains its own working context.
+Pi is the first conversation frontend for the v0 experiment. Conduit's CLI selects
+roles/projects/scopes and launches or attaches frontends. Conduit owns the execution
+loop, provider requests, tool dispatch, working context, and execution observations.
+Its shared-memory service remains independently usable by other agent integrations.
 
-Pi can supply both a frontend and its own agent runtime. Using Claude or OpenAI
-subscription models through Pi does not establish compatibility with Claude Code or
-the Codex CLI. The [research report](RESEARCH_PI.md) recommends testing Pi's native
-providers first; the exact runtime composition of the four-account experiment remains
-to be reviewed. Native Claude Code/Codex integrations and Conduit's own chat remain
-goals. The core stays independent of any one frontend or runtime.
+Pi's stock terminal is coupled to its runtime. The [research report](RESEARCH_PI.md)
+compares adapting that UI against building a Pi-derived frontend from `pi-tui` and
+selected components. The exact frontend adaptation remains open; neither approach
+uses Pi's agent loop or Pi Durable to execute Conduit sessions. Model/account adapters
+and external Claude Code/Codex adapters remain distinct. Additional frontends and
+Conduit's own chat remain goals.
 
 ### Work in task-owned workspaces
 
@@ -229,9 +241,10 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 
 | Scenario | Observable outcome |
 | --- | --- |
-| **Four accounts run concurrently** | Conduit's CLI launches two Codex and two Claude sessions simultaneously, each using a distinct subscription account, in their native interfaces. Permitted knowledge is retrievable with independent private context and scopes. Actual account selection is verified rather than inferred from role labels. |
+| **Four accounts run concurrently** | Conduit's CLI launches four sessions across two Codex/OpenAI and two Claude subscription identities, using the first Pi-derived frontend and Conduit-owned execution. Permitted knowledge is retrievable with independent private context and scopes. Supported subscription access and actual identity must be verified; native Claude Code/Codex interoperability is a separate adapter check. |
 | **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted sessions retain their logical identity; usage is attributed to the producing execution and account where available. |
 | **Different scopes share selected knowledge** | A shared record is available to intended sessions; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Isolated-mode OS access checks are additional acceptance cases to specify. |
+| **Frontend independence** | The Pi-derived frontend presents a Conduit-owned execution; another frontend can observe or assume control of the same logical session. The Pi agent loop is not involved. Exact UI parity is a review choice. |
 | **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. A role's optional isolation requirement rejects native launch overrides. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
 | **Resume across accounts or agents** | The logical session remains stable, actual execution settings are recorded, and the resumed execution gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new session has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
@@ -246,10 +259,12 @@ open. Exact test operations and recovery scenarios will be selected during the
 
 ## Delivery scope
 
-The current design prioritizes memory retrieval/writes, simultaneous account separation,
-role/connection configuration, native skills, and basic managed access. Native and
-isolated modes are part of the design; exact
-isolation policies, compatibility coverage, and their acceptance checks remain to be selected.
+The current design prioritizes a Conduit-owned runtime sufficient for memory
+retrieval/writes, simultaneous account separation, role/connection configuration,
+compatible imported skills, and basic managed access. Pi/Durable feature parity is not
+a v0 requirement; the minimal runtime and frontend adaptation are the next review choices.
+Native and isolated modes are part of the design; exact isolation policies, compatibility
+coverage, and their acceptance checks remain to be selected.
 
 Communication requirements and their delivery order are consolidated in REVIEW.md.
 Comprehensive call interception and automated memory extraction/classification are later work.

@@ -505,16 +505,29 @@ between resource existence, ownership, membership, access and activation.
 
 ## Conduits
 
-Conduits establish typed, authorized relationships for resource access through Pools and
-communication between Sessions. Profiles reference default declarations; each Session
-binds them independently. Shared declarations do not merge Session state, authentication,
-permissions or live clients. A Conduit is a logical relationship, not a socket, MCP
-connection, frontend attachment or automatic model turn.
+Conduits establish typed, authorized relationships, including resource access through Pools
+and communication between Sessions. Their contracts must accommodate shared state,
+supporting Resources and runtimes where needed, alongside each Session's participation.
+Profiles reference default declarations; reuse does not implicitly merge private Session
+context, credentials, permissions or live clients. Sharing protocol state is compatible
+with independent participants. A relationship does not imply one socket, process, transport
+or automatic model turn.
+
+Participant attachment ownership and shared runtime ownership are distinct questions.
+Session-owned attachment state is the preferred direction for ordinary Pool access, not a
+universal ownership rule or a finalized storage placement. The distinction between a reusable
+declaration, a live relationship and participant attachments must be settled together with
+shared-state lifetime. Exact ownership, instantiation, supporting-Resource access and
+composition are open in the [scenario review](research/CONDUITS.md). No extra top-level kind
+is implied, and historical room-specific decisions remain reopened.
 
 For resource access, the Conduit selects and filters available Resources and operations.
 Activation instructions belong to the Profile and are applied by the Session. Filters
 are narrowing-only: removing a constraint can reveal an existing grant, but a filter
 cannot create one. Exact type names, endpoint forms, lifecycle and composition remain open.
+Profile activation governs how a Session prepares/uses permitted resources. How a Conduit
+provisions its own shared service or backing storage is a separate unresolved lifecycle
+contract; allowing such a runtime does not transfer Session activation into the Conduit.
 
 ### Authority and current access
 

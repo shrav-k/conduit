@@ -21,7 +21,7 @@ the interpretation and exposes it consistently through its CLI, APIs and fronten
 | **Session** | A durable, independently identified participant created from one Profile, with resolved settings, private context/history and its own Conduit bindings. | A Session persists across supported execution, account and frontend changes. |
 | **Resource** | An independently addressable object exposing data, capabilities or both through a defined contract. | Its identity/source is independent of Pool membership; kinds are extensible. |
 | **Pool** | A named collection of Resource references, assembled explicitly or through label selectors. | Pools are the sole route for supplying Resources to Sessions through Conduit; membership alone grants no access or exclusive ownership. |
-| **Conduit** | A typed, authorized relationship for Session access to Pool resources, communication between Sessions, or both as its contract permits. | Reusable declarations are bound per Session; a relationship does not imply one transport or delivery guarantee. |
+| **Conduit** | A typed, authorized relationship for resource access, communication or other supported interaction among endpoints in the five-concept model. | May require shared state, supporting Resources or a runtime alongside participant-specific attachments. Its contract determines topology and lifecycle; no single transport or delivery guarantee is implied. |
 
 ```mermaid
 flowchart LR
@@ -40,9 +40,10 @@ Sessions. The diagram describes the conceptual model, not a process layout or wi
 1. **A Profile creates independent Sessions.** Each Session resolves one Profile plus
    explicit overrides. Behavioral default changes affect new Sessions; existing Sessions
    adopt them through explicit reconfiguration. Permission limits remain live.
-2. **Profile defaults establish Conduits.** Defaults reference reusable declarations;
-   each Session receives its own authenticated bindings and lifecycle. V0 defers Profile
-   inheritance. Runtime/model/account bootstrap settings stay in the Profile.
+2. **Profile defaults select Conduits.** Each Session establishes its own authenticated
+   participation. Whether a selected declaration joins an existing relationship or creates
+   another instance remains under review; shared runtime state need not belong to one Session.
+   V0 defers Profile inheritance. Runtime/model/account bootstrap settings stay in the Profile.
 3. **Pools organize Resources.** A Resource can be referenced by several Pools without
    copying content or transferring ownership. Pools may collect project resources, a skill
    package or any other useful grouping through the same extensible membership contract.
@@ -59,6 +60,13 @@ prepares and uses the resources available through its Conduits. A resource-acces
 Conduit selects and filters resources and operations; it does not own their loading
 instructions. Exact import defaults, compatibility handling and activation sequencing
 remain open. Pi's loaders, packages and MCP setup inform those Profile/Session contracts.
+
+Conduits must accommodate both simple access paths and interactions that maintain shared
+state or a service runtime. A Session's attachment, a shared runtime and its backing data
+can have different lifetimes. The [scenario review](research/CONDUITS.md) explores these
+distinctions before assigning binding ownership or finalizing YAML fields. It also separates
+Profile activation of available resources from provisioning a shared Conduit service, whose
+contract remains open. These are supporting mechanisms within the five concepts.
 
 ## Supporting mechanisms
 

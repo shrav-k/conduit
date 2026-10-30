@@ -419,11 +419,13 @@ digest, runtime/account identity evidence, independent binding IDs, preparation 
 lifecycle, execution state and capability coverage. Avoid independently editable binding
 lists on both Session and Conduit objects.
 
-For Session→Pool access, recommend making the **Session the authority for its binding instances**.
-A Conduit object is a reusable declaration; the Session status contains its actual binding
-references. Other objects expose reverse indexes/views, not a second competing source of truth.
-This fits a Profile instantiated four times without duplicating the declarations. Ownership of
-shared communication state remains a separate interaction-contract question.
+Session-owned participant attachment state is a useful direction for ordinary Pool access,
+but does not settle ownership of shared Conduit state, backing Resources or runtimes. The
+earlier universal declaration-to-Session-binding formulation is insufficient. Review the
+[five concrete Conduit scenarios](CONDUITS.md) before choosing where authoritative records
+live. A single authority per fact remains useful; it need not be the same object for every
+fact. Definition reuse, relationship instantiation and joining an existing instance need
+distinct semantics. Exact status placement and operation preconditions remain proposals.
 
 ### Resource
 
@@ -470,9 +472,12 @@ Deleting a Pool removes the grouping/path, not the member Resources or underlyin
 ### Conduit
 
 A declaration specifies a versioned interaction contract and endpoints, requested operations
-and narrowing filters. Session binding supplies authenticated identity and resolved authority.
-For a resource Conduit, the target is a Pool. For a communication Conduit, the target can be
-a Session or an explicitly resolved set; fan-out/recipient selection still needs a ruling.
+and narrowing filters. Participation supplies authenticated identity and resolved authority.
+Pool access and Session exchange are examples, not a closed taxonomy. A contract may need
+shared state or a runtime plus separate participant attachments. How declarations establish
+new instances or join existing ones, use supporting Resources, and compose with other
+Conduits is under [scenario-led review](CONDUITS.md). The fixture below demonstrates only
+simple Pool access, not a universal topology or lifecycle.
 
 In the example, `source: {session: self}` is a template binding placeholder, not an identity
 the caller may assert over the wire. Actual sender identity comes from the authenticated

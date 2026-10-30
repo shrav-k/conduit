@@ -38,9 +38,37 @@ contract questions even when the eventual operation is exposed through MCP or a 
 
 ## Next discussion
 
-Use six connected review rounds. These are discussion groupings, not new domain concepts
-or a requirement to decide every row in one answer. Later rounds refine earlier rulings
-rather than reopening them.
+Pause the field-by-field review to test the Conduit abstraction against the five Euphony
+examples below. Session-owned access attachments are a useful direction, but they do not
+answer ownership of shared runtimes, supporting Resources, credentials or durable exchanges.
+The next deliverable is a coherent relationship/lifecycle model, not another isolated field.
+
+### Architecture pause — walk the five Conduits
+
+Read the [scenario analysis](research/CONDUITS.md), which separates existing commitments,
+provider evidence and new proposals. Work through repository projection, communication,
+1Password, AWS CLI and Linear MCP access; then combine them as `euphony-access`.
+
+| Discussion | What must become clear |
+| --- | --- |
+| Declaration versus live relationship | Does selecting a named Conduit join an existing relationship, instantiate a new one, or choose explicitly according to its contract? Four consumers of one configuration must not accidentally create four conversations or share one credential cache. |
+| Shared versus participant state | Which facts belong to a Session attachment, which to a shared relationship/runtime, and which to backing Resources? Show detach, last participant leaving, restart, deletion and retention separately. Authoritative storage placement follows these semantics. |
+| Endpoints, backing Resources and authority | Who authenticates at each hop? How does a shared runtime obtain authority? How are its backing Resources managed and exposed without bypassing Pools or making every internal cursor a new Resource? |
+| Operation semantics and contention | Distinguish another client from another copy of data. Define target identity across access paths, conflict boundaries, supported consistency/concurrency policy, capacity and actual enforcement coverage. |
+| Composition and activation | Can one Conduit reference others, or is a named selection enough? Define independent status/credentials, dependencies and partial failure. Preserve Profile activation while defining shared service provisioning and lifetime separately. |
+
+For each example show **what exists before attachment → what is created/shared → what
+an operation changes → what survives departure or failure**. Keep per-participant access,
+private context and native provider semantics visible throughout. Do not reinstate old
+room-only rules or require comprehensive locks, deployment orchestration or sandboxing in
+v0 just because a future contract can express them.
+
+### Remaining language rounds
+
+The six rounds retain unresolved details and earlier research. The architecture pause
+draws from rounds 1, 3, 4 and 5; move settled conclusions into DESIGN.md before returning
+to metadata, rebind requests or field spelling. These are discussion groupings, not new
+domain concepts or a requirement to decide every row in one answer.
 
 | Round | Central question | Deliverable |
 | --- | --- | --- |
@@ -48,20 +76,21 @@ rather than reopening them.
 | 2. Resolution and composition | How do authored values become one explainable effective configuration? | Defaults, selectors, collections, input resolution and change rules. |
 | 3. Activation and Session changes | What does preparing or changing a Session do, and when? | Profile activation and Session transition contract. |
 | 4. Resource and adapter contracts | How does the language describe extensible capabilities without hiding native behavior? | Plugin boundary, compatibility and initial Resource/provider contracts. |
-| 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
+| 5. Conduit contracts | How do authorized interactions operate across participant attachments and shared runtime/state? | Relationship lifecycle, filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with ownership of Session→Pool access bindings, then rebind operations and
-remaining metadata/reference details. Session deletion requires confirmed execution end;
-other kind-specific deletion effects and runtime cleanup follow in rounds 3–5.
+After the architecture pause, resume the remaining identity/reference operations and
+metadata details in round 1. Session deletion already requires confirmed execution end;
+other kind-specific deletion effects and runtime cleanup remain in rounds 3–5.
 
 ### Shared example
 
 Keep one example throughout: two Profiles create four Sessions across two Claude and two
 Codex/OpenAI subscription identities. A `frontend-toolkit` Pool and an `application` Pool
 overlap on a skill Resource and shared knowledge; the application also exposes a checkout
-and tracker MCP service. Each Session binds selected Conduit declarations independently
-and applies its Profile's activation instructions to the permitted inventory.
+and tracker MCP service. Each Session has its own participation and applies its Profile's
+activation instructions to the permitted inventory. Add the Euphony scenarios to test shared
+runtime state, credentials and operation conflicts beyond this simple access example.
 
 Use the [existing YAML](research/five-concepts.proposal.yaml) as a starting point, changing
 it as we rule. Its paths, account aliases, model IDs and API group are synthetic. For
@@ -71,7 +100,8 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 ### Commitments this review must preserve
 
 - Exactly five core concepts; Resources are independent, Pools collect them, Conduits
-  govern access/interaction, and Profile instructions own activation.
+  govern access/interaction and may need shared state/runtime, and Profile instructions
+  own Session activation. Instance and supporting-Resource lifecycle details remain open.
 - One Profile per Session; explicit behavioral overrides/reconfiguration; live access
   limits; independent private Session state and no implicit account or billing fallback.
 - Rust-owned execution with replaceable frontends; native external-agent integrations
@@ -88,13 +118,14 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
-[configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** establish access-binding ownership before specifying rebind operations.
+[configuration-update checks](DESIGN.md#configuration-updates). Resolve relationship
+instantiation and participant/shared-state responsibilities in the architecture pause
+before specifying rebind operations or authoritative binding-record placement.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| Who owns Session→Pool access bindings? | Recommend Session-owned system state for established bindings, with derived reverse views on Conduit declarations and Pools. The alternative stores binding state under the Conduit object. How does a reusable declaration target `self` without letting a caller assert another Session's identity? Shared communication-state ownership remains in round 5. |
+| How is relationship identity represented? | After the scenario review, define references to declarations, realized relationships and participant attachments within the five concepts. Preserve one authority per fact without forcing every fact under the same owner. Resolve what `self` means and how authenticated participation is established. |
 | Which identity/reference operations remain? | Define rebind requests and preconditions, including how checked reference edits relate to established bindings. Decide optional direct-ID references, unresolved-reference handling and export-refresh diagnostics for unavailable or ambiguous targets. |
 | What are the remaining metadata/status fields? | Define `metadata.name` syntax, label rules, system-owned identity/version field names/types and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
@@ -198,17 +229,21 @@ Evidence: [provider/authentication research](research/PI_CONNECTORS.md#provider-
 
 ## Round 5 — Conduit contracts
 
-**Recommended starting point:** a reusable typed declaration becomes an authenticated
-Session binding. A contract describes endpoints, permitted operations, interaction behavior
-and outcomes. Filters narrow capabilities; Profile activation remains separate. Transport,
-retention and starting a model turn are not implicit consequences of a connection.
+**Starting point under review:** a typed Conduit can combine shared relationship state or
+runtime with authenticated participant attachments. The [scenario analysis](research/CONDUITS.md)
+explores declaration reuse, instance boundaries, supporting Resources and composition before
+choosing field names. Contracts describe endpoints, operations and outcomes. Filters narrow
+capabilities; Profile activation remains separate. Transport, retention and starting a model
+turn are not implicit consequences of a connection.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
 | Where does binding authority come from? | How is an authorized local setup distinguished from a Session's access request? Define who may establish/change a binding and how effective grants are recorded. YAML text, `session: self` and discovered tool lists do not establish identity or permission. |
 | How are filters represented and combined? | Choose inline/reusable forms within the five concepts; specify Resource, operation, native sub-capability, owning-context and supported path constraints. What happens to unsupported predicates? Preserve constrained capability tuples across independent paths. |
 | Where do exclusions apply? | Distinguish narrowing one binding from a Profile-wide denial. With read access to `src/**` and write access to `docs/**`, no composition may create write access to `src/**`. Define current-rule evaluation and scoped explanations. |
-| What is the binding lifecycle? | Specify opening, unavailable/pending states, closing and revocation separately from declaration deletion, live transport and Session lifecycle. Which declaration edits change existing bindings, and which require explicit rebind? |
+| What lifecycles must be distinct? | Specify declaration, shared relationship/runtime, participant attachment, operation and backing-data lifetimes. Show detach, last participant leaving, restart and revocation separately from declaration deletion and purge. Which edits change established relationships or attachments, and which require explicit rebind? |
+| How do Resource capabilities constrain a Conduit? | Define actual target identity across routes, native operation conflicts, supported coordination policies and capacity. Specify advisory versus enforced exclusion and unavailable guarantees without treating all clients as replicas of the data they access. |
+| How are supporting Resources and composition expressed? | Resolve internal protocol state versus Resource-backed retained content, runtime authority, Pool exposure and managed lifecycle. Decide grouped selection versus composite Conduits, required dependencies, independent status and partial effects. |
 | How does the contract describe invocation and exchange? | Define typed input/output, operation IDs, correlation, receipt versus completion, cancellation and retry behavior. Distinguish a Resource invocation, a request for agent work and an observation stream. |
 
 ### Interaction research

@@ -9,9 +9,10 @@ and Conduits**. Their interactions define the system.
 - **Pools** collect references to Resources and supply them to Sessions through Conduits.
 - **Conduits** establish authorized resource access and communication between Sessions.
 
-Profiles reference default Conduit declarations. Each Session establishes its own
-bindings to Pools and other Sessions. Resources can be reused across Pools; membership,
-access and activation have distinct meanings.
+Profiles reference default Conduit declarations. Sessions establish their own participation
+and access while a Conduit may also require shared state, supporting Resources or a runtime.
+Resources can be reused across Pools; membership, access, activation and lifecycle ownership
+have distinct meanings. The relationship between declarations and live instances is under review.
 
 **Retain YAML; define the language through typed objects and explicit semantics.**
 Configuration describes the five-object graph. Conduit defines how references, defaults,
@@ -32,12 +33,13 @@ Read in order:
 
 1. [SPEC.md](SPEC.md) — the five-concept model, language objectives and intended outcomes.
 2. [DESIGN.md](DESIGN.md) — accepted language principles and domain contracts.
-3. [REVIEW.md](REVIEW.md) — six language-focused review rounds, concrete cases and experiment criteria.
+3. [REVIEW.md](REVIEW.md) — the Conduit architecture review, remaining language rounds and experiment criteria.
 
 Research is collected in one folder, with a separate purpose for each document:
 
 | Document | Read it for |
 | --- | --- |
+| [Conduit relationships and runtime state](research/CONDUITS.md) | The current architecture review: repositories, communication, credentials, AWS and Linear; shared versus participant state, concurrency and composition. |
 | [Configuration languages and contracts](research/CONFIGURATION.md) | Kubernetes/Docker semantics, alternative languages, seven research papers, local probes and the proposed five-object schema. |
 | [Connected YAML example](research/five-concepts.proposal.yaml) | A concrete, synthetic configuration to review alongside that proposal. |
 | [Pi connectors, context and communication](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP, Chord and the experiment sequence. |

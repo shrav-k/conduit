@@ -505,8 +505,11 @@ A Pi extension running TypeScript against `AgentSession` is executable runtime c
 it will not work just because the frontend uses `pi-tui`. Claude/Codex native plugin
 hooks likewise require a compatible runtime or a specific port. Report compatibility
 at the instruction, helper/tool, extension-hook, and presentation layers. Adapters can
-use native installation tooling, while the profile selects exactly which supported
-resources load. Do not import an entire default profile implicitly.
+use native installation tooling. Conduit's accepted direction supplies resources through
+Pools and Profile-selected default conduits; the resource-loading conduit contract remains
+for review. Its division between Profile/model/runtime defaults and conduit-specific
+activation should draw on these Pi patterns. Do not import an entire native default
+profile implicitly.
 
 The local pstack reference contributes bounded subprocess workers, process-group
 cleanup, explicit tool sets, branch-aware views, version manifests, and loopback model

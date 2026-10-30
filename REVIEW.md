@@ -33,7 +33,7 @@ A native agent's login profile is an adapter detail, distinct from a Conduit Pro
 | Responsibility | Template/profile | Session |
 | --- | --- | --- |
 | Execution choices | Default runtime/model/account and compatible settings | Resolved choices plus explicit overrides and actual execution evidence. |
-| Behavior/configuration | Explicit instruction, skill and native-configuration references | Resolved sources and any supported session-specific changes. Pool resources do not silently rewrite template settings. |
+| Behavior/configuration | Default conduit references; compatible loading defaults remain to be specified | Resolved bindings and Pool-supplied configuration. Resources do not silently rewrite template settings. |
 | Constraints | Profile-level access ceilings and execution requirements | Current effective constraints; a session override cannot weaken required limits. |
 | Identity/history | Reusable template identity, without a shared conversation | Stable session ID, private state, lifecycle and execution lineage. |
 | Connectivity/workspace | No access merely from possessing the template | Authorized conduits to selected resources/other sessions; workspace association stays distinct from ownership. |
@@ -47,36 +47,26 @@ execution. The exact provenance fields, reconfiguration boundaries and handling 
 profile deletion remain open. Whether referenced configuration/skill content follows
 source updates or is pinned is a separate resource-versioning decision.
 
-**Accepted composition boundary:** each Session starts from one Profile and reuses
-configuration through resource references. Profile-to-profile inheritance/composition
-is deferred for v0. Pool resources remain subject to access and activation rules.
+**Accepted resource path:** each Session starts from one Profile. Profiles reference
+reusable default conduit declarations, bound independently for each Session. Pools are
+the sole route for supplying resources through Conduit, including baseline skills and
+configuration. Resource definitions remain independent and reusable across Pools;
+membership does not copy content or change ownership. V0 defers Profile inheritance.
+Runtime/model/account bootstrap settings and limits remain in the Profile.
 
-**Accepted activation direction:** use explicit, reusable activation rules. This does
-not yet choose label-based activation, eager context loading, or update/precedence rules.
-Resource labels are selection metadata, not Pool membership declarations. Explicit
-resource references do not require labels; Pool membership and Session activation are
-different selections.
+**Accepted activation direction; details deferred:** explicit, reusable activation rules
+belong in the conduit review. The design should include a conduit type that selects and
+prepares compatible Pool resources for a Session, such as Claude-compatible skills and
+selected MCP connections. Profile/model/runtime defaults may handle standard imports;
+the conduit may specify additional selection/loading behavior. The type name, division
+of responsibilities, precedence and exact activation contract remain open. Model choice
+alone does not establish compatibility with a native agent's plugins or hooks.
 
-**Current proposal — default conduits instead of direct configuration references:**
-Profiles select reusable conduit declarations. Creating a Session binds those declarations
-to that Session; resource conduits target Pools. A Pool may collect a skill package,
-engineering resources, application resources, or any other grouping without introducing
-a closed set of Pool types. All session-consumed resources would be supplied through this
-path, replacing direct Profile-to-resource configuration references.
-
-The recommended reading of “only Pools have resources” is that Pools expose resource
-collections, while resource identity/source remains independent of membership. Exclusive
-Pool ownership, where every resource must be defined inside exactly one Pool, is a separate
-choice and is not assumed. Shared definitions, inline declarations and provider discovery
-still need a resource-authoring contract. Pool membership need not duplicate content or
-transfer ownership; the existing memory-record ownership contract is separate.
-
-Default references identify reusable declarations, not a shared live connection. Each
-Session needs its own authenticated bindings, lifecycle and resolution evidence. Reusing
-a declaration grants no access beyond current authority, Profile limits and filters.
-The declaration/instance representation remains for conduit design. Runtime/model/account
-bootstrap settings remain in the Profile so Conduit can prepare the Session before any
-agent work begins.
+Resource labels are optional selection metadata, not required Pool membership declarations.
+Explicit references need no labels. Shared definitions, inline declarations and provider
+discovery still need an authoring contract. Reusing a conduit declaration grants no access
+beyond current authority, Profile limits and filters; the declaration/instance schema
+remains open.
 
 **Proposed representation:** author profiles in YAML. A session has a persisted runtime
 record that can be created through CLI/API and inspected/exported as YAML; users need
@@ -101,11 +91,10 @@ spec:
   limitsRef: engineering-limits
 ```
 
-`conduitRefs` illustrates the current proposal: `frontend-kit` is a reusable conduit
-declaration targeting a Pool and selecting activation behavior. It is bound independently
-for each Session. This replaces the earlier proposed `configurationRefs` field, pending
-agreement on the resource-access path. Exact declaration/reference/limits schemas remain
-open. Credentials stay outside these files.
+`conduitRefs` illustrates the accepted reference relationship: `frontend-kit` identifies
+a reusable conduit declaration targeting a Pool. Each Session gets its own binding.
+Exact declaration/reference/limits fields and activation semantics remain open.
+Credentials stay outside these files.
 
 ```yaml
 apiVersion: conduit/v1alpha1
@@ -132,23 +121,23 @@ configuration, retained history and current model context. Its inheritance/updat
 are reference behavior, not automatically Conduit's rules. Kubernetes `spec`/`status`
 provides an authoring/observation distinction without implying automatic agent restart.
 
-Next review: settle the resource-access path and Pool/resource ownership interpretation,
-then design resolution and activation together. The proposed startup sequence is:
+Activation is deferred to the joint conduit/filter review. Build on the
+[Pi skills/package and MCP findings](RESEARCH_PI.md#bring-your-own-skills-with-explicit-compatibility)
+and inspect its resource loaders to resolve these connected questions:
 
-1. Resolve the Profile's default conduit declarations and explicit Session choices.
-2. Resolve target Pools/resources, validate current access and runtime compatibility.
-3. Plan kind-specific activation: expose for retrieval, register compatible tools/skills,
-   or include selected content in context. A document, package or directory does not imply
-   one universal loading action. Do not load every resource into the prompt.
-4. Apply the plan and record actual bindings, selected sources/versions where available,
-   loaded context and omissions. Required/optional resources and conflict handling remain
-   to be decided; an unusable optional resource should not imply total launch failure.
+- What comes from Profile/model/runtime loading defaults, and what must the conduit
+  declare? Specify which runtime capabilities make a selected resource compatible.
+- How do discovery, resource selection, native registration and context loading differ?
+  Compare skill metadata with full instructions, prompt use and MCP tool exposure;
+  preserve provider-native schemas and Conduit's own runtime ownership.
+- How should duplicate/conflicting resources, required/optional activation, context
+  budgets and unavailable integrations behave? Make the resolved result inspectable.
+- How do source changes, Session reconfiguration and conduit teardown affect loaded
+  configuration? Keep these distinct from live permission changes.
 
-This is a proposal, not an implementation requirement. Decide duplicate/conflicting
-resources, required versus optional activation, context budgets, source update behavior,
-and the precedence of Profile defaults, Pool defaults and explicit Session choices.
-Keep behavioral reconfiguration separate from live access changes. Exact YAML names,
-conduit kinds and any activation executor contract remain open.
+Resolve these with concrete examples during conduit design. The Pool/resource access path
+is settled; exact activation sequencing and YAML remain open. Precedence between Profile
+default conduits, Pool defaults and explicit Session choices also needs review.
 
 ## Concepts and configuration review
 
@@ -174,9 +163,9 @@ its exact kinds, endpoints, representation and guarantees require deep research.
 
 Review these relationships next:
 
-- Specify reference/selector resolution and update behavior; decide overlapping/nested
-  membership separately. Membership, ownership, access and activation
-  remain distinct. Resolve how domain resources such as skills compose with profile selections
+- Specify reference/selector resolution and update behavior; decide duplicate handling
+  across overlapping Pools and any nesting semantics. Membership, ownership, access
+  and activation remain distinct. Resolve how domain resources such as skills compose with profile selections
   through general resource contracts, rather than special fields for each use case.
 - Define where filters attach and how multiple filters/conduits compose. Keep
   pool membership selectors distinct from access constraints; filters cannot add grants.
@@ -264,7 +253,7 @@ contracts, rather than independent features to bolt together after implementatio
 | State and context | Retained exchange versus current state snapshots, payloads versus references/artifacts, query versus unsolicited delivery, and optional context inclusion. Preserve provenance and private working context; observing state does not automatically require shared editable memory. |
 | Lifecycle and attention | Authored declaration versus active instance, opening/closing, pause/resume, timeouts, expiry, backpressure and participant turnover. Distinguish a message notification from permission to start a model turn. |
 | Extensibility and observability | Common identity/schema/version rules, interaction-specific extensions, capability negotiation and unsupported behavior. Carry operation/execution/account attribution across boundaries without conflating traces with retained outcomes. |
-| Configuration and usability | Demonstrate pool references/selectors, conduit endpoints, grants/filters and observed status through YAML. Compare direct configuration with reusable presets; make resolution and omissions inspectable. |
+| Configuration and usability | Demonstrate Profile default conduits, Pool references/selectors, endpoints, grants/filters and observed status through YAML. Design the resource-loading conduit type using Pi as a reference; separate compatible import defaults, conduit-specific selection and context loading. Make resolution and omissions inspectable. |
 
 ### Reference families to investigate
 

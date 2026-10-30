@@ -27,7 +27,8 @@ communication behavior will be specified together through the
   Pi's agent runtime and Pi Durable are references for our implementation, not runtime
   dependencies.
 - **Native compatibility:** preserve provider tools, schemas, and workflows. Users
-  bring compatible skills and plugins into local profile configurations.
+  bring compatible skills and plugins into Pools selected through their profiles’
+  default conduits.
 - **Small, replaceable boundaries:** use MCP broadly and keep backend, runtime,
   frontend, account, and tracker choices independently replaceable.
 - **Explicit access:** select resources and operations for each session within profile
@@ -43,11 +44,11 @@ These names have distinct meanings throughout the specification.
 
 | Concept | Definition | Example |
 | --- | --- | --- |
-| **Profile** | A reusable template from which any number of independent sessions can be created, selecting runtime/model/account defaults and compatible configuration. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
+| **Profile** | A reusable template from which any number of independent sessions can be created, selecting runtime/model/account defaults and reusable default conduit declarations. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
 | **Session** | A durable, independently identified instance created from a profile template, with its own resolved configuration, private history/context and conduit relationships. It has at most one active primary agent. | A review conversation that later resumes using another account. |
-| **Resource** | An addressable object exposed through a defined contract. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
+| **Resource** | An independently addressable object exposed through a defined contract and reusable across Pools. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
-| **Pool** | A named, extensible collection of resources relevant to interacting with a domain. It replaces Conduit's former project grouping and can provide convenient access defaults. Membership alone grants no access. | An Euphony pool collecting the resources relevant to that domain across different providers. |
+| **Pool** | A named, extensible collection of resources relevant to interacting with a domain. Pools are the sole route for supplying session resources through Conduit and can provide convenient access defaults. Membership alone grants no access or exclusive ownership. | An Euphony pool collecting the resources relevant to that domain across different providers. |
 | **Filter** | A reusable constraint that narrows an existing selection or grant. It can restrict resources or operations but cannot grant access. Its target and composition rules belong to the conduit contract. | Restrict access to frontend-related resources and read operations. |
 | **Conduit** | A typed, authorized relationship between endpoints for resource access, communication, or both as its contract permits. Filters narrow its permissions within profile limits. The common concept is fixed; endpoint forms, interaction kinds, lifecycle and delivery guarantees remain for research. | A session accessing selected pool resources, or exchanging information with another session. |
 
@@ -56,13 +57,19 @@ agent login profile or credential directory, which an account adapter may manage
 Conduits supply authorized access and exchange relationships; filters narrow those
 permissions. A filter grants nothing on its own. This replaces the former
 scope object's combination of selection and grants. Connection definitions describe
-setup without granting access. A pool organizes resources; memory is one kind of retained information
-those resources expose. Pool membership supports explicit resource references and label
-selectors. Pool contents are not a fixed set of categories: new kinds
+setup without granting access. Profiles reference default conduit declarations, bound
+independently for each Session. Conduits supply session resources through Pools, including
+baseline skills and configuration; Profiles do not directly supply resource bundles.
+Resource definitions remain independent and may be referenced by multiple Pools.
+Memory is one kind of retained information those resources expose. Pool membership
+supports explicit resource references and label selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
 does not establish a dedicated core resource kind or pool field. Membership, access,
 and activation/context loading are separate concerns. Activation uses explicit, reusable
-rules; their selection syntax, binding, loading and update behavior remain open.
+rules. The design includes a conduit type for selecting and preparing compatible Pool
+resources for a Session, such as supported skills and MCP integrations. Its name, loading
+contract, and division between Profile/model/runtime defaults and conduit-specific choices
+remain open for the Pi-informed conduit review.
 Profile/session and pool contracts are the immediate review priority, followed by conduit
 and filter research. The shared concept does
 not require every kind to expose identical operations or guarantees.
@@ -72,11 +79,12 @@ flowchart LR
     Profile -->|configures and limits| Session
     Session -->|uses| Conduit
     Filter -->|narrows| Conduit
-    Conduit -->|resource access| Resource
+    Profile -.->|default declarations| Conduit
+    Conduit -->|authorized resource selection| Pool
     Conduit <-->|session exchange| Peer[Other sessions]
     Conduit -->|uses setup| Connection
     Connection -->|exposes| Resource
-    Pool -->|groups| Resource
+    Pool -->|references| Resource
     Memory -->|exposed as| Resource
 ```
 
@@ -111,9 +119,10 @@ how sessions notify or address one another.
 ### Configure and reuse profiles
 
 A Profile is a reusable template; a Session is an independent durable instance.
-Each session starts from one Profile. Reuse instructions, settings and skill selections
-through resource references; profile-to-profile inheritance/composition is deferred
-for v0. Pool-supplied resources remain subject to access and activation rules.
+Each session starts from one Profile. Its default conduit declarations select Pools
+that expose reusable instructions, settings, skills and other resources. Each Session
+establishes independent bindings; profile-to-profile inheritance/composition is deferred
+for v0. Pool resources remain subject to access and activation rules.
 Resolve and record behavioral settings when creating a session. Later edits to profile
 defaults affect new sessions; existing sessions retain their resolved settings until
 explicitly reconfigured. Access limits remain live, and overrides cannot weaken them.
@@ -166,11 +175,10 @@ integrations translate configuration into native forms where needed. The version
 identifier scheme and exact schemas remain open.
 
 Users can import or select skills from Superpowers, jxp-skills, personal libraries,
-and other compatible sources. Pools can reference domain-relevant skill resources;
-this extends availability beyond profile-only bundles without imposing a custom skill
-format. How pool resources are activated alongside profile selections remains open.
-Profiles explicitly select reusable user-level native
-settings, skills, and plugins; the default agent profile is not automatically inherited.
+and other compatible sources. Pools collect these resources; Profile defaults select
+conduits that supply compatible resources to Sessions. Selection of reusable user-level
+native settings, skills and plugins remains explicit; the default agent profile is not
+automatically inherited. Loading semantics will be designed with the relevant conduit type.
 An existing setup can be selected once, preserving native formats. Shared MCP
 connections remain selected through conduits; authentication/history are
 separate, and mandatory host/organization policies still apply. Skills/plugins may be runtime-specific.

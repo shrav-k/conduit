@@ -16,8 +16,14 @@ room model. Access and communication share a conceptual foundation; they need no
 share every operation, persistence rule or delivery guarantee.
 
 Pools collect domain resources; profiles configure sessions; conduits establish permitted
-interactions; filters only narrow them. Connection definitions describe the service
-setup a conduit may use, while plugins implement supported protocols and resource
+interactions; filters only narrow them. Profiles reference default conduit declarations,
+which are bound independently for each Session. Conduit-managed session resources are
+supplied exclusively through Pools, including baseline configuration resources. Resource
+identity and source remain independent of Pool membership; multiple Pools can reference
+the same resource. This does not merge Session state or resource ownership.
+
+Connection definitions describe the service setup a conduit may use, while plugins
+implement supported protocols and resource
 contracts. A conduit is not synonymous with an MCP client, socket, frontend attachment,
 or active model turn. Common concepts do not require a single gateway or transport.
 
@@ -49,8 +55,9 @@ Plugins may integrate models, runtimes, frontends, resources, trackers, and stor
 A connection definition describes reusable local setup for a service/backend; it does
 not represent an already-open MCP client. Authorized conduits for resource access select connection
 definitions and grant resource operations; filters only narrow that access. Profiles
-supply execution settings, native skills, and optional permission ceilings. A profile
-does not need a second list of shared connections. Definition alone grants no access.
+supply execution settings, default conduit references and optional permission ceilings.
+Skills and selected connections are supplied from Pools through those conduits. Definition
+alone grants no access.
 
 Resolve selected conduits and filters against profile limits for each session.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration where needed.
@@ -99,15 +106,24 @@ same membership mechanism rather than require fields added to every pool schema.
 
 Data, tools, skills and documents illustrate possible members, not an exhaustive type
 system. A use such as onboarding is ordinary resource content/metadata rather than a
-special core kind or pool field. Pool-provided skills extend BYOS availability beyond
-profile-only bundles. Activation uses explicit, reusable rules; compatible selection,
-loading and composition semantics remain for review.
+special core kind or pool field. A Pool may collect a skill package, project resources
+or another useful grouping using the same extensible membership contract. Resources
+can be reused across Pools; a Pool does not exclusively own the definitions it references.
+
+Activation uses explicit, reusable rules. The design direction includes a conduit type
+that selects and prepares compatible resources from a Pool, such as supported skills and
+MCP connections. Profile/model/runtime defaults can inform loading, with conduit-specific
+selection and behavior; their exact boundaries and precedence remain open. Runtime/plugin
+compatibility must be established independently of model preference. Use Pi's loading,
+package and MCP patterns as research inputs before specifying this type or its activation
+contract. Opening a conduit does not imply loading all Pool content into model context.
 
 Membership does not by itself copy content, change its owner, grant operations, or
 load information into a model. Existing record ownership and access contracts still
 apply. Pool membership supports both explicit resource references and label selectors.
-Exact selector syntax, update behavior, overlapping membership and any nesting semantics
-remain to be specified. Membership selection is distinct from session access filtering.
+Exact selector syntax, update behavior, duplicate resolution across overlapping Pools,
+and any nesting semantics remain to be specified. Membership selection is distinct
+from session access filtering.
 
 ### Configuration
 
@@ -129,10 +145,11 @@ defaults requires an explicit add action. Apply profile limits and exclusions to
 result in every case. This keeps convenient pool setup from silently retaining
 access the caller intended to replace. Exact authoring and CLI syntax remain open.
 
-A profile explicitly selects the user-level native settings, skills, and plugins it
-reuses; do not automatically inherit the user's default agent profile. An existing
-setup may be selected once for convenience, preserving its native formats. This makes
-profile composition explicit without requiring a replacement skill/plugin framework.
+A profile selects default conduits to Pools containing explicitly chosen user-level
+native settings, skills and plugins. Do not automatically inherit the user's default
+agent profile. An existing setup may be selected once for convenience, preserving its
+native formats. This keeps composition explicit without requiring a replacement
+skill/plugin framework.
 Shared MCP connections, including definitions bundled with selected plugins, still
 participate in access selection; selecting a source grants no additional access.
 Authentication and private history remain separately managed, and mandatory host or
@@ -258,10 +275,10 @@ has its own identity, resolved configuration, private history/context and condui
 relationships. Sessions connect to selected pool resources and other sessions through
 conduits; sharing a template does not merge state or establish communication.
 
-Each session starts from one Profile. Shared instructions, settings and skill selections
-are reused through resource references; v0 defers profile-to-profile inheritance and
-composition. This preserves modular reuse while avoiding chains of template overrides
-and their precedence rules. Resource composition and activation still need explicit
+Each session starts from one Profile. Its default conduit declarations establish
+Session-specific bindings to Pools containing reusable configuration and other resources;
+v0 defers profile-to-profile inheritance and composition. This preserves modular reuse
+while avoiding chains of template overrides and their precedence rules. Resource composition and activation still need explicit
 contracts; references do not bypass access limits.
 
 Resolve behavioral defaults at session creation and retain those settings until explicit

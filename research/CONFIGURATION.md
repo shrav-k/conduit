@@ -364,6 +364,10 @@ from explicit references now retain resolved identity across renames; deletion m
 target unavailable, and replacement requires explicit rebinding. This does not pin content
 versions or permissions. Exact rebind operations and live selector behavior remain for review.
 
+Registry-object deletion requires expected stable ID and configuration version; an intervening
+configuration change produces a conflict, allowing the caller to reread and reconcile before
+retrying. Effects on dependent objects, running executions and external resources remain open.
+
 Registry authority and explicit configuration updates are accepted; storage technology and
 Resource-content updates are separate. Explicit create/update intent is also accepted:
 creation conflicts on an existing kind/name; an update requires an existing target and its

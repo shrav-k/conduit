@@ -119,6 +119,11 @@ the configuration version the edit was based on. Reject the update if either dif
 from the current object. This prevents stale edits from silently overwriting newer
 configuration and prevents a reused name from redirecting an update to a replacement.
 
+Registry-object deletion requires the same expected ID and configuration-version checks.
+An intervening configuration change makes deletion conflict; the caller may reread and
+reconcile before retrying. Effects on dependent objects, running executions and external
+resources remain separate decisions.
+
 The configuration version covers `spec` and author-editable metadata. Changes to those
 values invalidate the prior version for updates; status-only changes do not. The check
 does not freeze live permissions or replace authorization at the time of the operation.

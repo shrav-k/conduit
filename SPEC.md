@@ -145,6 +145,9 @@ compare current configuration and capture its ID/version before a checked replac
 Missing edit history cannot be reconstructed; stale baselines still require reconciliation.
 Exact request fields and baseline storage/lifecycle remain open.
 
+Registry-object deletion also requires expected ID and configuration version, rejecting
+mismatches. Effects on dependent objects, running executions and external resources remain open.
+
 | Requirement | Meaning |
 | --- | --- |
 | Typed object graph | The five objects have explicit identities, references and contracts. New integrations extend Resource/Conduit contracts without adding a core concept for every provider. |

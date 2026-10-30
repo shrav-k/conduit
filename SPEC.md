@@ -6,7 +6,7 @@ Updated: 2026-10-30 · Current design for review · Implementation has not start
 
 Conduit's core is a common interaction model: **conduits are typed, authorized
 relationships for both resource access and communication between sessions**. Pools,
-filters, roles, memory and runtime integrations support that model. Establishing its
+filters, profiles, memory and runtime integrations support that model. Establishing its
 contracts and their YAML representation takes priority over implementation.
 
 The first acceptance scenario uses four simultaneous sessions across two distinct
@@ -27,10 +27,10 @@ communication behavior will be specified together through the
   Pi's agent runtime and Pi Durable are references for our implementation, not runtime
   dependencies.
 - **Native compatibility:** preserve provider tools, schemas, and workflows. Users
-  bring compatible skills and plugins into local role configurations.
+  bring compatible skills and plugins into local profile configurations.
 - **Small, replaceable boundaries:** use MCP broadly and keep backend, runtime,
   frontend, account, and tracker choices independently replaceable.
-- **Explicit access:** select resources and operations for each session within role
+- **Explicit access:** select resources and operations for each session within profile
   limits. Making information available does not automatically load it into a model.
 - **Staged control:** design for intercepting outgoing MCP calls while preserving
   native interfaces. V0 requires account separation and offers native execution by
@@ -43,17 +43,18 @@ These names have distinct meanings throughout the specification.
 
 | Concept | Definition | Example |
 | --- | --- | --- |
-| **Role** *(name under review)* | A reusable template from which any number of independent sessions can be created, selecting runtime/model/account defaults and compatible configuration. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
-| **Session** | A durable, independently identified instance created from a role template, with its own resolved configuration, private history/context and conduit relationships. It has at most one active primary agent. | A review conversation that later resumes using another account. |
+| **Profile** | A reusable template from which any number of independent sessions can be created, selecting runtime/model/account defaults and compatible configuration. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
+| **Session** | A durable, independently identified instance created from a profile template, with its own resolved configuration, private history/context and conduit relationships. It has at most one active primary agent. | A review conversation that later resumes using another account. |
 | **Resource** | An addressable object exposed through a defined contract. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
 | **Pool** | A named, extensible collection of resources relevant to interacting with a domain. It replaces Conduit's former project grouping and can provide convenient access defaults. Membership alone grants no access. | An Euphony pool collecting the resources relevant to that domain across different providers. |
 | **Filter** | A reusable constraint that narrows an existing selection or grant. It can restrict resources or operations but cannot grant access. Its target and composition rules belong to the conduit contract. | Restrict access to frontend-related resources and read operations. |
-| **Conduit** | A typed, authorized relationship between endpoints for resource access, communication, or both as its contract permits. Filters narrow its permissions within role limits. The common concept is fixed; endpoint forms, interaction kinds, lifecycle and delivery guarantees remain for research. | A session accessing selected pool resources, or exchanging information with another session. |
+| **Conduit** | A typed, authorized relationship between endpoints for resource access, communication, or both as its contract permits. Filters narrow its permissions within profile limits. The common concept is fixed; endpoint forms, interaction kinds, lifecycle and delivery guarantees remain for research. | A session accessing selected pool resources, or exchanging information with another session. |
 
-A role defines execution configuration and limits. Conduits supply authorized access
-and exchange relationships;
-filters only narrow it. A filter grants nothing on its own. This replaces the former
+A Profile defines execution configuration and limits. It is distinct from a native
+agent login profile or credential directory, which an account adapter may manage.
+Conduits supply authorized access and exchange relationships; filters narrow those
+permissions. A filter grants nothing on its own. This replaces the former
 scope object's combination of selection and grants. Connection definitions describe
 setup without granting access. A pool organizes resources; memory is one kind of retained information
 those resources expose. Pool membership supports explicit resource references and label
@@ -61,13 +62,13 @@ selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
 does not establish a dedicated core resource kind or pool field. Membership, access,
 and activation/context loading are separate concerns; activation rules remain open.
-Role/session and pool contracts are the immediate review priority, followed by conduit
+Profile/session and pool contracts are the immediate review priority, followed by conduit
 and filter research. The shared concept does
 not require every kind to expose identical operations or guarantees.
 
 ```mermaid
 flowchart LR
-    Role -->|configures and limits| Session
+    Profile -->|configures and limits| Session
     Session -->|uses| Conduit
     Filter -->|narrows| Conduit
     Conduit -->|resource access| Resource
@@ -93,7 +94,7 @@ flowchart LR
 ### Example
 
 A pool groups resources for an application domain, including its repository and knowledge.
-A Claude implementation role and a Codex review role select different skills and permission
+A Claude implementation profile and a Codex review profile select different skills and permission
 limits. Each starts a separate session with access appropriate to its work.
 Their conduits can reference the same connections with different grants and filters;
 Conduit prepares its runtime clients, or an external-agent adapter prepares native setup.
@@ -106,7 +107,15 @@ how sessions notify or address one another.
 
 ## Expected behavior
 
-### Configure and reuse roles
+### Configure and reuse profiles
+
+A Profile is a reusable template; a Session is an independent durable instance.
+Resolve and record behavioral settings when creating a session. Later edits to profile
+defaults affect new sessions; existing sessions retain their resolved settings until
+explicitly reconfigured. Access limits remain live, and overrides cannot weaken them.
+Record configuration origins and actual execution settings. This rule does not determine
+whether referenced configuration/skill contents are pinned or follow source updates;
+that resource-versioning choice remains open.
 
 V0 supports concurrent, separately authenticated Codex and Claude subscription
 accounts. Login, refresh, logout, configuration, and private history for one
@@ -121,29 +130,29 @@ model account. Account separation alone does not establish OS isolation.
 
 Native execution is the v0 default; here native means running on the host without
 Conduit's full OS sandbox, independently of which runtime or frontend is chosen. Isolated
-execution adds a boundary around the runtime and its children. Show each role's
+execution adds a boundary around the runtime and its children. Show each profile's
 configured mode and show/record each execution's effective mode and coverage. Never
-silently downgrade a requested isolation guarantee. A role may require isolated
-execution, which a launch override cannot weaken to native. Roles without that
+silently downgrade a requested isolation guarantee. A profile may require isolated
+execution, which a launch override cannot weaken to native. Profiles without that
 requirement may use either mode. The isolation backend remains open;
 [the design explains the rationale](DESIGN.md#why-both-modes-with-native-as-the-default).
 
 Isolated execution allows declared network destinations by default: required runtime
 model/login services, selected connection endpoints, and extra destinations explicitly
-granted through conduits, within filters, role limits and exclusions. Local/private
+granted through conduits, within filters, profile limits and exclusions. Local/private
 services need explicit access. Network reachability does not grant provider-operation permissions.
 
 Each session has its own effective access and authenticated access to shared memory.
 Sharing a model account does not merge permissions or grant access to another session's
 private context through Conduit. Runtime state reuse must respect the receiving context.
 Stored conversation history and agent-maintained private memory are
-session-owned, even for sessions sharing a role/account. Resume can reuse the session's
+session-owned, even for sessions sharing a profile/account. Resume can reuse the session's
 compatible state; fresh sessions do not inherit it automatically. Reusable knowledge
 is shared through scoped Conduit memory; credential reuse remains separate.
 
 At pool launch, omitted access selection uses the pool's configured defaults.
 Explicit access selection replaces those defaults; an explicit add action can extend
-them. Filters, role limits and exclusions still constrain the resulting access.
+them. Filters, profile limits and exclusions still constrain the resulting access.
 The conduit/default configuration schema remains open.
 
 Use YAML for Conduit's local configuration, with versioned, named objects, explicit
@@ -154,9 +163,9 @@ identifier scheme and exact schemas remain open.
 
 Users can import or select skills from Superpowers, jxp-skills, personal libraries,
 and other compatible sources. Pools can reference domain-relevant skill resources;
-this extends availability beyond role-only bundles without imposing a custom skill
-format. How pool resources are activated alongside role selections remains open.
-Roles explicitly select reusable user-level native
+this extends availability beyond profile-only bundles without imposing a custom skill
+format. How pool resources are activated alongside profile selections remains open.
+Profiles explicitly select reusable user-level native
 settings, skills, and plugins; the default agent profile is not automatically inherited.
 An existing setup can be selected once, preserving native formats. Shared MCP
 connections remain selected through conduits; authentication/history are
@@ -169,7 +178,7 @@ Claude Code, or Codex plugin needs a compatible runtime adapter or an explicit p
 using the same model or terminal components does not make it compatible.
 
 A custom Conduit terminal inspired by Pi is the first conversation frontend. Its CLI selects
-roles/pools/access and launches or attaches frontends. Conduit owns the execution
+profiles/pools/access and launches or attaches frontends. Conduit owns the execution
 loop, provider requests, tool dispatch, working context, and execution observations.
 Its shared-memory service remains independently usable by other agent integrations.
 
@@ -189,7 +198,7 @@ and Git state; it does not authorize deletion of the directory.
 For concurrent coding sessions on a Git project, independent writers use separate
 task-owned worktrees by default. Sequential handoffs reuse a workspace. Shared-workspace
 editing is an explicit choice, without a guarantee of automatic merging or file locking.
-Worktrees belong to the task or experiment, independently of roles and accounts;
+Worktrees belong to the task or experiment, independently of profiles and accounts;
 they do not establish a security boundary.
 
 Session closure or task completion retains workspaces until explicit cleanup. Cleanup
@@ -242,9 +251,9 @@ unresolved outcomes remain explicitly unknown.
 ### Control access and explain coverage
 
 Select authorized conduits per session. Apply their narrowing filters,
-role limits and explicit exclusions; filters cannot create or expand a grant. The
+profile limits and explicit exclusions; filters cannot create or expand a grant. The
 same configured connection can serve sessions with different effective access.
-Conduit, filter and role-limit changes apply to subsequent Conduit-managed requests
+Conduit, filter and profile-limit changes apply to subsequent Conduit-managed requests
 and must be visible. Detailed conduit/filter composition remains for review.
 If a running isolated execution cannot revoke removed access live, stop it and require
 an explicit restart under current rules. Preserve the logical session identity.
@@ -272,7 +281,8 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 | **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted sessions retain their logical identity; usage is attributed to the producing execution and account where available. |
 | **Different access selections share selected knowledge** | A shared record is available to intended sessions; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Isolated-mode OS access checks are additional acceptance cases to specify. |
 | **Frontend independence** | The custom terminal presents a Conduit-owned execution; another frontend can observe or assume control of the same logical session. The Pi agent loop is not involved. Stock Pi UI parity is unnecessary. |
-| **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. A role's optional isolation requirement rejects native launch overrides. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
+| **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. A profile's optional isolation requirement rejects native launch overrides. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
+| **Profile defaults and live limits** | Changing a profile’s behavioral defaults affects new sessions; existing sessions retain their resolved settings until explicit reconfiguration. Current access limits still constrain every session. |
 | **Resume across accounts or agents** | The logical session remains stable, actual execution settings are recorded, and the resumed execution gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new session has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within effective access. |
 | **Access changes** | Managed retrieval/context loading uses current permissions. If an isolated execution cannot revoke removed access live, it stops pending explicit restart; session identity remains intact. Inaccessible content is omitted without revealing restricted provenance; already loaded native context is not claimed to be erased. |
@@ -287,7 +297,7 @@ open. Exact test operations and recovery scenarios will be selected during the
 ## Delivery scope
 
 The core priority is defining conduits for resource access and communication, including
-how their contracts compose with pools, filters, roles and sessions in YAML. Deep
+how their contracts compose with pools, filters, profiles and sessions in YAML. Deep
 comparative research precedes selecting interaction kinds, transports or implementation.
 A Conduit-owned runtime, shared memory, simultaneous account separation, compatible
 imported skills and managed access support that core. Pi/Durable feature parity is not

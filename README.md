@@ -3,7 +3,7 @@
 Conduit is built around **conduits**: typed, authorized relationships for both resource
 access and communication between sessions. This interaction model is the project's core.
 Pools organize extensible collections of resources; filters narrow what a conduit permits;
-roles configure the sessions that use them. Shared memory, native tools and skills,
+profiles configure the sessions that use them. Shared memory, native tools and skills,
 continuity and observation operate through this common model.
 
 Conduit owns its runtime in Rust. The first frontend is a custom Conduit terminal

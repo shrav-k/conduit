@@ -435,7 +435,7 @@ flowchart TB
     External[Optional external agent adapters] --> Memory
 ```
 
-An execution resolves role/account/scopes and workspace, admits input, builds authorized
+An execution resolves profile/account/access selections and workspace, admits input, builds authorized
 context, streams a provider response, validates/dispatches tool calls, persists outcomes,
 and advances until it settles or needs input. Provider-specific messages stay inside
 adapters; Conduit's public identity, access and lifecycle rules remain independent.
@@ -462,7 +462,7 @@ library remains implementation planning.
 is independent; Pi Durable supplies research rather than an execution dependency.
 The earlier recommendation to run stock Pi with a thin Conduit extension is removed.
 
-**Still accepted:** BYOS, replaceable memory backends, scope-selected connections,
+**Still accepted:** BYOS, replaceable memory backends, conduit-selected connections,
 private session state, account separation, native-default execution with optional
 isolation, portable checkpoints, safe retries, and honest usage. Here “native” means
 execution on the host without Conduit's full OS sandbox; it does not mean choosing
@@ -479,15 +479,15 @@ adapters; it does not automatically authenticate our own provider adapter.
 
 Pi has Anthropic subscription and OpenAI ChatGPT subscription authentication paths in
 source. Its credential storage is keyed by provider, not by an arbitrary collection
-of role/account identities. Separate account bindings and coordinated token refresh
+of profile/account identities. Separate account bindings and coordinated token refresh
 are necessary. A model family, provider label, or successful login is not sufficient
-evidence that two profiles represent distinct selected accounts.
+evidence that two configured account bindings select distinct identities.
 [Providers][openai-provider] · [Anthropic][anthropic-provider] ·
 [Auth storage][auth-storage] · [OpenAI authentication][openai-auth]
 
 For Conduit, model selection, account selection, private conversation storage, and
 resource-service credentials remain separate. Do not copy rotating tokens across
-independently refreshing profiles. Do not silently substitute API billing. Preserve
+independently refreshing credential stores. Do not silently substitute API billing. Preserve
 supported native login/refresh for external runtime adapters; evaluate supported
 provider/account adapters for our own runtime, including eligibility and verifiable
 identity. Pi source shows a mechanism, not authorization or a compatibility guarantee
@@ -505,7 +505,7 @@ A Pi extension running TypeScript against `AgentSession` is executable runtime c
 it will not work just because the frontend uses `pi-tui`. Claude/Codex native plugin
 hooks likewise require a compatible runtime or a specific port. Report compatibility
 at the instruction, helper/tool, extension-hook, and presentation layers. Adapters can
-use native installation tooling, while the role selects exactly which supported
+use native installation tooling, while the profile selects exactly which supported
 resources load. Do not import an entire default profile implicitly.
 
 The local pstack reference contributes bounded subprocess workers, process-group
@@ -533,7 +533,7 @@ upstream operation inspection remains staged; current memory access checks remai
 
 | Reference | Absorb | Do not silently inherit |
 | --- | --- | --- |
-| jayzeng/pi-memory, `1e276a762a666a7031459fdf7af018cc7966663e` | Human-readable notes, search modes, health/recovery signals | Automatic extraction/injection, global roots independent of role scope. |
+| jayzeng/pi-memory, `1e276a762a666a7031459fdf7af018cc7966663e` | Human-readable notes, search modes, health/recovery signals | Automatic extraction/injection, global roots independent of session access. |
 | josephkern/pi-memory, `312627ffc5a47de690b3066276009e7d651f8729` | Bounded loading, page representations, truncation and writeback diagnostics | Ambient home-directory memory, automatic prompt injection, assumed multi-process safety. |
 | Pi session entries / Durable documents | Explicit typed state and reconstruction | Treating runtime-private state as shared searchable knowledge or access policy. |
 

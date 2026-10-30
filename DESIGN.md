@@ -3,7 +3,7 @@
 Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for vocabulary and expected behavior.
 This describes current boundaries; [REVIEW.md](REVIEW.md) contains unresolved choices.
 Conduits are the accepted common relationship model for resource access and session
-communication. Role/session and pool definitions precede the detailed conduit/filter
+communication. Profile/session and pool definitions precede the detailed conduit/filter
 research in REVIEW.md,
 building on the [Pi investigation](RESEARCH_PI.md).
 
@@ -15,7 +15,7 @@ replacing the provisional access “attachment” term and extending beyond the 
 room model. Access and communication share a conceptual foundation; they need not
 share every operation, persistence rule or delivery guarantee.
 
-Pools collect domain resources; roles configure sessions; conduits establish permitted
+Pools collect domain resources; profiles configure sessions; conduits establish permitted
 interactions; filters only narrow them. Connection definitions describe the service
 setup a conduit may use, while plugins implement supported protocols and resource
 contracts. A conduit is not synonymous with an MCP client, socket, frontend attachment,
@@ -38,7 +38,7 @@ not a required collection of processes or crates.
 | Owner | Responsibility |
 | --- | --- |
 | Conduit runtime | Session supervision, execution loop, context construction, provider/tool dispatch, lifecycle, recovery and available observations, implemented in Rust. Models supply reasoning within that runtime. |
-| Conduit shared services | Conduit relationships, roles/connections, logical identities, filters, knowledge/checkpoints and managed resource access. Interaction-specific communication contracts follow the research review. |
+| Conduit shared services | Conduit relationships, profiles/connections, logical identities, filters, knowledge/checkpoints and managed resource access. Interaction-specific communication contracts follow the research review. |
 | Provider/account adapter | Model request/response conversion, capabilities, supported authentication, account selection and usage evidence. |
 | External-agent adapter | Connect a separate runtime such as Claude Code/Codex, which retains its own loop and private native state. Report the lifecycle/access/telemetry capabilities actually supported. |
 | Resource or tracker provider | Source content and native operations; Linear issue fields, assignments, status, and workflow. |
@@ -48,11 +48,11 @@ not a required collection of processes or crates.
 Plugins may integrate models, runtimes, frontends, resources, trackers, and storage/search.
 A connection definition describes reusable local setup for a service/backend; it does
 not represent an already-open MCP client. Authorized conduits for resource access select connection
-definitions and grant resource operations; filters only narrow that access. Roles
-supply execution settings, native skills, and optional permission ceilings. A role
+definitions and grant resource operations; filters only narrow that access. Profiles
+supply execution settings, native skills, and optional permission ceilings. A profile
 does not need a second list of shared connections. Definition alone grants no access.
 
-Resolve selected conduits and filters against role limits for each session.
+Resolve selected conduits and filters against profile limits for each session.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration where needed.
 Keep host-specific transport/configuration/authentication in the relevant adapter and
 report unsupported capabilities. Changing the model alone need not change registration.
@@ -100,7 +100,7 @@ same membership mechanism rather than require fields added to every pool schema.
 Data, tools, skills and documents illustrate possible members, not an exhaustive type
 system. A use such as onboarding is ordinary resource content/metadata rather than a
 special core kind or pool field. Pool-provided skills extend BYOS availability beyond
-role-only bundles; compatible activation and composition rules remain for review.
+profile-only bundles; compatible activation and composition rules remain for review.
 
 Membership does not by itself copy content, change its owner, grant operations, or
 load information into a model. Existing record ownership and access contracts still
@@ -124,14 +124,14 @@ versions distinct from application releases, record revisions, MCP and plugin ve
 
 For a pool launch, use its configured access defaults only when no explicit access
 selection is supplied. An explicit selection replaces those defaults; extending the
-defaults requires an explicit add action. Apply role limits and exclusions to the
+defaults requires an explicit add action. Apply profile limits and exclusions to the
 result in every case. This keeps convenient pool setup from silently retaining
 access the caller intended to replace. Exact authoring and CLI syntax remain open.
 
-A role explicitly selects the user-level native settings, skills, and plugins it
+A profile explicitly selects the user-level native settings, skills, and plugins it
 reuses; do not automatically inherit the user's default agent profile. An existing
 setup may be selected once for convenience, preserving its native formats. This makes
-role composition explicit without requiring a replacement skill/plugin framework.
+profile composition explicit without requiring a replacement skill/plugin framework.
 Shared MCP connections, including definitions bundled with selected plugins, still
 participate in access selection; selecting a source grants no additional access.
 Authentication and private history remain separately managed, and mandatory host or
@@ -145,11 +145,11 @@ users to manage their selected sources through Conduit.
 
 ## Account separation and execution isolation
 
-Concurrent account separation is required in v0. Keep a role's reusable configuration,
+Concurrent account separation is required in v0. Keep a profile's reusable configuration,
 an account's persistent login, and an execution's effective access/state distinct.
 Never implement switching by swapping credentials in one global agent directory.
 Bind Conduit requests to authenticated session/execution identity rather than trusting
-a caller-supplied role or session label. Model-provider credentials do not select
+a caller-supplied profile or session label. Model-provider credentials do not select
 resource-provider credentials.
 
 For external Claude Code/Codex integrations, native runtimes continue to own sign-in
@@ -165,13 +165,14 @@ validation. A successful login alone proves neither distinct-account selection n
 independent refresh. No silent API-billing or account fallback is permitted.
 
 Stored conversation history and agent-maintained private memory belong to the
-Conduit session, even when sessions use the same role or subscription. Resume may reuse
+Conduit session, even when sessions use the same profile or subscription. Resume may reuse
 that session's compatible state; fresh sessions do not inherit it automatically, and
 forks use the already-defined checkpoint semantics. Reusable knowledge is shared through
 scoped Conduit memory. Credential reuse is a separate concern and does not authorize
-sharing private state. This keeps role/account reuse from crossing session access boundaries. Adapters must validate the storage/loading separation; native mode does not
+sharing private state. This keeps profile/account reuse from crossing session access boundaries. Adapters must validate the storage/loading separation; native mode does not
 thereby acquire an OS boundary against otherwise accessible host files.
 
+A Conduit Profile is a template, not a native login profile or a credential directory.
 For external native-agent adapters, [Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
 through `CLAUDE_CONFIG_DIR`. [Codex state locations](https://learn.chatgpt.com/docs/config-file/environment-variables)
 use `CODEX_HOME`; its [credential backend](https://learn.chatgpt.com/docs/auth#credential-storage)
@@ -182,16 +183,16 @@ native memory, plugins, and daemon attachment for each supported runtime/version
 V0 offers both modes below, with **native execution as the default**. Here native
 means execution on the host without Conduit's full OS sandbox, not selection of a
 particular agent runtime. Both Conduit-owned and external-agent execution need explicit
-coverage. Make the role's configured mode and each execution's effective mode visible
+coverage. Make the profile's configured mode and each execution's effective mode visible
 and record the latter.
 Isolated execution is an explicit option for additional protection. Both modes retain
 the account-separation and Conduit-access guarantees above; neither merges permissions.
 
-A role may require isolated execution. Launch overrides cannot select native mode for
-that role; unavailable required isolation causes a clear launch failure. Without that
+A profile may require isolated execution. Launch overrides cannot select native mode for
+that profile; unavailable required isolation causes a clear launch failure. Without that
 requirement, either mode may be selected, with native remaining the general default.
 The requirement is separate from a preferred mode: defaults support convenient setup,
-while an explicit requirement preserves the role's boundary across launch interfaces.
+while an explicit requirement preserves the profile's boundary across launch interfaces.
 
 | Mode | Boundary and tradeoff |
 | --- | --- |
@@ -200,7 +201,7 @@ while an explicit requirement preserves the role's boundary across launch interf
 
 Isolated execution defaults to declared network destinations: required model/login
 services, endpoints for selected connections, and extra destinations granted through
-conduits, constrained by filters, role limits and exclusions. Make runtime endpoint
+conduits, constrained by filters, profile limits and exclusions. Make runtime endpoint
 requirements visible; selecting a runtime must not silently override a restriction. Package
 registries, research sites, and local/private services require explicit inclusion.
 An allowed destination does not authorize every operation or object at that service.
@@ -212,13 +213,13 @@ a separate capability.
 
 ### Why both modes, with native as the default
 
-The first workflow needs multiple subscriptions to coexist reliably. Separate profiles
-solve identity/configuration collisions without requiring every user to isolate their
-entire development environment. Native execution preserves host integrations and suits
+The first workflow needs multiple subscriptions to coexist reliably. Separate account
+and session state address identity/configuration collisions without requiring every
+user to isolate their entire development environment. Native execution preserves host integrations and suits
 users who deliberately grant broad local access. Making full isolation mandatory would
 add setup and compatibility costs to that common case, so v0 defaults to native.
 
-Profile separation does not stop native tools from reaching other accessible host files.
+Account/session state separation does not stop native tools from reaching other accessible host files.
 Isolated execution supplies that stronger boundary for users who need it. It covers
 the runtime and children because a command-only sandbox leaves other tool paths outside
 the boundary. IDE sockets, browser authentication, keychains, Docker, local services,
@@ -227,9 +228,9 @@ these compatibility gaps from excluding an otherwise useful agent integration.
 
 Keep local isolation, network destinations, provider-operation permissions, and Conduit
 record access distinct: each controls a different path. Visibility of the selected mode
-and actual coverage prevents profile separation from being mistaken for OS security.
-Account, role, and execution also remain distinct so reusing a subscription does not
-automatically load another role's private context. These boundaries preserve native
+and actual coverage prevents state separation from being mistaken for OS security.
+Account, Profile, Session and Execution remain distinct: reusing a subscription does
+not automatically load another session's private context. These boundaries preserve native
 workflows while allowing stronger, replaceable isolation backends.
 
 An isolated mode cannot rely only on native command sandbox flags:
@@ -241,24 +242,31 @@ containers, or VMs are candidates, not selected dependencies.
 Resolve the chosen mode and required capabilities before starting work; reject
 unsupported required isolation rather than silently downgrade.
 Use the session's private execution state and only intended credentials/resources. Do not
-mount an account's entire native history into every role using it. Coordinate native
+mount an account's entire native history into every session using it. Coordinate native
 credential access instead of blindly cloning rotating credentials. The exact
 credential/state layout needs adapter validation. For YAML authoring, explicitly
-writing the mode in generated roles is recommended; whether handwritten configurations
+writing the mode in generated profiles is recommended; whether handwritten configurations
 may omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
 
 ## Sessions and workspaces
 
-A role is a reusable template, not a running participant or a shared conversation.
+A profile is a reusable template, not a running participant or a shared conversation.
 Any number of independent sessions can be created from the same template. Each session
 has its own identity, resolved configuration, private history/context and conduit
 relationships. Sessions connect to selected pool resources and other sessions through
 conduits; sharing a template does not merge state or establish communication.
 
-The name “Profile” is proposed for the template in REVIEW.md; “Session” remains the
-instance concept. Exact YAML shapes and how template-default edits affect existing
-sessions remain open. Existing explicit overrides and live access-limit rules remain.
+Profile is the reusable configuration template; Session is its durable instance.
+Resolve behavioral defaults at session creation and retain those settings until explicit
+reconfiguration. Profile edits change defaults for new sessions. Record the configuration
+origins and actual execution settings so a mutable profile name is not the only explanation
+of past behavior. Exact provenance fields and reconfiguration boundaries remain for review.
+
+Profile access limits remain live alongside conduit/filter rules. Retained behavioral
+settings never freeze permission grants or exempt an existing session from current limits.
+This decision does not pin the content of every referenced skill/configuration resource;
+source-version selection and update behavior remain open.
 
 One logical session can span multiple executions, with their runtime/model/account
 bindings recorded separately. It has at most one active primary agent; independently
@@ -287,7 +295,7 @@ the YAML review.
 
 For concurrent coding sessions on Git projects, independent writers use separate
 task-owned worktrees by default; sequential handoffs reuse a workspace. This separates
-concurrent edits while keeping workspace ownership independent of roles and accounts.
+concurrent edits while keeping workspace ownership independent of profiles and accounts.
 Shared-workspace editing is available through explicit selection, without a guarantee
 of automatic merging or file locking.
 
@@ -379,7 +387,7 @@ Conduits supply authorized resource/connection access and operation grants accor
 to their interaction contracts.
 Filters are narrowing-only: they may remove resources or operations from a target
 selection, but cannot introduce grants. A filter alone supplies no access. Declared
-role limits and explicit exclusions constrain effective access; missing role limits
+profile limits and explicit exclusions constrain effective access; missing profile limits
 add no grants. Permissions name operations per resource type, with convenience bundles
 expanding into visible grants. Permitted operations do not require an extra human
 confirmation merely because permissions exist.
@@ -392,7 +400,7 @@ exchange share the conduit concept without granting one another's permissions im
 Resource selectors support IDs, named ownership contexts, metadata predicates, and
 path patterns where integrations support them. Pool membership also supports explicit
 references and label selectors; membership does not authorize access. Resource matching
-and authorized conduit/filter/role-limit changes apply live to subsequent managed
+and authorized conduit/filter/profile-limit changes apply live to subsequent managed
 requests, with effective changes recorded and shown. They do not change model/account defaults or automatically inject context.
 
 If an access-rule change removes access that an active isolated execution cannot revoke live,
@@ -431,7 +439,7 @@ grants. The table defines sharing semantics as each capability is introduced.
 | Live or pinned share | Default to read access to the original with its ID/owner intact; live follows updates, pinned selects a source revision. Additional operations are explicit, subject to recipient limits. |
 | Share management | Separate authority from read/update. A manager may grant only operations it currently holds. Creating, changing, and withdrawing shares are managed operations. |
 | Onward delegation | Explicit permission permits grants within received rights, linked to the parent. A recipient manages its onward shares, not the incoming grant. Parent restrictions propagate; other valid grants remain independent. |
-| Grant lifecycle | Issued grants survive changes to their creator's session/role. Parent-constrained access recovers when the same chain permits it; explicit withdrawal requires authorized restoration/reissue. New parent grants do not silently replace old links. |
+| Grant lifecycle | Issued grants survive changes to their creator's session/profile. Parent-constrained access recovers when the same chain permits it; explicit withdrawal requires authorized restoration/reissue. New parent grants do not silently replace old links. |
 | Derived knowledge or copy | Require read access to the record and all declared source inputs. A copy has its own ID/owner and editable content but retains access dependencies. |
 | Independent publication | Create a separate extract/audience with retained provenance. Require read/publication authority for each released restricted input plus destination creation rights. It does not follow source updates and retains its own access/lifecycle after source restriction or deletion. |
 | Published updates | Normal edits use update permission; newly introduced restricted inputs require current read/publication authority and destination update rights. Prior publication does not release other source content. |
@@ -470,7 +478,7 @@ Do not assume a separate live client per conversation or cross-host OAuth portab
 
 Preserve native provider tool names, descriptions, schemas, results, and workflows
 wherever possible; identify necessary adaptations. The target is interception of all
-outgoing MCP calls from managed role sessions, with attribution and eventual permission
+outgoing MCP calls from managed profile sessions, with attribution and eventual permission
 checks that allow, limit, or block calls. This does not require one combined endpoint:
 a common gateway or multiple provider endpoints can provide mediation.
 

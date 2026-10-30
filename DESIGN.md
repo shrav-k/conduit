@@ -257,7 +257,12 @@ has its own identity, resolved configuration, private history/context and condui
 relationships. Sessions connect to selected pool resources and other sessions through
 conduits; sharing a template does not merge state or establish communication.
 
-Profile is the reusable configuration template; Session is its durable instance.
+Each session starts from one Profile. Shared instructions, settings and skill selections
+are reused through resource references; v0 defers profile-to-profile inheritance and
+composition. This preserves modular reuse while avoiding chains of template overrides
+and their precedence rules. Resource composition and activation still need explicit
+contracts; references do not bypass access limits.
+
 Resolve behavioral defaults at session creation and retain those settings until explicit
 reconfiguration. Profile edits change defaults for new sessions. Record the configuration
 origins and actual execution settings so a mutable profile name is not the only explanation

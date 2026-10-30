@@ -110,6 +110,9 @@ how sessions notify or address one another.
 ### Configure and reuse profiles
 
 A Profile is a reusable template; a Session is an independent durable instance.
+Each session starts from one Profile. Reuse instructions, settings and skill selections
+through resource references; profile-to-profile inheritance/composition is deferred
+for v0. Pool-supplied resources remain subject to access and activation rules.
 Resolve and record behavioral settings when creating a session. Later edits to profile
 defaults affect new sessions; existing sessions retain their resolved settings until
 explicitly reconfigured. Access limits remain live, and overrides cannot weaken them.

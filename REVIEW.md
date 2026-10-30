@@ -47,6 +47,10 @@ execution. The exact provenance fields, reconfiguration boundaries and handling 
 profile deletion remain open. Whether referenced configuration/skill content follows
 source updates or is pinned is a separate resource-versioning decision.
 
+**Accepted composition boundary:** each Session starts from one Profile and reuses
+configuration through resource references. Profile-to-profile inheritance/composition
+is deferred for v0. Pool resources remain subject to access and activation rules.
+
 **Proposed representation:** author profiles in YAML. A session has a persisted runtime
 record that can be created through CLI/API and inspected/exported as YAML; users need
 not author a file for every session. A session request's `spec` and observed `status`
@@ -103,8 +107,8 @@ Next review: configuration composition. A Profile selects baseline configuration
 Pools can expose additional compatible resources. Decide how a Session selects/activates
 those resources, how conflicting settings are handled, and whether source updates need
 explicit adoption. Availability does not itself activate a skill or load instructions.
-Template layering is also undecided. Settle these with examples before filters/conduits;
-keep exact field names provisional until the relationships are clear.
+Settle these with examples before filters/conduits; keep exact field names provisional
+until the relationships are clear.
 
 ## Concepts and configuration review
 

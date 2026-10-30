@@ -149,7 +149,8 @@ Memory search defaults to all Conduit memory permitted by the session's selected
 scopes, with optional narrowing by context, record kind, or classification labels.
 Results contain bounded excerpts, record/revision references, and permitted provenance.
 Agents retrieve full content through explicit reads, choosing what enters their context
-under the session's current access rules.
+under the session's current access rules. Partial searches return available results
+with explicit coverage gaps; an unavailable source is never reported as “no matches.”
 
 Resume keeps the logical session and loads its applicable permitted checkpoint.
 Fresh starts a new session without automatically loading prior conversation or

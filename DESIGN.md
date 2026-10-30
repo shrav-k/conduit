@@ -231,9 +231,14 @@ or external service.
 Results contain bounded excerpts with record/revision references and permitted
 provenance; full content requires an explicit read. This lets agents evaluate relevance
 before spending context on a whole record. Both search and subsequent reads apply
-current access rules, including restrictions on provenance. Exact budgets, freshness
-reporting, and partial-result behavior remain open; this contract does not select a
-storage or search backend.
+current access rules, including restrictions on provenance.
+
+When some selected memory cannot be searched, return available results with an explicit
+incomplete-search status. Report known coverage gaps and backend-supplied freshness;
+unknown coverage or freshness remains unknown. Diagnostic details respect the reader's
+permissions. An unavailable backend is never reported as “no matches,” so agents do not
+mistake missing evidence for an empty search. Exact budgets remain open; these contracts
+do not select a storage or search backend.
 
 ## Access and sharing
 

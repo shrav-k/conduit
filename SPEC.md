@@ -123,10 +123,13 @@ references, and schema validation. Runtime integrations translate it into native
 configuration where needed. The version identifier scheme and exact schemas remain open.
 
 Users can import or select skills from Superpowers, jxp-skills, personal libraries,
-and other compatible sources. Initially, skills/plugins may be tied to Claude,
-Codex, or another native runtime. Conduit may supply small defaults explaining its
-own capabilities. A custom skill format or automatic cross-runtime conversion is
-not required.
+and other compatible sources. Roles explicitly select reusable user-level native
+settings, skills, and plugins; the default agent profile is not automatically inherited.
+An existing setup can be selected once, preserving native formats. Shared MCP
+connections remain scope-selected; authentication/history are separate, and mandatory
+host/organization policies still apply. Skills/plugins may be runtime-specific.
+Conduit may supply small defaults explaining its capabilities; a custom skill format
+or automatic cross-runtime conversion is not required.
 
 The first interaction surface is Conduit's CLI: select a role, project, and scopes,
 then launch the agent in its native interface. Claude and Codex run as separate

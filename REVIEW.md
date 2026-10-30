@@ -8,26 +8,15 @@ Work through one coherent boundary at a time and update those documents in place
 
 V0 centers on two Codex and two Claude subscription accounts running concurrently
 through Conduit's CLI and native agent interfaces, sharing one room and permitted
-knowledge. Account state stays separate. Native execution is the default, isolated
-execution is available explicitly, and configured/effective modes must be visible.
-Roles may require isolation; launch overrides cannot weaken that requirement.
-Isolated executions use declared network destinations, including explicit grants for
-local/private services; network reachability and provider-operation permissions remain distinct.
-Required isolation must never silently fall back to native execution. The
-[isolation rationale](DESIGN.md#why-both-modes-with-native-as-the-default) explains why.
-If removed access cannot be revoked live in an isolated execution, stop it pending
-explicit restart while retaining session/room identity; managed requests use current rules.
+knowledge. Account state stays separate; private native context belongs to sessions.
+Native execution is the default, isolated execution is available explicitly, and roles
+may require it. The [account/isolation contract](DESIGN.md#account-separation-and-execution-isolation)
+and [rationale](DESIGN.md#why-both-modes-with-native-as-the-default) cover the agreed guarantees.
 
-Roles provide execution settings, native skills, and limits; scopes select reusable
-connection definitions and resource/operation grants. Integrations prepare native
-configuration. Project scope defaults apply when selection is omitted; explicit
-selection replaces them, with an explicit add action to extend defaults. Rooms
-preserve append-only messages and independent read positions. Private native history
-and agent-maintained memory belong to each session, independently of role/account reuse;
-shared knowledge goes through scoped Conduit memory. YAML is the configuration format.
-Native runtimes own subscription authentication/refresh; Conduit selects account
-profiles and verifies identity. Concurrent authentication and private-state separation
-remain explicit adapter checks for the experiment.
+YAML authoring, explicit native-source selection, and project scope defaults are settled
+in the [configuration contract](DESIGN.md#configuration). Native runtimes own subscription
+authentication; Conduit selects accounts and verifies identity. Runtime-specific loading,
+credential concurrency, and private-state separation still need experiment evidence.
 
 ## Remaining behavioral review
 
@@ -37,7 +26,7 @@ settled definitions or adding speculative features.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Role, account, and resource binding** | Define handling of inherited native settings/MCP servers/plugins and BYOS selection/update behavior. Native enrollment/identity evidence, credential reuse with session-private state, exact storage layout, and configuration precedence need adapter validation, with unsupported capabilities reported. |
+| **1. Native skills/plugins** | Decide ownership of installation and updates for selected native skills/plugins. Source selection and scope boundaries are settled; native loading, account/state separation, and configuration precedence need adapter validation, with unsupported capabilities reported. |
 | **2. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
 | **3. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
 | **4. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |

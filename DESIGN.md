@@ -49,6 +49,15 @@ defaults requires an explicit add action. Apply role limits and exclusions to th
 result in every case. This keeps convenient project setup from silently retaining
 access the caller intended to replace. Exact authoring and CLI syntax remain open.
 
+A role explicitly selects the user-level native settings, skills, and plugins it
+reuses; do not automatically inherit the user's default agent profile. An existing
+setup may be selected once for convenience, preserving its native formats. This makes
+role composition explicit without requiring a replacement skill/plugin framework.
+Shared MCP connections, including definitions bundled with selected plugins, still
+participate in scope selection; selecting a source grants no additional access.
+Authentication and private history remain separately managed, and mandatory host or
+organization policies still apply. Adapters must validate native loading/precedence.
+
 ## Account separation and execution isolation
 
 Concurrent account separation is required in v0. Keep a role's reusable configuration,

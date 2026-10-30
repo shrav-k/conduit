@@ -2,8 +2,30 @@
 
 Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for vocabulary and expected behavior.
 This describes current boundaries; [REVIEW.md](REVIEW.md) contains unresolved choices.
-Intersession communication contracts are deferred there for redesign after reviewing
-the [Pi research](RESEARCH_PI.md).
+Conduits are the accepted common relationship model for resource access and session
+communication. Their detailed contracts are the next research priority in REVIEW.md,
+building on the [Pi investigation](RESEARCH_PI.md).
+
+## Conduits as the core interaction model
+
+A conduit is a typed, authorized relationship for accessing resources or exchanging
+information between sessions. This is the central organizing concept of the project,
+replacing the provisional access “attachment” term and extending beyond the former
+room model. Access and communication share a conceptual foundation; they need not
+share every operation, persistence rule or delivery guarantee.
+
+Pools collect domain resources; roles configure sessions; conduits establish permitted
+interactions; filters only narrow them. Connection definitions describe the service
+setup a conduit may use, while plugins implement supported protocols and resource
+contracts. A conduit is not synonymous with an MCP client, socket, frontend attachment,
+or active model turn. Common concepts do not require a single gateway or transport.
+
+Research must establish endpoint identity, addressing, interaction contracts, lifecycle,
+authority, observation and failure semantics before fixing conduit kinds or YAML fields.
+Distinguish authored declarations from runtime instances and observed status. The
+requirements for account separation, current managed-access checks, explicit session
+lifecycle and honest usage remain applicable. The common concept does not itself
+restore earlier room rules or authorize automatic wakeups.
 
 ## Ownership and extension boundaries
 
@@ -15,7 +37,7 @@ not a required collection of processes or crates.
 | Owner | Responsibility |
 | --- | --- |
 | Conduit runtime | Session supervision, execution loop, context construction, provider/tool dispatch, lifecycle, recovery and available observations, implemented in Rust. Models supply reasoning within that runtime. |
-| Conduit shared services | Roles/connections, logical identities, access attachments/filters, knowledge/checkpoints and managed resource access. Communication will be refined in the deferred review. |
+| Conduit shared services | Conduit relationships, roles/connections, logical identities, filters, knowledge/checkpoints and managed resource access. Interaction-specific communication contracts follow the research review. |
 | Provider/account adapter | Model request/response conversion, capabilities, supported authentication, account selection and usage evidence. |
 | External-agent adapter | Connect a separate runtime such as Claude Code/Codex, which retains its own loop and private native state. Report the lifecycle/access/telemetry capabilities actually supported. |
 | Resource or tracker provider | Source content and native operations; Linear issue fields, assignments, status, and workflow. |
@@ -24,12 +46,12 @@ not a required collection of processes or crates.
 
 Plugins may integrate models, runtimes, frontends, resources, trackers, and storage/search.
 A connection definition describes reusable local setup for a service/backend; it does
-not represent an already-open MCP client. Authorized attachments select connection
+not represent an already-open MCP client. Authorized conduits for resource access select connection
 definitions and grant resource operations; filters only narrow that access. Roles
 supply execution settings, native skills, and optional permission ceilings. A role
 does not need a second list of shared connections. Definition alone grants no access.
 
-Resolve selected attachments and filters against role limits for each session.
+Resolve selected conduits and filters against role limits for each session.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration where needed.
 Keep host-specific transport/configuration/authentication in the relevant adapter and
 report unsupported capabilities. Changing the model alone need not change registration.
@@ -177,7 +199,7 @@ while an explicit requirement preserves the role's boundary across launch interf
 
 Isolated execution defaults to declared network destinations: required model/login
 services, endpoints for selected connections, and extra destinations granted through
-attachments, constrained by filters, role limits and exclusions. Make runtime endpoint
+conduits, constrained by filters, role limits and exclusions. Make runtime endpoint
 requirements visible; selecting a runtime must not silently override a restriction. Package
 registries, research sites, and local/private services require explicit inclusion.
 An allowed destination does not authorize every operation or object at that service.
@@ -342,7 +364,8 @@ search backend.
 
 ## Access and sharing
 
-Attachments supply authorized resource/connection access and operation grants.
+Conduits supply authorized resource/connection access and operation grants according
+to their interaction contracts.
 Filters are narrowing-only: they may remove resources or operations from a target
 selection, but cannot introduce grants. A filter alone supplies no access. Declared
 role limits and explicit exclusions constrain effective access; missing role limits
@@ -350,15 +373,15 @@ add no grants. Permissions name operations per resource type, with convenience b
 expanding into visible grants. Permitted operations do not require an extra human
 confirmation merely because permissions exist.
 
-This separates the former scope object's grant and constraint responsibilities.
-“Attachment” is a working name; whether it becomes a conduit and how filters target
-and compose across attachments remain for review. Removing a constraint may expose
-an underlying existing grant again; it does not create a new grant.
+This separates grant and constraint responsibilities. How filters target and compose
+across conduits remains for review. Removing a constraint may expose an underlying
+existing grant again; it does not create a new grant. Resource access and session
+exchange share the conduit concept without granting one another's permissions implicitly.
 
 Resource selectors support IDs, named ownership contexts, metadata predicates, and
 path patterns where integrations support them. Pool membership also supports explicit
 references and label selectors; membership does not authorize access. Resource matching
-and authorized attachment/filter/role-limit changes apply live to subsequent managed
+and authorized conduit/filter/role-limit changes apply live to subsequent managed
 requests, with effective changes recorded and shown. They do not change model/account defaults or automatically inject context.
 
 If an access-rule change removes access that an active isolated execution cannot revoke live,
@@ -447,7 +470,7 @@ remains core. Each mode must state observed activity, enforced restrictions, and
 uncovered paths. Preventing bypass requires more than configuring MCP connections;
 isolating local processes does not replace provider authorization or MCP mediation.
 
-Conduit's session, ownership, attachment and filter semantics are application contracts.
+Conduit's session, ownership, conduit and filter semantics are application contracts.
 Bind requests to effective session identity/access; do not equate an MCP connection
 with a Conduit session. Protocol authorization does not supply Conduit's complete
 access policy.

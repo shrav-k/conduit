@@ -1,16 +1,18 @@
 # Collaborator review
 
-Updated: 2026-10-30. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) contain the current
-non-communication contracts. Intersession communication is reopened and consolidated
-here; prior room choices below are material to reconsider, not implementation requirements.
+Updated: 2026-10-30. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) contain accepted
+contracts. A conduit is now the common relationship for both resource access and
+session communication, and the project's central concept. Its specific interaction
+contracts are the next deep research priority; previous room choices remain unselected.
 
 ## Review order
 
-1. Refine the concepts and relationships below, using the Pi investigation as evidence.
-   Review illustrative YAML alongside those concepts before selecting implementation details.
-2. Design what it means to establish a “conduit,” without assuming the former room model.
+1. Research communication and resource-access strategies against the conduit model,
+   using the brief below. Produce a comparison and proposed contract boundaries.
+2. Review the recommended interaction kinds and YAML examples together, including how
+   conduits connect pools/resources and sessions through filters and role limits.
 3. Resolve runtime depth/account integration, finalize initial YAML contracts, then design
-   the experiment before implementation.
+   the experiment before implementation. Do not freeze a transport or library first.
 
 ## Concepts and configuration review
 
@@ -27,9 +29,12 @@ new kinds. Pools support both explicit resource references and label selectors. 
 prior project access-default behavior now applies to pools.
 
 **Accepted:** filters only narrow selections/grants; they never grant access. This
-separates the former scope object's responsibilities: an authorized attachment supplies
-access, filters constrain it, and role limits remain the ceiling. “Attachment” remains
-a working term; its final name, representation and composition are not yet selected.
+separates grant and constraint responsibilities: an authorized conduit supplies access,
+filters constrain it, and role limits remain the ceiling.
+
+**Accepted:** “conduit” covers resource access and session communication. This interaction
+strategy is the project's core. It replaces the provisional access “attachment” term;
+its exact kinds, endpoints, representation and guarantees require deep research.
 
 Review these relationships next:
 
@@ -37,13 +42,12 @@ Review these relationships next:
   membership separately. Membership, ownership, access and activation
   remain distinct. Resolve how domain resources such as skills compose with role selections
   through general resource contracts, rather than special fields for each use case.
-- Define where filters attach and how multiple filters/attachments compose. Keep
+- Define where filters attach and how multiple filters/conduits compose. Keep
   pool membership selectors distinct from access constraints; filters cannot add grants.
   Preserve visible effective access and current-rule checks as the schema evolves.
-- A conduit could represent a typed relationship with explicit endpoints and supported
-  operations/exchanges. Discuss whether resource access and intersession communication use
-  this same concept or distinct relationships with common metadata. Do not assume one
-  transport, topology, delivery guarantee or automatic context injection.
+- Determine the common conduit contract and the interaction-specific extensions.
+  Establish endpoint/addressing, lifecycle, authority and observation semantics without
+  assuming one transport, topology, delivery guarantee or automatic context injection.
 
 Use pi-ai for provider/capability contracts, pi-mcp for protocol/transport separation,
 pi-telemetry for explicit operation attribution, and Chord for typed references, caller-aware
@@ -105,49 +109,88 @@ usage contracts remain applicable. Runtime-specific plugins need compatibility c
 or ports. The research's implementation details are proposals, not a new decision ledger
 or accepted requirement to reproduce every Pi feature.
 
-## Deferred communication redesign
+## Conduit interaction research
 
-**Status: reopened, after review of the Pi findings.** This is the sole review home for room-specific
-and intersession communication choices. The user wants a more extensible way to open
-lines of communication between sessions and explore a “conduit” as the abstraction.
-The term is provisional: this is a semantic redesign, not a rename of the room API.
-No topology, communication record kind, participant binding, tracker requirement, or
-communication acceptance criterion below is currently fixed.
+**Direction established; detailed research is next.** This brief defines what the
+investigation must answer. It is not a completed research report or a selected set of
+conduit types. Access and communication are one design problem with different interaction
+contracts, rather than independent features to bolt together after implementation.
 
-### Material carried forward for reconsideration
+### Questions and comparison criteria
 
-| Area | Previous approach and reasoning to revisit |
+| Area | What the research must resolve |
 | --- | --- |
-| Core abstraction | A shared room/message board modeled after group chat, with durable append-only history. Messages were Conduit records with common identity/scope/provenance metadata, immutable after acceptance, with corrections as later posts to avoid shared-document merge conflicts. |
-| Memory boundary | No editable room-owned working-memory document. Sessions kept their own working context; scoped knowledge/checkpoints could be linked or quoted. This was motivated by concurrent editing and ownership concerns. |
-| Participants and attribution | The Conduit session identified the participant across resumed executions; fresh/fork created new participants. Each post identified its producing execution. Restart/account/frontend changes preserved participant identity. |
-| History and catch-up | Shared history, optional participant-local copies, and one independent read position per session per room. One reader did not consume another's unread history. Late joiners/restarted sessions could recover retained messages, with gaps reported. |
-| Replies and addressing | One timeline with reply-to links and optional recipient-session hints. No separate direct-message inboxes or thread cursors; the same-room approach was intended to cover small/private conversations too. Hints did not alter visibility or permissions. |
-| Access and membership | Effective scopes governed discovery, joining, reading, and posting. Joining was explicit, without a second invitation gate, and enabled participation/notices without granting extra access. Merely acquiring scope access did not join a room or merge participants' memory permissions. |
-| Attention and execution | A brief unread notice on the next normal turn, content retrieved on demand, and no automatic wake/model turn. Paused/closed sessions needed explicit resume; role-specific wake hooks were a possible later capability. |
-| Delivery and context | Queued content, retries, and replays were to recheck current recipient access. Whole-record checks and scoped provenance could omit inaccessible content, without erasing context already received. Message acknowledgement, retry identity, ordering, and cursor advancement remained unresolved. |
-| Tracker relationship | Independent room identity; tracker-free initial testing, followed eventually by required tracker linkage. The transition milestone/cardinality were unresolved. Provider-native tracking was preferred, and a post did not automatically become an external issue comment. |
-| Primary tracker proposal | One primary tracker item plus related references was proposed immediately before this deferral. It was not accepted. Do not treat it as a constraint on the new model. |
-| Transport and MCP | Local communication first, with room for remote transport later. Candidate MCP tools covered posts/reads, resources exposed history, and notifications signaled unread content. Protocol primitives alone did not establish application-level durability or delivery guarantees. These mappings and sequencing are reopened. |
-| Original experiment | Four accounts discussing work through one room, independent catch-up/read positions, visible message provenance and delivery gaps, plus scope-aware context exchange. These communication checks await redesign; the four-account and memory-access checks remain active. |
+| Interaction patterns | Compare capability/resource invocation, query/read, request/reply, asynchronous messages, publish/subscribe, retained streams, state observation and handoff. Identify a small common contract and where distinct semantics are necessary. This is a candidate list, not a closed taxonomy. |
+| Endpoints and topology | What may be addressed: session, resource, pool selection, service or other endpoint? Compare direct and routed links, one-to-one and one-to-many exchange, discovery and binding. Keep role presets separate from running participants. |
+| Contract and transport | Which semantics belong to Conduit, which map to existing protocols, and which require adapters? Preserve provider-native operations and distinguish configured relationships from sockets/processes. Compare local-first operation with remote extension and Rust integration. |
+| Authority and filtering | Who may establish or accept a relationship and grant operations? How do endpoint authority, role ceilings and narrowing filters compose? Cover current-rule checks and revocation without presupposing comprehensive v0 sandboxing. |
+| Delivery and failures | Ordering scope, correlation, durable acceptance, acknowledgement meaning, replay/cursors, duplicates, idempotency and unknown outcomes. Compare offline endpoints, storage failures, retries, reconnect and cancellation; separate delivery from execution and completion. |
+| State and context | Retained exchange versus current state snapshots, payloads versus references/artifacts, query versus unsolicited delivery, and optional context inclusion. Preserve provenance and private working context; observing state does not automatically require shared editable memory. |
+| Lifecycle and attention | Authored declaration versus active instance, opening/closing, pause/resume, timeouts, expiry, backpressure and participant turnover. Distinguish a message notification from permission to start a model turn. |
+| Extensibility and observability | Common identity/schema/version rules, interaction-specific extensions, capability negotiation and unsupported behavior. Carry operation/execution/account attribution across boundaries without conflating traces with retained outcomes. |
+| Configuration and usability | Demonstrate pool references/selectors, conduit endpoints, grants/filters and observed status through YAML. Compare direct configuration with reusable presets; make resolution and omissions inspectable. |
 
-### Questions for the future deep review
+### Reference families to investigate
 
-Start with what a line of communication is for, how it is opened/closed, and what
-sessions need to exchange. Compare addressing and topology, directionality, message
-or event/request semantics, lifecycle, extensibility, and compatibility with native
-agent interfaces. Then choose identity/authority, persistence, attention, delivery
-assurances, and relationships to work, pools, trackers, and shared knowledge.
-Do not constrain that analysis to group chat, a single log, or the previous membership model.
+Use primary documentation, specifications, source and focused tests. Pin inspected
+versions and distinguish source evidence, executed checks and proposed adaptations.
+These are starting points to compare, not dependencies or an exhaustive source list.
 
-Use the local `agentwatch` reference for concrete communication behavior and the
-[Pi communication research](RESEARCH_PI.md#communication-research-for-the-upcoming-redesign)
-for native input timing, pi-messenger delivery, and pi-chat supervision. Separate
-addressing, authorization, retained exchange, attention, and execution when comparing
-options; this is a discussion frame, not a selected object model.
-`jxp-skills` and provider-native tracking remain
-useful coordination references. Bring the conclusions back into SPEC.md and DESIGN.md
-only after review, replacing this provisional material rather than creating a decision ledger.
+| Family | Starting references | Investigative purpose |
+| --- | --- | --- |
+| Typed object/capability interaction | Pi Chord and its local source; capability-oriented RPC designs | Caller-aware interfaces, typed references, observable state, lifecycle and local/remote consistency. |
+| Existing model/agent protocols | [MCP](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture), [A2A specification](https://a2a-protocol.org/v1.0.1/specification/) | Resource/tool interaction, agent discovery, work exchanges, status and artifacts; establish where protocol guarantees end. |
+| Messaging and retained exchange | [NATS/JetStream](https://docs.nats.io/concepts/jetstream), [Zenoh specification](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html); compare topic and queue designs as needed | Routing, query versus publication, independent consumers, persistence, replay, acknowledgements and backpressure. |
+| RPC and streams | [gRPC concepts](https://grpc.io/docs/what-is-grpc/core-concepts/), relevant HTTP/JSON-RPC streaming contracts | Request boundaries, cancellation, deadlines, streaming and transport limitations. |
+| Declarative connectivity | Kubernetes objects/selectors/versioning and Gateway API references above | References, attachment/route concepts, grants, policy placement, extension points and observable resolution. |
+| Execution ownership and recovery | Pi Durable, actor/mailbox/supervision designs, durable-execution systems | Work ownership, scheduling boundaries, cancellation propagation, recovery and why message receipt differs from completed work. |
+| Practical agent coordination | Local agentwatch, pstack-pi, jxp-skills; previously inspected pi-messenger/pi-chat | Actual multi-session/account workflows, retained history, attention, failures and provider-native tracking. |
+
+### Scenarios to use throughout
+
+Compare approaches against the same concrete cases:
+
+1. Four sessions across two Claude and two Codex/OpenAI accounts use one domain pool
+   with different allowed operations and narrowing filters, retaining private state.
+2. One session requests a review from another and can distinguish acceptance, progress,
+   result, cancellation and an unknown outcome after interruption.
+3. A session exposes a finding or artifact to several permitted recipients, including
+   a recipient that reconnects later. Determine delivery and context inclusion separately.
+4. A frontend or session observes progress without receiving every retained payload or
+   gaining permission to execute work; a slow observer cannot create unbounded buffering.
+5. Access changes while work is queued or reconnecting; retrying a provider write must
+   respect the existing uncertain-outcome contract.
+6. Work continues after a model/account/frontend change with permitted context and
+   provenance, without confusing a role preset, session, execution and provider identity.
+7. A tracker integration associates exchanges with provider-native work records without
+   requiring every interaction to be a room or adopting an internal ticket engine.
+
+### Required research output
+
+Produce one focused report with a comparison matrix, concrete flow/failure examples,
+and recommendations. Include candidate conduit contracts and illustrative YAML, a small
+v0 set versus later extensions, and what to reuse, adapt or implement in Rust. Explain
+which designs were rejected and why only where it clarifies a live tradeoff. Return a
+short list of consequential rulings rather than a new exhaustive decision ledger.
+
+No backend, broker, transport, topology, room model or automatic-wake policy is selected
+by this direction. Existing account/access, explicit session lifecycle, retention and
+safe-retry contracts remain constraints. Configuration and contract design precede code.
+
+### Prior room ideas as comparison material
+
+Earlier room discussions are hypotheses for comparison, not current requirements:
+append-only group history with per-session cursors; session identity across executions;
+reply links and recipient hints; scope-authorized participation; passive unread notices
+with possible later wake hooks; tracker linkage; and local-first transport. The former
+model avoided a shared editable room scratchpad. Research should explain which ideas
+fit particular conduit contracts and which should be replaced. None establishes the
+new model's topology, identity, membership, tracker cardinality or delivery guarantees.
+
+The [Pi communication investigation](RESEARCH_PI.md#communication-research-for-the-upcoming-redesign)
+provides initial evidence, including input timing and mailbox/supervision behavior.
+Use Git history for the full earlier discussion; keep accepted results in SPEC.md and
+DESIGN.md as the review progresses.
 
 ## After the review: first YAML design
 
@@ -160,11 +203,11 @@ Discuss concrete examples together before freezing a schema or implementing:
   experiment.
 - Specify managed-worktree creation settings: base revision, branch selection, directory
   placement, and treatment of any existing local changes.
-- Express roles, account references, shared connection definitions, attachments/filters, pools,
+- Express roles, account references, shared connection definitions, conduits/filters, pools,
   and execution policy. Keep runtime, frontend, model and account selections distinct.
   Show resolved launch settings and adapter output; classify supported skill/plugin
   resources without copying every Pi setting. Keep credentials out of shareable
-  configuration. Add communication objects only after redesign.
+  configuration. Derive interaction-specific objects from the research review.
 - Consider explicitly writing execution mode in generated role files; decide whether
   handwritten files may omit it and use the native default.
 - Check ordinary use and conflicting/incomplete configurations. Preserve native tooling;
@@ -194,7 +237,7 @@ No account registration, implementation start or live experiment is implied by t
 
 Comprehensive MCP operation inspection/enforcement, advanced memory-sharing delivery,
 automatic classification/extraction, automatic expiry, exact cost accounting, plugin ABI, and crate
-layout remain staged. Communication delivery order is reopened above. A custom terminal
+layout remain staged. Conduit interaction kinds and their delivery order follow research. A custom terminal
 is first; other frontends and external native runtime integrations remain goals.
 General durable workflows, recoverable script execution and comprehensive Pi plugin
 compatibility are not prerequisites for the first Conduit-owned runtime.

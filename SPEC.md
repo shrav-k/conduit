@@ -4,13 +4,20 @@ Updated: 2026-10-30 · Current design for review · Implementation has not start
 
 ## Purpose and principles
 
-Conduit lets users work with different models, agents, accounts, and interfaces while
-sharing relevant knowledge and coordinating work. Its first acceptance scenario is
-four simultaneous sessions using two distinct Codex subscription accounts and two
-distinct Claude subscription accounts on one machine, with private session state and
-scoped access to shared knowledge. Communication between sessions remains a core goal;
-its model and acceptance criteria are [deferred for redesign](REVIEW.md#deferred-communication-redesign).
+Conduit's core is a common interaction model: **conduits are typed, authorized
+relationships for both resource access and communication between sessions**. Pools,
+filters, roles, memory and runtime integrations support that model. Establishing its
+contracts and their YAML representation takes priority over implementation.
 
+The first acceptance scenario uses four simultaneous sessions across two distinct
+Codex subscription accounts and two distinct Claude subscription accounts on one
+machine, with private state and selected shared knowledge. Resource-access and
+communication behavior will be specified together through the
+[conduit research and review](REVIEW.md#conduit-interaction-research).
+
+- **Conduits first:** resource access and session exchange use the same relationship
+  concept. Specific interaction kinds and guarantees remain open; the model must support
+  extensible contracts without assuming a room, one transport, or one delivery policy.
 - **Runtime ownership:** Conduit owns its runtime in Rust, including execution and
   private working context, alongside portable memory and continuity. Models supply
   reasoning; frontends present interaction. External agent adapters can separately
@@ -36,15 +43,16 @@ These names have distinct meanings throughout the specification.
 
 | Concept | Definition | Example |
 | --- | --- | --- |
-| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on access supplied through attachments. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
-| **Session** | One continuing Conduit conversation, configured from a role with selected access attachments and filters, with at most one active primary agent. | A review conversation that later resumes using another account. |
+| **Role** | A reusable local configuration selecting an agent/runtime, model, account reference, and native skills. It can declare permission limits on access supplied through conduits. Model/account settings are defaults with explicit session overrides. | A reviewer using Codex with selected skills and read-only tool limits. |
+| **Session** | One continuing Conduit conversation, configured from a role with selected conduits and filters, with at most one active primary agent. | A review conversation that later resumes using another account. |
 | **Resource** | An addressable object exposed through a defined contract. Resource kinds are extensible and can expose data, behavior, or both. This is broader than the MCP protocol's specific resource primitive. | A repository, knowledge collection, tool, or skill; these examples are not an exhaustive type list. |
 | **Memory** | Durable knowledge and portable checkpoints retained for use across sessions, models, and accounts. Memory is exposed as resources and can use replaceable storage/search backends. | A saved project convention or task checkpoint. |
 | **Pool** | A named, extensible collection of resources relevant to interacting with a domain. It replaces Conduit's former project grouping and can provide convenient access defaults. Membership alone grants no access. | An Euphony pool collecting the resources relevant to that domain across different providers. |
-| **Filter** | A reusable constraint that narrows an existing selection or grant. It can restrict resources or operations but cannot grant access. Its target and composition rules belong to the attachment contract. | Restrict access to frontend-related resources and read operations. |
-| **Attachment** *(working term)* | An authorized relationship supplying a session with selected resource/connection access and permitted operations, constrained by filters and role limits. Its final name and schema remain open. | Attach selected access to the Euphony pool for a review session. |
+| **Filter** | A reusable constraint that narrows an existing selection or grant. It can restrict resources or operations but cannot grant access. Its target and composition rules belong to the conduit contract. | Restrict access to frontend-related resources and read operations. |
+| **Conduit** | A typed, authorized relationship between endpoints for resource access, communication, or both as its contract permits. Filters narrow its permissions within role limits. The common concept is fixed; endpoint forms, interaction kinds, lifecycle and delivery guarantees remain for research. | A session accessing selected pool resources, or exchanging information with another session. |
 
-A role defines execution configuration and limits. Attachments supply authorized access;
+A role defines execution configuration and limits. Conduits supply authorized access
+and exchange relationships;
 filters only narrow it. A filter grants nothing on its own. This replaces the former
 scope object's combination of selection and grants. Connection definitions describe
 setup without granting access. A pool organizes resources; memory is one kind of retained information
@@ -53,15 +61,17 @@ selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
 does not establish a dedicated core resource kind or pool field. Membership, access,
 and activation/context loading are separate concerns; activation rules remain open.
-Communication concepts will be defined after the deferred review; they are not implicit in these resource or session definitions.
+Conduit interaction specifics are the next research priority. The shared concept does
+not require every kind to expose identical operations or guarantees.
 
 ```mermaid
 flowchart LR
     Role -->|configures and limits| Session
-    Session -->|selects| Attachment
-    Filter -->|narrows| Attachment
-    Attachment -->|grants operations on| Resource
-    Attachment -->|selects| Connection
+    Session -->|uses| Conduit
+    Filter -->|narrows| Conduit
+    Conduit -->|resource access| Resource
+    Conduit <-->|session exchange| Peer[Other sessions]
+    Conduit -->|uses setup| Connection
     Connection -->|exposes| Resource
     Pool -->|groups| Resource
     Memory -->|exposed as| Resource
@@ -84,7 +94,7 @@ flowchart LR
 A pool groups resources for an application domain, including its repository and knowledge.
 A Claude implementation role and a Codex review role select different skills and permission
 limits. Each starts a separate session with access appropriate to its work.
-Their attachments can reference the same connections with different grants and filters;
+Their conduits can reference the same connections with different grants and filters;
 Conduit prepares its runtime clients, or an external-agent adapter prepares native setup.
 
 Claude saves a finding to shared memory. Codex can retrieve it if its effective access permits
@@ -119,7 +129,7 @@ requirement may use either mode. The isolation backend remains open;
 
 Isolated execution allows declared network destinations by default: required runtime
 model/login services, selected connection endpoints, and extra destinations explicitly
-granted through attachments, within filters, role limits and exclusions. Local/private
+granted through conduits, within filters, role limits and exclusions. Local/private
 services need explicit access. Network reachability does not grant provider-operation permissions.
 
 Each session has its own effective access and authenticated access to shared memory.
@@ -133,7 +143,7 @@ is shared through scoped Conduit memory; credential reuse remains separate.
 At pool launch, omitted access selection uses the pool's configured defaults.
 Explicit access selection replaces those defaults; an explicit add action can extend
 them. Filters, role limits and exclusions still constrain the resulting access.
-The attachment/default configuration schema remains open.
+The conduit/default configuration schema remains open.
 
 Use YAML for Conduit's local configuration, with versioned, named objects, explicit
 references, and schema validation. Kubernetes object structure, extensibility and
@@ -148,7 +158,7 @@ format. How pool resources are activated alongside role selections remains open.
 Roles explicitly select reusable user-level native
 settings, skills, and plugins; the default agent profile is not automatically inherited.
 An existing setup can be selected once, preserving native formats. Shared MCP
-connections remain selected through access attachments; authentication/history are
+connections remain selected through conduits; authentication/history are
 separate, and mandatory host/organization policies still apply. Skills/plugins may be runtime-specific.
 Conduit may supply small defaults explaining its capabilities; a custom skill format
 or automatic cross-runtime conversion is not required. Use existing ecosystem tooling
@@ -230,17 +240,17 @@ unresolved outcomes remain explicitly unknown.
 
 ### Control access and explain coverage
 
-Select authorized access attachments per session. Apply their narrowing filters,
+Select authorized conduits per session. Apply their narrowing filters,
 role limits and explicit exclusions; filters cannot create or expand a grant. The
 same configured connection can serve sessions with different effective access.
-Attachment, filter and role-limit changes apply to subsequent Conduit-managed requests
-and must be visible. Detailed attachment/filter composition remains for review.
+Conduit, filter and role-limit changes apply to subsequent Conduit-managed requests
+and must be visible. Detailed conduit/filter composition remains for review.
 If a running isolated execution cannot revoke removed access live, stop it and require
 an explicit restart under current rules. Preserve the logical session identity.
 
 Proceed with usable capabilities while reporting missing or unsupported access.
 An unavailable restriction cannot silently become broader access. V0 guarantees must
-be limited to the paths actually controlled; configuring an attachment or filter does
+be limited to the paths actually controlled; configuring a conduit or filter does
 not establish agent-wide isolation. The [design](DESIGN.md#access-and-sharing) defines the access
 contract and its staged implementation.
 
@@ -275,14 +285,16 @@ open. Exact test operations and recovery scenarios will be selected during the
 
 ## Delivery scope
 
-The current design prioritizes a Conduit-owned runtime sufficient for memory
-retrieval/writes, simultaneous account separation, role/connection configuration,
-compatible imported skills, and basic managed access. Pi/Durable feature parity is not
-a v0 requirement; the minimal runtime and frontend adaptation are the next review choices.
+The core priority is defining conduits for resource access and communication, including
+how their contracts compose with pools, filters, roles and sessions in YAML. Deep
+comparative research precedes selecting interaction kinds, transports or implementation.
+A Conduit-owned runtime, shared memory, simultaneous account separation, compatible
+imported skills and managed access support that core. Pi/Durable feature parity is not
+a v0 requirement; runtime depth follows the interaction and configuration review.
 Native and isolated modes are part of the design; exact isolation policies, compatibility
 coverage, and their acceptance checks remain to be selected.
 
-Communication requirements and their delivery order are consolidated in REVIEW.md.
+The interaction research agenda and delivery choices are consolidated in REVIEW.md.
 Comprehensive call interception and automated memory extraction/classification are later work.
 Advanced sharing semantics guide compatible implementations but do not require the
 whole feature set in v0. Storage engines, wire schemas, YAML field/version conventions

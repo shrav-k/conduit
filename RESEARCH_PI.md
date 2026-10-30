@@ -558,9 +558,11 @@ must be evaluated independently; a remote process protocol alone proves neither.
 
 ## Communication research for the upcoming redesign
 
-Communication remains reopened in REVIEW.md. This research does not restore rooms or
-choose a replacement topology. Separate addressing, authorization, retained exchange,
-attention, and execution when evaluating a “conduit.”
+The user has established conduits as the common relationship for resource access and
+session communication. The [next research brief](REVIEW.md#conduit-interaction-research)
+will refine their specific contracts. This investigation does not restore rooms or
+choose a topology. Separate addressing, authorization, retained exchange, attention
+and execution when comparing candidate conduit kinds.
 
 Pi's queued input, steering, follow-up and next-turn delivery show useful attention
 boundaries. Its process-local extension bus is not interprocess transport. Durable

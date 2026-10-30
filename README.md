@@ -1,14 +1,16 @@
 # Conduit
 
-Conduit connects models and agents through shared memory, scoped resource access,
-and communication between sessions. Pools organize extensible collections of resources
-for a domain. Conduit preserves native tools and skills while adding continuity and,
-progressively, observation and enforcement.
+Conduit is built around **conduits**: typed, authorized relationships for both resource
+access and communication between sessions. This interaction model is the project's core.
+Pools organize extensible collections of resources; filters narrow what a conduit permits;
+roles configure the sessions that use them. Shared memory, native tools and skills,
+continuity and observation operate through this common model.
 
 Conduit owns its runtime in Rust. The first frontend is a custom Conduit terminal
 inspired by Pi, with selective component reuse where useful. Pi's agent loop and
 Pi Durable are implementation references, not runtime dependencies.
-The communication model is being reconsidered in [REVIEW.md](REVIEW.md#deferred-communication-redesign).
+The common concept is established. Specific interaction contracts and YAML relationships
+are the next [research and review priority](REVIEW.md#conduit-interaction-research).
 
 **Status:** current specification for collaborator review; no implementation yet.
 The core will be native Rust, initially for personal use with private local

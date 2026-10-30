@@ -1,96 +1,88 @@
 # Collaborator review
 
-Updated: 2026-10-30. Read [SPEC.md](SPEC.md) for the current product definition and
-[DESIGN.md](DESIGN.md) for contracts. This file contains the remaining choices, not
-another decision ledger. Recommendations below are proposals.
+Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the product; [DESIGN.md](DESIGN.md)
+records the contracts and their rationale. This agenda contains unresolved choices.
+Work through one coherent boundary at a time and update those documents in place.
 
-## Review sequence
+## Agreed starting point
 
-### 1. Confirm the concept model
+V0 centers on two Codex and two Claude subscription accounts running concurrently
+through Conduit's CLI and native agent interfaces, sharing one room and permitted
+knowledge. Account state stays separate. Native execution is the default, isolated
+execution is available explicitly, and configured/effective modes must be visible.
+Required isolation must never silently fall back to native execution. The
+[isolation rationale](DESIGN.md#why-both-modes-with-native-as-the-default) explains why.
 
-Check whether the definitions make an actual workflow easy to explain: a role
-configures a session; the session selects scopes; scopes grant operations on resources;
-a project groups related resources; memory retains knowledge; rooms carry messages.
+Roles provide execution settings, native skills, and limits; scopes select reusable
+connection definitions and resource/operation grants. Integrations prepare native
+configuration. Rooms preserve append-only messages and independent read positions;
+agents retain their own working context. YAML is the configuration format.
 
-Role limits and scope grants serve different purposes. Memory, project, and resource
-are related but not interchangeable. Working context means information an agent is
-using; an owning context means a record's task/project/personal ownership anchor.
-Raise a concrete example if any distinction should change rather than creating new
-names for the same responsibility.
+## Remaining behavioral review
 
-### 2. Bound the first end-to-end workflow
+These five groups bound the decisions needed for the first workflow. The existing
+contracts remain the starting point; resolve concrete gaps rather than reopening
+settled definitions or adding speculative features.
 
-Use two Codex and two Claude subscription accounts concurrently on the same machine,
-one project/repository, one room, and useful shared knowledge. Exercise different
-session scopes, separate private native state, account restart/logout independence,
-and four-way communication. Then demonstrate checkpoint-based continuation with
-visible gaps if capture fails.
-
-The [first interaction surface](SPEC.md#configure-and-reuse-roles) is settled:
-Conduit's CLI launches native agent interfaces. Resolve account separation and sandbox
-guarantees first, then launch configuration and the minimal memory backend. Choose memory
-read/write/search operations and their returned evidence before selecting a graph, vector engine,
-ontology, or broad plugin schema. Pi and own chat follow the initial workflow.
-
-The immediate ruling is the [execution-isolation contract](DESIGN.md#account-separation-and-execution-isolation):
-whether v0 offers native/profile-separated and OS-isolated modes, which is the default,
-and what roles may require. Account separation is mandatory in either mode. Decide
-local files/processes/services first, then network egress and provider-operation limits.
-Choose a backend only after defining guarantees and required native capabilities.
-Also resolve private state when one account serves differently scoped sessions, auth
-refresh ownership, and scope changes that need an execution restart.
-
-### 3. Bind collaboration to resources
-
-Resolve these connected questions for that workflow:
-
-| Boundary | What remains to decide |
+| Group | Decisions still needed |
 | --- | --- |
-| Role and connection setup | Configuration precedence, credential references/concurrent logins, skill import/update behavior, and capability checks when switching runtimes. |
-| Managed access | Which operations/selectors/sharing modes v0 supplies; what chosen integrations can actually restrict; initial observation coverage and MCP routing. |
-| Room and work | Membership and visibility, addressing, relation to task/workspace/issue, and the transition to mandatory tracker linkage. Start without a tracker for room testing; Linear remains the first integration. |
-| Memory retrieval | Search/read/save contract, relevance and context budgets, source freshness, and handling partial results. Available content must remain distinct from automatically loaded context. |
+| **1. Execution policy** | Can roles require isolation, and which launch overrides are allowed? What files, local services, and network destinations may isolated executions reach? Which native capabilities are supported initially? Decide what scope changes require pausing/restarting an execution, while managed requests continue to use current rules. |
+| **2. Role, account, and resource binding** | Project scope defaults and launch precedence; enrollment/identity verification, credential-refresh ownership, and private state when one account serves differently scoped sessions. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Exact credential/state layout needs adapter validation. |
+| **3. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
+| **4. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
+| **5. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |
 
-Shared connection selection is settled in the [integration contract](DESIGN.md#ownership-and-extension-boundaries):
-scopes select reusable connections and grants, roles set limits, and runtime integrations
-prepare native setup. Project defaults and launch-override precedence remain open.
+Keep local isolation, network access, provider-operation permissions, and Conduit
+record access distinct. A useful first implementation can have different coverage
+at each boundary, provided that coverage is explicit and required restrictions hold.
 
-YAML and [versioned, named objects](DESIGN.md#configuration) are settled. Choose the
-Conduit schema-version convention, fields, file layout, and precedence/merge rules.
+The behavioral review is complete when each group supplies a concrete v0 contract
+or an explicit deferral compatible with the four-account scenario. Unverified adapter
+behavior becomes a named experiment check, not an assumed guarantee. Detailed wire
+schemas, storage engines, and every possible failure mode need not be decided here.
 
-Reusable connection definitions do not require shared live MCP clients. Review the
-[native registration findings](DESIGN.md#mcp-and-native-compatibility), then choose
-per-launch configuration and authentication handling for concurrent Claude/Codex roles.
-Native configuration must account for inherited and plugin-provided servers; a launch
-override alone does not establish an exclusive server list or agent-wide enforcement.
+## Next: first YAML design
 
-Preserve native provider operations. The shared layer should not require an internal
-ticket engine, replacement skill language, or generic wrapper around every provider tool.
+After the behavioral review, discuss concrete examples together before freezing a
+schema or writing implementation code:
 
-### 4. Agree on acceptance and recovery
+- Choose the configuration schema-version convention, object shapes, names/references,
+  file layout, validation, and merge/override rules. Keep configuration versions distinct
+  from MCP protocol and plugin versions.
+- Express the four roles, account references, shared connection definitions, scopes,
+  project, and execution policy. Show the resolved launch settings and native adapter
+  output so precedence is reviewable. Keep credentials out of shareable configuration.
+- Make execution mode explicit in generated role files as a proposed authoring rule;
+  decide whether handwritten files may omit it and use the native default.
+- Check both ordinary use and a few conflicting/incomplete configurations. Do not
+  require Kubernetes machinery, a custom skills language, or an internal ticket engine.
 
-Choose the acceptance cases from the specification that belong in the first release.
-Set room read-position initialization/advancement, message ordering and retry identity,
-acknowledgement meaning, restart recovery, and retention. Resolve workspace concurrent
-editing and cleanup. Specify how any selected tracker exchange works; a room post
-must not silently become an external comment.
+## Then: initial experiment design
 
-Define enough usage, delivery, and context evidence to explain the demonstration.
-Verify host/version support with the chosen adapters rather than claiming universal
-coverage. These are design and validation tasks; implementation begins after the
-workflow and its required contracts are agreed.
+Review the experiment in detail after the first YAML examples. Select supported host
+platform/runtime versions, account enrollment, the minimal room/memory backend, and
+an isolation backend to evaluate. These are choices for the experiment, not universal
+plugin requirements.
 
-## Keep later work out of the critical path
+Define setup, expected observations, failure criteria, restart/cleanup, and the order
+of trials. Cover four simultaneous identities, room catch-up, permitted/shared and
+private knowledge, independent account lifecycle, visible execution modes, and honest
+usage coverage. Specify isolated-mode negative checks and compatibility gaps. Decide
+which checks gate the first usable version; distinguish a native-mode demonstration
+from evidence that isolation works. Checkpoint handoff remains a separate scenario.
 
-Remote rooms, role-specific wake hooks, comprehensive MCP operation enforcement,
-advanced sharing delivery, and automatic classification/extraction stay staged.
-Their principles remain in the specification/design. V0 sandbox guarantees and backend
-validation are now on the critical path; full event schemas, exact costs, and plugin
-ABI details remain later decisions.
+Implementation follows agreement on the behavioral contracts, YAML examples, and
+experiment plan. No account registration or live agent experiment is implied by this
+documentation review.
 
-## Editing the specification
+## Deferred scope
 
-Resolve one coherent boundary at a time. Edit the relevant contract in place and
-remove answered questions here. Ask before changing an ambiguous substantive
-requirement. Use Git history for previous versions; do not recreate a numbered
-chronology or duplicate the specification in a separate decision register.
+Remote rooms, role-specific wake hooks, comprehensive MCP operation inspection and
+enforcement, advanced sharing delivery, and automatic classification/extraction stay
+staged. Pi and Conduit's own chat follow the initial native-interface workflow. Exact
+cost accounting, plugin ABI, crate layout, and stronger isolation backends can follow
+the evidence from the initial experiment.
+
+Keep accepted reasoning beside its contract in DESIGN.md. Remove resolved questions
+from this agenda and use Git history for previous versions; do not recreate a separate
+decision chronology.

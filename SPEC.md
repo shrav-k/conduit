@@ -18,9 +18,9 @@ distinct Claude subscription accounts, collaborating in one room on one machine.
 - **Explicit access:** select resources and operations for each session within role
   limits. Making information available does not automatically load it into a model.
 - **Staged control:** design for intercepting outgoing MCP calls while preserving
-  native interfaces. Account separation is required in v0. Select its sandbox modes
-  and guarantees before implementation; comprehensive inspection and enforcement of
-  individual upstream operations can follow later.
+  native interfaces. V0 requires account separation and offers native execution by
+  default, with isolated execution as an explicit option. Comprehensive inspection
+  and enforcement of individual upstream operations can follow later.
 
 ## Core concepts
 
@@ -91,7 +91,11 @@ accounts. Login, refresh, logout, configuration, and private native history for 
 account must not switch or overwrite another's state. Record each execution's actual
 settings and session overrides; do not silently substitute an account or API billing.
 Resource credentials remain separate from the model account. Account separation
-alone does not establish OS isolation; the supported sandbox guarantees remain under review.
+alone does not establish OS isolation. Native execution is the v0 default; isolated
+execution adds a boundary around the runtime and its children. Show each role's
+configured mode and show/record each execution's effective mode and coverage. Never
+silently downgrade a requested isolation guarantee. Backend, network policy, and
+role-required minima remain open; [the design explains the rationale](DESIGN.md#why-both-modes-with-native-as-the-default).
 
 Each session has its own effective scopes and authenticated access to shared memory
 and rooms. Sharing a room or model account does not merge scopes or grant access to
@@ -165,7 +169,8 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 | --- | --- |
 | **Four accounts collaborate** | Conduit's CLI launches two Codex and two Claude sessions simultaneously, each using a distinct subscription account, in their native interfaces. All four discuss work in one room; permitted knowledge is retrievable with independent context, scopes, and read progress. Actual account selection is verified rather than inferred from role labels. |
 | **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted participants retain their identity and read progress; usage is attributed to the producing execution and account where available. |
-| **Different scopes in one room** | A shared record is available to the intended participants; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Room membership grants no additional memory access. OS-level isolation has separate acceptance cases once its mode is selected. |
+| **Different scopes in one room** | A shared record is available to the intended participants; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Room membership grants no additional memory access. Isolated-mode OS access checks are additional acceptance cases to specify. |
+| **Execution mode is explicit** | Native is the default, isolated is selectable, and the configured/effective modes are visible. Required isolation that cannot be provided causes a clear launch failure, with no automatic fallback to native. |
 | **Resume across accounts or agents** | The logical session/room participant remains stable, actual execution settings are recorded, and the receiver gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new participant has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
 | **Independent catch-up** | One participant reads room history without advancing another's position. A restarted session can retrieve retained history; missing/expired content is reported. |
@@ -181,7 +186,8 @@ and recovery cases must be selected in [REVIEW.md](REVIEW.md).
 
 The first usable workflow prioritizes local collaboration, memory retrieval/writes,
 rooms, simultaneous account separation, role/connection configuration, native skills,
-and basic managed access. V0 sandbox modes and compatibility are an immediate design decision.
+and basic managed access. Native and isolated modes are part of the design; exact
+isolation policies, compatibility coverage, and their acceptance checks remain to be selected.
 
 Remote communication, optional wake hooks, comprehensive call interception, and
 automated memory extraction/classification are later work.

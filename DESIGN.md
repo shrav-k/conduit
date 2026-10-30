@@ -59,12 +59,37 @@ can be a file, OS store, or process memory. These are adapter primitives, not pr
 of OS isolation. Validate credential namespaces, refresh behavior, inherited environment,
 native memory, plugins, and daemon attachment for each supported runtime/version.
 
-**Modes under discussion:** both retain the account and Conduit-access guarantees above.
+V0 offers both modes below, with **native execution as the default**. Make the role's
+configured mode and each execution's effective mode visible and record the latter.
+Isolated execution is an explicit option for additional protection. Both modes retain
+the account-separation and Conduit-access guarantees above; neither merges scopes.
 
 | Mode | Boundary and tradeoff |
 | --- | --- |
 | Native with separate profiles | Keeps each account's setup and state separate while retaining host integration. Native tools still have their actual host privileges; this is not an OS security boundary. |
 | Isolated execution | Encloses the runtime and its child processes with explicit access to selected files/services, excluding other accounts' state and privileged host controls. Some host integrations need bridges or remain unavailable. Backend and network policy are unselected. |
+
+### Why both modes, with native as the default
+
+The first workflow needs multiple subscriptions to coexist reliably. Separate profiles
+solve identity/configuration collisions without requiring every user to isolate their
+entire development environment. Native execution preserves host integrations and suits
+users who deliberately grant broad local access. Making full isolation mandatory would
+add setup and compatibility costs to that common case, so v0 defaults to native.
+
+Profile separation does not stop native tools from reaching other accessible host files.
+Isolated execution supplies that stronger boundary for users who need it. It covers
+the runtime and children because a command-only sandbox leaves other tool paths outside
+the boundary. IDE sockets, browser authentication, keychains, Docker, local services,
+and native OS tooling may need explicit access or bridges. Supporting native mode keeps
+these compatibility gaps from excluding an otherwise useful agent integration.
+
+Keep local isolation, network destinations, provider-operation permissions, and Conduit
+record access distinct: each controls a different path. Visibility of the selected mode
+and actual coverage prevents profile separation from being mistaken for OS security.
+Account, role, and execution also remain distinct so reusing a subscription does not
+automatically load another role's private context. These boundaries preserve native
+workflows while leaving room for stronger, replaceable isolation backends.
 
 An isolated mode cannot rely only on native command sandbox flags:
 [Claude's Bash sandbox](https://code.claude.com/docs/en/sandboxing#what-runs-outside-the-sandbox)
@@ -72,12 +97,14 @@ excludes file tools, MCP servers, and hooks; [Codex command permissions](https:/
 also leave other surfaces under separate controls. Whole-process OS wrappers,
 containers, or VMs are candidates, not selected dependencies.
 
-**Proposed launch contract:** resolve the chosen mode and required capabilities before
+Resolve the chosen mode and required capabilities before
 starting work; reject unsupported required isolation rather than silently downgrade.
 Use private execution state and only intended credentials/resources. Do not mount an
 account's entire native history into every role using it. Keep auth refresh coordinated
 instead of blindly cloning rotating credentials. The exact credential/state layout,
-mode defaults/minima, network restrictions, and handling of live scope changes need review.
+role-required minima, mode overrides, network restrictions, and handling of live scope
+changes need review. For YAML authoring, explicitly writing the mode in generated roles
+is recommended; whether handwritten configurations may omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
 
 ## Sessions and workspaces

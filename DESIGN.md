@@ -100,7 +100,8 @@ same membership mechanism rather than require fields added to every pool schema.
 Data, tools, skills and documents illustrate possible members, not an exhaustive type
 system. A use such as onboarding is ordinary resource content/metadata rather than a
 special core kind or pool field. Pool-provided skills extend BYOS availability beyond
-profile-only bundles; compatible activation and composition rules remain for review.
+profile-only bundles. Activation uses explicit, reusable rules; compatible selection,
+loading and composition semantics remain for review.
 
 Membership does not by itself copy content, change its owner, grant operations, or
 load information into a model. Existing record ownership and access contracts still

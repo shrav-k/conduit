@@ -51,6 +51,33 @@ source updates or is pinned is a separate resource-versioning decision.
 configuration through resource references. Profile-to-profile inheritance/composition
 is deferred for v0. Pool resources remain subject to access and activation rules.
 
+**Accepted activation direction:** use explicit, reusable activation rules. This does
+not yet choose label-based activation, eager context loading, or update/precedence rules.
+Resource labels are selection metadata, not Pool membership declarations. Explicit
+resource references do not require labels; Pool membership and Session activation are
+different selections.
+
+**Current proposal — default conduits instead of direct configuration references:**
+Profiles select reusable conduit declarations. Creating a Session binds those declarations
+to that Session; resource conduits target Pools. A Pool may collect a skill package,
+engineering resources, application resources, or any other grouping without introducing
+a closed set of Pool types. All session-consumed resources would be supplied through this
+path, replacing direct Profile-to-resource configuration references.
+
+The recommended reading of “only Pools have resources” is that Pools expose resource
+collections, while resource identity/source remains independent of membership. Exclusive
+Pool ownership, where every resource must be defined inside exactly one Pool, is a separate
+choice and is not assumed. Shared definitions, inline declarations and provider discovery
+still need a resource-authoring contract. Pool membership need not duplicate content or
+transfer ownership; the existing memory-record ownership contract is separate.
+
+Default references identify reusable declarations, not a shared live connection. Each
+Session needs its own authenticated bindings, lifecycle and resolution evidence. Reusing
+a declaration grants no access beyond current authority, Profile limits and filters.
+The declaration/instance representation remains for conduit design. Runtime/model/account
+bootstrap settings remain in the Profile so Conduit can prepare the Session before any
+agent work begins.
+
 **Proposed representation:** author profiles in YAML. A session has a persisted runtime
 record that can be created through CLI/API and inspected/exported as YAML; users need
 not author a file for every session. A session request's `spec` and observed `status`
@@ -69,14 +96,16 @@ spec:
     runtimeRef: conduit
     modelRef: claude-default
     accountRef: claude-work
-    configurationRefs: [engineering-baseline]
+    conduitRefs: [frontend-kit]
     executionMode: native
   limitsRef: engineering-limits
 ```
 
-`configurationRefs` illustrates references to compatible authored configuration,
-including instruction/skill selections; the exact reference and limits schemas remain
-open. Credentials stay outside these files. Generic referenced resources remain extensible.
+`conduitRefs` illustrates the current proposal: `frontend-kit` is a reusable conduit
+declaration targeting a Pool and selecting activation behavior. It is bound independently
+for each Session. This replaces the earlier proposed `configurationRefs` field, pending
+agreement on the resource-access path. Exact declaration/reference/limits schemas remain
+open. Credentials stay outside these files.
 
 ```yaml
 apiVersion: conduit/v1alpha1
@@ -103,12 +132,23 @@ configuration, retained history and current model context. Its inheritance/updat
 are reference behavior, not automatically Conduit's rules. Kubernetes `spec`/`status`
 provides an authoring/observation distinction without implying automatic agent restart.
 
-Next review: configuration composition. A Profile selects baseline configuration, and
-Pools can expose additional compatible resources. Decide how a Session selects/activates
-those resources, how conflicting settings are handled, and whether source updates need
-explicit adoption. Availability does not itself activate a skill or load instructions.
-Settle these with examples before filters/conduits; keep exact field names provisional
-until the relationships are clear.
+Next review: settle the resource-access path and Pool/resource ownership interpretation,
+then design resolution and activation together. The proposed startup sequence is:
+
+1. Resolve the Profile's default conduit declarations and explicit Session choices.
+2. Resolve target Pools/resources, validate current access and runtime compatibility.
+3. Plan kind-specific activation: expose for retrieval, register compatible tools/skills,
+   or include selected content in context. A document, package or directory does not imply
+   one universal loading action. Do not load every resource into the prompt.
+4. Apply the plan and record actual bindings, selected sources/versions where available,
+   loaded context and omissions. Required/optional resources and conflict handling remain
+   to be decided; an unusable optional resource should not imply total launch failure.
+
+This is a proposal, not an implementation requirement. Decide duplicate/conflicting
+resources, required versus optional activation, context budgets, source update behavior,
+and the precedence of Profile defaults, Pool defaults and explicit Session choices.
+Keep behavioral reconfiguration separate from live access changes. Exact YAML names,
+conduit kinds and any activation executor contract remain open.
 
 ## Concepts and configuration review
 

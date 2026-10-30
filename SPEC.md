@@ -61,7 +61,8 @@ those resources expose. Pool membership supports explicit resource references an
 selectors. Pool contents are not a fixed set of categories: new kinds
 should not require a new pool field. A document's use for onboarding, for example,
 does not establish a dedicated core resource kind or pool field. Membership, access,
-and activation/context loading are separate concerns; activation rules remain open.
+and activation/context loading are separate concerns. Activation uses explicit, reusable
+rules; their selection syntax, binding, loading and update behavior remain open.
 Profile/session and pool contracts are the immediate review priority, followed by conduit
 and filter research. The shared concept does
 not require every kind to expose identical operations or guarantees.

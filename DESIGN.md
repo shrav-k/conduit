@@ -43,6 +43,12 @@ is an inspiration; its tooling and role model are not dependencies. The version
 identifier scheme, exact fields, file layout, precedence, and merge rules remain open.
 Conduit configuration versions are separate from MCP protocol and plugin versions.
 
+For a project launch, use its configured default scopes only when no explicit scope
+selection is supplied. An explicit selection replaces those defaults; extending the
+defaults requires an explicit add action. Apply role limits and exclusions to the
+result in every case. This keeps convenient project setup from silently retaining
+access the caller intended to replace. Exact authoring and CLI syntax remain open.
+
 ## Account separation and execution isolation
 
 Concurrent account separation is required in v0. Keep a role's reusable configuration,

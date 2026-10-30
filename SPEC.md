@@ -109,6 +109,10 @@ and rooms. Sharing a room or model account does not merge scopes or grant access
 another participant's private context through Conduit. Native state reuse must respect
 the receiving context.
 
+At project launch, omitted scope selection uses the project's configured defaults.
+Explicit scope selection replaces those defaults; an explicit add action can extend
+them. Role limits and exclusions still constrain the resulting access.
+
 Use YAML for Conduit's local configuration, with versioned, named objects, explicit
 references, and schema validation. Runtime integrations translate it into native
 configuration where needed. The version identifier scheme and exact schemas remain open.

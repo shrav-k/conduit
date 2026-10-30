@@ -20,7 +20,9 @@ explicit restart while retaining session/room identity; managed requests use cur
 
 Roles provide execution settings, native skills, and limits; scopes select reusable
 connection definitions and resource/operation grants. Integrations prepare native
-configuration. Rooms preserve append-only messages and independent read positions;
+configuration. Project scope defaults apply when selection is omitted; explicit
+selection replaces them, with an explicit add action to extend defaults. Rooms
+preserve append-only messages and independent read positions;
 agents retain their own working context. YAML is the configuration format.
 
 ## Remaining behavioral review
@@ -31,7 +33,7 @@ settled definitions or adding speculative features.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Role, account, and resource binding** | Project scope defaults and launch precedence; enrollment/identity verification, credential-refresh ownership, and private state when one account serves differently scoped sessions. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Exact credential/state layout needs adapter validation. |
+| **1. Role, account, and resource binding** | Enrollment/identity verification, credential-refresh ownership, and private state when one account serves differently scoped sessions. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Exact credential/state layout and native configuration precedence need adapter validation. |
 | **2. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
 | **3. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |
 | **4. Recovery and observable evidence** | Message order, cursor initialization/advancement, acknowledgements, retry identity/deduplication, and restart behavior. Set retention for history, checkpoints, and observations; define the usage/account/context evidence needed to explain the experiment, including gaps and unknown outcomes. |

@@ -150,7 +150,10 @@ mismatches. Incoming references alone do not block an otherwise permitted deleti
 objects and their authored references remain, with affected relationships reported as unavailable.
 Deleting a Resource registration preserves backing files, repositories and service data, even
 when created through Conduit. Cleanup/purge uses separate explicit operations with their own
-permissions. Running-execution restrictions and transient runtime cleanup remain open.
+permissions. Session deletion requires confirmed execution end, including idle native agents:
+live or unknown execution status rejects deletion and preserves the Session for explicit stop
+or reconciliation before retry. Deletion does not initiate shutdown. Other runtime restrictions
+and transient cleanup remain open.
 
 | Requirement | Meaning |
 | --- | --- |

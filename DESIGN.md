@@ -128,8 +128,9 @@ objects. For example, deleting a Resource leaves the Pool that referenced it int
 
 Deleting a Resource registration preserves its backing files, repositories and service data,
 including data created through Conduit. Cleanup or purge requires separate explicit operations
-governed by their own permissions. Running-execution restrictions, client disconnection and
-transient helper-process cleanup remain separate runtime decisions.
+governed by their own permissions. Session deletion also requires confirmed execution end
+under the [lifecycle contract](#lifecycle-and-continuity). Further effects of deleting other
+object kinds, client disconnection and transient helper-process cleanup remain runtime decisions.
 
 The configuration version covers `spec` and author-editable metadata. Changes to those
 values invalidate the prior version for updates; status-only changes do not. The check
@@ -338,6 +339,7 @@ frontend state and shared Resource content distinct.
 | Fresh | Create a new Session without automatically loading prior conversation/checkpoint content. Existing records and files remain retrievable through permitted access. |
 | Fork | Create an independent Session from a selected portable checkpoint with an origin reference. The source Session is unchanged. |
 | Unexpected interruption | Reconnect only when the integration verifies the execution is still running and supports reconnection. A stopped execution requires explicit resume to start a replacement. Unknown status never launches a duplicate. |
+| Delete Session | Require its agent executions to be confirmed ended, including native agents that are idle but still alive. Reject deletion while an execution is live or its status is unknown, preserving the Session so the caller can explicitly stop or reconcile and retry. Deletion does not initiate shutdown; closing a conversation and purging data are separate operations. |
 
 Fresh/fork do not clone or delete workspace files. Changing accounts or frontends does
 not by itself create a checkout. Reusing an account must not expose another Session's

@@ -51,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with running-execution restrictions, rebind operations and remaining
-metadata/reference details. Resource deletion preserves backing data; cleanup is explicit
-and separate. Baseline storage/lifecycle and remaining diagnostic details stay in round 6.
+Continue round 1 with ownership of Session→Pool access bindings, then rebind operations and
+remaining metadata/reference details. Session deletion requires confirmed execution end;
+other kind-specific deletion effects and runtime cleanup follow in rounds 3–5.
 
 ### Shared example
 
@@ -89,15 +89,15 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** define Session deletion with live or unknown execution, then other runtime restrictions and rebind behavior.
+direction:** establish access-binding ownership before specifying rebind operations.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| Which identity/reference operations remain? | Reference handling and backing-data preservation on deletion are settled. Recommend requiring confirmed execution end before Session deletion, returning an in-use or unknown-status result while the caller stops or reconciles; initiating shutdown as part of deletion is the alternative. Define other runtime restrictions, transient process/connection cleanup, rebind requests, optional direct-ID references, unresolved-reference handling and export-refresh diagnostics for unavailable or ambiguous targets. |
+| Who owns Session→Pool access bindings? | Recommend Session-owned system state for established bindings, with derived reverse views on Conduit declarations and Pools. The alternative stores binding state under the Conduit object. How does a reusable declaration target `self` without letting a caller assert another Session's identity? Shared communication-state ownership remains in round 5. |
+| Which identity/reference operations remain? | Define rebind requests and preconditions, including how checked reference edits relate to established bindings. Decide optional direct-ID references, unresolved-reference handling and export-refresh diagnostics for unavailable or ambiguous targets. |
 | What are the remaining metadata/status fields? | Define `metadata.name` syntax, label rules, system-owned identity/version field names/types and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
-| Who owns actual Conduit bindings? | Recommend Session-owned binding instances with reverse views on declarations, rather than independently editable binding lists on both objects. How does a reusable declaration target `self` without letting a caller assert another Session's identity? |
 | How are discovered and external objects represented? | Recommend independently identified Resources with attachment/management metadata; a service Resource can expose native items without one YAML object per file, ticket or tool. Decide whether inline declarations add enough value to justify identity rules. |
 
 **Required walkthrough:** create two Resources, reference one from two Pools, rename it,
@@ -147,7 +147,7 @@ names and whether one user action can deliberately combine stages remain open.
 | How do defaults and explicit actions interact? | Can an adapter provide conventional import behavior, and how is it disabled/replaced? Recommend recording the resolved actions and source/version so adapter defaults are not invisible behavior. |
 | What establishes ordering, duplication and conflicts? | Are actions an ordered list or named steps with dependencies? What if two Pools expose the same skill, or two different packages declare the same command? Recommend deduplication only when identity/version/action are compatible, with explicit conflict resolution. |
 | What do required and optional preparation mean? | If a required document is unavailable but an optional MCP service is offline, which parts can prepare and can execution start? Define each outcome, retry scope and evidence rather than reducing all preparation to one ready flag. |
-| Which edits affect a running Session, and when? | Specify model/account/runtime switches, activation changes, Resource refresh and Profile deletion. Behavioral reconfiguration must be explicit; access limits remain live. Decide safe transition boundaries and whether an active turn must finish or stop. |
+| Which edits affect a running Session, and when? | Specify model/account/runtime switches, activation changes, Resource refresh and deletion of referenced Profiles, Pools, Resources or Conduit declarations. Behavioral reconfiguration must be explicit; access limits remain live. Decide safe transition boundaries and whether an active turn must finish or stop. |
 | What is committed before effects occur? | Recommend version-checked local configuration changes and separately recorded external preparation outcomes. Decide batch versus per-object commits, resumable partial preparation, and handling of an installation that succeeded before a later step failed. |
 | What belongs in the persisted Session state? | Define Profile origin, overrides, resolved behavior, binding references, activation results, execution boundaries and controller state. Specify create/import/export versus resume/fresh/fork without serializing credentials or duplicating an execution. |
 
@@ -177,7 +177,7 @@ identity, adapter version and account binding are separate choices.
 | What is portable and what stays native? | Distinguish instruction bundles, executable tools/helpers, native runtime hooks and presentation extensions. How does a Profile select a compatible preparation strategy without treating model family as runtime compatibility? |
 | How are model/provider/account choices typed? | Define runtime adapter, provider/protocol, model identifier and credential alias. Validate the actual identity for two Claude and two OpenAI subscriptions, refresh ownership and concurrency. Keep own-runtime provider support separate from Claude Code/Codex runtime adapters. |
 | What crosses an execution boundary? | Define context projections for a model/account change: selected history, opaque provider state, checkpoints, compaction, source revisions and losses. How are preservation, transformation and unavailable evidence recorded? Account identity must constrain reuse of private/provider-specific state. |
-| How are MCP services represented? | A Resource can expose native tools, resource URIs and prompts beneath it. Specify native-operation identity/schema changes, supported protocol versions, nested dispatch and per-binding client/auth state. A shared definition is not proof that one live connection is shareable. |
+| How are MCP services represented? | A Resource can expose native tools, resource URIs and prompts beneath it. Specify native-operation identity/schema changes, supported protocol versions, nested dispatch, per-binding client/auth state and transient client/helper-process cleanup. A shared definition is not proof that one live connection is shareable. |
 | What are the first memory and workspace payloads? | Choose a backend and search-limit units/defaults/caps; specify coverage/freshness and revision-checked lifecycle operations. Define workspace base/branch/path and attached/managed status, preserving ownership and explicit safe cleanup. |
 | How do external trackers and execution environments fit? | Specify Linear/work references without duplicating its workflow. Select isolation support and destination-matching rules; expose actual enforcement alongside requested mode. Native mode remains default and required isolation cannot silently downgrade. |
 

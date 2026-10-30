@@ -371,8 +371,11 @@ objects and their authored references remain, with affected relationships report
 deletion does not prune those references or cascade to referring objects. Deleting a Resource
 registration preserves backing files, repositories and service data, including data created
 through Conduit. Cleanup/purge requires separate explicit operations governed by their own
-permissions. Running-execution restrictions, client disconnection and transient helper-process
-cleanup remain open.
+permissions. Session deletion requires confirmed end of its agent executions, including native
+agents that are idle but still alive. Live or unknown status rejects deletion and preserves the
+Session for explicit stop or reconciliation before retry; deletion does not initiate shutdown.
+Closing the conversation and purging data remain separate. Other kind-specific deletion effects,
+client disconnection and transient helper-process cleanup remain open.
 
 Registry authority and explicit configuration updates are accepted; storage technology and
 Resource-content updates are separate. Explicit create/update intent is also accepted:
@@ -416,10 +419,11 @@ digest, runtime/account identity evidence, independent binding IDs, preparation 
 lifecycle, execution state and capability coverage. Avoid independently editable binding
 lists on both Session and Conduit objects.
 
-Recommend making the **Session the authority for its binding instances**. A Conduit object
-is a reusable declaration; the Session status contains its actual binding references. Other
-objects expose reverse indexes/views, not a second competing source of truth. This fits a
-Profile instantiated four times without duplicating the declarations.
+For Session→Pool access, recommend making the **Session the authority for its binding instances**.
+A Conduit object is a reusable declaration; the Session status contains its actual binding
+references. Other objects expose reverse indexes/views, not a second competing source of truth.
+This fits a Profile instantiated four times without duplicating the declarations. Ownership of
+shared communication state remains a separate interaction-contract question.
 
 ### Resource
 

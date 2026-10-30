@@ -4,12 +4,92 @@ Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the five-concept model. This doc
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
 Field names, transports, storage engines and implementation layout remain unselected.
 
+## Configuration language
+
+**YAML is the authoring format; typed objects and explicit semantics define the language.**
+The common model consists of Profiles, Sessions, Resources, Pools and Conduits. Their
+identity, reference, composition and behavioral contracts govern every entry point.
+CLI/API/frontends must interpret the same objects consistently. Future generators can
+emit this model; they cannot bypass its validation or authority rules.
+
+This accepts the organizing principle from the configuration research, not every proposed
+field or algorithm. In particular, the API group/version, registry layout, exact reference
+forms, YAML subset, schema toolchain and command names remain for review. Configuration
+objects also do not force every memory record, native tool or runtime event into an
+individually authored YAML file.
+
+### Objects, representations and contracts
+
+Each object contract must distinguish what an author requests, what Conduit resolves and
+what a runtime observes. These are representations of the existing concepts, not new
+top-level concepts:
+
+| Representation | Responsibility |
+| --- | --- |
+| Authored intent | Explicit settings, references, requested relationships and constraints, with their configuration sources. |
+| Resolved configuration | Effective behavioral values and selected references, with defaults/overrides and origins explainable. A Session retains resolved behavior under the rules below. |
+| Observed state | Current binding, compatibility, authentication, preparation and execution information, including unknown or unsupported coverage. |
+| Operation evidence | Actual attempts, effects, results and unresolved outcomes attributed to the Session/execution and integration. |
+
+Identity, editable names, source paths, configuration change versions, retained-record
+revisions, plugin releases and provider protocol versions have different meanings. Their
+encoding is open; none may silently stand in for another. A reference, label or capability
+request is not permission. Configuring an account does not prove which identity actually ran.
+
+Schemas describe data shape. Resource and Conduit contracts also describe operations,
+preconditions, transitions, effects and failure behavior. Runtime compatibility, current
+authority and successful execution require their own evidence. Preserve provider-native
+contracts where possible instead of flattening every integration into one generic payload.
+
+### Composition follows the relationship
+
+There is no universal deep-merge rule. Each public field and operation must state the
+meaning of omission, explicit values, empty collections, nullable values where supported,
+defaults and updates. Collection order and duplicate identity must have defined meanings.
+
+| Relationship | Established constraint; details still to settle |
+| --- | --- |
+| Profile → Session | Explicit overrides operate within required limits. Behavioral defaults are resolved, while access limits remain live. Per-field replacement/addition syntax and default-Conduit precedence are open. |
+| Resource → Pool | References/selectors collect independently identified Resources. Overlap does not copy ownership or imply repeated activation. Selector algebra, deduplication and membership changes need exact rules. |
+| Session → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
+| Profile activation | Preparation and context-loading instructions operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
+| Intent → observation | Runtime observations report whether requests are realized; they do not silently become authored defaults or fresh authority. |
+
+Permission, membership and activation semantics remain independent even when they use
+similar selector notation. A serialization library's merge behavior or filesystem order
+must not choose these rules accidentally.
+
+### Validation, effects and evolution
+
+Distinguish syntax/schema checks, reference resolution, semantic/transition checks,
+environmental probes and effects. A valid object can still have an unresolved reference,
+an unsupported native extension or an expired credential. Error/status reporting must
+identify the relevant object and field, explain the limitation, and preserve unknowns.
+Exact diagnostic codes, stages and partial-failure policy remain open.
+
+Configuration changes, package preparation, binding establishment and agent execution have
+different effects. Their operations must say what they do. A Session export is not evidence
+of a running execution, and restoring configuration must preserve the explicit-resume and
+no-duplicate-execution rules. Current permissions still govern managed actions after a
+preview. Local configuration consistency does not imply atomic rollback of external effects.
+
+Version the meaning of configuration, including defaults, list composition, reference
+interpretation and transition behavior. Keep concrete input/result/failure examples with
+the contracts so implementations and tools can be checked for agreement. Migration rules
+must expose changed behavior; updating a version string alone is not a migration contract.
+The exact version progression and compatibility policy remain for review.
+
+Keep the core small and extensible through typed contracts. Reusable objects are the first
+composition mechanism; additional template languages, expressions and patch systems need
+concrete use cases. The following sections retain the accepted domain behavior that the
+language must express. [REVIEW.md](REVIEW.md) focuses the remaining choices on those semantics.
+
 ## Profiles
 
 A Profile is a reusable template for any number of independent Sessions. It specifies
 runtime/model/account defaults, execution preferences and requirements, optional permission
 limits, default Conduit declarations, and activation instructions. A Session starts from
-one Profile; v0 defers Profile inheritance and composition.
+one Profile; v0 defers inheritance and composition between Profiles.
 
 Resolve behavioral defaults at Session creation and retain them until explicit
 reconfiguration. Later Profile edits affect new Sessions. Record configuration origins,

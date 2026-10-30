@@ -1,8 +1,10 @@
 # Configuration languages, contracts and the Conduit object model
 
-2026-10-30. **Proposal for review; no schema or field names are accepted by this document.**
-The five concepts and Profile-owned activation are already accepted. This report proposes
-how to express them without turning Conduit into another deployment framework. The research
+2026-10-30. **Research evidence and concrete proposals; this report does not define the schema.**
+The five concepts, Profile-owned activation and YAML with typed objects and explicit
+semantics are accepted in [DESIGN.md](../DESIGN.md#configuration-language). Exact fields
+and algorithms below remain proposals. This report investigates how to express the model
+without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 
 Read alongside [the Pi re-review](PI_CONNECTORS.md) and the
@@ -659,8 +661,8 @@ Conduit runtime or live account behavior was tested. Research used official docu
 versioned source where relevant and the linked papers; current documentation can differ
 from installed implementations, as the include fixture demonstrated.
 
-The next configuration discussion can resolve three connected choices: **the object and
-reference envelope; the composition/default/update semantics; and the validation/effect
-boundary**. Keep these within groups 1–2 of [REVIEW.md](../REVIEW.md), then return to provider
-continuity and Conduit interaction contracts. Rust types, formal schemas and runtime code
-should follow the rulings.
+The findings now inform the language-focused rounds in [REVIEW.md](../REVIEW.md): objects
+and references; resolution and composition; activation and Session changes; Resource and
+adapter contracts; Conduit contracts; validation and evolution. Review the concrete inputs,
+effective results and failure cases before selecting Rust types, formal schemas or runtime
+implementation details.

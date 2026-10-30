@@ -9,6 +9,12 @@ and Conduits**. These five concepts and their interactions define the system. Th
 support shared knowledge, compatible tools and skills, independent accounts, portable
 context, and communication without making any one provider or frontend the architecture.
 
+**Retain YAML; define the language through typed objects and explicit semantics.**
+The configuration describes a graph of these five objects. Its meaning comes from their
+contracts: how references resolve, defaults compose, access narrows, activation happens,
+and changes affect running Sessions. YAML supplies the authoring notation. Conduit owns
+the interpretation and exposes it consistently through its CLI, APIs and frontends.
+
 | Concept | Meaning | Boundary |
 | --- | --- | --- |
 | **Profile** | A reusable Session template specifying runtime/model/account defaults, execution requirements, optional permission limits, activation instructions and default Conduit references. | A template has no shared conversation or private agent history. |
@@ -73,6 +79,34 @@ These belong to the five concepts rather than extending the core vocabulary:
 Conduit's Resource concept is broader than MCP's specific resource primitive.
 A Conduit Profile is distinct from a native agent's login profile or credential directory.
 
+## Configuration language
+
+The language must make a Session's effective setup explainable: which Profile supplied
+its defaults, which Conduits were selected, which Pools supplied each Resource, what
+permissions apply, and which Profile instructions prepared or loaded it. An author should
+be able to trace that result without knowing an adapter's implementation.
+
+| Requirement | Meaning |
+| --- | --- |
+| Typed object graph | The five objects have explicit identities, references and contracts. New integrations extend Resource/Conduit contracts without adding a core concept for every provider. |
+| One interpretation | Files, CLI/API requests and frontends use the same semantic rules. A future external generator can produce objects without gaining a separate authority or execution path. |
+| Explicit composition | Defaults, membership, filters, authorized capabilities and activation have different rules. No generic deep merge defines all of them. |
+| Distinct representations | Authored intent, resolved configuration, runtime observations and operation outcomes remain distinguishable. Observed readiness does not rewrite intent or prove ongoing permission. |
+| Inspectable resolution | Explain effective values, their sources, unresolved references, unavailable capabilities and proposed effects. Credentials remain outside ordinary shareable configuration. |
+| Layered contracts | Data shape, object relationships, allowed transitions, environmental compatibility and execution evidence answer different questions. Schema validity alone is not successful preparation or enforcement. |
+| Semantic evolution | Version interpretation as well as field shape. Changes to defaults, list behavior, references or effects can require migration even when the YAML still parses. |
+| Small authoring surface | Favor reusable objects and well-defined operations. An embedded template/programming language and inherited configuration chains are not prerequisites for v0. |
+
+For example, a Resource selected through two Pools retains one identity; the two access
+paths still need their own authority. A Profile's activation can only use the permitted
+selection. A model override changes behavior within limits; it cannot broaden access.
+Making these distinctions visible is part of the product, not an implementation detail.
+
+Exact envelope fields, identifiers, schema dialect, YAML subset, composition syntax,
+validation stages and update operations remain open. The [design](DESIGN.md#configuration-language)
+sets the constraints; the [review](REVIEW.md) resolves them using concrete inputs, effective
+results and failure cases. The research YAML remains an illustration, not an approved schema.
+
 ## Implementation direction
 
 Conduit owns its runtime in **Rust**, including the execution loop, context construction,
@@ -81,10 +115,10 @@ inspired by Pi. UI components may be reused; Pi's agent loop and Pi Durable rema
 research references. External-agent adapters can separately connect runtimes such as
 Claude Code and Codex.
 
-Use YAML for named, versioned configuration with explicit references and validation.
-Kubernetes object structure, versioning and networking APIs inform the design. Exact
-version identifiers, schemas, file layout and precedence remain open. Authored configuration
-and observed runtime state are distinct; credentials stay outside shareable configuration.
+Kubernetes and networking APIs inform object structure, identity and versioning; Docker
+and configuration-language research inform composition, validation and effect boundaries.
+These are design references. Conduit's Rust runtime interprets its own contracts; adopting
+the configuration conventions does not require a Kubernetes control plane or Docker engine.
 
 Use MCP as the preferred external capability contract while preserving provider-native
 names, schemas and workflows. Native adapters cover runtime/account/lifecycle needs and
@@ -110,6 +144,8 @@ These are intended outcomes, not completed tests. The experiment details follow 
 
 | Interaction | Observable outcome |
 | --- | --- |
+| **Authoring → effective configuration** | The same declared inputs and semantic versions produce an explainable static resolution. Live discoveries and access observations are distinguished. CLI, API and frontend views agree on the result. |
+| **Configuration changes → effects** | Authors can distinguish a data edit, a preparation action and execution/resume. Defaults, empty selections, conflicts and version changes have documented outcomes; a valid file is not evidence that an external action succeeded. |
 | **Profiles → Sessions** | Four Sessions run concurrently across two Claude and two Codex/OpenAI subscription identities. Account login/refresh/logout does not overwrite another account's state; private history remains per Session. Supported subscription access and actual identities must be verified. |
 | **Profile defaults → Session bindings** | Reusing a Profile creates independent bindings. Behavioral default edits leave existing resolved settings intact until explicit reconfiguration; live limits continue to apply. |
 | **Resources → Pools → Conduits** | One Resource can be reused in multiple Pools without copying it. Membership alone neither exposes it to a Session nor activates it. Selected compatible resources are supplied through the intended Conduit. |
@@ -121,12 +157,15 @@ These are intended outcomes, not completed tests. The experiment details follow 
 
 ## Design boundary
 
-The five concepts are settled. Their detailed schemas, interaction contracts and first
-implementation sequence are under review. All remaining questions must identify the
-concept or relationship they refine. Memory search, account adapters, observation and
-sandboxing support this model; they do not introduce parallel organizational frameworks.
+The five concepts and the typed-object language direction are settled. Their detailed
+schemas, semantic rules, interaction contracts and first implementation sequence are under
+review. Remaining choices must identify the object, field, operation or relationship they
+refine, with an example of its resolved meaning and behavior. Memory search, account
+adapters, observation and sandboxing support this model; they do not introduce parallel
+organizational frameworks.
 
 [DESIGN.md](DESIGN.md) is authoritative for accepted behavior. [REVIEW.md](REVIEW.md)
-contains remaining choices, research and staged work. [Pi runtime research](research/PI_RUNTIME.md)
-provides evidence, not an additional specification. Implementation begins after the
-configuration contracts and initial experiment are agreed.
+contains the language-focused review and staged work. [Configuration research](research/CONFIGURATION.md)
+and [Pi research](research/PI_CONNECTORS.md) provide supporting evidence. Their unadopted
+proposals are not additional requirements. Implementation begins after the configuration
+contracts and initial experiment are agreed.

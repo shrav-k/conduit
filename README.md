@@ -13,6 +13,11 @@ Profiles reference default Conduit declarations. Each Session establishes its ow
 bindings to Pools and other Sessions. Resources can be reused across Pools; membership,
 access and activation have distinct meanings.
 
+**Retain YAML; define the language through typed objects and explicit semantics.**
+Configuration describes the five-object graph. Conduit defines how references, defaults,
+filters, activation and changes are interpreted, and makes the effective result inspectable
+through the same contracts across its CLI, APIs and frontends.
+
 Conduit owns its runtime in Rust. Its first frontend is a custom terminal inspired by
 Pi. Providers, external agent runtimes, native skills, MCP services, trackers and memory
 backends connect through replaceable integrations. Pi supplies design evidence and
@@ -25,9 +30,9 @@ Subscription compatibility and the communication contract still need validation/
 
 Read in order:
 
-1. [SPEC.md](SPEC.md) — the five-concept model, interactions and intended outcomes.
-2. [DESIGN.md](DESIGN.md) — accepted contracts organized by those concepts.
-3. [REVIEW.md](REVIEW.md) — open questions, research and experiment planning within the model.
+1. [SPEC.md](SPEC.md) — the five-concept model, language objectives and intended outcomes.
+2. [DESIGN.md](DESIGN.md) — accepted language principles and domain contracts.
+3. [REVIEW.md](REVIEW.md) — six language-focused review rounds, concrete cases and experiment criteria.
 
 Research is collected in one folder, with a separate purpose for each document:
 

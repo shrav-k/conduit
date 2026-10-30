@@ -29,10 +29,15 @@ Read in order:
 2. [DESIGN.md](DESIGN.md) — accepted contracts organized by those concepts.
 3. [REVIEW.md](REVIEW.md) — open questions, research and experiment planning within the model.
 
-The [Pi re-review](research/REFINEMENTS.md) maps provider connectors, context preservation
-and communication onto this model. Its [configuration proposal](research/CONFIGURATION.md)
-includes a connected YAML example and comparisons with Kubernetes, Gateway API, Compose
-and Terraform. [RESEARCH_PI.md](RESEARCH_PI.md) retains the deeper Durable/frontend evidence.
+Research is collected in one folder, with a separate purpose for each document:
+
+| Document | Read it for |
+| --- | --- |
+| [Configuration languages and contracts](research/CONFIGURATION.md) | Kubernetes/Docker semantics, alternative languages, seven research papers, local probes and the proposed five-object schema. |
+| [Connected YAML example](research/five-concepts.proposal.yaml) | A concrete, synthetic configuration to review alongside that proposal. |
+| [Pi connectors, context and communication](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP, Chord and the experiment sequence. |
+| [Pi runtime and Durable](research/PI_RUNTIME.md) | Detailed execution, recovery, frontend, storage and ecosystem evidence. |
+
 Research proposals are not requirements until incorporated into the design.
 Update these documents in place; Git history preserves earlier designs. Keep resolved
 contracts out of the open-question list and settle schemas before implementation.

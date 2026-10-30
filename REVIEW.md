@@ -25,26 +25,34 @@ ledger or alternate conceptual model is needed.
 
 ## Next discussion
 
-The autonomous re-review is complete: [Pi findings](research/REFINEMENTS.md),
-[configuration comparison](research/CONFIGURATION.md), and a
-[connected YAML proposal](research/five-concepts.proposal.yaml). It inspected all 42
-built-in provider factories and ran 17 offline history/authentication checks. No live
-subscription, Conduit implementation or new contract is implied by those results.
+The research is ready for review: [Pi findings](research/PI_CONNECTORS.md),
+[configuration languages and contracts](research/CONFIGURATION.md), and a
+[connected YAML proposal](research/five-concepts.proposal.yaml). The Pi re-review inspected
+all 42 built-in provider factories and ran 17 offline history/authentication checks. The
+configuration follow-up adds 13 local Compose/Kustomize checks and seven annotated papers.
+No live subscription, cluster test, Conduit implementation or new accepted contract is
+implied by those results.
 
 Use the same four-Session example to settle these five groups in order. Each group
 should produce one coherent ruling; the sections below retain the necessary details.
 
 | Group | Recommended direction for discussion | What still needs a ruling |
 | --- | --- | --- |
-| 1. Object identity and configuration | One versioned envelope across the five kinds; strict core validation; independent Resources; Pool refs/selectors; inspectable desired/resolved state. | API group/version, reference/rename behavior, file roots, plugin schema boundary and Session ownership of binding instances. |
-| 2. Profile preparation and composition | Structured activation steps plus agent guidance in the Profile; apply only to permitted Resources; record versions/results; explicit replacement/addition of default Conduits. | Required/optional failures, conflict handling, refresh boundaries and precedence between Profile defaults, Pool defaults and Session choices. |
+| 1. Object identity and configuration | YAML/JSON over one typed object graph; versioned envelope; strict core and explicit plugin schemas; inspectable desired/resolved state. | API group/version, reference/rename behavior, file roots, Session ownership of bindings, offline validation versus live probes, and semantic migration rules. |
+| 2. Profile preparation and composition | Profile-owned steps plus guidance over permitted Resources; replacement for explicit overrides, set membership for Pools, narrowing for filters, constrained capability unions for access. | Missing/null/empty semantics, default-Conduit precedence, required/optional failures, conflict handling, refresh boundaries and the effects of apply/prepare. |
 | 3. Provider execution and continuity | Rust protocol adapters beneath provider definitions/catalogs; explicit account bindings; retained history plus target-specific context projections. | Initial provider/library scope, context evidence/compaction behavior and subscription feasibility criteria. Native-runtime adapters remain separate. |
 | 4. Conduit interaction contracts | Compare capability requests, retained exchanges and observations; preserve native MCP operations with version-specific compatibility. | Initial families, addressing/fan-out, durable acceptance, outcomes/replay, attention and cancellation. No room or wake policy is reinstated. |
 | 5. First experiment and release boundary | Resolve the YAML graph offline, validate four accounts, exercise the minimal runtime, then shared memory/MCP and the chosen communication flow. | Memory backend/budgets, first native packages/services, isolation backend, success criteria and which capabilities can wait. |
 
-Two findings deserve explicit attention: Pi's inspected MCP lifecycle predates the chosen
-July 2026 standard, and its history conversion does not fence opaque state by account.
-Neither invalidates the five concepts; both affect adapter contracts and acceptance tests.
+The configuration recommendation is to define semantics before adding a template or
+expression language. Review [composition operators](research/CONFIGURATION.md#composition-needs-several-operators)
+and [validation/effect boundaries](research/CONFIGURATION.md#validation-and-effects-are-separate-contracts)
+with the same YAML example. The tested Compose include behavior differed from its current
+documentation; this supports keeping semantic fixtures alongside schema versions.
+
+The Pi findings still matter: its inspected MCP lifecycle predates the chosen July 2026
+standard, and its history conversion does not fence opaque state by account. These affect
+adapter contracts and acceptance tests, without changing the five concepts.
 
 ## Profiles
 
@@ -53,7 +61,7 @@ references, activation instructions and limits a Profile can author. How are reu
 loading conventions supplied without Profile inheritance? Define Session overrides,
 Profile deletion and explicit reconfiguration without freezing live permission limits.
 
-**Activation instructions.** Use the [loader findings and preparation proposal](research/REFINEMENTS.md#profile-activation-and-pool-resources)
+**Activation instructions.** Use the [loader findings and preparation proposal](research/PI_CONNECTORS.md#profile-activation-and-pool-resources)
 to determine what Profile/model/runtime defaults handle, how an
 author overrides them in the template, and how a Session applies them to permitted
 Resources. Separate discovery, compatible import/registration and context loading. Resolve
@@ -172,7 +180,7 @@ not selected dependencies:
 
 | Reference | Relationship it informs |
 | --- | --- |
-| [Pi re-review](research/REFINEMENTS.md) and [earlier investigation](RESEARCH_PI.md), including loaders, pi-ai, pi-mcp, pi-telemetry, Durable and Chord | Profile activation, Session execution, Resource compatibility and Conduit contracts. |
+| [Pi re-review](research/PI_CONNECTORS.md) and [earlier investigation](research/PI_RUNTIME.md), including loaders, pi-ai, pi-mcp, pi-telemetry, Durable and Chord | Profile activation, Session execution, Resource compatibility and Conduit contracts. |
 | [Kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/), [labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/), [API versions](https://kubernetes.io/docs/reference/using-api/), [CRD versioning](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/) | Common authoring conventions, references, extensibility and version evolution across the model. |
 | [Gateway API](https://gateway-api.sigs.k8s.io/docs/concepts/api-overview/) and [reference grants](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/) | Declared relationships, selection, authority and observed binding status. |
 | [MCP architecture](https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture) and [A2A](https://a2a-protocol.org/v1.0.1/specification/) | Resource capability exchange and Session interaction; distinguish protocol guarantees from application contracts. |
@@ -181,7 +189,7 @@ not selected dependencies:
 | [Xerj](https://github.com/xerj-org/xerj), native skill sources such as [Superpowers](https://github.com/obra/superpowers), [Matt Pocock's skills](https://github.com/mattpocock/skills), and [Ponytail](https://github.com/DietrichGebert/ponytail) | Replaceable Resource backends and native packages; no mandated storage or skill framework. |
 | [Spec Kit](https://github.com/github/spec-kit) | Concrete scenarios and reviewable requirements separated from implementation planning. |
 
-The [completed comparison](research/REFINEMENTS.md#communication-lessons-for-typed-conduits)
+The [completed comparison](research/PI_CONNECTORS.md#communication-lessons-for-typed-conduits)
 and [YAML failure matrix](research/CONFIGURATION.md#failure-matrix-for-the-example) use these
 flows: four independent Sessions accessing shared Pools; a review request and result; a finding sent to multiple
 permitted recipients including one reconnecting later; a slow observer; a permission change
@@ -194,7 +202,7 @@ transport or automatic wake policy is selected yet.
 
 Design the experiment before starting implementation or enrolling accounts. Keep own-runtime
 subscription feasibility early so UI work does not conceal a blocking integration assumption.
-The [Pi trial proposal](RESEARCH_PI.md#proposed-experiment-sequence) supplies fault cases,
+The [Pi trial proposal](research/PI_RUNTIME.md#proposed-experiment-sequence) supplies fault cases,
 not a fixed implementation order.
 
 | Interaction to exercise | Evidence required |

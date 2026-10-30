@@ -6,7 +6,7 @@ instructions belong to Profiles. Conduit owns its Rust runtime and a replaceable
 
 Read this report's recommendation, then [the configuration proposal](CONFIGURATION.md)
 and [the connected YAML example](five-concepts.proposal.yaml). The earlier
-[Pi investigation](../RESEARCH_PI.md) remains the detailed source for Durable, frontend
+[Pi investigation](PI_RUNTIME.md) remains the detailed source for Durable, frontend
 coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) groups the rulings.
 
 ## Recommendation
@@ -493,7 +493,7 @@ Durable's existing research remains applicable: persist intent, perform the effe
 outcome before claiming completion; use ownership and stale-worker fencing; distinguish input
 acceptance from execution; never infer external exactly-once effects from local transactions.
 The v0 Rust loop does not need Pi Durable's entire workflow engine, script replay or hot reload.
-[Earlier detailed investigation](../RESEARCH_PI.md#pi-durable-in-depth)
+[Earlier detailed investigation](PI_RUNTIME.md#pi-durable-in-depth)
 
 ## Validation performed and next experiment
 

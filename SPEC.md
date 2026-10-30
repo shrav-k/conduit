@@ -127,6 +127,6 @@ concept or relationship they refine. Memory search, account adapters, observatio
 sandboxing support this model; they do not introduce parallel organizational frameworks.
 
 [DESIGN.md](DESIGN.md) is authoritative for accepted behavior. [REVIEW.md](REVIEW.md)
-contains remaining choices, research and staged work. [RESEARCH_PI.md](RESEARCH_PI.md)
+contains remaining choices, research and staged work. [Pi runtime research](research/PI_RUNTIME.md)
 provides evidence, not an additional specification. Implementation begins after the
 configuration contracts and initial experiment are agreed.

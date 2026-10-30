@@ -1,12 +1,58 @@
-# Configuration research and proposed object model
+# Configuration languages, contracts and the Conduit object model
 
 2026-10-30. **Proposal for review; no schema or field names are accepted by this document.**
 The five concepts and Profile-owned activation are already accepted. This report proposes
-how to express them without turning Conduit into another deployment framework.
+how to express them without turning Conduit into another deployment framework. The research
+covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 
-Read alongside [the Pi re-review](REFINEMENTS.md) and the
+Read alongside [the Pi re-review](PI_CONNECTORS.md) and the
 [complete illustrative YAML](five-concepts.proposal.yaml). The YAML has synthetic paths,
 accounts and endpoints; it is an authoring example, not executable configuration.
+
+## Recommendation and reading guide
+
+Use **YAML/JSON as an authoring surface over a typed, versioned graph of the five objects**.
+Conduit's actual language is the meaning of those objects: references, defaults, composition,
+constraints, transitions and effects. YAML alone defines none of that. Keep a small core;
+extend Resource and Conduit contracts through explicit plugin schemas. Do not embed a new
+general-purpose template, inheritance or programming language in v0.
+
+External generators could later emit the same canonical objects. CUE, Dhall, Nickel or
+Jsonnet would then be authoring choices, not alternate authority or runtime paths. The CLI,
+MCP surface and frontends should consume the same validated model and expose why each
+binding, setting and preparation action was selected.
+
+For collaborator review, read [language qualities](#what-makes-a-good-configuration-language),
+[composition](#composition-needs-several-operators), and
+[validation and effects](#validation-and-effects-are-separate-contracts), then inspect the
+[five-object proposal](#how-the-five-objects-connect). The comparisons and
+[papers](#research-papers-and-their-limits) explain the reasoning. Exact fields, versions
+and new behaviors remain recommendations, not accepted changes to DESIGN.md.
+
+## What makes a good configuration language
+
+A representative configuration should reveal the system's relationships without making
+the reader reconstruct them from scripts or implied defaults. For Conduit, that means
+being able to trace Profile → Session → Conduit → Pool → Resource, and Session-to-Session
+interaction, without confusing membership, authority and activation.
+
+| Quality | Concrete requirement to consider for Conduit |
+| --- | --- |
+| Domain fidelity | The five objects retain one meaning each. A Pool collects; a Conduit connects and filters; Profile instructions determine activation. |
+| Predictable evaluation | Given the same declared inputs and versions, static resolution produces the same result. Live discovery and authorization observations are recorded separately. |
+| Explicit dependencies | References resolve to identifiable objects and versions. Relative paths have a known base; credentials and environment inputs are deliberate. |
+| Controlled expressiveness | Reusable objects and selectors cover common cases. Arbitrary conditionals, scripts and inheritance chains need demonstrated use cases before becoming core syntax. |
+| Clear composition | Each field declares replacement, set membership or ordered behavior. Permission constraints are not merged like ordinary settings. |
+| Useful types | An account reference, byte limit, token budget, duration and operation name are distinct domains, even if some serialize as strings or integers. |
+| Inspectability | Show authored value, resolved value, source, applicable limits, unsupported capabilities and the next proposed effects. |
+| Helpful errors | Report the object, source location, field path, violated rule and a plausible repair. Preserve multiple independent errors in one report. |
+| Evolution | Defaults, interpretation and merge behavior are versioned alongside field shape. Old files do not silently acquire new meaning. |
+| Tool parity | Editors, CLI, APIs, agents and frontends use shared schemas and semantic checks. A valid-looking model-generated file has no special trust. |
+
+These are proposed design criteria, not a claim that one notation guarantees them. A short
+file can conceal a complicated resolution process; a longer explicit graph can be easier to
+inspect. Judge the result by the user's ability to explain and change a Session's effective
+configuration, not just line count.
 
 ## What to borrow
 
@@ -33,6 +79,210 @@ have deletion consequences in Kubernetes; they are the wrong representation for 
 Full server-side field ownership, admission webhooks, Kubernetes namespaces/RBAC, Helm,
 Terraform planning engines and a configuration programming language are unnecessary v0
 dependencies. Start with explicit objects, validation, resolution and inspection.
+
+## Kubernetes: an API model with configuration semantics
+
+The most useful Kubernetes idea is that configuration is a representation of API objects,
+with desired and observed state kept distinct. Its object conventions give identity,
+concurrency and change tracking separate roles. A successful write is not proof that a
+controller has achieved the requested result. This maps well to a Session whose configuration
+is valid while authentication or Resource preparation is still unavailable.
+[Objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) ·
+[API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md)
+
+### Schema includes topology, defaults and transitions
+
+Custom-resource structural schemas constrain shape and govern unknown-field pruning;
+selected subtrees can preserve unknown data. Kubernetes defaulting and nullable fields
+interact, and read-time defaults need not have been stored. CEL validation can compare new
+and old values for transition rules; expression cost and collection sizes matter. These
+are application semantics beyond YAML parsing. Kubernetes' OpenAPI schema support should
+not be treated as interchangeable with every JSON Schema dialect.
+[Custom-resource definitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/)
+
+For Conduit, reject unknown core fields rather than pruning a misspelled limit. Reserve
+explicit schema-bearing plugin payloads for extension. Validate both a new object and its
+proposed transition: an allowed final value does not necessarily make every live transition
+safe. Keep conditions requiring current credentials or OS enforcement out of claims made
+by an offline schema check.
+
+### Concurrent editing is not ordinary overlay merging
+
+Server-side apply tracks field managers and conflicts. Schema topology distinguishes
+atomic collections, sets and maps keyed by selected fields; it also controls granular
+versus atomic maps. Changing topology can change update ownership. Omitting a previously
+managed field can relinquish or remove it. Field management is an editing mechanism, not
+an authorization identity, and other update mechanisms have different conflict behavior.
+[Server-side apply](https://kubernetes.io/docs/reference/using-api/server-side-apply/)
+
+Conduit does not need that entire engine for v0. Whole-object revision checks plus explicit
+Session overrides are easier to explain. If multiple controllers eventually manage different
+parts of an object, adopt field ownership deliberately, with a migration story. Merely naming
+list entries does not establish whether updating one entry replaces or merges the list.
+
+Kustomize is a separate configuration transformation layer. Our local probe merged a
+built-in Deployment's environment entries by name, but replaced a custom Profile list when
+no corresponding schema was supplied. This is evidence about the tested transformations,
+not Kubernetes server acceptance or authorization.
+[Kustomize](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
+
+### Versions and dry runs have precise boundaries
+
+Custom-resource served versions, storage versions, conversion and stored-object migration
+are separate concerns. Changing the version label alone does not migrate meaning.
+Conduit should initially support one authoring version while recording enough identity
+and source information to add explicit migrations later.
+[Versioning](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/)
+
+Kubernetes server dry runs execute validation and relevant admission/merge processing
+without persisting the result; they require authorization and compatible admission behavior.
+They are not an offline parse. Conduit should name its checks by what they actually do,
+instead of using one ambiguous “dry run” for parsing, account probes and package installation.
+[API dry runs](https://kubernetes.io/docs/reference/using-api/api-concepts/)
+
+## Docker: several languages for different effects
+
+Docker is not one configuration language. A [Dockerfile](https://docs.docker.com/build/concepts/dockerfile/)
+describes an image build, including instructions that execute commands. Compose describes
+an application model. [Bake](https://docs.docker.com/build/bake/) supplies build targets and
+groups using HCL, JSON or Compose input. Their shared ecosystem does not make their
+evaluation or effects interchangeable.
+
+This is useful for Conduit: declaring a Resource, preparing its native package and invoking
+it are different operations. A Profile can describe preparation without turning ordinary
+configuration loading into an implicit build or agent execution.
+
+### Compose is accessible because it provides a domain model
+
+Compose's familiar YAML still has substantial semantics:
+
+| Mechanism | Behavior and implication |
+| --- | --- |
+| [Merging](https://docs.docker.com/reference/compose-file/merge/) | Mappings combine and many sequences append. Commands have replacement behavior; volumes and ports have distinct uniqueness keys. Explicit reset/override tags change the result. Conduit needs field-specific rules, especially for access and activation. |
+| [Interpolation](https://docs.docker.com/reference/compose-file/interpolation/) | Substitution occurs per file before merging. Unset variables can warn and become empty; required forms fail. This makes the input environment part of meaning. Prefer declared inputs over implicit host-environment expansion. |
+| [Fragments](https://docs.docker.com/reference/compose-file/fragments/) | YAML anchors offer document-local reuse; they are resolved before interpolation. They do not define stable cross-file object references or package identities. |
+| [Extensions](https://docs.docker.com/reference/compose-file/extension/) | The `x-` convention reserves ignored fields. Conduit needs a distinction between inert annotations and executable plugin configuration that requires a known schema. |
+| [Version field](https://docs.docker.com/reference/compose-file/version-and-name/) | Compose's old top-level version is now informational/obsolete; it does not pin an older schema interpretation. Conduit's proposed `apiVersion` must have a stronger, explicit contract. |
+| [Canonical rendering](https://docs.docker.com/reference/cli/docker/compose/config/) | The CLI exposes a resolved application model. Conduit should likewise make effective configuration inspectable, with sensitive values protected. |
+| [Startup order](https://docs.docker.com/compose/how-tos/startup-order/) | Started dependencies are not necessarily ready; health/completion conditions are distinct. Resource declaration, preparation and usability need separate status. |
+
+Build-time `ARG` and image/runtime `ENV` also have different lifetimes; neither is a suitable
+secret store. Conduit should keep credential references outside ordinary parameter merging
+and label when a value is consumed: at resolution, preparation or execution.
+[Build variables](https://docs.docker.com/build/building/variables/)
+
+### A concrete documentation and implementation mismatch
+
+The inspected [Compose include documentation](https://docs.docker.com/reference/compose-file/include/)
+says conflicting names are not merged. Installed **Compose 5.1.0** instead merged a root
+service override with an included service in our fixture: the root image won and the
+included volume survived. Its [dependency declaration](https://github.com/docker/compose/blob/v5.1.0/go.mod)
+pins compose-go 2.10.1, whose [include implementation](https://github.com/compose-spec/compose-go/blob/v2.10.1/loader/include.go#L176)
+calls the merge routine for that collision. This conclusion is limited to that version and
+case; it does not establish all include-conflict behavior across releases.
+
+Synthetic reproduction:
+
+```yaml
+# module/compose.yaml
+services:
+  worker:
+    image: fixture.invalid/never-pulled:one
+    volumes: [./data:/data]
+```
+
+```yaml
+# compose.yaml
+include: [./module/compose.yaml]
+services:
+  worker:
+    image: fixture.invalid/never-pulled:two
+```
+
+Rendering with `docker compose -f compose.yaml config --format json` on the tested version
+produced image `:two` and the module-relative volume. No container was started. The lesson
+for Conduit is to maintain executable semantic fixtures alongside prose and schemas:
+field shape can remain unchanged while merge behavior changes the resulting system.
+
+### Offline observations
+
+Thirteen checks passed against installed **Compose 5.1.0**, **kubectl 1.34.1** and its
+**Kustomize 5.7.1**. They used synthetic temporary files, a minimal environment, an empty
+Docker configuration directory and an absent kubeconfig. Only local configuration rendering
+ran; no daemon operation, image pull, cluster request, login or model call occurred.
+
+| Checks | Observed result |
+| --- | --- |
+| 1–3: Compose overlays | DNS appended; command replaced; unchanged environment keys survived; volume target collisions replaced sources while distinct published ports coexisted. |
+| 4: Explicit tags | `!reset` cleared ports and `!override` replaced DNS. |
+| 5–6: Interpolation | Missing value warned and became empty; a required value failed rendering. |
+| 7: Cross-file anchor | An alias in another file could not resolve the first file's anchor. |
+| 8–9: Include | Module-relative paths were preserved; the root service override merged as described above. |
+| 10–11: Validation/version | A misspelled service field was rejected; an `x-` field was accepted and legacy `version` warned. |
+| 12–13: Kustomize | Built-in named environment entries merged; a custom list without supplied schema replaced as a whole. |
+
+These fixtures establish local behavior only. Kubernetes documentation was read as current
+on 2026-10-30; no matching server was tested. The other languages below were investigated
+through their primary documentation, not executed or benchmarked.
+
+## Alternative languages and contract systems
+
+The useful comparison is what each system contributes to authoring, validation and evaluation,
+not which has the nicest syntax. None is selected as a dependency by this research.
+
+| System | Mechanism worth understanding | Fit and limitation for Conduit |
+| --- | --- | --- |
+| [CUE](https://cuelang.org/docs/reference/spec/) | Values and constraints share a model; unification combines constraints, is commutative/associative/idempotent, and detects contradictions. Defaults involve alternatives rather than arbitrary last-writer precedence. | Strong inspiration for narrowing filters and typed validation; possible external authoring/schema tooling. Constraint intersection is not the same operation as Session override or activation sequencing. |
+| [Dhall](https://docs.dhall-lang.org/discussions/Safety-guarantees.html) | Typed, total configuration functions and semantic integrity checks for imports. Imports can involve files, environment or network; termination does not guarantee cheap evaluation or successful I/O. | Useful model for reproducibility, typed composition and pinned dependencies. Could generate canonical objects; does not replace live access checks or runtime readiness. |
+| [Nickel contracts](https://nickel-lang.org/user-manual/contracts/) and [merging](https://nickel-lang.org/user-manual/merging/) | Composable configurations with runtime contracts, delayed checks and priority-aware merging. Diagnostics can identify the source of a contract violation. The merging guide itself carries a version caveat. | Good lessons for source-aware errors and defaults. Deferred validation means successful construction alone may not check every field; whole-output validation needs an explicit boundary. |
+| [Jsonnet](https://jsonnet.org/ref/language.html) | Functional generation and object composition, with lazy evaluation and explicit external inputs. Its documentation recommends top-level arguments over globally coupled external variables for libraries. | Useful optional generator for repeated objects. Functions and inheritance should not become required knowledge for understanding a resolved Conduit Session. |
+| [CEL](https://cel.dev/overview/cel-overview) | An expression environment with declared variables/functions and separate parsing, checking and evaluation. | Candidate for bounded predicates if fixed selectors become insufficient. Define types, cost limits and permitted functions first; no expression engine is needed to ship refs and label selectors. |
+| [Terraform conditions](https://developer.hashicorp.com/terraform/language/validate) | Input validation, preconditions, postconditions and non-blocking checks serve different stages and consequences. Some facts depend on values only known later. | Distinguish invariants from operational checks and observations. A connection-health warning and an invalid permission request should not share one generic validation outcome. |
+
+### JSON Schema describes data, not the entire contract
+
+JSON Schema's `default`, `readOnly` and `writeOnly` are annotations; the evaluator does not
+thereby fill missing values or enforce authorization. Conduit needs explicit resolution and
+write permissions, and distinct authoring/observation shapes where appropriate.
+[Annotations](https://json-schema.org/understanding-json-schema/reference/annotations)
+
+`allOf` requires every subschema; it is not inheritance with field overrides. `oneOf` requires
+exactly one match. Prefer explicit discriminators for Resource configuration and operation
+variants so errors can point at the intended branch.
+[Combining schemas](https://json-schema.org/understanding-json-schema/reference/combining)
+
+Closed objects help catch typos, but `additionalProperties` considers its local schema;
+composition may require `unevaluatedProperties` or a different schema design. Declare a
+specific supported dialect and test the chosen validator rather than assuming editor support
+means runtime parity. Schema `$ref` references schemas; a Conduit Resource reference points
+to an actual object and requires graph resolution.
+[Object validation](https://json-schema.org/understanding-json-schema/reference/object)
+
+For Rust, choose one authoritative schema/type definition path and generate the other
+representations where practical. Shared fixtures should verify Rust decoding, editor schemas
+and plugin validation agree. Do not hand-maintain three competing interpretations of the
+same field. The source-of-truth toolchain and crates remain implementation decisions.
+
+## Research papers and their limits
+
+These sources support the design reasoning; none measures Conduit or proves a particular
+language will work for agent systems. Findings from large operational systems and formal
+contract languages should be transferred as testable design hypotheses.
+
+| Paper | Evidence and useful conclusion | Limit and proposed Conduit response |
+| --- | --- | --- |
+| Xu and Zhou, **[Systems Approaches to Tackling Configuration Errors: A Survey](https://cseweb.ucsd.edu/~tixu/papers/csur.pdf)**, ACM Computing Surveys, 2015. [DOI](https://doi.org/10.1145/2791577) | Organizes prevention, detection and diagnosis approaches, including the difficulty of systematic configuration testing. | A survey of earlier systems, not a comparison of our candidate syntax. Build a taxonomy of failures spanning parsing, references, compatibility, transitions and environment; schema validity is one layer. |
+| Xu et al., **[Hey, You Have Given Me Too Many Knobs!](https://cseweb.ucsd.edu/~tixu/papers/fse15.pdf)**, ESEC/FSE 2015. [DOI](https://doi.org/10.1145/2786805.2786852) | Studies operational configuration use in commercial and open-source systems and identifies over-designed options, inappropriate low-level controls and opportunities to simplify domains. | Observed option use does not prove a universal ideal option count. Keep the five-object core small; add settings for concrete scenarios rather than exposing every runtime implementation choice. |
+| Xu, Pandey and Klemmer, **[An HCI View of Configuration Problems](https://arxiv.org/abs/1601.01747)**, 2016 preprint. | Reframes configuration around human interaction and assistance, rather than syntax alone. | Exploratory framing, not a controlled evaluation of Conduit. Show the effective graph and explanations next to errors; do not require users to remember invisible precedence. |
+| Xu et al., **[Early Detection of Configuration Errors to Reduce Failure Damage](https://www.usenix.org/conference/osdi16/technical-sessions/presentation/xu)**, OSDI 2016. [Paper](https://www.usenix.org/system/files/conference/osdi16/osdi16-xu.pdf) | PCheck brings checks of later-used configuration forward, reducing the damage of errors discovered only on particular execution paths. | The approach is neither sound nor complete for all configuration failures; valid values can still be wrong for a workload. Separate offline checks from explicit environment probes and retain runtime failure handling. |
+| Zhang et al., **[An Evolutionary Study of Configuration Design and Implementation in Cloud Systems](https://arxiv.org/abs/2102.07052)**, 2021 study. [Paper](https://arxiv.org/pdf/2102.07052) | Examines 1,178 commits over 2.5 years in HDFS, HBase, Spark and Cassandra; configuration evolution includes defaults, constraints, dependencies and diagnostic changes. | Four systems and a commit-selection method limit generalization. Treat changes in defaults and interpretation as compatibility changes, and retain migration/conformance examples. |
+| Tang et al., **[Interpreted Formalisms for Configurations](https://arxiv.org/abs/1712.04982)**, 2017 preprint. [Paper](https://arxiv.org/pdf/1712.04982) | Uses formal types and constraints in a Hadoop configuration case study to express facts that primitive strings/integers miss. | Narrow prototype, not proof of whole-system correctness; richer environment-dependent cases remain difficult. Give durations, budgets, references and constraints domain meaning without requiring a theorem prover in v0. |
+| Freund et al., **[Union and Intersection Contracts Are Hard, Actually](https://arxiv.org/abs/2106.06278)**, DLS 2021; revised preprint 2022. [DOI](https://doi.org/10.1145/3486602.3486767) | Explains subtle tradeoffs in higher-order union/intersection contracts, including effects and blame. | This does not invalidate ordinary JSON Schema Boolean combinations. Avoid embedding arbitrary higher-order contract programs; start with tagged data variants and explicit operation/state-machine semantics. |
+
+For the next discussion, the most useful reading order is **Too Many Knobs → Evolutionary
+Study → HCI View**, followed by the formal-contract papers if we consider a richer embedded
+language. They argue for careful semantics and diagnostics, not for choosing a notation by
+popularity alone.
 
 ## Proposed envelope and versions
 
@@ -212,6 +462,108 @@ permissions. When multiple steps conflict, report the conflict or use an explici
 do not choose by filesystem scan order. Distinguish downloaded, registered, advertised,
 loaded into context and actually invoked in the observed result.
 
+## Composition needs several operators
+
+“Merge configuration” is too vague for this system. These relationships have different
+algebraic properties and should have distinct, documented behavior:
+
+| Relationship | Proposed composition | Example |
+| --- | --- | --- |
+| Profile defaults and Session overrides | Ordered replacement for explicitly supplied settings. | A selected model replaces the default; order matters. |
+| Pool refs and selector matches | Set union, deduplicated by resolved identity. | A Resource selected twice remains one Resource with two membership explanations. |
+| Filters and mandatory limits | Intersection/narrowing; repeating a constraint cannot widen access. | A path filter and read-only limit both apply. |
+| Independent authorized bindings | Union of complete constrained capabilities. | Read `src/**` plus write `docs/**` does not imply write `src/**`. |
+| Profile activation | Explicit sequence/dependencies and conflict rules. | Registering a tool and loading instructions are actions, not unordered set members. |
+| Desired state and observation | Compare/record; never merge observation into authored intent. | An unavailable connection does not rewrite the requested Resource configuration. |
+
+The narrowing analogy comes from constraint systems such as CUE; the exact Conduit access
+calculus still needs tests. In particular, exclusions and independent grant paths must retain
+their accepted meanings. One universal deep-merge function would erase those distinctions.
+
+### Missing, empty, null and reset
+
+Recommended behavior for the **Session override of a default Conduit list**, not a rule for
+every field and not settled syntax:
+
+| Authored form | Proposed meaning |
+| --- | --- |
+| Override absent | Use the default selection determined by the accepted precedence rules. |
+| Explicit replacement with `[]` | Select no default Conduit bindings. |
+| Explicit replacement with entries | Use exactly the supplied declarations, subject to authority and limits. |
+| Explicit add operation | Extend the selection and deduplicate identical declarations. |
+| `null` | Reject unless the field explicitly defines a nullable value; do not silently treat it as reset. |
+| Reset operation | If introduced, explicitly return to current defaults during reconfiguration; never infer it from YAML emptiness. |
+
+Make similar choices for each public field. Do not give numeric zero an implicit “unlimited”
+meaning or interpret an empty filter as unrestricted unless the contract explicitly says so.
+When changing defaults, preserve existing Sessions' resolved behavioral configuration; the
+same protection must not freeze live access limits.
+
+## Validation and effects are separate contracts
+
+A Resource contract needs more than the JSON shape of its configuration. For example, a
+memory update may be structurally valid but based on a stale revision; a tool call may be
+accepted while its outcome is unknown. Describe the following layers explicitly:
+
+| Layer | What it can establish | What it cannot establish alone |
+| --- | --- | --- |
+| Syntax and shape | Supported YAML subset, field types, required/disallowed fields, tagged variants and bounds. | The referenced Pool exists or a credential is usable. |
+| Object graph | Unique identity, reference kinds, versions, selector semantics, forbidden dependency cycles and resolution bases. | A live remote service supports the requested operation now. |
+| Behavioral contract | Preconditions, valid transitions, operation effects, outcome meanings, retry/cancel behavior and error categories. | Enforcement by an unavailable or incompatible adapter. |
+| Environment and authority | Current authenticated identity, effective capabilities, compatibility and available enforcement. | Continued availability or unchanged authority after the check. |
+| Execution evidence | What was attempted, accepted, performed, observed or remains unknown. | That every effect outside Conduit's visibility was captured. |
+
+Graph cycles need relationship-specific rules. Mutual communication can be valid, while
+a preparation dependency cycle may be impossible to schedule. Do not reject every cycle
+merely because the objects form a graph.
+
+### Proposed resolution and effect boundaries
+
+```mermaid
+flowchart TD
+  A[Authored YAML or JSON with source locations] --> B[Parse and validate declared schemas]
+  B --> C[Resolve defaults, references and static constraints]
+  C --> D[Inspect effective configuration and preparation plan]
+  D --> E[Explicit authorized commit or preparation]
+  E --> F[Record observed outcomes and coverage]
+  F --> G[Explicit execution or resume]
+  C -. optional environment probes .-> D
+  E -. recheck versions and current access .-> C
+```
+
+This is a conceptual pipeline, not a requirement for one validation pass or one process.
+Schema checks may run again after normalization and resolution. Proposed user-facing
+operations should expose their effects:
+
+- **Validate/resolve offline:** read the selected local inputs and cached schemas; no package
+  execution, login, network retrieval or model turn. Unresolved live facts remain unknown.
+- **Probe explicitly:** inspect declared services or identities using an adapter that states
+  its effects. Even a connection check can refresh credentials or start a local MCP process;
+  do not automatically label every probe read-only.
+- **Prepare/apply:** record the configuration change and perform authorized installations,
+  registration or binding changes with separate outcomes. Applying a Session export does
+  not implicitly launch a model or resume stopped work.
+- **Execute/resume:** start agent work under current permissions through the selected runtime.
+
+A preview is an observation, not a durable permission grant. At commit/dispatch, recheck
+relevant generations, current access and environmental assumptions. A local object-batch
+commit can be atomic while external preparation cannot; do not promise rollback of an
+already completed package install or remote effect.
+
+For inspection, retain both authored and resolved representations. An error should identify
+the source field and the reason a capability is absent, with scoped diagnostic detail.
+For example: “Profile activation step `load-guide` matched Resource `guide`, but the selected
+Conduit permits metadata only; content read is unavailable.” Proposed stable diagnostic
+codes would let frontends and agents react without parsing prose.
+
+Record a source digest separately from a normalized configuration digest. The latter should
+include semantic version inputs and the resolved behavioral snapshot; neither digest is an
+object UID or proof of permission. Live membership, credential freshness and authorization
+belong in dated observations, not a claim that a fixed hash makes the running system immutable.
+Source locations and comments should survive editing where practical even though they are
+not part of semantic equality. Secret values must not leak through resolved exports or hashes
+of easily guessable secrets.
+
 ## Resolution, updates and YAML semantics
 
 The proposed v0 loader reads explicit local configuration roots, with optional predictable
@@ -244,16 +596,28 @@ list replacement for overrides plus a separate explicit add operation. Named act
 can support targeted edits later, once their merge semantics are defined. `null`, omission
 and `[]` must have distinct documented meanings wherever they are accepted.
 
-Recommend local atomic validation/commit of an authored configuration batch, with generation-
-checked edits and a resolution preview. External preparation is not one distributed transaction:
-record each installation/connection outcome and partial availability. An installation already
-performed does not become undone merely because a later MCP connection failed.
-
 Status conditions should separately express validity, reference resolution, authorization,
 compatibility, preparation and runtime readiness, with the evaluated generation. A single
 `ready: true` cannot say whether a model is entitled, a token is fresh, a tool is available or
 an OS restriction is enforced. Preserve unknown states. Avoid copying credentials or full
 private prompt content into status exports.
+
+### Version meaning, not just field names
+
+Maintain conformance examples for defaults, missing/null/empty behavior, list composition,
+reference resolution, transitions and failure outcomes. A change to any of those may break
+an existing configuration without changing its schema shape. Unknown contract versions
+should remain explicitly unsupported, not be interpreted as the nearest familiar version.
+
+For each proposed breaking change, show old input, old resolved meaning, migrated input and
+new resolved meaning. Avoid automatic migrations that widen access, change the selected
+account, start work or lose native configuration. An alpha designation permits iteration;
+it does not eliminate the need to identify which interpretation produced a Session.
+
+Do not import Kubernetes' whole controller model or Docker's include/overlay machinery just
+to gain familiar syntax. The first implementation can be a Rust resolver and registry behind
+a shared API, with explicit operations and adapters. Future richer authoring tools can target
+that same contract.
 
 ## Failure matrix for the example
 
@@ -289,6 +653,14 @@ conformance, validation against an implemented Conduit schema or proof of author
 Synthetic source paths and accounts are intentionally unresolved at runtime. All fields
 remain proposals.
 
-The next discussion can settle this in a few groups: the object/reference envelope;
-Profile activation and update rules; default-Conduit composition; and the initial Conduit
-interaction families. Rust types, formal schemas and runtime code should follow those rulings.
+The Compose/Kustomize checks above add evidence about reference systems; they do not validate
+this proposed Conduit language. No CUE/Dhall/Nickel/Jsonnet evaluator, Kubernetes server,
+Conduit runtime or live account behavior was tested. Research used official documentation,
+versioned source where relevant and the linked papers; current documentation can differ
+from installed implementations, as the include fixture demonstrated.
+
+The next configuration discussion can resolve three connected choices: **the object and
+reference envelope; the composition/default/update semantics; and the validation/effect
+boundary**. Keep these within groups 1–2 of [REVIEW.md](../REVIEW.md), then return to provider
+continuity and Conduit interaction contracts. Rust types, formal schemas and runtime code
+should follow the rulings.

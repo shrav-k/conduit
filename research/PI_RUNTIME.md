@@ -1,24 +1,16 @@
-# Pi research for Conduit's five-concept model
+# Pi runtime, Durable and ecosystem research
 
 Source investigation: 2026-10-30. This report provides evidence for **Profiles, Sessions,
-Resources, Pools and Conduits**. Current contracts live in [SPEC.md](SPEC.md) and
-[DESIGN.md](DESIGN.md); open decisions are in [REVIEW.md](REVIEW.md). The report's
+Resources, Pools and Conduits**. Current contracts live in [SPEC.md](../SPEC.md) and
+[DESIGN.md](../DESIGN.md); open decisions are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 
-The later [Pi re-review](research/REFINEMENTS.md) refreshes provider/authentication, context
+The later [Pi re-review](PI_CONNECTORS.md) refreshes provider/authentication, context
 conversion, MCP version compatibility and Chord evidence against the five-concept model.
-Start there for those topics and the [YAML proposal](research/CONFIGURATION.md); use this
+Start there for those topics and the [YAML proposal](CONFIGURATION.md); use this
 report for the detailed Durable, frontend and ecosystem investigation. Proposals in either
 report still require a ruling before becoming accepted contracts.
-
-| Concept | Relevant Pi evidence |
-| --- | --- |
-| Profiles | Provider/account resolution, native configuration and resource-loading defaults. Activation instructions belong in Conduit's Profile template. |
-| Sessions | Turn execution, private history/context, frontend state, Durable recovery, child ownership and telemetry. |
-| Resources | Skills/packages, tools, MCP capabilities, memory backends and runtime compatibility. |
-| Pools | Resource discovery and configuration selection as inputs to Conduit's independent, reusable collections. Pi's native grouping rules do not define Pool semantics. |
-| Conduits | MCP/Chord contracts, filtered capability exposure, caller attribution and communication patterns between Sessions. |
 
 Read [the recommendation](#recommendation), [frontend evidence](#frontend-components-for-session-interfaces)
 and [the runtime proposal](#proposed-rust-runtime) first. The [Durable investigation](#pi-durable-in-depth)
@@ -483,44 +475,13 @@ bindings, Resource compatibility and Conduit behavior. Native authentication del
 appropriate for external-agent adapters; Conduit's own provider adapter needs a supported
 path. Native host execution and isolated execution remain distinct from runtime selection.
 
-## Accounts, skills, MCP, and ecosystem lessons
+## Ecosystem resources and execution environments
 
-### Accounts and provider support
+Provider/account bindings, skill preparation and MCP compatibility are maintained in
+[PI_CONNECTORS.md](PI_CONNECTORS.md). The following references add distinct evidence
+about local tooling, memory packages and execution environments.
 
-Pi has Anthropic subscription and OpenAI ChatGPT subscription authentication paths in
-source. Its credential storage is keyed by provider, not by an arbitrary collection
-of profile/account identities. Separate account bindings and coordinated token refresh
-are necessary. A model family, provider label, or successful login is not sufficient
-evidence that two configured account bindings select distinct identities.
-[Providers][openai-provider] · [Anthropic][anthropic-provider] ·
-[Auth storage][auth-storage] · [OpenAI authentication][openai-auth]
-
-For Conduit, model selection, account selection, private conversation storage, and
-resource-service credentials remain separate. Do not copy rotating tokens across
-independently refreshing credential stores. Do not silently substitute API billing. Preserve
-supported native login/refresh for external runtime adapters; evaluate supported
-provider/account adapters for our own runtime, including eligibility and verifiable
-identity. Pi source shows a mechanism, not authorization or a compatibility guarantee
-for every account or future provider policy. The four-account experiment must test
-real account separation after fixture tests.
-
-### Bring your own skills, with explicit compatibility
-
-Pi supports `SKILL.md` instruction bundles and npm/git/local packages containing
-skills, extensions, prompts and themes. Metadata-first discovery and explicit loading
-are useful patterns. Conduit should consume compatible instruction bundles without
-inventing another skills language or package manager. [Skills][skills] · [Packages][packages]
-
-A Pi extension running TypeScript against `AgentSession` is executable runtime code;
-it will not work just because the frontend uses `pi-tui`. Claude/Codex native plugin
-hooks likewise require a compatible runtime or a specific port. Report compatibility
-at the instruction, helper/tool, extension-hook, and presentation layers. Adapters can
-use native installation tooling. Conduit's accepted direction supplies resources through
-Pools and Profile-selected default Conduits. Profile activation instructions describe
-how a Session imports/prepares the permitted selection; the Conduit filters available
-Resources and operations. Pi's loaders, metadata-first discovery and registration patterns
-inform those instructions, with compatibility, precedence and updates still open. Do not
-import an entire native default profile implicitly.
+### pstack compatibility
 
 The local pstack reference contributes bounded subprocess workers, process-group
 cleanup, explicit tool sets, branch-aware views, version manifests, and loopback model
@@ -528,25 +489,6 @@ fixtures. Its inherited environment, one-shot `--no-session` children, and missi
 fallbacks are not Conduit's account/durability/usage contract. Its old Pi target also
 precludes assuming current extension compatibility. [Workers][pstack-workers] ·
 [Usage export][pstack-export] · [Fixture harness][pstack-tests]
-
-### Provider-native MCP and managed access
-
-Version boundary: these Pi findings concern its November 2025 MCP implementation. The
-[re-review](research/REFINEMENTS.md#mcp-as-a-resource-and-conduit-protocol) compares it with
-the July 2026 protocol and evaluates the current official Rust SDK as a candidate. Pi's
-connection lifecycle should not be assumed to implement that newer standard.
-
-Pi's native MCP implementation supports stdio and Streamable HTTP, direct/deferred
-exposure, resources, configuration and authentication. Tool search and Code Mode can
-call tools absent from the top-level advertised list; listing less is not denying
-access. [MCP documentation][mcp] · [Implementation][mcp-source]
-
-Conduit's own runtime should own its MCP clients/broker, preserving provider names,
-schemas, results and workflows. A frontend need not separately register these servers.
-For external agent runtimes, adapters still generate native registration from shared
-connection definitions. Reusing a definition is not sharing a live client or OAuth state.
-Attribute nested calls and carry session authority through every managed path. Full
-upstream operation inspection remains staged; current memory access checks remain core.
 
 ### Shared-memory packages
 
@@ -578,7 +520,7 @@ must be evaluated independently; a remote process protocol alone proves neither.
 ## Communication between Sessions through Conduits
 
 Conduits support resource access and communication between Sessions. The
-[interaction research brief](REVIEW.md#interaction-research) defines the remaining work.
+[interaction research brief](../REVIEW.md#interaction-research) defines the remaining work.
 Separate addressing, authorization, retained exchange, attention and execution when
 comparing candidate contracts; a source library's topology does not choose Conduit's.
 
@@ -609,25 +551,10 @@ merely because a reference offers one.
 
 ## Proposed experiment sequence
 
-This is a design proposal, not authorization to start implementation or log into accounts.
-Keep account/provider feasibility early so a polished UI does not conceal a blocker.
-
-| Stage | Future experiment | Evidence required |
-| --- | --- | --- |
-| 1. UI separation | Minimal `pi-tui` client and simple CLI observer against a fake Conduit state/control service | No `pi-coding-agent`, `pi-agent-core` or `pi-durable` execution dependency; controller transfer, detach and reconnect. Resource loading and model calls remain outside presentation. |
-| 2. Rust runtime slice | Scripted model stream, one tool, one session and persisted intent/result | The Rust loop owns provider/tool calls; accepted versus completed input, cancellation, bounded output and explicit pending recovery. |
-| 3. Supported accounts | Conduit-owned provider/account adapters for two Claude and two OpenAI subscription identities | Verified identity evidence, independent refresh/logout/restart, no implicit API fallback; fixture labels do not count as verification. Resolve unsupported subscription flows explicitly. |
-| 4. Memory Resources | One minimal backend exposed through Pools and differently filtered Conduits | Search excerpts/caps/coverage, explicit reads, denied private direct-ID/search access, CAS conflict, lifecycle, direct live read-only sharing. |
-| 5. Context continuity | Model/account changes, resume, fresh, checkpoint fork, compaction | Stable logical identity, permitted content only, provider-state separation, visible transformations and gaps. |
-| 6. Resource preparation and use | Profile activation of permitted skill/MCP Resources, including a controlled fake server | Compatible imports, familiar schemas, resource-account attribution, current checks on nested/retried calls and honest interception coverage. |
-| 7. Faults and usage | Kill at each intent/effect/result boundary; disconnect UI; fail storage and telemetry | No unsafe automatic replay or duplicate execution, unknown outcomes explicit, usage not double-counted or defaulted to zero. |
-| 8. External runtimes / isolation | Native Claude Code/Codex adapters and isolated mode as separate checks | Shared-capability interoperability versus model-provider support; actual OS boundary, declared network policy and explicit restart after non-revocable access removal. |
-| Session communication | Add after its Conduit contract is agreed | Chosen identity, delivery, ordering, acknowledgement, attention and lifecycle semantics. |
-
-The first usable runtime need not contain general workflow scheduling, deterministic
-script replay, arbitrary hot reload, distributed storage ownership, automatic memory
-extraction, or a new skills packaging system. Its failure behavior should nevertheless
-be explicit before those features are added.
+The current [experiment order](PI_CONNECTORS.md#validation-performed-and-next-experiment)
+and [five-concept acceptance agenda](../REVIEW.md#experiment-across-the-five-concepts)
+are maintained together. The Durable-specific fault cases below supplement that plan;
+they do not define a second implementation sequence.
 
 ### Fault cases worth deriving from Durable
 
@@ -709,17 +636,9 @@ research snapshot; the Durable/frontend links use the newer follow-up snapshot.
 [sqlite-schema]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/durable/src/storage/sqlite/schema.ts
 [storage-conformance]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/durable/src/testing/storage-conformance.ts
 [storage-failures]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/durable/test/harness-storage-failure.test.ts
-[openai-provider]: https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/ai/src/providers/openai.ts
-[anthropic-provider]: https://github.com/earendil-works/pi/blob/f09d01b85e0384647fcab6779d35ab9dabe04be3/packages/ai/src/providers/anthropic.ts
-[auth-storage]: https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/coding-agent/src/core/auth-storage.ts
-[openai-auth]: https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/ai/src/auth/oauth/openai-chatgpt.ts
-[skills]: https://github.com/earendil-works/pi/blob/f09d01b85e0384647fcab6779d35ab9dabe04be3/packages/coding-agent/docs/skills.md
-[packages]: https://github.com/earendil-works/pi/blob/f09d01b85e0384647fcab6779d35ab9dabe04be3/packages/coding-agent/docs/packages.md
 [pstack-workers]: https://github.com/aaalexliu/pstack-pi/blob/c87e65f8ed7ee80d9dc38faeabacc103fce14bc7/extensions/subagent/index.ts
 [pstack-export]: https://github.com/aaalexliu/pstack-pi/blob/c87e65f8ed7ee80d9dc38faeabacc103fce14bc7/extensions/pstack/export-session.ts
 [pstack-tests]: https://github.com/aaalexliu/pstack-pi/blob/c87e65f8ed7ee80d9dc38faeabacc103fce14bc7/tests/pi/README.md
-[mcp]: https://github.com/earendil-works/pi/blob/4a080252f06caf63a525d7873c5d94d3c23887e0/packages/coding-agent/docs/mcp.md
-[mcp-source]: https://github.com/earendil-works/pi/tree/f09d01b85e0384647fcab6779d35ab9dabe04be3/packages/coding-agent/src/extensions/mcp
 [memory-a]: https://github.com/jayzeng/pi-memory/blob/1e276a762a666a7031459fdf7af018cc7966663e/index.ts
 [memory-b-inject]: https://github.com/josephkern/pi-memory/blob/312627ffc5a47de690b3066276009e7d651f8729/src/resident-inject.ts
 [memory-b-writeback]: https://github.com/josephkern/pi-memory/blob/312627ffc5a47de690b3066276009e7d651f8729/src/writeback.ts

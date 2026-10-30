@@ -20,16 +20,25 @@ names for the same responsibility.
 
 ### 2. Bound the first end-to-end workflow
 
-Use Claude and Codex on the same machine, one project/repository, one room, and useful
-shared knowledge. A proposed demonstration is: Claude investigates a change, saves
-its finding, and asks for review; Codex retrieves the finding/evidence and replies.
-Then demonstrate checkpoint-based continuation with visible gaps if capture fails.
+Use two Codex and two Claude subscription accounts concurrently on the same machine,
+one project/repository, one room, and useful shared knowledge. Exercise different
+session scopes, separate private native state, account restart/logout independence,
+and four-way communication. Then demonstrate checkpoint-based continuation with
+visible gaps if capture fails.
 
 The [first interaction surface](SPEC.md#configure-and-reuse-roles) is settled:
-Conduit's CLI launches native agent interfaces. Resolve launch configuration and
-account handling, then the minimal memory backend. Choose exact memory read/write/search
-operations and their returned evidence before selecting a graph, vector engine,
+Conduit's CLI launches native agent interfaces. Resolve account separation and sandbox
+guarantees first, then launch configuration and the minimal memory backend. Choose memory
+read/write/search operations and their returned evidence before selecting a graph, vector engine,
 ontology, or broad plugin schema. Pi and own chat follow the initial workflow.
+
+The immediate ruling is the [execution-isolation contract](DESIGN.md#account-separation-and-execution-isolation):
+whether v0 offers native/profile-separated and OS-isolated modes, which is the default,
+and what roles may require. Account separation is mandatory in either mode. Decide
+local files/processes/services first, then network egress and provider-operation limits.
+Choose a backend only after defining guarantees and required native capabilities.
+Also resolve private state when one account serves differently scoped sessions, auth
+refresh ownership, and scope changes that need an execution restart.
 
 ### 3. Bind collaboration to resources
 
@@ -73,10 +82,11 @@ workflow and its required contracts are agreed.
 
 ## Keep later work out of the critical path
 
-Remote rooms, role-specific wake hooks, comprehensive MCP enforcement, broader sandbox
-tiers, advanced sharing delivery, and automatic classification/extraction stay staged.
-Their principles remain in the specification/design; tier names, sandbox technology,
-full event schemas, exact costs, and plugin ABI details do not need decisions now.
+Remote rooms, role-specific wake hooks, comprehensive MCP operation enforcement,
+advanced sharing delivery, and automatic classification/extraction stay staged.
+Their principles remain in the specification/design. V0 sandbox guarantees and backend
+validation are now on the critical path; full event schemas, exact costs, and plugin
+ABI details remain later decisions.
 
 ## Editing the specification
 

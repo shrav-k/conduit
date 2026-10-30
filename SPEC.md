@@ -6,7 +6,8 @@ Updated: 2026-10-30 · Current design for review · Implementation has not start
 
 Conduit lets users work with different models, agents, accounts, and interfaces while
 sharing relevant knowledge and coordinating work. Its first acceptance scenario is
-Claude and Codex collaborating in one room on the same project, on one machine.
+four simultaneous sessions using two distinct Codex subscription accounts and two
+distinct Claude subscription accounts, collaborating in one room on one machine.
 
 - **Shared continuity:** Conduit owns the portable memory and communication layer;
   each agent owns its planning, execution loop, and working context.
@@ -17,8 +18,9 @@ Claude and Codex collaborating in one room on the same project, on one machine.
 - **Explicit access:** select resources and operations for each session within role
   limits. Making information available does not automatically load it into a model.
 - **Staged control:** design for intercepting outgoing MCP calls while preserving
-  native interfaces. Comprehensive interception, permission enforcement on upstream
-  calls, and sandboxing follow after v0; broader sandboxing may offer tiers.
+  native interfaces. Account separation is required in v0. Select its sandbox modes
+  and guarantees before implementation; comprehensive inspection and enforcement of
+  individual upstream operations can follow later.
 
 ## Core concepts
 
@@ -84,10 +86,17 @@ not particular tool names or configuration syntax.
 
 ### Configure and reuse roles
 
-Support separate Claude subscription logins, simultaneous sessions using different
-accounts, and explicit account/model changes when continuing work. Record each
-execution's actual settings and session overrides. Resource credentials remain
-separate from the model account.
+V0 supports concurrent, separately authenticated Codex and Claude subscription
+accounts. Login, refresh, logout, configuration, and private native history for one
+account must not switch or overwrite another's state. Record each execution's actual
+settings and session overrides; do not silently substitute an account or API billing.
+Resource credentials remain separate from the model account. Account separation
+alone does not establish OS isolation; the supported sandbox guarantees remain under review.
+
+Each session has its own effective scopes and authenticated access to shared memory
+and rooms. Sharing a room or model account does not merge scopes or grant access to
+another participant's private context through Conduit. Native state reuse must respect
+the receiving context.
 
 Use YAML for Conduit's local configuration, with versioned, named objects, explicit
 references, and schema validation. Runtime integrations translate it into native
@@ -154,14 +163,16 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 
 | Scenario | Observable outcome |
 | --- | --- |
-| **Claude and Codex collaborate** | Conduit's CLI launches two role sessions in their native agent interfaces, using one project and room. One saves knowledge and posts a reference; the other retrieves permitted content and replies. Both retain their own context and read progress. |
+| **Four accounts collaborate** | Conduit's CLI launches two Codex and two Claude sessions simultaneously, each using a distinct subscription account, in their native interfaces. All four discuss work in one room; permitted knowledge is retrievable with independent context, scopes, and read progress. Actual account selection is verified rather than inferred from role labels. |
+| **Account state remains separate** | Logging in, refreshing, logging out, or restarting one account does not replace another's credentials/configuration/history. Restarted participants retain their identity and read progress; usage is attributed to the producing execution and account where available. |
+| **Different scopes in one room** | A shared record is available to the intended participants; a private record is denied through Conduit to sessions without access, including direct-ID reads and search. Room membership grants no additional memory access. OS-level isolation has separate acceptance cases once its mode is selected. |
 | **Resume across accounts or agents** | The logical session/room participant remains stable, actual execution settings are recorded, and the receiver gets the permitted checkpoint or explicit context gaps. |
 | **Start fresh** | A new participant has no automatically loaded prior checkpoint/history. Existing files and stored knowledge remain intact and retrievable within scope. |
 | **Independent catch-up** | One participant reads room history without advancing another's position. A restarted session can retrieve retained history; missing/expired content is reported. |
 | **Access changes** | A subsequent managed retrieval or queued delivery uses current permissions. Inaccessible content is omitted without revealing restricted provenance. Already delivered native context is not claimed to be erased. |
 | **Integration gaps** | Unsupported notifications, unavailable sources, unknown runtime state, and missing usage data are visible rather than reported as successful, empty, running, or zero by default. |
 
-Success for the initial demonstration means the two agents exchange useful retained
+Success for the initial demonstration means all four agents exchange useful retained
 knowledge and room messages without manually copying their full conversations, with
 clear participant identity and honest access/delivery/usage coverage. Exact operations
 and recovery cases must be selected in [REVIEW.md](REVIEW.md).
@@ -169,10 +180,11 @@ and recovery cases must be selected in [REVIEW.md](REVIEW.md).
 ## Delivery scope
 
 The first usable workflow prioritizes local collaboration, memory retrieval/writes,
-rooms, role/connection configuration, native skills, and basic managed access.
+rooms, simultaneous account separation, role/connection configuration, native skills,
+and basic managed access. V0 sandbox modes and compatibility are an immediate design decision.
 
-Remote communication, optional wake hooks, comprehensive call interception, broader
-sandbox tiers, and automated memory extraction/classification are later work.
+Remote communication, optional wake hooks, comprehensive call interception, and
+automated memory extraction/classification are later work.
 Advanced sharing semantics guide compatible implementations but do not require the
 whole feature set in v0. Storage engines, wire schemas, YAML field/version conventions
 and file layout, crate layout, and plugin packaging remain unselected.

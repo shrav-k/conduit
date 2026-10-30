@@ -43,6 +43,43 @@ is an inspiration; its tooling and role model are not dependencies. The version
 identifier scheme, exact fields, file layout, precedence, and merge rules remain open.
 Conduit configuration versions are separate from MCP protocol and plugin versions.
 
+## Account separation and execution isolation
+
+Concurrent account separation is required in v0. Keep a role's reusable configuration,
+an account's persistent login, and an execution's effective scopes/state distinct.
+Never implement switching by swapping credentials in one global agent directory.
+Bind Conduit requests to authenticated session/execution identity rather than trusting
+a caller-supplied role or session label. Shared room access does not merge participants'
+permissions. Model-provider credentials do not select resource-provider credentials.
+
+[Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
+through `CLAUDE_CONFIG_DIR`. [Codex state locations](https://learn.chatgpt.com/docs/config-file/environment-variables)
+use `CODEX_HOME`; its [credential backend](https://learn.chatgpt.com/docs/auth#credential-storage)
+can be a file, OS store, or process memory. These are adapter primitives, not proof
+of OS isolation. Validate credential namespaces, refresh behavior, inherited environment,
+native memory, plugins, and daemon attachment for each supported runtime/version.
+
+**Modes under discussion:** both retain the account and Conduit-access guarantees above.
+
+| Mode | Boundary and tradeoff |
+| --- | --- |
+| Native with separate profiles | Keeps each account's setup and state separate while retaining host integration. Native tools still have their actual host privileges; this is not an OS security boundary. |
+| Isolated execution | Encloses the runtime and its child processes with explicit access to selected files/services, excluding other accounts' state and privileged host controls. Some host integrations need bridges or remain unavailable. Backend and network policy are unselected. |
+
+An isolated mode cannot rely only on native command sandbox flags:
+[Claude's Bash sandbox](https://code.claude.com/docs/en/sandboxing#what-runs-outside-the-sandbox)
+excludes file tools, MCP servers, and hooks; [Codex command permissions](https://learn.chatgpt.com/docs/permissions)
+also leave other surfaces under separate controls. Whole-process OS wrappers,
+containers, or VMs are candidates, not selected dependencies.
+
+**Proposed launch contract:** resolve the chosen mode and required capabilities before
+starting work; reject unsupported required isolation rather than silently downgrade.
+Use private execution state and only intended credentials/resources. Do not mount an
+account's entire native history into every role using it. Keep auth refresh coordinated
+instead of blindly cloning rotating credentials. The exact credential/state layout,
+mode defaults/minima, network restrictions, and handling of live scope changes need review.
+Filesystem isolation does not itself restrict operations at an allowed remote service.
+
 ## Sessions and workspaces
 
 One logical session can span multiple native executions. It has at most one active
@@ -175,7 +212,7 @@ user/project TOML; [Claude Code](https://code.claude.com/docs/en/mcp) supports p
 registrations and launch-specific `--mcp-config` with `--strict-mcp-config`.
 [Codex configuration overrides](https://learn.chatgpt.com/docs/config-file/config-basic#configuration-precedence)
 can supply launch values, but are not by themselves an isolated configuration source.
-**Proposal:** generate native launch configuration from effective scopes without
+Generate native launch configuration from effective scopes without
 repeatedly rewriting global settings. Validate inherited/plugin servers, concurrent
 accounts, credential reuse, and host lifecycle before selecting the binding mechanism.
 Do not assume a separate live client per conversation or cross-host OAuth portability.
@@ -186,12 +223,12 @@ outgoing MCP calls from managed role sessions, with attribution and eventual per
 checks that allow, limit, or block calls. This does not require one combined endpoint:
 a common gateway or multiple provider endpoints can provide mediation.
 
-V0 need not implement comprehensive interception, upstream policy enforcement, or
-sandboxing. Keep a path to those capabilities and report actual coverage. Basic access
-to Conduit-managed resources remains core. MCP interception is the first boundary;
-future tiers may cover native tools, subprocesses, files, and network interactions.
-Each tier must state observed activity, enforced restrictions, and uncovered paths.
-Preventing bypass requires more than configuring an agent's MCP connections.
+V0 need not implement comprehensive inspection or enforcement of individual upstream
+operations. Its account separation and execution-isolation choices are addressed
+[above](#account-separation-and-execution-isolation). Access to Conduit-managed resources
+remains core. Each mode must state observed activity, enforced restrictions, and
+uncovered paths. Preventing bypass requires more than configuring MCP connections;
+isolating local processes does not replace provider authorization or MCP mediation.
 
 Conduit's sessions, ownership, scope, and room semantics are application contracts.
 Bind requests to effective session identity/access; do not equate an MCP connection

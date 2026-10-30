@@ -73,7 +73,19 @@ while an explicit requirement preserves the role's boundary across launch interf
 | Mode | Boundary and tradeoff |
 | --- | --- |
 | Native with separate profiles | Keeps each account's setup and state separate while retaining host integration. Native tools still have their actual host privileges; this is not an OS security boundary. |
-| Isolated execution | Encloses the runtime and its child processes with explicit access to selected files/services, excluding other accounts' state and privileged host controls. Some host integrations need bridges or remain unavailable. Backend and network policy are unselected. |
+| Isolated execution | Encloses the runtime and its child processes with explicit access to selected files/services and declared network destinations, excluding other accounts' state and privileged host controls. Some host integrations need bridges or remain unavailable. The isolation backend remains unselected. |
+
+Isolated execution defaults to declared network destinations: required model/login
+services, endpoints for selected connections, and extra destinations granted through
+scopes, subject to role limits and exclusions. Make runtime endpoint requirements
+visible; selecting a runtime must not silently override a restriction. Package
+registries, research sites, and local/private services require explicit inclusion.
+An allowed destination does not authorize every operation or object at that service.
+
+This default gives deliberately isolated executions a defined network boundary while
+native mode preserves broad host compatibility. Exact endpoint matching and enforcement
+mechanisms belong to backend/configuration design; provider-operation inspection remains
+a separate capability.
 
 ### Why both modes, with native as the default
 
@@ -103,14 +115,14 @@ excludes file tools, MCP servers, and hooks; [Codex command permissions](https:/
 also leave other surfaces under separate controls. Whole-process OS wrappers,
 containers, or VMs are candidates, not selected dependencies.
 
-Resolve the chosen mode and required capabilities before
-starting work; reject unsupported required isolation rather than silently downgrade.
+Resolve the chosen mode and required capabilities before starting work; reject
+unsupported required isolation rather than silently downgrade.
 Use private execution state and only intended credentials/resources. Do not mount an
 account's entire native history into every role using it. Keep auth refresh coordinated
-instead of blindly cloning rotating credentials. The exact credential/state layout,
-network restrictions, and handling of live scope changes need review. For YAML authoring,
-explicitly writing the mode in generated roles
-is recommended; whether handwritten configurations may omit it remains a schema choice.
+instead of blindly cloning rotating credentials. The exact credential/state layout
+and handling of live scope changes need review. For YAML authoring, explicitly writing
+the mode in generated roles is recommended; whether handwritten configurations may
+omit it remains a schema choice.
 Filesystem isolation does not itself restrict operations at an allowed remote service.
 
 ## Sessions and workspaces

@@ -11,6 +11,8 @@ through Conduit's CLI and native agent interfaces, sharing one room and permitte
 knowledge. Account state stays separate. Native execution is the default, isolated
 execution is available explicitly, and configured/effective modes must be visible.
 Roles may require isolation; launch overrides cannot weaken that requirement.
+Isolated executions use declared network destinations, including explicit grants for
+local/private services; network reachability and provider-operation permissions remain distinct.
 Required isolation must never silently fall back to native execution. The
 [isolation rationale](DESIGN.md#why-both-modes-with-native-as-the-default) explains why.
 
@@ -27,7 +29,7 @@ settled definitions or adding speculative features.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Execution policy** | What files, local services, and network destinations may isolated executions reach? Which native capabilities are supported initially? Decide what scope changes require pausing/restarting an execution, while managed requests continue to use current rules. |
+| **1. Execution policy** | Which files, declared services, and native capabilities does the initial workflow need? Decide what scope changes require stopping/restarting an execution, while managed requests continue to use current rules. Exact path/endpoint matching and enforcement need configuration/backend validation. |
 | **2. Role, account, and resource binding** | Project scope defaults and launch precedence; enrollment/identity verification, credential-refresh ownership, and private state when one account serves differently scoped sessions. Define handling of inherited native settings/MCP servers/plugins, BYOS selection/update behavior, and unavailable capabilities. Exact credential/state layout needs adapter validation. |
 | **3. Rooms and workspaces** | Joining and visibility, addressing/replies, and the relation among room, task, workspace, and tracker issue. Choose concurrent file-editing and workspace-cleanup behavior. Set the transition to mandatory tracker linkage and any initial Linear exchange; room posts must not automatically become external comments. |
 | **4. Shared memory and managed access** | The smallest useful save/read/search contract and its evidence; which selectors, operations, and sharing modes v0 supplies. Define retrieval limits, source freshness, and partial/unavailable results. Available information remains distinct from automatically loaded context; choose backend candidates against this behavior later. |

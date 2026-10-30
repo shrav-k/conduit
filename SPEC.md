@@ -96,8 +96,13 @@ execution adds a boundary around the runtime and its children. Show each role's
 configured mode and show/record each execution's effective mode and coverage. Never
 silently downgrade a requested isolation guarantee. A role may require isolated
 execution, which a launch override cannot weaken to native. Roles without that
-requirement may use either mode. Backend and network policy remain open;
+requirement may use either mode. The isolation backend remains open;
 [the design explains the rationale](DESIGN.md#why-both-modes-with-native-as-the-default).
+
+Isolated execution allows declared network destinations by default: required runtime
+model/login services, selected connection endpoints, and extra destinations explicitly
+granted through scopes, within role limits and exclusions. Local/private services need
+explicit access. Network reachability does not grant provider-operation permissions.
 
 Each session has its own effective scopes and authenticated access to shared memory
 and rooms. Sharing a room or model account does not merge scopes or grant access to

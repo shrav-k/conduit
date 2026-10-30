@@ -89,6 +89,13 @@ conflict if that kind/name already exists. Updating a missing target reports a c
 instead of creating it. Neither operation silently switches intent based on name matches;
 exact commands and batch handling remain open.
 
+A v0 update replaces the complete authored configuration, including `spec` and editable
+metadata. Omitting an optional field removes its explicit setting; the field's omission,
+default and validation rules apply instead of retaining its previous value. The object's
+identity is preserved, and Conduit continues to maintain its system-owned version information
+and status. Clients can edit a retrieved configuration copy before submitting it with the
+original baseline. Partial patches are deferred.
+
 Normal updates to an existing configuration object require its expected stable ID and
 the configuration version the edit was based on. Reject the update if either differs
 from the current object. This prevents stale edits from silently overwriting newer

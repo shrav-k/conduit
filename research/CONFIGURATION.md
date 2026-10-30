@@ -8,8 +8,9 @@ unique per kind, and the common `apiVersion`/`kind`/`metadata`/`spec` envelope a
 remain proposals. Inspection combines `spec` with system-owned `status`; configuration
 writes reject `status`, and configuration-only export omits it. Metadata has per-field
 ownership, combining editable naming/labels with system-owned identity/version information.
-Updates require expected ID and configuration version, covering `spec` and editable metadata
-but excluding status-only changes. Preconditions are separate update-operation inputs;
+Updates replace complete authored configuration; partial patches are deferred. Expected
+ID/version checks are required; the configuration version covers `spec` and editable metadata
+but excludes status-only changes. Preconditions are separate update-operation inputs;
 reusable configuration export omits status and system-owned identity/version values.
 The registry holds active configuration through explicit YAML application/export; input
 files are not automatically watched or silently rewritten by CLI/API changes. Submissions
@@ -349,10 +350,13 @@ versions or permissions. Exact rebind operations and live selector behavior rema
 Registry authority and explicit configuration updates are accepted; storage technology and
 Resource-content updates are separate. Explicit create/update intent is also accepted:
 creation conflicts on an existing kind/name; an update requires an existing target and its
-expected ID/version. Neither silently becomes the other. Detailed commands, batch handling
-and remaining import mechanics are proposals. Exporting a Session snapshot must not make
-applying it restart work, clone credentials or create a duplicate execution. Session creation
-is normally a CLI/API operation; a YAML file per conversation is optional.
+expected ID/version. Neither silently becomes the other. Updates replace complete authored
+configuration; omitted optional fields follow their omission/default/validation rules rather
+than retaining old explicit values. Identity is preserved, system-owned fields remain managed
+by Conduit, and partial patches are deferred. Detailed commands, batch handling and remaining
+import mechanics are proposals. Exporting a Session snapshot must not make applying it restart
+work, clone credentials or create a duplicate execution. Session creation is normally a CLI/API
+operation; a YAML file per conversation is optional.
 
 ## How the five objects connect
 

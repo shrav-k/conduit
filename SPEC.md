@@ -114,6 +114,10 @@ rewrite source files. Registry storage technology and Resource-content updates r
 Submissions explicitly select create or update intent: creation conflicts on an occupied
 kind/name, and an update requires an existing target rather than becoming a creation.
 
+V0 updates replace the complete authored configuration. Omitted optional fields follow
+their omission/default/validation rules instead of retaining old explicit values. Object
+identity is preserved; Conduit maintains system-owned fields. Partial patches are deferred.
+
 Normal configuration updates require the expected stable ID and the configuration version
 the edit was based on, rejecting mismatches. That version covers `spec` and editable
 metadata; status-only changes do not invalidate edits. Clients can reconcile and retry

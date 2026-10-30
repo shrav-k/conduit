@@ -29,7 +29,10 @@ Read in order:
 2. [DESIGN.md](DESIGN.md) — accepted contracts organized by those concepts.
 3. [REVIEW.md](REVIEW.md) — open questions, research and experiment planning within the model.
 
-[RESEARCH_PI.md](RESEARCH_PI.md) contains supporting source evidence and proposed
-adaptations. Research proposals are not requirements until incorporated into the design.
+The [Pi re-review](research/REFINEMENTS.md) maps provider connectors, context preservation
+and communication onto this model. Its [configuration proposal](research/CONFIGURATION.md)
+includes a connected YAML example and comparisons with Kubernetes, Gateway API, Compose
+and Terraform. [RESEARCH_PI.md](RESEARCH_PI.md) retains the deeper Durable/frontend evidence.
+Research proposals are not requirements until incorporated into the design.
 Update these documents in place; Git history preserves earlier designs. Keep resolved
 contracts out of the open-question list and settle schemas before implementation.

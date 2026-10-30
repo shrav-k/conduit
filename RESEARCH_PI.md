@@ -6,6 +6,12 @@ Resources, Pools and Conduits**. Current contracts live in [SPEC.md](SPEC.md) an
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 
+The later [Pi re-review](research/REFINEMENTS.md) refreshes provider/authentication, context
+conversion, MCP version compatibility and Chord evidence against the five-concept model.
+Start there for those topics and the [YAML proposal](research/CONFIGURATION.md); use this
+report for the detailed Durable, frontend and ecosystem investigation. Proposals in either
+report still require a ruling before becoming accepted contracts.
+
 | Concept | Relevant Pi evidence |
 | --- | --- |
 | Profiles | Provider/account resolution, native configuration and resource-loading defaults. Activation instructions belong in Conduit's Profile template. |
@@ -524,6 +530,11 @@ precludes assuming current extension compatibility. [Workers][pstack-workers] ·
 [Usage export][pstack-export] · [Fixture harness][pstack-tests]
 
 ### Provider-native MCP and managed access
+
+Version boundary: these Pi findings concern its November 2025 MCP implementation. The
+[re-review](research/REFINEMENTS.md#mcp-as-a-resource-and-conduit-protocol) compares it with
+the July 2026 protocol and evaluates the current official Rust SDK as a candidate. Pi's
+connection lifecycle should not be assumed to implement that newer standard.
 
 Pi's native MCP implementation supports stdio and Streamable HTTP, direct/deferred
 exposure, resources, configuration and authentication. Tool search and Code Mode can

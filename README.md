@@ -7,12 +7,15 @@ and Conduits**. Their interactions define the system.
 - **Sessions** are durable, independent participants with private context and resolved settings.
 - **Resources** are independently defined data or capabilities.
 - **Pools** collect references to Resources and supply them to Sessions through Conduits.
-- **Conduits** establish authorized resource access and communication between Sessions.
+- **Conduits** express typed, authorized interactions across the model, including resource
+  access and communication between Sessions; their supported forms are extensible.
 
 Profiles reference default Conduit declarations. Sessions establish their own participation
 and access while a Conduit may also require shared state, supporting Resources or a runtime.
 Resources can be reused across Pools; membership, access, activation and lifecycle ownership
-have distinct meanings. The relationship between declarations and live instances is under review.
+have distinct meanings. Conduit selection explicitly distinguishes joining an existing
+relationship from creating a new instance from a reusable declaration. Both are supported;
+the instance/attachment schema and lifecycle details remain under review.
 
 **Retain YAML; define the language through typed objects and explicit semantics.**
 Configuration describes the five-object graph. Conduit defines how references, defaults,

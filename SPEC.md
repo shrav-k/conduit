@@ -33,17 +33,22 @@ flowchart LR
 ```
 
 The Session–Conduit relationship covers both access to Pools and exchanges between
-Sessions. The diagram describes the conceptual model, not a process layout or wire protocol.
+Sessions. These are examples of an extensible interaction layer across the five concepts,
+not an exhaustive list of endpoint pairings or protocols. Each supported contract defines
+which endpoints and operations make sense. The diagram describes common relationships,
+not a process layout or wire protocol.
 
 ## How the concepts interact
 
 1. **A Profile creates independent Sessions.** Each Session resolves one Profile plus
    explicit overrides. Behavioral default changes affect new Sessions; existing Sessions
    adopt them through explicit reconfiguration. Permission limits remain live.
-2. **Profile defaults select Conduits.** Each Session establishes its own authenticated
-   participation. Whether a selected declaration joins an existing relationship or creates
-   another instance remains under review; shared runtime state need not belong to one Session.
-   V0 defers Profile inheritance. Runtime/model/account bootstrap settings stay in the Profile.
+2. **Profile defaults select Conduits.** Selection explicitly distinguishes joining an
+   existing relationship from creating a new instance from a reusable declaration. Both
+   modes are supported; name reuse alone does not select the mode. Each Session establishes
+   its own authenticated participation; shared runtime state need not belong to one Session.
+   Exact instance references and authoring syntax remain open. V0 defers Profile inheritance.
+   Runtime/model/account bootstrap settings stay in the Profile.
 3. **Pools organize Resources.** A Resource can be referenced by several Pools without
    copying content or transferring ownership. Pools may collect project resources, a skill
    package or any other useful grouping through the same extensible membership contract.

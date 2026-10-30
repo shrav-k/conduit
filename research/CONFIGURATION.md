@@ -424,8 +424,8 @@ but does not settle ownership of shared Conduit state, backing Resources or runt
 earlier universal declaration-to-Session-binding formulation is insufficient. Review the
 [five concrete Conduit scenarios](CONDUITS.md) before choosing where authoritative records
 live. A single authority per fact remains useful; it need not be the same object for every
-fact. Definition reuse, relationship instantiation and joining an existing instance need
-distinct semantics. Exact status placement and operation preconditions remain proposals.
+fact. Explicit join-existing and create-new intents are now accepted; instance addressing,
+configuration binding, status placement and operation preconditions remain proposals.
 
 ### Resource
 
@@ -474,10 +474,11 @@ Deleting a Pool removes the grouping/path, not the member Resources or underlyin
 A declaration specifies a versioned interaction contract and endpoints, requested operations
 and narrowing filters. Participation supplies authenticated identity and resolved authority.
 Pool access and Session exchange are examples, not a closed taxonomy. A contract may need
-shared state or a runtime plus separate participant attachments. How declarations establish
-new instances or join existing ones, use supporting Resources, and compose with other
-Conduits is under [scenario-led review](CONDUITS.md). The fixture below demonstrates only
-simple Pool access, not a universal topology or lifecycle.
+shared state or a runtime plus separate participant attachments. Joining an existing instance
+and creating a new one from a declaration are explicitly supported. Their exact representation,
+supporting Resources and composition remain under [scenario-led review](CONDUITS.md). The
+fixture illustrates Pool access and a candidate review request, not a universal topology or
+lifecycle; its schema does not yet express join/create intent.
 
 In the example, `source: {session: self}` is a template binding placeholder, not an identity
 the caller may assert over the wire. Actual sender identity comes from the authenticated
@@ -559,7 +560,7 @@ every field and not settled syntax:
 | Override absent | Use the default selection determined by the accepted precedence rules. |
 | Explicit replacement with `[]` | Select no default Conduit bindings. |
 | Explicit replacement with entries | Use exactly the supplied declarations, subject to authority and limits. |
-| Explicit add operation | Extend the selection and deduplicate identical declarations. |
+| Explicit add operation | Extend the selection; define duplicates using join/create intent and instance/operation identity, not declaration identity alone. Two deliberate instances of one declaration must remain distinct. |
 | `null` | Reject unless the field explicitly defines a nullable value; do not silently treat it as reset. |
 | Reset operation | If introduced, explicitly return to current defaults during reconfiguration; never infer it from YAML emptiness. |
 

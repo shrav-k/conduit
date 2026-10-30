@@ -3,9 +3,10 @@
 # No grant is created just by authoring access.requested below.
 # Local account registrations and installed runtime connectors are bootstrap configuration,
 # not secrets or new top-level concepts. Resource content enters only through Pools.
-# This fixture covers simple Session-to-Pool access only. Shared Conduit state,
-# relationship instantiation, participant attachments and composition remain under
-# review in CONDUITS.md; `source.session: self` is not a universal topology.
+# This fixture illustrates Pool access and a candidate review request. It does not
+# yet express the accepted explicit join-existing/create-new intents. Their schema,
+# shared state, attachments and composition remain under review in CONDUITS.md;
+# `source.session: self` is not a universal topology.
 apiVersion: conduit.example/v1alpha1
 kind: Resource
 metadata:

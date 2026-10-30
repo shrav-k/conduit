@@ -42,6 +42,9 @@ Pause the field-by-field review to test the Conduit abstraction against the five
 examples below. Session-owned access attachments are a useful direction, but they do not
 answer ownership of shared runtimes, supporting Resources, credentials or durable exchanges.
 The next deliverable is a coherent relationship/lifecycle model, not another isolated field.
+Explicit support for both joining an existing Conduit instance and creating a new instance
+from a reusable declaration is settled in [DESIGN.md](DESIGN.md#explicit-joining-and-instantiation).
+Continue with instance identity, shared versus participant state, and lifetime together.
 
 ### Architecture pause — walk the five Conduits
 
@@ -51,9 +54,9 @@ provider evidence and new proposals. Work through repository projection, communi
 
 | Discussion | What must become clear |
 | --- | --- |
-| Declaration versus live relationship | Does selecting a named Conduit join an existing relationship, instantiate a new one, or choose explicitly according to its contract? Four consumers of one configuration must not accidentally create four conversations or share one credential cache. |
+| Instance identity and selection | How are the accepted join-existing and create-new intents represented in Profile defaults and Session operations? How is an instance addressed, what configuration does it retain, and how do retries distinguish a repeated create request from a deliberate second instance? |
 | Shared versus participant state | Which facts belong to a Session attachment, which to a shared relationship/runtime, and which to backing Resources? Show detach, last participant leaving, restart, deletion and retention separately. Authoritative storage placement follows these semantics. |
-| Endpoints, backing Resources and authority | Who authenticates at each hop? How does a shared runtime obtain authority? How are its backing Resources managed and exposed without bypassing Pools or making every internal cursor a new Resource? |
+| Endpoints, backing Resources and authority | Which endpoint roles and operations does each extensible contract accept across the five concepts? Who authenticates at each hop? How does a shared runtime obtain authority? How are its backing Resources managed and exposed without bypassing Pools or making every internal cursor a new Resource? |
 | Operation semantics and contention | Distinguish another client from another copy of data. Define target identity across access paths, conflict boundaries, supported consistency/concurrency policy, capacity and actual enforcement coverage. |
 | Composition and activation | Can one Conduit reference others, or is a named selection enough? Define independent status/credentials, dependencies and partial failure. Preserve Profile activation while defining shared service provisioning and lifetime separately. |
 
@@ -102,6 +105,8 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 - Exactly five core concepts; Resources are independent, Pools collect them, Conduits
   govern access/interaction and may need shared state/runtime, and Profile instructions
   own Session activation. Instance and supporting-Resource lifecycle details remain open.
+- Explicit join-existing and create-new Conduit intents; declaration reuse does not imply
+  either one. Resource access and Session exchange are examples, not a closed taxonomy.
 - One Profile per Session; explicit behavioral overrides/reconfiguration; live access
   limits; independent private Session state and no implicit account or billing fallback.
 - Rust-owned execution with replaceable frontends; native external-agent integrations

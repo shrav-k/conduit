@@ -1,6 +1,8 @@
 # Conduits: relationships, participants and shared state
 
 Updated: 2026-10-30. **Architecture proposal for discussion, not an accepted schema.**
+Explicit support for joining an existing instance and creating a new one from a reusable
+declaration is now accepted; the detailed representation and lifecycle proposals remain open.
 This review uses the Euphony examples to resolve the meaning of Conduits before deciding
 more individual fields. [DESIGN.md](../DESIGN.md#conduits) retains accepted boundaries;
 [REVIEW.md](../REVIEW.md#architecture-pause--walk-the-five-conduits) carries the questions.
@@ -35,11 +37,16 @@ four additional top-level YAML kinds. They need not each require a process or da
 - An **operation** reads, writes, posts, invokes, subscribes or otherwise acts through it.
   Its outcome can outlive the attachment or process that initiated it.
 
-It remains open whether a named Conduit denotes one relationship or a reusable definition
-that can produce several. For example, selecting `euphony-discussion` should not accidentally
-create four disconnected conversations, while selecting `euphony-linear` should not
-accidentally make four Sessions share a credential cache. The schema must express the
-intended sharing boundary, rather than infer it from the fact that a name was reused.
+**Accepted direction:** explicitly support both joining an existing relationship instance
+and creating a new instance from a reusable declaration. For example, four Sessions can
+join the same Euphony discussion; another experiment can create a separate discussion from
+the same declaration. Relationship reuse does not imply credential-cache sharing, and a
+new relationship does not imply new backing data. Exact instance addressing, repeated-create
+behavior, configuration binding and YAML syntax remain open.
+
+Conduits express an extensible range of interactions across the five concepts. Pool access
+and Session communication are examples rather than a closed endpoint taxonomy. Each typed
+contract still needs meaningful endpoint roles, operations and supported guarantees.
 
 ## Walkthroughs
 
@@ -259,15 +266,16 @@ Existing narrowing-only filters and capability-tuple composition remain applicab
 
 ## Review sequence and tests
 
-First settle **declaration versus relationship instance**: does selecting a name join
-something or instantiate something, and how is that choice explicit? Then settle state
-responsibilities/lifetimes, endpoint/authentication contracts, operation coordination and
-composition. Only then choose concrete YAML fields. The existing access-only fixture is
-insufficient evidence for a universal schema.
+With explicit join-existing and create-new intents settled, next define instance identity
+and state responsibilities/lifetimes together. Follow with endpoint/authentication contracts,
+operation coordination and composition before choosing concrete YAML fields. The existing
+fixture illustrates access and a candidate review request; it does not yet express the
+accepted join/create distinction or shared runtime lifecycles.
 
 Use these change cases alongside the five happy paths:
 
-1. Two Sessions select the same declaration; show exactly which state is shared and private.
+1. Two Sessions join one instance; then create separate instances from the same declaration.
+   Show exactly which state is shared and private, including any shared backing data.
 2. One detaches, crashes, changes account or loses permission; the other continues where valid.
 3. The last participant leaves; then a new participant arrives and the runtime restarts.
 4. Two different Conduits reach the same checkout, vault item, issue or deployment target.

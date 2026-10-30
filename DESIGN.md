@@ -506,8 +506,11 @@ between resource existence, ownership, membership, access and activation.
 ## Conduits
 
 Conduits establish typed, authorized relationships, including resource access through Pools
-and communication between Sessions. Their contracts must accommodate shared state,
-supporting Resources and runtimes where needed, alongside each Session's participation.
+and communication between Sessions. They are the extensible interaction layer across the
+five concepts; those examples do not exhaust the supported forms of connection. Contracts
+define meaningful endpoints and operations without requiring every integration to implement
+every topology. They must accommodate shared state, supporting Resources and runtimes where
+needed, alongside each Session's participation.
 Profiles reference default declarations; reuse does not implicitly merge private Session
 context, credentials, permissions or live clients. Sharing protocol state is compatible
 with independent participants. A relationship does not imply one socket, process, transport
@@ -515,11 +518,32 @@ or automatic model turn.
 
 Participant attachment ownership and shared runtime ownership are distinct questions.
 Session-owned attachment state is the preferred direction for ordinary Pool access, not a
-universal ownership rule or a finalized storage placement. The distinction between a reusable
-declaration, a live relationship and participant attachments must be settled together with
-shared-state lifetime. Exact ownership, instantiation, supporting-Resource access and
-composition are open in the [scenario review](research/CONDUITS.md). No extra top-level kind
+universal ownership rule or a finalized storage placement. Reusable declarations, live
+relationship instances and participant attachments have distinct meanings. Their exact
+identity representation and state ownership must be settled together with shared-state
+lifetime. Supporting-Resource access and composition are open in the
+[scenario review](research/CONDUITS.md). No extra top-level kind
 is implied, and historical room-specific decisions remain reopened.
+
+### Explicit joining and instantiation
+
+Conduit selection supports both intents explicitly:
+
+- **Join an existing instance:** establish participation in a specified existing relationship.
+- **Create a new instance:** realize a reusable declaration as a new relationship, subject
+  to the contract's supported endpoints, authority and provisioning requirements.
+
+Reusing a declaration name does not implicitly choose between these intents. For example,
+two Sessions can join the same discussion, or create separate discussions from the same
+declaration. This choice does not by itself determine whether clients, credentials, backing
+data or processes are shared. Joining preserves participant-specific access/authentication;
+creating another relationship does not imply copying its underlying Resources.
+
+Exact selection syntax, instance addressing/identity, repeat-request behavior and the
+declaration-to-instance configuration-change rules remain open. Both modes belong within
+the existing Conduit concept, rather than requiring another top-level kind.
+
+### Resource selection and activation
 
 For resource access, the Conduit selects and filters available Resources and operations.
 Activation instructions belong to the Profile and are applied by the Session. Filters

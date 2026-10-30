@@ -6,9 +6,10 @@ default kind/name references with recorded resolved IDs, one local registry with
 unique per kind, and the common `apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
 [DESIGN.md](../DESIGN.md#configuration-language). Detailed fields and algorithms below
 remain proposals. Inspection combines `spec` with system-owned `status`; configuration
-writes reject `status`, and configuration-only export omits it. Exact status fields and
-other import/export rules remain open. This report investigates how to express the model
-without turning Conduit into another deployment framework. The research
+writes reject `status`, and configuration-only export omits it. Metadata has per-field
+ownership, combining editable naming/labels with system-owned identity/version information.
+Exact fields, update preconditions and other import/export rules remain open. This report
+investigates how to express the model without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 
 Read alongside [the Pi re-review](PI_CONNECTORS.md) and the

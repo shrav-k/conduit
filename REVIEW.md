@@ -5,15 +5,12 @@ semantics.** [SPEC.md](SPEC.md) sets the intended outcomes; [DESIGN.md](DESIGN.m
 accepted contracts. This agenda contains the remaining language and system choices for
 Profiles, Sessions, Resources, Pools and Conduits.
 
-The direction, common `apiVersion`/`kind`/`metadata`/`spec` envelope, stable object IDs and
-default kind/name references with recorded resolved IDs are accepted. V0 uses one local
-registry with names unique per kind. Established bindings from explicit references retain
-resolved identity until explicitly rebound. Inspection combines authored `spec` with
-system-owned `status`. Normal configuration writes reject `status`; configuration-only
-export omits it. Detailed fields, identifier encoding, schemas, reference extensions,
-composition rules and operations remain open. The
-[connected YAML](research/five-concepts.proposal.yaml) is a design fixture, not a specification
-or implemented format.
+The accepted envelope, identity/reference rules, local naming boundary, per-field metadata
+ownership and inspection/write distinction are recorded in
+[DESIGN.md](DESIGN.md#configuration-language). Detailed fields, update preconditions,
+import/export semantics, composition and interaction operations remain for review.
+The [connected YAML](research/five-concepts.proposal.yaml) remains a design fixture,
+not a complete accepted schema or implemented format.
 
 ## Review method
 
@@ -53,9 +50,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-The common envelope, identity/reference rules, v0 naming boundary, combined inspection and
-status-write/export boundary are settled. Continue round 1 with metadata ownership and
-remaining import/export and reference details before composition or activation syntax.
+Continue round 1 with update preconditions and remaining import/export, field and reference
+details. Metadata now has per-field ownership; `status` remains system-owned and is rejected
+by normal configuration writes.
 
 ### Shared example
 
@@ -88,20 +85,15 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 
 ## Round 1 — Objects and references
 
-The common envelope and [identity/reference rules](DESIGN.md#object-identity) are settled:
-rename preserves the ID; delete/recreate produces a new one; authored references normally
-use kind/name and resolution records the selected ID. V0 uses one local registry with names
-unique per kind; namespaces and cross-registry references are deferred. Established bindings
-from explicit references follow the resolved ID through renames; deletion makes the target
-unavailable and replacement requires explicit rebinding. This does not pin content or
-permissions, or settle live selectors. Inspection returns system-owned `status` alongside
-authored `spec`; configuration writes reject `status`, and configuration-only export omits
-it. **Recommended next direction:** explicit configuration operations and ownership rules
-for remaining fields. Those details remain proposals.
+Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
+[metadata/inspection contract](DESIGN.md#configuration-language). **Recommended next
+direction:** checked configuration updates and explicit import/export operations. Identity
+pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| Which metadata and status fields belong to each owner? | Define editable naming/labels, system-assigned identity, concurrency/generation information and kind-specific status. Specify what import/create/update may supply as intent or a precondition, and what only Conduit may report. |
+| How do configuration updates use system-owned identity/version information? | Recommend checking the expected stable ID and the configuration version an edit was based on, rejecting mismatches. Define what advances that version, how clients supply preconditions and how stale edits are reconciled. |
+| What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which identity/reference details remain? | Decide optional direct-ID forms, ID encoding and metadata placement, handling of unresolved references, and which explicit operations create or rebind a relationship. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
 | Where is configuration authoritative? | If a user edits YAML and another client edits the registry, which operation reconciles them? Recommend explicit import/update/export with concurrency checks over silent bidirectional file synchronization; decide who owns deletion and rename intent. |

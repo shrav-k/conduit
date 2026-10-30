@@ -19,8 +19,13 @@ All five kinds share this authoring envelope:
 | --- | --- |
 | `apiVersion` | The versioned contract used to interpret the object. |
 | `kind` | Profile, Session, Resource, Pool or Conduit. |
-| `metadata` | Naming, labels and other object metadata under a common convention. |
+| `metadata` | Author-editable naming/labels and system-owned identity/version information, with ownership defined per field. |
 | `spec` | Configuration defined by that kind's contract. |
+
+Metadata ownership is defined per field: authors control naming and labels within their
+permissions, while Conduit assigns and maintains identity/version information. Placing a
+field in `metadata` does not make it editable. Exact field names and rules for accepting
+returned system values as update preconditions remain open.
 
 Inspection returns the object with a system-owned `status` section alongside its authored
 `spec`. Status reports resolution and observed state appropriate to the kind, such as a

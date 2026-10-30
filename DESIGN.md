@@ -120,10 +120,12 @@ Clients may reread, reconcile and retry within their permissions without mandato
 approval. Simply substituting a newly read version does not reconcile an older edit.
 
 The expected ID and configuration version accompany the update as separate operation inputs,
-not as fields in the reusable object YAML. The CLI, editor or API client carries the edit's
-original baseline alongside that document. An operation request is not an additional core
-object kind. Exact request fields, baseline storage/recovery and remaining creation/import/export
-details remain open.
+not as fields in the reusable object YAML. V0 CLI/editor workflows retain a recoverable local
+baseline containing the original configuration and its ID/version, associated with the edit
+but separate from its YAML. An interrupted edit can resume with its original conflict checks.
+Direct API clients supply the required preconditions themselves. An operation request or local
+edit baseline is not an additional core object kind. Exact request fields, baseline storage
+format/lifecycle, recovery when missing and remaining creation/import/export details remain open.
 
 ### Objects, representations and contracts
 

@@ -126,8 +126,10 @@ outcome. Stale submissions still conflict. Equality compares parsed authored val
 presentation-only formatting, comments and mapping-key order while distinguishing omission
 from an explicit default. Lists follow their field-specific order rules. Clients can reconcile
 and retry under current permissions. Expected ID/version are separate update-operation
-inputs, carried by the CLI/editor/API with the original edit baseline rather than embedded in
-reusable object YAML. Exact request fields and baseline-storage details remain open.
+inputs rather than fields in reusable object YAML. V0 CLI/editor workflows retain a recoverable
+local baseline of the original configuration and ID/version so interrupted edits keep their
+original checks. Direct API clients supply those preconditions themselves. Exact request fields,
+baseline storage/lifecycle and missing-baseline recovery remain open.
 
 | Requirement | Meaning |
 | --- | --- |

@@ -2,7 +2,8 @@
 
 Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the five-concept model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
-Field names, transports, storage engines and implementation layout remain unselected.
+The common authoring envelope is settled; detailed fields, transports, storage engines
+and implementation layout remain under review.
 
 ## Configuration language
 
@@ -12,8 +13,21 @@ identity, reference, composition and behavioral contracts govern every entry poi
 CLI/API/frontends must interpret the same objects consistently. Future generators can
 emit this model; they cannot bypass its validation or authority rules.
 
-This accepts the organizing principle from the configuration research, not every proposed
-field or algorithm. In particular, the API group/version, registry layout, exact reference
+All five kinds share this authoring envelope:
+
+| Field | Meaning |
+| --- | --- |
+| `apiVersion` | The versioned contract used to interpret the object. |
+| `kind` | Profile, Session, Resource, Pool or Conduit. |
+| `metadata` | Naming, labels and other object metadata under a common convention. |
+| `spec` | Configuration defined by that kind's contract. |
+
+The shared envelope does not give every kind the same configuration fields. Exact metadata
+fields, system-owned identity and observation representations remain open; this ruling does
+not yet select `status` or determine which system fields may appear on import/export.
+
+This accepts the envelope and organizing principle, not every proposed field or algorithm
+in the research. In particular, the API group/version, registry layout, exact reference
 forms, YAML subset, schema toolchain and command names remain for review. Configuration
 objects also do not force every memory record, native tool or runtime event into an
 individually authored YAML file.

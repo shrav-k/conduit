@@ -86,6 +86,11 @@ its defaults, which Conduits were selected, which Pools supplied each Resource, 
 permissions apply, and which Profile instructions prepared or loaded it. An author should
 be able to trace that result without knowing an adapter's implementation.
 
+Profiles, Sessions, Resources, Pools and Conduits share the authoring envelope
+`apiVersion`, `kind`, `metadata` and `spec`. Each kind defines its own configuration within
+`spec`; naming and labels belong in `metadata`. The actual version identifier and the
+representation of system-owned state remain open.
+
 | Requirement | Meaning |
 | --- | --- |
 | Typed object graph | The five objects have explicit identities, references and contracts. New integrations extend Resource/Conduit contracts without adding a core concept for every provider. |
@@ -102,7 +107,7 @@ paths still need their own authority. A Profile's activation can only use the pe
 selection. A model override changes behavior within limits; it cannot broaden access.
 Making these distinctions visible is part of the product, not an implementation detail.
 
-Exact envelope fields, identifiers, schema dialect, YAML subset, composition syntax,
+Detailed metadata/spec fields, identifiers, schema dialect, YAML subset, composition syntax,
 validation stages and update operations remain open. The [design](DESIGN.md#configuration-language)
 sets the constraints; the [review](REVIEW.md) resolves them using concrete inputs, effective
 results and failure cases. The research YAML remains an illustration, not an approved schema.

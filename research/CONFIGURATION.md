@@ -1,9 +1,10 @@
 # Configuration languages, contracts and the Conduit object model
 
 2026-10-30. **Research evidence and concrete proposals; this report does not define the schema.**
-The five concepts, Profile-owned activation and YAML with typed objects and explicit
-semantics are accepted in [DESIGN.md](../DESIGN.md#configuration-language). Exact fields
-and algorithms below remain proposals. This report investigates how to express the model
+The five concepts, Profile-owned activation, typed-object semantics and the common
+`apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
+[DESIGN.md](../DESIGN.md#configuration-language). Detailed fields and algorithms below
+remain proposals. This report investigates how to express the model
 without turning Conduit into another deployment framework. The research
 covers Kubernetes, Docker Compose/Build, schema and configuration languages, and seven papers.
 
@@ -28,8 +29,8 @@ For collaborator review, read [language qualities](#what-makes-a-good-configurat
 [composition](#composition-needs-several-operators), and
 [validation and effects](#validation-and-effects-are-separate-contracts), then inspect the
 [five-object proposal](#how-the-five-objects-connect). The comparisons and
-[papers](#research-papers-and-their-limits) explain the reasoning. Exact fields, versions
-and new behaviors remain recommendations, not accepted changes to DESIGN.md.
+[papers](#research-papers-and-their-limits) explain the reasoning. Beyond the accepted
+envelope and principles, detailed fields, versions and new behaviors remain recommendations.
 
 ## What makes a good configuration language
 
@@ -652,8 +653,8 @@ The companion YAML passed structural checks using the installed Psych 3.1.0 pars
 Pool membership and Profile-only activation. Duplicate mapping keys are checked explicitly;
 a deliberately duplicated key was rejected. These are example checks, not YAML 1.2 parser
 conformance, validation against an implemented Conduit schema or proof of authorization.
-Synthetic source paths and accounts are intentionally unresolved at runtime. All fields
-remain proposals.
+Synthetic source paths and accounts are intentionally unresolved at runtime. The common
+envelope is accepted; detailed fields, identifiers and semantics in the example remain proposals.
 
 The Compose/Kustomize checks above add evidence about reference systems; they do not validate
 this proposed Conduit language. No CUE/Dhall/Nickel/Jsonnet evaluator, Kubernetes server,

@@ -10,8 +10,10 @@ writes reject `status`, and configuration-only export omits it. Metadata has per
 ownership, combining editable naming/labels with system-owned identity/version information.
 Updates replace complete authored configuration; partial patches are deferred. Expected
 ID/version checks are required; the configuration version covers `spec` and editable metadata
-but excludes status-only changes. Preconditions are separate update-operation inputs;
-reusable configuration export omits status and system-owned identity/version values.
+but excludes status-only changes. Unchanged submissions retain their version after the
+required checks and record an unchanged outcome; exact comparison rules remain open.
+Preconditions are separate update-operation inputs; reusable configuration export omits
+status and system-owned identity/version values.
 The registry holds active configuration through explicit YAML application/export; input
 files are not automatically watched or silently rewritten by CLI/API changes. Submissions
 explicitly select create or update intent, rather than deriving it from name matches.
@@ -353,10 +355,12 @@ creation conflicts on an existing kind/name; an update requires an existing targ
 expected ID/version. Neither silently becomes the other. Updates replace complete authored
 configuration; omitted optional fields follow their omission/default/validation rules rather
 than retaining old explicit values. Identity is preserved, system-owned fields remain managed
-by Conduit, and partial patches are deferred. Detailed commands, batch handling and remaining
-import mechanics are proposals. Exporting a Session snapshot must not make applying it restart
-work, clone credentials or create a duplicate execution. Session creation is normally a CLI/API
-operation; a YAML file per conversation is optional.
+by Conduit, and partial patches are deferred. Unchanged submissions retain the configuration
+version after authorization and ID/version checks, with an unchanged operation outcome;
+stale submissions still conflict. Comparison rules, detailed commands, batch handling and
+remaining import mechanics are proposals. Exporting a Session snapshot must not make applying
+it restart work, clone credentials or create a duplicate execution. Session creation is
+normally a CLI/API operation; a YAML file per conversation is optional.
 
 ## How the five objects connect
 

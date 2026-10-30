@@ -120,10 +120,12 @@ identity is preserved; Conduit maintains system-owned fields. Partial patches ar
 
 Normal configuration updates require the expected stable ID and the configuration version
 the edit was based on, rejecting mismatches. That version covers `spec` and editable
-metadata; status-only changes do not invalidate edits. Clients can reconcile and retry
-under current permissions. Expected ID/version are separate update-operation inputs, carried
-by the CLI/editor/API with the original edit baseline rather than embedded in reusable object
-YAML. Exact request fields and baseline-storage details remain open.
+metadata; status-only changes do not invalidate edits. After authorization and ID/version
+checks pass, unchanged submissions retain the version and record an unchanged operation
+outcome. Stale submissions still conflict; exact comparison rules remain open. Clients can
+reconcile and retry under current permissions. Expected ID/version are separate update-operation
+inputs, carried by the CLI/editor/API with the original edit baseline rather than embedded in
+reusable object YAML. Exact request fields and baseline-storage details remain open.
 
 | Requirement | Meaning |
 | --- | --- |

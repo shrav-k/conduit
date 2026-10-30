@@ -51,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with unchanged updates, the editing workflow and remaining import/export,
-field and reference details. V0 updates replace complete authored configuration; the editing
-workflow must preserve the original identity/version baseline separately from reusable YAML.
+Continue round 1 with configuration comparison, the editing workflow and remaining import/export,
+field and reference details. Unchanged submissions retain their version after the required
+checks; define equality without losing authored intent or the edit's original baseline.
 
 ### Shared example
 
@@ -89,12 +89,12 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** settle unchanged-update behavior and how the editing workflow retains its baseline.
+direction:** define configuration equality and how the editing workflow retains its baseline.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| What happens when an update changes nothing? | After authorization and identity/version checks, decide whether unchanged authored configuration retains its version or every accepted submission advances it. Recommend retaining the version and reporting an unchanged outcome; exact equality rules must distinguish authored configuration from resolved defaults and runtime state. |
+| How is unchanged configuration identified? | Recommend comparing parsed authored values, ignoring presentation differences while distinguishing omission from an explicit default. Compare lists according to their field contracts. Define normalization and version-interpretation rules without equating authored intent with currently resolved values or runtime state. |
 | How does an editing workflow retain its baseline? | With separate precondition inputs accepted, define capture, association with the edited document, recovery after interruption and behavior when the baseline is missing. Specify how reusable configuration becomes an explicit edit of an existing object. |
 | What are the exact metadata/status fields? | Name and type the editable naming/labels, system-owned identity/version information and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which identity/reference details remain? | Decide optional direct-ID forms, ID/version field names and encoding, handling of unresolved references, and explicit rename, delete and rebind operations. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |

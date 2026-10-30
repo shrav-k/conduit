@@ -105,6 +105,12 @@ The configuration version covers `spec` and author-editable metadata. Changes to
 values invalidate the prior version for updates; status-only changes do not. The check
 does not freeze live permissions or replace authorization at the time of the operation.
 
+After authorization and the required ID/version checks pass, submitting unchanged authored
+configuration reports an unchanged result and retains the current configuration version.
+Record the operation outcome without invalidating other edits. Stale submissions still
+conflict even if their submitted configuration matches the current values. The exact
+comparison rules remain open.
+
 Clients may reread, reconcile and retry within their permissions without mandatory human
 approval. Simply substituting a newly read version does not reconcile an older edit.
 
@@ -112,7 +118,7 @@ The expected ID and configuration version accompany the update as separate opera
 not as fields in the reusable object YAML. The CLI, editor or API client carries the edit's
 original baseline alongside that document. An operation request is not an additional core
 object kind. Exact request fields, baseline storage/recovery, creation/import/export details
-and handling of no-op writes remain open.
+and configuration-comparison rules remain open.
 
 ### Objects, representations and contracts
 

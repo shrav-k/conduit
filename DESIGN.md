@@ -27,8 +27,8 @@ fields, ID encoding and observation representations remain open; the envelope ru
 not yet select `status` or determine which system fields may appear on import/export.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
-in the research. In particular, the API group/version, registry layout, exact reference
-forms, YAML subset, schema toolchain and command names remain for review. Configuration
+in the research. In particular, the API group/version, registry layout, reference
+extensions, YAML subset, schema toolchain and command names remain for review. Configuration
 objects also do not force every memory record, native tool or runtime event into an
 individually authored YAML file.
 
@@ -38,10 +38,14 @@ Every Profile, Session, Resource, Pool and Conduit has a system-assigned stable 
 of its name. Renaming an object preserves that ID. Deleting it and creating another object
 with the same name produces a new ID; name reuse does not make them the same object.
 
+Authored YAML normally references an object by `kind` and `name`. Conduit records the stable
+ID of the object selected when that reference resolves. Authors need not copy generated IDs
+into ordinary references; the readable lookup and the resolved identity remain distinguishable.
+
 The ID format, serialized field, uniqueness boundary and import/export treatment remain
-open. So do authored reference forms and the behavior of existing references/bindings after
-rename or replacement. Stable identity makes those cases distinguishable; it does not by
-itself choose whether a relationship follows a name or remains bound to an object.
+open, along with naming boundaries, optional direct-ID reference forms and the behavior of
+existing references/bindings after rename or replacement. Recording a resolved ID does not
+by itself choose when a relationship may resolve again or move to another object.
 
 ### Objects, representations and contracts
 

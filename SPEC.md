@@ -93,7 +93,9 @@ representation of system-owned state remain open.
 
 Each configuration object has a system-assigned stable ID independent of its name. Renames
 preserve the ID; deletion and recreation under the same name produce a different ID.
-ID encoding, reference syntax and binding behavior remain for review.
+Authored references normally use `kind` and `name`; Conduit records the resolved object's
+stable ID. ID encoding, naming boundaries, reference extensions and rebinding behavior
+remain for review.
 
 | Requirement | Meaning |
 | --- | --- |

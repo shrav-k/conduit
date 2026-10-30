@@ -5,9 +5,9 @@ semantics.** [SPEC.md](SPEC.md) sets the intended outcomes; [DESIGN.md](DESIGN.m
 accepted contracts. This agenda contains the remaining language and system choices for
 Profiles, Sessions, Resources, Pools and Conduits.
 
-The direction, common `apiVersion`/`kind`/`metadata`/`spec` envelope and system-assigned stable
-object IDs independent of names are accepted.
-Detailed fields, identifiers, schemas, reference forms, composition rules and operations
+The direction, common `apiVersion`/`kind`/`metadata`/`spec` envelope, stable object IDs and
+default kind/name references with recorded resolved IDs are accepted.
+Detailed fields, identifier encoding, schemas, reference extensions, composition rules and operations
 remain open. The [connected YAML](research/five-concepts.proposal.yaml)
 is a design fixture, not a specification or implemented format.
 
@@ -49,8 +49,8 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-The common authoring envelope and stable identity semantics are settled. Continue round 1
-with reference forms/resolution and the authoring/observation boundary. Do not choose merge
+The common envelope, stable identity and default reference form are settled. Continue round 1
+with naming boundaries, rebinding and the authoring/observation boundary. Do not choose merge
 syntax or activation steps before we know what is being referenced and who owns its state.
 
 ### Shared example
@@ -84,14 +84,15 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 
 ## Round 1 — Objects and references
 
-The common envelope and [stable identity rules](DESIGN.md#object-identity) are settled:
-rename preserves the ID; delete/recreate produces a new one. **Recommended next direction:**
-readable kind/name references, one local registry initially, recorded resolved IDs and a
-clear boundary around system-owned state. Those details remain proposals.
+The common envelope and [identity/reference rules](DESIGN.md#object-identity) are settled:
+rename preserves the ID; delete/recreate produces a new one; authored references normally
+use kind/name and resolution records the selected ID. **Recommended next direction:** one
+local registry initially and explicit rules for rebinding and system-owned state. Those
+details remain proposals.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| How are references authored and bound? | Recommend kind/name in authored YAML with the resolved stable ID recorded. Decide direct-ID forms, rename behavior and whether existing bindings require explicit rebinding after a name is reused by a replacement object. ID format and metadata placement also remain open. |
+| How do resolved references respond to changes? | Decide rename behavior and whether existing bindings require explicit rebinding after a name is reused by a replacement object. Optional direct-ID forms, ID encoding and metadata placement also remain open. |
 | Which fields are authored and which are system-owned? | Within the accepted envelope, define editable metadata and kind-specific spec fields. Consider `status` for returned observations, but decide whether it is a separate representation or included read-only view. Specify what import/create/update may set. |
 | What is the reference resolution boundary? | Are names unique per kind in one registry? Do refs need a group, namespace, source or registry qualification now? Recommend one local boundary initially; define collisions and unresolved references rather than guessing by file order. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |

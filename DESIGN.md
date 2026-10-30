@@ -65,14 +65,19 @@ Pool membership does not create a separate naming boundary. Registry membership 
 access grant, and this naming rule does not require every exposed native item to have a
 registry-wide name. Namespaces and cross-registry references are deferred.
 
+V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
+After a rename, the old name becomes available for reuse. A fresh lookup of that old name
+finds no object unless the name has been reused, in which case it can resolve to a different ID.
+This does not redirect established bindings, which retain their resolved identity as below.
+
 A rename uses the normal checked configuration update, changing `metadata.name` while
 preserving the object's ID. The original ID/version identifies the target; the new name
 must be available for that kind or the update conflicts.
 
 Other registry objects retain their authored kind/name references after a rename. Report
 known mismatches between a written name and its resolved target, and offer explicit checked
-reference updates. The rename does not rewrite source YAML files. Alias and export behavior
-remain separate decisions.
+reference updates. The rename does not rewrite source YAML files. Export behavior for outdated
+authored references remains a separate decision.
 
 An established binding created from an explicit kind/name reference retains its resolved
 stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting

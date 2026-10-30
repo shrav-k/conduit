@@ -350,7 +350,10 @@ default kind/name references with the resolved ID recorded. Renames use normal c
 updates to `metadata.name`, targeting the original ID/version and requiring the new name
 to be available for that kind. Other registry objects retain authored kind/name references
 until explicitly updated; Conduit reports known mismatches with resolved targets and offers
-checked reference updates. Source YAML files remain unchanged. Alias/export behavior is open.
+checked reference updates. Source YAML files remain unchanged. V0 kind/name lookups use only
+current object names; registry object-name aliases are deferred. A rename frees the old name
+for reuse, so fresh lookups can later resolve to a different ID while established bindings
+retain their resolved identity. Export behavior for outdated authored references is open.
 `metadata.uid` remains an illustrative encoding. V0's single local registry and names unique
 per kind are accepted; namespaces and cross-registry references are deferred. Duplicate-definition
 handling and recording configuration generation during resolution remain proposals. Established bindings

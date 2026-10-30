@@ -103,11 +103,14 @@ stable ID. V0 uses one local registry with names unique per kind; underlying res
 remain local or remote. Namespaces and cross-registry references are deferred. ID encoding,
 reference extensions and exact rebind operations remain for review.
 
+V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
+A rename frees the old name for reuse, so a fresh lookup may later resolve to a different ID.
+
 Renames use normal checked updates to `metadata.name`, targeting the original ID/version.
 The new name must be available for that kind. Other registry objects keep their authored
 references until explicitly updated; known mismatches with resolved targets are reported and
-checked reference updates are offered. Source YAML files remain unchanged; aliases and export
-behavior remain open.
+checked reference updates are offered. Source YAML files remain unchanged; export behavior
+for outdated authored references remains open.
 
 Established bindings from explicit references retain their resolved IDs through renames.
 A deleted target becomes unavailable; a replacement using the same name requires explicit

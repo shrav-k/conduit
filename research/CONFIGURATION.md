@@ -1,8 +1,8 @@
 # Configuration languages, contracts and the Conduit object model
 
 2026-10-30. **Research evidence and concrete proposals; this report does not define the schema.**
-The five concepts, Profile-owned activation, typed-object semantics and the common
-`apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
+The five concepts, Profile-owned activation, typed-object semantics, stable object IDs
+independent of names and the common `apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
 [DESIGN.md](../DESIGN.md#configuration-language). Detailed fields and algorithms below
 remain proposals. This report investigates how to express the model
 without turning Conduit into another deployment framework. The research
@@ -309,7 +309,7 @@ style `v1alpha1 → v1beta1 → v1` progression when the schema is accepted. Use
 for the five kinds initially. Namespaced Resource/Conduit contract identifiers can evolve
 independently without inventing a new top-level kind for every integration.
 
-Keep these versions separate:
+Keep these identifiers and versions separate:
 
 | Value | Meaning |
 | --- | --- |
@@ -327,11 +327,12 @@ Conduit need not implement Kubernetes' full watch/storage behavior. A stored kno
 record's immutable content revision is also not automatically the configuration object's
 resourceVersion. [API concurrency](https://kubernetes.io/docs/reference/using-api/api-concepts/)
 
-For v0, recommend one local registry, names unique by kind, with duplicate definitions
-rejected. Human-authored references use kind/name; resolution records the UID and configuration
-generation. A deliberate rename preserves UID through the registry. Deleting/recreating the
-same name produces a different UID and must not silently retarget an existing binding.
-Cross-registry naming/namespaces can follow when sharing/distribution needs them.
+Stable IDs preserved through rename and renewed on delete/recreate are now accepted;
+`metadata.uid` remains an illustrative encoding. For v0, recommend one local registry,
+names unique by kind, with duplicate definitions rejected. Proposed human-authored references
+use kind/name; resolution records the ID and configuration generation. Recommend that name
+reuse not silently retarget existing bindings. Reference/binding behavior and registry
+boundaries remain for review; cross-registry naming/namespaces can follow when needed.
 
 Import/export must distinguish “create a new object from this configuration” from “update
 this existing object.” Exporting a Session snapshot must not make applying it restart work,

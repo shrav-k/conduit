@@ -23,7 +23,7 @@ All five kinds share this authoring envelope:
 | `spec` | Configuration defined by that kind's contract. |
 
 The shared envelope does not give every kind the same configuration fields. Exact metadata
-fields, system-owned identity and observation representations remain open; this ruling does
+fields, ID encoding and observation representations remain open; the envelope ruling does
 not yet select `status` or determine which system fields may appear on import/export.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
@@ -31,6 +31,17 @@ in the research. In particular, the API group/version, registry layout, exact re
 forms, YAML subset, schema toolchain and command names remain for review. Configuration
 objects also do not force every memory record, native tool or runtime event into an
 individually authored YAML file.
+
+### Object identity
+
+Every Profile, Session, Resource, Pool and Conduit has a system-assigned stable ID independent
+of its name. Renaming an object preserves that ID. Deleting it and creating another object
+with the same name produces a new ID; name reuse does not make them the same object.
+
+The ID format, serialized field, uniqueness boundary and import/export treatment remain
+open. So do authored reference forms and the behavior of existing references/bindings after
+rename or replacement. Stable identity makes those cases distinguishable; it does not by
+itself choose whether a relationship follows a name or remains bound to an object.
 
 ### Objects, representations and contracts
 

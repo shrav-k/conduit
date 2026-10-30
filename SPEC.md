@@ -91,6 +91,10 @@ Profiles, Sessions, Resources, Pools and Conduits share the authoring envelope
 `spec`; naming and labels belong in `metadata`. The actual version identifier and the
 representation of system-owned state remain open.
 
+Each configuration object has a system-assigned stable ID independent of its name. Renames
+preserve the ID; deletion and recreation under the same name produce a different ID.
+ID encoding, reference syntax and binding behavior remain for review.
+
 | Requirement | Meaning |
 | --- | --- |
 | Typed object graph | The five objects have explicit identities, references and contracts. New integrations extend Resource/Conduit contracts without adding a core concept for every provider. |

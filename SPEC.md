@@ -148,7 +148,9 @@ Exact request fields and baseline storage/lifecycle remain open.
 Registry-object deletion also requires expected ID and configuration version, rejecting
 mismatches. Incoming references alone do not block an otherwise permitted deletion: referring
 objects and their authored references remain, with affected relationships reported as unavailable.
-Running-execution restrictions and external-data cleanup remain open.
+Deleting a Resource registration preserves backing files, repositories and service data, even
+when created through Conduit. Cleanup/purge uses separate explicit operations with their own
+permissions. Running-execution restrictions and transient runtime cleanup remain open.
 
 | Requirement | Meaning |
 | --- | --- |

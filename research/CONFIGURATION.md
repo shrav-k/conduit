@@ -368,8 +368,11 @@ Registry-object deletion requires expected stable ID and configuration version; 
 configuration change produces a conflict, allowing the caller to reread and reconcile before
 retrying. Incoming references alone do not block an otherwise permitted deletion. Referring
 objects and their authored references remain, with affected relationships reported as unavailable;
-deletion does not prune those references or cascade to referring objects. Running-execution
-restrictions and external-data cleanup remain open.
+deletion does not prune those references or cascade to referring objects. Deleting a Resource
+registration preserves backing files, repositories and service data, including data created
+through Conduit. Cleanup/purge requires separate explicit operations governed by their own
+permissions. Running-execution restrictions, client disconnection and transient helper-process
+cleanup remain open.
 
 Registry authority and explicit configuration updates are accepted; storage technology and
 Resource-content updates are separate. Explicit create/update intent is also accepted:

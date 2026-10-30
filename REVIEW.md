@@ -51,9 +51,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-Continue round 1 with backing-data cleanup, running-execution restrictions, rebind operations
-and remaining metadata/reference details. References alone do not block deletion; referring
-objects remain. Baseline storage/lifecycle and remaining diagnostic details stay in round 6.
+Continue round 1 with running-execution restrictions, rebind operations and remaining
+metadata/reference details. Resource deletion preserves backing data; cleanup is explicit
+and separate. Baseline storage/lifecycle and remaining diagnostic details stay in round 6.
 
 ### Shared example
 
@@ -89,12 +89,12 @@ Sessions, including one that reconnects later. Their interaction semantics remai
 Build on the accepted [identity/reference rules](DESIGN.md#object-identity) and
 [metadata/inspection contract](DESIGN.md#configuration-language) and
 [configuration-update checks](DESIGN.md#configuration-updates). **Recommended next
-direction:** separate registry deletion from backing-data cleanup, then define runtime restrictions and rebind behavior.
+direction:** define Session deletion with live or unknown execution, then other runtime restrictions and rebind behavior.
 Identity pinning does not pin content or permissions, or settle live selector membership.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| Which identity/reference operations remain? | Reference handling on deletion is settled. Recommend preserving backing data when deleting a Resource registration, including data created through Conduit, with explicit cleanup operations kept separate. Define running-execution restrictions and transient process/connection cleanup, rebind requests, optional direct-ID references, unresolved-reference handling and export-refresh diagnostics for unavailable or ambiguous targets. |
+| Which identity/reference operations remain? | Reference handling and backing-data preservation on deletion are settled. Recommend requiring confirmed execution end before Session deletion, returning an in-use or unknown-status result while the caller stops or reconciles; initiating shutdown as part of deletion is the alternative. Define other runtime restrictions, transient process/connection cleanup, rebind requests, optional direct-ID references, unresolved-reference handling and export-refresh diagnostics for unavailable or ambiguous targets. |
 | What are the remaining metadata/status fields? | Define `metadata.name` syntax, label rules, system-owned identity/version field names/types and kind-specific observations. Choose any generation or source-time fields by their purpose; metadata placement does not grant write authority. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |
 | Who owns actual Conduit bindings? | Recommend Session-owned binding instances with reverse views on declarations, rather than independently editable binding lists on both objects. How does a reusable declaration target `self` without letting a caller assert another Session's identity? |

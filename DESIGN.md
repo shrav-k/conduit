@@ -125,7 +125,11 @@ reconcile before retrying. Incoming references alone do not block an otherwise p
 checked deletion. Retain referring objects and their authored references, reporting affected
 relationships as unavailable; do not prune those references or cascade removal to referring
 objects. For example, deleting a Resource leaves the Pool that referenced it intact.
-Further restrictions for running executions and external-data cleanup remain separate decisions.
+
+Deleting a Resource registration preserves its backing files, repositories and service data,
+including data created through Conduit. Cleanup or purge requires separate explicit operations
+governed by their own permissions. Running-execution restrictions, client disconnection and
+transient helper-process cleanup remain separate runtime decisions.
 
 The configuration version covers `spec` and author-editable metadata. Changes to those
 values invalidate the prior version for updates; status-only changes do not. The check

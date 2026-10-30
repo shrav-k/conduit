@@ -107,7 +107,10 @@ explicit access. Network reachability does not grant provider-operation permissi
 Each session has its own effective scopes and authenticated access to shared memory
 and rooms. Sharing a room or model account does not merge scopes or grant access to
 another participant's private context through Conduit. Native state reuse must respect
-the receiving context.
+the receiving context. Stored native history and agent-maintained private memory are
+session-owned, even for sessions sharing a role/account. Resume can reuse the session's
+compatible state; fresh sessions do not inherit it automatically. Reusable knowledge
+is shared through scoped Conduit memory; credential reuse remains separate.
 
 At project launch, omitted scope selection uses the project's configured defaults.
 Explicit scope selection replaces those defaults; an explicit add action can extend

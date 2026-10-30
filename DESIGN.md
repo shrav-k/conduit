@@ -58,6 +58,15 @@ Bind Conduit requests to authenticated session/execution identity rather than tr
 a caller-supplied role or session label. Shared room access does not merge participants'
 permissions. Model-provider credentials do not select resource-provider credentials.
 
+Stored native conversation history and agent-maintained private memory belong to the
+Conduit session, even when sessions use the same role or subscription. Resume may reuse
+that session's compatible state; fresh sessions do not inherit it automatically, and
+forks use the already-defined checkpoint semantics. Reusable knowledge is shared through
+scoped Conduit memory. Credential reuse is a separate concern and does not authorize
+sharing private state. This keeps role/account reuse from crossing different session
+scopes. Adapters must validate the storage/loading separation; native mode does not
+thereby acquire an OS boundary against otherwise accessible host files.
+
 [Claude documents separate subscription profiles](https://code.claude.com/docs/en/authentication#log-in-with-multiple-accounts)
 through `CLAUDE_CONFIG_DIR`. [Codex state locations](https://learn.chatgpt.com/docs/config-file/environment-variables)
 use `CODEX_HOME`; its [credential backend](https://learn.chatgpt.com/docs/auth#credential-storage)
@@ -123,8 +132,8 @@ containers, or VMs are candidates, not selected dependencies.
 
 Resolve the chosen mode and required capabilities before starting work; reject
 unsupported required isolation rather than silently downgrade.
-Use private execution state and only intended credentials/resources. Do not mount an
-account's entire native history into every role using it. Keep auth refresh coordinated
+Use the session's private native state and only intended credentials/resources. Do not
+mount an account's entire native history into every role using it. Keep auth refresh coordinated
 instead of blindly cloning rotating credentials. The exact credential/state layout
 needs review. For YAML authoring, explicitly writing
 the mode in generated roles is recommended; whether handwritten configurations may

@@ -235,6 +235,13 @@ agents a way to correct and retire knowledge as well as save it. Bulk administra
 and advanced sharing remain separate; other record kinds retain their type-specific
 operations and update rules.
 
+V0 retains records, their revisions, and captured history under Conduit's retention
+control until explicit purge. This includes knowledge, checkpoints, captured transcripts,
+usage observations, and operation outcomes. Archive changes ordinary retrieval, not
+retention. Automatic expiry is deferred so the initial experiment preserves continuity
+and evidence. Integrations must report native-runtime or backend retention limits outside
+Conduit's control; this policy does not promise preservation of unavailable source history.
+
 A checkpoint contains optional objective/constraints, decisions, progress/evidence,
 remaining work/questions, and artifact/source references. The active agent writes it
 at planned handoff, explicit pause, task completion, or on demand; Conduit requests
@@ -375,7 +382,7 @@ optional MCP skill-discovery support. No host/SDK compatibility has been tested.
 Record and attribute available token usage across agents, preserve available transcripts,
 and associate observations with session/execution identity. Initial coverage depends
 on integrations; comprehensive tools/subagent tracking, MCP inspection, and user hooks
-remain broader goals. Payload retention remains open; exact cost accounting is deferred.
+remain broader goals. Exact cost accounting is deferred.
 
 V0 usage observations identify their execution/account and reporting source, distinguishing
 reported counts, estimates, unknown data, and observed zero. Sum only observations known
@@ -400,8 +407,8 @@ within their permissions without mandatory human approval.
 
 This avoids repeating completed work without claiming universal duplicate prevention.
 External integrations promise only the guarantees they support; native operations outside
-Conduit's control remain outside this contract. Operation-result retention remains to be
-chosen alongside other retention policies.
+Conduit's control remain outside this contract. A purged or unavailable operation result
+does not prove that the operation never ran; the same reconciliation rule still applies.
 
 ## Design references
 

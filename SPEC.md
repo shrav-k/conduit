@@ -164,6 +164,10 @@ revision-checked updates, archive/restore, and explicit purge, each governed by 
 operation permissions. Available transcripts support continuity, but complete normalized
 conversation history is not guaranteed.
 
+Records and captured history under Conduit's retention control remain until explicit
+purge; automatic expiry is deferred. Archive only affects ordinary retrieval. Integrations
+report native-runtime or backend retention limits outside Conduit's control.
+
 V0 cross-context sharing uses direct live read-only shares, revocable by authorized
 share managers. The original keeps its owner and identity; recipients see updates
 through their selected incoming shares, within their effective access.
@@ -232,7 +236,8 @@ checklist. The first scenario anchors v0; sequencing the others is a review deci
 Success for the non-communication portion means all four agents can use permitted
 shared knowledge with separate private state, clear account/session identity, and
 honest access/usage coverage. The communication portion of the experiment remains
-open. Exact operations and recovery cases must be selected in [REVIEW.md](REVIEW.md).
+open. Exact test operations and recovery scenarios will be selected during the
+[initial experiment design](REVIEW.md#then-initial-experiment-design).
 
 ## Delivery scope
 

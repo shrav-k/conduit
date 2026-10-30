@@ -6,31 +6,19 @@ here; prior room choices below are material to reconsider, not implementation re
 
 ## Review order
 
-1. Resolve the remaining non-communication behavior: recovery and observability.
-2. Review the user's Pi coding-agent research and its implications for integration.
-3. Design in detail what it means to establish a “conduit” between sessions, without
+1. Review the user's Pi coding-agent research and its implications for integration.
+2. Design in detail what it means to establish a “conduit” between sessions, without
    assuming the former room model.
-4. Review concrete YAML examples, then the initial experiment in detail, before implementation.
+3. Review concrete YAML examples, then the initial experiment in detail, before implementation.
 
 The four-account objective remains: two Codex and two Claude subscription accounts
 running concurrently with separate native state and scoped shared knowledge. The
 communication portion of that objective will be specified after its redesign. Native
 execution remains the default with optional/required isolation as already defined.
-Account authentication, native-source selection, and skill/plugin lifecycle ownership
-remain settled; runtime-specific behavior still needs experiment evidence.
-
-## Active non-communication review
-
-The remaining non-communication policy is retention for knowledge/checkpoints/native
-history/observations and operation outcomes. Actual account/usage/context coverage still
-needs adapter validation in the experiment. Communication delivery, cursors, and
-acknowledgements are deferred below.
-
-The active review is complete when these behaviors have concrete v0 contracts or an explicit
-deferral compatible with the four-account objective. Unverified adapter behavior becomes
-an experiment check. Storage engines, exact wire schemas, and every possible failure
-mode need not be selected here. Existing portable checkpoint, session-continuity,
-resource/MCP, and memory-access contracts remain active; they do not prescribe a messaging model.
+The non-communication policy review is complete. Actual account, context, usage, and
+recovery behavior still needs adapter validation in the experiment. Storage engines,
+exact schemas, and test cases remain implementation-planning choices; the accepted
+contracts do not prescribe an intersession communication model.
 
 ## Pi coding-agent research
 
@@ -121,7 +109,7 @@ is implied by this documentation review.
 ## Deferred implementation scope
 
 Comprehensive MCP operation inspection/enforcement, advanced memory-sharing delivery,
-automatic classification/extraction, exact cost accounting, plugin ABI, and crate
+automatic classification/extraction, automatic expiry, exact cost accounting, plugin ABI, and crate
 layout remain staged. Communication delivery order is reopened above. Conduit's own
 chat and Pi integration remain goals; Pi research now precedes communication review.
 

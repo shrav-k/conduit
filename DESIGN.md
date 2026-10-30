@@ -1,24 +1,50 @@
 # Conduit design contracts
 
-Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the five-concept model. This document
+Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
-The common authoring envelope is settled; detailed fields, transports, storage engines
+The common authoring envelope remains; family/form encoding, detailed fields, transports, storage engines
 and implementation layout remain under review.
+
+## Families, templates and instances
+
+The four families are Session, Resource, Pool and Conduit. Each has a template describing
+reusable configuration and an instance representing something established. An instance need
+not have a running process. Session templates replace the separate Profile concept; a
+Conduit instance is called a connection. Neither term introduces another family.
+
+| Family | Template responsibility | Instance responsibility |
+| --- | --- | --- |
+| Session | Model/agent/account defaults, limits, activation and connection choices. | Durable participant identity, private context, resolved behavior and executions. |
+| Resource | Typed create/attach configuration for data or capabilities. | Concrete capability with native backing identity and exactly one owning Pool instance. |
+| Pool | Resource-template selections, provisioning defaults and policy. | Creates and exclusively owns its Resource instances. |
+| Conduit | Interaction contract, endpoints, filters and supporting-resource requirements. | Opened connection, resolved endpoints, participants and operational state. |
+
+Templates can be reused. Creating instances does not mutate a template into an instance.
+Resource instances are created only through their owning Pool, including attachment of
+external data and Resources required by connections. Different Pools can instantiate the same
+Resource template with separate backing or explicit attachment to the same backing target.
+Resource identity/ownership, backing identity, authentication and process lifetime are distinct.
+
+The shared distinction does not impose one lifecycle or mandatory process on every family.
+A template registration, instance creation, external provisioning, model execution and later
+reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
+Named versus inline templates, version binding outside Session behavior, family/form schema
+encoding and lifecycle operations remain in [REVIEW.md](REVIEW.md).
 
 ## Configuration language
 
 **YAML is the authoring format; typed objects and explicit semantics define the language.**
-The common model consists of Profiles, Sessions, Resources, Pools and Conduits. Their
-identity, reference, composition and behavioral contracts govern every entry point.
+The four families and their template/instance forms share identity, reference, composition
+and behavioral contracts across every entry point.
 CLI/API/frontends must interpret the same objects consistently. Future generators can
 emit this model; they cannot bypass its validation or authority rules.
 
-All five kinds share this authoring envelope:
+Templates and instances retain this common authoring envelope; concrete form encoding is open:
 
 | Field | Meaning |
 | --- | --- |
 | `apiVersion` | The versioned contract used to interpret the object. |
-| `kind` | Profile, Session, Resource, Pool or Conduit. |
+| `kind` | The concrete object schema. Encoding four families and template/instance forms in kinds or a discriminator remains open. |
 | `metadata` | Author-editable naming/labels and system-owned identity/version information, with ownership defined per field. |
 | `spec` | Configuration defined by that kind's contract. |
 
@@ -50,7 +76,7 @@ individually authored YAML file.
 
 ### Object identity
 
-Every Profile, Session, Resource, Pool and Conduit has a system-assigned stable ID independent
+Every registered template and instance has a system-assigned stable ID independent
 of its name. Renaming an object preserves that ID. Deleting it and creating another object
 with the same name produces a new ID; name reuse does not make them the same object.
 
@@ -58,12 +84,12 @@ Authored YAML normally references an object by `kind` and `name`. Conduit record
 ID of the object selected when that reference resolves. Authors need not copy generated IDs
 into ordinary references; the readable lookup and the resolved identity remain distinguishable.
 
-V0 resolves these references within one local registry, with object names unique per kind.
-A Pool and a Resource may share a name; two distinct Resources may not. The registry
-catalogs definitions and IDs, while underlying data and services may be local or remote.
-Pool membership does not create a separate naming boundary. Registry membership is not an
-access grant, and this naming rule does not require every exposed native item to have a
-registry-wide name. Namespaces and cross-registry references are deferred.
+V0 resolves references within one local registry. Names must identify an unambiguous object
+in their qualified naming boundary. How the existing kind/name convention distinguishes
+family and template/instance form is open; so is whether instance display names gain a
+Pool-local qualification. No namespace or cross-registry mechanism is selected by this
+refactor. The registry catalogs definitions and IDs while backing data may be local or remote.
+Registry presence grants no access and need not name every native item globally.
 
 V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
 After a rename, the old name becomes available for reuse. A fresh lookup of that old name
@@ -105,7 +131,9 @@ access rules still apply when the registry configuration changes.
 Configuration submissions explicitly select create or update intent. Creation reports a
 conflict if that kind/name already exists. Updating a missing target reports a conflict
 instead of creating it. Neither operation silently switches intent based on name matches;
-exact commands and batch handling remain open.
+exact commands and batch handling remain open. Creating Resource instances must go through
+a Pool operation; a generic registry write cannot bypass the owner requirement. Registering
+a template is distinct from provisioning instances or launching execution.
 
 A v0 update replaces the complete authored configuration, including `spec` and editable
 metadata. Omitting an optional field removes its explicit setting; the field's omission,
@@ -124,13 +152,17 @@ An intervening configuration change makes deletion conflict; the caller may rere
 reconcile before retrying. Incoming references alone do not block an otherwise permitted
 checked deletion. Retain referring objects and their authored references, reporting affected
 relationships as unavailable; do not prune those references or cascade removal to referring
-objects. For example, deleting a Resource leaves the Pool that referenced it intact.
+objects. Deleting a Resource registration does not delete its owning Pool. Pool ownership
+is stronger than an ordinary incoming reference: owner retirement, transfer and incomplete
+provisioning need a lifecycle contract before a Pool deletion path can be finalized.
 
 Deleting a Resource registration preserves its backing files, repositories and service data,
 including data created through Conduit. Cleanup or purge requires separate explicit operations
 governed by their own permissions. Session deletion also requires confirmed execution end
 under the [lifecycle contract](#lifecycle-and-continuity). Further effects of deleting other
-object kinds, client disconnection and transient helper-process cleanup remain runtime decisions.
+object forms, client disconnection and transient helper-process cleanup remain runtime decisions.
+An unowned Resource is an ownership inconsistency to resolve, not automatic purge authority.
+The existing retain-until-explicit-purge rule remains; automatic orphan collection is not selected.
 
 The configuration version covers `spec` and author-editable metadata. Changes to those
 values invalidate the prior version for updates; status-only changes do not. The check
@@ -200,10 +232,10 @@ defaults and updates. Collection order and duplicate identity must have defined 
 
 | Relationship | Established constraint; details still to settle |
 | --- | --- |
-| Profile → Session | Explicit overrides operate within required limits. Behavioral defaults are resolved, while access limits remain live. Per-field replacement/addition syntax and default-Conduit precedence are open. |
-| Resource → Pool | References/selectors collect independently identified Resources. Overlap does not copy ownership or imply repeated activation. Selector algebra, deduplication and membership changes need exact rules. |
+| Session template → Session | Explicit overrides operate within required limits. Behavioral defaults are resolved, while access limits remain live. Per-field replacement/addition syntax and default-Conduit precedence are open. |
+| Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Template reuse across Pools creates distinct instances. Selectors cannot assign a foreign instance to another owner; target domains and live behavior remain open. |
 | Session → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
-| Profile activation | Preparation and context-loading instructions operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
+| Session template activation | Preparation and context-loading instructions operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
 | Intent → observation | Runtime observations report whether requests are realized; they do not silently become authored defaults or fresh authority. |
 
 Permission, membership and activation semantics remain independent even when they use
@@ -235,39 +267,41 @@ composition mechanism; additional template languages, expressions and patch syst
 concrete use cases. The following sections retain the accepted domain behavior that the
 language must express. [REVIEW.md](REVIEW.md) focuses the remaining choices on those semantics.
 
-## Profiles
+## Sessions
 
-A Profile is a reusable template for any number of independent Sessions. It specifies
+### Templates
+
+A Session template is reusable configuration for any number of independent Sessions. It specifies
 runtime/model/account defaults, execution preferences and requirements, optional permission
-limits, default Conduit declarations, and activation instructions. A Session starts from
-one Profile; v0 defers inheritance and composition between Profiles.
+limits, default connection choices, and activation instructions. A Session starts from
+one Session template; v0 defers inheritance and composition between Session templates.
 
 Resolve behavioral defaults at Session creation and retain them until explicit
-reconfiguration. Later Profile edits affect new Sessions. Record configuration origins,
+reconfiguration. Later Session template edits affect new Sessions. Record configuration origins,
 overrides and actual execution settings. Permission limits remain live; behavioral
 snapshots never freeze access or allow overrides to weaken required limits. Whether
 referenced resource content follows source updates is a separate open choice.
 
 ### Activation instructions
 
-Activation instructions live in the Profile template. They tell a Session how to prepare
+Activation instructions live in the Session template. They tell a Session how to prepare
 and use Resources made available through its Conduits. Resource-access Conduits select
 and filter; they do not own import or context-loading instructions. The Session performs
 activation through compatible integrations, within current permissions.
 
 Activation behavior is distinct from the Resource content it consumes. Skills, documents,
-prompts, tools and configuration bundles are supplied through Pools; the Profile describes
+prompts, tools and configuration bundles are supplied through Pools; the Session template describes
 how to use the permitted selection. Discovering a skill, importing it, exposing a tool
 and placing instructions in model context can require different behavior.
 
-Profile/model/runtime defaults can handle conventional imports. Exact representations,
+Defaults for the Session template, model and runtime can handle conventional imports. Exact representations,
 compatibility rules, sequencing, duplicate handling, failure behavior and source updates
 remain open. Pi's resource loaders, package support and MCP setup are research inputs.
 Model preference alone does not establish native plugin or hook compatibility.
 
 ### Account selection
 
-Profile account references select identities without embedding credentials. Model-provider
+Session template account references select identities without embedding credentials. Model-provider
 and resource-service credentials remain distinct. Conduit verifies the account actually
 selected; no silent account or API-billing fallback is permitted. Concurrent subscription
 accounts must not overwrite one another's login, refresh, logout or private state.
@@ -279,13 +313,13 @@ login alone does not prove concurrent-account correctness.
 
 Coordinate credential reuse separately from Session history. Do not switch accounts by
 swapping one global credential directory or blindly cloning rotating credentials. A
-Conduit Profile is distinct from a native agent's login profile. The credential/state
+Session template is distinct from a native agent's login profile. The credential/state
 layout is an adapter validation task, not a prescribed filesystem schema.
 
 ### Execution policy
 
 Native execution is the v0 default: the runtime runs on the host without Conduit's full
-OS sandbox. Isolated execution is selectable, and a Profile may require it. Required
+OS sandbox. Isolated execution is selectable, and a Session template may require it. Required
 isolation cannot be weakened by launch overrides; unavailable required isolation causes
 a visible launch failure. Show the configured mode and record actual enforcement coverage.
 
@@ -297,15 +331,15 @@ services may require explicit bridges or remain unavailable. This is why both mo
 
 Isolated execution defaults to declared network destinations: required model/login
 services, selected connections, and extra destinations authorized through Conduits.
-Profile limits and exclusions still apply; local/private services require explicit
+Session-template limits and exclusions still apply; local/private services require explicit
 access. Network reachability does not authorize every operation at a provider. Exact
 sandbox technology and matching rules remain open. Native host access, network policy,
 provider authorization and Conduit-managed access have different coverage.
 
-## Sessions
+### Instances
 
 A Session has a durable identity, resolved configuration, private context/history and
-independent Conduit bindings. Sharing a Profile or account does not share private state
+independent connection attachments. Sharing a Session template or account does not share private state
 or establish communication. One Session may span multiple executions with different
 runtime/model/account settings; record the settings actually used in each execution.
 
@@ -370,16 +404,24 @@ remain extension goals rather than assumptions about every runtime.
 
 ## Resources
 
-Resources are independently addressable data or capabilities with extensible contracts.
-They can be referenced by several Pools without copying content or transferring ownership.
-A repository, knowledge collection, skill, document or provider capability is an example,
-not a required closed taxonomy. A Resource need not be a copied payload or a separately
-authored YAML file; declaration, discovery and granularity remain for review.
+A Resource template describes how to create or attach data/capabilities through a typed
+contract. It is reusable configuration, not a deployed capability, and need not belong to a
+Pool merely to exist. Creating or attaching a Resource instance is exclusively a Pool operation.
+Every instance has exactly one owning Pool; one instance cannot be a member of several Pools.
 
-Resources carry enough identity and contract information to resolve their source and
-supported operations. Labels are optional selection metadata, not identity or authority.
-Exact metadata and kind schemas are open. Provider-owned objects retain native contracts;
-they need not adopt Conduit's retained-record schema.
+The same template may create distinct instances in multiple Pools. A contract supports new
+backing data, attachment to existing backing data, or both explicitly. Different instances
+may therefore reach the same native target without sharing registry ownership. Creating a
+new instance does not prove that files, credentials, quotas or remote data were copied.
+
+A repository, knowledge collection, skill, document or provider capability is an example,
+not a closed taxonomy. One Resource may expose many native files, tools, tickets or records;
+each need not become a separately authored registry object. Labels aid selection, never
+identity, authority or implicit ownership transfer. Exact field names and granularity remain open.
+
+Resource instances record enough identity/contract information to resolve their source and
+supported operations. Provider-owned data retains native contracts; attaching it does not
+make Conduit the owner of the provider account or authorize deleting that backing data.
 
 ### Native resources and integrations
 
@@ -391,7 +433,7 @@ still apply. Selecting a package does not grant extra MCP or resource access.
 Use ecosystem tooling for compatible skill/plugin installation and updates. Adapters may
 invoke it on request and record source/version information and outcomes. Conduit does
 not require a new skill format or package manager. Executable native extensions need a
-compatible runtime adapter or port; report unsupported hooks. Profile activation instructions
+compatible runtime adapter or port; report unsupported hooks. Session template activation instructions
 control preparation of the selected resources.
 
 Resource providers retain source content and operations. Linear is the first tracker
@@ -409,7 +451,7 @@ Work and personal knowledge remain separate unless explicitly shared.
 
 | Concern | Contract |
 | --- | --- |
-| Identity and ownership | Stable internal record IDs survive names/paths/external-key changes. Each record has one owning context, such as a task, Pool or personal collection. Ownership metadata is distinct from Pool membership and from a Session's working context. |
+| Identity and ownership | Stable internal record IDs survive names/paths/external-key changes. Each record has one owning context, such as a task, Pool or personal collection. These content contexts do not create additional owners of the containing Resource instance. Mapping them within Pool-owned memory needs a concrete schema; a Session's working context remains separate. |
 | References | Support live and revision-pinned references. Missing pinned content is reported unavailable, never silently substituted with a newer revision. References alone grant no access. |
 | Revision and concurrency | Each accepted mutable-record update creates an immutable revision. Updates name their base revision; stale writes conflict. Agents may reconcile and retry without mandatory human approval. |
 | Provenance and time | Separate original source/author, revision writer and derivation links. Preserve local recording time separately from labelled source times. Unknown provenance remains unknown. |
@@ -440,7 +482,8 @@ V0 supports authorized, revocable, direct live read-only shares between owning c
 The source retains its ID and owner; recipients explicitly select incoming shares through
 their access configuration. Other independent grants remain valid after one share is
 withdrawn. Common knowledge can be updated through separately granted update rights.
-Pool membership alone does not create a share.
+Pool ownership alone does not create a share. Sharing a record grants access to source
+content; it does not assign the containing Resource instance to a second Pool.
 
 Share management is separate from read/update permission. A manager may grant only rights
 it currently holds. Selecting a context covers directly owned records by default;
@@ -459,16 +502,16 @@ The following preserve agreed extension semantics; they are not v0 delivery requ
 | --- | --- |
 | Richer shares | Pinned shares expose an exact revision; additional operations are explicit and bounded by current authority. Revision-pinned references remain usable in v0 without granting access. |
 | Onward delegation | Explicit permission allows grants within received rights, linked to the parent. Recipients manage their own onward grants, not the incoming grant. Parent restrictions, including loss of delegation permission, constrain dependent grants; other independent grants remain valid. |
-| Grant lifetime | Issued grants survive changes to their creator's Session/Profile. Parent-constrained access recovers when that same chain permits it. Explicitly withdrawn grants require authorized restoration/reissue; a new parent does not replace an old parent link implicitly. |
+| Grant lifetime | Issued grants survive changes to their creator's Session or its template. Parent-constrained access recovers when that same chain permits it. Explicitly withdrawn grants require authorized restoration/reissue; a new parent does not replace an old parent link implicitly. |
 | Independent publication | A separate record may release source-access dependencies only with read/publication authority for each released restricted input and destination creation rights. Retain source/version provenance. The published record has its own audience/lifecycle and does not follow source changes or withdrawal. |
 | Published edits | Edits using already-published content need ordinary update rights. New restricted material requires current read/publication authority for those inputs and destination update rights. Explicitly released attribution remains readable. |
 
 ### Workspace resources
 
-A task or experiment owns workspaces/worktrees; Sessions attach through permitted resource
-access. V0 supports existing folders/checkouts and Conduit-managed Git worktrees, recording
-management status. Attachment preserves existing files and Git state and grants no deletion
-authority. Concurrent independent writers use separate task-owned worktrees by default;
+A workspace Resource instance belongs to its Pool and is associated with a task or
+experiment; Sessions attach through permitted access. V0 supports existing folders/checkouts
+and Conduit-managed Git worktrees, recording management status. Attachment preserves existing files and Git state and grants no deletion
+authority. Concurrent independent writers use separate task-associated worktrees by default;
 sequential handoffs can reuse a workspace. Shared editing is opt-in, without automatic
 merge/file-lock guarantees. A worktree is not an isolation boundary.
 
@@ -479,92 +522,96 @@ with an explanation. Exact creation/base/branch/path settings remain open.
 
 ## Pools
 
-Pools are named, extensible collections of Resource references. They are the sole route
-for supplying Resources to Sessions through Conduit, including baseline configuration,
-skills and tool connections. The same Resource can appear in multiple Pools; membership
-does not copy content, grant access, change ownership or automatically activate it.
+A Pool template describes resource provisioning selections, defaults and policies. A Pool
+instance creates/attaches and exclusively owns its Resource instances. Pools remain the
+resource-supply boundary for Sessions and connections, including skills, tools, memory and
+connection support such as conversation storage. A Pool need not run a process.
 
-Membership supports explicit references and label selectors. Pool schemas must accommodate
-new Resource kinds without a new field per category. A skill collection, application domain
-or document collection is a use of the same Pool mechanism. Pool labels and Resource
-selection are organizational metadata, not implicit permission grants.
+Resource templates can be selected by explicit references and labels where supported.
+Selection among an existing Pool's owned instances is another operation. Exact selector
+syntax, target domains and refresh rules remain open; neither labels nor references can
+silently adopt an instance from another Pool. Reusing templates creates new owned instances,
+not overlapping ownership. Pool schemas remain open to new Resource contracts.
 
-Pool membership selection, Conduit filtering and Profile activation instructions have
-different jobs. Pool selectors collect candidates. Conduits expose authorized selections.
-Sessions apply Profile instructions to those permitted resources. Multiple memberships do
-not imply multiple copies or automatic duplicate activation; resolution remains for review.
+Connection participants can access Resources in several Pools through authorized paths to
+the owners. Sharing backing data between separate instances does not transfer ownership or
+establish access. Pool ownership, current access, Session activation and native backing-data
+management have distinct meanings.
+
+Creating a Resource for a connection must identify its owning Pool; the connection requests
+provisioning through that Pool. Which explicit operation establishes a Pool, starts its
+Resource plan, retries partial provisioning or resolves dynamic support requirements remains
+open. A template registration alone does not execute a provisioning plan.
 
 When launching against a Pool, its access defaults apply only if no explicit selection
 is supplied. Explicit selection replaces those defaults; extending them requires an
-explicit add action. Profile limits and exclusions always constrain the result. How this
-combines with Profile default Conduits is open; neither form of default can bypass limits.
+explicit add action. Session-template limits and exclusions always constrain the result.
+Combination with Session-template default connection choices remains open.
 
-Exact selector syntax, membership update behavior, duplicate resolution and nesting remain
-open. The resource-authoring layout and Pool lifecycle must preserve the distinction
-between resource existence, ownership, membership, access and activation.
+Pool retirement, possible ownership transfer, active-use handling and incomplete provisioning
+need explicit contracts. Deleting a grouping cannot silently orphan deployed Resources under
+this model. The response to an orphan does not imply deleting attached external data or
+purging retained history. Ownership cleanup and backing-data cleanup remain separate.
 
 ## Conduits
 
-Conduits establish typed, authorized relationships, including resource access through Pools
-and communication between Sessions. They are the extensible interaction layer across the
-five concepts; those examples do not exhaust the supported forms of connection. Contracts
-define meaningful endpoints and operations without requiring every integration to implement
-every topology. They must accommodate shared state, supporting Resources and runtimes where
-needed, alongside each Session's participation.
-Profiles reference default declarations; reuse does not implicitly merge private Session
-context, credentials, permissions or live clients. Sharing protocol state is compatible
-with independent participants. A relationship does not imply one socket, process, transport
-or automatic model turn.
+A Conduit template defines a typed, authorized interaction. Opening it creates a **connection**,
+a Conduit instance with resolved endpoints, participant attachments and operational state.
+Conduits are the extensible interaction layer across the four families. Pool access and
+Session communication are examples, not a closed list of endpoint roles or protocols.
 
-Participant attachment ownership and shared runtime ownership are distinct questions.
-Session-owned attachment state is the preferred direction for ordinary Pool access, not a
-universal ownership rule or a finalized storage placement. Reusable declarations, live
-relationship instances and participant attachments have distinct meanings. Their exact
-identity representation and state ownership must be settled together with shared-state
-lifetime. Supporting-Resource access and composition are open in the
-[scenario review](research/CONDUITS.md). No extra top-level kind
-is implied, and historical room-specific decisions remain reopened.
+A connection may use a shared runtime, retained history and per-participant clients. Every
+supporting Resource is created/attached through, and exclusively owned by, a Pool. Connection
+bookkeeping such as routing state and cursors need not each be registered Resources, but durable
+shared content cannot use this distinction to bypass Pool ownership or current access rules.
+
+Session-owned participant attachments remain a useful direction for ordinary Pool access;
+shared connection state can have a different authority and lifetime. Template reuse or joining
+a connection does not merge private Session context, credentials or access. Connection identity
+is separate from process, transport and backing-Resource identity. The exact authoritative
+records, instance lifetime, supervision and composition remain in [REVIEW.md](REVIEW.md).
 
 ### Explicit joining and instantiation
 
-Conduit selection supports both intents explicitly:
+Connection establishment supports both intents explicitly:
 
 - **Join an existing instance:** establish participation in a specified existing relationship.
-- **Create a new instance:** realize a reusable declaration as a new relationship, subject
+- **Open a new connection:** instantiate a Conduit template as a new relationship, subject
   to the contract's supported endpoints, authority and provisioning requirements.
 
-Reusing a declaration name does not implicitly choose between these intents. For example,
+Reusing a template name does not implicitly choose between these intents. For example,
 two Sessions can join the same discussion, or create separate discussions from the same
-declaration. This choice does not by itself determine whether clients, credentials, backing
+template. This choice does not by itself determine whether clients, credentials, backing
 data or processes are shared. Joining preserves participant-specific access/authentication;
 creating another relationship does not imply copying its underlying Resources.
 
 Exact selection syntax, instance addressing/identity, repeat-request behavior and the
-declaration-to-instance configuration-change rules remain open. Both modes belong within
+template-to-instance configuration-change rules remain open. Both modes belong within
 the existing Conduit concept, rather than requiring another top-level kind.
 
 ### Resource selection and activation
 
 For resource access, the Conduit selects and filters available Resources and operations.
-Activation instructions belong to the Profile and are applied by the Session. Filters
+Activation instructions belong to the Session template and are applied by the Session. Filters
 are narrowing-only: removing a constraint can reveal an existing grant, but a filter
 cannot create one. Exact type names, endpoint forms, lifecycle and composition remain open.
-Profile activation governs how a Session prepares/uses permitted resources. How a Conduit
-provisions its own shared service or backing storage is a separate unresolved lifecycle
-contract; allowing such a runtime does not transfer Session activation into the Conduit.
+Session-template activation prepares the participant. Pool operations create/attach supporting
+Resources; connection supervision runs any shared interaction service. Their ordering and
+failure behavior are unresolved, but a connection cannot provision an unowned Resource or
+assume the Session's loading instructions merely because it requested storage.
 
 ### Authority and current access
 
 Permissions name operations per Resource contract, with convenience bundles expanding
-into visible grants. Profile limits and explicit exclusions constrain effective access;
+into visible grants. Session-template limits and explicit exclusions constrain effective access;
 missing limits add no authority. Permitted operations require no extra confirmation merely
 because permission rules exist. Resource and communication permissions do not imply each other.
 
 Selection supports IDs, owning contexts, metadata predicates and path patterns where the
 integration supports them. Matches within established access rules are live. Authorized
-Conduit/filter/Profile-limit changes apply to subsequent managed requests and are shown
+connection, filter and Session-template limit changes apply to subsequent managed requests and are shown
 and recorded; they do not silently change model/account defaults or inject context.
-Pool membership rebinding and behavioral activation updates remain separate open questions.
+Pool provisioning/selection changes and behavioral activation updates remain separate open questions.
 
 If an isolated execution cannot revoke removed access live, stop it and require explicit
 restart under current rules, preserving Session identity. Managed requests use new rules
@@ -583,7 +630,8 @@ MCP is the preferred external capability contract. Use standard tools, resources
 and supported extensions where applicable; native adapters address concrete runtime,
 account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP servers.
 
-Connection definitions describe reusable endpoint/process/transport/authentication setup.
+Resource templates for MCP services describe reusable endpoint/process/transport/authentication
+setup. Pool-owned instances and connection attachments realize that setup under current access.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration
 from effective selections. Registration, provider authentication and Conduit Session
 authority are distinct. Reusing a definition does not promise shared live clients, OAuth

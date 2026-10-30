@@ -1,0 +1,191 @@
+# REVIEW SCENARIO ONLY. No accepted configuration/API schema or executable operations.
+# The wrapper, spec.form, reference.form and operation fields are illustrative candidates.
+# All paths, accounts, provider identifiers and targets are synthetic. No grants or secrets.
+# Templates register reusable configuration; only explicit Pool operations create Resources.
+scenario: four-families-with-exclusive-resource-ownership
+
+templates:
+  - apiVersion: conduit.example/v1alpha1
+    kind: Resource
+    metadata: {name: workspace}
+    spec:
+      form: template
+      contract: workspace.example/v1alpha1
+      supportedModes: [create, attach]
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Resource
+    metadata: {name: knowledge}
+    spec:
+      form: template
+      contract: memory.example/v1alpha1
+      supportedModes: [create, attach]
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Resource
+    metadata: {name: native-mcp}
+    spec:
+      form: template
+      contract: mcp.example/v1alpha1
+      supportedModes: [attach]
+      defaults: {transport: streamable-http, url: "https://tools.example/mcp"}
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Resource
+    metadata: {name: native-skills}
+    spec:
+      form: template
+      contract: skills.example/v1alpha1
+      supportedModes: [attach]
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Pool
+    metadata: {name: euphony-domain}
+    spec:
+      form: template
+      resourcePlans:
+        - {name: checkout, templateRef: {kind: Resource, form: template, name: workspace}}
+        - {name: notes, templateRef: {kind: Resource, form: template, name: knowledge}}
+        - {name: tools, templateRef: {kind: Resource, form: template, name: native-mcp}}
+        - {name: skills, templateRef: {kind: Resource, form: template, name: native-skills}}
+      # Declaring this plan does not itself execute it. Operations below are explicit.
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Conduit
+    metadata: {name: pool-access}
+    spec:
+      form: template
+      contract: resource-access.example/v1alpha1
+      endpointRoles: {participant: Session, source: Pool}
+      requestedOperations: [read, search]
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Conduit
+    metadata: {name: discussion}
+    spec:
+      form: template
+      contract: retained-exchange.example/v1alpha1
+      endpointRoles: {participants: Session}
+      supportRequirements:
+        - templateRef: {kind: Resource, form: template, name: knowledge}
+          purpose: retained-conversation
+          # Opening must resolve/provision this through an owning Pool.
+      # Delivery, wake, ordering and retention details are not selected by this fixture.
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Session
+    metadata: {name: claude-engineer}
+    spec:
+      form: template
+      defaults: {runtime: conduit, provider: claude-example, model: example-model}
+      connectionDefaults:
+        - {intent: open, templateRef: {kind: Conduit, form: template, name: pool-access}}
+      activation:
+        - {action: advertise-compatible-skills, from: permitted-resources}
+
+  - apiVersion: conduit.example/v1alpha1
+    kind: Session
+    metadata: {name: openai-engineer}
+    spec:
+      form: template
+      defaults: {runtime: conduit, provider: openai-example, model: example-model}
+      connectionDefaults:
+        - {intent: open, templateRef: {kind: Conduit, form: template, name: pool-access}}
+      activation:
+        - {action: advertise-compatible-skills, from: permitted-resources}
+
+# Descriptions of requests and their expected identities, NOT command/API payloads to run.
+# instanceRef/poolRef names refer to outputs of earlier operations in this scenario.
+# Creating a Pool establishes the owner; provisioning is shown separately, not selected as
+# the required v0 operation sequence. No assertion of external atomicity or successful auth.
+operations:
+  - action: instantiate
+    templateRef: {kind: Pool, form: template, name: euphony-domain}
+    result: {kind: Pool, form: instance, name: euphony-development}
+  - action: instantiate
+    templateRef: {kind: Pool, form: template, name: euphony-domain}
+    result: {kind: Pool, form: instance, name: euphony-review}
+
+  - action: provision-resource
+    poolRef: {kind: Pool, form: instance, name: euphony-development}
+    templateRef: {kind: Resource, form: template, name: workspace}
+    inputs: {mode: attach, backing: fixture/shared-checkout}
+    result: {kind: Resource, form: instance, name: development-checkout}
+  - action: provision-resource
+    poolRef: {kind: Pool, form: instance, name: euphony-review}
+    templateRef: {kind: Resource, form: template, name: workspace}
+    inputs: {mode: attach, backing: fixture/shared-checkout}
+    result: {kind: Resource, form: instance, name: review-shared-checkout}
+  - action: provision-resource
+    poolRef: {kind: Pool, form: instance, name: euphony-review}
+    templateRef: {kind: Resource, form: template, name: workspace}
+    inputs: {mode: create, backing: fixture/review-worktree}
+    result: {kind: Resource, form: instance, name: review-independent-worktree}
+  - action: provision-resource
+    poolRef: {kind: Pool, form: instance, name: euphony-development}
+    templateRef: {kind: Resource, form: template, name: knowledge}
+    inputs: {mode: create, backing: fixture/conversation-store}
+    result: {kind: Resource, form: instance, name: conversation-store}
+  - action: provision-resource
+    poolRef: {kind: Pool, form: instance, name: euphony-development}
+    templateRef: {kind: Resource, form: template, name: native-mcp}
+    inputs: {mode: attach, backing: fixture/linear-workspace, accountRef: linear-example-a}
+    result: {kind: Resource, form: instance, name: development-linear}
+  - action: provision-resource
+    poolRef: {kind: Pool, form: instance, name: euphony-review}
+    templateRef: {kind: Resource, form: template, name: native-mcp}
+    inputs: {mode: attach, backing: fixture/linear-workspace, accountRef: linear-example-b}
+    result: {kind: Resource, form: instance, name: review-linear}
+
+  - action: instantiate
+    templateRef: {kind: Session, form: template, name: claude-engineer}
+    inputs: {accountRef: claude-example-a}
+    result: {kind: Session, form: instance, name: claude-a}
+  - action: instantiate
+    templateRef: {kind: Session, form: template, name: claude-engineer}
+    inputs: {accountRef: claude-example-b}
+    result: {kind: Session, form: instance, name: claude-b}
+  - action: instantiate
+    templateRef: {kind: Session, form: template, name: openai-engineer}
+    inputs: {accountRef: openai-example-a}
+    result: {kind: Session, form: instance, name: openai-a}
+  - action: instantiate
+    templateRef: {kind: Session, form: template, name: openai-engineer}
+    inputs: {accountRef: openai-example-b}
+    result: {kind: Session, form: instance, name: openai-b}
+
+  - action: open
+    templateRef: {kind: Conduit, form: template, name: pool-access}
+    endpoints:
+      participant: {kind: Session, form: instance, name: claude-a}
+      source: {kind: Pool, form: instance, name: euphony-development}
+    result: {kind: Conduit, form: instance, name: development-access}
+  - action: open
+    templateRef: {kind: Conduit, form: template, name: discussion}
+    supportingResources:
+      - poolRef: {kind: Pool, form: instance, name: euphony-development}
+        resourceRef: {kind: Resource, form: instance, name: conversation-store}
+    result: {kind: Conduit, form: instance, name: euphony-discussion}
+  - action: join
+    instanceRef: {kind: Conduit, form: instance, name: euphony-discussion}
+    participantRef: {kind: Session, form: instance, name: claude-a}
+  - action: join
+    instanceRef: {kind: Conduit, form: instance, name: euphony-discussion}
+    participantRef: {kind: Session, form: instance, name: openai-a}
+
+expected:
+  resourceOwners:
+    development-checkout: euphony-development
+    review-shared-checkout: euphony-review
+    review-independent-worktree: euphony-review
+    conversation-store: euphony-development
+    development-linear: euphony-development
+    review-linear: euphony-review
+  distinctInstancesWithSharedBacking:
+    - [development-checkout, review-shared-checkout]
+    - [development-linear, review-linear]
+  independentBacking: [review-independent-worktree]
+  joinedConnection: euphony-discussion
+  participants: [claude-a, openai-a]
+  # A create retry and another deliberate create need different operation semantics;
+  # naming a template alone must not decide which was intended.

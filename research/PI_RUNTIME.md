@@ -1,13 +1,13 @@
 # Pi runtime, Durable and ecosystem research
 
-Source investigation: 2026-10-30. This report provides evidence for **Profiles, Sessions,
-Resources, Pools and Conduits**. Current contracts live in [SPEC.md](../SPEC.md) and
+Source investigation: 2026-10-30. This report provides evidence for **Session, Resource, Pool and Conduit templates
+and instances**. Current contracts live in [SPEC.md](../SPEC.md) and
 [DESIGN.md](../DESIGN.md); open decisions are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 
 The later [Pi re-review](PI_CONNECTORS.md) refreshes provider/authentication, context
-conversion, MCP version compatibility and Chord evidence against the five-concept model.
+conversion, MCP version compatibility and Chord evidence against the four-family template/instance model.
 Start there for those topics and the [YAML proposal](CONFIGURATION.md); use this
 report for the detailed Durable, frontend and ecosystem investigation. Proposals in either
 report still require a ruling before becoming accepted contracts.
@@ -201,7 +201,7 @@ of arbitrary tool outputs. Distinguish memory-cache eviction from permanent rete
 ### 3. Submissions, queues, and activation
 
 Here Pi Durable activation means scheduling execution. It is distinct from Conduit's
-Profile instructions for preparing permitted Resources.
+Session template instructions for preparing permitted Resources.
 
 Durable persists submissions with queued/placed/settled outcomes, supports steering and
 follow-up placement, and makes cancellation of a waiter distinct from cancellation of
@@ -340,7 +340,7 @@ foreground boundary. [Compaction source][compaction-source] · [Specification][d
 
 Record source references/revisions and transformations with a request-context manifest,
 without requiring another full text copy of every prompt. Pin source bounds; apply
-current Conduit access and Profile limits when assembling and dispatching; report omitted/incompatible content.
+current Conduit access and Session template limits when assembling and dispatching; report omitted/incompatible content.
 Start compaction at a safe turn boundary if needed for long sessions. Keep background
 compaction, arbitrary history editing, and sophisticated branch operations later.
 
@@ -425,7 +425,7 @@ plugin framework. Keep the first implementation local and small.
 ```mermaid
 flowchart TB
     UI[Terminal and other frontends] --> API[Session control and state API]
-    Profiles[Resolved Profile settings and activation instructions] --> Runtime
+    Template[Resolved Session-template settings and activation instructions] --> Runtime
     API --> Runtime[Rust Session supervisor and turn loop]
     Runtime --> Context[Private context builder]
     Runtime --> Providers[Provider and account adapters]
@@ -441,7 +441,7 @@ flowchart TB
     Adapters --> Memory[Memory and search backends]
 ```
 
-An execution resolves its Profile and Conduit bindings, applies activation instructions
+An execution resolves its Session template and Conduit bindings, applies activation instructions
 to permitted Pool resources, admits input, builds authorized
 context, streams a provider response, validates/dispatches tool calls, persists outcomes,
 and advances until it settles or needs input. Provider-specific messages stay inside
@@ -465,12 +465,13 @@ library remains implementation planning.
 
 ### Fit to the model
 
-These components implement the five-concept model; they are not additional domain concepts.
-Profiles supply execution and activation instructions. Sessions own private execution state.
-Resources are exposed through Pools and selected through Conduits. Frontends present the
+These components implement the four-family template/instance model; they are not additional domain concepts.
+Session templates supply execution and activation instructions. Sessions own private execution state.
+Resource instances are created and exclusively owned by Pools, then accessed through
+connections. Reusable templates remain distinct from those instances. Frontends present the
 Session, and native adapters supply integration-specific behavior.
 
-Remaining implementation choices concern Session durability depth, supported Profile account
+Remaining implementation choices concern Session durability depth, supported Session template account
 bindings, Resource compatibility and Conduit behavior. Native authentication delegation is
 appropriate for external-agent adapters; Conduit's own provider adapter needs a supported
 path. Native host execution and isolated execution remain distinct from runtime selection.
@@ -520,7 +521,7 @@ must be evaluated independently; a remote process protocol alone proves neither.
 ## Communication between Sessions through Conduits
 
 Conduits support resource access and communication between Sessions. The
-[interaction research brief](../REVIEW.md#interaction-research) defines the remaining work.
+[interaction research brief](../REVIEW.md#4-connections-authority-and-communication) defines the remaining work.
 Separate addressing, authorization, retained exchange, attention and execution when
 comparing candidate contracts; a source library's topology does not choose Conduit's.
 
@@ -552,7 +553,7 @@ merely because a reference offers one.
 ## Proposed experiment sequence
 
 The current [experiment order](PI_CONNECTORS.md#validation-performed-and-next-experiment)
-and [five-concept acceptance agenda](../REVIEW.md#experiment-across-the-five-concepts)
+and [four-family acceptance agenda](../REVIEW.md#initial-experiment)
 are maintained together. The Durable-specific fault cases below supplement that plan;
 they do not define a second implementation sequence.
 

@@ -1,25 +1,25 @@
 # Pi re-review: connectors, context and communication
 
 Research date: 2026-10-30. **Recommendations for discussion, not new accepted contracts.**
-The accepted model remains Profiles, Sessions, Resources, Pools and Conduits. Activation
-instructions belong to Profiles. Conduit owns its Rust runtime and a replaceable frontend.
+The accepted model has Session, Resource, Pool and Conduit families, each with templates
+and instances. Activation instructions belong to Session templates. Conduit owns its Rust
+runtime and a replaceable frontend.
 
 Read this report's recommendation, then [the configuration proposal](CONFIGURATION.md)
-and [the connected YAML example](five-concepts.proposal.yaml). The earlier
+and [the synthetic template/instance scenario](templates-instances.scenario.yaml). The earlier
 [Pi investigation](PI_RUNTIME.md) remains the detailed source for Durable, frontend
 coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) groups the rulings.
 
 ## Recommendation
 
-The five concepts hold up well. They need more precise boundaries rather than more nouns:
+The source findings inform the four-family template/instance model:
 
 | Concept | Refinement proposed from this investigation |
 | --- | --- |
-| Profile | Keep model/account choices explicit; turn activation instructions into inspectable preparation steps, with agent guidance distinguished from runtime actions. |
-| Session | Retain original history and execution evidence; construct a separate, permission-checked context projection for each model request. Record the losses and transformations. |
-| Resource | Expose native contracts plus compatibility information. Provider catalogs, actual account access and tested capabilities are different observations. |
-| Pool | Collect references without copying, owning, granting or activating them. Make selection deterministic and explainable. |
-| Conduit | Give each relationship a typed contract. Resource calls, requests for agent work, retained notifications and observable state need different completion and recovery semantics. |
+| Session | Templates keep account choices and activation explicit; instances retain original history and execution evidence; construct a separate, permission-checked context projection for each model request. Record the losses and transformations. |
+| Resource | Reusable templates describe native contracts; Pool-owned instances record backing identity and compatibility. Provider catalogs, account access and tested behavior are different observations. |
+| Pool | Templates describe provisioning selections; instances exclusively own the Resources they create/attach. Ownership does not itself grant access or activate content. |
+| Conduit | Templates define interactions; opened connections realize them, requesting any supporting Resources through Pools. Resource calls, requests for agent work, retained notifications and observable state need different completion and recovery semantics. |
 
 Build Rust protocol adapters beneath Conduit's runtime, with provider definitions and
 catalogs above them. Pi is a source of mappings and test cases; adopting its loop is
@@ -75,7 +75,7 @@ For Conduit, the proposed split is:
 | Model catalog | Model IDs, operation families, modalities, limits, reasoning options, prices when known, source/freshness. | That a live request succeeds or reported pricing equals subscription cost. |
 | Account binding | Selected registration, credential resolution/refresh ownership, identity evidence and account-specific availability. | Permission to expose unrelated files, tools or memory to that account. |
 
-These are implementation responsibilities under Profile/Session/Resource contracts,
+These are implementation responsibilities under Session/Resource contracts,
 not additional top-level concepts. An external Codex or Claude Code runtime is a separate
 adapter: it owns its loop, native history and supported authentication. A model-provider
 adapter supplies inference to Conduit's loop. A frontend supplies neither.
@@ -283,7 +283,7 @@ generated fields. Unmatched tool results are not comprehensively validated by th
 ```mermaid
 flowchart LR
     H[Retained Session history] --> C[Context construction]
-    P[Profile activation results] --> C
+    P[Session template activation results] --> C
     R[Permitted Resource revisions] --> C
     K[Applicable checkpoint] --> C
     C --> A[Target protocol projection]
@@ -300,7 +300,7 @@ Keep four representations distinct:
    checked against current access and the target context budget.
 3. **Provider continuation state:** response handles, encrypted/signed blocks, caches and
    transport state with explicit compatibility boundaries. It is private runtime state.
-4. **Shared knowledge/checkpoints:** explicit Resources with independent access and lifecycle;
+4. **Shared knowledge/checkpoints:** Pool-owned Resource instances with scoped access and lifecycle;
    neither a transcript nor a compaction summary becomes shared memory automatically.
 
 Proposed context evidence names input record revisions, the selected history boundary,
@@ -326,7 +326,7 @@ truncating serialized JSON. A smaller target may require compaction; failed comp
 not erase history or automatically repeat unsafe tool effects. Compaction is a model operation
 whose provider/account/usage needs attribution. Exact thresholds remain an experiment choice.
 
-## Profile activation and Pool resources
+## Session template activation and Pool resources
 
 Pi advertises skill metadata before loading full instructions. Packages can bundle skills,
 prompts, themes and executable extensions; package selections narrow what the package
@@ -336,17 +336,18 @@ selected precedence rules. [Skills][skills] · [Packages][packages]
 
 The proposed preparation sequence is:
 
-1. Resolve the Profile snapshot and explicit Session overrides.
-2. Bind default/selected Conduit declarations; resolve Pool membership and current authority.
+1. Resolve the Session template snapshot and explicit Session overrides.
+2. Open/join selected connections explicitly; resolve owner-Pool Resource access and current authority.
+   Any required new Resource is provisioned through its Pool before use.
 3. Build the permitted Resource inventory, including source versions and compatibility.
-4. Apply **Profile activation rules** to that inventory: advertise skills, register permitted
+4. Apply **Session template activation rules** to that inventory: advertise skills, register permitted
    tools, mount an authorized workspace, or load selected instruction content within a budget.
 5. Record results, skipped resources, conflicts, unsupported capabilities and content provenance.
 6. Let the Session start its model turn using that resolved preparation result.
 
 This avoids a circular bootstrap where the model must discover and install the tools needed
 to load its own instructions. Structured preparation actions can run before inference;
-free-text behavioral instructions remain agent guidance. The Profile can contain both,
+free-text behavioral instructions remain agent guidance. The Session template can contain both,
 distinguished explicitly. A Conduit never becomes an installation script.
 
 Recommended v0 rules: same Resource UID/revision/action activates once; incompatible versions
@@ -519,15 +520,15 @@ Temporary probe files were kept outside the product repository.
 
 The next experiment should be specified in this order:
 
-1. Resolve the YAML graph offline: independent Sessions, overlapping Pools, narrowing-only
-   filters, explicit activation and visible diagnostics. Use the examples and failure matrix
+1. Resolve the YAML graph offline: template/instance references, independent Sessions, exclusive
+   Pool ownership, narrowing-only filters, explicit activation and visible diagnostics. Use the examples and failure matrix
    in [CONFIGURATION.md](CONFIGURATION.md).
 2. Verify supported account enrollment/identity and independent refresh/logout for the four
    subscriptions before investing in UI polish. Record declared versus observed support.
 3. Exercise a minimal Rust-owned model/tool loop with fake transport fixtures first, then
    authorized live providers. Include partial streams, unknown writes and context conversion.
-4. Add one memory Resource and one MCP endpoint using native schemas, with Resource revisions
-   and current-access checks. Validate selected MCP version/feature coverage explicitly.
+4. Provision one memory Resource and one MCP service Resource through a Pool, preserving native
+   schemas, Resource revisions and current-access checks. Validate selected MCP version/feature coverage explicitly.
 5. Add the agreed communication family: review/result, retained finding and slow observer
    are the smallest useful comparison. Do not make a broker or tracker mandatory to prove it.
 

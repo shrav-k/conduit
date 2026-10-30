@@ -1,53 +1,48 @@
 # Conduit
 
-Conduit's working model has five concepts: **Profiles, Sessions, Resources, Pools,
-and Conduits**. Their interactions define the system.
+Conduit has four concept families: **Session, Resource, Pool and Conduit**. Each has a
+**template** form describing reusable configuration and an **instance** form representing
+something established. An instance can persist without a running process.
 
-- **Profiles** are reusable templates for creating Sessions.
-- **Sessions** are durable, independent participants with private context and resolved settings.
-- **Resources** are independently defined data or capabilities.
-- **Pools** collect references to Resources and supply them to Sessions through Conduits.
-- **Conduits** express typed, authorized interactions across the model, including resource
-  access and communication between Sessions; their supported forms are extensible.
+| Family | Template | Instance |
+| --- | --- | --- |
+| Session | Model/agent/account defaults, activation instructions, limits and connection choices. | A durable participant with private context and executions. |
+| Resource | How to create or attach data or a capability. | A concrete capability owned by exactly one Pool instance. |
+| Pool | Resource provisioning selections, defaults and policies. | The ownership and creation boundary for its Resource instances. |
+| Conduit | Endpoints, interaction contract, filters and supporting-resource requirements. | An opened **connection**, with participants and operational state. |
 
-Profiles reference default Conduit declarations. Sessions establish their own participation
-and access while a Conduit may also require shared state, supporting Resources or a runtime.
-Resources can be reused across Pools; membership, access, activation and lifecycle ownership
-have distinct meanings. Conduit selection explicitly distinguishes joining an existing
-relationship from creating a new instance from a reusable declaration. Both are supported;
-the instance/attachment schema and lifecycle details remain under review.
+Resource instances are created only through a Pool. Templates can be reused across Pools;
+the same Resource instance cannot belong to several Pools. Separate instances may attach
+to the same external data or create independent backing data, explicitly according to their
+contract. Connections use Resources through their owning Pools, including any storage they
+need for communication. They can request provisioning through a Pool but do not own Resources.
 
-**Retain YAML; define the language through typed objects and explicit semantics.**
-Configuration describes the five-object graph. Conduit defines how references, defaults,
-filters, activation and changes are interpreted, and makes the effective result inspectable
-through the same contracts across its CLI, APIs and frontends.
+Opening a connection from a Conduit template and joining an existing connection are explicit,
+distinct intents. Sharing a connection does not implicitly share credentials or private context.
+Session templates contain the activation behavior previously called a Profile; Profile is no
+longer a separate family. **Connection** names a Conduit instance, not an additional family.
 
-Conduit owns its runtime in Rust. Its first frontend is a custom terminal inspired by
-Pi. Providers, external agent runtimes, native skills, MCP services, trackers and memory
-backends connect through replaceable integrations. Pi supplies design evidence and
-potential UI components; Conduit owns execution and shared contracts.
+**Retain YAML; define the language through typed objects and explicit semantics.** The common
+envelope, identity and checked-update rules remain. Encoding template versus instance, their
+reference syntax and family-specific lifecycle contracts are the next design work.
 
-**Status:** documentation and contract design; implementation has not started. The first
-experiment targets four concurrent Sessions across two Claude and two Codex/OpenAI
-subscription identities, with separate private state and selected shared resources.
-Subscription compatibility and the communication contract still need validation/design.
+Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable
+frontends and integrations. Provider-native tools, MCP, native skills, trackers and memory
+backends retain their useful contracts. Implementation has not started.
 
 Read in order:
 
-1. [SPEC.md](SPEC.md) — the five-concept model, language objectives and intended outcomes.
-2. [DESIGN.md](DESIGN.md) — accepted language principles and domain contracts.
-3. [REVIEW.md](REVIEW.md) — the Conduit architecture review, remaining language rounds and experiment criteria.
+1. [SPEC.md](SPEC.md) — vocabulary, interactions and intended outcomes.
+2. [DESIGN.md](DESIGN.md) — accepted contracts, including retained account/memory/access rules.
+3. [REVIEW.md](REVIEW.md) — grouped questions, walkthroughs and the initial experiment.
 
-Research is collected in one folder, with a separate purpose for each document:
-
-| Document | Read it for |
+| Research | Purpose |
 | --- | --- |
-| [Conduit relationships and runtime state](research/CONDUITS.md) | The current architecture review: repositories, communication, credentials, AWS and Linear; shared versus participant state, concurrency and composition. |
-| [Configuration languages and contracts](research/CONFIGURATION.md) | Kubernetes/Docker semantics, alternative languages, seven research papers, local probes and the proposed five-object schema. |
-| [Connected YAML example](research/five-concepts.proposal.yaml) | A concrete, synthetic configuration to review alongside that proposal. |
-| [Pi connectors, context and communication](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP, Chord and the experiment sequence. |
+| [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios; shared state and participant lifetimes. |
+| [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, configuration-language papers and candidate expression of the four families. |
+| [Template/instance scenario](research/templates-instances.scenario.yaml) | Synthetic review data: templates, explicit operations and expected ownership. Not an accepted configuration/API schema. |
+| [Pi connectors and context](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP and Chord. |
 | [Pi runtime and Durable](research/PI_RUNTIME.md) | Detailed execution, recovery, frontend, storage and ecosystem evidence. |
 
-Research proposals are not requirements until incorporated into the design.
-Update these documents in place; Git history preserves earlier designs. Keep resolved
-contracts out of the open-question list and settle schemas before implementation.
+Update these documents in place; Git history preserves earlier designs. Research proposals
+are not requirements. Settle the configuration contracts and experiment before implementation.

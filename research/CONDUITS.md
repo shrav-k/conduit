@@ -1,60 +1,44 @@
-# Conduits: relationships, participants and shared state
+# Conduit templates, connections and Pool-owned Resources
 
-Updated: 2026-10-30. **Architecture proposal for discussion, not an accepted schema.**
-Explicit support for joining an existing instance and creating a new one from a reusable
-declaration is now accepted; the detailed representation and lifecycle proposals remain open.
-This review uses the Euphony examples to resolve the meaning of Conduits before deciding
-more individual fields. [DESIGN.md](../DESIGN.md#conduits) retains accepted boundaries;
-[REVIEW.md](../REVIEW.md#architecture-pause--walk-the-five-conduits) carries the questions.
-No implementation, login, deployment or provider mutation was performed for this review.
+Updated: 2026-10-30. The four-family template/instance model, exclusive Pool ownership,
+Pool-only Resource creation and explicit open/join intents are accepted. Detailed interaction,
+state and lifecycle proposals below remain for review; no schema or implementation is implied.
+[DESIGN.md](../DESIGN.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) groups questions.
+No live login, deployment or provider mutation was performed for this research.
 
-## Why the ownership question was insufficient
+## Common model across the scenarios
 
-Choosing whether a Session or a Conduit owns "the binding" compresses several different
-things into one record. A Session can own its participation in a relationship while the
-relationship owns shared history, a coordinating runtime or other supporting state. A
-backing Resource can outlive both. Session-owned attachments are a good candidate for
-ordinary Pool access, but cannot determine every Conduit's lifecycle.
+| Family | Reusable template | Concrete instance |
+| --- | --- | --- |
+| Session | Account/model/runtime choices, limits and activation instructions. | Durable participant with private context and executions. |
+| Resource | How to create or attach a typed capability. | Deployed/attached capability belonging to exactly one Pool instance. |
+| Pool | Resource provisioning choices, defaults and policies. | Creates and exclusively owns its Resource instances. |
+| Conduit | Interaction, endpoint, filter and support requirements. | An opened connection with participants, shared operational state and any runtime. |
 
-The five concepts still work:
+Template identity, instance identity, participant attachments and individual operations are
+distinct. Opening a Conduit template establishes a new connection; joining selects an existing
+one. Reusing a template does not implicitly choose either operation or share credentials.
+Instances need not have resident processes. One authority per fact is useful without making
+every fact belong to one Session, connection or backend.
 
-| Concept | Responsibility in this review |
-| --- | --- |
-| Profile | Templates a participant's runtime/model/account defaults, limits and activation instructions; selects default Conduits. |
-| Session | Identifies the participant, preserving private context, resolved configuration and its own participation state. |
-| Resource | Identifies available data or a capability, its native source and its contract. Multiple routes can reach the same backing state. |
-| Pool | Organizes available Resources. Membership neither duplicates data nor grants access. |
-| Conduit | Defines an authorized interaction; its contract may require shared state/runtime as well as participant attachments. |
+A connection that needs backing Resources must request them through an identified Pool.
+Connection supervision and participant attachments can have different lifetimes from those
+Resources. One Resource instance cannot appear in several Pools. Separate instances can
+explicitly attach to the same external data or provision independent backing, according to
+their contract. Cross-Pool access uses authorized paths to the owning Pools.
 
-**Proposed distinction within these concepts:** declaration, live relationship, participant
-attachment and individual operation. These are representations and lifecycle units, not
-four additional top-level YAML kinds. They need not each require a process or database table.
-
-- A **declaration** describes a connection's intended contract and configuration.
-- A **live relationship** realizes it for particular endpoints and may have shared state.
-- A **participant attachment** records one Session's resolved access, authentication
-  references, local preparation and participation in that relationship.
-- An **operation** reads, writes, posts, invokes, subscribes or otherwise acts through it.
-  Its outcome can outlive the attachment or process that initiated it.
-
-**Accepted direction:** explicitly support both joining an existing relationship instance
-and creating a new instance from a reusable declaration. For example, four Sessions can
-join the same Euphony discussion; another experiment can create a separate discussion from
-the same declaration. Relationship reuse does not imply credential-cache sharing, and a
-new relationship does not imply new backing data. Exact instance addressing, repeated-create
-behavior, configuration binding and YAML syntax remain open.
-
-Conduits express an extensible range of interactions across the five concepts. Pool access
-and Session communication are examples rather than a closed endpoint taxonomy. Each typed
-contract still needs meaningful endpoint roles, operations and supported guarantees.
+Conduits express interactions across the four families; the five scenarios below are examples,
+not a closed endpoint taxonomy. Exact contract types, state placement and delivery semantics
+remain open. Room-based behavior is one candidate, not the universal Conduit primitive.
 
 ## Walkthroughs
 
 ### 1. Expose Euphony repositories as local paths
 
-The Pool references repository/workspace Resources. An access Conduit selects permitted
-Resources and operations. Profile activation can prepare a Session's local path projection,
-subject to adapter and execution-mode capabilities.
+The Pool creates or attaches repository/workspace Resource instances from reusable templates.
+An access connection selects permitted Resources and operations. Session-template activation
+can prepare a participant's local path projection, subject to adapter and execution-mode
+capabilities.
 
 Two symlinks to the same checkout expose the same working files. Creating another symlink
 does not create a separate editing environment, a read-only boundary or an isolated account.
@@ -67,9 +51,9 @@ Proposed state separation:
 | State | Natural responsibility to test |
 | --- | --- |
 | Repository and checkout identity | Resource/native workspace contract. |
-| Selected paths and permitted operations | Effective Conduit access constrained by Profile limits. |
+| Selected paths and permitted operations | Effective Conduit access constrained by Session-template limits. |
 | Session-local symlink/mount location | Participant preparation and attachment state. |
-| Task-owned worktree | Managed workspace lifecycle, already separate from account or Session ownership. |
+| Task-associated worktree | Pool owns the Resource instance; task association and native workspace management guide its use/cleanup. |
 | Concurrent modification | Actual target plus operation; separate writers by default, shared editing explicitly selected. |
 
 Removing a local projection must be distinguished from deleting its target. The existing
@@ -78,7 +62,7 @@ between writers can coordinate intent, but do not themselves lock files or preve
 
 ### 2. Coordinate the Sessions using those repositories
 
-A communication Conduit may have several participants, shared retained exchanges, pending
+A communication connection may have several participants, shared retained exchanges, pending
 requests and a routing service. Each participant can have its own identity, delivery state
 and context. Shared conversation storage need not be editable shared working memory.
 
@@ -97,7 +81,7 @@ describe the implemented history behavior.
 [Room implementation](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-server/src/rooms.rs)
 · [History read](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-mcp/src/tools/room_read.rs)
 
-A shared runtime must identify what authority it uses to read/write backing storage.
+A shared runtime must identify what authority it uses to read/write its Pool-owned backing storage.
 A process serving two Sessions must not silently use one participant's broader credentials
 for the other's requests. Joining communication also must not confer repository access,
 import private context or automatically start a model turn.
@@ -108,8 +92,8 @@ one possible interaction example, not the universal Conduit abstraction.
 
 ### 3. Access a 1Password account or vault
 
-The Resource exposes a credential service or selected vault capabilities; the Pool makes
-that Resource selectable. The Conduit establishes authorized access. A Session's attachment
+The Pool instantiates a Resource template to attach a credential service or selected vault
+capabilities, and owns that attachment instance. The Conduit establishes authorized access. A Session's attachment
 resolves the chosen native account/grant and how authentication is obtained and refreshed.
 
 Do not require every credential service to implement one login per Session, and do not
@@ -160,8 +144,9 @@ direction without making deployment orchestration a prerequisite for v0.
 
 ### 5. Access Linear through MCP
 
-One Resource can describe the native Linear MCP service while different Sessions establish
-their own clients and authorized attachments. A common endpoint does not imply a common
+A reusable Resource template can describe the native Linear MCP service. A Pool creates an
+attachment instance; different Sessions establish authorized clients through it. Another Pool
+can create its own distinct instance targeting the same service. A common endpoint does not imply a common
 OAuth grant, private cache or transport session. Linear hosts its remote server and supports
 OAuth setup as well as token-based authentication; it also documents read-only access.
 [Linear MCP](https://linear.app/docs/mcp)
@@ -189,7 +174,7 @@ and conflict properties. Useful contract dimensions include:
 | Backing state | Another view of the same state, a snapshot, an independent copy, or a new managed object? How are native target identity and revisions tracked? |
 | Effects and coordination | Which operations conflict, over what target, and what mechanism actually prevents conflicts? Are leases advisory or enforced? |
 | Capacity | Which quotas apply per principal, target, service or runtime? How are bounded queues, rate limits and overload reported? |
-| Persistence and lifetime | What survives detach, last participant leaving, execution exit, runtime restart, declaration deletion and explicit purge? |
+| Persistence and lifetime | What survives detach, last participant leaving, execution exit, runtime restart, template deletion and explicit purge? |
 | Failure and change | What can remain usable, what must be stopped, and which completed or uncertain effects require reconciliation? |
 
 These are questions for typed contracts, not mandatory knobs on every YAML object. A
@@ -212,35 +197,34 @@ report limited coordination rather than inventing a guarantee.
 
 ## Supporting Resources and lifecycle ownership
 
-A Conduit should be allowed to depend on, and where authorized provision, backing Resources.
-That does not mean every cursor or temporary buffer needs a Resource registration.
-Proposed boundary:
+Resource instances are created only through Pools and each has exactly one owner. If a
+connection requires a conversation store, queue or other retained capability, it requests
+provisioning through a selected Pool; the connection never becomes a second Resource owner.
+Reusable Resource templates describe the support capability without deploying it.
 
-- Protocol bookkeeping such as membership, current cursors and in-flight routing state
-  can remain system-managed relationship/attachment state.
-- Independently retained or reusable content, such as searchable exchange history, can use
-  a Resource contract. Its storage backend need not be the same as the runtime process.
-- A backing Resource may already exist or be created for a relationship. Record which
-  lifecycle is managed; using it does not imply permission to destroy it.
-- If Sessions access that Resource as data, preserve the Pool→Conduit access route. Merely
-  backing a relationship must not make it publicly discoverable or expose raw storage.
+Protocol bookkeeping such as participant attachments, cursors and in-flight routing state
+can remain connection state. Not every cursor or message needs an individually registered
+Resource. Retained content exposed as a Resource still belongs to a Pool, even if a shared
+connection runtime writes it. The distinction must not become an unscoped storage path.
 
-The unresolved boundary is how internal service authority and backing-Resource registrations
-are expressed: explicit support Pools, generated memberships, or another representation
-within the five concepts. Ordinary protocol replies should not require inventing a new
-Pool for each message. Equally, "internal state" cannot become a hidden route around data
-access rules. Define this once with communication history and credential-service examples.
+A collaboration Pool can own the backing conversation Resource for Sessions using different
+domain Pools. Participants retain their own access. Closing a connection, detaching its last
+participant and retiring the backing Resource are separate lifecycle operations. Pool deletion,
+possible ownership transfer and partial provisioning need explicit rules. Missing ownership
+is not proof that purging the backing data is safe; existing retention and external-data
+protection remain applicable.
 
-Profile activation still prepares a participant to use available capabilities. Starting a
-shared routing service or provisioning its history store is infrastructure lifecycle for
-the relationship. A Profile may request the connection; which component supervises that
-service, with what authority and lifetime, is a separate contract still to be decided.
+Session-template activation prepares a participant. Pool provisioning creates or attaches
+Resource instances. Connection supervision operates a shared interaction service when needed.
+Ordering, service identity, dependency failure and cleanup among these operations remain open.
+A common template/instance pattern does not imply one universal startup procedure.
 
 ## Can there be one euphony-access Conduit?
 
 Yes as an authoring goal, but aggregation must preserve the constituents' different meanings.
-Two candidates are a composite Conduit referencing others, or a named selection of separate
-declarations in an existing Profile/Session field. Neither requires a sixth core kind.
+Two candidates are a composite Conduit template referencing others, or a named selection of
+connection choices in Session configuration. Both fit the four-family model; neither is yet
+selected. Opening and joining constituents must remain explicit.
 
 Prefer independent typed components and references over one giant provider-specific payload:
 
@@ -266,15 +250,16 @@ Existing narrowing-only filters and capability-tuple composition remain applicab
 
 ## Review sequence and tests
 
-With explicit join-existing and create-new intents settled, next define instance identity
-and state responsibilities/lifetimes together. Follow with endpoint/authentication contracts,
+With the four families, Pool ownership and explicit open/join intents settled, define
+form-qualified identity, template binding and state responsibilities/lifetimes together.
+Follow with endpoint/authentication contracts,
 operation coordination and composition before choosing concrete YAML fields. The existing
-fixture illustrates access and a candidate review request; it does not yet express the
-accepted join/create distinction or shared runtime lifecycles.
+scenario fixture illustrates templates, explicit Pool provisioning and connection open/join
+requests. Its fields are proposals, not an accepted authoring or API schema.
 
 Use these change cases alongside the five happy paths:
 
-1. Two Sessions join one instance; then create separate instances from the same declaration.
+1. Two Sessions join one instance; then create separate instances from the same template.
    Show exactly which state is shared and private, including any shared backing data.
 2. One detaches, crashes, changes account or loses permission; the other continues where valid.
 3. The last participant leaves; then a new participant arrives and the runtime restarts.
@@ -283,9 +268,10 @@ Use these change cases alongside the five happy paths:
 6. A write is accepted remotely and its local caller disappears before learning the outcome.
 7. One optional component fails; a dependent required operation remains unavailable without
    falsely marking every other capability broken or claiming rollback of completed effects.
-8. A declaration or backing Resource registration is deleted; inspect retained data,
+8. A template or backing Resource registration is deleted; inspect retained data,
    surviving participants and the exact cleanup action still required.
 
-This changes the review order, not the accepted five-object envelope, identity/update rules,
-private Session context, Profile activation, Pool access route or backing-data preservation.
-Specific state ownership, topology, communication semantics and composition remain proposals.
+This changes the review order, not the accepted envelope, identity/update rules, private Session context, Session-template
+activation, Pool ownership/access route or backing-data preservation.
+Participant/connection state placement, topology, communication semantics and composition
+remain proposals; exclusive Pool ownership of Resource instances is settled.

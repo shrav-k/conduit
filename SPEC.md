@@ -150,6 +150,11 @@ editing is an explicit choice, without a guarantee of automatic merging or file 
 Worktrees belong to the task or experiment, independently of roles and accounts;
 they do not establish a security boundary.
 
+Session closure or task completion retains workspaces until explicit cleanup. Cleanup
+only unregisters an attached directory. Removing a managed worktree requires checking
+that no execution is using it and no unique local work would be lost; uncertainty
+preserves the worktree with an explanation.
+
 ### Share knowledge and continue work
 
 Memory covers tasks, projects, and personal knowledge across projects. Users and

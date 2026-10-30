@@ -188,13 +188,20 @@ V0 can attach an existing checkout/folder or create a Conduit-managed Git worktr
 recording the management status. Attachment preserves existing files and Git state
 without granting deletion authority. Supporting both preserves existing workflows
 while providing managed creation for new work. Exact creation settings belong to
-the YAML review; cleanup and recovery remain open.
+the YAML review.
 
 For concurrent coding sessions on Git projects, independent writers use separate
 task-owned worktrees by default; sequential handoffs reuse a workspace. This separates
 concurrent edits while keeping workspace ownership independent of roles and accounts.
 Shared-workspace editing is available through explicit selection, without a guarantee
 of automatic merging or file locking.
+
+Workspaces remain after session closure or task completion until an explicit cleanup
+operation. Cleanup of an attached directory only unregisters it from Conduit, leaving
+its files intact. Before removing a managed worktree, check that no execution is using
+it and no unique local work would be lost. If either cannot be established, preserve
+the worktree and report why. This keeps cleanup separate from conversation/task lifecycle
+and preserves work when its recovery status is uncertain.
 
 Linear is the first tracker direction. Providers own issue fields, assignments,
 status, and workflow; Conduit does not require an internal ticket engine or full

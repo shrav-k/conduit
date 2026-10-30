@@ -6,7 +6,7 @@ here; prior room choices below are material to reconsider, not implementation re
 
 ## Review order
 
-1. Resolve the remaining non-communication behavior: workspaces and recovery/observability.
+1. Resolve the remaining non-communication behavior: recovery and observability.
 2. Review the user's Pi coding-agent research and its implications for integration.
 3. Design in detail what it means to establish a “conduit” between sessions, without
    assuming the former room model.
@@ -21,12 +21,12 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 ## Active non-communication review
 
-| Group | Decisions still needed |
-| --- | --- |
-| **1. Workspaces** | Cleanup and recovery for attached directories and managed worktrees, independently of any messaging topology or tracker-to-communication binding. |
-| **2. Recovery and observability** | Runtime restart and unknown-outcome behavior, retry/deduplication for memory/resource operations, retention for knowledge/checkpoints/native history/observations, and usable account/token/context evidence. Communication delivery, cursors, and acknowledgements are deferred below. |
+Remaining choices concern recovery and observability: runtime restart and unknown
+outcomes, retry/deduplication for workspace/memory/resource operations, retention for
+knowledge/checkpoints/native history/observations, and usable account/token/context
+evidence. Communication delivery, cursors, and acknowledgements are deferred below.
 
-The active review is complete when each group has a concrete v0 contract or an explicit
+The active review is complete when these behaviors have concrete v0 contracts or an explicit
 deferral compatible with the four-account objective. Unverified adapter behavior becomes
 an experiment check. Storage engines, exact wire schemas, and every possible failure
 mode need not be selected here. Existing portable checkpoint, session-continuity,

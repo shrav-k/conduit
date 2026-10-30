@@ -206,9 +206,16 @@ provenance, and links; external provider objects need not adopt this schema.
   inputs. Local recording time differs from labeled source times. Unknown provenance
   stays unknown and does not certify truth or approval.
 - **Cleanup:** archive excludes ordinary retrieval while preserving explicit scoped
-  access. Explicit purge removes retained content/history with a minimal deletion
-  marker. Removing an artifact reference does not delete its referenced file. Artifact
-  records are independently searchable/linkable; a reference does not promise a snapshot.
+  access; restore returns it to ordinary retrieval under current access rules. Explicit
+  purge removes retained content/history with a minimal deletion marker. Removing an
+  artifact reference does not delete its referenced file. Artifact records are
+  independently searchable/linkable; a reference does not promise a snapshot.
+
+V0 knowledge records support create, read/search, revision-checked update, archive,
+restore, and explicit purge, each governed by its operation permissions. This gives
+agents a way to correct and retire knowledge as well as save it. Bulk administration
+and advanced sharing remain separate; other record kinds retain their type-specific
+operations and update rules.
 
 A checkpoint contains optional objective/constraints, decisions, progress/evidence,
 remaining work/questions, and artifact/source references. The active agent writes it

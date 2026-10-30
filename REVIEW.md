@@ -24,7 +24,7 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Shared memory and managed access** | Select the v0 memory-management operations and sharing modes. Available information remains distinct from automatically loaded context. |
+| **1. Shared memory and managed access** | Select the v0 sharing modes. Available information remains distinct from automatically loaded context. |
 | **2. Workspaces** | How sessions attach to task/experiment workspaces; concurrent file-editing, separate worktrees where needed, and cleanup/recovery. Resolve these independently of any messaging topology or tracker-to-communication binding. |
 | **3. Recovery and observability** | Runtime restart and unknown-outcome behavior, retry/deduplication for memory/resource operations, retention for knowledge/checkpoints/native history/observations, and usable account/token/context evidence. Communication delivery, cursors, and acknowledgements are deferred below. |
 

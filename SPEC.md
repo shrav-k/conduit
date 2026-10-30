@@ -142,8 +142,10 @@ communication review. The core must remain independent of any one frontend.
 
 Memory covers tasks, projects, and personal knowledge across projects. Users and
 agents write knowledge explicitly within their access; work and personal knowledge
-stay separate unless shared. Available transcripts support continuity, but complete
-normalized conversation history is not guaranteed.
+stay separate unless shared. V0 knowledge records support create, read/search,
+revision-checked updates, archive/restore, and explicit purge, each governed by its
+operation permissions. Available transcripts support continuity, but complete normalized
+conversation history is not guaranteed.
 
 Memory search defaults to all Conduit memory permitted by the session's selected
 scopes, with optional narrowing by context, record kind, or classification labels.

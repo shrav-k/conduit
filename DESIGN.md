@@ -28,9 +28,13 @@ Session's bindings, preparation and execution. Normal authored YAML omits `statu
 and agents request changes through configuration or operations rather than declaring an
 observed state to be true.
 
+Normal configuration writes reject an included `status` field rather than silently
+ignoring it. Conduit provides a configuration-only export that omits `status`, distinct
+from inspection. Identity and concurrency metadata have separate input rules still to be
+defined; this does not authorize clients to assign system-owned values.
+
 The shared envelope does not give every kind the same configuration or status fields.
-Exact metadata/status fields, ID encoding and import/export handling remain open, including
-what happens when inspection output is submitted as configuration.
+Exact metadata/status fields, ID encoding and remaining import/export semantics are open.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
 in the research. In particular, the API group/version, registry storage layout, reference

@@ -9,8 +9,9 @@ The direction, common `apiVersion`/`kind`/`metadata`/`spec` envelope, stable obj
 default kind/name references with recorded resolved IDs are accepted. V0 uses one local
 registry with names unique per kind. Established bindings from explicit references retain
 resolved identity until explicitly rebound. Inspection combines authored `spec` with
-system-owned `status`; normal authoring omits `status`. Detailed fields, identifier encoding, schemas,
-reference extensions, composition rules and operations remain open. The
+system-owned `status`. Normal configuration writes reject `status`; configuration-only
+export omits it. Detailed fields, identifier encoding, schemas, reference extensions,
+composition rules and operations remain open. The
 [connected YAML](research/five-concepts.proposal.yaml) is a design fixture, not a specification
 or implemented format.
 
@@ -52,9 +53,9 @@ rather than reopening them.
 | 5. Conduit contracts | How do authorized capabilities and Session interactions flow through a binding? | Filter/authority semantics and initial interaction contracts. |
 | 6. Validation and evolution | How do we explain, check, migrate and test the language before relying on it? | Diagnostics, conformance cases and staged experiment criteria. |
 
-The common envelope, identity/reference rules, v0 naming boundary and combined inspection
-view are settled. Continue round 1 with configuration-write/import/export semantics,
-metadata ownership and remaining reference details before composition or activation syntax.
+The common envelope, identity/reference rules, v0 naming boundary, combined inspection and
+status-write/export boundary are settled. Continue round 1 with metadata ownership and
+remaining import/export and reference details before composition or activation syntax.
 
 ### Shared example
 
@@ -94,12 +95,12 @@ unique per kind; namespaces and cross-registry references are deferred. Establis
 from explicit references follow the resolved ID through renames; deletion makes the target
 unavailable and replacement requires explicit rebinding. This does not pin content or
 permissions, or settle live selectors. Inspection returns system-owned `status` alongside
-authored `spec`. **Recommended next direction:** explicit configuration operations and
-ownership rules for remaining fields. Those details remain proposals.
+authored `spec`; configuration writes reject `status`, and configuration-only export omits
+it. **Recommended next direction:** explicit configuration operations and ownership rules
+for remaining fields. Those details remain proposals.
 
 | Question to resolve | Concrete case and proposed direction |
 | --- | --- |
-| What happens when inspection output is submitted as configuration? | `status` is system-owned and normally omitted from authoring. Decide whether normal writes reject it or explicitly ignore it, and how configuration export differs from inspection/snapshot export. Identity and concurrency metadata need separate input rules. |
 | Which metadata and status fields belong to each owner? | Define editable naming/labels, system-assigned identity, concurrency/generation information and kind-specific status. Specify what import/create/update may supply as intent or a precondition, and what only Conduit may report. |
 | Which identity/reference details remain? | Decide optional direct-ID forms, ID encoding and metadata placement, handling of unresolved references, and which explicit operations create or rebind a relationship. Specify effects on authored references after a rename without changing the accepted binding-identity rule. |
 | Which references are live or pinned? | Configuration generation, external source revision, native schema version and retained-record revision are different. What may an author pin, and what must resolution record even when the author uses a readable name? |

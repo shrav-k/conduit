@@ -90,8 +90,9 @@ Profiles, Sessions, Resources, Pools and Conduits share the authoring envelope
 `apiVersion`, `kind`, `metadata` and `spec`. Each kind defines its own configuration within
 `spec`; naming and labels belong in `metadata`. Inspection adds system-owned `status` for
 reported resolution and observed state. Normal authoring omits `status`; changes are
-requested through configuration or operations. The actual version identifier, detailed
-status fields and import/export handling remain open.
+requested through configuration or operations. Normal configuration writes reject an
+included `status` field; configuration-only export omits it. The actual version identifier,
+detailed status fields and other import/export rules remain open.
 
 Each configuration object has a system-assigned stable ID independent of its name. Renames
 preserve the ID; deletion and recreation under the same name produce a different ID.

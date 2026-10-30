@@ -184,12 +184,17 @@ A task or experiment owns its workspaces/worktrees; sessions attach to them. Cha
 agent, account, or frontend need not create a checkout. Forking a conversation does
 not fork files, and a worktree does not imply isolation.
 
+V0 can attach an existing checkout/folder or create a Conduit-managed Git worktree,
+recording the management status. Attachment preserves existing files and Git state
+without granting deletion authority. Supporting both preserves existing workflows
+while providing managed creation for new work. Exact creation settings belong to
+the YAML review; cleanup and recovery remain open.
+
 For concurrent coding sessions on Git projects, independent writers use separate
 task-owned worktrees by default; sequential handoffs reuse a workspace. This separates
 concurrent edits while keeping workspace ownership independent of roles and accounts.
 Shared-workspace editing is available through explicit selection, without a guarantee
-of automatic merging or file locking. Workspace attachment, creation, and cleanup
-remain open.
+of automatic merging or file locking.
 
 Linear is the first tracker direction. Providers own issue fields, assignments,
 status, and workflow; Conduit does not require an internal ticket engine or full

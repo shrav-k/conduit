@@ -140,6 +140,10 @@ communication review. The core must remain independent of any one frontend.
 
 ### Work in task-owned workspaces
 
+V0 supports attaching an existing checkout/folder or creating a Conduit-managed Git
+worktree, recording which kind each workspace is. Attachment preserves existing files
+and Git state; it does not authorize deletion of the directory.
+
 For concurrent coding sessions on a Git project, independent writers use separate
 task-owned worktrees by default. Sequential handoffs reuse a workspace. Shared-workspace
 editing is an explicit choice, without a guarantee of automatic merging or file locking.

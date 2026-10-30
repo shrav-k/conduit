@@ -23,7 +23,7 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Workspaces** | How sessions attach to existing workspaces or create managed worktrees, plus cleanup/recovery. Resolve these independently of any messaging topology or tracker-to-communication binding. |
+| **1. Workspaces** | Cleanup and recovery for attached directories and managed worktrees, independently of any messaging topology or tracker-to-communication binding. |
 | **2. Recovery and observability** | Runtime restart and unknown-outcome behavior, retry/deduplication for memory/resource operations, retention for knowledge/checkpoints/native history/observations, and usable account/token/context evidence. Communication delivery, cursors, and acknowledgements are deferred below. |
 
 The active review is complete when each group has a concrete v0 contract or an explicit
@@ -94,6 +94,8 @@ Discuss concrete examples together before freezing a schema or implementing:
   distinct from MCP protocol and plugin versions.
 - Define search-limit settings and text-size units; tune default values and caps in the
   experiment.
+- Specify managed-worktree creation settings: base revision, branch selection, directory
+  placement, and treatment of any existing local changes.
 - Express roles, account references, shared connection definitions, scopes, projects,
   and execution policy. Show resolved launch settings and native adapter output. Keep
   credentials out of shareable configuration. Add communication objects only after redesign.

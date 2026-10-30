@@ -6,8 +6,7 @@ here; prior room choices below are material to reconsider, not implementation re
 
 ## Review order
 
-1. Resolve the remaining non-communication behavior: shared memory/access, workspaces,
-   and recovery/observability.
+1. Resolve the remaining non-communication behavior: workspaces and recovery/observability.
 2. Review the user's Pi coding-agent research and its implications for integration.
 3. Design in detail what it means to establish a “conduit” between sessions, without
    assuming the former room model.
@@ -24,9 +23,8 @@ remain settled; runtime-specific behavior still needs experiment evidence.
 
 | Group | Decisions still needed |
 | --- | --- |
-| **1. Shared memory and managed access** | Select the v0 sharing modes. Available information remains distinct from automatically loaded context. |
-| **2. Workspaces** | How sessions attach to task/experiment workspaces; concurrent file-editing, separate worktrees where needed, and cleanup/recovery. Resolve these independently of any messaging topology or tracker-to-communication binding. |
-| **3. Recovery and observability** | Runtime restart and unknown-outcome behavior, retry/deduplication for memory/resource operations, retention for knowledge/checkpoints/native history/observations, and usable account/token/context evidence. Communication delivery, cursors, and acknowledgements are deferred below. |
+| **1. Workspaces** | How sessions attach to task/experiment workspaces; concurrent file-editing, separate worktrees where needed, and cleanup/recovery. Resolve these independently of any messaging topology or tracker-to-communication binding. |
+| **2. Recovery and observability** | Runtime restart and unknown-outcome behavior, retry/deduplication for memory/resource operations, retention for knowledge/checkpoints/native history/observations, and usable account/token/context evidence. Communication delivery, cursors, and acknowledgements are deferred below. |
 
 The active review is complete when each group has a concrete v0 contract or an explicit
 deferral compatible with the four-account objective. Unverified adapter behavior becomes

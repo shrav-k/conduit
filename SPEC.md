@@ -147,6 +147,10 @@ revision-checked updates, archive/restore, and explicit purge, each governed by 
 operation permissions. Available transcripts support continuity, but complete normalized
 conversation history is not guaranteed.
 
+V0 cross-context sharing uses direct live read-only shares, revocable by authorized
+share managers. The original keeps its owner and identity; recipients see updates
+through their selected incoming shares, within their effective access.
+
 Memory search defaults to all Conduit memory permitted by the session's selected
 scopes, with optional narrowing by context, record kind, or classification labels.
 Results contain bounded excerpts, record/revision references, and permitted provenance.

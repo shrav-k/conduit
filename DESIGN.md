@@ -283,8 +283,16 @@ derived records. Permission changes cannot erase already-delivered native contex
 
 ### Sharing semantics
 
-These define supported sharing behavior as it is introduced; the full set is not a
-v0 requirement.
+V0 supports direct live read-only shares between contexts, managed and revocable by
+authorized share managers. The source keeps its ID and owner; recipients select incoming
+shares through their scopes and see current content within their effective access.
+Revoking a share removes that grant on subsequent managed requests; independent grants
+remain valid. This supports selective reuse without delegated grant chains.
+
+Update rights through shares, pinned shares, onward delegation, and independent publication
+are deferred. Revision-pinned record references remain supported and do not grant access
+themselves. Agents can edit common project knowledge through their own scoped update
+grants. The table defines sharing semantics as each capability is introduced.
 
 | Operation | Contract |
 | --- | --- |

@@ -94,8 +94,9 @@ representation of system-owned state remain open.
 Each configuration object has a system-assigned stable ID independent of its name. Renames
 preserve the ID; deletion and recreation under the same name produce a different ID.
 Authored references normally use `kind` and `name`; Conduit records the resolved object's
-stable ID. ID encoding, naming boundaries, reference extensions and rebinding behavior
-remain for review.
+stable ID. V0 uses one local registry with names unique per kind; underlying resources may
+remain local or remote. Namespaces and cross-registry references are deferred. ID encoding,
+reference extensions and rebinding behavior remain for review.
 
 | Requirement | Meaning |
 | --- | --- |

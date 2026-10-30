@@ -27,7 +27,7 @@ fields, ID encoding and observation representations remain open; the envelope ru
 not yet select `status` or determine which system fields may appear on import/export.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
-in the research. In particular, the API group/version, registry layout, reference
+in the research. In particular, the API group/version, registry storage layout, reference
 extensions, YAML subset, schema toolchain and command names remain for review. Configuration
 objects also do not force every memory record, native tool or runtime event into an
 individually authored YAML file.
@@ -42,10 +42,17 @@ Authored YAML normally references an object by `kind` and `name`. Conduit record
 ID of the object selected when that reference resolves. Authors need not copy generated IDs
 into ordinary references; the readable lookup and the resolved identity remain distinguishable.
 
-The ID format, serialized field, uniqueness boundary and import/export treatment remain
-open, along with naming boundaries, optional direct-ID reference forms and the behavior of
-existing references/bindings after rename or replacement. Recording a resolved ID does not
-by itself choose when a relationship may resolve again or move to another object.
+V0 resolves these references within one local registry, with object names unique per kind.
+A Pool and a Resource may share a name; two distinct Resources may not. The registry
+catalogs definitions and IDs, while underlying data and services may be local or remote.
+Pool membership does not create a separate naming boundary. Registry membership is not an
+access grant, and this naming rule does not require every exposed native item to have a
+registry-wide name. Namespaces and cross-registry references are deferred.
+
+The ID format, serialized field, cross-registry identity policy and import/export treatment
+remain open, along with optional direct-ID reference forms and the behavior of existing
+references/bindings after rename or replacement. Recording a resolved ID does not by itself
+choose when a relationship may resolve again or move to another object.
 
 ### Objects, representations and contracts
 

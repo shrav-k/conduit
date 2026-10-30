@@ -2,8 +2,8 @@
 
 2026-10-30. **Research evidence and concrete proposals; this report does not define the schema.**
 The five concepts, Profile-owned activation, typed-object semantics, stable object IDs,
-default kind/name references with recorded resolved IDs, and the common
-`apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
+default kind/name references with recorded resolved IDs, one local registry with names
+unique per kind, and the common `apiVersion`/`kind`/`metadata`/`spec` envelope are accepted in
 [DESIGN.md](../DESIGN.md#configuration-language). Detailed fields and algorithms below
 remain proposals. This report investigates how to express the model
 without turning Conduit into another deployment framework. The research
@@ -330,10 +330,10 @@ resourceVersion. [API concurrency](https://kubernetes.io/docs/reference/using-ap
 
 Stable IDs preserved through rename and renewed on delete/recreate are accepted, as are
 default kind/name references with the resolved ID recorded. `metadata.uid` remains an
-illustrative encoding. For v0, recommend one local registry, names unique by kind, duplicate
-definitions rejected, and configuration generation recorded during resolution. Recommend
-that name reuse not silently retarget existing bindings. Rebinding behavior and registry
-boundaries remain for review; cross-registry naming/namespaces can follow when needed.
+illustrative encoding. V0's single local registry and names unique per kind are accepted;
+namespaces and cross-registry references are deferred. Duplicate-definition handling and
+recording configuration generation during resolution remain proposals. Recommend that name
+reuse not silently retarget existing bindings; exact rebinding behavior remains for review.
 
 Import/export must distinguish “create a new object from this configuration” from “update
 this existing object.” Exporting a Session snapshot must not make applying it restart work,

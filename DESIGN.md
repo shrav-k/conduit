@@ -154,12 +154,16 @@ or enqueueing, and a local revision cannot establish unseen provider state.
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority
 and Conduit filters; none overrides another to widen access. Exact authoring shorthand/defaults,
-cross-field expressions, handler composition and control-contract evolution remain open.
+cross-field expressions, handler composition and version compatibility remain open.
 
 A setting's value and the rule governing its permitted changes are distinct. Changing a value
-must not silently expand the control's allowed range or caller privileges. Whether an instance's
-control declaration, graph or runtime implementation can itself change requires an explicit
-management/evolution contract; it is not implied by exposing a setting. This remains under review.
+must not silently expand the control's allowed range or caller privileges. **Accepted for v0:**
+an instance's resolved setup graph and control definitions remain fixed. Changing setup steps,
+control schemas/constraints or handler bindings requires a new instance from a revised definition.
+Existing controls still change their permitted settings; dynamic attachments, current access rules
+and declared dynamic provider catalogs remain live. In-place definition upgrades are deferred.
+This does not select plugin binary pinning or compatible implementation-update policy. A new
+instance does not automatically acquire the old one's bindings, private context or permissions.
 
 ### Conduits and configurable endpoints
 

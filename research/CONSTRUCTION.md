@@ -65,8 +65,8 @@ The intended user journey is:
 
 Resource templates remain reusable definitions; Pool ownership applies to the concrete Resource
 instances established through that Pool. Referencing a template does not give it an exclusive
-owner. The exact Pool composition fields and registration/start boundary remain under review;
-this workflow does not introduce a second setup recipe outside the templates and graphs.
+owner. Registration remains separate from explicitly requested setup; exact Pool composition
+fields remain under review. This workflow introduces no second setup recipe outside templates/graphs.
 
 The Interface provides authoring, observability and entry points, not a parallel implementation of target
 behavior. An existing Pool's Resource-creation operation must still respect its access/ownership
@@ -89,12 +89,31 @@ the interaction endpoint, not a replacement for the user. Agent-originated reque
 Agent and its effective authority. Both use Conduits and the target's declared contracts. Exact
 identity fields and delegation rules remain for review; the existing account separation remains.
 
-**Bootstrap question:** the first Interface must be able to reach registry/template management
-and establish Conduits before application instances exist. A proposed solution is a local runtime
-bootstrap that establishes the management Interface and its initial management connection.
-Registry operations need a defined platform surface. Their endpoint representation, root
-authority and recovery path are not yet selected; they do not introduce a sixth family. Do not
-require a pre-existing application Pool or Conduit to create the very first one.
+### Bootstrap management access
+
+The first Interface must reach registry/template management and establish Conduits before any
+application instances exist. **Proposal for the next ruling:** initial local startup seeds a
+minimal system Pool owning a management Resource, a default Interface, and a management Conduit
+connecting them. These use the existing five families. A small runtime bootstrap establishes the
+initial set before its management operations can be called, avoiding a dependency on an existing
+application Pool or Agent.
+
+The proposed walkthrough is:
+
+1. Local startup establishes the initial management objects and their connection.
+2. The frontend presents the default Interface, which reaches platform management through its
+   Conduit to the Pool-owned management Resource. That Resource exposes the core runtime's
+   supported management capabilities; it does not create a second registry or require a new daemon.
+3. Through this access, the user authors templates, instantiates an application Pool and requests
+   its setup. Resource creation still goes through the selected owning Pool.
+4. The user creates an Agent and establishes its authorized Conduits. A subsequently authorized
+   Agent can use management capabilities through its own restricted connection.
+
+The alternative is a built-in platform endpoint outside Pool-owned Resources. It reduces registered
+objects but makes management an ownership exception. Recommend the seeded Pool approach for
+consistency. The representation does not grant arbitrary callers administrative access or sign
+into external services. Initial authority, built-in definitions, recovery/protection, exact management
+operations, process layout and transports remain open; no new object family is proposed.
 
 ## A common interaction contract
 
@@ -165,7 +184,8 @@ Kubernetes transitions, Docker runtime updates, schema constraints and Pi comman
 search-control example shows how a template limit and narrower Conduit restriction compose.
 Templates reuse declared type-control defaults and may customize the exposed surface. Exact
 selection notation, change-handler representation, transition rules, storage fields, revision
-mechanics and evolution of a running instance's own control contract remain for grouped review.
+mechanics and implementation-version compatibility remain for grouped review. The retained setup
+graph and control definitions are fixed in v0; changing them requires a new instance.
 Configuration changes apply one at a time per target by default, with declared safe parallelism.
 They normally check the caller's expected configuration revision at application, with explicit
 contract exceptions for safe unconditional operations.
@@ -512,8 +532,9 @@ accepted [extensible MCP exchange](CONFIGURATION.md#application-requirements-and
 settings remain [separate from outstanding requests](CONFIGURATION.md#requested-and-applied-configuration).
 [Per-target control coordination](CONFIGURATION.md#concurrent-configuration-controls) is accepted.
 [Default revision checks](CONFIGURATION.md#stale-configuration-requests) address stale requests.
-The next review is [instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings);
-typed filters and their access-path composition are settled at the semantic level.
+[Instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings)
+is settled for v0, alongside typed filters and access-path composition. The next walkthrough is
+[bootstrap management access](#bootstrap-management-access).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

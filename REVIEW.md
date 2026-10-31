@@ -42,6 +42,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Control exchanges | MCP tools carry typed inputs and extensible plugin results. Reuse supported standard interaction/observation mechanisms where applicable; no exhaustive Conduit domain-state enum. Current authority and evidence still govern each operation. |
 | Configuration state | Store confirmed applied settings; keep outstanding requests separately. Plugins establish application evidence. An uncertain outcome is reported alongside the last confirmed value without claiming it is still active. |
 | Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
+| Definition boundary | Setup graphs and control definitions are fixed per instance in v0. Change them through a revised definition and new instance; declared settings and dynamic connections/catalogs remain supported. In-place definition upgrades are deferred. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -53,18 +54,20 @@ The [control examples](research/CONFIGURATION.md#a-bounded-control-example) cove
 MCP exchange, reusable defaults, confirmed settings, coordination and revision checks. Exact syntax,
 storage fields, revision granularity and native-client support remain open.
 
-**Next ruling — instance definitions versus settings:** for v0, should an instance retain a fixed
-setup graph and control definitions, with changes to those definitions requiring a new instance?
-Recommend this while existing controls continue to change their permitted settings. For example,
-changing a query limit within 1–100 uses the existing control; replacing its handler, changing its
-allowed range or editing setup steps requires a revised template/definition and a new instance.
-Dynamic Conduit attachments, live access restrictions and provider-native catalogs remain dynamic.
+The [definition boundary](research/CONFIGURATION.md#instance-definitions-and-permitted-settings)
+is accepted for v0. Move from individual setting changes to the management entry point.
 
-The alternative allows a declared in-place upgrade operation to replace those definitions, requiring
-compatibility and recovery semantics. This ruling would not pin plugin binaries or settle plugin
-release compatibility; it concerns the retained graph and control contract. It also would not
-automatically migrate data, permissions or connections when a new instance is created. See the
-[definition-boundary example](research/CONFIGURATION.md#instance-definitions-and-permitted-settings).
+**Next ruling — the first management connection:** should initial local startup seed a minimal
+system Pool with a management Resource, plus a default Interface and its management Conduit?
+Recommend this so registry/template management and instance creation use the same five-family
+model from the start. A small runtime bootstrap creates this initial set before those operations
+can be invoked through it. No application Pool, external service login or Agent is required first.
+
+The alternative exposes a built-in platform-management endpoint outside Pool-owned Resources.
+It needs fewer registered objects but gives that endpoint a different ownership model. The
+proposal adds no object family, separate registry, required daemon or automatic access to external
+services. Root authority, built-in definitions, protection/recovery and management schemas remain
+separate choices. See the [bootstrap walkthrough](research/CONSTRUCTION.md#bootstrap-management-access).
 
 Then review these connected contracts, one bundle at a time:
 
@@ -79,11 +82,11 @@ Then review these connected contracts, one bundle at a time:
 The Interface remains the broad local management entry. Pool ownership, shared service
 authentication, separate model subscriptions/private Agent state, provider-native tools and
 Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
-transitions, revision mechanics, contract evolution and bootstrap remain unresolved.
+transitions, revision mechanics, implementation-version compatibility and bootstrap remain unresolved.
 
-Use [the bounded search control](research/CONFIGURATION.md#a-bounded-control-example) now, followed
-by database startup/migrations. They test whether the same contracts work beyond MCP
-without promoting one provider's timeout, queue or process behavior into universal rules.
+Use the bootstrap walkthrough next: enter through a frontend, inspect templates, create a Pool,
+and establish an Agent's permitted access. The bounded search control and database startup/migrations
+remain test cases for those paths without making provider-specific behavior universal.
 
 ## 1. Resource templates and instances
 
@@ -120,7 +123,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Named controls, type-default reuse, extensible MCP exchanges, confirmed settings separate from requests, per-target coordination and default revision checks are accepted. Settle storage fields, handler bindings, revision mechanics and safe-parallelism details. Control-envelope/graph changes and metadata rules remain unresolved. |
+| Configuration changes versus state | Control exchanges, state/coordination rules and fixed v0 graph/control definitions are accepted. Settle storage fields, handler declaration syntax, revision mechanics, safe-parallelism details and metadata rules. In-place definition upgrades are deferred; plugin implementation compatibility remains separate. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |

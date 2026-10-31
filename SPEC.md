@@ -91,6 +91,10 @@ Instances retain their resolved graph, concrete configuration and applicable cha
 independently of source-template edits/deletion. There is no required template-history or override
 archive. Current authority and Resource data remain live. Changes to an existing instance use its
 permitted controls through a Conduit; the template does not silently propagate edits to it.
+In v0, the retained setup graph and control definitions are fixed. Changing their steps, schemas,
+constraints or handler bindings requires a new instance from a revised definition. Declared
+settings, dynamic attachments, live access restrictions and provider catalogs retain their agreed
+behavior. Plugin binary-version and compatible implementation-update policies remain separate.
 
 Template intent, instance configuration, requested changes and observed state must remain
 distinguishable. Configuration changes advance the instance's stored settings only after the
@@ -107,7 +111,7 @@ allow safe unconditional operations. Inspection and clients can carry the revisi
 confirmation; exact revision scope and MCP representation remain open.
 
 Blanket instance immutability is replaced by explicit change contracts. Exact mutable fields,
-change-handler syntax, plugin application behavior, revision mechanics, contract migration and storage
+change-handler syntax, plugin application behavior, revision mechanics and storage
 layout remain for grouped review. This is neither a promise that every setting is mutable nor a
 generic unrestricted spec-patch API.
 
@@ -313,6 +317,6 @@ remaining choices and staged evidence.
 The five families, template/instance forms, Pool ownership and shared service authentication,
 complete construction templates, typed handlers and template-declared change boundaries are
 settled direction, including Pool-owned reusable authentication Resources. Concrete binding and
-authentication-operation schemas, control schemas, permitted
-contract evolution, Conduit filtering/composition, lifecycle transitions and communication topology
+authentication-operation schemas, control schemas, Conduit filtering/composition,
+lifecycle transitions and communication topology
 remain open. Resolve them with complete examples rather than provider-specific micro-rulings.

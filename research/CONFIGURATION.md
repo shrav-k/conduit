@@ -71,7 +71,7 @@ and filtering changes on a Conduit need the same semantic distinctions but diffe
 **Questions this example leaves open:** exact control-selection notation;
 field bindings and cross-field/transition predicate language;
 plugin application behavior; handler versus composed change graph; version checks;
-contract evolution and persistence of pending/applied settings. These are grouped in
+contract-version compatibility and storage of pending/applied settings. These are grouped in
 [REVIEW.md](../REVIEW.md), rather than decided by this fragment.
 
 **Accepted:** use named typed controls as the normal interaction contract for
@@ -98,7 +98,8 @@ The template need not restate the complete input/output schemas or handler. This
 public control surface, not every internal plugin operation. Actual caller authority and Conduit
 filters remain additional requirements. Dynamic native provider tool catalogs remain separate:
 discovering a newly available provider tool does not redefine an instance's configuration controls.
-Exact selection/default notation and contract evolution remain open.
+Exact selection/default notation and contract-version compatibility remain open; v0 instance
+control definitions stay fixed as described below.
 
 ### Application requirements and outcomes
 
@@ -238,7 +239,7 @@ of unobservable external changes remain open; a local revision cannot prove unse
 
 ### Instance definitions and permitted settings
 
-**Proposal for the next ruling:** keep each instance's resolved setup graph and control definitions
+**Accepted:** keep each instance's resolved setup graph and control definitions
 fixed in v0. Existing controls can change their permitted settings; changing the graph, control
 schema/constraints or handler binding requires a new instance from a revised definition. An
 existing type's declared dynamic choices and provider catalogs do not become fixed snapshots.
@@ -248,11 +249,10 @@ configuration change. Replacing the handler or expanding its declared range to 2
 control definition and would require a new instance. A Conduit can still narrow the permitted
 range for a caller; current authority and attachments remain live under their own contracts.
 
-The alternative supports declared in-place upgrades of retained definitions. That could preserve
-instance identity through a structural change but requires migration, in-flight-work and recovery
-rules. Recommend deferring that mechanism in v0. This does not choose plugin binary pinning or
-compatible implementation-update policy, or authorize automatic data/permission migration and
-connection rebinding when an instance is replaced.
+In-place upgrades of retained definitions are deferred in v0. They would require migration,
+in-flight-work and recovery rules. This does not choose plugin binary pinning or compatible
+implementation-update policy, or authorize automatic data/permission migration and connection
+rebinding when an instance is replaced.
 
 ## Recommendation and reading guide
 

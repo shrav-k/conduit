@@ -361,7 +361,9 @@ Only a Pool creates its Resource instances; registering a template does not depl
 Resources should be unitary: storage, search and MCP access are separate by default and grouped
 in Pools, even when one backend supplies them. Each Resource has one responsibility with related
 operations; callable operations/tools do not each require a Resource. Minimize duplicated
-configuration/state within those boundaries; dependency/connection representation remains open.
+configuration/state within those boundaries. Logical Resource-to-Resource access uses Conduits,
+including search reading storage; this does not require a new Conduit per query/socket.
+Endpoint declaration syntax and connection creation remain open.
 Define Resource templates and instances before Pool grouping/provisioning machinery. Compare
 a local path exposed by symlink, an MCP service connection and hybrid database search to find
 the minimum common contract and the necessary type-specific differences. For the accepted

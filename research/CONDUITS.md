@@ -27,8 +27,11 @@ Resources. One Resource instance cannot appear in several Pools. Separate instan
 explicitly attach to the same external data or provision independent backing, according to
 their contract. Cross-Pool access uses authorized paths to the owning Pools.
 
-Conduits express interactions across the four families; the five scenarios below are examples,
-not a closed endpoint taxonomy. Exact contract types, state placement and delivery semantics
+Conduits express interactions across the four families, including logical Resource-to-Resource
+access such as search reading storage. That relationship uses the connection/filter model;
+sharing a Pool alone does not establish it. Individual queries or sockets do not each require
+a Conduit. The five scenarios below are examples, not a closed endpoint taxonomy.
+Exact contract types, endpoint declarations, state placement and delivery semantics
 remain open. Room-based behavior is one candidate, not the universal Conduit primitive.
 
 ## Walkthroughs

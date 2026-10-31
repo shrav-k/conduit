@@ -510,7 +510,8 @@ operations. A storage Resource may read/write/delete records, a search Resource 
 and an MCP-access Resource handles its configured integration. Keep those responsibilities as
 separate Resources by default and group them in Pools, including when one provider supplies
 all three. Separate registrations do not require separate backend processes or copied data.
-Dependency/connection representation and exact type schemas remain open.
+Access between Resource instances is expressed through Conduits; exact configuration syntax,
+connection creation and type schemas remain open.
 
 A repository, storage collection, search capability, skill, document or provider access is an
 example, not a closed taxonomy. Related operations stay within their Resource; each operation
@@ -686,6 +687,13 @@ complete instance configuration creates an authorized **connection**, a Conduit 
 resolved endpoints, participant attachments and operational state.
 Conduits are the extensible interaction layer across the four families. Pool access and
 Session communication are examples, not a closed list of endpoint roles or protocols.
+
+Resource-to-Resource access uses Conduits as well. For example, a search Resource reads a
+storage Resource through a logical Conduit connection under the applicable access/filter
+rules. Pools retain ownership and group the Resources; grouping alone does not establish
+that connection or grant access. This models logical relationships, without creating a new
+Conduit for every query or underlying socket. Exact endpoint declarations, connection creation
+and runtime state placement remain open.
 
 A connection may use a shared runtime, retained history and per-participant clients. Every
 supporting Resource is created/attached through, and exclusively owned by, a Pool. Connection

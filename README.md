@@ -19,8 +19,9 @@ need for communication. They can request provisioning through a Pool but do not 
 
 Each Resource has one responsibility and its related operations; Pools group Resources into
 useful sets. Storage, search and MCP access are separate Resources by default, even when they
-use one backend. Minimize
-duplicated configuration and state within those explicit boundaries. Define Resource templates
+use one backend. Resource-to-Resource access also uses Conduits: for example, a search Resource
+reads a storage Resource through a logical connection. Minimize duplicated configuration and
+state within those explicit boundaries. Define Resource templates
 and instances first, then how Pools group and coordinate them. Pool creation and Resource
 provisioning remain explicit, distinct effects. Persistent Pool declarations and their binding
 mechanics are back under review rather than prerequisites for defining Resources.

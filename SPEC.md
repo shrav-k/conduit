@@ -24,6 +24,8 @@ form nor instance form implies an additional general-purpose programming languag
 Each Resource has one responsibility with its related operations; Pools group Resources into
 useful sets. Storage, search and MCP access are separate Resources by default, even if supplied
 by the same backend.
+Logical access between Resource instances is expressed through Conduits, such as search
+reading storage. Pool grouping preserves ownership; it does not itself establish access.
 Minimize duplicated bookkeeping within these explicit boundaries, keeping one authoritative
 configuration per instance. Define Resources before Pool grouping: local paths, MCP services
 and hybrid database search require different typed configuration and behavior. A shared envelope
@@ -197,7 +199,8 @@ defines the remaining selections and staged evidence.
 | Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
 | Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
-| Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. Dependency wiring remains under review. |
+| Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. |
+| Resource connections | A search Resource's access to storage is expressed through a Conduit under applicable authority and filters. This is a logical relationship, not a separate Conduit per query/socket; endpoint syntax and establishment remain open. |
 | Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
 | MCP authentication | Two Sessions can use one MCP Resource with different permitted service identities where supported. Resolve identity per attachment within target/access constraints; shared configuration does not imply shared authentication state. |
 | Pool registration and provisioning | Registering a Pool does not itself provision Resources. Explicit provisioning has its own outcome, including when a frontend combines registration and provisioning. The declaration/binding representation remains under review. |

@@ -46,7 +46,10 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Storage, search and MCP access are separate Resources by default, grouped in Pools, even
   when backed by one provider. Each Resource has one responsibility with related operations;
-  individually callable operations/tools do not each require a Resource. Dependency wiring is open.
+  individually callable operations/tools do not each require a Resource.
+- Logical Resource-to-Resource access uses Conduits, including search reading storage.
+  Pool grouping alone does not establish the connection or grant access. This does not create
+  a Conduit per query/socket; declaration syntax and connection creation remain open.
 - Different Pools may create independent backing data or attach distinct instances to shared
   backing data where the contract supports it. One Resource instance never has multiple owners.
 - A local-folder Resource describes the configured folder. Session symlinks are preparation
@@ -76,10 +79,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Clarify **Resource dependencies and connections** next. One responsibility with related
-operations is settled; storage, search and MCP access remain separate. Compare typed references
-handled by integrations with explicit Conduits for logical Resource-to-Resource access, such as
-search reading storage. Then express template/instance configuration before Pool mechanics.
+Clarify **where Resource connection endpoints are authored** next. Resource-to-Resource access
+uses Conduits. Decide whether the Conduit is the single authored location for endpoint wiring,
+with derived connection views on Resources, or whether Resources also select/mirror their
+connection assignments. Then express template/instance configuration before Pool mechanics.
 Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
 ruling remains paused.
 
@@ -96,7 +99,7 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How do separate Resources depend on each other? | Trace storage → search → MCP access. Decide how typed references, Conduits and native integration configuration express dependencies/connections without duplicating backend settings. Sharing a Pool alone does not grant access; ownership remains with each Resource's Pool. |
+| How are Resource connections declared? | Trace storage → search → MCP access through Conduits. Choose one authoritative place for endpoint wiring; distinguish Resource requirements from established connections and derived inspection views. Settle references/compatibility, required/optional connections and creation without duplicating backend settings. Pool ownership and access rules still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |

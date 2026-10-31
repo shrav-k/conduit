@@ -341,11 +341,11 @@ require a new Agent. Changing the subscription account remains distinct from sel
 model available through that account. The named models are the user's illustrative labels, not
 verified provider identifiers or a promise that a particular runtime supports such switching.
 
-**Recommended contract:** separate the immutable execution/access boundary and model-selection
+**Accepted selection boundary:** separate the immutable execution/access boundary and model-selection
 rule from the current selected model. This expresses model choice independently in configuration,
 while validating it against the access and runtime that will actually execute it.
 
-| Concern | Meaning and proposed treatment |
+| Concern | Meaning; exact field layout remains open |
 | --- | --- |
 | Runtime implementation | The native agent integration or Conduit-owned execution runtime. Fixed by the instance definition. |
 | Model access | The selected provider route/endpoint and account/subscription or API principal. Fixed; credential refresh/rotation for the same identity is managed state. A new principal/access route requires a new Agent. |
@@ -390,13 +390,36 @@ new Agent that can recover permitted shared context through a Pool-owned Resourc
 Switching within the permitted domain can retain the Agent's identity and context access when
 the runtime supports it; this is not a guarantee of identical context limits or native state formats.
 
-**Next proposal:** allow currently compatible models within the fixed provider/access boundary
+**Accepted default:** allow currently compatible models within the fixed provider/access boundary
 by default, with an optional narrower list. The rule stays immutable while matching availability
 can change, so a newly available compatible model need not force an instance replacement. The
-alternative requires every permitted model to be enumerated at creation. The explicit list in
-the sketch illustrates narrowing and does not settle the default. Unknown compatibility or
-authorization is not proof of eligibility. Catalog discovery, exact policy syntax, switch timing,
-handling a failed switch and retention of the selection across restarts remain open.
+explicit list in the sketch illustrates optional narrowing. Newly matching models become
+selectable; availability changes do not themselves request a switch. Unknown compatibility or
+authorization is not proof of eligibility. Catalog discovery, exact policy syntax, handling a
+failed switch and retention of the selection across restarts remain open.
+
+### Applying a model selection
+
+**Next proposal:** an explicit selection request waits for a supported execution boundary when
+the Agent is busy, leaving in-flight model/tool work uninterrupted. The runtime integration
+defines where it can apply the switch, such as between completed model/tool exchanges or only
+once the whole Agent turn has finished. A pending request and the model actually in use remain
+distinguishable; submission alone is not evidence that a switch occurred.
+
+Before application, recheck the selected model's compatibility, availability and current access.
+The operation must report application or failure according to the integration's evidence. An
+integration that cannot perform the switch must report that limitation, not silently substitute
+another model, account or runtime. Exact error/recovery handling remains open.
+
+For example, an Agent working with Astra receives a request for Sol. Its current model/tool
+work completes under the existing selection. At the runtime's supported boundary, the request
+can take effect after validation; subsequent model work uses the confirmed selection. This
+changes runtime state under the immutable rule and neither starts another model turn nor
+implements automatic per-task model routing.
+
+The alternative rejects a request while busy, requiring the caller to resubmit when switching
+is supported. Immediate interruption, pending-request replacement/cancellation and exact switch
+boundary/status syntax remain separate choices. This timing policy is still under review.
 
 ## MCP setup and instance runtime walkthrough
 
@@ -677,12 +700,13 @@ of the source template. Those definitions are immutable; change a template/creat
 instantiate again for a different definition. Dynamic Conduit connections and shared context
 Resources are accepted. Current authority and Resource data remain live.
 
-Next refine [Agent access and model selection](#agent-access-and-model-selection). A supported
-model switch inside the fixed runtime/access and model domain can remain within one Agent;
-changing subscription identity or crossing GPT/Claude requires a new Agent. Choose a selection
-rule based on currently compatible models with optional narrowing, or an explicit model list.
-Then define the runtime operation's timing/state behavior. Shared context across replacement
-Agents continues through Pool-owned Resources and Conduits; no new Conversation family is needed.
+The [Agent selection boundary](#agent-access-and-model-selection) is settled: compatible models
+within the fixed runtime/access and provider domain are selectable by default, optionally
+narrowed by a list. Supported selection changes retain the Agent; subscription changes or
+GPT-to-Claude transitions create a new Agent with shared context accessed through Conduits.
+Next review [model-switch timing](#applying-a-model-selection), followed by failed-switch behavior
+and restart persistence. Shared context across replacement Agents remains Pool-owned Resource
+data; no new Conversation family is needed.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

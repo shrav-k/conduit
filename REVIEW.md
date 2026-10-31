@@ -25,14 +25,15 @@ Change a template/creation draft and instantiate again to change that definition
 be opened or removed without changing the instance's underlying function; shared context is a
 Pool-owned Resource exposed through Conduits. See [fixed definitions and changing connections](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections).
 
-Next refine [Agent access and model selection](research/CONSTRUCTION.md#agent-access-and-model-selection):
-keep runtime/account/access fixed and permit supported model changes within a declared provider/
-model domain. GPT-to-Claude and subscription-account switches create new Agents; compatible
-within-domain switches may keep their identity. Decide whether the immutable selection rule
-normally allows all currently compatible models within that boundary, optionally narrowed by a
-model list, or requires an explicit list for every choice. Initial/current model fields, switch
-timing and restart persistence remain proposals. This replaces the earlier all-model-changes
-versus all-switches-preserve-identity framing.
+The [Agent model-selection rule](research/CONSTRUCTION.md#agent-access-and-model-selection) allows
+currently compatible models within the fixed runtime/account/access and provider domain by
+default, optionally narrowed by a list. Supported within-domain selection retains Agent identity;
+GPT-to-Claude or subscription-account changes create new Agents.
+
+Next review [selection while an Agent is busy](research/CONSTRUCTION.md#applying-a-model-selection):
+queue an explicit request until the runtime's supported execution boundary, or reject it while
+busy and require the caller to retry? Exact fields, switch-state handling and restart persistence
+remain open. This refines the earlier all-model-changes versus all-switches-preserve-identity framing.
 Current authority rules remain live. Exact fields, metadata editing rules, status representation
 and retry limits remain open. Caching/build optimizations remain implementation concerns. The
 checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison; the

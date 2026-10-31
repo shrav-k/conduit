@@ -13,10 +13,11 @@ their underlying function stays fixed. Shared context lives in Pool-owned Resour
 through Conduits. Caching and build optimizations remain implementation concerns. Implementation
 has not started.
 
-Agent identity and current model selection are being separated: the runtime/account/access
-boundary stays fixed, while a supported model-selection operation may change the current model
-within a declared provider/model domain. GPT-to-Claude or subscription-account changes require
-a new Agent; the exact within-domain selection policy is under review.
+The Agent's runtime/account/access boundary and model-selection rule stay fixed. Compatible
+models within its declared provider/model domain are selectable by default, with an optional
+narrower list. A supported operation changes the current model as runtime state. GPT-to-Claude
+or subscription-account changes require a new Agent. Switch timing and restart persistence
+remain under review.
 
 Plugins declare their typed inputs and outputs; graph nodes select plugins and bind values to
 those contracts. Output bindings establish dependencies; explicit prerequisites cover ordering

@@ -448,24 +448,16 @@ A common template/instance pattern does not imply one universal startup procedur
 
 ## Can there be one euphony-access Conduit?
 
-Yes as an authoring goal, but aggregation must preserve the constituents' different meanings.
-Two candidates are a composite Conduit template referencing others, or a named selection of
-connection choices in Agent configuration. Both fit the five-family model; neither is yet
-selected. Opening and joining constituents must remain explicit.
-
-**Current recommendation for review:** support reusable composite Conduit templates. An Agent
-could declare `euphony-access` once; its instance would compose repository and Linear Conduits
-without combining their identities, permissions or provider state. A custom setup graph can
-establish the components, while ongoing attachment/lifecycle state belongs to the instances.
-This need not add a daemon or transfer ownership of any supporting Resource out of its Pool.
-The alternative puts separate connection declarations on the Agent and creates no composite
-Conduit instance. Exact child ownership, required/optional policy and detach propagation remain
-open; selecting the composition mechanism would not settle those details.
+**Accepted:** reusable Conduit templates can compose other Conduits. An Agent can declare
+`euphony-access` once; its instance composes repository and Linear Conduits while retaining their
+identities, permissions and provider state. Setup graphs can establish the components; ongoing
+attachment/lifecycle state belongs to the instances. Opening and joining remain explicit. This
+adds no family or required daemon and does not transfer supporting Resources out of their Pools.
 
 Prefer independent typed components and references over one giant provider-specific payload:
 
 ```text
-euphony-access                    proposed grouped selection / composite
+euphony-access                    composite Conduit; component names illustrative
   repository access              shared checkout or selected task worktree
   coordination                   shared exchange + participant delivery state
   credential access              Pool-owned managed service binding
@@ -473,11 +465,28 @@ euphony-access                    proposed grouped selection / composite
   Linear MCP                     shared service authentication + per-caller restrictions
 ```
 
-The grouping can make one user action convenient without requiring one shared token,
-process, lifetime or failure state. We must settle dependencies, required/optional parts,
-startup ordering, status, rollback limits and cleanup. For example, Linear login failure
-need not remove repository access, while a deploy requiring unavailable credentials cannot
-proceed. External writes already completed cannot be undone merely by failing an aggregate.
+**Next proposal — per-consumer component participation.** Each consumer's composite attachment
+tracks its participation in the components, so access, readiness and cleanup remain attributable.
+These are logical attachments, not a requirement for another upstream client, provider login or
+Resource per consumer. Component Conduit instances may be explicitly shared. The alternative keeps
+one shared set of component attachments on the composite and checks caller authority at dispatch;
+it still cannot turn shared participation into shared caller privileges.
+
+To test the proposal, let A and B use one composite with required repository access and optional
+Linear access. The optional marking is an example choice; declarations otherwise default to required.
+The following applies existing lifecycle rules to the proposed per-consumer relationships:
+
+| Event | Proposed behavior |
+| --- | --- |
+| A prepares while Linear awaits login | A can finish preparation if its required repository connection is ready; report its unavailable optional Linear connection. Marking Linear required would instead keep A's preparation incomplete while retaining successful attachments. |
+| B joins the composite | Establish B's permitted component participation, preserving B's identity and restrictions even when component flows/clients are shared. A's existing access does not authorize B. |
+| A detaches | Release A's participation through this composite. Preserve B and any independent attachments to the components; release a component flow only when its last logical consumer/peer leaves. |
+| The composite loses its last consumer | End the composite and release remaining participation/leases it owns. Components still used elsewhere and Pool-owned Resources/login remain intact. Unknown cleanup is reported. |
+
+This avoids treating a ready repository Resource as proof that an Agent's required connections
+are ready. Explicit cancellation and retry would use the retained-progress rules for the affected
+consumer; completed external effects are not rolled back by detachment. Exact attachment records,
+component reuse selection, aggregate status and required/optional composition fields remain open.
 
 The [establishment investigation](ESTABLISHMENT.md) supplies dependency/output and recovery cases
 for typed plugin graphs. Shared authentication waits and refresh belong to the managed capability;

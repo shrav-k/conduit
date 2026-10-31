@@ -1037,6 +1037,21 @@ or joining alone does not merge private Agent context, credentials or access. Co
 is separate from process, transport and backing-Resource identity. Further authoritative-state,
 recovery and composition details remain in [REVIEW.md](REVIEW.md).
 
+### Composite Conduits
+
+**Accepted:** a reusable Conduit template can compose other Conduits. An Agent can declare one
+`euphony-access` connection that establishes repository and Linear components. The composite is
+itself a Conduit template/instance, while components retain distinct targets, authority and
+lifecycle. Opening versus joining remains explicit; template reuse does not silently share a
+connection or credential. This adds no family or required daemon. Supporting Resources, including
+shared authentication and durable content, remain Pool-owned.
+
+Composition must preserve caller attribution and restrictions at each component. It does not
+combine provider identities or imply permission to use every component. Individual components
+remain inspectable. Exact child attachment ownership, required/optional and readiness aggregation,
+detach propagation and YAML representation remain open. Ready Pool Resources do not by themselves
+prove that an Agent's required composite connection has completed preparation.
+
 ### Explicit joining and instantiation
 
 Connection establishment supports both intents explicitly:

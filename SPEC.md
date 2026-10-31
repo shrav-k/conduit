@@ -114,6 +114,12 @@ one. The enclosing consumer supplies its endpoint identity for declared connecti
 preparation attempts configured connections, required by default; optional failures report and
 continue. Partial failure retains successful attachments for retry; explicit cancellation detaches.
 
+Reusable Conduit templates can compose other Conduits. An Agent can declare an access bundle such
+as `euphony-access`, retaining each component's targets, authority, explicit open/join intent and
+lifecycle. The bundle has a Conduit instance; it introduces no object family or mandatory process.
+Supporting Resources remain Pool-owned. Component attachment ownership, aggregate readiness and
+detach propagation still need concrete contracts.
+
 Logical consumers/peers keep a flow alive, including between polls or during a temporary socket
 failure. The last departure ends the flow and releases its owned connections/leases. This
 does not delete backing data, undo delivered content or prove cancellation of external work.

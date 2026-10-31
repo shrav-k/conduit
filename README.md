@@ -10,8 +10,9 @@ optimizations remain implementation concerns. Implementation has not started.
 
 Plugins declare their typed inputs and outputs; graph nodes select plugins and bind values to
 those contracts. Output bindings establish dependencies; explicit prerequisites cover ordering
-without data transfer. Implementations can still be local scripts or processes. Output readiness,
-completion and the detailed invocation protocol remain under review.
+without data transfer. Contracts can declare outputs usable while running or upon successful
+completion. Implementations can still be local scripts or processes. Output lifetime, changing
+availability and the detailed invocation protocol remain under review.
 
 | Family | Instance represents |
 | --- | --- |

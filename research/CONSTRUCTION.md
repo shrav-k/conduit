@@ -96,19 +96,26 @@ across templates does not require each template to repeat its schemas.
 **Accepted dependency rule:** binding one node's output to another node's input establishes an
 execution dependency. Explicit prerequisites express ordering without transferring a value,
 such as populating a directory before validating it. Output bindings do not require a duplicate
-ordering declaration. Exact binding/prerequisite syntax, readiness/completion conditions and
-concurrency policy remain separate choices.
+ordering declaration. Exact binding/prerequisite syntax, readiness signals and concurrency policy
+remain separate choices.
 
-**Next proposal:** a plugin contract may declare an output usable while its execution continues,
-or publish it upon successful completion. A connection-maintenance plugin could expose a ready
-connection without terminating; an ordinary script could return its result when it finishes.
-Allowing such early outputs is under review. This does not select process ownership, teardown,
-readiness-loss propagation or automatic downstream retry behavior.
+**Accepted output availability:** a plugin contract can declare an output usable while its
+execution continues, or publish it upon successful completion. A connection-maintenance plugin
+can expose a ready connection without terminating; an ordinary script can return its result
+when it finishes. Consumers can use the declared usable output subject to their other prerequisites
+and current authority. Process ownership, teardown, readiness-loss propagation and automatic
+downstream retry behavior are not selected by this ruling.
+
+Publication timing does not by itself determine how long an output remains usable. A completed
+operation can produce an expiring handle; an output published early can describe an already
+persisted result. **Next proposal:** let the plugin contract declare validity/lifetime per output,
+so a persistent description and a live connection handle need not share one policy. This is under
+review; no fixed lifetime taxonomy, caching scheme or failure policy is selected.
 
 ### Optimization-compatible properties
 
-Typed input/output ownership and dependency wiring are accepted above. Remaining details below
-are design recommendations, not a cache specification:
+Typed input/output ownership, dependency wiring and declared publication on readiness or completion
+are accepted above. Remaining details below are recommendations, not a cache specification:
 
 | Property | Why it helps independent implementations |
 | --- | --- |
@@ -295,10 +302,11 @@ bindings establish dependencies, with explicit prerequisites when no value is tr
 Authentication feeding connection setup and directory population preceding validation illustrate
 the two forms. Exact YAML syntax in the sketch remains illustrative.
 
-Next distinguish when an output becomes usable from when its producer finishes. Compare a finite
-authentication/script result with a connection-maintenance plugin that can report readiness while
-continuing to run. Decide whether the plugin contract may support both, before specifying how
-readiness loss or failure affects consumers. This does not imply a separate runtime family.
+Plugins may publish declared usable outputs while running or upon successful completion. Next
+decide whether validity/lifetime is specified per output or once for the plugin's entire output
+set. Use a persistent connection description and a live handle from the same plugin to explain
+the difference. Then define how changes in usability are reported and affect consumers, without
+equating publication, producer completion and lasting validity. No new runtime family is implied.
 
 Then work through the same reusable Agent template started twice, using an illustrative sequence:
 

@@ -9,9 +9,10 @@ Reserve Conduits for ongoing connections and filters; move construction graphs i
 template mechanism across all families. Agent is the proposed name replacing Session. Start
 with the [plugin-node walkthrough](research/CONSTRUCTION.md#next-discussion): plugins declare typed
 input/output contracts; nodes select plugins and bind values. Output bindings establish dependencies;
-explicit prerequisites provide ordering when no data is transferred. Next review whether a plugin
-may publish declared ready outputs before its execution completes. The YAML authoring boundary
-is settled: typed configuration with an inline graph by default or an explicit graph-source reference, with the
+explicit prerequisites provide ordering when no data is transferred. Plugins may publish declared
+usable outputs while running or upon successful completion. Next review per-output validity/lifetime
+versus one plugin-wide policy. The YAML authoring boundary is settled: typed configuration with
+an inline graph by default or an explicit graph-source reference, with the
 same execution semantics. Exact fields remain open. Graph execution on each start is settled;
 caching and build optimizations remain implementation concerns. Repeated instantiation
 remains fundamental; no construction-ownership scheme or extra runtime family is selected.

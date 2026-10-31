@@ -23,8 +23,9 @@ Conduit-mediated change, then decide what each contract permits changing.
 ## Next discussion
 
 **Start with the management Interface and the common interaction contract.** The basic Interface
-has the broadest local management scope, sees templates/instances across families and can establish
-Pools, Resources, Agents and Conduits. CLI, terminal UI and tests use the same capabilities.
+has the broadest local management scope. It is the primary user path for authoring Resource/Agent
+templates, adding Resource templates to Pool configurations, instantiating Pools and Agents with
+Conduits to those Pools, and observing all instances. CLI, terminal UI and tests use the same capabilities.
 Observing/instantiating is distinct from modifying a running target: the latter requires a Conduit.
 Agents can invoke target operations through Conduits as well. Resource creation still belongs
 to a Pool, and broad management authority cannot manufacture an unsupported provider operation.
@@ -33,15 +34,16 @@ to a Pool, and broad management authority cannot manufacture an unsupported prov
 | --- | --- |
 | Discover and invoke | How does an endpoint advertise supported typed operations and observations? What is common request/result structure versus type-specific content? How are capabilities discovered through filtered Conduits while retaining native provider names? |
 | Control and observe | How do templates, concrete instance configuration and observed state differ? Which changes can target contracts permit live, on restart or only through replacement? Which result distinctions are common, and how do a pending command, progress, interaction wait and actual application appear consistently to frontends and Agents? |
-| Identity and bootstrap | How does the first Interface obtain its management connection and user authority? How is registry/template management addressed before application instances exist? Distinguish user, Interface instance, frontend client and Agent identities. Clarify whether the proposed additional object stack is a separate layer or an additional family. |
+| Identity and bootstrap | How does the first Interface obtain its management connection and user authority? How is registry/template management addressed before application instances exist? Distinguish user, Interface instance, frontend client and Agent identities within the confirmed five families; no additional family is proposed. |
 | Concurrent use and recovery | Which concurrency, cancellation, retry and event capabilities must operations declare? Preserve inspectable outcomes and current authority; leave provider ordering/coalescing to their contracts. How do multiple frontends observe/control one Interface or target? |
 
-**Walkthrough for this discussion:** a user opens the management Interface, inspects a Pool
-template, creates the Pool, and creates/attaches a directory Resource through it. The user starts
-two Agents from templates and connects them to permitted Resources. The Interface opens a Conduit to request an
-Agent configuration change, then an authorized Agent invokes that same operation on a peer. Compare an
-immediate result, pending work and an uncertain result. Show what a CLI, terminal UI and test
-client receive without assigning each a separate execution engine.
+**Walkthrough for this discussion:** a user authors Resource and Agent templates through the
+Interface, adds Resource-template references to a Pool configuration and instantiates the Pool
+with its configured Resource establishment. The user then instantiates two Agents with Conduits
+to that Pool. The Interface opens a Conduit to request a configuration change on a running Agent;
+an authorized Agent invokes that same target operation on a peer. Compare immediate, pending and
+uncertain results across CLI, terminal UI and test clients. Templates remain reusable; the Pool
+owns its actual Resource instances, not the shared Resource templates.
 
 No final command names, transport, invocation envelope or universal live-config patch is selected.
 Template construction is still comprehensive: invoking start does not require assembling another
@@ -133,8 +135,8 @@ fall behind. Withdraw access before delivery; show permitted results and unresol
 Implementation has not started. Settle the common interaction contract and a bounded schema
 before coding or live account testing.
 
-1. **Management entry point:** one broad Interface discovers all five families, resolves templates,
-   validates drafts, creates instances and observes outcomes. Use a headless client and terminal
+1. **Management entry point:** one broad Interface discovers all five families, authors/resolves
+   templates, composes Pools, validates drafts, creates instances and observes outcomes. Use a headless client and terminal
    against the same management path; define bootstrap explicitly.
 2. **Construction and ownership:** filesystem, authentication and database/indexing examples,
    including waiting and partial failure; repeated instantiation through two Pools; Resource-only

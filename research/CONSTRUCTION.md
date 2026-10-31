@@ -14,7 +14,7 @@ both forms; an instance need not have a dedicated process or be continuously run
 
 | Family | Definition and responsibility |
 | --- | --- |
-| Interface | The user-facing observation and creation layer. It establishes Conduits for interaction with existing instances and can be expressed through different frontends. |
+| Interface | The user-facing authoring, observation and creation layer. It establishes Conduits for interaction with running instances and can be expressed through different frontends. |
 | Agent | An autonomous participant with its own execution/access boundary and private context. It initiates actions and can expose operations for other participants to invoke. |
 | Resource | A unitary capability, data source or service, created or attached through exactly one owning Pool. |
 | Pool | The ownership and creation boundary for its Resource instances; grouping can reflect their types and capabilities. |
@@ -35,21 +35,37 @@ nodes compose a setup graph shared by all template families. A login or linking 
 thereby a Conduit. Family, template/instance form, setup graph and YAML representation are
 separate concepts.
 
-## The observation and creation Interface
+## The authoring, observation and creation Interface
 
-**User direction:** the basic Interface observes the configured system, can choose any available
-template to instantiate an object, and can establish Conduits. Interacting with or changing a
-running target requires a Conduit to that target. Broad visibility is not a direct-edit exception.
+**User-confirmed workflow:** there are exactly five families. Interfaces are the primary user
+entry point for creating/editing Resource and Agent templates, adding Resource-template references
+to Pool configurations, instantiating Pools and Agents, observing them, and establishing Conduits
+for access and changes to running instances. CLI, terminal and other frontends express this same
+Interface contract. Broad visibility is not a direct-edit exception for running targets.
 
 | Path | Expected behavior of the initial Interface |
 | --- | --- |
+| Authoring | Create/edit reusable templates against their type contracts, including Resource/Agent templates and Pool composition. |
 | Observation | Discover available templates and instantiated objects across families; inspect their reported state and relationships. |
 | Creation | Select a template, customize ordinary creation fields and instantiate using the declared construction contract. Resource creation/attachment still belongs to an owning Pool. |
 | Connection | Create or join a permitted Conduit to a target or targets. |
 | Interaction | Through that Conduit, inspect supported controls and request configuration/lifecycle changes. The target validates and applies them under its contract. |
 | Feedback | Present observed state, progress and operation outcomes, distinguishing requested changes from changes actually applied. |
 
-The Interface provides observability and entry points, not a parallel implementation of target
+The intended user journey is:
+
+1. Use an Interface to author Resource templates and an Agent template.
+2. Add selected Resource-template references and creation settings to a Pool configuration.
+3. Instantiate the Pool and run its configured establishment lifecycle to create/attach its Resources.
+4. Instantiate Agents whose declared Conduits connect them to the relevant Pools/capabilities.
+5. Observe the resulting instances; use Conduits from the Interface to request supported changes.
+
+Resource templates remain reusable definitions; Pool ownership applies to the concrete Resource
+instances established through that Pool. Referencing a template does not give it an exclusive
+owner. The exact Pool composition fields and registration/start boundary remain under review;
+this workflow does not introduce a second setup recipe outside the templates and graphs.
+
+The Interface provides authoring, observability and entry points, not a parallel implementation of target
 behavior. An existing Pool's Resource-creation operation must still respect its access/ownership
 contract; listing or selecting a template does not bypass that contract. The exact platform
 creation endpoint and its relationship to Pool operations remain part of the bootstrap review.
@@ -74,9 +90,8 @@ identity fields and delegation rules remain for review; the existing account sep
 and establish Conduits before application instances exist. A proposed solution is a local runtime
 bootstrap that establishes the management Interface and its initial management connection.
 Registry operations need a defined platform surface. Their endpoint representation, root
-authority and recovery path are not yet selected. Whether the proposed additional object stack
-means a separate management layer or another object family remains to be clarified. Do not hide this circularity
-by requiring a pre-existing application Pool or Conduit to create the very first one.
+authority and recovery path are not yet selected; they do not introduce a sixth family. Do not
+require a pre-existing application Pool or Conduit to create the very first one.
 
 ## A common interaction contract
 
@@ -86,7 +101,7 @@ runtime owns the operation's meaning and application. The protocol should genera
 not standardize each provider's settings or scheduling choices.
 
 ```text
-User → frontend → Interface → observation / template instantiation
+User → frontend → Interface → template authoring / observation / instantiation
                   Interface ── Conduit ──→ existing instance
                   Agent     ── Conduit ──→ existing instance
                              ← results, state and supported events
@@ -361,7 +376,7 @@ its syntax until the individual contracts work. Detailed supporting research rem
 
 ## Next discussion
 
-Review the common interaction contract with the Interface as the observation/creation entry point:
+Review the common interaction contract with the Interface as the authoring/observation/creation entry point:
 discovery, connection establishment, typed configuration/control changes and observable outcomes. Work through
 Interface → Pool → Resource creation, then Interface → Agent control and Agent → Agent control.
 Use the same rules with different target contracts; do not return to one model's queue policy.

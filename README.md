@@ -6,14 +6,15 @@ forms. Implementation has not started.
 
 | Family | Responsibility |
 | --- | --- |
-| Interface | The user-facing observation and creation layer; opens Conduits to interact with instances, through different frontends. |
+| Interface | The user-facing authoring, observation and creation layer; opens Conduits to interact with instances, through different frontends. |
 | Agent | An autonomous participant that acts through Conduits and can expose operations to other participants. |
 | Resource | A unitary capability, data source or service owned by exactly one Pool instance. |
 | Pool | The ownership and creation boundary for Resource instances. |
 | Conduit | A connection carrying permitted interactions and data between endpoints, with filtering. |
 
 The first **management Interface** has system-wide visibility and management scope in the local
-installation: inspect templates and instances, instantiate Pools, Resources, Agents and Conduits,
+installation: author and inspect templates, compose Pools using Resource templates, instantiate
+Pools and Agents with their configured Resources/connections,
 and establish Conduits through which it requests supported configuration/lifecycle changes.
 Visibility does not permit bypassing that interaction path. Resource creation still goes through
 an owning Pool. CLI, terminal UI and test clients should exercise the same interaction contracts; choosing

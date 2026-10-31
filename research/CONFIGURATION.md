@@ -1,8 +1,9 @@
 # Configuration languages, templates and instances
 
-**Branch reading note:** [Conduits as graphs](CONDUIT_GRAPHS.md) extends this research with
-BuildKit, typed operational composition and continuing flows. This report retains the earlier
-configuration proposals and source evidence for comparison.
+**Branch reading note:** [Construction templates and runtime instances](CONSTRUCTION.md)
+revisits the base concepts using the evidence below. YAML can represent both configuration and
+graphs; construction and ongoing connections have different responsibilities. Earlier schema
+examples remain comparison material.
 
 Updated 2026-10-31. **Research evidence and proposals; this report does not define the schema.**
 The accepted model has four families, each with template and instance forms. Resource

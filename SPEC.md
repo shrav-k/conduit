@@ -3,9 +3,9 @@
 Updated: 2026-10-31. Accepted working model; implementation has not started.
 
 **Branch context:** this specification preserves the model saved on `main` at `c013f0a`.
-The active [Conduit-graph proposal](research/CONDUIT_GRAPHS.md) explores graph-based establishment
-and continuing flows. Its detailed contracts remain in review; the distinctions below provide
-the baseline against which to evaluate them.
+The active [construction proposal](research/CONSTRUCTION.md) separates universal template
+construction from ongoing Conduits and proposes Agent as the replacement for Session. Use it
+for the current discussion; the model below remains the comparison baseline.
 
 ## Working model
 

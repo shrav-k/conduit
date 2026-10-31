@@ -19,7 +19,9 @@ narrower list. A supported operation changes the current model as runtime state.
 or subscription-account changes require a new Agent. Selection requests queue until the runtime
 can apply them without interrupting in-flight work; pending and applied choices remain distinct.
 Explicit restarts restore the last successfully applied model after current checks; new Agents
-use their initial choice. Detailed switch-failure and pending-request handling remain under review.
+use their initial choice. A failed switch permits continuation only on a verified, still-eligible
+previous model; uncertainty holds new model requests until reconciliation. Pending-request
+replacement and detailed recovery mechanics remain under review.
 
 Plugins declare their typed inputs and outputs; graph nodes select plugins and bind values to
 those contracts. Output bindings establish dependencies; explicit prerequisites cover ordering

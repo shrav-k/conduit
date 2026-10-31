@@ -1,6 +1,6 @@
 # Template and instance contract review
 
-Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the four-family model; [DESIGN.md](DESIGN.md)
+Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family model; [DESIGN.md](DESIGN.md)
 records accepted behavior. This agenda contains unresolved choices, grouped around connected
 outcomes rather than a long sequence of individual field rulings.
 
@@ -33,6 +33,9 @@ outcomes rather than a long sequence of individual field rulings.
   schemas may define fields and open maps; map keys/values still follow their contracts.
 - Create/replacement writes require their applicable schemas. An unavailable required schema
   rejects the write, preserving source YAML and any existing registry object.
+- Otherwise valid configuration may be registered with a missing plugin runtime or offline
+  configured service. Report readiness gaps/unknowns and block affected operations; registration
+  does not imply activation or relax authority, validation or Pool ownership.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -56,10 +59,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **valid configuration versus operational readiness**. Schemas are required for
-create/replacement writes; decide whether otherwise valid configuration can be registered when
-its plugin runtime is missing or a configured external service is offline. Then resolve
-remaining field-value rules and establish Pool provisioning/ownership and instance lifecycle.
+Continue with **Pool creation and Resource provisioning**. Configuration validity and runtime
+readiness are separate; decide whether creating a Pool only establishes its registered owner
+and spec or also requests execution of its Resource plan. Then resolve provisioning outcomes,
+ownership and instance lifecycle. Remaining field-value rules stay on the agenda below.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -86,7 +89,7 @@ and direct creation from exported configuration with a distinct name.
 
 | Question | Example and considerations |
 | --- | --- |
-| What does creating a Pool instance do? | Does it only establish the ownership boundary, or also explicitly request the template's Resource plan? Define registration versus provisioning, required/optional items, dependency order, partial success and retry. No implicit background controller is assumed. |
+| What does creating a Pool instance do? | Does it only establish the ownership boundary and spec, or also request the instance's declared Resource plan? Consider an explicit combined frontend action while keeping registration/provisioning outcomes distinct. Define required/optional items, dependency order, partial success and retry. No implicit background controller is assumed. |
 | How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |
 | How do separate instances describe shared backing? | Two Pools attach to the same Linear workspace or local directory; another pair provisions separate worktrees. Record the distinction, management/deletion authority, credential boundaries and conflicts on the actual backing target across registrations. |
@@ -148,7 +151,7 @@ unsupported hooks and a change of model/account without leaking private context.
 
 | Question | Example and considerations |
 | --- | --- |
-| What do offline validation and explicit probes promise? | Required schemas must be available for create/replacement writes. Decide whether otherwise valid configuration may be registered when runtime/service dependencies are unavailable, and how readiness is reported. Separate syntax, reference, semantic and transition checks from network/login/process effects. Preview does not freeze current access. Preserve multiple scoped errors and unknown live facts. |
+| What do offline validation and explicit probes promise? | Schemas and required registry checks govern registration; operational readiness is reported separately. Define how readiness is established/refreshed. Separate syntax, reference, semantic and transition checks from network/login/process effects. Preview does not freeze current access. Preserve multiple scoped errors and unknown live facts. |
 | How are diagnostics and status represented? | Choose metadata/status field names, source locations, stable categories, evaluated versions and independently reported validity, auth, readiness and enforcement. Avoid one universal ready flag. |
 | What are version/migration boundaries? | Choose API group/version, family/form schemas and plugin dialect. Separate template config versions, instance resolved versions, record revisions and runtime releases. Unknown semantics must not silently degrade to a familiar version. |
 | How do edits and batches remain recoverable? | Specify existing baseline storage/association/lifecycle, checked import/export and rebind, source preservation and batch atomicity. Local registry atomicity does not imply rollback of external provisioning. |

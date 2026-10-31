@@ -1,6 +1,6 @@
 # Conduit design contracts
 
-Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
+Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
 The common authoring envelope is settled; detailed fields, transports, storage engines
 and implementation layout remain under review.
@@ -323,10 +323,14 @@ not silently discarded or retained outside those locations.
 Create and replacement writes require the applicable configuration schemas, including required
 plugin schemas. If a required schema is unavailable, reject the write: preserve source YAML
 and any existing registered object rather than register an unvalidated replacement or new
-object. This supports field validation and declared-default materialization. It governs these
-configuration writes; it does not equate schema availability with installed runtime support
-or external-service readiness. Registration when those operational dependencies are unavailable
-remains in review.
+object. This supports field validation and declared-default materialization.
+
+When schemas and required registry checks pass, accept configuration even when its plugin
+runtime is missing or a configured external service is offline. Report known readiness gaps
+or unknown readiness, without claiming successful activation. Operations requiring unavailable
+dependencies remain blocked. Registration remains separate from activation; validation,
+authority and Pool-ownership requirements still apply. Schema availability establishes the
+ability to validate configuration, not the availability of its operational dependencies.
 
 Configuration changes, package preparation, binding establishment and agent execution have
 different effects. Their operations must say what they do. A Session export is not evidence

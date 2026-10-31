@@ -127,7 +127,10 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   still obey the applicable map contract.
 - Creation and replacement require all applicable configuration schemas. If a required schema
   is unavailable, reject the write and preserve source YAML and any existing registered object.
-  Missing runtime support or external-service availability are separate readiness questions.
+  If schemas and required registry checks pass, register configuration despite a missing plugin
+  runtime or offline configured service. Report known readiness gaps or unknown readiness;
+  operations requiring unavailable dependencies remain blocked. Registration is separate from
+  activation and does not relax validation, authority or Pool ownership.
 - Create/update intent is explicit. Updates replace complete authored configuration and use
   separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
 - Unchanged configuration preserves its version after checks. Compare instances after default

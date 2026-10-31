@@ -36,7 +36,8 @@ values; editing a nested child preserves its siblings. Creation and replacement 
 declared schema defaults explicitly; templates preserve authored omissions. Template history
 is optional; continuing Resource and authority dependencies are explicit on the instance.
 Creation and replacement require the applicable schemas. Unknown configuration fields are
-rejected except within schema-declared open maps.
+rejected except within schema-declared open maps. Otherwise valid configuration can be
+registered before its runtime/services are available, with readiness reported separately.
 Current-access checks and actual execution evidence remain required.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable

@@ -465,8 +465,10 @@ Unknown-field rejection is accepted for templates and instances, except in schem
 open maps. Plugin schemas can define their own fields and open maps; map keys/values retain
 their declared constraints. Create/replacement writes require their applicable schemas: an
 unavailable required schema rejects the write while preserving source YAML and any existing
-registry object. Accepting otherwise valid configuration with unavailable runtime/service
-dependencies remains a separate readiness choice under review.
+registry object. With schemas and required registry checks satisfied, otherwise valid
+configuration may be registered despite a missing plugin runtime or offline configured service.
+Report readiness gaps/unknowns and block operations requiring unavailable dependencies.
+Registration is separate from activation and retains validation, authority and ownership rules.
 
 The complete instance spec is authoritative for configuration. Template-origin information
 is optional; it is not required to operate or edit an instance. The representation must still

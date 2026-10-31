@@ -67,15 +67,20 @@ embedding code, credentials or backing data in YAML.
 | Allowed changes | Named typed controls, their handlers and valid parameters/conditions, within implementation support. |
 | Observations | How the system reports actual configuration, execution and operation outcomes separately from intent. |
 
-Permitted configuration changes are exposed as named typed controls backed by handlers. Type
-contracts can supply reusable schemas and implementations; templates select and constrain them.
+Permitted configuration changes are exposed as named typed controls backed by handlers. Templates
+normally reuse their selected type's declared default controls, with optional narrowing or explicit
+selection of other supported controls. Reuse includes schemas and implementations; the instance
+retains its resolved control surface, so plugin updates do not silently add controls. This is distinct
+from the accepted discovery of dynamic provider-native tool catalogs.
 A frontend can present ordinary field editing while invoking the relevant control through a
 Conduit. This requires no separate user-authored operation-request document.
 
-Application behavior must remain extensible rather than requiring an exhaustive Conduit-wide
-lifecycle enum. Plugins describe their own requirements and follow-up behavior through typed
-contracts. The MCP representation of these exchanges is under review; protocol message types
-are distinct from plugin-specific domain state.
+MCP is the standard external interaction for named controls: discoverable tools carry typed inputs,
+explanatory content and plugin-defined structured results. Reuse supported MCP interaction and
+observation mechanisms where applicable. Application behavior remains extensible; MCP message
+types do not impose an exhaustive Conduit-wide domain lifecycle enum. Plugins describe their own
+requirements and follow-up behavior. This neither requires MCP between internal Rust components
+nor changes provider-native tool preservation. Exact mappings and client support remain to be verified.
 
 Plugins declare typed inputs/outputs. Graph bindings imply dependencies; explicit prerequisites
 cover ordering without data. Graphs run at instance start, while plugins may verify already

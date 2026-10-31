@@ -38,7 +38,8 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Partial availability | Ready Resources remain usable through authorized Conduits during incomplete Pool setup. Their prerequisites and declared gates still apply; component and Pool status remain distinct. |
 | Composite Conduits | Reusable bundles preserve component targets, authority and lifecycle. Each consumer's attachment tracks its own component participation and detach cleanup; underlying flows/clients/authentication may still be shared. Supporting Resources remain Pool-owned. |
 | Filters and paths | Typed declarations are implemented by supporting plugins. Every applicable restriction on the chosen path must pass; independent paths preserve complete target/operation/parameter combinations. Custom filter contracts can use scripts/graphs. |
-| Configuration controls | Templates expose named typed controls backed by handlers. Type contracts can supply reusable schemas/implementations; frontends can still present field editing. |
+| Configuration controls | Templates normally reuse their type's declared default controls, with optional narrowing or explicit selection of other supported controls. Instances retain that resolved surface. Frontends can still present field editing; plugin updates do not silently add controls. Dynamic provider-native catalogs remain separate. |
+| Control exchanges | MCP tools carry typed inputs and extensible plugin results. Reuse supported standard interaction/observation mechanisms where applicable; no exhaustive Conduit domain-state enum. Current authority and evidence still govern each operation. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -46,24 +47,23 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Current discussion — open-ended control exchanges through MCP:** the user did not accept the
-previous shared-application-contract ruling and wants to avoid a strict lifecycle enumeration.
-Named typed controls remain settled. Investigate MCP as the communication standard for agents
-requesting those changes, with plugin-defined requirements, results and follow-up behavior.
+The accepted [MCP exchange](research/CONFIGURATION.md#application-requirements-and-outcomes)
+distinguishes standard messages from plugin-defined behavior. The accepted
+[control selection](research/CONFIGURATION.md#selecting-the-exposed-controls) reuses type defaults
+without requiring every template to repeat them. Exact syntax and native-client support remain open.
 
-**Revised proposal, not yet ruled:** expose controls as discoverable MCP tools with their typed
-contracts; return explanatory content and plugin-schema structured results. Use standard
-progress, additional-input, resource observation and task mechanisms where applicable and
-supported. Keep MCP wire states distinct from open-ended domain state; do not add a mandatory
-Conduit application-mode enum or universal change-state machine. Each continuation still uses
-authorized operations and current access checks.
+**Next ruling — requested versus applied configuration:** should the instance retain its last
+confirmed applied settings, with pending or uncertain requests kept separately in operation
+evidence? Recommend this: requesting a query limit of 15 does not replace a confirmed limit of 10
+until the handler establishes application. If the outcome is unknown, report that uncertainty
+alongside the last confirmed value instead of claiming it is still current. Plugins define what
+constitutes evidence and can describe partial effects through their contracts.
 
-The [MCP review and example](research/CONFIGURATION.md#application-requirements-and-outcomes)
-distinguish baseline tools/results from optional features and version-specific behavior. This
-mapping does not select a single combined MCP server, require internal Rust modules to speak
-MCP, or prove native client support. Exact bindings, client fallbacks, workflow schemas, restart
-policy and requested/applied storage remain open. Discuss this revision before asking for another
-fine-grained application-state ruling.
+The alternative stores desired settings on acceptance and reconciles the runtime toward them.
+That makes desired configuration authoritative even while runtime observations differ. Either
+approach must distinguish intent from observation; this choice concerns persistence and recovery,
+not a universal result enum, automatic retry policy or another user-authored request manifest.
+See the [configuration-state example](research/CONFIGURATION.md#requested-and-applied-configuration).
 
 Then review these connected contracts, one bundle at a time:
 
@@ -119,7 +119,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Named typed controls are accepted; avoid an exhaustive domain lifecycle enum. Review MCP-based exchanges with plugin-specific results/continuations, handler bindings, transition constraints, concurrency and applied-state representation. Control-envelope/graph changes and metadata rules remain unresolved. |
+| Configuration changes versus state | Named controls, type-default reuse and extensible MCP exchanges are accepted. Settle requested/applied storage, handler bindings, transition constraints and concurrency. Control-envelope/graph changes and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |
@@ -164,8 +164,8 @@ fall behind. Withdraw access before delivery; show permitted results and unresol
 
 ## Initial experiment
 
-Implementation has not started. Settle the common interaction contract and a bounded schema
-before coding or live account testing.
+Implementation has not started. Settle concrete schemas, supported MCP features and the remaining
+lifecycle/authority contracts before coding or live account testing.
 
 1. **Management entry point:** one broad Interface discovers all five families, authors/resolves
    templates, composes Pools, validates drafts, creates instances and observes outcomes. Use a headless client and terminal

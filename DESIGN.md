@@ -91,17 +91,20 @@ or establishment intent rather than inventing it. Current schema/default rules s
 **Accepted control surface:** templates expose permitted configuration changes as named typed
 controls backed by handlers. A control such as `set-query-limit` accepts typed inputs, applies
 the supported change and reports its outcome. One control can cover several related settings;
-this does not itself guarantee atomic application. Type/plugin contracts can supply reusable
-schemas and implementations; templates select and constrain the exposed surface.
+this does not itself guarantee atomic application. Templates normally reuse their selected type's
+declared default controls, including reusable schemas and implementations. They may narrow that
+surface or explicitly select other supported controls. The instance retains the resolved surface;
+a plugin update does not silently add controls. Type defaults are distinct from every internal
+plugin operation and from the dynamic provider-native catalogs exposed by integration capabilities.
 
 Frontends may present ordinary field editing and invoke the corresponding control through an
 authorized Conduit. The interaction does not require a separate user-authored operation manifest
 or make all instance fields writable. A declaration cannot make an unsupported runtime operation
-work or grant caller authority. Omitted-control defaults and exact field/handler bindings remain open.
+work or grant caller authority. Exact default-selection notation and field/handler bindings remain open.
 
 The following lists **contract concerns for review**, not a mandatory field list or exhaustive
-application-state enum. The user's direction is an open-ended communication pattern, investigating
-MCP as its standard agent-facing expression. Shared versioned type definitions can avoid copying
+application-state enum. MCP is the accepted standard external expression of this open-ended
+communication pattern. Shared versioned type definitions can avoid copying
 schemas into every template; the resolved template/instance must make its effective contract visible.
 
 | Concern | Meaning to expose |
@@ -113,11 +116,18 @@ schemas into every template; the resolved template/instance must make its effect
 | Results and observations | What proves application, how progress/failure/unknown outcomes appear, and what clients can inspect afterward. |
 | Recovery and retention | Supported retry/cancel/reconciliation and what applied settings persist across restarts. No universal queue or rollback policy is implied. |
 
-The earlier proposal for shared application semantics was not accepted. Rework it around MCP
-discovery/invocation and extensible plugin results, preserving the existing distinction between
-request acceptance and verified effects. MCP's standard wire/result types do not require every
-plugin's domain lifecycle to fit a shared enum. Exact mapping and client compatibility remain in
-[review](REVIEW.md#next-discussion); no universal status schema or new state machine is selected.
+**Accepted exchange:** expose named controls as discoverable MCP tools with typed inputs,
+explanatory content and plugin-defined structured results. Reuse supported standard mechanisms for
+progress, additional input, observation and long-running work where applicable. MCP's wire/result
+types do not require every plugin's domain lifecycle to fit a shared enum. Plugins define domain
+behavior; Conduit preserves attribution, current authority and evidence of effects. Follow-up calls
+remain authorized operations, not authority supplied by the preceding result.
+
+Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
+No mandatory combined MCP server or MCP boundary between internal Rust components follows.
+Exact mappings, optional-feature fallbacks and client compatibility remain in
+[review](REVIEW.md#next-discussion). Request acceptance remains distinct from verified application;
+the storage of requested versus applied settings is the next review boundary.
 
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority

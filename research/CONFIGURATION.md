@@ -68,9 +68,9 @@ see the object while a particular interaction still requires an authorized Condu
 remain necessary after static validation. Model-specific dynamic choices, filesystem rebinding,
 and filtering changes on a Conduit need the same semantic distinctions but different handlers.
 
-**Questions this example leaves open:** explicit exposure versus type-provided control defaults;
+**Questions this example leaves open:** exact control-selection notation;
 field bindings and cross-field/transition predicate language;
-application/restart/replacement declarations; handler versus composed change graph; version checks;
+plugin application behavior; handler versus composed change graph; version checks;
 contract evolution and persistence of pending/applied settings. These are grouped in
 [REVIEW.md](../REVIEW.md), rather than decided by this fragment.
 
@@ -82,15 +82,31 @@ type contracts can supply the input schema and handler rather than copying them 
 
 A control can represent a coordinated change to several settings and expose its transition and
 application behavior directly. This does not promise atomic updates or make ordinary provider
-content operations configuration changes. Exact field bindings, control defaults and handler
+content operations configuration changes. Exact field bindings, default-selection notation and handler
 notation remain open; no separate user-authored operation manifest is required.
+
+### Selecting the exposed controls
+
+**Accepted:** templates normally reuse the selected type's declared default controls, including
+their schemas and handlers. A template can narrow those defaults or explicitly select other
+supported controls. The effective instance surface remains inspectable and retained independently
+of later plugin updates; adding a control to an implementation does not silently expose it on an
+existing instance.
+
+For example, a search type can supply a query-limit control while a template restricts its range.
+The template need not restate the complete input/output schemas or handler. This reuses a declared
+public control surface, not every internal plugin operation. Actual caller authority and Conduit
+filters remain additional requirements. Dynamic native provider tool catalogs remain separate:
+discovering a newly available provider tool does not redefine an instance's configuration controls.
+Exact selection/default notation and contract evolution remain open.
 
 ### Application requirements and outcomes
 
-**User direction:** keep this an open-ended communication pattern and investigate MCP, since
-Agents will request configuration changes. The previous shared-application-contract proposal
-was not accepted. Its examples must not become an exhaustive Conduit lifecycle enum. Named typed
-controls remain accepted; their MCP mapping below is a revised proposal for discussion.
+**Accepted direction:** expose named controls through MCP tools with typed inputs, explanatory
+content and extensible plugin-specific results. Reuse supported standard interaction/observation
+mechanisms where applicable. Plugins own domain behavior; Conduit retains authority and outcome
+evidence. MCP message types do not require an exhaustive Conduit domain lifecycle enum. The
+evidence below informs concrete mappings; it does not select every optional feature for v0.
 
 #### MCP evidence and mapping
 
@@ -108,9 +124,9 @@ Agent or an implementation commitment to every optional feature.
 | [Resources](https://modelcontextprotocol.io/specification/2026-07-28/server/resources) | URI-addressed content is readable; supported updates use subscription notifications in this revision. | Expose permitted instance observations/artifacts for retrieval. An MCP resource is a protocol view, not necessarily another Pool-owned Resource instance. |
 | [Tasks extension](https://modelcontextprotocol.io/extensions/tasks/overview) | A separately negotiated extension supplies durable task handles, polling/input/cancellation and its own status vocabulary. | Consider it for long-running changes. Do not require it of every client or equate task status with a plugin's application state. It adds no Conduit object family. |
 
-#### Revised communication boundary
+#### Accepted communication boundary
 
-Recommend standard MCP interactions carrying extensible, typed plugin contracts. A database
+Use standard MCP interactions carrying extensible, typed plugin contracts. A database
 plugin can explain migration prerequisites; an authentication plugin can describe an unlock flow;
 a filesystem plugin can report a conflicting path. Adding one such behavior should not require
 editing a global Conduit list of application modes. Each plugin still defines its inputs, output
@@ -165,6 +181,25 @@ Unchanged principles include separate model accounts, shared Pool authentication
 provider tools, no mandatory combined gateway and no MCP server requirement for every internal
 Rust component. Exact mappings, fallback behavior, restart policy and stored requested/applied
 configuration remain open.
+
+### Requested and applied configuration
+
+**Proposal for the next ruling:** retain confirmed applied settings as instance configuration;
+keep outstanding requests and uncertain outcomes in the existing operation evidence. Plugins
+establish what proves application, including any partial effects. This adds no global workflow enum
+or separately authored operation document.
+
+For the query-limit example, a confirmed value of 10 remains the last confirmed setting while an
+Agent requests 15. A handler confirming application advances the stored setting to 15. If the
+response is lost and application cannot be established, inspection shows the last confirmed value
+and the unresolved outcome; it must not assert that 10 is still active. Reconciliation can establish
+the actual result without blindly repeating the change. This does not settle exact spec/status
+fields, retention representation, atomicity or restart policy.
+
+The alternative records 15 as desired configuration when accepting the request, then reconciles
+the runtime toward it while reporting observed values separately. That is a meaningful controller
+model, but changes how saved configuration drives later execution. Prefer confirmation-based
+updates for the current explicit-control model; provider-specific workflows remain extensible.
 
 ## Recommendation and reading guide
 

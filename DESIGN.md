@@ -57,8 +57,16 @@ establishes this initial set before its operations can be invoked. The managemen
 core template/registry management and instance-creation capabilities through the same five-family
 model. Resource creation still goes through its owning Pool. No application Pool, Agent or external
 service login is required first; this does not introduce a second registry or require a new daemon.
-Initial authority, built-in definitions, recovery/protection, exact management operations, frontend
-attachment and identity details remain open.
+Built-in definitions, recovery/protection, exact management operations and frontend attachment
+remain open.
+
+**Accepted initial authority:** v0 establishes one local registry owner using the initializing
+OS-user context, without separate Conduit login. The default Interface acts for that owner;
+Agents receive explicit delegated access through their own Conduits. Owners can delegate broad
+or narrow access under the existing grant model. Running an Agent under the owner's OS account
+does not itself constitute a managed grant. Exact owner/client recognition, credential handling
+and native-versus-isolated enforcement remain separate; this authority rule is not proof of
+isolation between processes with the same host privileges.
 
 ### Establishment contracts and instance state
 
@@ -194,7 +202,8 @@ contract is rejected/reported; transformations, if supported, need their own exp
 No generic recursive dependency is required: a control request is carried over an established
 Conduit, not a newly registered Conduit for each request. Controlling a Conduit itself uses an
 appropriate management connection. The initial connection is established by the accepted system
-bootstrap; authority, recovery and supported changes to live management access remain open.
+bootstrap. Initial owner/delegation semantics are settled; client binding, recovery and supported
+changes to live management access remain open.
 
 Configuration changes remain distinct from Resource-content writes, lifecycle actions and
 connection membership, even if they share the invocation protocol. Adding a document does not

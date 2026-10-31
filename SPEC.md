@@ -42,6 +42,11 @@ and a management Conduit connecting them. A small runtime bootstrap establishes 
 subsequent template/registry management and instance creation use that managed path. No application
 Pool or external login is required first. Resource creation still goes through its owning Pool.
 
+V0 establishes one local registry owner from the initializing OS-user context, without a separate
+Conduit login. The default Interface acts for that owner. Agents receive explicit delegated access
+through their own Conduits; sharing the owner's OS account does not itself constitute that grant.
+Credential handling and native-versus-isolated enforcement remain separate from this authority model.
+
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.
 2. **Compose Pools.** Select Resource templates, establishment settings and intended shared service
@@ -56,7 +61,7 @@ Pool or external login is required first. Resource creation still goes through i
 
 Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
 interaction principle. Broad Interface access does not manufacture unsupported provider controls.
-Initial authority, bootstrap recovery/protection and precise frontend attachment remain open.
+Owner/client binding, bootstrap recovery/protection and precise frontend attachment remain open.
 
 ## Templates are complete construction and change contracts
 

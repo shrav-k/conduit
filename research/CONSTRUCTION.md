@@ -110,12 +110,12 @@ The walkthrough is:
    Agent can use management capabilities through its own restricted connection.
 
 This representation does not grant arbitrary callers administrative access or sign into external
-services. Initial authority, built-in definitions, recovery/protection, exact management operations,
-process layout and transports remain open; no new object family is introduced.
+services. The initial authority rule is below; built-in definitions, recovery/protection, exact
+management operations, process layout and transports remain open. No new object family is introduced.
 
 ### Initial management authority
 
-**Proposal for the next ruling:** establish one local registry owner using the initializing OS-user
+**Accepted:** establish one local registry owner using the initializing OS-user
 context. The default Interface conveys that owner's initial management authority without requiring
 a separate Conduit login. Other actor access is explicit: an authorized owner can delegate a
 subset through an Agent's or Interface's Conduit using the existing attachment-grant model.
@@ -126,11 +126,30 @@ remains possible. Requests identify the acting user or Agent and the relevant co
 launched under the owner's OS user is not itself the Agent's management grant. Identity/authority
 records do not introduce a new managed object family.
 
-The alternative requires explicit administrator enrollment before initial management access.
-Recommend the local-owner bootstrap for v0's personal/local use. This is an authority model, not
-proof that native processes sharing host privileges cannot obtain each other's access. Client
-authentication, credential storage and runtime enforcement need their declared native/isolated
+This is an authority model, not proof that native processes sharing host privileges cannot obtain
+each other's access. Client authentication, credential storage and runtime enforcement need their declared native/isolated
 coverage. Exact owner recognition, delegated-client binding and recovery remain open.
+
+### Interfaces and frontend attachments
+
+**Proposal for the next ruling:** the default Interface is a reusable logical instance. CLI,
+terminal and test clients attach to it rather than creating another Interface for each run.
+Multiple frontend attachments can use it, retaining identifiable requests and current caller
+authority. A separate Interface can be instantiated when another definition or access endpoint
+is wanted.
+
+For example, the owner opens a terminal UI, inspects the same registry with a CLI command and
+then closes the terminal. These can be attachments to one Interface; closing the frontend does
+not delete its registered identity. Each operation still passes through the Interface's permitted
+Conduit path and target contract. Sharing an Interface neither grants a client the owner's
+authority nor overrides a target's exclusive-control requirements. The existing default of one
+controlling frontend for an Agent remains a separate mapping question.
+
+The alternative creates an Interface instance for each frontend run. Reuse avoids turning every
+short CLI invocation into another persistent domain object. This selects identity/attachment
+semantics, not process layout, authentication mechanics or how last-client disconnection affects
+live connections. A retained Interface record alone does not keep a Conduit alive without the
+logical participation required by its lifecycle contract.
 
 ## A common interaction contract
 
@@ -551,8 +570,9 @@ settings remain [separate from outstanding requests](CONFIGURATION.md#requested-
 [Default revision checks](CONFIGURATION.md#stale-configuration-requests) address stale requests.
 [Instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings)
 is settled for v0, alongside typed filters and access-path composition.
-[Bootstrap management access](#bootstrap-management-access) is accepted; the next ruling concerns
-[initial management authority](#initial-management-authority).
+[Bootstrap management access](#bootstrap-management-access) and
+[initial management authority](#initial-management-authority) are accepted. The next ruling concerns
+[Interface identity and frontend attachments](#interfaces-and-frontend-attachments).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

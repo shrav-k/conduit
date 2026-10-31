@@ -125,7 +125,8 @@ view without diverting the current Resource walkthrough into choosing a communic
 Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
 
 1. **Concrete type contracts:** local-directory's explicit creation/attachment intent and absolute
-   instance backing paths are settled. Next distinguish operation intent from stored configuration,
+   instance backing paths are settled. Use the [provisioning walkthrough](research/RESOURCES.md#provisioning-request-versus-resource-configuration)
+   to distinguish operation intent from stored configuration and from how requests are reused,
    then define Session preparation, symlink behavior and one failure. Review Git-worktree-specific
    behavior separately, then records, search and MCP. Earlier boundaries need no further ruling.
 2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
@@ -198,7 +199,7 @@ ordinary operation outcomes can supply the needed behavior without a parallel de
 | What should type-aware grouping do? | Group unitary Resources using declared types/capabilities, compatible Session preparation and supported operations. Derive inventory views where possible. Decide what Pools select, validate or coordinate without duplicating Resource configuration or silently activating capabilities. |
 | Do Pool instances need retained creation declarations? | Compare template-time expansion/explicit Resource operations with persistent declarations and per-entry bindings. Keep the least state needed for repeated operations, later additions and partial work. Only define declaration-edit edge cases if this mechanism remains necessary. |
 | How are partial outcomes handled? | Use Resource-specific effects to identify required/optional work, dependencies, independent progress and success/blocked/unknown reporting. Reuse operation IDs/outcomes for safe retry before adding a second reconciliation system. Registration remains distinct from provisioning. |
-| How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
+| How is Resource creation requested through a Pool? | Local-directory already distinguishes create-new-backing from attach-existing. Compare operation inputs with persistent config using the provisioning walkthrough; a request can itself be YAML and may later receive Pool setup defaults. Settle owner assignment, dispatch, partial failure and readiness without introducing another object family. A connection requiring a conversation store must resolve its provisioning Pool. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |
 | How do separate instances describe shared backing? | Two Pools attach to the same Linear workspace or local directory; another pair provisions separate worktrees. Record the distinction, management/deletion authority, credential boundaries and conflicts on the actual backing target across registrations. |
 | What happens when ownership ends or changes? | Define whether transfer is supported, which authority is required, and how owner deletion handles active uses, retained data and incomplete provisioning. An unowned Resource is a lifecycle problem, not automatic proof that its backing data can be purged. |

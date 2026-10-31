@@ -2,6 +2,8 @@
 # Family kind plus top-level form is accepted; payloads remain illustrative.
 # Resource fields type {group, name, version}, config and conduits are accepted. Group/type/version
 # labels and all type-specific config below are synthetic, not approved plugin schemas.
+# The config.mode examples are one candidate representation; whether create/attach belongs
+# in persistent Resource config or only in the provisioning request remains unresolved.
 # These Resource templates declare no Conduits; the container/entry shape remains undecided.
 # Names are unique per family across both forms. These examples use explicit instance names;
 # the default is template name plus a generated unique suffix (exact format remains open).

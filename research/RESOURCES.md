@@ -381,6 +381,89 @@ an executable compatibility promise. Pool mechanics should follow these tested c
 
 ## YAML, identity and extension rules
 
+### Provisioning request versus Resource configuration
+
+**Unresolved design comparison.** An operation is a request to Conduit's API, implemented
+through the relevant Resource adapter. CLI, UI, MCP and automation can issue the request;
+it need not be a newly registered object or a handwritten provisioning script. The request
+itself can be serialized as YAML without becoming another object family. Exact command names,
+request fields and plugin configuration below are illustrative.
+
+Assume the `euphony-folder` Resource template selects the accepted `filesystem` group and
+`local-directory` type, with a candidate `spec.config.path` value of `./repo`. The Pool instance
+`euphony-development` already exists. An explicit request might be:
+
+```yaml
+# Operation request, not a registry object or an approved API schema.
+operation: provision-resource
+poolRef: {kind: Pool, form: instance, name: euphony-development}
+templateRef: {kind: Resource, form: template, name: euphony-folder}
+action: attach
+basePath: /work/euphony
+```
+
+A possible CLI expression of that same request is:
+
+```text
+conduit resource provision --pool euphony-development --template euphony-folder --action attach --base /work/euphony
+```
+
+This command is proposed syntax, not an implemented command. A caller could instead supply
+complete instance configuration through the Pool; a template is optional. A template-based
+request uses the already-agreed generated instance name unless the caller explicitly supplies one.
+
+The proposed combined operation proceeds as follows:
+
+1. Resolve the Pool/template identities, validate the draft and applicable authority, resolve
+   the relative path against the explicit base, and materialize the complete instance settings.
+2. Establish the Pool-owned registration and dispatch the selected backing action with tracked
+   operation identity/outcomes. Registration and the filesystem effect remain distinguishable;
+   a frontend need not make the caller issue two separate commands.
+3. For `attach`, verify that the directory exists and establish its usable attachment. For
+   `create`, request creation of a new directory; an existing target conflicts. Missing runtime,
+   permission failure and uncertain external outcomes follow the existing readiness/retry rules.
+4. Report what was registered and what actually succeeded. Session-specific exposure occurs
+   later during preparation; a symlink is not created merely by saving Resource configuration.
+
+The exact ordering/retention of failed registrations is still open; this example does not
+promise a transaction spanning the registry and filesystem. A failure must not be presented as
+successful provisioning, and a lost response must not trigger blind repeat creation.
+
+In the operation-input option, either successful route produces the same directory settings:
+
+```yaml
+# Abbreviated instance spec; version label and config field spelling are illustrative.
+spec:
+  type: {group: filesystem, name: local-directory, version: v1alpha1}
+  config:
+    path: /work/euphony/repo
+```
+
+The instance also has its own identity and Pool ownership. Recorded operation evidence still
+distinguishes whether the backing was created or attached; removing `action` from the spec
+does not erase that fact or authorize cleanup. Exporting current configuration need not be a
+complete instruction for reproducing its original establishment. Current configuration and
+a repeatable setup request serve different purposes.
+
+| Choice | Where attach/create is supplied | Useful property | Tradeoff |
+| --- | --- | --- | --- |
+| Operation input, recommended | The explicit request, through CLI/API or a saved YAML request. | The instance spec describes the resulting configured directory; the same template can establish new or existing backing. | Setup automation must retain or supply its operation intent separately from an instance-only export. |
+| Persistent Resource configuration | A candidate field such as `spec.config.mode`. An explicit provisioning call reads it. | One Resource configuration includes both directory settings and the chosen establishment policy. | Define what that field means after success, on edits and on later provisioning; the field must not silently cause recreation. |
+
+Both choices preserve the accepted rule that registration alone starts neither action. The
+configuration option does not inherently require a background controller or automatic deletion.
+Likewise, the operation option does not force manual CLI use: an authorized agent or automation
+can submit the same request, and a future Pool setup declaration could supply a reusable action
+default. That is separate from storing the action in the Resource's ongoing configuration.
+Pool declaration syntax and whether such defaults are needed remain parked for later review;
+no new recipe family or mandatory provisioning ledger is proposed.
+
+The immediate question is whether attach/create belongs in the Resource's persistent spec.
+The separate question is how callers author and reuse a request. Do not conflate these with
+whether provisioning is explicit, whether YAML is supported, or which implementation executes it.
+
+### Type reference and extension identity
+
 The separate type fields are accepted; their example values and all plugin configuration below
 are illustrative. These are partial `spec` fragments, not complete validated object documents.
 

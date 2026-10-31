@@ -1,19 +1,26 @@
 # Establishment, ordering, outputs and recovery
 
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
+now define five families and templates that declare establishment plus permitted configuration
+changes. Earlier Session/four-family terminology and architecture proposals below identify the
+research context, not competing current contracts. Read the
+[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
+how this evidence informs Interface and Conduit behavior.
+
 **Branch reading note:** this report preserves the earlier lifecycle investigation. The active
 [construction proposal](CONSTRUCTION.md) reuses its ordering, output and recovery requirements
 in a common template mechanism. Conduits again denote ongoing connections, rather than all
 construction procedures. Detailed recommendations below remain material for comparison.
 
 Research: 2026-10-31. **Design investigation and recommendation, not an accepted lifecycle API.**
-The four families, template-owned establishment intent, Pool ownership and existing recovery
-rules remain accepted. The lifecycle protocol, dependency/output notation and composition boundary
-proposed here require review. No accounts were enrolled, services provisioned or model calls made.
+This earlier investigation preceded the accepted inline/referenced plugin-graph boundary and
+template-declared runtime controls. Its ordering, output and recovery cases remain useful;
+alternative lifecycle recommendations below are comparison material, not current rulings. No accounts were enrolled, services provisioned or model calls made.
 
 Read [the accepted contracts](../DESIGN.md#establishment-contracts-and-instance-state), then the
 worked cases below, including the [filesystem comparison](#filesystem-plugins-and-template-examples). This report extends [configuration research](CONFIGURATION.md) and
 uses the existing [Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth). It does not
-introduce a fifth family, a separate operation-document format or a dependency on Pi's runtime.
+introduce an additional workflow family, a separate operation-document format or a dependency on Pi's runtime.
 
 ## Conclusion and proposed boundary
 

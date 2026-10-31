@@ -1,9 +1,16 @@
 # Pi re-review: connectors, context and communication
 
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
+now define five families and templates that declare establishment plus permitted configuration
+changes. Earlier Session/four-family terminology and architecture proposals below identify the
+research context, not competing current contracts. Read the
+[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
+how this evidence informs Interface and Conduit behavior.
+
 Research date: 2026-10-30. **Recommendations for discussion, not new accepted contracts.**
-The accepted model has Session, Resource, Pool and Conduit families, each with templates
-and instances. Activation instructions belong to Session templates. Conduit owns its Rust
-runtime and a replaceable frontend.
+The source review used the earlier Session/Resource/Pool/Conduit vocabulary. Current design
+uses Interface and Agent alongside Resource, Pool and Conduit. Activation remains consumer
+behavior; Conduit owns its Rust runtime and replaceable frontends.
 
 Read this report's recommendation, then [the configuration proposal](CONFIGURATION.md)
 and [the synthetic template/instance scenario](templates-instances.scenario.yaml). The earlier

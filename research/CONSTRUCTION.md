@@ -1,10 +1,11 @@
 # Construction, interfaces and runtime interaction
 
-Updated: 2026-10-31. **Active working direction; detailed protocol schemas remain open.**
-The pre-inquiry design is preserved on `main` at
-[`c013f0a`](https://github.com/shrav-k/conduit/tree/c013f0a20c0c579f511aea84fdc6804b66417b96).
-This branch uses five working families. The boundary between fixed instance definitions and
-Conduit-mediated configuration changes is being reviewed. Earlier explorations remain in Git. No implementation or live provider operation has been performed.
+Updated: 2026-10-31. **Construction/runtime research and illustrative examples.** Current working
+contracts live in [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md). Templates now declare complete
+establishment and the permitted instance-configuration changes and parameters. This report supplies
+reasoning and graph examples; exact fields remain proposals. The earlier design remains on `main`
+at [`c013f0a`](https://github.com/shrav-k/conduit/tree/c013f0a20c0c579f511aea84fdc6804b66417b96).
+No implementation or live provider operation has been performed.
 
 ## Base concepts
 
@@ -97,8 +98,9 @@ require a pre-existing application Pool or Conduit to create the very first one.
 
 **Working direction:** Interfaces and Agents invoke supported operations through Conduits.
 The Conduit connects endpoints and applies permitted routing/filtering; the target instance's
-runtime owns the operation's meaning and application. The protocol should generalize interaction,
-not standardize each provider's settings or scheduling choices.
+runtime owns the operation's meaning and application. The template declares the exposed controls and parameter constraints within that runtime support.
+The protocol generalizes their discovery, validation and outcomes, while provider-specific
+application and scheduling belong to implementations.
 
 ```text
 User → frontend → Interface → template authoring / observation / instantiation
@@ -137,49 +139,30 @@ packaging and operation discovery are still undecided.
 
 ## Instance configuration and supported changes
 
-**Reopened:** do not settle blanket instance-spec immutability before defining interaction.
-The earlier fixed-definition rule was too broad to answer the user's current question. A running
-instance may expose configuration changes through a Conduit; which fields can change, and what
-application requires, belongs to its type/runtime contract. No arbitrary direct registry edit of
-a running target is implied by the Interface's visibility.
+**Accepted direction:** a template specifies both how to establish an instance and which of its
+configuration can change within declared parameters. Type/plugin contracts supply implementation
+support; the template exposes/constrains it; a Conduit provides the permitted path to use it.
+The complete contract is defined in [DESIGN.md](../DESIGN.md#template-defined-configuration-changes).
 
-Three things need distinct meanings, without prematurely fixing their serialized field layout:
+A template is a reusable recipe, an instance has its own concrete configuration/change contract,
+and observed state reports what is actually applied. Editing a source template does not alter
+existing instances. Instance configuration is not universally immutable, nor is every field
+implicitly editable. A declared setting change does not silently widen its governing constraints.
 
-| Layer | Meaning |
-| --- | --- |
-| Template | A reusable construction recipe and defaults. Editing it does not silently update existing instances. |
-| Instance configuration | The concrete configuration established for one instance, including whatever settings its contract permits changing through a Conduit. |
-| Observed state | What the instance reports as actually applied, running or available. A requested configuration change cannot assert its own success. |
+[The configuration research](CONFIGURATION.md#template-defined-changes-research-synthesis) compares
+Kubernetes transitions, Docker runtime updates, schema constraints and Pi commands. Its bounded
+search-control example shows how a template limit and narrower Conduit restriction compose.
+Defaults for omitted controls, change-handler representation, transition rules, requested/applied
+storage and evolution of a running instance's own control contract remain for grouped review.
 
-**Proposed protocol boundary:** an endpoint advertises supported configuration/control operations;
-an Interface or Agent invokes them over a permitted Conduit; the target validates the change,
-applies it as supported and reports its outcome. The protocol carries typed intent and evidence.
-The target contract determines whether a particular change is live, requires restart, requires a
-replacement instance, or is unsupported. These categories are review candidates, not a mandatory
-universal mutation API or a final field-by-field policy.
+Instances retain their resolved setup graph and runtime configuration independently of source
+changes; dynamic Conduit attachment and Resource data are separate from definition edits. If a
+supported change affects setup inputs, future start and recorded-progress validity must be defined.
+No new field-level policy is implied by the construction examples below.
 
-This keeps two questions separate: *through what path may a change be requested?* and *which
-changes can that target support?* Requiring a Conduit answers the first; it does not by itself
-make every spec/graph field editable or immutable. Whole-object replacement versus typed settings
-updates, version checks, concurrent changes and the stored requested/applied representation remain
-open. Do not import provider-specific queue behavior into that core discussion.
-
-Instances still retain their resolved setup graph and configuration independently of later source
-template edits/deletion. This is self-contained execution configuration, not mandatory template
-history. If changes to that retained configuration are supported, their effect on future starts
-and recorded setup progress needs an explicit contract. The source template does not acquire the
-instance's live state. Current authority and Resource data remain live throughout.
-
-Conduit attachments can be added/removed. Current membership is derived from actual relationships,
-not duplicate editable endpoint lists. Supported attachment operations may regenerate native MCP
-configuration or Agent-local symlinks; native hot attachment is not universally guaranteed. Closing
-one Conduit does not delete backing data or other consumers. The last logical consumer/peer ends
-its flow; temporary transport failure does not itself detach that consumer.
-
-Shared context is a Pool-owned Resource exposed to participating instances through Conduits.
-A replacement Agent can access the same permitted context without automatically inheriting private
-native state. New instances have new IDs; existing bindings are not silently retargeted. Resource
-ownership, current access and explicit cleanup remain independent of the configuration-edit policy.
+Shared context remains a Pool-owned Resource exposed through Conduits. New instances have new IDs;
+replacement does not silently retarget existing bindings or copy private native state. Closing an
+attachment preserves backing data/other consumers; last logical consumer departure ends the flow.
 
 ### Agent access and model selection
 
@@ -376,12 +359,12 @@ its syntax until the individual contracts work. Detailed supporting research rem
 
 ## Next discussion
 
-Review the common interaction contract with the Interface as the authoring/observation/creation entry point:
-discovery, connection establishment, typed configuration/control changes and observable outcomes. Work through
-Interface → Pool → Resource creation, then Interface → Agent control and Agent → Agent control.
-Use the same rules with different target contracts; do not return to one model's queue policy.
+Use the [grouped review](../REVIEW.md#next-discussion) to formalize template-declared controls:
+exposure/defaults, typed value and transition constraints, invocation/application, and contract
+evolution. Test authoring through an Interface, Pool-mediated creation and then a configuration
+change over a Conduit. Include a narrower parameter filter, rejected change and uncertain outcome.
 
-Then settle the bootstrap/identity boundary, type/version discovery and lifecycle schema in
-[REVIEW.md](../REVIEW.md). Preserve Resource ownership, dynamic Conduits, account/private-state
-separation, current access, memory/evidence retention and safe recovery. The five-family framing
-does not promise support for every native agent's control surface or full sandboxing in v0.
+The same template mechanism must express an Agent, a search Resource, a filesystem Resource and
+a Conduit's own supported settings without turning every control into an object or imposing one
+provider's queueing behavior. Keep setup graphs, runtime handlers and persistent observations
+separate; decide whether change handlers may compose graphs without prematurely requiring one.

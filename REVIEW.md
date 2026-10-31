@@ -1,9 +1,8 @@
 # Protocol and instance contract review
 
-Updated: 2026-10-31. The [active proposal](research/CONSTRUCTION.md) defines the current branch
-model: **Interface, Agent, Resource, Pool and Conduit**, each with template and instance forms.
-[DESIGN.md](DESIGN.md) and [SPEC.md](SPEC.md) preserve the pre-inquiry baseline on `main` at
-`c013f0a`; use them for retained constraints, not superseded editable-instance guidance.
+Updated: 2026-10-31. The current [specification](SPEC.md) and [design contracts](DESIGN.md) define
+**Interface, Agent, Resource, Pool and Conduit**, each with template and instance forms. The
+pre-inquiry design remains on `main` at `c013f0a`; research is supporting evidence and examples.
 
 ## Review method
 
@@ -17,8 +16,9 @@ The working foundations are reusable typed YAML templates with inline/referenced
 instance configuration independent of later template edits; runtime-owned behavior; dynamic Conduit
 attachments; Pool-only Resource creation/ownership; current authority; and safe outcome/retry
 handling. Plugins declare inputs/outputs, graph bindings imply dependencies, and instances manage
-processes even when started during setup. Blanket instance immutability is reopened: first define
-Conduit-mediated change, then decide what each contract permits changing.
+processes even when started during setup. **Templates specify complete establishment and which
+instance configuration may change within what parameters.** This is settled protocol direction;
+its declaration/implementation details below remain open.
 
 ## Next discussion
 
@@ -32,10 +32,11 @@ to a Pool, and broad management authority cannot manufacture an unsupported prov
 
 | Contract bundle | Questions to resolve together |
 | --- | --- |
-| Discover and invoke | How does an endpoint advertise supported typed operations and observations? What is common request/result structure versus type-specific content? How are capabilities discovered through filtered Conduits while retaining native provider names? |
-| Control and observe | How do templates, concrete instance configuration and observed state differ? Which changes can target contracts permit live, on restart or only through replacement? Which result distinctions are common, and how do a pending command, progress, interaction wait and actual application appear consistently to frontends and Agents? |
-| Identity and bootstrap | How does the first Interface obtain its management connection and user authority? How is registry/template management addressed before application instances exist? Distinguish user, Interface instance, frontend client and Agent identities within the confirmed five families; no additional family is proposed. |
-| Concurrent use and recovery | Which concurrency, cancellation, retry and event capabilities must operations declare? Preserve inspectable outcomes and current authority; leave provider ordering/coalescing to their contracts. How do multiple frontends observe/control one Interface or target? |
+| Declaration and exposure | How do templates select named controls and constraints from type/plugin contracts? Are all controls explicitly listed, or can versioned defaults be expanded for inspection? Distinguish configuration settings from data operations, lifecycle and connection membership. |
+| Constraints and Conduit filtering | How are value types/ranges, related-field rules, dynamic eligible choices and old-to-new transition conditions represented? Validate the proposed intersection of type support, template limits, current authority and connection restrictions; avoid merge precedence or silent value rewriting. |
+| Invocation and application | What common request/result/observation contract distinguishes received, pending, applied, failed and unknown outcomes? Do settings use typed field updates, named operations or both? How are application behavior and restart/replacement requirements made inspectable without a universal scheduler? |
+| Handlers and recovery | Does a control reference a runtime operation, a plugin operation, or optionally a composed graph? Which setup primitives can be reused? Settle concurrency/version checks, safe retries, cancellation, persistence across starts and invalidation of setup progress as one contract. |
+| Evolution and management | Can a running instance change its control envelope, setup graph or implementation, and by which separate management contract? Source-template edits must not silently alter it. Settle bootstrap/identity and management of Conduits without a recursive connection-per-request requirement. |
 
 **Walkthrough for this discussion:** a user authors Resource and Agent templates through the
 Interface, adds Resource-template references to a Pool configuration and instantiates the Pool
@@ -45,9 +46,15 @@ an authorized Agent invokes that same target operation on a peer. Compare immedi
 uncertain results across CLI, terminal UI and test clients. Templates remain reusable; the Pool
 owns its actual Resource instances, not the shared Resource templates.
 
+Add a Resource-template control with a range of 1–100 and a Conduit restriction of at most 20.
+Request 15, then 80, then an unrelated field change. Use the
+[research fragment](research/CONFIGURATION.md#a-bounded-control-example) as a design probe, not
+accepted syntax. Verify that interface widgets, Agent tools and headless clients expose the same
+effective controls and results. Also test a valid value at an invalid transition and lost response.
+
 No final command names, transport, invocation envelope or universal live-config patch is selected.
 Template construction is still comprehensive: invoking start does not require assembling another
-setup recipe. Model switching remains an integration example in the active proposal; pending
+setup recipe. Model switching remains an integration example in the construction research; pending
 selection supersession is no longer a core-review question.
 
 The sections below retain relevant unresolved work for later bundles. Resources precede detailed
@@ -87,7 +94,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Define changes requested through Conduits, applied configuration and observation. Decide what is mutable by type, whether a change requires restart/replacement, concurrency checks and what persists across starts. Graph changes, generic patches and metadata rules are unresolved; do not assume all fields are editable or fixed. |
+| Configuration changes versus state | Templates declare the allowed surface and parameters; settle its schema, type implementation binding, Conduit filtering and applied-state representation. Control-envelope/graph changes, generic patches and metadata rules are unresolved; do not assume all fields are editable or fixed. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |
@@ -141,9 +148,12 @@ before coding or live account testing.
 2. **Construction and ownership:** filesystem, authentication and database/indexing examples,
    including waiting and partial failure; repeated instantiation through two Pools; Resource-only
    Pool ownership; dynamic Conduit open/join/detach.
-3. **Actors and controls:** an Interface and an Agent invoke the same target contract. Exercise
+3. **Actors and controls:** resolve a template's configurable surface and constraints; an Interface
+   and an Agent invoke the same target contract through Conduits. Exercise
    immediate, pending and unknown results, permissions changing before application, and unsupported
    operations without requiring universal queueing or provider-specific settings in the core.
+   Include template limits, narrower parameter filters, related-field/transition checks, unsupported
+   handlers and unchanged existing instances after source-template edits.
 4. **Real integration:** later verify two Claude and two Codex/OpenAI subscriptions with independent
    credentials/private state; a minimal Rust-owned runtime/terminal, native adapters, one memory
    backend, workspace and MCP/skill integration. Record actual observability/control limits.

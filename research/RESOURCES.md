@@ -1,5 +1,12 @@
 # Resource types, groups and extensibility
 
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
+now define five families and templates that declare establishment plus permitted configuration
+changes. Earlier Session/four-family terminology and architecture proposals below identify the
+research context, not competing current contracts. Read the
+[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
+how this evidence informs Interface and Conduit behavior.
+
 Research: 2026-10-31. **Evidence, accepted working groups and proposals; no implementation.**
 Logical type groups independent of plugin packages, separate `spec.type.group`, `spec.type.name`
 and `spec.type.version` fields, and the four core group names are accepted. Filesystem's

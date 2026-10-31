@@ -1,272 +1,186 @@
 # Conduit specification
 
-Updated: 2026-10-31. Accepted working model; implementation has not started.
-
-**Branch context:** this specification preserves the model saved on `main` at `c013f0a`.
-The active [construction proposal](research/CONSTRUCTION.md) separates universal template
-construction from ongoing Conduits, uses Agent in place of Session and adds Interface as the
-fifth family. The basic Interface is the broad management entry point for multiple frontends
-and tests. Use that proposal for current discussion; the model below remains the comparison baseline.
-The active branch is reviewing [which instance configuration can change through Conduits](research/CONSTRUCTION.md#instance-configuration-and-supported-changes);
-blanket instance immutability is reopened after clarifying the Interface boundary.
+Updated: 2026-10-31. Current working model on `research/conduits-as-graphs`; implementation has
+not started. The pre-inquiry design remains on `main` at `c013f0a`. [DESIGN.md](DESIGN.md) holds
+detailed contracts; [REVIEW.md](REVIEW.md) groups remaining decisions. Research is supporting
+evidence and proposed syntax, not an additional source of requirements.
 
 ## Working model
 
-Conduit connects models, agents and capabilities through four families: **Session, Resource,
-Pool and Conduit**. Each has a reusable **template** and a concrete **instance** form.
-This distinction applies throughout the system; it does not require every instance to run a
-process or every family to have identical lifecycle operations.
+Conduit connects human users, autonomous actors and capabilities through five families:
+**Interface, Agent, Resource, Pool and Conduit**. Each has a reusable **template** and concrete
+**instance** form. One template can create many instances. Instance identity, native process,
+transport connection and underlying data are different; not every instance runs a process.
 
-| Family | Template defines | Instance represents |
-| --- | --- | --- |
-| **Session** | Runtime/model/account defaults, activation instructions, required limits and default connection choices. | A durable participant with resolved settings, private context/history and executions. |
-| **Resource** | A typed recipe for creating or attaching data/capabilities, with supported configuration and behavior. | A particular provisioned or attached capability with identity, backing-source information and exactly one owning Pool instance. |
-| **Pool** | Resource-template selections, provisioning defaults and policies. | An ownership boundary that creates and contains its own Resource instances. |
-| **Conduit** | A typed interaction contract, endpoint requirements, filters and supporting-resource requirements. | A live filtered flow with resolved endpoints, logical consumer/peer attachments and connection state. |
+| Family | Responsibility |
+| --- | --- |
+| Interface | User-facing authoring, observation and creation; establishes Conduits for interacting with running targets. |
+| Agent | Autonomous participant with runtime/access configuration, private context and executions; may initiate or receive operations. |
+| Resource | One responsibility with related operations, exposed as a particular capability, data source or service. |
+| Pool | Owns and creates/attaches its Resource instances; composes reusable Resource templates. |
+| Conduit | Carries permitted interactions/data between endpoints, applying filtering and maintaining connection state. |
 
-Profile is the former name for a Session template. An attachment is a consumer or peer's
-logical participation in a Conduit; neither term adds a family. A plugin's type schema describes valid
-contracts; a template supplies reusable configuration for such a contract. Neither template
-form nor instance form implies an additional general-purpose programming language.
+Agent replaces the former Session name. Plugins implement typed operations and runtime behavior;
+graph nodes compose setup. Plugins, executions and attachment records do not introduce another
+object family. Resources may run services without being autonomous Agents. Interfaces convey
+human authority; they are not themselves the human identity.
 
-Each Resource has one responsibility with its related operations; Pools group Resources into
-useful sets. Storage, search and MCP access are separate Resources by default, even if supplied
-by the same backend.
-Logical access between Resource instances is expressed through Conduits, such as search
-reading storage. Pool grouping preserves ownership; it does not itself establish access.
-Minimize duplicated bookkeeping within these explicit boundaries, keeping one authoritative
-configuration per instance. Define Resources before Pool grouping: local paths, MCP services
-and hybrid database search require different typed configuration and behavior. A shared envelope
-does not imply a uniform runtime or provisioning lifecycle. The next review derives common
-Resource requirements from those examples, then considers how Pools group and coordinate
-their declared capabilities. The [establishment review](research/ESTABLISHMENT.md) adds native
-subscription login, corpus indexing and password-manager authentication to test ordering,
-typed outputs and recovery. It recommends declarative templates, recoverable plugin stages
-and engine coordination; the lifecycle protocol and composition syntax remain proposals.
+## The user workflow
 
-```mermaid
-flowchart LR
-    ST[Session template] -->|instantiate| S[Session instance]
-    PT[Pool template] -->|instantiate| P[Pool instance]
-    RT[Resource template] -->|provision or attach through Pool| R[Resource instance]
-    P -->|creates and exclusively owns| R
-    CT[Conduit template] -->|open| C[Live flow: Conduit instance]
-    S <-->|join and interact| C
-    C -->|authorized access / provisioning request| P
-```
+The default Interface is the primary entry point, with the broadest local management scope and
+visibility across configured templates and instances. CLI, terminal UI and automated test clients
+use the same contracts.
 
-This diagram shows common interactions, not a closed topology or process layout. Conduits
-are the extensible interaction layer across the families; each contract specifies meaningful
-endpoint roles and operations. Templates describe potential behavior; instances carry identity
-and realized state. Executions, transports and participant attachments are supporting state.
+1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
+   instructions, configuration and permitted changes.
+2. **Compose Pools.** Select Resource templates and creation settings in a Pool configuration.
+3. **Establish Pools and Resources.** Register/instantiate and explicitly run the configured
+   establishment lifecycle. An Interface may combine these actions while reporting separate outcomes.
+4. **Establish Agents.** Instantiate Agent templates with Conduits to the relevant Pools/capabilities.
+5. **Observe and interact.** Observe state; establish a Conduit to a running target to request its
+   supported configuration changes, lifecycle actions or other operations.
+
+Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
+interaction principle. Broad Interface access does not manufacture unsupported provider controls.
+Bootstrap of the first Interface/management connection and precise frontend attachment remain open.
+
+## Templates are complete construction and change contracts
+
+**Accepted direction:** a template contains all instructions needed to establish its instance and
+specifies which configuration can change afterward and within what parameters. Completeness can
+use explicit references to versioned type/plugin contracts and graphs; it does not require
+embedding code, credentials or backing data in YAML.
+
+| Part | Required meaning |
+| --- | --- |
+| Establishment | Initial settings, create/attach intent, dependencies and an inline or referenced setup graph. |
+| Ongoing behavior | The typed runtime behavior the instance manages after and, where needed, during setup. |
+| Allowed changes | The exposed configurable surface and its valid parameters/conditions, within implementation support. |
+| Observations | How the system reports actual configuration, execution and operation outcomes separately from intent. |
+
+Plugins declare typed inputs/outputs. Graph bindings imply dependencies; explicit prerequisites
+cover ordering without data. Graphs run at instance start, while plugins may verify already
+satisfied work. A graph can request instance-managed service startup before later setup steps.
+Instances manage ongoing processes and availability; setup nodes do not become permanent supervisors.
+
+Instances retain their resolved graph, concrete configuration and applicable change contract
+independently of source-template edits/deletion. There is no required template-history or override
+archive. Current authority and Resource data remain live. Changes to an existing instance use its
+permitted controls through a Conduit; the template does not silently propagate edits to it.
+
+Template intent, instance configuration, requested changes and observed state must remain
+distinguishable. Blanket instance immutability is replaced by explicit change contracts. Exact
+mutable fields, omission defaults, change-handler syntax, restart/replacement categories, contract
+migration and stored requested/applied representation remain for grouped review. This is neither
+a promise that every setting is mutable nor a generic unrestricted spec-patch API.
+
+## Conduits expose permitted interactions
+
+The target's effective contract gives a Conduit an inspectable surface: supported operations,
+inputs, constraints and observations. The Interface or Agent requests a change through the
+connection; the target validates and applies it using its implementation and reports the outcome.
+Provider-specific scheduling and recovery stay in those contracts.
+
+Filters narrow authority and target capabilities. An allowed operation name alone does not
+establish that every parameter is allowed. Discovery, dispatch and current-state validation must
+agree. The proposed constraint composition is intersection of implementation support, template
+limits, current authority and Conduit restrictions; exact schema and expression language are open.
+A filter does not silently rewrite the requested value or grant access.
+
+Conduits cover Agent-to-Agent and Resource-to-Resource interaction as well as user control and
+Pool access. Reusing a template does not choose between opening a new flow and joining an existing
+one. The enclosing consumer supplies its endpoint identity for declared connections. Explicit
+preparation attempts configured connections, required by default; optional failures report and
+continue. Partial failure retains successful attachments for retry; explicit cancellation detaches.
+
+Logical consumers/peers keep a flow alive, including between polls or during a temporary socket
+failure. The last departure ends the flow and closes remaining provider-side connections. This
+does not delete backing data, undo delivered content or prove cancellation of external work.
+
+Current access applies at execution and delivery, including retries and queued changes. Report
+unavailable or unsupported operations. A response acknowledging a request is distinct from its
+application; uncertain effects remain unknown until reconciliation or a supported safe retry.
 
 ## Resource ownership and creation
 
-Every Resource instance is created through a Pool instance and belongs to exactly that Pool.
-This includes attaching an existing directory/service and provisioning backing Resources for
-a connection. A bare Resource-creation path must not bypass Pool ownership. Authoring or
-registering a Resource template does not create a deployed Resource.
+Every Resource instance is created/attached through exactly one Pool and remains owned by it.
+Resource templates are reusable definitions with no exclusive Pool owner. Different Pools may
+instantiate the same template, either creating distinct backing or explicitly attaching to shared
+external data. Separate registry objects do not prove separate credentials, quotas or write targets.
 
-Different Pools can instantiate the same template. The resulting Resource instances are
-distinct even when they intentionally attach to the same repository, vault or remote service.
-Contracts must distinguish creating new backing data from attaching to existing data. Separate
-registrations do not prove separate files, credentials, quotas or mutation targets.
+Keep Resources unitary: filesystem, storage, search and integration are working groups; storage,
+search and MCP access are separate Resources by default even when supplied by one backend.
+Local-directory and git-worktree are distinct types. Groups are independent of plugin packaging;
+content, identity and agent-communication groups remain candidates.
 
-For a local folder, one Resource instance describes the configured folder; per-Session symlinks
-are preparation state. Removing one symlink preserves the Resource and backing folder, without
-affecting other Sessions' views. This does not require the same consumer lifecycle for every type.
+A folder Resource describes backing directory access; each Agent's symlink is preparation state.
+MCP service identity may differ per attachment where supported, separately from model subscriptions.
+Resource-to-Resource access uses Conduits. Activation instructions belong to the consumer; Pool
+membership and availability alone do not load skills/documents into model context.
 
-An MCP Resource can serve Sessions using different permitted service identities, resolved per
-attachment where the integration supports it. The configured target and access constraints still
-apply; differing service logins alone do not require duplicate Resources or change model accounts.
-
-Conduits access Resources through their owning Pools. A connection that needs conversation
-storage requests it from a selected Pool, then uses that Pool-owned Resource. Connections and
-Sessions may use several Pools; this does not make them owners of the Resources. Cross-Pool
-access follows authorized connections to the owner, not duplicate membership of one instance.
-
-Pool ownership is not automatic access, activation or authority to destroy external data.
-Selectors may help choose templates or the Pool's owned instances; their exact targets and
-live behavior remain open. They cannot implicitly adopt another Pool's Resource instance.
-Pool retirement, ownership transfer and orphan handling require explicit lifecycle design.
-No automatic purge follows from a missing Pool reference.
-
-## How instances work together
-
-1. **Create a Session.** Establish it from typed template configuration. One-off configuration
-   and instance import are under review where establishment information differs. Later edits
-   target the instance; current access limits are explicit. V0 defers Session-template inheritance.
-2. **Register Pools, then explicitly create/attach Resources.** Pool registration and Resource
-   provisioning are separate effects; a frontend may combine them in one explicit action with
-   separate outcomes. The Pool owns the resulting instances. Persistent creation declarations
-   and their bindings are back under review pending Resource contracts; no background
-   reconciler is implied.
-3. **Open or join a connection explicitly.** Opening uses declared establishment configuration;
-   joining targets an existing connection. Reusing a template name
-   does not choose between these operations or imply shared clients, credentials or private context.
-   Session and Resource templates can reference Conduit templates to describe flows their
-   instances will establish. The enclosing instance automatically supplies the consumer endpoint;
-   it need not repeat its identity in the declaration. This grants no authority and does not
-   choose open versus join. Explicit consumer preparation normally attempts those declared
-   actions and reports their outcomes; registration remains passive. A failed required connection
-   blocks its consumer's completion of preparation; optional failures are reported and allow
-   preparation to continue. Declarations default to required; optional is explicit, and saved
-   instance configuration materializes the default. Partial failure retains successful attachments
-   for retry; explicit cancellation detaches those retained by the preparation without undoing
-   delivered data or external effects. Other consumers and backing Resources are preserved.
-   Remote endpoint selection, exact fields and retry/cleanup details remain open.
-4. **Apply access and activation.** Connection filters narrow authorized resources and
-   operations. The Session applies activation instructions in its own spec to the permitted
-   inventory. Availability alone does not load instructions or content into the model.
-5. **End the live flow after the last consumer/peer detaches.** Close remaining provider-side
-   connections. Logical subscriptions stay attached between polls or during temporary transport
-   failure. Templates, backing Resources and retained evidence survive; ending a Conduit does
-   not establish cancellation of an already accepted remote operation.
-
-Session activation, Pool provisioning and connection supervision are different responsibilities.
-The first prepares a participant; the second creates/attaches owned Resources; the third
-implements an interaction through the engine/plugins. A Conduit has no independent runtime.
-One-time transfers, persistent access and ongoing sync may use different interaction contracts.
-Their ordering and dependency rules remain for review.
+Conduits needing durable content use Pool-owned Resources. Routing state need not be a Resource
+per cursor. Pool ownership does not grant data access or authorize deletion of backing files.
+Retirement, transfer and orphan handling need explicit lifecycle semantics, never implicit purge.
 
 ## Configuration language
 
-**YAML is the authoring format; typed objects and explicit semantics define the language.**
-The common envelope is `apiVersion`, `kind`, `form`, `metadata`, `spec`, with system-owned
-`status` in inspection. Each object uses one family `kind`—Session, Resource, Pool or Conduit—
-plus a top-level `form` identifying a template or instance. Validation must
-distinguish both family and form; sharing a kind does not imply identical payloads or operations.
+YAML is the authoring surface; typed objects and explicit semantics define the protocol.
+The common envelope is `apiVersion`, family `kind`, top-level `form`, `metadata`, `spec`, plus
+system-owned `status` for inspection. Exact API version and new control fields remain open.
 
-Resource specs use `type: {group, name, version}`, schema-validated `config`, and `conduits` for
-connection declarations. The type reference is distinct from registry kind/form/name references.
-Logical type groups are independent of plugin packaging; group and type name are separate
-fields, never a combined slash-delimited identifier. The first working core groups are
-`filesystem`, `storage`, `search` and `integration`; new groups and types can extend the catalog.
-Within `filesystem`, `local-directory` and `git-worktree` are distinct types. Both expose a
-directory; Git-specific management belongs to the worktree contract. Their detailed schemas
-remain open. In v0, local-directory supports explicit attachment and creation through its Pool:
-attachment requires an existing directory; fresh creation conflicts with an existing target.
-Create/attach intent belongs in the Resource template's spec; triggering establishment does
-not require a separate operation-request recipe. Registration performs neither effect, and
-cleanup remains separate. The type contract must define how establishment settings become
-instance configuration and observed results; exact fields remain open.
-Relative local-directory template paths resolve against an explicit creation base; the complete
-instance stores an absolute host backing path. Session-local exposure is separate.
-An agent-communication group is a candidate for direct messaging, conversations and shared
-context. Its contracts and name remain open, alongside other core types and third-party
-naming rules.
-Type contracts have their own schema versions, independent of common object `apiVersion` and
-plugin implementation releases. Allowed type identifiers/version labels, Conduit declaration
-contents and migration details remain open.
+Resource type references use separate `group`, `name`, `version`, with typed `config` and
+consumer `conduits`. Type-contract versions differ from common API versions and plugin releases.
+The allowed-change declaration extends the behavioral contract; its exact field layout is not
+selected. A schema annotation by itself is not runtime enforcement.
 
-Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#configuration-language):
+Retain [registry/authoring contracts](DESIGN.md#configuration-language):
 
-- Stable IDs survive rename; replacement objects receive new IDs. Readable references record
-  resolved identity, and established explicit bindings require explicit rebind to another ID.
-- Readable configuration-object references explicitly include `kind`, `form` and `name`.
-  Kind/name locates the object; form checks the expected template/instance distinction.
-  A wrong-form target is rejected, including in fields that already imply a form.
-- Use one local registry with names unique per family across templates and instances. A Session
-  template and Session instance cannot both be named `reviewer`. Templates name reusable concepts;
-  instances default to the template name plus a generated unique suffix, with explicit unique
-  names allowed. Exact suffix format and name constraints remain open.
-- YAML registration/export is explicit. Editing a file does not update active configuration;
-  changing a template is distinct from instantiation, provisioning, execution or reconciliation.
-- Across all four families, templates contain the establishment configuration; explicit
-  lifecycle actions select when to realize it. Typed transitions produce instance configuration
-  and observations; instantiation need not copy every template field into the instance.
-  Establishment-only settings, ongoing settings and generated results need explicit semantics.
-  Users edit ordinary typed fields; no separate operation-recipe or generic parameter/mapping
-  language is required. Assigning a field replaces its whole value, including objects/lists;
-  editing a nested child preserves its siblings. Resources require Pool-mediated creation.
-  Registration, provisioning and execution remain distinct effects. Later changes edit the
-  instance directly; its creation template can change or disappear without changing it.
-- Direct creation/import from complete instance YAML is being reviewed where instance exports
-  omit establishment information. Preserve the one-off use case without guessing missing
-  create/attach intent or adding a parallel request recipe. Exact authoring syntax remains open.
-- Template-origin information is optional; no source snapshots or input/override history are
-  required. Continuing Resource and authority dependencies must be explicit on the instance.
-  Current-access checks, Resource data, runtime status and actual execution evidence remain
-  separate from configuration.
-- Instance creation and checked replacement updates materialize declared schema defaults into
-  saved/exported instance specs. Template YAML preserves omissions. Fields without declared
-  defaults retain their required/optional semantics.
-- Typed configuration rejects unknown fields except within maps explicitly declared open by
-  their schemas. Plugin contracts may define their own fields and open maps; keys and values
-  still obey the applicable map contract.
-- Creation and replacement require all applicable configuration schemas. If a required schema
-  is unavailable, reject the write and preserve source YAML and any existing registered object.
-  If schemas and required registry checks pass, register configuration despite a missing plugin
-  runtime or offline configured service. Report known readiness gaps or unknown readiness;
-  operations requiring unavailable dependencies remain blocked. Registration is separate from
-  activation and does not relax validation, authority or Pool ownership.
-- Create/update intent is explicit. Updates replace complete authored configuration and use
-  separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
-- Unchanged configuration preserves its version after checks. Compare instances after default
-  materialization, so omission and an equivalent explicit default produce the same stored
-  value. Templates retain that authored distinction; presentation-only differences do not count.
-- CLI/editor edits retain recoverable baselines; absent baselines need explicit preparation.
-  Status is rejected on normal writes and omitted with system IDs/versions from reusable exports.
-- Deletion is checked; registration removal, native shutdown and backing-data purge are distinct.
-  Pool ownership introduces lifecycle obligations that ordinary reference behavior does not settle.
-
-References, defaults, field values, selectors, filters, activation and provisioning require
-field-specific semantics. Draft assignments do not implicitly merge objects or append lists;
-there is no implicit textual substitution.
-Authored intent, resolved configuration, observations and operation outcomes stay distinguishable.
+- Stable IDs, names unique per family across forms, generated template-name instance suffixes,
+  readable kind/form/name references and explicit rebind of established identity.
+- Explicit registration/export; file edits do not update active objects. Ordinary draft fields
+  use replacement/explicit child edits rather than an implicit deep merge or parameter DSL.
+- Materialized instance defaults, strict known schemas, and separate validation versus operational
+  readiness. Missing runtime/service can be reported without inventing success.
+- Checked template edits with separate ID/version preconditions and recoverable edit baselines.
+  These are not a bypass for running-instance controls. Their runtime concurrency counterpart
+  remains under review.
+- Status is not authored success. Configuration exports omit system-owned state. Registration
+  removal, execution shutdown and backing-data purge have distinct contracts.
 
 ## Implementation direction and retained behavior
 
-Conduit owns its runtime in Rust, including execution, context construction, provider/tool
-dispatch and recovery. The first frontend is a custom terminal inspired by Pi. Pi's runtime
-and Durable are research references; external-agent adapters separately support native runtimes.
-Provider adapters and native-agent adapters have different authentication and lifecycle contracts.
+Conduit owns its runtime in Rust, with a custom Pi-inspired terminal and replaceable frontends.
+Pi/Durable are references; native-agent adapters separately report supported control, context,
+authentication and telemetry. BYO skills use compatible native ecosystems and tooling.
 
-MCP is the preferred external capability protocol. Preserve provider-native names, schemas and
-workflows. Resource-service authentication is separate from model subscriptions. Native skills
-and plugins are brought through compatible ecosystems, without a new Conduit package manager.
-Linear owns its tracking workflow; memory/search/graph providers remain replaceable plugins.
+MCP is the preferred external capability protocol; preserve native provider operations and schemas.
+Linear owns its tracking workflow, and memory/search/graph backends remain plugins. Configuration
+and logical mediation do not imply complete interception of native host access in v0.
 
-Native execution is the v0 default, with selectable or Session-required isolation. Four
-independent accounts remain an early acceptance target: two Claude and two Codex/OpenAI
-subscription identities. Actual identity, subscription compatibility and refresh/logout isolation
-must be verified. No silent account or billing fallback is permitted.
-
-Session continuity, portable checkpoints, current-access checks, memory revisions/provenance,
-bounded search with coverage reporting, read-only sharing, workspace retention, safe retry and
-usage attribution remain as specified in [DESIGN.md](DESIGN.md). A four-family vocabulary does
-not relax these rules or make native host access fully mediated.
+Native execution remains the default, with optional or template-required isolation. Verify separate
+account/private state for two Claude and two Codex/OpenAI subscriptions before claiming support.
+Retain current-access checks, portable context, scoped memory/provenance, bounded search, direct
+read-only sharing, safe workspace cleanup, retention and usage coverage in [DESIGN.md](DESIGN.md).
 
 ## Acceptance scenarios
 
-These are intended outcomes, not completed tests. [REVIEW.md](REVIEW.md#initial-experiment)
-defines the remaining selections and staged evidence.
+These are intended outcomes, not completed tests. [REVIEW.md](REVIEW.md#initial-experiment) defines
+remaining choices and staged evidence.
 
-| Interaction | Observable outcome |
+| Scenario | Observable outcome |
 | --- | --- |
-| Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
-| Establishment from configuration | A Resource template carries create/attach intent. A lifecycle trigger uses that intent through the owning Pool; actual outcomes become instance observations. Instance import must report missing establishment information, with its exact authoring path still under review. |
-| Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
-| Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. |
-| Resource connections | Explicit consumer preparation attempts declared open/join actions under applicable authority and filters. Required failure blocks that consumer's preparation; optional failure is reported and permits continuation. Registration alone starts nothing; unrelated consumers are unaffected. |
-| Conduit lifetime | A sync subscription stays attached between polls or during transport failure. The last logical consumer/peer detaching ends the flow and closes provider-side connections; Resources and retained evidence survive. |
-| Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
-| MCP authentication | Two Sessions can use one MCP Resource with different permitted service identities where supported. Resolve identity per attachment within target/access constraints; shared configuration does not imply shared authentication state. |
-| Pool registration and provisioning | Registering a Pool does not itself provision Resources. Explicit provisioning has its own outcome, including when a frontend combines registration and provisioning. The declaration/binding representation remains under review. |
-| One template, several Pools | Pools create distinct Resource instances; each has exactly one owner. A foreign Resource cannot become a local member through a label or reference. |
-| Shared versus independent backing | Both explicit attachment to shared backing and provisioning independent backing are expressible; target identity and actual enforcement are reported. |
-| Connection support | Opening a connection requiring storage provisions it through an identified Pool. Joining reuses the intended connection without creating a duplicate conversation. |
-| Concurrent accounts | Four Sessions retain independent private state and verified account selection while accessing authorized common Resources. |
-| Session activation | Instructions materialized in the Session spec prepare only permitted Resources; connection filters do not become loading instructions. |
-| Context and communication | Sessions exchange permitted context through the selected contract while retaining private histories; memory retrieval reports omissions and coverage. |
-| Change and failure | Stale edits conflict, unknown effects remain unknown, and retries do not mistake a repeated create request for a deliberate second instance. |
-| Lifecycle | Detach, close, stop, unregister and purge have distinct outcomes; removing configuration does not silently destroy files or retained evidence. |
+| Interface workflow | Author templates, compose/establish a Pool, instantiate Agents, connect and observe through one shared CLI/UI/test contract. |
+| Repeated construction | One template creates distinct instances; source edits do not alter existing configuration/control contracts. Resource ownership is explicit. |
+| Allowed change | A declared setting changes through a permitted Conduit, with valid parameters and observable application. |
+| Rejected change | Type/template constraints, current authority or a narrower Conduit restriction reject an invalid request without silently transforming it. |
+| Transition and uncertainty | Valid values can still have an unsupported transition; pending and unknown outcomes are not reported as applied. |
+| Resource data versus configuration | Writing a note, changing a search setting and attaching a Conduit use their respective contracts. |
+| Recovery | Retain valid setup progress, reconcile uncertain effects, avoid duplicate execution and do not replay unsafe writes. |
+| Native coverage | Unsupported hot control or enforcement is reported; no fabricated provider compatibility. |
 
 ## Design boundary
 
-The four families, family kinds with explicit forms, exclusive Pool ownership and Pool-only
-Resource creation are settled. Review Resource templates/instances and type-specific semantics
-first, then Pool grouping. Detailed addressing, lifecycle, provisioning and communication
-contracts remain open. Prefer derived views over additional bookkeeping; settle the connected
-choices before implementation.
-Research proposals and the synthetic scenario are discussion aids, not additional requirements.
+The five families, template/instance forms, Pool ownership, complete construction templates and
+template-declared change boundaries are settled direction. Concrete control schemas, permitted
+contract evolution, Conduit filtering/composition, lifecycle transitions and communication topology
+remain open. Resolve them with complete examples rather than provider-specific micro-rulings.

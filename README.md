@@ -20,30 +20,26 @@ Visibility does not permit bypassing that interaction path. Resource creation st
 an owning Pool. CLI, terminal UI and test clients should exercise the same interaction contracts; choosing
 a frontend must not select a different management implementation.
 
-Templates contain typed YAML configuration and an inline or referenced setup graph of focused
-plugins. One template can create many instances. Graphs establish instances; instances manage
-ongoing behavior. Instances retain their own resolved configuration independently of source
-template edits. We are reviewing which settings can change through Conduits and which require
-restart or replacement; blanket instance immutability is not settled. Provider-specific settings,
-switching and recovery details belong to type/integration contracts.
+Templates contain complete establishment instructions and declare what instance configuration
+can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit
+plugin dependencies make this inspectable. Instances manage ongoing behavior; Interfaces and
+Agents request permitted changes through Conduits. Type/plugin implementations supply the actual
+operations, while templates expose and constrain them.
 
-**Active proposal:** [Construction, interfaces and runtime interaction](research/CONSTRUCTION.md).
-Agent replaces Session in this proposal. Conduit owns its runtime in Rust, with a Pi-inspired
-terminal and replaceable frontends and integrations. Provider-native tools, MCP, native skills,
-trackers and memory backends retain their useful contracts.
+Conduit owns its runtime in Rust, with a Pi-inspired terminal and replaceable frontends and
+integrations. Native tools, MCP, skills, trackers and memory backends retain their useful contracts.
 
 ## Read the design
 
-The pre-inquiry design remains saved on `main` at `c013f0a`. This research branch has not been
-merged into it. Use the active proposal and review agenda for current decisions; the baseline
-documents preserve contracts and comparison material, not competing current guidance.
+These documents now describe the current research-branch model. The pre-inquiry design remains
+saved on `main` at `c013f0a`; this branch has not been merged into it.
 
 | Document | Responsibility |
 | --- | --- |
-| [Active proposal](research/CONSTRUCTION.md) | Five families, management Interface, typed operations, construction and runtime boundaries. |
-| [REVIEW.md](REVIEW.md) | Grouped unresolved contracts and the next end-to-end walkthrough. |
-| [SPEC.md](SPEC.md) | Pre-inquiry vocabulary, interactions and intended outcomes for comparison. |
-| [DESIGN.md](DESIGN.md) | Baseline configuration, account, memory, access and recovery contracts. |
+| [SPEC.md](SPEC.md) | Five families, user workflow, construction/change contract and intended outcomes. |
+| [DESIGN.md](DESIGN.md) | Detailed configuration, controls, ownership, account, memory, access and recovery contracts. |
+| [REVIEW.md](REVIEW.md) | Grouped unresolved choices and the next end-to-end walkthrough. |
+| [Construction research](research/CONSTRUCTION.md) | Graph/runtime evidence and worked examples supporting the current design. |
 
 ## Research
 
@@ -53,7 +49,7 @@ documents preserve contracts and comparison material, not competing current guid
 | [Resource typing and groups](research/RESOURCES.md) | Core groups, candidate types, capabilities and plugin boundaries. |
 | [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios. |
 | [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, language papers and schema proposals. |
-| [Template/instance scenario](research/templates-instances.scenario.yaml) | Earlier ownership fixture; not validation of the active proposal. |
+| [Template/instance scenario](research/templates-instances.scenario.yaml) | Earlier ownership fixture; not validation of the current control contract. |
 | [Pi connectors and context](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP and Chord. |
 | [Pi runtime and Durable](research/PI_RUNTIME.md) | Execution, recovery, frontend, storage and ecosystem evidence. |
 

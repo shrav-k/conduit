@@ -1,32 +1,81 @@
 # Configuration languages, templates and instances
 
-**Branch reading note:** [Construction templates and runtime instances](CONSTRUCTION.md)
-revisits the base concepts using the evidence below. YAML can represent both configuration and
-graphs; construction and ongoing connections have different responsibilities. Earlier schema
-examples remain comparison material.
+Updated 2026-10-31. **Research evidence and proposed schema, not an executable specification.**
+Current contracts live in [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md). The five families
+are Interface, Agent, Resource, Pool and Conduit. Templates specify both complete establishment
+and permitted instance-configuration changes. Resource instances remain Pool-owned.
 
-Updated 2026-10-31. **Research evidence and proposals; this report does not define the schema.**
-The accepted model has four families, each with template and instance forms. Resource
-instances are created only through, and owned exclusively by, a Pool instance. Conduit
-instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
-envelope, family kinds with top-level forms, explicit kind/form/name references, identity and
-checked-edit contracts. Templates carry the establishment configuration across all four families, including Resource
-create/attach intent. Instance-import behavior is under review where establishment information
-is absent. Resource creation remains Pool-mediated. Instances are edited directly; no mandatory
-template/input history is required, and continuing Resource/authority dependencies are explicit.
+This report retains Kubernetes/Docker research, language comparisons, papers and prior offline
+probes. Historical fixtures and quoted source terminology do not define the current protocol.
+The new synthesis below revisits the evidence specifically for template-defined controls.
 
-This report retains Kubernetes/Docker investigations, configuration-language comparisons,
-seven papers and source-specific probes. Its proposals express the current model without
-requiring a general deployment framework. Read alongside [Pi research](PI_CONNECTORS.md),
-[connection scenarios](CONDUITS.md) and the synthetic
-[template/instance scenario](templates-instances.scenario.yaml). The deeper
-[establishment investigation](ESTABLISHMENT.md) tests ordering, outputs and recovery against
-authentication, corpus indexing and password-manager access. Fixture fields are candidates,
-not accepted API syntax or an executable implementation.
+## Template-defined changes: research synthesis
+
+Rechecked primary documentation on 2026-10-31 and the local Pi source snapshot
+`0441483926f283e42ca44eb7b4a46552e9469d6f`. These mechanisms inform Conduit; none supplies its
+complete control protocol or proves current provider support.
+
+| Evidence | Implication for the proposed contract |
+| --- | --- |
+| [Kubernetes transition rules](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#transition-rules) can compare old/new values and prohibit a transition between otherwise valid states. | Declare value constraints and transition conditions separately. A valid new setting alone cannot establish that applying it now is supported. Do not import all of Kubernetes reconciliation or CEL by analogy. |
+| [Kubernetes spec/status](https://kubernetes.io/docs/concepts/overview/working-with-objects/#object-spec-and-status) distinguishes intended configuration from system-reported state. | A requested configuration change and confirmed runtime application need distinct evidence. This does not choose a universal Conduit desired-state controller or storage layout. |
+| [Docker container update](https://docs.docker.com/reference/cli/docker/container/update/) changes selected running-container settings, including resource limits and restart policy, with documented restrictions. | The image/container analogy is compatible with bounded runtime controls; it does not imply that every instance setting is either fixed or freely replaceable. |
+| [JSON Schema annotations](https://json-schema.org/understanding-json-schema/reference/annotations) describe fields; defaults are not inserted by validation, and read/write annotations do not themselves implement application behavior. | A `mutable`/`readOnly` flag is not the protocol. Controls need executable behavior, validation and observed results; choose a supported schema dialect deliberately. |
+| [CUE constraints](https://cuelang.org/docs/tour/basics/constraints/) compose restrictions through unification and detect incompatible values. | Intersect type support, template limits and Conduit restrictions. This is constraint composition, not a last-writer-wins settings merge, and does not select CUE as a dependency. |
+| [Pi RPC commands](https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/coding-agent/docs/rpc-commands.md) expose named setting operations and runtime-dependent available choices. Its [RPC contract](https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/coding-agent/docs/rpc.md) distinguishes command responses from continuing execution/events. | Use discoverable controls with typed requests and honest outcomes, without baking Pi's model/queue behavior into every family or requiring its runtime. |
+| [Pi Durable evidence](PI_RUNTIME.md#2-mutation-ordering-commits-and-publication) separates external effects, commit and publication; the [submission review](PI_RUNTIME.md#3-submissions-queues-and-activation) separates acknowledgement and later work. | Preserve operation identity and requested/applied/unknown distinctions. Reconnection is not evidence that an uncertain setting change failed or is safe to repeat. |
+
+Our [configuration papers](#research-papers-and-their-limits) also argue for meaningful constraints,
+diagnostics and avoiding excessive options. The inference is a small discoverable control contract,
+not every plugin implementation detail exposed as a configurable field.
+
+### A bounded control example
+
+This **partial illustrative Resource-template fragment** tests the division of responsibilities;
+`controls`, `operation` and `constraints` below are proposed notation, not accepted fields.
+The selected search type would supply the integer input schema, related setting, implementation
+and result contract for `set-query-limit`. The template narrows its range. Setup/runtime and Pool
+creation declarations are omitted here; this is not a complete executable template.
+
+```yaml
+spec:
+  type: {group: search, name: collection, version: v1alpha1}
+  config:
+    queryLimit: 10
+  controls:
+    set-query-limit:
+      operation: set-query-limit
+      constraints:
+        limit: {minimum: 1, maximum: 100}
+```
+
+Suppose a particular Conduit additionally limits this control's `limit` input to at most 20:
+
+| Request through that Conduit | Expected contract outcome |
+| --- | --- |
+| Set the limit to 15 | Within the declared ranges; proceed only if currently authorized and the target can apply the transition. Report application from runtime evidence. |
+| Set the limit to 80 | Template-valid but Conduit-restricted. Reject/report the violated constraint; do not silently clamp to 20. |
+| Change an unrelated database location | This control exposes no such change. A separate declared operation or replacement path would be needed. |
+| Response is lost after a request | Preserve uncertainty and reconcile the operation/actual state; retry only under the operation's safe-repetition contract. |
+
+This example changes default search configuration. Passing a smaller limit to one search query
+is a per-call input, not necessarily a persistent configuration update. Writing a knowledge record
+is a content operation. The protocol may carry all three without confusing their state effects.
+
+The template-defined control declaration is not caller authorization. A management Interface may
+see the object while a particular interaction still requires an authorized Conduit. Current checks
+remain necessary after static validation. Model-specific dynamic choices, filesystem rebinding,
+and filtering changes on a Conduit need the same semantic distinctions but different handlers.
+
+**Questions this example leaves open:** explicit exposure versus type-provided control defaults;
+field-level constraints versus named operations; cross-field/transition predicate language;
+application/restart/replacement declarations; handler versus composed change graph; version checks;
+contract evolution and persistence of pending/applied settings. These are grouped in
+[REVIEW.md](../REVIEW.md), rather than decided by this fragment.
 
 ## Recommendation and reading guide
 
-Use **YAML/JSON as an authoring surface over a typed, versioned graph of the four families and their template/instance forms**.
+Use **YAML/JSON as an authoring surface over a typed, versioned graph of the five families and their template/instance forms**.
 Conduit's actual language is the meaning of those objects: references, defaults, composition,
 constraints, transitions and effects. YAML alone defines none of that. Keep a small core;
 extend Resource and Conduit contracts through explicit plugin schemas. Do not embed a new
@@ -48,12 +97,12 @@ envelope and principles, detailed fields, versions and new behaviors remain reco
 
 A representative configuration should reveal the system's relationships without making
 the reader reconstruct them from scripts or implied defaults. For Conduit, that means
-being able to trace Session template → Session instance → connection → Pool instance → Resource instance, and Session-to-Session
-interaction, without confusing ownership, authority and activation.
+being able to trace Interface authoring → template → instance → Conduit → Pool/Resource access,
+and Agent-to-Agent interaction, without confusing ownership, authority and activation.
 
 | Quality | Concrete requirement to consider for Conduit |
 | --- | --- |
-| Domain fidelity | The four families have template and instance forms. A Pool instance owns/provisions Resources; connections implement interactions; Session-spec instructions determine activation. |
+| Domain fidelity | The five families have template and instance forms. A Pool instance owns/provisions Resources; connections implement interactions; Agent-spec instructions determine activation. |
 | Predictable evaluation | Given the same declared inputs and versions, static resolution produces the same result. Live discovery and authorization observations are recorded separately. |
 | Explicit dependencies | References resolve to identifiable objects and versions. Relative paths have a known base; credentials and environment inputs are deliberate. |
 | Controlled expressiveness | Reusable objects and selectors cover common cases. Arbitrary conditionals, scripts and inheritance chains need demonstrated use cases before becoming core syntax. |
@@ -66,14 +115,14 @@ interaction, without confusing ownership, authority and activation.
 
 These are proposed design criteria, not a claim that one notation guarantees them. A short
 file can conceal a complicated resolution process; a longer explicit graph can be easier to
-inspect. Judge the result by the user's ability to explain and change a Session's effective
+inspect. Judge the result by the user's ability to explain and change a Agent's effective
 configuration, not just line count.
 
 ## What to borrow
 
 | Source | Useful mechanism | Proposed Conduit adaptation |
 | --- | --- | --- |
-| [Kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) | Versioned kinds, metadata, desired `spec`, observed `status`. | One envelope across Session, Resource, Pool and Conduit templates/instances. YAML authoring and API/CLI inspection represent the same objects. |
+| [Kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) | Versioned kinds, metadata, desired `spec`, observed `status`. | One envelope across Interface, Agent, Resource, Pool and Conduit templates/instances. YAML authoring and API/CLI inspection represent the same objects. |
 | [API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) | Stable UID, opaque concurrency version, desired-state generation and status conditions. | Separate durable identity, configuration changes and observed preparation/execution. Never treat a file path as identity. |
 | [Labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) | Optional metadata and composable set selection; empty-selector behavior is defined by its use. | References/selectors may select templates or owned Resource instances. They never adopt foreign instances or grant access; connection filters narrow authorized candidates. |
 | [CRD versioning](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/) | API versions can differ from storage versions, with explicit conversion/migration. | Version public schemas separately from storage, plugin releases and provider protocols. Start with one supported authoring version. |
@@ -147,7 +196,7 @@ reviewed together so the exported configuration makes only promises it can actua
 The most useful Kubernetes idea is that configuration is a representation of API objects,
 with desired and observed state kept distinct. Its object conventions give identity,
 concurrency and change tracking separate roles. A successful write is not proof that a
-controller has achieved the requested result. This maps well to a Session whose configuration
+controller has achieved the requested result. This maps well to a Agent whose configuration
 is valid while authentication or Resource preparation is still unavailable.
 [Objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) ·
 [API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md)
@@ -178,12 +227,12 @@ an authorization identity, and other update mechanisms have different conflict b
 [Server-side apply](https://kubernetes.io/docs/reference/using-api/server-side-apply/)
 
 Conduit does not need that entire engine for v0. Whole-object revision checks plus explicit
-Session overrides are easier to explain. If multiple controllers eventually manage different
+Agent overrides are easier to explain. If multiple controllers eventually manage different
 parts of an object, adopt field ownership deliberately, with a migration story. Merely naming
 list entries does not establish whether updating one entry replaces or merges the list.
 
 Kustomize is a separate configuration transformation layer. Our local probe merged a
-built-in Deployment's environment entries by name, but replaced a custom Session template list when
+built-in Deployment's environment entries by name, but replaced a custom Session template list in the earlier fixture when
 no corresponding schema was supplied. This is evidence about the tested transformations,
 not Kubernetes server acceptance or authorization.
 [Kustomize](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
@@ -215,7 +264,7 @@ groups using HCL, JSON or Compose input. Their shared ecosystem does not make th
 evaluation or effects interchangeable.
 
 This is useful for Conduit: declaring a Resource, preparing its native package and invoking
-it are different operations. A Session template can describe preparation without turning ordinary
+it are different operations. A Agent template can describe preparation without turning ordinary
 configuration loading into an implicit build or agent execution.
 
 ### Compose is accessible because it provides a domain model
@@ -254,7 +303,7 @@ Synthetic reproduction:
 services:
   worker:
     image: fixture.invalid/never-pulled:one
-    volumes: [./data:/data]
+    volumes: ["./data:/data"]
 ```
 
 ```yaml
@@ -298,10 +347,10 @@ not which has the nicest syntax. None is selected as a dependency by this resear
 
 | System | Mechanism worth understanding | Fit and limitation for Conduit |
 | --- | --- | --- |
-| [CUE](https://cuelang.org/docs/reference/spec/) | Values and constraints share a model; unification combines constraints, is commutative/associative/idempotent, and detects contradictions. Defaults involve alternatives rather than arbitrary last-writer precedence. | Strong inspiration for narrowing filters and typed validation; possible external authoring/schema tooling. Constraint intersection is not the same operation as Session override or activation sequencing. |
+| [CUE](https://cuelang.org/docs/reference/spec/) | Values and constraints share a model; unification combines constraints, is commutative/associative/idempotent, and detects contradictions. Defaults involve alternatives rather than arbitrary last-writer precedence. | Strong inspiration for narrowing filters and typed validation; possible external authoring/schema tooling. Constraint intersection is not the same operation as Agent override or activation sequencing. |
 | [Dhall](https://docs.dhall-lang.org/discussions/Safety-guarantees.html) | Typed, total configuration functions and semantic integrity checks for imports. Imports can involve files, environment or network; termination does not guarantee cheap evaluation or successful I/O. | Useful model for reproducibility, typed composition and pinned dependencies. Could generate canonical objects; does not replace live access checks or runtime readiness. |
 | [Nickel contracts](https://nickel-lang.org/user-manual/contracts/) and [merging](https://nickel-lang.org/user-manual/merging/) | Composable configurations with runtime contracts, delayed checks and priority-aware merging. Diagnostics can identify the source of a contract violation. The merging guide itself carries a version caveat. | Good lessons for source-aware errors and defaults. Deferred validation means successful construction alone may not check every field; whole-output validation needs an explicit boundary. |
-| [Jsonnet](https://jsonnet.org/ref/language.html) | Functional generation and object composition, with lazy evaluation and explicit external inputs. Its documentation recommends top-level arguments over globally coupled external variables for libraries. | Useful optional generator for repeated objects. Functions and inheritance should not become required knowledge for understanding a resolved Conduit Session. |
+| [Jsonnet](https://jsonnet.org/ref/language.html) | Functional generation and object composition, with lazy evaluation and explicit external inputs. Its documentation recommends top-level arguments over globally coupled external variables for libraries. | Useful optional generator for repeated objects. Functions and inheritance should not become required knowledge for understanding a resolved Conduit Agent. |
 | [CEL](https://cel.dev/overview/cel-overview) | An expression environment with declared variables/functions and separate parsing, checking and evaluation. | Candidate for bounded predicates if fixed selectors become insufficient. Define types, cost limits and permitted functions first; no expression engine is needed to ship refs and label selectors. |
 | [Terraform conditions](https://developer.hashicorp.com/terraform/language/validate) | Input validation, preconditions, postconditions and non-blocking checks serve different stages and consequences. Some facts depend on values only known later. | Distinguish invariants from operational checks and observations. A connection-health warning and an invalid permission request should not share one generic validation outcome. |
 
@@ -338,9 +387,9 @@ contract languages should be transferred as testable design hypotheses.
 | Paper | Evidence and useful conclusion | Limit and proposed Conduit response |
 | --- | --- | --- |
 | Xu and Zhou, **[Systems Approaches to Tackling Configuration Errors: A Survey](https://cseweb.ucsd.edu/~tixu/papers/csur.pdf)**, ACM Computing Surveys, 2015. [DOI](https://doi.org/10.1145/2791577) | Organizes prevention, detection and diagnosis approaches, including the difficulty of systematic configuration testing. | A survey of earlier systems, not a comparison of our candidate syntax. Build a taxonomy of failures spanning parsing, references, compatibility, transitions and environment; schema validity is one layer. |
-| Xu et al., **[Hey, You Have Given Me Too Many Knobs!](https://cseweb.ucsd.edu/~tixu/papers/fse15.pdf)**, ESEC/FSE 2015. [DOI](https://doi.org/10.1145/2786805.2786852) | Studies operational configuration use in commercial and open-source systems and identifies over-designed options, inappropriate low-level controls and opportunities to simplify domains. | Observed option use does not prove a universal ideal option count. Keep the four-family core small; add settings for concrete scenarios rather than exposing every runtime implementation choice. |
+| Xu et al., **[Hey, You Have Given Me Too Many Knobs!](https://cseweb.ucsd.edu/~tixu/papers/fse15.pdf)**, ESEC/FSE 2015. [DOI](https://doi.org/10.1145/2786805.2786852) | Studies operational configuration use in commercial and open-source systems and identifies over-designed options, inappropriate low-level controls and opportunities to simplify domains. | Observed option use does not prove a universal ideal option count. Keep the conceptual core small; add settings for concrete scenarios rather than exposing every runtime implementation choice. |
 | Xu, Pandey and Klemmer, **[An HCI View of Configuration Problems](https://arxiv.org/abs/1601.01747)**, 2016 preprint. | Reframes configuration around human interaction and assistance, rather than syntax alone. | Exploratory framing, not a controlled evaluation of Conduit. Show the effective graph and explanations next to errors; do not require users to remember invisible precedence. |
-| Xu et al., **[Early Detection of Configuration Errors to Reduce Failure Damage](https://www.usenix.org/conference/osdi16/technical-sessions/presentation/xu)**, OSDI 2016. [Paper](https://www.usenix.org/system/files/conference/osdi16/osdi16-xu.pdf) | PCheck brings checks of later-used configuration forward, reducing the damage of errors discovered only on particular execution paths. | The approach is neither sound nor complete for all configuration failures; valid values can still be wrong for a workload. Separate offline checks from explicit environment probes and retain runtime failure handling. |
+| Xu et al., **[Early Detection of Configuration Errors to Reduce Failure Damage](https://www.usenix.org/conference/osdi16/technical-agents/presentation/xu)**, OSDI 2016. [Paper](https://www.usenix.org/system/files/conference/osdi16/osdi16-xu.pdf) | PCheck brings checks of later-used configuration forward, reducing the damage of errors discovered only on particular execution paths. | The approach is neither sound nor complete for all configuration failures; valid values can still be wrong for a workload. Separate offline checks from explicit environment probes and retain runtime failure handling. |
 | Zhang et al., **[An Evolutionary Study of Configuration Design and Implementation in Cloud Systems](https://arxiv.org/abs/2102.07052)**, 2021 study. [Paper](https://arxiv.org/pdf/2102.07052) | Examines 1,178 commits over 2.5 years in HDFS, HBase, Spark and Cassandra; configuration evolution includes defaults, constraints, dependencies and diagnostic changes. | Four systems and a commit-selection method limit generalization. Treat changes in defaults and interpretation as compatibility changes, and retain migration/conformance examples. |
 | Tang et al., **[Interpreted Formalisms for Configurations](https://arxiv.org/abs/1712.04982)**, 2017 preprint. [Paper](https://arxiv.org/pdf/1712.04982) | Uses formal types and constraints in a Hadoop configuration case study to express facts that primitive strings/integers miss. | Narrow prototype, not proof of whole-system correctness; richer environment-dependent cases remain difficult. Give durations, budgets, references and constraints domain meaning without requiring a theorem prover in v0. |
 | Freund et al., **[Union and Intersection Contracts Are Hard, Actually](https://arxiv.org/abs/2106.06278)**, DLS 2021; revised preprint 2022. [DOI](https://doi.org/10.1145/3486602.3486767) | Explains subtle tradeoffs in higher-order union/intersection contracts, including effects and blame. | This does not invalidate ordinary JSON Schema Boolean combinations. Avoid embedding arbitrary higher-order contract programs; start with tagged data variants and explicit operation/state-machine semantics. |
@@ -352,155 +401,33 @@ popularity alone.
 
 ## Proposed template and instance forms
 
-The accepted representation uses one family `kind` plus a top-level template/instance `form`.
-Family and form jointly determine the schema and operations; templates and instances do not
-need identical payloads. `form` sits beside `kind`; `spec` contains the configuration for that
-family and form. Readable object references include `kind`, `form` and `name`: kind/name
-locates the object, while form validates the intended target. A wrong-form target is rejected.
+The current envelope, identity and editing contracts are maintained in
+[DESIGN.md](../DESIGN.md#configuration-language). Family/form identify the contract; stable IDs
+are distinct from names. Templates are reusable; instances retain resolved configuration and
+controls independently of later template edits. Setup graphs run at start, and instances manage
+ongoing behavior. The [construction research](CONSTRUCTION.md) gives illustrative graph YAML.
 
-The scenario fixture follows the accepted envelope and readable reference shape. Its payloads
-remain illustrative; status shape, command names, operation payloads and instance export are open.
-Reusable template registration, instance creation, native provisioning and starting
-execution must remain distinguishable even if a frontend offers a combined operation.
-
-Templates contain establishment choices and dependencies across all four families. Users edit
-ordinary typed fields; instantiation interprets those fields under the selected type/form contract
-rather than requiring a second authored operation recipe. The exact template-to-instance field
-transition is under review. Direct creation from an exported instance cannot guess missing
-establishment settings; one-off and import workflows must be settled against this requirement.
-Instances operate from and edit their own configuration; changes or deletion of the creation
-template do not alter it. No historical source snapshots or input/override ledger are required.
-Resource and authority dependencies are explicit; configuration does not freeze current access
-or backing data. Explicit Resource-template references for future establishment remain ordinary
-dependencies, distinct from an instance's own creation template.
-
-Instance creation and checked replacement updates materialize declared schema defaults into
-saved/exported specs. Instance equality compares these materialized values; templates retain
-authored omission distinctions. Missing fields without defaults follow their required/optional
-contracts. This is application behavior; a schema's default annotation alone does not supply it.
-
-Keep authoring interpretation, template configuration version, resolved instance configuration,
-retained-record revision, source digest, plugin release and native protocol version separate.
-A reusable template is configuration for a typed capability; its contract schema defines
-what that configuration means. Template inheritance or arbitrary expression evaluation is
-not required to obtain reuse.
-
-Resource specs use `spec.type` with separate `group`, `name` and `version` fields, `spec.config` for typed
-settings, and `spec.conduits` for connection declarations. The selected schema validates config,
-including unknown-field rejection except in declared open maps. Type references differ from
-registry kind/form/name references. Logical type groups are independent of implementation
-packages; group and type name are not combined into a slash-delimited string. The extensible
-catalog, working core groups and candidate extensions are investigated in [Resource typing](RESOURCES.md).
-Allowed identifiers/version labels and Conduit declaration
-structure remain under review. Resource type contracts have independently
-selected schema versions, separate from the common object apiVersion and plugin implementation
-releases. A type contract can evolve without changing the common format; compatibility and
-migration rules still require explicit design. No extra registered object family is implied.
-
-Stable object identity and expected-ID/configuration-version checks remain accepted. Names
-are unique within each family across both forms in the single local registry. A template
-uses a reusable concept name; an instance defaults to that name plus a generated unique suffix,
-with explicit unique names also allowed. Suffix format remains open. The fixture uses explicit
-instance names for readability. Opening twice from a Conduit template intentionally creates
-two connections; retrying the same create request must instead follow
-the operation-outcome contract. Exact idempotency/identity fields are open.
+Templates now specify both establishment and allowed configuration changes. The syntax proposed
+above is one possible expression; no generic full-spec write path for running instances follows
+from using YAML. Interface-mediated authoring and Conduit-mediated runtime interaction have
+different effects. The complete registered schema and operation contract must validate both.
 
 ## How the families connect
 
-### Sessions
+The [current user workflow](../SPEC.md#the-user-workflow) starts in an Interface: author Resource
+and Agent templates, compose/instantiate Pools, start Agents with Conduits, then observe and
+request supported changes. Resources are created through exactly one owner Pool; their templates
+remain reusable. Conduits carry operations and data, including Resource-to-Resource access.
 
-Session templates contain runtime/model/account defaults, required limits, connection choices
-and activation instructions. Establish the Session from this configuration using its form-specific
-contract; one-off/import syntax remains in review. Later changes edit that instance. Required
-limits and live dependencies are explicit.
-Resource-service authentication is separate from model-account selection. A native agent's
-login profile is not a Session template or Session history store.
+Observation, configuration changes, content writes, setup effects and connection membership
+must remain distinguishable. Type constraints, template-selected controls, current authority
+and Conduit restrictions do not merge like ordinary draft values. The earlier four-family
+[scenario fixture](templates-instances.scenario.yaml) remains evidence about those earlier
+structural relationships only; it does not validate the new control contract.
 
-Session specs choose how permitted Resources are prepared: advertise skills, register native
-MCP configuration, prepare a workspace or load relevant instructions. Operations need ordering,
-compatibility, required/optional behavior and cleanup rules. A Resource's presence does not
-itself place content in model context.
-
-### Resources and Pools
-
-A Resource template supplies reusable configuration for a type's creation/attachment contract.
-Only a Pool creates its Resource instances; registering a template does not deploy anything.
-Resources should be unitary: storage, search and MCP access are separate by default and grouped
-in Pools, even when one backend supplies them. Each Resource has one responsibility with related
-operations; callable operations/tools do not each require a Resource. Minimize duplicated
-configuration/state within those boundaries. Logical Resource-to-Resource access uses Conduits,
-including search reading storage; this does not require a new Conduit per query/socket.
-Endpoint declaration syntax and connection creation remain open.
-Define Resource templates and instances before Pool grouping/provisioning machinery. Compare
-a local path exposed by symlink, an MCP service connection and hybrid database search to find
-the minimum common contract and the necessary type-specific differences. For the accepted
-local-folder case, the Resource describes the folder attachment and Session symlinks are
-preparation state. Removing a symlink leaves the Resource and backing folder intact. Other
-types have different boundaries: MCP permits service identity per Session attachment within
-target/access constraints where supported, without requiring duplicate Resources per login.
-Credential handling and further consumer boundaries remain under review; do not assume each
-helper needs a registered object.
-
-Pool instances remain the ownership boundary. Pool registration and provisioning are separate
-explicit effects, optionally combined by a frontend with separate outcomes. Persistent Pool
-creation declarations and per-entry Resource bindings are back under review; the earlier
-proposal is consolidated in [REVIEW.md](../REVIEW.md#2-pool-grouping-and-resource-ownership).
-Prefer minimal bookkeeping and derived inventory views. Explore how Pools can use declared
-Resource types/capabilities for grouping and coordination without duplicating instance specs
-or embedding every provider's behavior in the Pool schema.
-
-Reuse templates across Pools, not membership of one Resource instance. Contracts distinguish
-new backing data from attachment to existing data. Two local registrations can refer to the
-same provider object or directory and therefore share native conflicts and quotas. Native
-target identity is not necessarily equal to registry Resource identity.
-
-Reference/selector algebra must name its domain: reusable templates, the Pool's own Resource
-instances, or native sub-capabilities exposed by one such instance. Labels cannot silently
-transfer ownership. Removing a selector match is not inherently a cleanup instruction.
-Content-level record contexts and task-associated workspaces remain meaningful inside the
-Resource contract; they do not add another owner to a Resource instance.
-
-Pool deletion can no longer be treated as removal of a collection with unrelated members.
-Define owner retirement, possible transfer, active use and incomplete provisioning explicitly.
-Preserve backing data on registration deletion; orphan detection alone is not permission to
-purge a local checkout, provider data or retained conversation history.
-
-### Conduits and connections
-
-A Conduit template describes a versioned interaction contract, endpoint roles, requested
-operations, filters and support requirements. Resource and Session templates can reference
-Conduit templates to declare flows their instances will establish. The enclosing instance
-automatically supplies the consumer endpoint; no local-endpoint marker or generated instance
-name is needed in the reusable template. This grants no authority or implicit open/join intent.
-Explicit consumer preparation normally attempts declared open/join actions and reports their
-outcomes, rather than waiting for first use. A failed required connection blocks that consumer's
-completion of preparation; optional failure is reported and permits continuation. Unrelated
-consumers are unaffected. Declarations default to required, with optional selected explicitly;
-saved instance configuration materializes that default. Registration alone starts no flow.
-Partial preparation retains successful attachments for retry while the consumer remains
-unprepared. Explicit cancellation detaches those retained by the preparation, preserving other
-consumers, backing Resources and outcomes without undoing delivered data or external effects.
-Opening establishes a Conduit instance; joining selects an existing one. Logical
-attachments and their authentication remain distinct from transport sockets and shared data.
-
-Conduits carry and filter data; the engine/plugins implement one-time transfers, persistent
-access or ongoing sync without an independent runtime per Conduit. The last logical consumer
-or peer detaching ends the flow and closes any remaining provider-side connections. Between
-polls or during transport failure, a logical subscription remains attached. Backing Resources,
-templates and retained evidence survive. Cleanup completion and attachment/crash detection
-must be reported distinctly from transport readiness.
-
-If a flow needs retained conversation storage, it requests provisioning through a selected
-Pool, which owns the Resource. Each access follows the owner Pool and current authority;
-connections do not introduce a second unscoped provisioning path. Consumer declaration fields,
-remote endpoint resolution, retry/timeout and incomplete cleanup behavior, and later
-reconfiguration remain open.
-
-Candidate interaction families remain capability requests, retained exchanges and observations.
-They need different success, cancellation, retention and recovery meanings. A communication
-protocol can operate across Pool boundaries without pooling ownership of its backing store.
-Composition can reuse typed contracts and references, but required dependencies, independent
-status and partial effects need explicit semantics.
+Pool provisioning-plan/binding proposals are still parked in the
+[review agenda](../REVIEW.md#2-pool-grouping-and-resource-ownership). No new control declaration
+requires reviving that ledger or making every operation/parameter another registry object.
 
 ## Composition needs several operators
 
@@ -511,14 +438,14 @@ status and partial effects need explicit semantics.
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
 | Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |
 | Independent authorized paths | Union of complete constrained capabilities. | Read `src/**` plus write `docs/**` does not create write access to `src/**`. |
-| Session activation and provisioning dependencies | Explicit ordering with distinct effects and failure rules. | Loading a guide, obtaining credentials and creating storage are not interchangeable steps. |
+| Agent activation and provisioning dependencies | Explicit ordering with distinct effects and failure rules. | Loading a guide, obtaining credentials and creating storage are not interchangeable steps. |
 | Intent versus observation | Compare and record, rather than merge. | A failed deployment does not silently rewrite the authored template. |
 
 Default materialization and draft field replacement are settled. Preserving, adding or removing
 entries requires deliberate edits; this does not introduce a partial-update registry protocol.
 Remaining omission, null, empty-collection, reset, ordering and duplicate-identity details need
 per-field rules. A Pool's default access selection applies only when no explicit replacement is
-supplied; combination with Session-spec choices remains open. Access-path composition keeps its
+supplied; combination with Agent-spec choices remains open. Access-path composition keeps its
 separate semantics.
 
 ## Validation and effects are separate contracts
@@ -548,7 +475,7 @@ A probe can have effects, including credential refresh or a local MCP process; d
 A local registry transaction cannot roll back an already completed external provisioning step.
 Operation IDs and uncertain-effect reconciliation remain necessary.
 
-A connection opening may depend on Pool provisioning and Session activation, but it must not
+A connection opening may depend on Pool provisioning and Agent activation, but it must not
 hide those outcomes. Show missing prerequisites, per-participant authentication, partially
 available components and unsupported restrictions. A single `ready` field cannot express all
 of these. Ordinary references may become unavailable after deletion; ownership dependencies
@@ -568,7 +495,7 @@ Plugin configuration needs a named/versioned schema. These parser details remain
 
 Unknown-field rejection is accepted for templates and instances, except in schema-declared
 open maps. Plugin schemas can define their own fields and open maps; map keys/values retain
-their declared constraints. Create/replacement writes require their applicable schemas: an
+their declared constraints. Template writes and instance creation require their applicable schemas: an
 unavailable required schema rejects the write while preserving source YAML and any existing
 registry object. With schemas and required registry checks satisfied, otherwise valid
 configuration may be registered despite a missing plugin runtime or offline configured service.

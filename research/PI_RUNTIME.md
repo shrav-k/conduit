@@ -1,5 +1,12 @@
 # Pi runtime, Durable and ecosystem research
 
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
+now define five families and templates that declare establishment plus permitted configuration
+changes. Earlier Session/four-family terminology and architecture proposals below identify the
+research context, not competing current contracts. Read the
+[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
+how this evidence informs Interface and Conduit behavior.
+
 Source investigation: 2026-10-30. This report provides evidence for **Session, Resource, Pool and Conduit templates
 and instances**. Current contracts live in [SPEC.md](../SPEC.md) and
 [DESIGN.md](../DESIGN.md); open decisions are in [REVIEW.md](../REVIEW.md). The report's

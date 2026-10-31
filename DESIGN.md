@@ -826,13 +826,26 @@ instance creates/attaches and exclusively owns its Resource instances. Pools rem
 resource-supply and shared service-access boundary for Agents and connections, including skills,
 tools, memory and connection support such as conversation storage. A Pool need not run a process.
 
+**Accepted dependency composition:** reusable Resource templates declare their required connections;
+Pool composition supplies the concrete targets during instantiation. The consumer instance supplies
+its own local endpoint and retains the resolved Conduit declaration/target binding. For example,
+one reusable MCP template can connect to Euphony's authentication Resource in a work Pool and to a
+personal authentication Resource in another Pool without embedding either concrete identity in the
+reusable template. This also applies to other Resource dependencies, such as search using storage.
+
+This separates reusable requirements from creation-time wiring. It is not automatic account
+selection, a new template-parameter DSL or permission granted by Pool membership. Keep one resolved
+connection assignment on the consumer instance, with derived reverse views. Later template/Pool
+edits do not silently rebind established connections. Exact declaration syntax, compatibility
+matching and controls for explicit rebinding remain open.
+
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one
 explicit action with separate outcomes; successful registration does not imply provisioning.
 No background reconciler is implied.
 
-Persistent Resource declarations and per-entry bindings are back under review until Resource
-contracts are defined. The previous Pool proposal and its lifecycle rulings are consolidated
+Persistent provisioning plans and per-entry creation-history bindings remain under review; these
+are separate from the accepted dependency bindings above. The previous proposal is consolidated
 in [REVIEW.md](REVIEW.md#2-pool-grouping-and-resource-ownership); they should not force extra
 configuration/state layers into the Resource model. Pools group unitary Resources and should
 account for their types when coordinating capabilities. Exact grouping behavior, provisioning

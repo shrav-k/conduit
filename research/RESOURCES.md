@@ -358,8 +358,10 @@ interchangeability. Type-group membership should help discovery, not imply inter
 For example, a search implementation can require record enumeration and revision-aware reads.
 Two different storage types may satisfy that exact requirement. A third may only export bytes,
 so it needs an explicit adapter or is incompatible. Its placement in `storage` is insufficient.
-The Resource contract declares the requirement; its Conduit declaration supplies the actual
-target. Do not maintain duplicate endpoint assignments inside a second configuration structure.
+Resource templates declare connection requirements; Pool composition supplies their concrete
+targets at instantiation. The instance retains its resolved Conduit binding, without duplicate
+endpoint assignments. That composition boundary is accepted; using versioned capability contracts
+for compatibility remains the next review ruling.
 
 | Fact | Proposed authority | Example |
 | --- | --- | --- |

@@ -39,7 +39,8 @@ use the same contracts.
 
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.
-2. **Compose Pools.** Select Resource templates, establishment settings and intended shared service identities.
+2. **Compose Pools.** Select Resource templates, establishment settings and intended shared service
+   identities; supply concrete targets for the templates' declared connection dependencies.
 3. **Establish Pools and Resources.** Register/instantiate and explicitly run the configured
    establishment lifecycle, completing needed service authentication. An Interface may combine these
    actions while reporting separate outcomes. Existing valid authentication can be reused.
@@ -117,6 +118,12 @@ provider bindings: associations to authorized identities, not raw credentials in
 implement authentication; the owning instance manages its ongoing state. A Pool template can
 compose the authentication and service Resources automatically. This adds no object family or
 requirement for a Resource per token, and makes the Pool neither a mandatory network hop nor process.
+
+Reusable Resource templates declare required connections; Pool composition supplies their concrete
+targets during instantiation. Each resulting instance retains its explicit resolved Conduit
+bindings. The same service template can therefore use work authentication in one Pool and personal
+authentication in another. This does not imply automatic account matching, additional permission,
+late rebinding or a second editable connection inventory. Exact binding syntax remains open.
 
 Separate these contracts:
 

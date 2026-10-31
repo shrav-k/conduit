@@ -28,19 +28,24 @@ Conduits. Pool templates can assemble that composition. One account may support 
 provider-appropriate credentials; this is not a Resource per token or a sixth family. The
 [Linear walkthrough](research/CONDUITS.md#5-access-linear-through-mcp) now uses this separation.
 
-**Next ruling — wiring reusable templates:** should a reusable service template declare the kind
-of authentication it needs, with Pool composition supplying the concrete authentication Resource
-target during instantiation? Recommend this so a common MCP template can be used in Euphony and
-personal Pools without hard-coding either account. The resulting instance still retains one
-explicit Conduit declaration with its resolved target; no second editable endpoint list or
-automatic selection among available accounts is implied. The alternative puts a concrete target
-reference in each reusable service template and requires customizing it for another Pool.
+**Settled composition:** reusable Resource templates declare required connections; the Pool supplies
+concrete targets during instantiation. Each instance retains its resolved Conduit bindings. This
+does not introduce automatic account selection, late rebinding, duplicate endpoint assignments or
+a template-parameter DSL. Concrete syntax remains open.
 
-This selects where composition supplies the dependency, not a parameter DSL, late implicit
-rebinding or particular YAML fields. The graph's ordinary configuration/output bindings and
-existing kind/form/name references remain the starting point. Then define the authentication
-Resource's supported identity/binding operations, interaction waits, refresh and consumer use.
-Keep ordinary use distinct from explicit secret retrieval; that boundary is already established.
+**Next ruling — dependency compatibility:** should a required connection name a versioned capability
+contract, allowing different compatible Resource types to fulfill it, rather than requiring one
+concrete Resource type? Recommend capability contracts where actual interchangeability is useful.
+For example, local-directory and git-worktree could both provide a directory-access contract while
+retaining different setup/lifecycle types. This is a contract definition, not another managed family
+and not the user-facing Interface concept. Exact names/version matching remain open.
+
+The target is still selected explicitly by the Pool. Matching requires the promised operations and
+behavior, not just similar names or fields. Provider/account constraints, current permissions and
+readiness remain separate checks. The alternative binds dependencies to concrete Resource types
+initially, reducing contract machinery but coupling consumers to particular Resource types.
+Use the [compatibility research](research/RESOURCES.md#what-should-actually-drive-compatibility) as
+the starting point, then apply the result to reusable authentication and storage/search dependencies.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -67,7 +72,7 @@ without promoting one provider's timeout, queue or process behavior into univers
 | --- | --- |
 | Types and compatibility | Keep filesystem, storage, search and integration groups; distinguish local-directory and git-worktree. Explore content, identity and agent-communication types. Define type group/name/version identifiers and compatible consumer contracts independently of plugin packages. Shared shapes/names alone do not prove behavioral compatibility. |
 | Establishment and runtime | Use an existing directory with Agent-local symlinks, explicit new-directory creation, remote filesystem and Git worktree. Retain create/attach intent in the complete template recipe, explicit path base and absolute instance path. Define type-specific setup outputs, waits, readiness, effects and cleanup. |
-| Authentication contract | Reusable authentication is a Pool-owned Resource. Define its type/operations, supported bindings and consumer dependency selection while preserving one lifecycle/refresh owner, protected references and separate caller authority. Non-reusable internal state and explicit per-consumer exceptions remain to be specified. |
+| Authentication contract | Reusable authentication is a Pool-owned Resource. Define its type/operations and supported bindings while preserving one lifecycle/refresh owner, protected references and separate caller authority. Non-reusable internal state and explicit per-consumer exceptions remain to be specified. |
 | Shared versus per-consumer state | Symlinks are preparation state, not additional Resources. Define client reuse, idle cleanup and attachment-local state separately from shared credentials; detaching a consumer must preserve Resource-owned state still needed elsewhere. |
 | Storage, search and MCP | Keep separate unitary Resources connected by Conduits. Define storage/search operations, index/input dependencies, freshness, indexing ownership and how MCP exposes existing contracts without silently combining responsibilities. |
 | Typed dependencies | Define generated outputs, revisions, expiring handles and prerequisites; diagnose blocking cycles. Preserve one authored connection declaration and derive reverse views rather than maintaining conflicting endpoint copies. |

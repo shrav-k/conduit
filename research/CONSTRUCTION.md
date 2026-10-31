@@ -56,7 +56,8 @@ Interface contract. Broad visibility is not a direct-edit exception for running 
 The intended user journey is:
 
 1. Use an Interface to author Resource templates and an Agent template.
-2. Add selected Resource-template references and creation settings to a Pool configuration.
+2. Add selected Resource-template references and creation settings to a Pool configuration,
+   supplying concrete targets for their declared connection requirements.
 3. Instantiate the Pool and establish its Resources and shared service authentication.
 4. Instantiate Agents whose declared Conduits authorize access to those capabilities without
    repeating the provider login merely because a new consumer attaches.
@@ -329,9 +330,10 @@ relationship. If a provider requires separate identities, an explicitly selected
 that authentication at the corresponding attachment boundary. Neither mode changes the Agent's
 model subscription or makes credentials ordinary exported values.
 
-Reusable authentication as a Pool-owned Resource is accepted. Dependency binding in reusable
-templates, exact operations and YAML fields remain open. No separate Resource per token is
-implied. Native interception/hotplug and provider compatibility remain unverified.
+Reusable authentication is a Pool-owned Resource. Resource templates declare connection needs;
+Pool composition supplies concrete targets at instantiation, retained as resolved instance
+bindings. Compatibility matching, exact operations and YAML fields remain open. No separate
+Resource per token is implied. Native interception/hotplug and provider compatibility remain unverified.
 
 MCP's [transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports) and
 [versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning) contracts

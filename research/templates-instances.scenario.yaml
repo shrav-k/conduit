@@ -5,6 +5,8 @@
 # References explicitly use kind/form/name. The wrapper and operation fields remain illustrative.
 # All paths, accounts, provider identifiers and targets are synthetic. No grants or secrets.
 # Templates register reusable configuration; only explicit Pool operations create Resources.
+# This scenario exercises template-based creation. Direct creation from complete instance YAML
+# is also supported, with an explicit unique name and the same Pool ownership requirements.
 scenario: four-families-with-exclusive-resource-ownership
 
 templates:

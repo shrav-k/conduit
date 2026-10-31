@@ -17,8 +17,8 @@ to the same external data or create independent backing data, explicitly accordi
 contract. Connections use Resources through their owning Pools, including any storage they
 need for communication. They can request provisioning through a Pool but do not own Resources.
 
-Opening a connection from a Conduit template and joining an existing connection are explicit,
-distinct intents. Sharing a connection does not implicitly share credentials or private context.
+Opening a new connection and joining an existing connection are explicit, distinct intents.
+Sharing a connection does not implicitly share credentials or private context.
 Session templates supply the activation behavior previously called a Profile; instances retain
 it in their own configuration. Profile is no longer a separate family. **Connection** names a
 Conduit instance, not an additional family.
@@ -27,9 +27,11 @@ Conduit instance, not an additional family.
 uses its family as `kind` and a top-level `form` to identify a template or instance. Names are
 unique per family across both forms: templates name reusable concepts, while instances have
 names generated from the template name plus a unique suffix unless an explicit unique name
-is supplied. Readable object references include `kind`, `form` and `name`. Templates and creation
-choices produce a complete instance `spec`, which is then edited directly. Template history
-is optional; continuing Resource and authority dependencies are explicit on the instance.
+is supplied. Readable object references include `kind`, `form` and `name`. Create instances
+either from a template and creation choices or directly from complete instance YAML. Direct
+creation requires an explicit unique name; Resource creation always goes through a Pool.
+The complete instance `spec` is then edited directly. Template history is optional; continuing
+Resource and authority dependencies are explicit on the instance.
 Current-access checks and actual execution evidence remain required.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable

@@ -62,16 +62,16 @@ No automatic purge follows from a missing Pool reference.
 
 ## How instances work together
 
-1. **Instantiate a Session from its template.** Materialize one template and creation choices
-   into a complete instance spec. Later edits target the instance; current access limits are
-   represented explicitly. V0 defers Session-template inheritance.
+1. **Create a Session.** Use complete instance YAML with an explicit unique name, or materialize
+   one template and creation choices. Later edits target the instance; current access limits
+   are represented explicitly. V0 defers Session-template inheritance.
 2. **Establish Pools and their Resources.** Pool templates describe intended provisioning;
    explicit operations create Pool instances and create/attach their Resource instances.
    Existing instances retain resolved settings until explicit reconfiguration. The operation
    sequence and partial-failure behavior remain open. No background reconciler is implied.
-3. **Open or join a connection explicitly.** Opening uses a Conduit template to establish a
-   new instance; joining targets an existing one. Reusing a template name does not choose
-   between these operations or imply shared clients, credentials or private context.
+3. **Open or join a connection explicitly.** Opening uses a Conduit template or complete
+   instance configuration; joining targets an existing connection. Reusing a template name
+   does not choose between these operations or imply shared clients, credentials or private context.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.
@@ -104,9 +104,12 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   names allowed. Exact suffix format and name constraints remain open.
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
-- Across all four families, templates and creation choices produce a complete instance spec.
-  Later changes edit that instance directly. Editing or deleting its creation template does
-  not change the instance or require historical template content to operate it.
+- Across all four families, create instances from complete instance YAML or from a template
+  and creation choices. Direct creation requires an explicit unique name; Resources still
+  require Pool-mediated creation. Both paths produce the authoritative instance spec and
+  obey the same validation and authority rules. Creation, provisioning and execution retain
+  separate contracts. Later changes edit the instance directly; its creation template can
+  change or disappear without changing the instance.
 - Template-origin information is optional; no source snapshots or input/override history are
   required. Continuing Resource and authority dependencies must be explicit on the instance.
   Current-access checks, Resource data, runtime status and actual execution evidence remain
@@ -154,6 +157,7 @@ defines the remaining selections and staged evidence.
 | Interaction | Observable outcome |
 | --- | --- |
 | Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
+| Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
 | One template, several Pools | Pools create distinct Resource instances; each has exactly one owner. A foreign Resource cannot become a local member through a label or reference. |
 | Shared versus independent backing | Both explicit attachment to shared backing and provisioning independent backing are expressible; target identity and actual enforcement are reported. |
 | Connection support | Opening a connection requiring storage provisions it through an identified Pool. Joining reuses the intended connection without creating a duplicate conversation. |

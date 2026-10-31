@@ -18,6 +18,9 @@ outcomes rather than a long sequence of individual field rulings.
   Later edits target that instance; its creation template can change or disappear independently.
   No template history or input/override ledger is required. Continuing Resource and authority
   dependencies are explicit; current-access checks and actual execution evidence remain.
+- Direct creation from complete instance YAML is also supported, with an explicit unique name.
+  Both paths use the same validation and authority rules; Resource creation still goes through
+  a Pool. Creation, provisioning and execution remain distinct effects.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -41,10 +44,9 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **instance creation and materialization**. The instance spec is authoritative;
-decide whether callers may supply it directly without a template, then define how defaults
-and creation choices become complete configuration. Establish Pool provisioning/ownership
-and instance lifecycle together.
+Continue with **defaults and materialization**. Direct and template-based creation are settled;
+define how declared defaults and creation choices become complete instance configuration.
+Then establish Pool provisioning/ownership and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -59,14 +61,13 @@ and instance lifecycle together.
 
 | Question | Example and considerations |
 | --- | --- |
-| Must creation use a registered template? | Compare template-backed creation with direct creation from complete instance configuration. Consider whether inline templates add value. Resource creation must still go through a Pool; generic registry writes cannot bypass ownership. Decide naming when there is no template prefix. |
 | How is complete instance configuration materialized? | Define each form's fields, creation inputs, defaults and validation. Reconcile materialization with authored omission/default distinctions and checked full replacement. References may stay live; external contents and system-owned status are not copied into spec. No retained override layer or general inheritance language is implied. |
-| How are instances addressed and rebound? | Open-new targets a template; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
+| How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 
 **Walkthrough:** create two instances from one template, edit one instance, then rename, edit
 and delete the template. Show independent instance specs and explicit dependencies, including
 a Pool's Resource-template references for future provisioning. Repeat with a name collision
-and, if selected, direct creation from exported configuration.
+and direct creation from exported configuration with a distinct name.
 
 ## 2. Pool provisioning and Resource ownership
 

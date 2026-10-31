@@ -35,7 +35,8 @@ remain open. Room-based behavior is one candidate, not the universal Conduit pri
 
 ### 1. Expose Euphony repositories as local paths
 
-The Pool creates or attaches repository/workspace Resource instances from reusable templates.
+The Pool creates or attaches repository/workspace Resource instances from reusable templates
+or complete instance configuration.
 An access connection selects permitted Resources and operations. Session activation
 can prepare a participant's local path projection, subject to adapter and execution-mode
 capabilities.

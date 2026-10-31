@@ -33,9 +33,13 @@ remain in [REVIEW.md](REVIEW.md).
 
 ### Template changes and resolved configuration
 
-Across Session, Resource, Pool and Conduit, templates are creation helpers. A template and
-creation choices materialize a complete instance `spec`, authoritative for that instance's
-configuration. Later changes edit the instance directly through checked updates. Editing or
+Across Session, Resource, Pool and Conduit, create an instance either from complete instance
+YAML or from a template and creation choices. Templates are optional creation helpers. Both
+paths produce a complete instance `spec`, authoritative for that instance's configuration,
+and follow the same validation and authority rules. Direct creation requires an explicit
+unique name. Resource creation always goes through its owning Pool; complete YAML cannot
+bypass that operation. This choice does not combine creation, provisioning and execution.
+Later changes edit the instance directly through checked updates. Editing or
 deleting the creation template does not change an existing instance or create a requirement
 to recover the template before operating it. Adding a Resource to a Pool template therefore
 does not provision it in existing Pools.
@@ -122,12 +126,12 @@ this registry naming boundary. Additional Pool-local display names and optional 
 references remain open. The registry catalogs definitions and IDs while backing data may be
 local or remote. Registry presence grants no access and need not name every native item globally.
 
-Templates name reusable concepts; instance names distinguish specific creations. By default,
-an instance receives its template's name plus a generated unique suffix, such as `reviewer-7f3a`.
-Callers may supply an explicit unique name instead, including for long-lived instances. Both
-paths obey per-family uniqueness across forms. Exact suffix format, name constraints and
-generated-collision handling remain open. Generated names remain separate from stable system
-IDs, and a specific instance name does not imply automatic expiry.
+Templates name reusable concepts; instance names distinguish specific creations. Template-based
+creation defaults to the template's name plus a generated unique suffix, such as `reviewer-7f3a`.
+Callers may supply an explicit unique name instead. Direct creation without a template requires
+an explicit unique name. Both paths obey per-family uniqueness across forms. Exact suffix
+format, name constraints and generated-collision handling remain open. Generated names remain
+separate from stable system IDs, and a specific instance name does not imply automatic expiry.
 
 V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
 After a rename, the old name becomes available for reuse. A fresh lookup of that old name
@@ -311,18 +315,19 @@ language must express. [REVIEW.md](REVIEW.md) focuses the remaining choices on t
 
 A Session template is reusable configuration for any number of independent Sessions. It specifies
 runtime/model/account defaults, execution preferences and requirements, optional permission
-limits, default connection choices, and activation instructions. A Session starts from
-one Session template; v0 defers inheritance and composition between Session templates.
+limits, default connection choices, and activation instructions. A Session can be created
+directly from complete instance YAML or from one Session template; v0 defers inheritance
+and composition between Session templates.
 
-The template and permitted creation choices produce the Session's complete spec. The Session
-operates from that spec and explicit live dependencies; retain actual execution settings.
+Both creation paths produce the Session's complete spec. The Session operates from that spec
+and explicit live dependencies; retain actual execution settings.
 Permission limits remain current. Whether referenced resource content follows source updates
 is a separate open choice.
 
 ### Activation instructions
 
-Activation instructions are supplied by the Session template and materialized in the Session
-spec. They tell it how to prepare and use Resources made available through its Conduits.
+Activation instructions are supplied directly in the Session spec or materialized from its
+creation template. They tell it how to prepare and use Resources made available through its Conduits.
 Resource-access Conduits select
 and filter; they do not own import or context-loading instructions. The Session performs
 activation through compatible integrations, within current permissions.
@@ -594,8 +599,9 @@ purging retained history. Ownership cleanup and backing-data cleanup remain sepa
 
 ## Conduits
 
-A Conduit template defines a typed, authorized interaction. Opening it creates a **connection**,
-a Conduit instance with resolved endpoints, participant attachments and operational state.
+A Conduit template describes a reusable typed interaction. Opening from that template or
+complete instance configuration creates an authorized **connection**, a Conduit instance with
+resolved endpoints, participant attachments and operational state.
 Conduits are the extensible interaction layer across the four families. Pool access and
 Session communication are examples, not a closed list of endpoint roles or protocols.
 
@@ -615,8 +621,8 @@ records, instance lifetime, supervision and composition remain in [REVIEW.md](RE
 Connection establishment supports both intents explicitly:
 
 - **Join an existing instance:** establish participation in a specified existing relationship.
-- **Open a new connection:** instantiate a Conduit template as a new relationship, subject
-  to the contract's supported endpoints, authority and provisioning requirements.
+- **Open a new connection:** create a relationship from a Conduit template or complete instance
+  configuration, subject to the contract's endpoints, authority and provisioning requirements.
 
 Reusing a template name does not implicitly choose between these intents. For example,
 two Sessions can join the same discussion, or create separate discussions from the same

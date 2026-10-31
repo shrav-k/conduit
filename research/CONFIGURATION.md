@@ -5,9 +5,10 @@ The accepted model has four families, each with template and instance forms. Res
 instances are created only through, and owned exclusively by, a Pool instance. Conduit
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
 envelope, family kinds with top-level forms, explicit kind/form/name references, identity and
-checked-edit contracts. Templates and creation choices produce complete instance specs across
-all four families. Instances are edited directly; no template/input history is required, and
-continuing Resource and authority dependencies are explicit.
+checked-edit contracts. All four families support template-based creation and direct creation
+from complete instance YAML. Direct creation requires an explicit unique name; Resource
+creation remains Pool-mediated. Instances are edited directly; no template/input history is
+required, and continuing Resource and authority dependencies are explicit.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -306,7 +307,9 @@ remain illustrative; status shape, command names, operation payloads and instanc
 Reusable template registration, instance creation, native provisioning and starting
 execution must remain distinguishable even if a frontend offers a combined operation.
 
-Templates and creation choices materialize complete instance specs across all four families.
+Templates and creation choices materialize complete instance specs across all four families;
+direct creation from complete instance YAML is also supported under the same validation,
+authority and Pool-ownership requirements, with an explicit unique name.
 Instances operate from and edit their own configuration; changes or deletion of the creation
 template do not alter it. No historical source snapshots or input/override ledger are required.
 Resource and authority dependencies are explicit; configuration does not freeze current access
@@ -333,7 +336,8 @@ the operation-outcome contract. Exact idempotency/identity fields are open.
 
 Session templates contain runtime/model/account defaults, required limits, connection choices
 and activation instructions. Materialize the template and creation choices into the Session
-spec; later changes edit that instance. Required limits and live dependencies are explicit.
+spec, or create from complete instance YAML. Later changes edit that instance. Required limits
+and live dependencies are explicit.
 Resource-service authentication is separate from model-account selection. A native agent's
 login profile is not a Session template or Session history store.
 
@@ -369,7 +373,8 @@ purge a local checkout, provider data or retained conversation history.
 ### Conduits and connections
 
 A Conduit template describes a versioned interaction contract, endpoint roles, requested
-operations, filters and support requirements. Opening creates a connection; joining selects
+operations, filters and support requirements. Opening from a template or complete configuration
+creates a connection; joining selects
 an existing connection. Participants have their own authenticated attachments. Neither join
 nor template reuse silently shares credentials, clients or private Session history.
 

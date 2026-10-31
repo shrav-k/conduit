@@ -18,7 +18,8 @@ models within its declared provider/model domain are selectable by default, with
 narrower list. A supported operation changes the current model as runtime state. GPT-to-Claude
 or subscription-account changes require a new Agent. Selection requests queue until the runtime
 can apply them without interrupting in-flight work; pending and applied choices remain distinct.
-Restart persistence and detailed switch-state handling remain under review.
+Explicit restarts restore the last successfully applied model after current checks; new Agents
+use their initial choice. Detailed switch-failure and pending-request handling remain under review.
 
 Plugins declare their typed inputs and outputs; graph nodes select plugins and bind values to
 those contracts. Output bindings establish dependencies; explicit prerequisites cover ordering

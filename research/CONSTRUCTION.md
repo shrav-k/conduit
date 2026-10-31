@@ -395,8 +395,8 @@ by default, with an optional narrower list. The rule stays immutable while match
 can change, so a newly available compatible model need not force an instance replacement. The
 explicit list in the sketch illustrates optional narrowing. Newly matching models become
 selectable; availability changes do not themselves request a switch. Unknown compatibility or
-authorization is not proof of eligibility. Catalog discovery, exact policy syntax, handling a
-failed switch and retention of the selection across restarts remain open.
+authorization is not proof of eligibility. Catalog discovery, exact policy syntax and handling
+failed or interrupted switches remain open; restart selection is defined below.
 
 ### Applying a model selection
 
@@ -423,26 +423,46 @@ indefinitely as though a supported boundary were known to exist.
 
 ### Model selection across restarts
 
-**Next proposal:** when explicitly restarting the same Agent instance, restore its last
+**Accepted:** when explicitly restarting the same Agent instance, restore its last
 successfully applied model after checking current compatibility, availability and access. The
 initial model supplies the choice for a new instance with no prior applied selection. An
 unapplied pending request is not evidence of a new current model; its recovery semantics remain
 separate.
 
 For example, a template starts with Astra. Agent A selects Sol through the supported operation,
-then stops. Restarting A would restore Sol; creating Agent B from the unchanged template would
+then stops. Restarting A restores Sol; creating Agent B from the unchanged template would
 start with Astra. The spec remains immutable: A's selection is retained runtime state, and its
 startup graph still runs with the applicable instance state. Graph-on-start does not itself
 require resetting runtime choices to creation defaults.
 
 If the recorded selection cannot currently be used or confirmed, report the condition and
 require an explicit permitted choice or reconciliation rather than silently selecting another
-model/account. This recommendation changes neither the explicit-start requirement nor the
+model/account. This changes neither the explicit-start requirement nor the
 rule against launching duplicate native executions when status is unknown.
 
-The alternative resets to the initial model on every new execution of that instance, after
-validation. The restart default, exact retained state and handling an interrupted switch remain
-under review; this is not an automatic wake or a request to start model work.
+The exact retained state and handling an interrupted switch remain under review. Restoring a
+selection does not automatically wake the Agent or start model work; the existing lifecycle and
+explicit-start rules continue to apply.
+
+### Failed or uncertain model switches
+
+**Next proposal:** a failed selection request reports its failure and permits already-authorized
+work to continue on the previous model only when the integration establishes that it remains
+active, compatible and permitted. If the active model cannot be established, hold new model
+requests until reconciliation; do not present the last recorded model as verified current state.
+This does not replace it with an unrequested model or alter the Agent's fixed access boundary.
+
+| Example | Proposed response |
+| --- | --- |
+| Sol is rejected before application; Astra is confirmed still active and eligible | Report the failed switch and actual selection; ordinary work can continue with Astra. |
+| The switch command was dispatched but its result is unknown | Hold new model requests until the integration establishes actual state. Keep the request and its uncertain outcome inspectable. |
+| Reconciliation confirms the requested selection was applied | Record the confirmed result and actual selection, under current access and compatibility checks. Do not issue another switch merely because its first response was lost. |
+
+Holding model requests is not pausing all independent Resource operations or starting a new
+Agent. Reconciliation can use the integration's supported observations without mandatory human
+approval; unsupported observation/control remains a reported limitation. Exact recovery/state
+representation remains open. The alternative pauses further model work after any failed switch,
+even when the previous model is confirmed usable, until the caller explicitly chooses to continue.
 
 ## MCP setup and instance runtime walkthrough
 
@@ -728,9 +748,10 @@ within the fixed runtime/access and provider domain are selectable by default, o
 narrowed by a list. Supported selection changes retain the Agent; subscription changes or
 GPT-to-Claude transitions create a new Agent with shared context accessed through Conduits.
 Model-selection requests queue until a supported execution boundary without interrupting current
-work. Next review [selection across restarts](#model-selection-across-restarts), followed by failed
-or interrupted switches and pending-request handling. Shared context across replacement Agents
-remains Pool-owned Resource data; no new Conversation family is needed.
+work. Explicit restart restores the last successfully applied selection after current validation;
+new instances use their initial choice. Next review [failed or uncertain switches](#failed-or-uncertain-model-switches),
+followed by pending-request handling. Shared context across replacement Agents remains Pool-owned
+Resource data; no new Conversation family is needed.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

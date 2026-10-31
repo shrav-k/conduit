@@ -31,11 +31,14 @@ default, optionally narrowed by a list. Supported within-domain selection retain
 GPT-to-Claude or subscription-account changes create new Agents. Busy model-selection requests
 queue until a supported execution boundary, with pending/applied state distinguished and current
 compatibility/access rechecked before application. Selection alone does not start model work.
+Restarting the same Agent restores its last successfully applied model after current checks;
+new instances use their initial choice. An unavailable/unconfirmed selection is reported without
+silently substituting a model.
 
-Next review [model choice across restarts](research/CONSTRUCTION.md#model-selection-across-restarts):
-should restarting the same Agent restore its last successfully applied selection after validation,
-or return to its initial model? Failed switches, pending-request handling and exact fields remain
-open. This refines the earlier all-model-changes versus all-switches-preserve-identity framing.
+Next review [failed or uncertain model switches](research/CONSTRUCTION.md#failed-or-uncertain-model-switches):
+continue on a verified, still-permitted previous model after failure, but hold new model requests
+when the active selection cannot be established? The alternative pauses further model work
+after every failed switch. Pending-request handling and exact fields remain open.
 Current authority rules remain live. Exact fields, metadata editing rules, status representation
 and retry limits remain open. Caching/build optimizations remain implementation concerns. The
 checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison; the

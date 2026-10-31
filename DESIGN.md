@@ -501,18 +501,23 @@ contract. It is reusable configuration, not a deployed capability, and need not 
 Pool merely to exist. Creating or attaching a Resource instance is exclusively a Pool operation.
 Every instance has exactly one owning Pool; one instance cannot be a member of several Pools.
 
-Resource specs keep type-specific settings in a dedicated configuration block alongside
-common fields such as Conduit declarations. The selected type contract validates that block;
-it is not an untyped extension map. Unknown fields are rejected except in schema-declared
-open maps. This separation applies to template and instance forms. `type`, `config` and
-`conduits` are illustrative field names; their exact names and type/version identifiers
-remain under review.
+Resource specs use these fields in both template and instance forms:
+
+| Field | Contract |
+| --- | --- |
+| `spec.type` | A type-contract reference with separate `name` and `version` fields. This is distinct from a registry object reference using kind/form/name. |
+| `spec.config` | Type-specific settings validated by the selected contract schema. Unknown fields are rejected except in schema-declared open maps. |
+| `spec.conduits` | The consumer's Conduit declarations. Their entry shape and contents remain under review. |
+
+The type name/version are not combined into one string. Allowed type identifiers and version
+labels remain open; example values do not establish that grammar. This field layout neither
+adds a registered object family nor prescribes the plugin's configuration fields.
 
 Resource type contracts are versioned independently of the common object `apiVersion`.
 The common format can remain unchanged while a type's configuration/behavior contract evolves.
 Plugin implementation releases are separate from both versions; a plugin release number does
-not substitute for either contract version. This adds no registered object family. Type
-reference syntax, version identifiers and compatibility/migration details remain open.
+not substitute for either contract version. Version identifiers and compatibility/migration
+details remain open.
 
 The same template may create distinct instances in multiple Pools. A contract supports new
 backing data, attachment to existing backing data, or both explicitly. Different instances

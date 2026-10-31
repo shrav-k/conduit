@@ -330,10 +330,11 @@ A reusable template is configuration for a typed capability; its contract schema
 what that configuration means. Template inheritance or arbitrary expression evaluation is
 not required to obtain reuse.
 
-Resource specs now separate a dedicated type-specific configuration block from common fields
-such as Conduit declarations. The selected contract schema validates the block, including
-unknown-field rejection except in declared open maps. Field names and the way type/schema
-versions are referenced remain under review. Resource type contracts have independently
+Resource specs use `spec.type` with separate `name`/`version` fields, `spec.config` for typed
+settings, and `spec.conduits` for connection declarations. The selected schema validates config,
+including unknown-field rejection except in declared open maps. Type references differ from
+registry kind/form/name references. Allowed identifiers/version labels and Conduit declaration
+structure remain under review. Resource type contracts have independently
 selected schema versions, separate from the common object apiVersion and plugin implementation
 releases. A type contract can evolve without changing the common format; compatibility and
 migration rules still require explicit design. No extra registered object family is implied.

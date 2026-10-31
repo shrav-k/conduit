@@ -126,11 +126,11 @@ The common envelope is `apiVersion`, `kind`, `form`, `metadata`, `spec`, with sy
 plus a top-level `form` identifying a template or instance. Validation must
 distinguish both family and form; sharing a kind does not imply identical payloads or operations.
 
-Within a Resource spec, type-specific settings occupy a dedicated block alongside common
-fields such as Conduit declarations. The selected type's schema validates that block under
-the normal unknown-field rules. Resource type contracts have their own schema versions,
-independent of the common object `apiVersion`; plugin implementation releases are separate
-from both. Field names, type/version reference syntax and migration details remain open.
+Resource specs use `type: {name, version}`, schema-validated `config`, and `conduits` for
+connection declarations. The type reference is distinct from registry kind/form/name references.
+Type contracts have their own schema versions, independent of common object `apiVersion` and
+plugin implementation releases. Allowed type identifiers/version labels, Conduit declaration
+contents and migration details remain open.
 
 Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#configuration-language):
 

@@ -1,7 +1,8 @@
 # REVIEW SCENARIO ONLY. Not a complete accepted schema or executable operations.
 # Family kind plus top-level form is accepted; payloads remain illustrative.
-# This fixture checks identities/ownership; Resource payloads predate the dedicated typed
-# configuration block and will be replaced with schema examples once field names are settled.
+# Resource fields type {name, version}, config and conduits are accepted. Contract IDs/version
+# labels and all type-specific config below are synthetic, not approved plugin schemas.
+# These Resource templates declare no Conduits; the container/entry shape remains undecided.
 # Names are unique per family across both forms. These examples use explicit instance names;
 # the default is template name plus a generated unique suffix (exact format remains open).
 # References explicitly use kind/form/name. The wrapper and operation fields remain illustrative.
@@ -13,39 +14,50 @@
 # Review Resource types and consumer boundaries first; use that result to simplify Pool syntax.
 scenario: four-families-with-exclusive-resource-ownership
 
+# Fixture-only capabilities for the structural checker, NOT registered Conduit objects or
+# an authoring API for contracts. Real integrations supply their schemas and supported behavior.
+fixtureResourceContracts:
+  - type: {name: example/workspace, version: v1alpha1}
+    supportedModes: [create, attach]
+  - type: {name: example/memory-storage, version: v1alpha1}
+    supportedModes: [create, attach]
+  - type: {name: example/mcp-access, version: v1alpha1}
+    supportedModes: [attach]
+  - type: {name: example/native-skills, version: v1alpha1}
+    supportedModes: [attach]
+
 templates:
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
     form: template
     metadata: {name: workspace}
     spec:
-      contract: workspace.example/v1alpha1
-      supportedModes: [create, attach]
+      type: {name: example/workspace, version: v1alpha1}
+      config: {mode: attach}
 
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
     form: template
     metadata: {name: knowledge}
     spec:
-      contract: memory.example/v1alpha1
-      supportedModes: [create, attach]
+      type: {name: example/memory-storage, version: v1alpha1}
+      config: {mode: create}
 
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
     form: template
     metadata: {name: native-mcp}
     spec:
-      contract: mcp.example/v1alpha1
-      supportedModes: [attach]
-      defaults: {transport: streamable-http, url: "https://tools.example/mcp"}
+      type: {name: example/mcp-access, version: v1alpha1}
+      config: {mode: attach, transport: streamable-http, url: "https://tools.example/mcp"}
 
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
     form: template
     metadata: {name: native-skills}
     spec:
-      contract: skills.example/v1alpha1
-      supportedModes: [attach]
+      type: {name: example/native-skills, version: v1alpha1}
+      config: {mode: attach}
 
   - apiVersion: conduit.example/v1alpha1
     kind: Pool
@@ -108,6 +120,8 @@ templates:
 # not the complete instance specs that creation must materialize.
 # The illustrative inputs below supply ordinary instance-field values, not separately
 # declared template parameters or a parameter-mapping language.
+# For Resource provisioning, these are illustrative spec.config values and replace the
+# corresponding fields from the template's config. They are not final operation payload syntax.
 # instanceRef/poolRef names refer to outputs of earlier operations in this scenario.
 # Pool creation registers the owner/configuration; provisioning is explicitly requested separately.
 # A frontend may combine these intents while retaining separate outcomes. The operation names

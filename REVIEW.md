@@ -101,11 +101,24 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Settle **Resource type naming** next. Resource fields are `spec.type: {name, version}`,
-`spec.config` and `spec.conduits`. Decide whether type names use a namespace/name form or a
-flat naming space, then define version labels and Conduit declaration structure. Example
-identifiers in the scenario remain illustrative. Keep type contract identity distinct from
-plugin implementation identity and registry object names.
+Settle **Resource type organization and implementation packaging together** before enforcing
+a name grammar. Resource fields remain `spec.type: {name, version}`, `spec.config` and
+`spec.conduits`. The proposed qualified names are not yet accepted: `tools/mcp` and `io/local`
+are useful examples for deciding what each part means, not a settled package/module system.
+
+Compare two arrangements: a logical type group containing Resource types, with implementation
+packages supplying one or more types; or an installable package whose exported types form its
+public naming hierarchy. Prefer the first provisionally so implementation rebundling need not
+rename contracts. Use **Resource type** for the schema/behavior contract rather than introducing
+an ambiguous public “module.” Neither arrangement adds a runtime object family or settles a
+package manager. Decide collision/namespace ownership and third-party qualification before
+finalizing identifiers; category names such as `tools` alone do not identify a publisher.
+
+Work through a built-in set offering MCP and local-filesystem types, an Euphony Linear Resource
+template configuring the MCP type, and Pool-created instances. Distinguish shipping contracts
+and starter templates from creating Resources. Service/workspace selection belongs in the
+appropriate typed configuration and supported identity/access mechanisms; a generic label does
+not prove workspace isolation. Then settle version labels and Conduit declaration structure.
 
 The preparation baseline is settled: attempt during explicit preparation, required by default,
 optional failures reported, successful attachments retained for retry, explicit cancellation
@@ -126,6 +139,7 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 
 | Question | Example and considerations |
 | --- | --- |
+| How are types organized and implementations distributed? | Compare logical group/type names such as tools/mcp and io/local with installable-package/type names. Define contract ownership, third-party collision rules, built-in types/templates and the effect of rebundling an implementation. Keep Resource types, configured templates and Pool-owned instances distinct; no package/module hierarchy is accepted yet. |
 | How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Resource specs use type {name, version}, config and conduits. Settle allowed type identifiers/version labels and the contents/shape of connection declarations. Type-contract versions stay independent of common apiVersion and plugin releases. Add other common descriptors only when examples require them. |

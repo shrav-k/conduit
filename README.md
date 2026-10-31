@@ -21,7 +21,8 @@ Creating a Pool registers its identity, configuration and Resource plan. Provisi
 requested explicitly to create or attach the planned Resources. A frontend may combine both
 in one explicit action while reporting their outcomes separately.
 Each named plan entry retains its created Resource's identity across provisioning runs;
-additional creation is explicit.
+additional creation is explicit. Removing an entry leaves its Resource registered and owned
+by the Pool until explicit cleanup.
 
 Opening a new connection and joining an existing connection are explicit, distinct intents.
 Sharing a connection does not implicitly share credentials or private context.

@@ -624,8 +624,12 @@ it creates. Subsequent provisioning runs reuse that identity. Bindings are per e
 the Pool, not per template: separate entries can create distinct Resources from one template.
 Additional creation is explicit. Reusing a binding does not overwrite the Resource's complete
 spec, reapply its creation template or repeat native creation effects. Retrying incomplete work
-still follows the operation-outcome and safe-retry rules. Plan-entry edits, removal, renaming,
-missing targets and explicit replacement remain separate lifecycle choices under review.
+still follows the operation-outcome and safe-retry rules.
+
+Removing a plan entry ends that entry's association with its Resource. The Resource remains
+registered and owned by the same Pool, available under its existing access rules until explicit
+cleanup. Entry removal does not unregister the Resource or delete backing files/service data.
+Other entry edits, renaming, missing targets and explicit replacement remain under review.
 
 Resource templates can be selected by explicit references and labels where supported.
 Selection among an existing Pool's owned instances is another operation. Exact selector

@@ -41,7 +41,8 @@ outcomes rather than a long sequence of individual field rulings.
   separate registration and provisioning outcomes.
 - Each named plan entry retains its created Resource's stable ID across provisioning runs.
   Bindings are per entry, not per template; additional creation is explicit. Reuse alone
-  neither overwrites the Resource spec nor repeats native creation effects.
+  neither overwrites the Resource spec nor repeats native creation effects. Removing an entry
+  ends its association, leaving the Resource registered and Pool-owned until explicit cleanup.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -65,10 +66,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **plan-entry changes and Resource lifecycle**. Repeated provisioning reuses
-entry bindings; decide what removing or changing an entry does to its existing Resource,
-and how missing targets or explicit replacements are handled. Then resolve partial outcomes
-and ownership transitions. Remaining field-value rules stay on the agenda below.
+Continue with **missing bound Resources and explicit replacement**. Entry removal preserves
+the Resource; decide what provisioning does when an entry remains but its bound Resource is
+missing. Then resolve other entry edits/renames, partial outcomes and ownership transitions.
+Remaining field-value rules stay on the agenda below.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -95,7 +96,7 @@ and direct creation from exported configuration with a distinct name.
 
 | Question | Example and considerations |
 | --- | --- |
-| What do plan-entry changes do? | Named entries retain Resource-ID bindings across runs. Define removal, edits, renames, missing targets and explicit replacement. Distinguish the plan's creation instructions from the Pool's ownership and each Resource's authoritative spec. Reuse does not imply automatic overwrite, replacement or background reconciliation. |
+| What do other plan-entry changes do? | Define edits, renames, re-adding a removed entry, missing bound targets and explicit replacement. Entry removal preserves the Resource and Pool ownership; retained entries reuse their Resource-ID bindings. Distinguish the plan's creation instructions from each Resource's authoritative spec. Reuse does not imply automatic overwrite, replacement or background reconciliation. |
 | How does a plan handle partial outcomes? | Define required/optional items, dependencies, independent work, success/blocked/unknown reporting and safe retry. Registration remains distinct from provisioning, including in a combined frontend action. |
 | How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |

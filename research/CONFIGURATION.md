@@ -364,8 +364,9 @@ executing the plan requires an explicit provisioning request. Frontends may comb
 and provisioning in one explicit action with separate outcomes. Each named plan entry retains
 a binding to its created Resource ID across runs. Distinct entries can use the same template;
 additional creation remains explicit. Reuse does not overwrite the Resource spec or repeat
-native creation effects. Entry changes, missing targets, replacement, partial provisioning and
-failure handling still need concrete contracts.
+native creation effects. Removing an entry ends its association while preserving the registered,
+Pool-owned Resource until explicit cleanup. Other entry changes, missing targets, replacement,
+partial provisioning and failure handling still need concrete contracts.
 
 Reuse templates across Pools, not membership of one Resource instance. Contracts distinguish
 new backing data from attachment to existing data. Two local registrations can refer to the

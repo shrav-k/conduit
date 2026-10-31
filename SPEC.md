@@ -69,8 +69,9 @@ No automatic purge follows from a missing Pool reference.
    and the declared Resource plan. Explicit provisioning creates or attaches the planned
    Resources. A frontend may combine both in one explicit action with separate outcomes.
    Named entries retain bindings to their created Resource IDs across runs; reuse does not
-   overwrite Resource specs or repeat native creation effects. Plan-change and partial-failure
-   details remain open; no background reconciler is implied.
+   overwrite Resource specs or repeat native creation effects. Removing an entry ends its
+   association but leaves the Resource registered and Pool-owned until explicit cleanup.
+   Other plan-change and partial-failure details remain open; no background reconciler is implied.
 3. **Open or join a connection explicitly.** Opening uses a Conduit template or complete
    instance configuration; joining targets an existing connection. Reusing a template name
    does not choose between these operations or imply shared clients, credentials or private context.

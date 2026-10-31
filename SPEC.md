@@ -79,8 +79,10 @@ actor has automatic priority. Ordinary message delivery and wake behavior remain
    through an explicit action or declared setup-graph step. Resolve their dependency targets and
    complete needed service authentication. An Interface may combine these actions while reporting
    separate outcomes. Existing valid authentication can be reused.
-4. **Establish Agents.** Instantiate Agent templates and authorize their Conduits to the relevant
-   Pools/capabilities. Attaching a new Agent does not inherently trigger another provider sign-in.
+4. **Establish Agents.** Instantiate Agent templates and authorize their declared Conduits to the
+   relevant Pools/capabilities. Agent templates can reuse composite Conduit templates; Pools do not
+   supply default Agent connections in v0. Later connections are explicit Interface/Agent operations.
+   Attaching a new Agent does not inherently trigger another provider sign-in.
 5. **Observe and interact.** Observe state; establish a Conduit to a running target to request its
    supported configuration changes, lifecycle actions or other operations.
 

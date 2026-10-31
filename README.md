@@ -34,8 +34,9 @@ Templates contain complete establishment instructions and declare what instance 
 can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit
 plugin dependencies make this inspectable. V0 graphs compose finite dependencies between typed
 steps; branching and loops stay inside plugins. Instances manage ongoing behavior; Interfaces and
-Agents request permitted changes through Conduits. Type/plugin implementations supply the actual
-operations, while templates expose and constrain them.
+Agents request permitted changes through Conduits. Agent templates declare starting connections;
+Pools do not supply default Agent connections in v0. Later connections are explicit.
+Type/plugin implementations supply the actual operations, while templates expose and constrain them.
 
 For example, an Euphony Pool owns a reusable authentication Resource and a Linear MCP Resource
 that accesses it through a Conduit. Several Agents attach to Linear through separately filtered

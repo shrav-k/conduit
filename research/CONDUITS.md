@@ -19,7 +19,7 @@ No live login, deployment or provider mutation was performed for this research.
 | Interface | User authoring, observation, creation and permitted connection capabilities. | The user-facing endpoint for instantiation and Conduit-mediated control. |
 | Agent | Account/model/runtime choices, limits and activation instructions. | Durable participant with private context and executions. |
 | Resource | How to create or attach a typed capability. | Deployed/attached capability belonging to exactly one Pool instance. |
-| Pool | Resource composition, shared authentication setup, defaults and policies. | Owns its Resources and organizes their shared service-access lifecycle. |
+| Pool | Available Resource templates, provisioning settings, shared authentication setup and policies. No default Agent connection set. | Owns its provisioned Resources and organizes their shared service-access lifecycle. |
 | Conduit | Interaction, endpoint, filter and support requirements. | A live filtered flow with logical attachments and connection state, implemented by the engine/plugins. |
 
 Template identity, instance identity, participant attachments and individual operations are

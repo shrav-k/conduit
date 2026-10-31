@@ -1046,12 +1046,14 @@ Creating a Resource for a connection must identify its owning Pool; the connecti
 provisioning through that Pool. How provisioning retries partial work or resolves dynamic
 support requirements remains open. A template registration alone does not create Resources.
 
-**R4 clarification pending:** an earlier project/scope rule used launch-time access defaults.
-Whether Pools should supply an analogous default set of Agent connections is not settled in the
-current model. Such a preset would be a convenience suggestion, not Pool contents, automatic
-provisioning or an access grant. Agent-declared Conduits and explicit connection operations already
-provide selection without that feature. Keep Pool-provided defaults and precedence rules proposed
-until reviewed; Agent limits and current authority constrain every actual connection.
+**Accepted connection selection (R4):** omit Pool-provided default Agent connections in v0.
+Agent templates declare starting Conduits, optionally referencing reusable composite Conduit
+templates. Authorized Interface/Agent operations explicitly add or remove connections later.
+Pools make provisioning templates and owned Resources available; they do not automatically suggest
+or add a connection set when an Agent uses the Pool. This avoids a second source of launch choices
+and its merge/precedence rules. Defaults inside Resource configuration remain supported and are
+unrelated to Agent connection selection. Current authority and Agent limits still constrain each
+connection; declaring one does not issue its own grant.
 
 **Accepted retirement (R3):** keep a Pool instance registered until its owned Resource instances
 have been explicitly retired through their supported lifecycle and checked unregistration.

@@ -13,35 +13,31 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-Continue **R4: connection selection, delegation and routing** with a clarified Pool model.
-The user clarified that adding Resource templates only outlines what a Pool can provision;
-it must not automatically deploy instances. Neither earlier R4 selection/defaults proposal was
-accepted. They conflated template availability with a deployment selection and assumed an
-unsettled Pool-provided connection-default feature.
+Continue **R4: connection selection, delegation and routing**. Accepted: a Pool offers templates
+it can provision and owns the resulting Resource instances; listing templates deploys nothing.
+V0 omits Pool-provided default Agent connections. Agent templates declare starting Conduits,
+including reusable composites, and explicit operations change connections later. Resource-field
+defaults remain separate. Three related choices remain:
 
-| View/action | Meaning |
-| --- | --- |
-| Available Resource templates | Recipes this Pool can provision, with relevant settings and dependency declarations. Adding a recipe creates no Resource instance or login. |
-| Owned Resource instances | Concrete Resources actually created/attached through this Pool, with their own identities and reported readiness. |
-| Provisioning | An explicit action or declared setup-graph step selects what to instantiate. A reusable composition step handles that selection and its declared dependencies. |
-| Conduit attachment | An Agent/Interface gains authorized access to a capability. Pool catalog membership alone neither opens this connection nor grants access. |
+| Choice | Example | Recommendation, not yet accepted |
+| --- | --- | --- |
+| Available-template selector refresh | A Pool's catalog selects templates labeled `domain=euphony`; a new search template receives that label. | Update catalog matches live within its declared rules. Search becomes available to provision, without creating a search instance or changing existing Resources/bindings. |
+| Route and service identity | Two authorized Linear paths could fulfill the same invocation through different accounts. | Resolve automatically only when unambiguous; otherwise require an explicit choice at attachment/invocation. Record the selected path/identity and do not silently substitute another route/account after failure. |
+| Delegation lifetime | A coordinator connects a worker to Linear, then its frontend closes or its execution stops. | Bind the delegated grant to the worker's logical participation, not the issuer's frontend/execution lifetime. Withdrawal, recipient detachment and current governing restrictions still apply. |
 
-For example, Euphony can offer checkout, Linear and notes templates while initially owning no
-application Resources. Provisioning a checkout creates one owned workspace. Later, a selected
-setup composition can establish shared authentication plus Linear access. Attaching another Agent
-uses those Resources through authorized Conduits; it need not repeat provider login. Adding a
-search template to the catalog still deploys nothing.
+Live catalog matching concerns availability only. Provisioning still selects concrete templates
+and follows the chosen setup contracts. Established explicit identity bindings do not retarget
+when names or labels change, and catalog changes do not silently propagate into existing instance
+definitions. The alternative captures a catalog selection until explicit refresh.
 
-“Pool defaults” meant an optional launch-time suggestion such as repository + Linear connections,
-carried forward from the earlier project/scope model. It did not mean Resource configuration
-defaults, available templates, owned instances or permission grants. Its place in the current
-model is unresolved. **Recommendation:** omit Pool-provided default Agent connections in v0;
-use Agent-declared Conduits and explicit later connection operations. Reusable composite Conduit
-templates already let an Agent select a bundle. This avoids an unnecessary merge/precedence layer.
+Explicit routing can be configured once and reused; it need not prompt a human on every call.
+Normal same-path transport reconnection remains supported, and separate authorized paths remain
+complete alternatives that an authorized caller can deliberately select. The alternative adds
+automatic route/account choice or failover, requiring its own policy and outcome handling.
 
-Whether selectors update the available-template catalog live is separate from provisioning and
-remains open. Current matching over existing permitted Resources stays live as already agreed.
-After clarifying this composition, settle explicit route/service identity and delegation lifetime.
+Logical participation can survive temporary transport loss. Grant lifetime should therefore be
+distinct from sockets and the UI that issued the grant. Time-limited leases or issuer-bound grants
+would be alternative policies; current access checks at dispatch/delivery remain required.
 
 ## Settled foundation
 
@@ -53,7 +49,7 @@ After clarifying this composition, settle explicit route/service identity and de
 | Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. R1 requires replacement for fixed-definition changes, including Interface administration. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
-| Composition/access | Pool-local Resource entries, reusable composition step, capability matching, ready Resources usable during partial setup. Composite Conduits retain per-consumer participation. Filters narrow complete authorized paths. |
+| Composition/access | Pool catalog membership does not provision Resources. Agent templates declare starting Conduits; no Pool-provided default Agent connections in v0. Local entries, reusable composition, capability matching and partial readiness remain. Composite Conduits retain per-consumer participation; filters narrow complete authorized paths. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
 | Continuity/evidence | Stable identity, explicit rebind, current-access delivery, safe retries, explicit restart of stopped Agents, portable checkpoints, retained evidence and honest telemetry gaps. |
 | Startup | Seed management objects once, reuse them and explicitly repair inconsistencies. No silent reseeding/purge. Repair mechanics remain implementation work. |
@@ -68,7 +64,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
-| R4 — in review | How are connections selected, delegated and routed? | Clarified: Pool templates describe provisioning availability, not automatic deployment. Proposed: omit Pool-provided default Agent connections; resolve route/service identity explicitly; delegation follows logical participation under current limits. Catalog-selector refresh remains open. | Optional connection presets/precedence, automatic routing or grant-expiry policies. |
+| R4 — partly settled | How are connections selected, delegated and routed? | Accepted: catalog availability does not deploy; no Pool-provided default Agent connections. Proposed: live catalog matches; unambiguous or explicit route/identity selection; grants tied to recipient participation under current limits. | Snapshot catalog refresh, automatic routing or different grant-lifetime policies. |
 | R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
@@ -120,23 +116,18 @@ partial bulk retirement. [Ownership scenarios](research/CONDUITS.md#supporting-r
 
 ### R4 — selection, delegation and routing
 
-Pool template availability, selected provisioning, owned instances and consumer attachments must
-be distinct. The user clarified that catalog additions do not deploy. The previous proposal to
-resolve a provisioning selection at Pool instantiation was not accepted; the timing/refresh of
-available-template selectors remains to settle without conflating it with execution. Matches
-within established authorized Resource access stay live; stable-ID bindings require explicit rebind.
+**Accepted:** Pool template availability, selected provisioning, owned instances and consumer
+attachments are distinct. Catalog additions do not deploy. Agent templates declare starting
+Conduits, including reusable bundles; explicit operations add/remove connections later. V0 omits
+Pool-provided default Agent connection sets, avoiding an extra merge/precedence layer. Resource
+configuration defaults are unaffected. Selection confers no authority.
 
-Pool-provided default Agent connections were assumed in the previous question, not established
-for this model. Recommend omitting them in v0: Agent templates declare starting Conduits, including
-reusable bundles, and explicit operations add/remove connections later. If optional Pool presets
-are retained instead, their selection and precedence need a separate contract. No connection
-selection creates authority or silently removes a required dependency.
-
-Retain the selected capability/service identity per attachment. Resolve multiple routes explicitly;
-do not choose by discovery order or silently fall back to a different account. Recommend delegation
-belonging to logical participation rather than the issuing frontend's lifetime. Revocation/limits
-still apply at dispatch and delivery. Unsupported restrictions leave affected access unavailable;
-native bypass paths retain their reported enforcement limitations.
+**Remaining proposals:** live available-template selector matching without automatic provisioning;
+unambiguous resolution or explicit choice of route/service identity with no silent fallback;
+delegation attached to recipient logical participation rather than issuer frontend/execution
+lifetime. See the worked cases above. Existing live access matching and stable-ID rebinding rules
+remain accepted. Revocation/limits apply at dispatch and delivery; unsupported restrictions leave
+affected access unavailable, with native bypass limitations honestly reported.
 
 Closure example: two Pools, overlapping selectors/routes and one revoked consumer; identify the
 chosen target, identity, rights and survivors. [Conduit contracts](DESIGN.md#conduits).

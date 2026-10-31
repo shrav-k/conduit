@@ -400,7 +400,7 @@ failed switch and retention of the selection across restarts remain open.
 
 ### Applying a model selection
 
-**Next proposal:** an explicit selection request waits for a supported execution boundary when
+**Accepted:** an explicit selection request queues until a supported execution boundary when
 the Agent is busy, leaving in-flight model/tool work uninterrupted. The runtime integration
 defines where it can apply the switch, such as between completed model/tool exchanges or only
 once the whole Agent turn has finished. A pending request and the model actually in use remain
@@ -417,9 +417,32 @@ can take effect after validation; subsequent model work uses the confirmed selec
 changes runtime state under the immutable rule and neither starts another model turn nor
 implements automatic per-task model routing.
 
-The alternative rejects a request while busy, requiring the caller to resubmit when switching
-is supported. Immediate interruption, pending-request replacement/cancellation and exact switch
-boundary/status syntax remain separate choices. This timing policy is still under review.
+Immediate interruption, pending-request replacement/cancellation and exact switch-boundary/status
+syntax remain separate choices. Unsupported switching must be reported rather than queued
+indefinitely as though a supported boundary were known to exist.
+
+### Model selection across restarts
+
+**Next proposal:** when explicitly restarting the same Agent instance, restore its last
+successfully applied model after checking current compatibility, availability and access. The
+initial model supplies the choice for a new instance with no prior applied selection. An
+unapplied pending request is not evidence of a new current model; its recovery semantics remain
+separate.
+
+For example, a template starts with Astra. Agent A selects Sol through the supported operation,
+then stops. Restarting A would restore Sol; creating Agent B from the unchanged template would
+start with Astra. The spec remains immutable: A's selection is retained runtime state, and its
+startup graph still runs with the applicable instance state. Graph-on-start does not itself
+require resetting runtime choices to creation defaults.
+
+If the recorded selection cannot currently be used or confirmed, report the condition and
+require an explicit permitted choice or reconciliation rather than silently selecting another
+model/account. This recommendation changes neither the explicit-start requirement nor the
+rule against launching duplicate native executions when status is unknown.
+
+The alternative resets to the initial model on every new execution of that instance, after
+validation. The restart default, exact retained state and handling an interrupted switch remain
+under review; this is not an automatic wake or a request to start model work.
 
 ## MCP setup and instance runtime walkthrough
 
@@ -704,9 +727,10 @@ The [Agent selection boundary](#agent-access-and-model-selection) is settled: co
 within the fixed runtime/access and provider domain are selectable by default, optionally
 narrowed by a list. Supported selection changes retain the Agent; subscription changes or
 GPT-to-Claude transitions create a new Agent with shared context accessed through Conduits.
-Next review [model-switch timing](#applying-a-model-selection), followed by failed-switch behavior
-and restart persistence. Shared context across replacement Agents remains Pool-owned Resource
-data; no new Conversation family is needed.
+Model-selection requests queue until a supported execution boundary without interrupting current
+work. Next review [selection across restarts](#model-selection-across-restarts), followed by failed
+or interrupted switches and pending-request handling. Shared context across replacement Agents
+remains Pool-owned Resource data; no new Conversation family is needed.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

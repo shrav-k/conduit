@@ -28,12 +28,14 @@ Pool-owned Resource exposed through Conduits. See [fixed definitions and changin
 The [Agent model-selection rule](research/CONSTRUCTION.md#agent-access-and-model-selection) allows
 currently compatible models within the fixed runtime/account/access and provider domain by
 default, optionally narrowed by a list. Supported within-domain selection retains Agent identity;
-GPT-to-Claude or subscription-account changes create new Agents.
+GPT-to-Claude or subscription-account changes create new Agents. Busy model-selection requests
+queue until a supported execution boundary, with pending/applied state distinguished and current
+compatibility/access rechecked before application. Selection alone does not start model work.
 
-Next review [selection while an Agent is busy](research/CONSTRUCTION.md#applying-a-model-selection):
-queue an explicit request until the runtime's supported execution boundary, or reject it while
-busy and require the caller to retry? Exact fields, switch-state handling and restart persistence
-remain open. This refines the earlier all-model-changes versus all-switches-preserve-identity framing.
+Next review [model choice across restarts](research/CONSTRUCTION.md#model-selection-across-restarts):
+should restarting the same Agent restore its last successfully applied selection after validation,
+or return to its initial model? Failed switches, pending-request handling and exact fields remain
+open. This refines the earlier all-model-changes versus all-switches-preserve-identity framing.
 Current authority rules remain live. Exact fields, metadata editing rules, status representation
 and retry limits remain open. Caching/build optimizations remain implementation concerns. The
 checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison; the

@@ -183,25 +183,168 @@ direction without making deployment orchestration a prerequisite for v0.
 
 ### 5. Access Linear through MCP
 
-A reusable Resource template can describe the native Linear MCP service. A Pool creates an
-attachment instance; different Agents establish authorized clients through it. Conduit's
-accepted contract allows different permitted service identities per Agent attachment where
-supported, within the Resource's target/access constraints; the login alone need not create
-another Resource. Another Pool can create its own distinct instance targeting the same service.
-A common endpoint does not imply a common OAuth grant, private cache or transport session.
-Linear hosts its remote server and supports
-OAuth setup as well as token-based authentication; it also documents read-only access.
-[Linear MCP](https://linear.app/docs/mcp)
+This expanded walkthrough tests the boundary between templates, plugins, graphs, ongoing runtime
+and permitted changes. **The architecture and example controls below are proposals**, applying
+the accepted five-family model. They do not select YAML fields, a plugin ABI, process topology or
+new universal retry policy. No provider call, login or live mediation test was performed.
 
-All those clients can still reach the same issues, projects and comments. Duplicating a
-client does not duplicate the data or remove mutation conflicts and rate limits. Preserve
-native schemas, source identity and provider outcomes rather than inventing a parallel
-Conduit issue workflow. Local mediation and tool filtering must report what is actually
-enforced, as already required by the provider-native integration direction.
+Provider facts: Linear documents a managed remote MCP endpoint at `https://mcp.linear.app/mcp`,
+Streamable HTTP, interactive OAuth and token authentication. It also offers a read-only endpoint
+at `https://mcp.linear.app/mcp/readonly`. These are service capabilities; they do not establish
+that our proposed adapter can enforce arbitrary workspace or parameter restrictions.
+[Linear MCP documentation](https://linear.app/docs/mcp)
 
-If one Agent's authentication fails, another attachment may remain usable. Conversely,
-a provider outage can affect every client. These need different status and recovery paths;
-a single `ready` flag on an aggregate cannot explain both.
+#### The objects and their responsibilities
+
+An Interface authors templates and asks an Euphony Pool to instantiate a Linear MCP Resource.
+Two Agents open access Conduits to that Resource, selected through its owning Pool. The Interface
+can separately open a management Conduit to the Resource. Opening access does not grant control
+over the Resource's configuration.
+
+| Element | Responsibility in this example |
+| --- | --- |
+| Resource template | Service target, constraints, establishment recipe, supported runtime and exposed operations/controls. |
+| Resource instance | The concrete Pool-owned service capability and its applicable configuration/state. It need not run its own daemon. |
+| Access Conduit instance | The permitted relationship, filters and per-attachment client/authentication lifetime; Agent A and B can use different permitted service identities. |
+| Management Conduit instance | The Interface's permitted path for inspection and supported changes on the Resource. |
+| Plugin implementation | Typed operations for authentication, MCP interaction or runtime control. One package may supply several operations; packaging is not Resource identity. |
+| Graph | Ordering and value bindings for a procedure requiring several operations. Its nodes do not become permanent supervisors. |
+
+The Pool owns the Resource; it need not relay every network request. A plugin implementation can
+serve many instances without sharing their credentials or state. A common endpoint does not imply
+a common OAuth grant, private cache or authenticated client. Per-attachment clients are managed
+runtime state, not additional Resources merely because there are two of them.
+
+#### Establish the service and its attachments
+
+The Resource's establishment recipe validates its configured service target and prepares the
+capability to accept supported attachments. This does not prove that every prospective consumer
+is logged in. Service validation that requires authentication belongs after an identity is available.
+
+For each Agent, the access template supplies an attachment procedure:
+
+```text
+select permitted service identity
+  → authenticate or verify an existing login
+  → prepare the instance-managed MCP client
+  → discover capabilities in that authorization context
+  → expose the permitted operations to the Agent
+```
+
+These are proposed operation boundaries, not required individual plugins. One integration may
+perform several steps. Authentication may wait for a user; its result is a protected binding,
+not a token embedded in exported YAML. The service identity is separate from the Agent's model
+subscription. A workspace constraint must be verified by supported evidence, not inferred from
+the local Resource name.
+
+The Conduit instance manages its attachment/client from startup, including supported refresh and
+reconnection. Setup finishes when its declared prerequisites are satisfied. An auth graph node
+does not remain running forever to own the connection. Resource-wide status describes the shared
+capability; attachment status describes the individual authorized path. One failed login need
+not disable the other Agent, whereas a provider outage can affect both.
+
+MCP defines named tools with input schemas, `tools/list` discovery and `tools/call` invocation.
+Its tool list can depend on the authorization supplied with a request. Therefore discovery must
+respect the authenticated context; one shared catalog is not proof that all consumers can use it.
+[MCP tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
+An ongoing logical relationship does not require an always-open socket: Streamable HTTP uses
+requests and can stream responses. The adapter must negotiate what the deployed service actually
+supports rather than assume it implements every feature of the cited specification.
+[MCP transports](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports)
+
+#### Invoke a provider operation
+
+Suppose Agent A requests an issue read through the provider-native tool schema. “Read issue” here
+is a description, not a verified Linear tool identifier. The proposed mediated route is:
+
+```text
+Agent A's native tool call
+  → its access Conduit checks current authority, filters and inputs
+  → Resource operation handler uses A's authorized attachment binding
+  → MCP plugin invokes the provider operation
+  → provider result and recorded outcome return through the same relationship
+```
+
+The Resource exposes the capability contract; the Conduit supplies the authorized access context.
+This logical route does not require a separate network hop or process for every box. A compatible
+native client configuration or adapter must actually route the call through mediation. Direct
+native calls outside that route remain outside its inspection/enforcement coverage.
+
+An ordinary pass-through call can use one typed plugin operation. It does not need a new graph
+or Conduit instance per request. A procedure that checks, transforms and combines several results
+could use a graph when its contract calls for that behavior. Preserve native names, schemas and
+results where possible; do not invent a parallel Conduit issue workflow.
+
+Discovery is not authorization at dispatch. A newly advertised tool must satisfy current grants
+and filters; discovery alone adds no permission. A team/workspace restriction may need issue-ID
+resolution or other provider-specific checks; a
+tool-name filter alone cannot establish it. Unsupported restrictions must be reported. Separate
+clients can still mutate the same issues and consume shared quotas; duplication provides neither
+data isolation nor automatic conflict resolution. After an uncertain write, reconcile available
+evidence rather than blindly replaying it.
+
+#### Change running configuration through a management Conduit
+
+Use a deliberately local example: the MCP Resource template exposes a **client request timeout**,
+initially 30 seconds, permitted from 5 to 120 seconds. These values and the control are illustrative,
+not a claim about a Linear setting. The template declares that applying a new value affects
+subsequent requests; existing calls keep their original deadlines. This is one possible control
+policy, not a protocol-wide rule.
+
+The Interface requests 60 seconds through its management Conduit. The target checks the caller's
+current authority, the control's bounds and transition conditions. Its change handler applies the
+setting to the managed request path and reports whether 60 seconds is confirmed in use, pending,
+failed or uncertain. A successful request receipt alone does not prove application. The precise
+common outcome vocabulary and concurrency checks remain under review.
+
+This change can be a single runtime/plugin operation; it does not require repeating login or
+Resource establishment. A more involved permitted change could run a graph. In both cases the
+instance owns the resulting behavior. The source template stays at its original defaults, so a
+new Resource does not inherit a previous instance's edits. Restart persistence must be declared.
+
+Placing this timeout on the Resource deliberately makes it shared across its applicable attachment
+requests. If the intended effect were only Agent A's access, define an attachment/Conduit control
+instead. Do not author the same setting in several places without an explicit contract. Agent B's
+permission to read issues does not imply permission to change either control.
+
+Contrast four actions using the same general interaction path:
+
+| Action | What changes |
+| --- | --- |
+| Update a Linear issue | Provider-owned content. |
+| Change the Resource's declared timeout | Supported instance configuration. |
+| Detach Agent A | A connection's participation/lifecycle. |
+| Edit the reusable Resource template | The recipe for future instances. |
+
+They can share discovery, typed invocation and outcome reporting without becoming equivalent
+operations. None implies permission to replace the running instance's entire definition.
+
+#### Detach and stop without confusing ownership
+
+Detaching A releases its relationship and the client state owned by that attachment. B remains
+connected. The last logical consumer leaving an access Conduit ends that flow, while the Resource
+remains registered and Pool-owned. Closing a client does not inherently revoke a reusable service
+login or delete provider data.
+
+Stopping the Resource, if its contract supports it, stops serving through that Resource and affects
+all its consumers. Its runtime must report how in-flight calls drain or cancel and retain unknown
+external outcomes; local cancellation does not prove a remote write was undone. It does not stop
+Linear's hosted server. Deleting a registration, purging retained evidence and deleting external
+issues are separate operations with separate authority.
+
+#### The structural ruling this tests
+
+**Recommendation for review:** templates bind named lifecycle, invocation and configuration-change
+handlers to a typed plugin operation or a composed graph. Instances own ongoing state and services.
+A handler identifies the procedure; it is not a sixth object family and need not be a process.
+The template/type contract determines which handlers are externally callable; internal setup
+helpers are not automatically exposed through an access Conduit.
+
+This preserves small plugin contributions and reusable graphs without making every function a
+Resource or every Resource a permanent process. Resolve this shared mechanism first; detailed
+timeout values, queueing and transport implementation can remain type-specific. A subsequent
+database walkthrough should test managed startup, migrations and recovery before finalizing the
+handler schema.
 
 ## Replace "replicable versus finite" with independent dimensions
 

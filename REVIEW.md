@@ -38,19 +38,23 @@ to a Pool, and broad management authority cannot manufacture an unsupported prov
 | Handlers and recovery | Does a control reference a runtime operation, a plugin operation, or optionally a composed graph? Which setup primitives can be reused? Settle concurrency/version checks, safe retries, cancellation, persistence across starts and invalidation of setup progress as one contract. |
 | Evolution and management | Can a running instance change its control envelope, setup graph or implementation, and by which separate management contract? Source-template edits must not silently alter it. Settle bootstrap/identity and management of Conduits without a recursive connection-per-request requirement. |
 
-**Walkthrough for this discussion:** a user authors Resource and Agent templates through the
-Interface, adds Resource-template references to a Pool configuration and instantiates the Pool
-with its configured Resource establishment. The user then instantiates two Agents with Conduits
-to that Pool. The Interface opens a Conduit to request a configuration change on a running Agent;
-an authorized Agent invokes that same target operation on a peer. Compare immediate, pending and
-uncertain results across CLI, terminal UI and test clients. Templates remain reusable; the Pool
-owns its actual Resource instances, not the shared Resource templates.
+**Current walkthrough:** [Linear MCP from establishment to shutdown](research/CONDUITS.md#5-access-linear-through-mcp).
+An Interface instantiates a Pool-owned service Resource; two Agents attach with separately permitted
+service identities. Follow authentication, native tool invocation, a declared client-timeout change
+through a management Conduit, and one consumer detaching. Distinguish shared Resource configuration,
+per-attachment state, provider content and template edits. The example's timeout/control semantics
+are proposals, not new protocol defaults or claims about Linear's settings.
 
-Add a Resource-template control with a range of 1–100 and a Conduit restriction of at most 20.
-Request 15, then 80, then an unrelated field change. Use the
-[research fragment](research/CONFIGURATION.md#a-bounded-control-example) as a design probe, not
-accepted syntax. Verify that interface widgets, Agent tools and headless clients expose the same
-effective controls and results. Also test a valid value at an invalid transition and lost response.
+**Next structural ruling:** should templates bind lifecycle, invocation and configuration-change
+handlers to either one typed plugin operation or a graph, with instances owning ongoing activity?
+Internal handlers need not be externally callable. This is a shared implementation boundary, not
+an extra object family or an obligation to wrap each request in a graph. Follow with database startup,
+migrations and recovery to test its limits before selecting exact fields.
+
+Retain the [bounded search-control fragment](research/CONFIGURATION.md#a-bounded-control-example)
+as a later constraint probe: template range 1–100, narrower Conduit cap 20, requests for 15, 80 and
+an unrelated field. Compare Interface, Agent and headless clients; test invalid transitions and
+lost responses as well as accepted values. These probes do not settle every control's policy.
 
 No final command names, transport, invocation envelope or universal live-config patch is selected.
 Template construction is still comprehensive: invoking start does not require assembling another

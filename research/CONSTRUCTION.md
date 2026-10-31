@@ -137,6 +137,11 @@ family to support every verb or hide provider-native tool names behind generic r
 Graph plugins and runtime implementations may share typed operations and code, but exact ABI,
 packaging and operation discovery are still undecided.
 
+The [Linear MCP walkthrough](CONDUITS.md#5-access-linear-through-mcp) follows one shared Resource
+through separate authenticated attachments, invocation, a proposed configuration control and
+shutdown. It tests using a single plugin operation or a graph as a handler while keeping ongoing
+state instance-owned; that handler representation remains a review recommendation.
+
 ## Instance configuration and supported changes
 
 **Accepted direction:** a template specifies both how to establish an instance and which of its

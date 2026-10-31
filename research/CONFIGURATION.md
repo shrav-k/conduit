@@ -358,6 +358,9 @@ itself place content in model context.
 
 A Resource template supplies reusable configuration for a type's creation/attachment contract.
 Only a Pool creates its Resource instances; registering a template does not deploy anything.
+Resources should be unitary: storage, search and MCP access are separate by default and grouped
+in Pools, even when one backend supplies them. Minimize duplicated configuration/state within
+those boundaries; operation granularity and dependency/connection representation remain open.
 Define Resource templates and instances before Pool grouping/provisioning machinery. Compare
 a local path exposed by symlink, an MCP service connection and hybrid database search to find
 the minimum common contract and the necessary type-specific differences. For the accepted

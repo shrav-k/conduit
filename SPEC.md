@@ -21,9 +21,11 @@ instance term for Conduit, not a fifth family. A plugin's type schema describes 
 contracts; a template supplies reusable configuration for such a contract. Neither template
 form nor instance form implies an additional general-purpose programming language.
 
-Prefer minimal bookkeeping and one authoritative configuration for each instance. Define
-Resources before Pool grouping: local paths, MCP services and hybrid database search require
-different typed configuration and behavior. A shared envelope does not imply a uniform
+Prefer simple, unitary Resources, with Pools grouping them into useful sets. Storage, search
+and MCP access are separate Resources by default, even if supplied by the same backend.
+Minimize duplicated bookkeeping within these explicit boundaries, keeping one authoritative
+configuration per instance. Define Resources before Pool grouping: local paths, MCP services
+and hybrid database search require different typed configuration and behavior. A shared envelope does not imply a uniform
 runtime or provisioning lifecycle. The next review derives common Resource requirements from
 those examples, then considers how Pools group and coordinate their declared capabilities.
 
@@ -193,6 +195,7 @@ defines the remaining selections and staged evidence.
 | Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
 | Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
+| Unitary composition | Storage, search and MCP access have separate Resource instances by default and are grouped in Pools. This does not require separate backend processes/data; dependency wiring and operation granularity remain under review. |
 | Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
 | MCP authentication | Two Sessions can use one MCP Resource with different permitted service identities where supported. Resolve identity per attachment within target/access constraints; shared configuration does not imply shared authentication state. |
 | Pool registration and provisioning | Registering a Pool does not itself provision Resources. Explicit provisioning has its own outcome, including when a frontend combines registration and provisioning. The declaration/binding representation remains under review. |

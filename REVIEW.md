@@ -4,7 +4,7 @@ Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family model; [DESIGN.m
 records accepted behavior. This agenda contains unresolved choices, grouped around connected
 outcomes rather than a long sequence of individual field rulings.
 
-**Review Resources before Pools.** Prefer the least bookkeeping that preserves required behavior.
+**Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive
 Pool grouping and provisioning. A persistent declaration/binding layer is not a prerequisite.
 
@@ -44,6 +44,8 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   and binding mechanics are paused for reconsideration after the Resource contracts below.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
+- Storage, search and MCP access are separate Resources by default, grouped in Pools, even
+  when backed by one provider. Operation granularity and dependency wiring remain open.
 - Different Pools may create independent backing data or attach distinct instances to shared
   backing data where the contract supports it. One Resource instance never has multiple owners.
 - A local-folder Resource describes the configured folder. Session symlinks are preparation
@@ -73,11 +75,12 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Compare **hybrid database search** next. Folder symlinks are Session preparation, and MCP service
-identity can vary per attachment. Now consider a collection offering search and record operations,
-possibly through MCP: decide what forms one Resource versus separate capabilities or independently
-managed targets. Use the examples to settle template/instance fields and the common Resource
-contract before type-aware Pools. The pending missing-plan-target ruling remains paused.
+Clarify **unitary Resource granularity** next. Storage, search and MCP access are separate by
+default. Decide whether a single responsibility can retain related operations, such as storage
+read/write/update, or whether each operation/tool should be a Resource. Then express the three
+Resource templates/instances and their dependency/connection boundaries before Pool mechanics.
+Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
+ruling remains paused.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -92,7 +95,8 @@ contract before type-aware Pools. The pending missing-plan-target ruling remains
 
 | Question | Example and considerations |
 | --- | --- |
-| What does a Resource instance identify for other types? | The folder instance identifies a folder attachment; symlinks are preparation. MCP permits service identities per attachment. For search, distinguish backend/collection/index identity from supported search/read/write operations, transport and per-request query state. Which targets need independent lifecycle? |
+| How small is a unitary Resource? | Storage, search and MCP access are separate by default. Decide whether each responsibility includes related operations or whether operations/tools require separate Resources. Preserve the folder/symlink and per-attachment MCP identity boundaries. |
+| How do separate Resources depend on each other? | Trace storage → search → MCP access. Decide how typed references, Conduits and native integration configuration express dependencies/connections without duplicating backend settings. Sharing a Pool alone does not grant access; ownership remains with each Resource's Pool. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
@@ -105,7 +109,7 @@ Use these examples as design probes, not a closed list of types or an accepted s
 | --- | --- |
 | Local filesystem exposed by symlink | The folder Resource survives removal of a prepared symlink. Settle configured source paths, Session-local path placement and cleanup timing; symlinks share backing files and do not isolate writes. |
 | MCP service connection | Service identity may differ per attachment within target/access constraints. Settle auth storage/refresh, exposed tools/resources/prompts and required processes. A Conduit Resource is distinct from MCP's protocol resource primitive. |
-| Hybrid search over a database | Can one Resource expose search and record operations, including over MCP, or do any targets need separate identities? Then settle query/filter/result contracts, freshness and indexing ownership if offered. |
+| Hybrid search over a database | Express separate storage, search and MCP-access Resources, including when supplied by one backend. Settle responsibilities, dependencies, query/filter/result contracts, freshness and indexing ownership if offered. |
 
 **Walkthrough:** write one template and complete instance for the filesystem example, attach
 two Sessions and remove one. Repeat for MCP and search. Record only the configuration/state
@@ -127,7 +131,7 @@ ordinary operation outcomes can supply the needed behavior without a parallel de
 
 | Question | Example and considerations |
 | --- | --- |
-| What should type-aware grouping do? | Explore grouping by declared types/capabilities, compatible Session preparation and supported operations. Derive inventory views where possible. Decide what Pools select, validate or coordinate without duplicating Resource configuration or silently activating capabilities. |
+| What should type-aware grouping do? | Group unitary Resources using declared types/capabilities, compatible Session preparation and supported operations. Derive inventory views where possible. Decide what Pools select, validate or coordinate without duplicating Resource configuration or silently activating capabilities. |
 | Do Pool instances need retained creation declarations? | Compare template-time expansion/explicit Resource operations with persistent declarations and per-entry bindings. Keep the least state needed for repeated operations, later additions and partial work. Only define declaration-edit edge cases if this mechanism remains necessary. |
 | How are partial outcomes handled? | Use Resource-specific effects to identify required/optional work, dependencies, independent progress and success/blocked/unknown reporting. Reuse operation IDs/outcomes for safe retry before adding a second reconciliation system. Registration remains distinct from provisioning. |
 | How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |

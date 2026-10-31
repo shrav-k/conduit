@@ -5,9 +5,10 @@ records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choice
 The common authoring envelope is settled; detailed fields, transports, storage engines
 and implementation layout remain under review.
 
-Prefer minimal bookkeeping: keep authoritative instance configuration and necessary identity,
-authority and operation evidence; derive views where possible rather than maintain parallel
-editable descriptions. Define Resource contracts before Pool grouping/provisioning mechanics.
+Prefer minimal bookkeeping within explicit, unitary Resource boundaries: keep authoritative
+instance configuration and necessary identity, authority and operation evidence; derive views
+where possible rather than maintain parallel editable descriptions. Resource count follows
+responsibilities, with Pools grouping the Resources. Define Resource contracts before Pool mechanics.
 Type-specific differences should guide composition without forcing every capability through
 the same lifecycle. This does not remove the accepted account, memory or recovery guarantees.
 
@@ -504,10 +505,16 @@ backing data, attachment to existing backing data, or both explicitly. Different
 may therefore reach the same native target without sharing registry ownership. Creating a
 new instance does not prove that files, credentials, quotas or remote data were copied.
 
-A repository, knowledge collection, skill, document or provider capability is an example,
-not a closed taxonomy. One Resource may expose many native files, tools, tickets or records;
-each need not become a separately authored registry object. Labels aid selection, never
-identity, authority or implicit ownership transfer. Exact field names and granularity remain open.
+Resources should be as simple and unitary as possible. Model storage, search and MCP access
+as separate Resources by default, and group them in Pools, including when one provider supplies
+all three. Separate registrations do not require separate backend processes or copied data.
+How those Resources depend on or connect to each other remains open.
+
+A repository, storage collection, search capability, skill, document or provider access is an
+example, not a closed taxonomy. The granularity within a responsibility remains under review,
+including whether related operations or native tools stay together. The unitary principle does
+not by itself decide that every native file, ticket or record needs its own registry object.
+Labels aid selection, never identity, authority or implicit ownership transfer.
 
 Resource instances record enough identity/contract information to resolve their source and
 supported operations. Provider-owned data retains native contracts; attaching it does not
@@ -640,9 +647,9 @@ No background reconciler is implied.
 Persistent Resource declarations and per-entry bindings are back under review until Resource
 contracts are defined. The previous Pool proposal and its lifecycle rulings are consolidated
 in [REVIEW.md](REVIEW.md#2-pool-grouping-and-resource-ownership); they should not force extra
-configuration/state layers into the Resource model. Pools should account for Resource types
-when grouping and coordinating capabilities. Exact grouping behavior, provisioning syntax and
-partial outcomes remain open. Stable identity, explicit effects, safe retry and separate
+configuration/state layers into the Resource model. Pools group unitary Resources and should
+account for their types when coordinating capabilities. Exact grouping behavior, provisioning
+syntax and partial outcomes remain open. Stable identity, explicit effects, safe retry and separate
 backing-data cleanup remain requirements regardless of the chosen representation.
 
 Resource templates can be selected by explicit references and labels where supported.

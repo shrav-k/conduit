@@ -10,96 +10,23 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 
 ## Starting point
 
-- Session, Resource, Pool and Conduit each have template and instance forms. Profile means a
-  Session template; a Conduit instance is a live filtered flow. An attachment is logical
-  consumer/peer participation, not a transport socket or another family.
-- Objects use one family `kind` plus a top-level `form` identifying a template or instance.
-  Names are unique per kind across both forms in the local registry. Templates name reusable
-  concepts; instances default to the template name plus a generated unique suffix. Callers
-  may supply explicit unique names; exact suffix format and name constraints remain open.
-- Readable object references explicitly include kind, form and name. Kind/name locates the
-  target and form validates its intended use; wrong-form targets are rejected.
-- Templates contain the establishment configuration across all four families. Lifecycle actions
-  select when to realize it; users do not assemble a separate operation-request recipe.
-  Local-directory create/attach intent belongs in the template spec. Type-defined transitions
-  produce ongoing instance configuration and observed status; their exact fields remain open.
-  Later edits target that instance; its creation template can change or disappear independently.
-  No template history or input/override ledger is required. Continuing Resource and authority
-  dependencies are explicit; current-access checks and actual execution evidence remain.
-- Direct-instance creation/import is under review where exports omit establishment information.
-  Preserve one-off authoring without guessing create/attach intent or requiring a parallel recipe.
-  Resource creation still goes through a Pool. Registration, provisioning and execution remain
-  distinct effects. Ordinary typed-field editing remains the baseline; no generic parameter,
-  mapping or scripting language is approved. Templates need not have identical instance fields.
-- Draft assignments replace whole field values, including objects/lists. Nested-child edits
-  preserve siblings; preserving or adding entries requires deliberate edits, not implicit merges.
-- Instance creation and checked replacement updates store declared schema defaults explicitly.
-  Instance equality compares materialized values; templates preserve authored omissions.
-  Unchanged updates still require current authorization and matching ID/version checks.
-- Typed configuration rejects unknown fields except in schema-declared open maps. Plugin
-  schemas may define fields and open maps; map keys/values still follow their contracts.
-- Resource specs have a dedicated, schema-validated block for type-specific settings alongside
-  common fields: `spec.type` contains separate `group`, `name` and `version` fields, `spec.config` holds
-  the type's settings, and `spec.conduits` declares connections. Type contracts are versioned
-  independently of common apiVersion and plugin releases. Allowed identifiers/version labels
-  and declaration contents remain open; type references are not registry object references.
-- Logical type groups are independent of implementation packages. A package may supply several
-  groups/types. The catalog remains open to new groups and types; no slash-delimited type name.
-  The working core groups are filesystem, storage, search and integration. Detailed type contracts
-  and third-party contract ownership/collision rules remain for review. Keep an agent-communication
-  group as a candidate, with direct messaging, conversations and shared context as design probes.
-- Filesystem has separate `local-directory` and `git-worktree` types: shared directory access,
-  with Git-specific management in the latter. Local-directory supports explicit attachment and
-  creation through its Pool in v0: attachment requires an existing directory; fresh creation
-  conflicts with an existing target. Registration and cleanup remain separate effects. Exact
-  schemas, Git-specific modes and any shared interface remain open.
-- Local-directory templates may use relative backing paths resolved against an explicit
-  creation base. Complete instances store absolute host paths, independent of later shell
-  working directories. Symlink resolution and Session-local exposure remain separate choices.
-- Create/replacement writes require their applicable schemas. An unavailable required schema
-  rejects the write, preserving source YAML and any existing registry object.
-- Otherwise valid configuration may be registered with a missing plugin runtime or offline
-  configured service. Report readiness gaps/unknowns and block affected operations; registration
-  does not imply activation or relax authority, validation or Pool ownership.
-- Pool registration and Resource provisioning are separate explicit effects. Pool declaration
-  and binding mechanics are paused for reconsideration after the Resource contracts below.
-- Every Resource instance has one owning Pool instance and is created/attached only through
-  that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
-- Storage, search and MCP access are separate Resources by default, grouped in Pools, even
-  when backed by one provider. Each Resource has one responsibility with related operations;
-  individually callable operations/tools do not each require a Resource.
-- Logical Resource-to-Resource access uses Conduits, including search reading storage.
-  Pool grouping alone does not establish the connection or grant access. This does not create
-  a Conduit per query/socket; declaration syntax and connection creation remain open.
-- Resource and Session templates can reference Conduit templates to declare flows for their
-  instances. The enclosing instance automatically supplies the consumer endpoint without a
-  local-endpoint marker; this grants no authority or implicit open/join choice.
-  The engine/plugins perform the work; a Conduit has no independent runtime.
-  One-time transfers, persistent access and ongoing sync are examples, not a closed taxonomy.
-- Explicit Session/Resource preparation normally attempts declared open/join actions and reports
-  their outcomes. Registration alone starts nothing. Required connection failure blocks the
-  declaring consumer's completion of preparation; optional failure is reported and allows
-  preparation to continue. Required is the default; optional must be explicit. Saved instance
-  configuration materializes that default. Unrelated consumers are unaffected; retry timing remains open.
-- Partial preparation retains successful attachments for retry while the consumer stays
-  unprepared. Explicit cancellation detaches those attachments; other consumers, backing
-  Resources and recorded outcomes survive. Delivered data/external effects are not rolled back.
-- The last logical consumer/peer detaching ends a live Conduit and closes remaining provider-side
-  connections. Sync subscriptions remain attached between polls or temporary transport failures.
-  Backing Resources, templates and retained evidence survive; crash/detach detection remains open.
-- Different Pools may create independent backing data or attach distinct instances to shared
-  backing data where the contract supports it. One Resource instance never has multiple owners.
-- A local-folder Resource describes the configured folder. Session symlinks are preparation
-  state, not separate Resources; removing one preserves the Resource, folder and other views.
-- An MCP Resource permits different service identities per Session attachment where supported,
-  within its target/access constraints. Service logins do not require duplicate Resource instances
-  and remain distinct from model subscriptions; credential storage/refresh details are open.
-- A connection requests supporting Resources through a Pool. Its shared operational state,
-  participant attachments and backing Resource lifetimes are distinct.
-- Open-new and join-existing connection intents are explicit. Filters narrow; activation in
-  the Session spec prepares permitted Resources. Pool provisioning is a different operation.
-- Existing account, context, memory, access, retention and checked-edit rules remain. Instance
-  form does not imply a process, automatic reconciliation or automatic cascading deletion.
+[SPEC.md](SPEC.md) defines the model; the linked DESIGN sections retain the detailed rulings.
+This agenda summarizes constraints needed for the next discussion; the full accepted contracts
+remain in DESIGN.md.
+
+| Area | Accepted baseline and detailed contract |
+| --- | --- |
+| Families | Session, Resource, Pool and Conduit each have template/instance forms. A Conduit instance is a live filtered flow, implemented by the common engine/plugins rather than its own independent runtime. See [families](DESIGN.md#families-templates-and-instances). |
+| Establishment | Templates carry complete setup intent, including create/attach choices. Lifecycle actions select when; they do not supply a second setup recipe. Instances retain ongoing spec and observed status, with no mandatory template history. Exact transitions and incomplete instance imports remain open. See [establishment](DESIGN.md#establishment-contracts-and-instance-state). |
+| Configuration | Typed YAML, top-level form, names unique per family, explicit kind/form/name references, stable IDs, checked replacements and strict schemas remain settled. Instance defaults are explicit; templates preserve omissions. Registration has no provisioning/execution effects. See [configuration](DESIGN.md#configuration-language). |
+| Resources | One responsibility with related operations; separate type group/name/version, config and conduits. Working groups: filesystem, storage, search and integration. Local-directory and git-worktree are distinct types; create/attach and path-resolution rulings remain. Storage, search and MCP access are separate Resources by default. See [Resources](DESIGN.md#resources). |
+| Ownership | Each Resource instance is created/attached only through its one owning Pool. Shared external backing does not imply shared registry ownership. Persistent Pool plans/bindings are parked pending Resource contracts. See [Pools](DESIGN.md#pools). |
+| Access preparation | Session/Resource declarations supply their enclosing consumer automatically. Explicit preparation attempts open/join; required by default, optional explicitly. Partial success remains for retry; cancellation detaches. Folder symlinks are preparation, not new Resources; MCP identity can differ per attachment where supported. See [Conduits](DESIGN.md#conduits) and [Resources](DESIGN.md#resources). |
+| Flow lifetime | Open-new and join-existing are explicit. Logical consumers/peers, not sockets, keep flows alive; the last departure ends the flow while backing Resources and retained evidence survive. Filters narrow authority; Session activation prepares permitted capabilities. See [Conduits](DESIGN.md#conduits). |
+| Retained guarantees | Account/private-context separation, continuity, memory revisions/sharing/search, current-access checks, safe retries, explicit cleanup and retention remain in force. See [Sessions](DESIGN.md#sessions), [memory](DESIGN.md#retained-memory-and-evidence), [authority](DESIGN.md#authority-and-current-access) and [recovery](DESIGN.md#outcomes-and-recovery). |
+
+Content, identity and agent-communication type groups remain candidates. No communication
+topology, plugin ABI, workflow language or detailed lifecycle schema has been selected.
 
 ## Review method
 
@@ -115,6 +42,12 @@ The candidate [scenario YAML](research/templates-instances.scenario.yaml) is a r
 not an accepted authoring/API format. It contains no real credentials or executable operations.
 
 ## Next discussion
+
+**Resumption checkpoint:** the accepted model is intact. The last completed review clarified
+plugin-owned stages versus optional author-written typed composition using four filesystem
+examples. Neither option has been selected. Resume with the establishment-ownership bundle
+below, then dependencies/outputs, interaction/recovery and template-to-instance state. The
+research recommendations and example field names are not accepted contracts.
 
 Settle **the establishment language and execution boundary** using
 [Establishment, ordering, outputs and recovery](research/ESTABLISHMENT.md). First use the

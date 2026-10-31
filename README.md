@@ -22,9 +22,10 @@ distinct intents. Sharing a connection does not implicitly share credentials or 
 Session templates contain the activation behavior previously called a Profile; Profile is no
 longer a separate family. **Connection** names a Conduit instance, not an additional family.
 
-**Retain YAML; define the language through typed objects and explicit semantics.** The common
-envelope, identity and checked-update rules remain. Encoding template versus instance, their
-reference syntax and family-specific lifecycle contracts are the next design work.
+**Retain YAML; define the language through typed objects and explicit semantics.** Each object
+uses its family as `kind` and explicitly identifies its template or instance form. The common
+envelope, identity and checked-update rules remain. Form placement, reference syntax and
+family-specific lifecycle contracts are the next design work.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable
 frontends and integrations. Provider-native tools, MCP, native skills, trackers and memory

@@ -1,5 +1,6 @@
-# REVIEW SCENARIO ONLY. No accepted configuration/API schema or executable operations.
-# The wrapper, spec.form, reference.form and operation fields are illustrative candidates.
+# REVIEW SCENARIO ONLY. Not a complete accepted schema or executable operations.
+# Family kind plus explicit form is accepted; spec.form placement is illustrative.
+# The wrapper, reference.form and operation fields remain illustrative candidates.
 # All paths, accounts, provider identifiers and targets are synthetic. No grants or secrets.
 # Templates register reusable configuration; only explicit Pool operations create Resources.
 scenario: four-families-with-exclusive-resource-ownership

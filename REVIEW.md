@@ -8,6 +8,8 @@ outcomes rather than a long sequence of individual field rulings.
 
 - Session, Resource, Pool and Conduit each have template and instance forms. Profile means a
   Session template; an opened connection is a Conduit instance. Neither adds a family.
+- Objects use one family `kind` plus an explicit template/instance form. Placement of form
+  and its qualification in names and references remain to be settled.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -31,9 +33,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Start with **representation, identity and template binding**. These determine whether we can
-unambiguously refer to a Session template, a Pool instance and an existing connection before
-choosing detailed fields. Then establish Pool creation/ownership and instance lifecycle together.
+Continue with **form placement, identity and template binding**. With family kinds settled,
+decide how form appears in objects and references so a Session template, Pool instance and
+existing connection can be addressed unambiguously. Then establish Pool creation/ownership
+and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -48,7 +51,7 @@ choosing detailed fields. Then establish Pool creation/ownership and instance li
 
 | Question | Example and considerations |
 | --- | --- |
-| How are family and form encoded? | Compare one family `kind` plus a template/instance discriminator with distinct concrete kinds. Keep the common envelope. Which fields can be authored on each form, and which belong only in system status? |
+| Where does explicit form belong? | Compare a top-level `form` beside `kind` with a discriminator inside `spec`. Family and form jointly select the contract. Which fields can be authored on each form, and which belong only in system status? |
 | How are names and references qualified? | A Session template and Session instance could both be called `reviewer`. Decide the unique-name boundary and readable reference form, optional direct IDs, and whether Pool-local display names are merely aliases or a naming boundary. Retain one registry and stable IDs. |
 | What does a template binding retain? | Record template identity, version and explicit inputs. Session behavioral snapshots already persist until reconfiguration; choose corresponding rules for Pool, Resource and Conduit instances without freezing live limits. Does an edited or deleted template affect existing instances? |
 | Must templates be independently registered? | Compare named reusable templates with inline definitions for one-off creation. Define identity, export, source attribution and allowed inputs without introducing arbitrary string interpolation or an inheritance language. |

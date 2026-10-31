@@ -87,8 +87,9 @@ implements an interaction. Their ordering and dependency rules remain for review
 
 **YAML is the authoring format; typed objects and explicit semantics define the language.**
 The common envelope remains `apiVersion`, `kind`, `metadata`, `spec`, with system-owned
-`status` in inspection. How family and template/instance form are encoded in `kind` or other
-fields is unresolved. Four families do not predetermine the number of concrete API schemas.
+`status` in inspection. Each object uses one family `kind`—Session, Resource, Pool or Conduit—
+plus an explicit template/instance form. Placement of that form remains open. Validation must
+distinguish both family and form; sharing a kind does not imply identical payloads or operations.
 
 Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#configuration-language):
 
@@ -152,7 +153,7 @@ defines the remaining selections and staged evidence.
 
 ## Design boundary
 
-The four families, template/instance distinction, exclusive Pool ownership and Pool-only
-Resource creation are settled. Exact schema encoding, addressing, lifecycle, provisioning and
+The four families, family kinds with explicit forms, exclusive Pool ownership and Pool-only
+Resource creation are settled. Form placement, addressing, lifecycle, provisioning and
 communication contracts remain open. Review those connected choices before implementation.
 Research proposals and the synthetic scenario are discussion aids, not additional requirements.

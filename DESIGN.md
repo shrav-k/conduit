@@ -2,7 +2,7 @@
 
 Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
-The common authoring envelope remains; family/form encoding, detailed fields, transports, storage engines
+The common authoring envelope remains; form placement, detailed fields, transports, storage engines
 and implementation layout remain under review.
 
 ## Families, templates and instances
@@ -28,8 +28,8 @@ Resource identity/ownership, backing identity, authentication and process lifeti
 The shared distinction does not impose one lifecycle or mandatory process on every family.
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
-Named versus inline templates, version binding outside Session behavior, family/form schema
-encoding and lifecycle operations remain in [REVIEW.md](REVIEW.md).
+Named versus inline templates, version binding outside Session behavior, form placement,
+reference qualification and lifecycle operations remain in [REVIEW.md](REVIEW.md).
 
 ## Configuration language
 
@@ -39,14 +39,17 @@ and behavioral contracts across every entry point.
 CLI/API/frontends must interpret the same objects consistently. Future generators can
 emit this model; they cannot bypass its validation or authority rules.
 
-Templates and instances retain this common authoring envelope; concrete form encoding is open:
+Each object uses its family as `kind` and explicitly identifies its template or instance
+form. Form is a structural distinction, not an observed lifecycle state: instantiation creates
+a separate object rather than changing the template's form. Placement of the form discriminator
+and exact reference syntax remain open. The common authoring envelope remains:
 
 | Field | Meaning |
 | --- | --- |
 | `apiVersion` | The versioned contract used to interpret the object. |
-| `kind` | The concrete object schema. Encoding four families and template/instance forms in kinds or a discriminator remains open. |
+| `kind` | The family: `Session`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
 | `metadata` | Author-editable naming/labels and system-owned identity/version information, with ownership defined per field. |
-| `spec` | Configuration defined by that kind's contract. |
+| `spec` | Configuration defined by the family and form's contract. |
 
 Metadata ownership is defined per field: authors control naming and labels within their
 permissions, while Conduit assigns and maintains identity/version information. Placing a
@@ -85,8 +88,8 @@ ID of the object selected when that reference resolves. Authors need not copy ge
 into ordinary references; the readable lookup and the resolved identity remain distinguishable.
 
 V0 resolves references within one local registry. Names must identify an unambiguous object
-in their qualified naming boundary. How the existing kind/name convention distinguishes
-family and template/instance form is open; so is whether instance display names gain a
+in their qualified naming boundary. How readable references qualify template/instance form
+is open; so is whether instance display names gain a
 Pool-local qualification. No namespace or cross-registry mechanism is selected by this
 refactor. The registry catalogs definitions and IDs while backing data may be local or remote.
 Registry presence grants no access and need not name every native item globally.
@@ -98,7 +101,7 @@ This does not redirect established bindings, which retain their resolved identit
 
 A rename uses the normal checked configuration update, changing `metadata.name` while
 preserving the object's ID. The original ID/version identifies the target; the new name
-must be available for that kind or the update conflicts.
+must be available within the applicable naming boundary or the update conflicts.
 
 Other registry objects retain their authored kind/name references after a rename. Report
 known mismatches between a written name and its resolved target, and offer explicit checked
@@ -129,7 +132,7 @@ storage technology or the update behavior of data exposed through Resources. Acc
 access rules still apply when the registry configuration changes.
 
 Configuration submissions explicitly select create or update intent. Creation reports a
-conflict if that kind/name already exists. Updating a missing target reports a conflict
+conflict if that qualified name already exists. Updating a missing target reports a conflict
 instead of creating it. Neither operation silently switches intent based on name matches;
 exact commands and batch handling remain open. Creating Resource instances must go through
 a Pool operation; a generic registry write cannot bypass the owner requirement. Registering

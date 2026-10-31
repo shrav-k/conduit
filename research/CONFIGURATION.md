@@ -4,7 +4,8 @@
 The accepted model has four families, each with template and instance forms. Resource
 instances are created only through, and owned exclusively by, a Pool instance. Conduit
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
-envelope, identity and checked-edit contracts; exact form encoding and lifecycle are open.
+envelope, family kinds with explicit forms, identity and checked-edit contracts; form placement
+and lifecycle are open.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -292,17 +293,14 @@ popularity alone.
 
 ## Proposed template and instance forms
 
-Four domain families do not dictate four concrete schema kinds. Two viable representations
-remain for review:
+The accepted representation uses one family `kind` plus an explicit template/instance form.
+Family and form jointly determine the schema and operations; templates and instances do not
+need identical payloads. The form discriminator could sit beside `kind` or inside `spec`;
+its placement and reference qualification remain under review.
 
-| Candidate | Example | Tradeoff |
-| --- | --- | --- |
-| Family kind plus explicit form | `kind: Resource` with a typed template/instance discriminator. | Emphasizes common identity, but references and schema validation must distinguish forms. |
-| Distinct concrete kinds | Separate Resource-template and Resource-instance kinds. | Distinction is visible in ordinary kind/name references, with more API kinds but still four domain families. |
-
-The scenario fixture uses the first style **only as illustrative notation**. It does not
-settle discriminator placement, status shape, command names, operation payloads or instance
-export. Reusable template registration, instance creation, native provisioning and starting
+The scenario fixture's `spec.form` is **an illustrative placement**, not an accepted field
+location. Status shape, command names, operation payloads and instance export also remain
+open. Reusable template registration, instance creation, native provisioning and starting
 execution must remain distinguishable even if a frontend offers a combined operation.
 
 Keep authoring interpretation, template configuration version, resolved instance configuration,

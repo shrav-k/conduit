@@ -380,9 +380,10 @@ Groups, advertised capabilities and schema validity do not prove enforcement by 
 An instance author may request narrower use, but cannot declare unsupported behavior into existence.
 
 For v0, prefer concrete adapters and only the capability contracts needed by the experiment.
-The next question is how stable contracts expose dynamic provider catalogs such as MCP tools.
-A universal trait
-registry, multiple inheritance, generated method wrappers for every service, or a policy field
+Integration contracts now support discovery/invocation over dynamically supplied provider catalogs
+and schemas, preserving native tools without a new Conduit contract for each operation. Static
+contracts remain valid. Discovery is not authority; exact refresh/schema-change behavior remains open.
+A universal trait registry, multiple inheritance, generated method wrappers for every service, or a policy field
 per provider call would add bookkeeping before demonstrating value.
 
 ### Consequences for Pools and Conduits

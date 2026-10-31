@@ -261,6 +261,12 @@ Its tool list can depend on the authorization supplied with a request. Upstream 
 selected service identity; downstream exposure is additionally narrowed for each Conduit caller.
 One shared upstream catalog is not proof that all consumers can use every tool.
 [MCP tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
+
+The accepted Conduit boundary is a versioned discovery/invocation capability contract with the
+provider's concrete tools and schemas discovered dynamically. Each permitted tool remains native
+in the Agent's view; it does not need its own Conduit contract or generic model-facing wrapper.
+Catalog refresh and schema evolution remain detailed integration questions, not new authority.
+
 An ongoing logical relationship does not require an always-open socket: Streamable HTTP uses
 requests and can stream responses. The adapter must negotiate what the deployed service actually
 supports rather than assume it implements every feature of the cited specification.

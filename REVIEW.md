@@ -39,18 +39,26 @@ selects the target explicitly. Type/group names, matching fields or contract dec
 are not evidence of actual compatibility, current authority or readiness. Exact identifiers,
 version matching and conformance mechanisms remain open.
 
-**Next ruling — native operation catalogs:** should an integration contract describe discovery
-and invocation while allowing its concrete provider operations to be discovered dynamically?
-Recommend this for MCP: Conduit validates its MCP-access contract, then preserves the permitted
-Linear tool catalog and native schemas rather than requiring a new Conduit contract definition for
-every Linear tool. These discovery/invocation operations are an integration boundary, not a demand
-that the model call a generic wrapper instead of Linear's tools.
+**Settled catalogs:** integration capability contracts can define discovery and invocation while
+providers supply concrete operation catalogs and schemas dynamically. Preserve permitted native
+MCP tools without a separate Conduit contract for every tool or a generic model-facing wrapper.
+Discovery adds no authority; fixed operation contracts remain valid for other capabilities. Detailed
+refresh, caching and schema-change behavior remain open.
 
-The alternative statically declares each provider operation in Conduit's contracts before it can
-be exposed. That gives a more fixed catalog but adds translation and maintenance for native
-integrations. Dynamic exposure must still obey current grants/filters; provider discovery grants
-no authority and does not silently rewrite an instance's control contract. Detailed catalog changes,
-caching and invocation-time schema validation can follow after choosing this boundary.
+**Next ruling — access delegation at connection:** when an authorized user or Agent establishes a
+Conduit attachment for another consumer, should that action be able to delegate an explicit subset
+of its permitted service access to that consumer? Recommend recording the delegation with the
+attachment, so the user can connect a review Agent to shared Linear with read-only access in one
+operation. The alternative requires a separate Agent-access grant before establishing the connection.
+
+This would make delegation an explicit, authorized part of connection establishment; merely naming
+a Resource, joining a Pool or editing a filter would still grant nothing. Only an actor permitted
+to delegate that access could issue it, within target policy and the recipient's limits. Filters
+would remain narrowing-only over granted access. The proposal adds no separate user-maintained
+permission registry or object family, and does not imply permission to delegate further. Exact
+binding fields, issuer authority, lifetime and revocation behavior would follow separately.
+After this boundary is settled, render one small connected Pool/authentication/service/Agent
+example before expanding individual permission policies or adding more bookkeeping.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -119,7 +127,7 @@ and reconcile a lost response. Keep identities, state and operation outcomes dis
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Endpoint contract | Generalize Interface/Agent control, Resource access, Resource-to-Resource dependencies and platform management. Define endpoint roles, filtered capabilities and request/result/observation paths without assuming one network topology. |
-| Authority and filtering | Authenticate the actor and connection; filters narrow granted authority. Define complete resource/operation/constraint combinations and current checks. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
+| Authority and filtering | Settle how an authorized creator delegates access when establishing an attachment versus requiring a separate prior grant. Authenticate the actor/consumer; filters narrow granted authority. Define complete resource/operation/constraint combinations and current checks. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
 | Communication Resources | Explore direct exchange, conversations and shared context as agent-oriented capabilities, potentially backed by storage Resources. Separate retained content from routing and runtime bookkeeping. No rooms-only topology or communication schema is selected. |
 | Composition and supporting Resources | An access template can compose repository, credentials, AWS and Linear connections with distinct identities and lifetimes. Resolve owners/provisioning rights for durable supporting Resources; avoid duplicated setup or implied external rollback. |
 | Delivery and attention | Define ordering, durable acceptance, acknowledgement, replay, offline delivery and backpressure for selected communication types. Distinguish available data, notices, queued input and starting model work; current access is checked at delivery. Wake behavior belongs to an explicit supported contract. |

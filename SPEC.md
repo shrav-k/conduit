@@ -90,6 +90,12 @@ inputs, constraints and observations. The Interface or Agent requests a change t
 connection; the target validates and applies it using its implementation and reports the outcome.
 Provider-specific scheduling and recovery stay in those contracts.
 
+Integration capability contracts can define discovery and invocation while providers supply their
+concrete operation catalogs and schemas dynamically. For MCP, expose permitted native tools;
+do not require a separate Conduit contract for every provider operation or a generic model-facing
+wrapper. Static operation contracts remain valid for other capabilities. Discovery supplies
+available behavior, not additional permission or a changed instance-control contract.
+
 Filters narrow authority and target capabilities. An allowed operation name alone does not
 establish that every parameter is allowed. Discovery, dispatch and current-state validation must
 agree. The proposed constraint composition is intersection of implementation support, template

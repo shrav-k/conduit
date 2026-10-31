@@ -1077,6 +1077,18 @@ MCP is the preferred external capability contract. Use standard tools, resources
 and supported extensions where applicable; native adapters address concrete runtime,
 account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP servers.
 
+**Accepted catalog boundary:** an integration capability contract can define discovery and
+invocation while concrete provider operations and their schemas are discovered dynamically.
+Conduit does not require its own contract definition for every Linear/MCP tool. The Agent sees
+permitted provider-native tools, not a mandatory generic invocation wrapper. Fixed operation
+contracts remain appropriate for other capabilities; dynamic catalogs are supported, not required
+everywhere. Provider schemas remain part of validation rather than becoming unchecked arguments.
+
+Discovery does not grant authority or silently alter a running instance's control envelope.
+Current grants, Conduit filters and target constraints still govern exposure and dispatch. Exact
+catalog refresh, schema-change handling, caching and version evidence remain to be specified;
+they must distinguish advertised operations from supported and currently permitted behavior.
+
 Resource templates for MCP services describe reusable endpoint/process/transport/authentication
 setup. Pool-owned instances and connection attachments realize that setup under current access.
 Use the [shared Pool access contract](#shared-access-and-authentication), with an explicit

@@ -91,6 +91,27 @@ Resource data and matching remain independent of the retained spec. Runtime obse
 belong in `status`. Content-version rules, materialization details and family-specific
 reconfiguration effects remain in review.
 
+### Lifecycle protocol under review
+
+Templates must be evaluated against multi-stage establishment, not only immediate directory
+attachment. Subscription authentication, corpus indexing and password-manager access require
+ordering, outputs, interaction waits and recovery semantics. YAML is the serialization surface;
+its selection does not settle who implements those behaviors.
+
+The [establishment investigation](research/ESTABLISHMENT.md) recommends typed declarations of
+intent, dependencies and supported policies, plugin-owned recoverable stages, and engine-owned
+coordination/continuation evidence. This is a proposal for review, not an accepted workflow engine
+or a new operation-request language. Strict prerequisite ordering, typed output bindings,
+readiness gates and structured human waits must be settled together with failure, retry and
+cancellation. Cross-Resource data access still uses Conduits and every Resource has a Pool owner.
+
+Distinguish a completed establishment effect from continuing readiness and from new model work.
+An empty database, an indexed corpus and a usable search capability are different outcomes.
+Existing safe-retry, current-access, explicit-resume and data-retention contracts constrain the
+new lifecycle design. The representation of recoverable partial setup, user-authored composition
+and creation-only field retention remains open. Neither an opaque callback nor arbitrary scripts
+should become the default merely because those contracts have not yet been specified.
+
 ## Configuration language
 
 **YAML is the authoring format; typed objects and explicit semantics define the language.**
@@ -321,7 +342,7 @@ access paths retain their own semantics; field assignment does not redefine thos
 
 | Relationship | Established constraint; details still to settle |
 | --- | --- |
-| Session template → Session | Expand to an instance draft and edit ordinary fields within required constraints. Assignments replace field values. Continuing authority is explicit; default-Conduit precedence remains open. |
+| Session template → Session | Interpret typed establishment configuration and retain ongoing instance settings. Customize ordinary typed fields with replacement semantics. Continuing authority is explicit; detailed transition/dependency semantics remain under review. |
 | Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Template reuse across Pools creates distinct instances. Selectors cannot assign a foreign instance to another owner; target domains and live behavior remain open. |
 | Session → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
 | Session activation | Instructions materialized in the Session spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |

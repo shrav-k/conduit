@@ -496,6 +496,11 @@ acceptance from execution; never infer external exactly-once effects from local 
 The v0 Rust loop does not need Pi Durable's entire workflow engine, script replay or hot reload.
 [Earlier detailed investigation](PI_RUNTIME.md#pi-durable-in-depth)
 
+That does not eliminate multi-stage establishment. The [lifecycle investigation](ESTABLISHMENT.md)
+proposes applying those recovery lessons to plugin-owned setup stages, typed outputs and human
+interaction waits. Its protocol remains for review; avoiding a replayable script VM must not
+mean losing progress or repeating unsafe native effects.
+
 ## Validation performed and next experiment
 
 The source inventory script enumerated every factory imported by `providers/all.ts`, checked

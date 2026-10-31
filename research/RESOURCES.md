@@ -455,9 +455,11 @@ recovery and permitted instance transitions still require decisions.
 Two useful design tests follow. First, an exported instance lacking create/attach intent cannot
 promise to be a complete setup recipe: define an explicit conversion to establishment configuration,
 or retain enough declared intent, rather than guessing. Second, a template can be comprehensive
-without being a universal workflow engine: plugin-defined fields, references and lifecycle behavior
-may cover the examples. [Configuration research](CONFIGURATION.md#establishment-in-configuration)
-compares Compose, Docker's lifecycle boundaries and Kubernetes before proposing extra syntax.
+without being a universal workflow engine. The [establishment investigation](ESTABLISHMENT.md)
+tests that boundary against subscription login, corpus indexing and password-manager access:
+typed dependencies/results and recoverable stages are needed even if provider procedures live
+in code. [Configuration research](CONFIGURATION.md#establishment-in-configuration) compares
+Compose, Docker's lifecycle boundaries and Kubernetes before selecting extra syntax.
 
 ### Type reference and extension identity
 
@@ -546,8 +548,9 @@ Recommended discussion sequence:
 
 1. Use the accepted four groups and directory/worktree split for concrete type review; do not
    repeat those rulings. Local-directory create/attach intent and absolute instance backing paths
-   are also settled, with establishment intent in the template spec. Review the typed transition
-   to instance settings/status, failure/retry and export together, then Session preparation/symlinks.
+   are also settled, with establishment intent in the template spec. Review the typed transition,
+   outputs and recovery against the three complex establishment cases before finalizing export
+   or the simple directory's field layout; then cover Session preparation/symlinks.
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
    dependencies, preparation and one failure each. Evaluate content and identity, retaining
    the agent-communication candidate for the detailed communication review.

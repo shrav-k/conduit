@@ -63,7 +63,11 @@ Current-access checks and actual execution evidence remain required.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable
 frontends and integrations. Provider-native tools, MCP, native skills, trackers and memory
-backends retain their useful contracts. Implementation has not started.
+backends retain their useful contracts. Current review focuses on the boundary between
+declarative templates, recoverable plugin lifecycles and engine coordination, using login,
+corpus indexing and password-manager access. Ordering, outputs and recovery need explicit
+contracts; an authored general workflow language has not been selected. Implementation has
+not started.
 
 Read in order:
 
@@ -73,6 +77,7 @@ Read in order:
 
 | Research | Purpose |
 | --- | --- |
+| [Establishment and recovery](research/ESTABLISHMENT.md) | Template/plugin/engine boundary; ordering, typed outputs, interaction waits, failure recovery and a broader template catalog. |
 | [Resource typing and groups](research/RESOURCES.md) | Working core groups, candidate types and agent communication, capabilities, plugin boundaries and scenario-based review. |
 | [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios; shared state and participant lifetimes. |
 | [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, configuration-language papers and candidate expression of the four families. |

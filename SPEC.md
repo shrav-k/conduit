@@ -31,7 +31,10 @@ configuration per instance. Define Resources before Pool grouping: local paths, 
 and hybrid database search require different typed configuration and behavior. A shared envelope
 does not imply a uniform runtime or provisioning lifecycle. The next review derives common
 Resource requirements from those examples, then considers how Pools group and coordinate
-their declared capabilities.
+their declared capabilities. The [establishment review](research/ESTABLISHMENT.md) adds native
+subscription login, corpus indexing and password-manager authentication to test ordering,
+typed outputs and recovery. It recommends declarative templates, recoverable plugin stages
+and engine coordination; the lifecycle protocol and composition syntax remain proposals.
 
 ```mermaid
 flowchart LR

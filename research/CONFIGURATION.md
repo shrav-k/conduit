@@ -14,7 +14,9 @@ This report retains Kubernetes/Docker investigations, configuration-language com
 seven papers and source-specific probes. Its proposals express the current model without
 requiring a general deployment framework. Read alongside [Pi research](PI_CONNECTORS.md),
 [connection scenarios](CONDUITS.md) and the synthetic
-[template/instance scenario](templates-instances.scenario.yaml). Fixture fields are candidates,
+[template/instance scenario](templates-instances.scenario.yaml). The deeper
+[establishment investigation](ESTABLISHMENT.md) tests ordering, outputs and recovery against
+authentication, corpus indexing and password-manager access. Fixture fields are candidates,
 not accepted API syntax or an executable implementation.
 
 ## Recommendation and reading guide
@@ -120,12 +122,14 @@ results. A template does not need a handwritten field-mapping program or shell s
 contract. For instance, local-directory's create/attach choice need not remain an ongoing command
 on a successfully established directory; exactly where that intent is retained remains open.
 
-YAML can represent these contracts now. More notation is useful only when concrete cases expose
-a gap: reusable composition, declared contextual values, dependency ordering or multi-stage
-establishment. First try typed declarations and references; if lifecycle steps become necessary,
-define their inputs, results, ordering, retries and cancellation before choosing expression or
-scripting syntax. A different parser would not settle those semantics. This is a recommendation,
-not a permanent ban on richer authoring or a decision to build a workflow language.
+The concrete authentication/indexing cases now demonstrate the need for multi-stage execution,
+typed outputs, dependency ordering, interaction waits and recovery. The open question is who
+authors those stages. [Establishment research](ESTABLISHMENT.md) recommends template-declared
+outcomes and composition, plugin-owned resumable procedures, and an engine protocol for
+coordination/observations. YAML can encode that contract; a different parser would not supply
+its semantics. General user-authored loops, scripts or replayable programs remain alternatives
+to evaluate against demonstrated composition needs, not implied requirements or permanently
+prohibited extensions. Do not treat a static settings schema as the complete lifecycle contract.
 
 Keep the existing small operational guarantees: outcome evidence and idempotent/safe retry where
 supported are runtime concerns, not another document users must maintain. No template snapshots,

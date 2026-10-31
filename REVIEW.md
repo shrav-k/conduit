@@ -116,47 +116,50 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Review **Resource responsibilities, grouping and compatibility** using the new
-[Resource investigation](research/RESOURCES.md). Logical groups independent of packages and
-separate `type.group`, `type.name`, `type.version` fields are settled. The working core groups
-`filesystem`, `storage`, `search` and `integration` are accepted. Filesystem's `local-directory`
-and `git-worktree` are distinct types; other individual types remain open.
-`content` and `identity` require further boundary work. Keep an agent-communication group in
-view without diverting the current Resource walkthrough into choosing a communication model.
+Settle **the establishment language and execution boundary** using
+[Establishment, ordering, outputs and recovery](research/ESTABLISHMENT.md). Directory examples
+alone do not expose enough of the contract. Start with these three cases as one connected review:
 
-Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
+1. A Session signs in to a selected Claude subscription, waits for browser interaction, verifies
+   identity, then prepares required connections without starting model work implicitly.
+2. Pool-owned corpus, storage and indexing/search capabilities produce a usable vector index
+   through authorized Conduits, with partial batches, generated outputs and recovery.
+3. A Session or Resource obtains password-manager access through a Conduit, with participant-
+   specific identity, possible human unlock and expiring access.
 
-1. **Template-to-instance transition:** use the [directory walkthrough](research/RESOURCES.md#template-establishment-and-instance-state)
-   to specify creation-only settings, ongoing settings and observed results. Local-directory
-   create/attach intent is in the template spec; absolute instance backing paths are settled.
-   Test success, existing-path conflict, retry and instance export/reuse together. Then cover
-   Session preparation/symlinks, Git-worktree, storage, search and MCP rather than inventing a
-   universal lifecycle from the folder example.
-2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
-   for discovery and explicit contracts for activation, connection matching and effects.
-3. **Extension identity:** who defines a contract, how new groups/types enter the catalog and
-   how conflicting definitions or multiple implementations are handled. A group is not a publisher.
+**Proposed boundary, awaiting ruling:** templates declare the result, identity, dependencies and
+supported policy; plugins implement typed, resumable stages; the engine coordinates prerequisites,
+interaction waits, progress and output delivery. The requirement for ordering/results/recovery
+is demonstrated; whether authors need a general workflow language is a separate question.
 
-Test local folders/worktrees, Linear MCP, AWS CLI, credential services, separate memory
-storage/search, native skills and communication history. Keep Session-private preparation,
-Pool ownership, external target identity and Conduit flow distinct. Then settle version labels
-and Conduit declaration structure; do not introduce a generic package manager or catalog of
-every provider operation merely to classify these examples.
+Resolve these bundles in order, not as isolated field-name choices:
 
-The preparation baseline is settled: attempt during explicit preparation, required by default,
-optional failures reported, successful attachments retained for retry, explicit cancellation
-detaching them. Detailed retry timing, incomplete cleanup, ordering and later reconfiguration
-stay on the agenda without blocking a configuration sketch. Remote endpoint selection still
-needs review. Pool declaration mechanics and the missing-plan-target ruling remain paused.
+| Bundle | Ruling and evidence needed |
+| --- | --- |
+| Establishment ownership | Choose the template/plugin/engine split. Require inspectable semantic stages and failure behavior even when procedure code stays in plugins. Decide whether the first three cases need authored steps. |
+| Dependencies and outputs | Define strict prerequisites, bounded independent work, readiness conditions, typed output references/lifetimes and blocking-cycle diagnosis. Keep logical Resource access in Conduits. |
+| Interaction and recovery | Define waiting for a person, retained partial setup, safe retry/reconciliation, versioned continuation, cancellation and late-worker results. Separate setup continuation from starting a stopped model execution. |
+| Template-to-instance transition | Use successful and failed cases to decide creation-only setting retention, status, instance export/import and one-off authoring. Preserve minimal bookkeeping and current authority. |
+| Extensibility | Identify a real case needing user-defined ordered calls, loops or transformations before selecting extra language syntax. Plugins remain extensible; no general workflow engine is presumed. |
+
+Then return to detailed directory/worktree contracts and symlink behavior, followed by storage,
+search and MCP. Filesystem/storage/search/integration groups and separate directory/worktree
+types remain settled. Content, identity and agent communication remain candidates; do not reopen
+those group rulings or choose a communication topology as a side effect of lifecycle design.
+
+The existing preparation baseline still applies: required by default, optional failures reported,
+successful attachments retained for retry, and explicit cancellation detaching them. Pool
+creation declarations/bindings remain parked; the engine may derive a dependency view without
+requiring users to maintain another plan. Composition does not add an object family.
 
 | Group | Outcome to settle |
 | --- | --- |
-| 1. Resource templates and instances | A small common contract, typed configuration and clear backing/consumer boundaries. |
-| 2. Pool grouping and Resource ownership | Group and coordinate understood Resource types with minimal duplicated state. |
-| 3. Object configuration and lifecycle | Remaining field/reference rules, change semantics and required runtime state. |
-| 4. Connections, authority and communication | Initial extensible interaction contracts and their observable guarantees. |
-| 5. Resolution, activation and integrations | How selected capabilities become usable in each runtime without hiding native behavior. |
-| 6. Validation, evolution and experiment | Language conformance and the smallest convincing end-to-end evidence. |
+| 1. Resource templates and instances | Typed establishment, ongoing configuration, outputs and consumer boundaries. |
+| 2. Pool grouping and Resource ownership | Coordinate understood Resource types with minimal duplicated state. |
+| 3. Object configuration and lifecycle | Interaction/recovery protocol, state transitions and export/import. |
+| 4. Connections, authority and communication | Extensible flows with explicit dependencies, capabilities and lifetimes. |
+| 5. Resolution, activation and integrations | Provider setup and selected capabilities become usable in each runtime. |
+| 6. Validation, evolution and experiment | Lifecycle conformance, fault cases and bounded real-provider evidence. |
 
 ## 1. Resource templates and instances
 
@@ -169,7 +172,8 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 | What is genuinely common across types? | Resource specs use type {group, name, version}, config and conduits. Settle allowed identifiers/version labels and the contents/shape of connection declarations. Type-contract versions stay independent of common apiVersion and plugin releases. Distinguish type-contract declarations from observed per-instance support; add common descriptors only when examples require them. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
 | How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
-| What lifecycle does each type actually need? | A path attachment need not start a service; an MCP integration may connect/spawn a client; search can attach to an existing index or build one where supported. Define necessary effects, readiness, retry and cleanup per type before requiring generic provisioning state. |
+| What lifecycle does each type actually need? | Define input/output schemas, semantic stages, readiness, possible interaction waits, recovery capability and cleanup. A path attachment may finish immediately; native login can wait; ingestion can checkpoint batches. The common protocol must handle those distinctions without exposing every provider API call in YAML. |
+| How are dependencies and outputs connected? | Describe required inputs and completion/readiness gates, including generated IDs, revisions and expiring handles. Output-to-input binding must respect Conduit access and Pool ownership. Decide when input/output changes invalidate dependent work and how to diagnose a blocking bootstrap cycle. |
 
 Use these examples as design probes, not a closed list of types or an accepted schema:
 
@@ -218,7 +222,8 @@ retry, then retire a Pool with active users and retained conversation history. S
 | --- | --- |
 | What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
 | How does one-off authoring and instance reuse work? | Can an unregistered template document supply establishment configuration? What can instance export reconstruct, and which choices must authors explicitly add? No guessed create/attach policy, imported ready status, or automatic recreation of lost backing. Decide this alongside the transition, not as a new operation language. |
-| Is more language expressiveness needed? | First test typed YAML declarations, references, explicit dependencies and form-specific transitions. Add reusable composition, declared contextual inputs or typed lifecycle steps only for a concrete gap; assess ordering, retries and errors before a Dockerfile-like DSL or arbitrary expressions. |
+| Is more language expressiveness needed? | The three establishment cases require multi-stage execution. Decide which stage ordering belongs in plugin code and which composition users author. Compare declarative typed bindings against ordered typed calls, a workflow plugin and richer code generation; preserve one validated semantic model. |
+| What is the recoverable establishment protocol? | Define meaningful phase/result persistence, effective-input identity, version compatibility, structured interaction waits, native job reconciliation and stale-worker rejection. Plugin code can resume only at supported boundaries. Retry limits cannot override unsafe effects; cancellation is not a rollback. |
 | How are instances addressed and rebound? | Open-new uses establishment configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle retry identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
@@ -280,9 +285,10 @@ unsupported hooks and a change of model/account without leaking private context.
 Implementation has not started. Settle the contracts above and define a bounded experiment
 before moving from documentation into implementation or live account testing.
 
-1. **Offline model:** first establish filesystem, MCP and search Resource templates/instances
-   and consumer boundaries; then express type-aware grouping in two Pools, separate/shared
-   backing, and open/join connections with inspectable ownership and no orphan path.
+1. **Offline model:** document template-to-instance transitions and dependency/output contracts
+   for filesystem, authentication and indexing. Add synthetic stage/interaction/failure cases; the
+   current structural fixture alone is insufficient. Then express grouping in two Pools,
+   separate/shared backing and open/join with inspectable ownership and no orphan path.
 2. **Accounts:** verify two Claude and two Codex/OpenAI subscription identities, independent
    credential refresh/logout and private Session state; record unsupported behavior explicitly.
 3. **Runtime:** a minimal Rust-owned model/tool loop and terminal, with native-agent adapters
@@ -295,5 +301,8 @@ before moving from documentation into implementation or live account testing.
 Required failure fixtures include stale edits, missing template/instance references, attempted
 foreign-Pool ownership, ambiguous create retry, partial provisioning, shared-backing conflicts,
 auth refresh failure, last participant departure, unknown remote effect and owner retirement.
+Establishment adds wrong-account authentication, expired interaction, crash after login success,
+partial ingest, input/model change mid-build, stale completion, cancellation after a write and
+missing/incompatible recovery handlers. No live login is implied by these documentation cases.
 Retain references to the research in [CONFIGURATION.md](research/CONFIGURATION.md),
 [PI_CONNECTORS.md](research/PI_CONNECTORS.md) and [PI_RUNTIME.md](research/PI_RUNTIME.md).

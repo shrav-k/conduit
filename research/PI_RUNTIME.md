@@ -306,6 +306,11 @@ from its observed completion. Support stopping plugin worker processes where nec
 Do not promise crash-safe continuation of arbitrary plugins or introduce general
 workflow definitions, durable timers, background subagents, and hot reload in v0.
 
+The subsequent [establishment investigation](ESTABLISHMENT.md) distinguishes that broad
+workflow runtime from the narrower recoverable setup protocol now needed for authentication,
+indexing and dependency preparation. Typed plugin stages and versioned continuation are a
+candidate boundary, not a claim that unmodified plugin code can be resumed safely.
+
 On restart, inspect pending intents and surface recoverable/unknown state. Reconnect
 if a verified execution survives; explicitly resume before starting a stopped one.
 Durability permits recovery; it does not authorize unattended work.

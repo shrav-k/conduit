@@ -277,6 +277,12 @@ startup ordering, status, rollback limits and cleanup. For example, Linear login
 need not remove repository access, while a deploy requiring unavailable credentials cannot
 proceed. External writes already completed cannot be undone merely by failing an aggregate.
 
+The [establishment investigation](ESTABLISHMENT.md) makes these lifecycle questions the next
+review priority. It proposes typed prerequisite/output contracts, plugin-owned resumable stages
+and engine coordination. Authentication waits and expiring access belong to the relevant
+attachment/account; ordering or output references never substitute for a permitted Conduit.
+This does not choose a composite-Conduit schema or a general workflow language.
+
 Selecting the group must not make authority transitive: repository access does not grant
 communication membership, posting a link does not grant access to its target, and possession
 of an AWS credential does not imply every operation is allowed by Conduit's managed policy.

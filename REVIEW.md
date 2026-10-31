@@ -117,8 +117,12 @@ not an accepted authoring/API format. It contains no real credentials or executa
 ## Next discussion
 
 Settle **the establishment language and execution boundary** using
-[Establishment, ordering, outputs and recovery](research/ESTABLISHMENT.md). Directory examples
-alone do not expose enough of the contract. Start with these three cases as one connected review:
+[Establishment, ordering, outputs and recovery](research/ESTABLISHMENT.md). First use the
+[filesystem comparison](research/ESTABLISHMENT.md#filesystem-plugins-and-template-examples) to
+distinguish plugin-owned stages from optional template-authored graphs: existing directory plus
+Session symlink, new directory, remote filesystem and Git worktree. No ruling has been made
+between these options. An authored graph may compose safe typed plugin actions; it need not
+introduce raw scripts or a general programming language. Then stress-test the boundary with:
 
 1. A Session signs in to a selected Claude subscription, waits for browser interaction, verifies
    identity, then prepares required connections without starting model work implicitly.
@@ -127,20 +131,21 @@ alone do not expose enough of the contract. Start with these three cases as one 
 3. A Session or Resource obtains password-manager access through a Conduit, with participant-
    specific identity, possible human unlock and expiring access.
 
-**Proposed boundary, awaiting ruling:** templates declare the result, identity, dependencies and
-supported policy; plugins implement typed, resumable stages; the engine coordinates prerequisites,
-interaction waits, progress and output delivery. The requirement for ordering/results/recovery
-is demonstrated; whether authors need a general workflow language is a separate question.
+**Proposed boundary, awaiting ruling:** standard Resource configuration selects complete,
+recoverable plugin lifecycles; the engine coordinates dependencies, interaction waits and results.
+An optional authored graph could compose those same typed operations for custom setup. Decide
+whether that composition ships in v0 separately from loops, scripts or a general workflow language.
+Both options need ordering/results/recovery; they differ in who authors the procedure.
 
 Resolve these bundles in order, not as isolated field-name choices:
 
 | Bundle | Ruling and evidence needed |
 | --- | --- |
-| Establishment ownership | Choose the template/plugin/engine split. Require inspectable semantic stages and failure behavior even when procedure code stays in plugins. Decide whether the first three cases need authored steps. |
+| Establishment ownership | Use the four filesystem cases to choose standard plugin lifecycles and whether optional author-written typed composition is needed in v0. Define what a plugin exports, what the author can vary, and what stages/outputs remain inspectable. Preserve Resource establishment versus Session-access preparation. |
 | Dependencies and outputs | Define strict prerequisites, bounded independent work, readiness conditions, typed output references/lifetimes and blocking-cycle diagnosis. Keep logical Resource access in Conduits. |
 | Interaction and recovery | Define waiting for a person, retained partial setup, safe retry/reconciliation, versioned continuation, cancellation and late-worker results. Separate setup continuation from starting a stopped model execution. |
 | Template-to-instance transition | Use successful and failed cases to decide creation-only setting retention, status, instance export/import and one-off authoring. Preserve minimal bookkeeping and current authority. |
-| Extensibility | Identify a real case needing user-defined ordered calls, loops or transformations before selecting extra language syntax. Plugins remain extensible; no general workflow engine is presumed. |
+| Extensibility | Compare a custom worktree → seed → validate sequence with ordinary Resource configuration. If typed composition is selected, define its home in the existing families and stage/version/recovery semantics. Loops, arbitrary expressions and shell execution are separate extensions, not prerequisites for a small graph. |
 
 Then return to detailed directory/worktree contracts and symlink behavior, followed by storage,
 search and MCP. Filesystem/storage/search/integration groups and separate directory/worktree

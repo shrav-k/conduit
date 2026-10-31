@@ -258,6 +258,9 @@ an absolute host backing path. For example, `./repo` with base `/work/euphony` b
 symlink-resolution behavior or the Session's prepared path.
 Remaining detailed configuration and lifecycle choices in this walkthrough are proposals.
 Plain directory access does not imply Git management, even when the folder contains a checkout.
+The [filesystem lifecycle comparison](ESTABLISHMENT.md#filesystem-plugins-and-template-examples)
+now works through existing/new directories, remote trees and Git worktrees, with concrete template
+fragments, plugin responsibilities and optional author-written typed composition.
 
 Attach an existing checkout as a `filesystem` / `local-directory` Resource through its Pool.
 Two Sessions can receive separate symlinks from their Conduit attachments; those symlinks are

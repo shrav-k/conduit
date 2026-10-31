@@ -109,8 +109,11 @@ Distinguish a completed establishment effect from continuing readiness and from 
 An empty database, an indexed corpus and a usable search capability are different outcomes.
 Existing safe-retry, current-access, explicit-resume and data-retention contracts constrain the
 new lifecycle design. The representation of recoverable partial setup, user-authored composition
-and creation-only field retention remains open. Neither an opaque callback nor arbitrary scripts
-should become the default merely because those contracts have not yet been specified.
+and creation-only field retention remains open. Author-written graphs of typed plugin actions
+are a distinct option from arbitrary scripts or a general workflow language; standard type
+lifecycles could coexist with optional composition. The filesystem walkthrough explores that
+boundary without selecting a plugin ABI or graph syntax. Neither an opaque callback nor
+arbitrary scripts should become the default merely because the contracts are unspecified.
 
 ## Configuration language
 

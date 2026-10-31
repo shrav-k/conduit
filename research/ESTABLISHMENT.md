@@ -6,7 +6,7 @@ rules remain accepted. The lifecycle protocol, dependency/output notation and co
 proposed here require review. No accounts were enrolled, services provisioned or model calls made.
 
 Read [the accepted contracts](../DESIGN.md#establishment-contracts-and-instance-state), then the
-three worked cases below. This report extends [configuration research](CONFIGURATION.md) and
+worked cases below, including the [filesystem comparison](#filesystem-plugins-and-template-examples). This report extends [configuration research](CONFIGURATION.md) and
 uses the existing [Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth). It does not
 introduce a fifth family, a separate operation-document format or a dependency on Pi's runtime.
 
@@ -31,6 +31,7 @@ Conversely, selecting YAML does not excuse leaving these properties implicit in 
 | Approach | Benefit | Main problem for Conduit |
 | --- | --- | --- |
 | Static settings plus one opaque plugin callback | Small authoring surface. | Cannot explain an interaction wait, partial progress or safe recovery without an additional lifecycle contract. |
+| Author-written graph of typed plugin actions | Compose supported behaviors into custom setup without implementing Git, SSH or filesystem internals. | Public step identities, output binding, continuation after edits and cleanup semantics must be designed. This is a narrower option than arbitrary scripts. |
 | Templates list arbitrary shell/HTTP steps | Almost any integration is expressible immediately. | Authors inherit token handling, parsing, retries, platform differences and uncertain side effects; unrelated templates duplicate provider mechanics. |
 | Typed templates plus recoverable plugin lifecycles, recommended | Portable semantic choices, explicit dependencies/results, implementation freedom. | Requires a real plugin lifecycle protocol and conformance cases; this is more than a schema parser. |
 | General workflow language or replayable program as the core | Rich branching, loops, fan-out and custom orchestration. | Adds workflow versioning, expression semantics, replay constraints and authoring complexity before the examples require that much freedom. |
@@ -39,6 +40,31 @@ A workflow interpreter could later implement a compatible plugin. It would still
 Conduit's ownership, output, authority and recovery contracts. No such dependency or workflow
 Resource type is selected here. Engine bookkeeping is supporting state of instances/attempts;
 each stage does not need its own Resource or user-maintained YAML document.
+
+## The distinction between plugin stages and authored stage graphs
+
+Both options support multiple stages, dependency ordering, outputs and recovery. The distinction
+is **who defines the sequence and which parts become a public authoring contract**:
+
+| Question | Plugin-owned stages | Template-authored typed graph |
+| --- | --- | --- |
+| Who defines a normal Git-worktree creation sequence? | The worktree implementation, selected by configuration. | A graph can call the same implementation as one typed stage. It need not rewrite Git internals. |
+| How does an author choose create versus attach? | An ordinary type-specific field. | The field may remain; graph stages add composition when needed. |
+| How can an author add custom initialization? | Select a supported option or use another capability through declared dependencies. A genuinely new sequence may require an extension. | Add a supported action and connect its inputs/outputs to earlier stages. |
+| Who implements OS calls and provider exchanges? | Plugins. | Still plugins, unless an explicit code/script action is supported. |
+| Who handles run recovery? | Engine plus the plugin's supported continuation contract. | Engine plus each action's continuation contract, with graph identity/version changes also governed. |
+| Must template authors write a graph? | No. | Not necessarily: types can still offer default graphs or ordinary configuration. |
+
+The earlier contrast was too broad: the second option does **not** inherently mean arbitrary
+shell scripts, loops or a full workflow language. A small typed composition graph is a credible
+middle ground. Conversely, needing staged execution does not automatically require author-written
+graphs: a code-defined state machine can expose stages/results and resume through the engine.
+
+Recommend stable built-in type lifecycles plus an explicit composition boundary. Whether authored
+typed graphs ship in v0 should follow a real customization case such as worktree creation followed
+by selected project initialization. The four primitive filesystem cases below work with ordinary
+typed configuration; combining their outcomes with custom processing may justify the graph option.
+No ruling on authored graphs has been accepted yet.
 
 ## Evidence from existing systems
 
@@ -333,6 +359,238 @@ The dividing test is whether users are selecting the desired capability or progr
 algorithm. Provider-specific mechanics belong in plugins. Reusable composition of capabilities
 belongs in the language. Novel computation can live in code-backed plugins; it should not force
 ordinary directory or login templates to adopt a programming language.
+
+## Filesystem plugins and template examples
+
+All new fields, module layouts and callable action names in this section are sketches. The accepted
+filesystem types are local-directory and git-worktree; remote-tree is only a candidate. Examples
+omit the undecided common apiVersion, owning-Pool field layout and system metadata. Every Resource
+is established through a Pool, and access is mediated by an authorized Conduit. No files, links,
+mounts or worktrees were created for this investigation.
+
+### What a plugin actually contains
+
+A plugin is an implementation package, not a skill or Resource instance. A possible Rust source
+layout for built-in implementations is:
+
+```text
+filesystem-implementation/
+  contracts/               template, instance, output and status schemas
+  local_directory.rs       attach/create/inspect/recover behavior
+  git_worktree.rs          Git-specific establishment and lifecycle
+  ssh_tree.rs              optional remote-tree implementation
+  projections.rs           supported consumer access preparation
+  conformance/             failure, retry and cleanup cases
+```
+
+These are illustrative files, not created code or a selected packaging convention. One package
+can supply several Resource types; type identity remains independent of installation packaging.
+Built-in Rust modules, external processes and other plugin hosts are implementation choices
+still open. A plugin need not be a dynamic Rust library or one process per Resource.
+
+Its conceptual interface includes config validation, establishment/continuation, inspection,
+supported consumer preparation/release, and explicitly authorized cleanup. A result can report
+completion, a dependency/human wait, a resumable phase or an uncertain outcome. These are not fixed
+method names. Contracts declare effects, outputs and recovery capabilities; the code implements
+them. Session activation selects the desired projection and path, while a compatible preparer
+performs the actual link/mount/tool setup. The exact helper ownership/API is unresolved.
+
+### Existing local directory exposed as a symlink
+
+The Resource template describes the backing directory:
+
+```yaml
+kind: Resource
+form: template
+metadata: {name: euphony-source}
+spec:
+  type: {group: filesystem, name: local-directory, version: v1alpha1}
+  config:
+    establish: attach
+    path: /work/euphony
+```
+
+The Pool creates a Resource registration bound to that existing directory. The plugin validates
+that the configured target can be attached under its path/access contract; it does not create a
+missing target. The instance records the absolute backing path and actual readiness.
+
+Separately, the Session receives the Resource through a Conduit and its activation chooses a
+Session-local symlink. In conceptual terms: expose the authorized input `source` as a symlink at
+`<session-workspace>/source`. This is Session preparation, not a new Resource template or a direct
+reference that bypasses the Conduit. That preparer establishes the link and records enough to
+release its own projection later. Reusing a known projection and encountering an unrelated path
+collision are different cases. Do not overwrite an unrelated file/link or remove the target folder
+when releasing the projection. Exact symlink-following/canonicalization rules remain open.
+
+A symlink names another path and can dangle; it does not copy a directory or create an independent
+filesystem permission boundary. The Linux manual is evidence for that mechanism, not a promise
+of identical cross-platform implementation. [symlink(2)](https://www.man7.org/linux/man-pages/man2/symlink.2.html)
+
+The plugin may expose inspectable phases, but an author should not have to write a stat/link/unlink
+program to request this normal exposure. A graph becomes useful when extra work must occur before
+exposure, not simply because the preparer uses several OS calls.
+
+### Create a new directory
+
+Use the same type with different establishment intent:
+
+```yaml
+spec:
+  type: {group: filesystem, name: local-directory, version: v1alpha1}
+  config:
+    establish: create
+    path: /work/euphony-scratch
+```
+
+Plugin procedure: validate target and parent policy → attempt creation with existing-target
+conflict semantics → verify and record the result. A preflight existence check alone cannot make
+a racing creation safe; the actual create operation must enforce its conflict rule. Parent-directory
+creation/permissions are additional type-contract choices, not implied by this example.
+
+The output is a concrete Pool-owned directory Resource. Sessions use the same access preparation
+as an attached directory. Stopping a Session or removing its symlink does not remove the directory.
+After an uncertain create, existence alone is insufficient proof that this attempt created the
+path; use retained/native evidence where possible or report an unresolved outcome. Cleanup remains
+explicit and preserves unrelated work.
+
+A template-authored graph adds value for a different request: create the directory, copy a selected
+seed, run a supported initializer, then make the result available. The existing type must not
+silently claim all those responsibilities through arbitrary extra config fields.
+
+### Access a remote filesystem
+
+For this example, assume SSH/SFTP rather than NFS, SMB or a synchronized local copy. This choice
+must be explicit; those protocols/exposure modes have different capabilities and lifetimes.
+OpenSSH describes SFTP as file transfer over SSH, including authentication. Its host-key handling
+is configurable. [sftp(1)](https://man.openbsd.org/sftp) ·
+[ssh_config(5)](https://man.openbsd.org/ssh_config)
+
+A candidate Resource describes the remote target:
+
+```yaml
+spec:
+  type: {group: filesystem, name: remote-tree, version: v1alpha1}
+  config:
+    establish: attach
+    endpoint:
+      protocol: sftp
+      host: files.example.invalid
+      port: 22
+    root: /srv/euphony
+```
+
+This config does not contain a private key or grant access. A Conduit attachment selects the
+permitted service identity and resolves its credential dependency, perhaps through an authorized
+password-manager Resource. The remote target can be shared while clients/authentication remain
+per participant. Registration may be possible offline; usable attachment requires successful
+connection/authentication and root/capability checks.
+
+Plugin/attachment stages might be: resolve credentials → establish SSH transport and host identity
+→ authenticate → verify remote root/capabilities → return the usable attachment. Authentication
+may require interaction. Conduit records waits, outcomes and continued attachment state; it does
+not require each template to spell out SSH handshakes.
+
+Session exposure then chooses a supported mode:
+
+- Remote filesystem tools operate through the authenticated client, without inventing a local path.
+- A mount-capable integration can prepare a local mount, then expose that path. Native support,
+  mount lifetime, credentials and required privileges must be reported rather than assumed.
+- Download/sync creates local backing and conflict/refresh semantics; model that explicitly, not
+  as a magic property of a remote path.
+
+A plain local symlink cannot turn an SFTP URL into a mounted filesystem. It can point to an
+already prepared local mount path. A persistent/shared mount with an independent lifecycle may
+merit its own Pool-owned Resource; an attachment-local helper need not. This is a lifecycle ruling
+still open, not a requirement to register every client or projection.
+
+On disconnect, retain logical identity where supported and report degraded access. Reconnect
+with the same authorized identity; retries of interrupted writes depend on their actual semantics.
+Detaching a consumer releases only its client/mount usage, never remote backing data.
+
+### Create and use a Git worktree
+
+The accepted git-worktree type adds Git-specific behavior to directory access. A conceptual
+config is:
+
+```yaml
+spec:
+  type: {group: filesystem, name: git-worktree, version: v1alpha1}
+  config:
+    establish: create
+    repositoryInput: repository
+    path: /work/worktrees/euphony-review
+    checkout:
+      base: main
+      newBranch: review-change
+```
+
+`repositoryInput` denotes the authorized repository supplied through a declared Conduit; its
+binding syntax is omitted because it remains under review. The base/branch fields are examples,
+not approved defaults. Detached checkout and attachment to an existing worktree need explicit
+supported variants. Fetch/clone is not implied by choosing a local base.
+
+Plugin procedure: inspect authorized repository → resolve the requested base to a commit →
+check destination/branch constraints → use native Git worktree establishment → inspect actual
+registration/checkout → return worktree identity, path and resolved revision. A lock or other
+coordination may be needed across attempts using the same repository; exact mechanisms are open.
+
+Git documents worktree add/list/remove, a machine-readable listing format, restrictions around
+already-checked-out branches and refusal to remove unclean worktrees without force. Linked
+worktrees share repository state while retaining worktree-specific state. These support a
+dedicated implementation rather than treating a worktree as an arbitrary newly created folder.
+[git-worktree](https://git-scm.com/docs/git-worktree)
+
+Use ordinary configured file/Git tooling for ongoing work within permitted access; the lifecycle
+handler need not reimplement Git's entire command set. A Session may receive a local path/symlink
+just as for a directory. More Sessions can attach to that same worktree explicitly; independent
+writers normally use different worktrees. Separate worktrees do not isolate shared branches/refs
+or provider quotas. On restart, inspect Git's actual registration and retained effect evidence
+before repeating add. Explicit cleanup checks active consumers, local work and the existing
+preservation rules; Session closure does not automatically remove a worktree or its branch.
+
+### What option 2 would add
+
+Suppose the user wants a custom ready-to-use workspace: create a worktree, populate fixtures,
+then perform a supported validation. An illustrative graph fragment inside establishment
+configuration could compose typed actions:
+
+```yaml
+# Conceptual fragment; no chosen graph field layout or expression language.
+stages:
+  - id: workspace
+    uses: {group: filesystem, name: git-worktree, operation: establish}
+    with: {configuration: selected-worktree-config}
+  - id: seed
+    uses: {group: example, name: project-seed, operation: populate}
+    with:
+      destination: {fromStage: workspace, output: workspace}
+      source: selected-authorized-seed
+  - id: verify
+    uses: {group: example, name: workspace-check, operation: run}
+    after: [seed]
+    with:
+      workspace: {fromStage: workspace, output: workspace}
+```
+
+The first stage still delegates Git mechanics to the worktree plugin. Stage outputs are typed
+handles with ownership/access semantics, not arbitrary trusted strings. The enclosing Pool and
+current authority still govern Resource creation; stage IDs are not new Resources. Exact public
+operation/type-version references and Conduit input routing need design before this is executable.
+The engine handles dependencies, persistence and retry; each plugin action must support its
+claimed continuation behavior.
+
+This adds genuine flexibility: a user can compose a novel supported sequence without writing a
+new plugin. It also adds public semantics: what edits do to an interrupted graph, how stage IDs
+survive retries, when output handles are valid, which completed work is reused and what cancelling
+a composite releases. A fixed linear graph is much smaller than a general language with loops,
+arbitrary expressions or shell execution, but these semantics still cannot be skipped.
+
+A useful combined design is **ordinary typed configuration for standard Resource lifecycles,
+plus optional typed graphs for custom composition**. A graph should call complete safe operations,
+not allow bypassing a worktree type's identity checks or hard-code every SSH protocol exchange.
+Whether that composition layer belongs in v0, and whether its authoring home is a Pool template
+or another existing family's contract, remains a single connected ruling rather than an assumed
+new workflow family. This is the question to resolve from the filesystem examples.
 
 ## What the first protocol must settle
 

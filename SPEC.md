@@ -72,6 +72,11 @@ contracts can supply reusable schemas and implementations; templates select and 
 A frontend can present ordinary field editing while invoking the relevant control through a
 Conduit. This requires no separate user-authored operation-request document.
 
+Application behavior must remain extensible rather than requiring an exhaustive Conduit-wide
+lifecycle enum. Plugins describe their own requirements and follow-up behavior through typed
+contracts. The MCP representation of these exchanges is under review; protocol message types
+are distinct from plugin-specific domain state.
+
 Plugins declare typed inputs/outputs. Graph bindings imply dependencies; explicit prerequisites
 cover ordering without data. Graphs run at instance start, while plugins may verify already
 satisfied work. A graph can request instance-managed service startup before later setup steps.
@@ -84,7 +89,7 @@ permitted controls through a Conduit; the template does not silently propagate e
 
 Template intent, instance configuration, requested changes and observed state must remain
 distinguishable. Blanket instance immutability is replaced by explicit change contracts. Exact
-mutable fields, omission defaults, change-handler syntax, restart/replacement categories, contract
+mutable fields, omission defaults, change-handler syntax, plugin application behavior, contract
 migration and stored requested/applied representation remain for grouped review. This is neither
 a promise that every setting is mutable nor a generic unrestricted spec-patch API.
 

@@ -46,19 +46,24 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — common application semantics:** should named controls expose a small shared,
-structured contract for application requirements/effects and separate progress/outcomes, with
-plugins supplying the details? Recommend this so every Interface/Agent can distinguish a change
-that can apply live, must wait for a supported boundary, or needs restart/replacement from whether
-the request is pending, applied, failed or uncertain. These are illustrative meanings, not a chosen
-enum or mandatory state machine. Requirements may depend on inputs/current state and must be rechecked.
+**Current discussion — open-ended control exchanges through MCP:** the user did not accept the
+previous shared-application-contract ruling and wants to avoid a strict lifecycle enumeration.
+Named typed controls remain settled. Investigate MCP as the communication standard for agents
+requesting those changes, with plugin-defined requirements, results and follow-up behavior.
 
-The alternative leaves those meanings entirely in each plugin's result format. Both retain typed
-control inputs/outputs, but a shared layer lets generic clients explain what a change requires and
-what actually happened without provider-specific interpretation. See the
-[application example](research/CONFIGURATION.md#application-requirements-and-outcomes).
-Exact fields, vocabulary, automatic versus explicit restart, concurrency and storage of requested/
-applied settings remain open. The proposal adds no mandatory preflight operation or extra confirmation.
+**Revised proposal, not yet ruled:** expose controls as discoverable MCP tools with their typed
+contracts; return explanatory content and plugin-schema structured results. Use standard
+progress, additional-input, resource observation and task mechanisms where applicable and
+supported. Keep MCP wire states distinct from open-ended domain state; do not add a mandatory
+Conduit application-mode enum or universal change-state machine. Each continuation still uses
+authorized operations and current access checks.
+
+The [MCP review and example](research/CONFIGURATION.md#application-requirements-and-outcomes)
+distinguish baseline tools/results from optional features and version-specific behavior. This
+mapping does not select a single combined MCP server, require internal Rust modules to speak
+MCP, or prove native client support. Exact bindings, client fallbacks, workflow schemas, restart
+policy and requested/applied storage remain open. Discuss this revision before asking for another
+fine-grained application-state ruling.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -114,7 +119,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Named typed controls backed by handlers are accepted. Define common application semantics, operation/graph bindings, related-field/transition constraints, concurrency checks and applied-state representation. Control-envelope/graph changes and metadata rules remain unresolved. |
+| Configuration changes versus state | Named typed controls are accepted; avoid an exhaustive domain lifecycle enum. Review MCP-based exchanges with plugin-specific results/continuations, handler bindings, transition constraints, concurrency and applied-state representation. Control-envelope/graph changes and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |

@@ -87,24 +87,84 @@ notation remain open; no separate user-authored operation manifest is required.
 
 ### Application requirements and outcomes
 
-**Proposal for review:** give named controls a small shared, structured contract describing
-application requirements/effects separately from progress and outcomes. Plugins supply the actual
-supported behavior and details. Inputs/current state may determine requirements, so inspection is
-not a reservation or guarantee; relevant conditions and authority are rechecked at application.
+**User direction:** keep this an open-ended communication pattern and investigate MCP, since
+Agents will request configuration changes. The previous shared-application-contract proposal
+was not accepted. Its examples must not become an exhaustive Conduit lifecycle enum. Named typed
+controls remain accepted; their MCP mapping below is a revised proposal for discussion.
 
-| Illustrative control behavior | Application requirement/effect | Independent progress/outcome |
+#### MCP evidence and mapping
+
+Checked the official 2026-07-28 specification and current Tasks extension documentation on
+2026-10-31. These are protocol facts plus design inferences, not verified support in any native
+Agent or an implementation commitment to every optional feature.
+
+| MCP mechanism and source | Fact relevant to this design | Proposed Conduit use |
 | --- | --- | --- |
-| Change a search limit supported live | Apply without restarting the runtime. | May still be pending, confirmed applied or uncertain after a lost response. |
-| Change a setting at a supported boundary | Wait until the runtime can safely apply it. | Waiting is not proof the new setting is active. |
-| Change a setting requiring restart | A runtime restart is needed to take effect. | A restart requirement is distinct from a restart having started or the setting becoming active. |
+| [Tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools) | `tools/list`/`tools/call` expose named tools with input schemas; results can include text and `structuredContent`, validated against an optional `outputSchema`. | Expose named controls with plugin-defined schemas and explanatory results, retaining native provider contracts. |
+| [Base protocol](https://modelcontextprotocol.io/specification/2026-07-28/basic) | This revision standardizes result discriminators and per-request metadata; extensions add recognized result types through advertised capabilities. Cross-request state uses explicit identifiers. | Reuse MCP's envelope; keep domain details in declared plugin payloads, and link requests to Conduit evidence/identity separately. |
+| [Progress](https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/progress) | Optional notifications correlate to a requested progress token and can include a message. | Report ongoing work when supported; progress is not proof that a configuration change took effect. |
+| [Multi-round-trip requests](https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/mrtr) | This revision uses `input_required`, input requests/responses and optional opaque continuation state for supported client-input mechanisms. | Support standard continuations when appropriate without inventing a universal domain workflow. Older protocol versions differ. |
+| [Elicitation](https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation) | Supports user-input forms and URL-based interaction, subject to client capabilities; secrets must not be collected by form mode. | Use for genuine human input or interactive authentication where supported. Agent decisions can normally proceed through ordinary tool exchanges instead. |
+| [Resources](https://modelcontextprotocol.io/specification/2026-07-28/server/resources) | URI-addressed content is readable; supported updates use subscription notifications in this revision. | Expose permitted instance observations/artifacts for retrieval. An MCP resource is a protocol view, not necessarily another Pool-owned Resource instance. |
+| [Tasks extension](https://modelcontextprotocol.io/extensions/tasks/overview) | A separately negotiated extension supplies durable task handles, polling/input/cancellation and its own status vocabulary. | Consider it for long-running changes. Do not require it of every client or equate task status with a plugin's application state. It adds no Conduit object family. |
 
-Recommend a common interpretation for these distinctions so CLI, UI, headless clients and Agents
-can explain the same operation. The alternative uses only each plugin's typed result format,
-requiring plugin-specific interpretation of application behavior. Exact vocabulary and status
-schemas remain open; these examples do not impose a universal scheduler or state machine.
-Automatic versus explicit restart/replacement, requested/applied configuration storage and
-concurrency remain separate decisions. No mandatory preflight request or additional approval
-step follows from exposing the contract.
+#### Revised communication boundary
+
+Recommend standard MCP interactions carrying extensible, typed plugin contracts. A database
+plugin can explain migration prerequisites; an authentication plugin can describe an unlock flow;
+a filesystem plugin can report a conflicting path. Adding one such behavior should not require
+editing a global Conduit list of application modes. Each plugin still defines its inputs, output
+schema and documented meaning; openness does not mean silently accepting malformed configuration.
+
+Generic Interfaces can render tool descriptions, explanatory content and structured results.
+Agents can interpret a result and select a supported next tool call. Specialized automation/UI
+can understand a plugin's richer schema. A generic frontend cannot infer every plugin-specific
+recovery procedure from a universal state label. Keep the existing shared invariants: attributable
+requests, current authority, recorded evidence, and no claim of application without evidence.
+
+Illustrative exchange, using invented tools and a plugin-specific response schema:
+
+1. The Agent invokes `set_query_limit` for `search-7f3a`, requesting 15.
+2. This hypothetical backend cannot apply the change live. It reports that no change was made,
+   the observed value remains 10, and its supported retry can explicitly include restart.
+3. The Agent can invoke the same advertised control with that option when permitted, or leave
+   the instance unchanged. No human prompt is inherently required by this pattern.
+
+Example **MCP tool-result fragment**, not a complete JSON-RPC exchange or an accepted Conduit schema:
+
+```json
+{
+  "resultType": "complete",
+  "isError": true,
+  "content": [{
+    "type": "text",
+    "text": "No change made. This backend needs a restart to apply the query limit. The active limit remains 10."
+  }],
+  "structuredContent": {
+    "observedLimit": 10,
+    "suggestedCall": {
+      "name": "set_query_limit",
+      "arguments": {"resource": "search-7f3a", "limit": 15, "restart": true}
+    }
+  }
+}
+```
+
+`resultType`, `content`, `structuredContent` and `isError` belong to the cited MCP version.
+`observedLimit`, `suggestedCall`, tool/argument names and the restart option are invented plugin
+fields, not MCP-standard continuation fields or a requirement for all controls. Here the tool
+request has finished with an actionable error; the requested setting has not been applied.
+For a genuinely ongoing operation, use a supported long-running mechanism or explicit operation
+handle instead of implying that returning a response proves completion of its effects.
+
+A suggested call is result data, not permission or an instruction to bypass the caller's policy.
+The Agent must use an actually exposed tool/schema and its permitted Conduit. JSON-RPC request IDs
+are wire correlation, not Conduit's retry/idempotency guarantee; retain explicit operation evidence
+where the integration can provide it. Optional MCP features and version mappings need adapter tests.
+Unchanged principles include separate model accounts, shared Pool authentication, preserved native
+provider tools, no mandatory combined gateway and no MCP server requirement for every internal
+Rust component. Exact mappings, fallback behavior, restart policy and stored requested/applied
+configuration remain open.
 
 ## Recommendation and reading guide
 

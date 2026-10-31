@@ -501,7 +501,7 @@ Exact aggregate status/completion fields and explicit whole-Pool gates remain op
 **Accepted composition and participation:** [one reusable access Conduit](CONDUITS.md#can-there-be-one-euphony-access-conduit)
 can compose these distinct connections; each consumer's attachment tracks its own component
 participation. Exact aggregate readiness and cleanup recovery remain open. The next review is the
-[common application semantics for named controls](CONFIGURATION.md#application-requirements-and-outcomes);
+[open-ended MCP communication pattern for named controls](CONFIGURATION.md#application-requirements-and-outcomes);
 typed filters and their access-path composition are settled at the semantic level.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,

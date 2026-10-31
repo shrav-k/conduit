@@ -99,18 +99,25 @@ authorized Conduit. The interaction does not require a separate user-authored op
 or make all instance fields writable. A declaration cannot make an unsupported runtime operation
 work or grant caller authority. Omitted-control defaults and exact field/handler bindings remain open.
 
-The following is the **recommended contract shape for review**, not finalized YAML or a mandatory
-field list. Shared versioned type definitions can avoid copying schemas into every template, but
-the resolved template/instance must make its effective contract visible.
+The following lists **contract concerns for review**, not a mandatory field list or exhaustive
+application-state enum. The user's direction is an open-ended communication pattern, investigating
+MCP as its standard agent-facing expression. Shared versioned type definitions can avoid copying
+schemas into every template; the resolved template/instance must make its effective contract visible.
 
 | Concern | Meaning to expose |
 | --- | --- |
 | Configurable surface | Which named controls are exposed, their types, and which configuration they affect. |
 | Value constraints | Allowed values, ranges, units, shapes and related-field conditions. Static limits differ from runtime-discovered eligible choices. |
 | Transition conditions | Whether this change is valid from the current state, including readiness, active work and other prerequisites. Valid endpoints alone do not prove a valid transition. |
-| Application behavior | The supported operation/handler and whether it applies live, waits, needs a restart, or requires a new instance. Concrete categories/defaults remain to be selected. |
+| Application behavior | Plugin-defined requirements, effects and continuations implemented by the supported handler. Examples such as waiting or restarting do not form a closed Conduit taxonomy. |
 | Results and observations | What proves application, how progress/failure/unknown outcomes appear, and what clients can inspect afterward. |
 | Recovery and retention | Supported retry/cancel/reconciliation and what applied settings persist across restarts. No universal queue or rollback policy is implied. |
+
+The earlier proposal for shared application semantics was not accepted. Rework it around MCP
+discovery/invocation and extensible plugin results, preserving the existing distinction between
+request acceptance and verified effects. MCP's standard wire/result types do not require every
+plugin's domain lifecycle to fit a shared enum. Exact mapping and client compatibility remain in
+[review](REVIEW.md#next-discussion); no universal status schema or new state machine is selected.
 
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority

@@ -200,8 +200,9 @@ that our proposed adapter can enforce arbitrary workspace or parameter restricti
 
 #### The objects and their responsibilities
 
-An Interface authors templates and asks an Euphony Pool to instantiate a Linear MCP Resource.
-The user establishes a shared service login for that Resource. Two Agents open individually
+An Interface authors templates and asks an Euphony Pool to instantiate an authentication Resource
+and a Linear MCP Resource connected to it through a Conduit. The authentication Resource manages
+the reusable provider login. Two Agents open individually
 restricted access Conduits without separately logging into Linear. The Interface can also open a
 management Conduit to the Resource. Opening access does not grant configuration control or give
 the Agent the upstream credential. Per-attachment identities remain an explicit supported exception.
@@ -209,14 +210,15 @@ the Agent the upstream credential. Per-attachment identities remain an explicit 
 | Element | Responsibility in this example |
 | --- | --- |
 | Resource template | Service target, constraints, establishment recipe, supported runtime and exposed operations/controls. |
-| Resource instance | The concrete Pool-owned service capability, shared upstream authentication/refresh and applicable configuration/state. It need not run its own daemon. |
+| Authentication Resource instance | The Pool-owned reusable identity/binding capability and coordinated login/refresh lifecycle. Its exact type and operations remain open. |
+| Service Resource instance | The Pool-owned Linear MCP capability, upstream clients and service configuration. It uses the authentication Resource through a Conduit. Neither Resource needs its own daemon. |
 | Access Conduit instance | Each Agent's authorized relationship, filters and local attachment state. It uses the explicitly shared binding here; a different mode can select a permitted per-attachment service identity. |
 | Management Conduit instance | The Interface's permitted path for inspection and supported changes on the Resource. |
 | Plugin implementation | Typed operations for authentication, MCP interaction or runtime control. One package may supply several operations; packaging is not Resource identity. |
 | Graph | Ordering and value bindings for a procedure requiring several operations. Its nodes do not become permanent supervisors. |
 
-The Pool owns the Resource; it need not relay every network request. This is Pool-managed access
-implemented by an owned Resource, not a reason to add a second authentication implementation to
+The Pool owns both Resources; it need not relay every network request. This is Pool-managed access
+implemented by owned Resources, not a reason to add a second authentication implementation to
 the Pool itself. A plugin can serve many instances; endpoint equality never implicitly shares
 credentials. Sharing the chosen service identity also does not require sharing a single socket or
 protocol session. The integration may reuse clients or keep separate upstream clients under the
@@ -224,9 +226,10 @@ same managed identity. Those clients are runtime state, not automatically additi
 
 #### Establish the service and its attachments
 
-The Resource's establishment recipe validates its target, authenticates or verifies the selected
-shared service identity, prepares the instance-managed upstream client and discovers supported
-capabilities. Authentication may wait for a user once, or again if provider consent expires; it is
+The authentication Resource establishes or verifies its supported shared provider binding. The
+service Resource's recipe establishes its authorized Conduit to that capability, validates its
+service target, prepares its upstream client and discovers supported operations. Authentication
+may wait for a user once, or again if provider consent expires; it is
 not repeated merely because another Agent attaches. A protected binding stays with the managed
 Resource, not in exported YAML or the Agent's tool arguments. A workspace constraint requires
 supported verification rather than inference from the local Resource name.
@@ -246,8 +249,9 @@ permission, Resource policy and the caller's Conduit restrictions all limit effe
 Joining a Pool alone does not grant use of the shared login. Native-client registration/approval
 may still be needed, but it need not entail another provider sign-in.
 
-The Resource instance manages shared authentication, refresh and upstream clients. Each Conduit
-manages its attachment and any consumer-facing transport. Setup nodes finish after preparing that
+The authentication Resource manages the reusable binding/refresh; the service Resource manages
+its upstream clients using that capability. Each Conduit manages its attachment and any
+consumer-facing transport. Setup nodes finish after preparing that
 instance-managed state. Expiration of the shared login affects its users; revoking only A's access
 does not disable B or revoke the shared login. In the per-attachment identity variant, authentication
 can instead be prepared for each attachment, and one failed login need not affect another.

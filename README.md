@@ -32,8 +32,9 @@ plugin dependencies make this inspectable. Instances manage ongoing behavior; In
 Agents request permitted changes through Conduits. Type/plugin implementations supply the actual
 operations, while templates expose and constrain them.
 
-For example, an Euphony Pool holds a Linear MCP Resource with a managed service login. Several
-Agents attach through separately filtered Conduits. An external Agent can see Linear's native
+For example, an Euphony Pool owns a reusable authentication Resource and a Linear MCP Resource
+that accesses it through a Conduit. Several Agents attach to Linear through separately filtered
+Conduits, reusing that managed login. An external Agent can see Linear's native
 tools through a Conduit-managed MCP endpoint; our own runtime can mediate internally. Preserving
 the provider contract does not require a direct provider connection. Detaching an Agent preserves
 the shared Resource and login for the others.

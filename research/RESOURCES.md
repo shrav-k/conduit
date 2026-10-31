@@ -300,8 +300,9 @@ credential resolution/injection as a distinct capability, an `identity` type bec
 The Pool owns that configured capability. Shared service authentication and coordinated refresh
 normally belong to the managed provider binding; consumer-specific permissions and preparation
 belong to each Conduit relationship. Explicit per-consumer identities remain possible where needed.
-Whether reusable authentication should always be a separate Resource or sometimes internal state
-is the next representation question; neither choice creates a new top-level family.
+Reusable authentication is now a Pool-owned Resource accessed by service Resources through
+Conduits. Its type group/name, operation contract and treatment of non-reusable internal state
+remain open; it adds no family or mandatory Resource per token.
 Each downstream connection still requires authority; same-Pool membership does not deliver secrets.
 Provider authentication modes remain integration-specific, as explored in the
 [credential walkthrough](CONDUITS.md#3-access-a-1password-account-or-vault).

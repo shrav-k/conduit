@@ -23,22 +23,24 @@ foundations; exact declaration/implementation details below remain open.
 
 ## Next discussion
 
-**Start with how shared authentication is represented and reused inside a Pool.** Repeated
-per-Agent provider login is no longer the baseline. The [Linear walkthrough](research/CONDUITS.md#5-access-linear-through-mcp)
-establishes one shared service capability, gives Agents different filtered access, changes a
-supported setting and removes one consumer without disturbing the others.
+**Settled:** reusable authentication is a Pool-owned Resource that service Resources access through
+Conduits. Pool templates can assemble that composition. One account may support different
+provider-appropriate credentials; this is not a Resource per token or a sixth family. The
+[Linear walkthrough](research/CONDUITS.md#5-access-linear-through-mcp) now uses this separation.
 
-**First ruling:** when authentication is reusable across capabilities, should it be represented as
-a Pool-owned Resource connected to service Resources by Conduits, or remain internal to each
-service Resource? The recommendation is a reusable authentication Resource where it has an
-independent lifecycle or multiple consumers; a Pool preset can compose the objects so the user
-still configures one integration. This is a proposed representation, not a sixth family or a
-Resource per token. It must also explain the simplest one-service case without unnecessary setup.
+**Next ruling — wiring reusable templates:** should a reusable service template declare the kind
+of authentication it needs, with Pool composition supplying the concrete authentication Resource
+target during instantiation? Recommend this so a common MCP template can be used in Euphony and
+personal Pools without hard-coding either account. The resulting instance still retains one
+explicit Conduit declaration with its resolved target; no second editable endpoint list or
+automatic selection among available accounts is implied. The alternative puts a concrete target
+reference in each reusable service template and requires customizing it for another Pool.
 
-Use a provider account needed by MCP and a CLI as the comparison. Sharing the account source does
-not imply that the same token is valid for both. Define who selects the identity, obtains each
-supported credential, coordinates refresh and reports expiry. Avoid adding a generic secret-transfer
-path merely because two Resources need the same identity.
+This selects where composition supplies the dependency, not a parameter DSL, late implicit
+rebinding or particular YAML fields. The graph's ordinary configuration/output bindings and
+existing kind/form/name references remain the starting point. Then define the authentication
+Resource's supported identity/binding operations, interaction waits, refresh and consumer use.
+Keep ordinary use distinct from explicit secret retrieval; that boundary is already established.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -65,7 +67,7 @@ without promoting one provider's timeout, queue or process behavior into univers
 | --- | --- |
 | Types and compatibility | Keep filesystem, storage, search and integration groups; distinguish local-directory and git-worktree. Explore content, identity and agent-communication types. Define type group/name/version identifiers and compatible consumer contracts independently of plugin packages. Shared shapes/names alone do not prove behavioral compatibility. |
 | Establishment and runtime | Use an existing directory with Agent-local symlinks, explicit new-directory creation, remote filesystem and Git worktree. Retain create/attach intent in the complete template recipe, explicit path base and absolute instance path. Define type-specific setup outputs, waits, readiness, effects and cleanup. |
-| Authentication representation | Decide when reusable service authentication is its own Pool-owned Resource versus internal binding state. Preserve one lifecycle/refresh owner, protected references, supported provider identities and separate caller authority. Explicit per-consumer exceptions do not reinstate repeated login as the normal path. |
+| Authentication contract | Reusable authentication is a Pool-owned Resource. Define its type/operations, supported bindings and consumer dependency selection while preserving one lifecycle/refresh owner, protected references and separate caller authority. Non-reusable internal state and explicit per-consumer exceptions remain to be specified. |
 | Shared versus per-consumer state | Symlinks are preparation state, not additional Resources. Define client reuse, idle cleanup and attachment-local state separately from shared credentials; detaching a consumer must preserve Resource-owned state still needed elsewhere. |
 | Storage, search and MCP | Keep separate unitary Resources connected by Conduits. Define storage/search operations, index/input dependencies, freshness, indexing ownership and how MCP exposes existing contracts without silently combining responsibilities. |
 | Typed dependencies | Define generated outputs, revisions, expiring handles and prerequisites; diagnose blocking cycles. Preserve one authored connection declaration and derive reverse views rather than maintaining conflicting endpoint copies. |

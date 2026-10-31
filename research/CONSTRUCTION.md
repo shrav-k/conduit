@@ -300,11 +300,11 @@ the retained instance graph; editing a source file does not silently change regi
 
 ### MCP setup and instance runtime walkthrough
 
-A Pool owns an MCP-access Resource. Two Agents can connect through separate Conduits using
-one shared service login managed by that Resource, or different permitted service identities where
-supported. These identities are distinct from their model subscriptions. The Resource describes
-the service capability; each Conduit manages its authorized access relationship. Shared mode keeps
-upstream authentication/refresh with the Resource and supplies filtered access without distributing
+A Pool owns a reusable authentication Resource and an MCP-access Resource connected to it through
+a Conduit. Two Agents use the service through separate access Conduits, normally sharing the
+managed provider binding. Explicitly different permitted service identities remain possible where
+supported; neither mode changes their model subscriptions. The service Resource owns its clients;
+the authentication Resource owns reusable login/refresh, supplying access without distributing
 the credential to Agents. See the [Linear walkthrough](CONDUITS.md#5-access-linear-through-mcp).
 External native clients can use a Conduit-managed MCP endpoint preserving provider-native tools;
 direct provider connections require separately verified native interception/control support.
@@ -313,9 +313,9 @@ The primary shared-access sequence is:
 
 ```text
 Pool establishment
-  → instantiate service capability
-  → verify or establish its authorized provider binding
-  → prepare Resource-managed runtime/client state
+  → establish reusable authentication Resource and provider binding
+  → connect service Resource to it through an authorized Conduit
+  → prepare service Resource's runtime/client state
 
 Agent attachment
   → identify caller and check authority
@@ -324,15 +324,14 @@ Agent attachment
 ```
 
 The first sequence may wait for provider consent; the second does not repeat that login for
-another Agent. The Resource owns shared authentication/refresh while each Conduit owns its caller
+another Agent. The authentication Resource owns login/refresh while each Conduit owns its caller
 relationship. If a provider requires separate identities, an explicitly selected variant prepares
 that authentication at the corresponding attachment boundary. Neither mode changes the Agent's
 model subscription or makes credentials ordinary exported values.
 
-Exact authentication representation is the next review question: a reusable Pool-owned capability
-versus a binding internal to one service Resource. This example selects the shared lifetime and
-access semantics without prematurely choosing new YAML fields. Resource-to-Resource use still
-follows Conduits. Native interception/hotplug and provider compatibility remain unverified.
+Reusable authentication as a Pool-owned Resource is accepted. Dependency binding in reusable
+templates, exact operations and YAML fields remain open. No separate Resource per token is
+implied. Native interception/hotplug and provider compatibility remain unverified.
 
 MCP's [transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports) and
 [versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning) contracts

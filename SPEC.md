@@ -111,10 +111,12 @@ application; uncertain effects remain unknown until reconciliation or a supporte
 
 ## Shared Pool access and authentication
 
-Pool-owned capabilities normally manage shared service bindings and refresh. A binding is the
-managed association to an authorized provider identity, not raw credentials in YAML. Plugins
-implement provider authentication; the owning instance manages its ongoing state. The Pool
-organizes ownership and lifecycle without becoming an obligatory network hop or process.
+Reusable authentication is a Pool-owned Resource. Service Resources access it through Conduits
+rather than independently owning copies of the same login/refresh state. It manages supported
+provider bindings: associations to authorized identities, not raw credentials in YAML. Plugins
+implement authentication; the owning instance manages its ongoing state. A Pool template can
+compose the authentication and service Resources automatically. This adds no object family or
+requirement for a Resource per token, and makes the Pool neither a mandatory network hop nor process.
 
 Separate these contracts:
 
@@ -127,7 +129,10 @@ Use through a Conduit does not distribute the upstream credential. Pool membersh
 endpoint or discovering a tool does not itself grant access. Provider, Resource, caller and
 Conduit limits must all hold. Provider-specific identities per attachment remain an explicit
 exception where required or selected; one account or client is not mandated for every Resource.
-How a reusable authentication capability is represented across several Resources is under review.
+One authentication Resource can support several service Resources with provider-appropriate
+bindings; a shared account does not imply that the same token works for every service. Exact type
+names, operations, connection binding syntax and the treatment of non-reusable internal state
+remain open.
 
 Revoking one Agent's access leaves other permitted consumers and the shared login intact. Loss
 of the shared login can affect all its users. Ending a Conduit cleans up what that flow owns,
@@ -223,6 +228,7 @@ remaining choices and staged evidence.
 
 The five families, template/instance forms, Pool ownership and shared service authentication,
 complete construction templates, typed handlers and template-declared change boundaries are
-settled direction. Concrete authentication representation, control schemas, permitted
+settled direction, including Pool-owned reusable authentication Resources. Concrete binding and
+authentication-operation schemas, control schemas, permitted
 contract evolution, Conduit filtering/composition, lifecycle transitions and communication topology
 remain open. Resolve them with complete examples rather than provider-specific micro-rulings.

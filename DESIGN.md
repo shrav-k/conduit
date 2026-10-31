@@ -875,9 +875,17 @@ interactive renewal requirements remain explicit.
 A binding means a managed association to an authorized service identity, not a copied secret in
 configuration. Plugins implement authentication; instance runtimes own continuing state/refresh.
 The Pool owns and organizes the capability rather than introducing a second authentication engine.
-One service Resource can manage its binding; reusable authentication across several Resources may
-justify a separate Pool-owned capability. That representation is the next review decision, not a
-new object family or a requirement for a Resource per token.
+
+**Accepted representation:** reusable authentication is a Pool-owned Resource, accessed by service
+Resources through Conduits. It owns the reusable authentication/refresh lifecycle; consumers own
+their service behavior and clients without becoming separate owners of the login. Pool templates
+can compose these Resources and connections so one integration does not require manual authoring
+of every helper. This adds no family and does not make each token or login attempt a Resource.
+
+One authentication Resource can provide supported bindings for several service consumers; tokens,
+audiences and provider grants may differ even when the underlying account is the same. Sharing
+the account never establishes credential compatibility. Its exact type group/name, operations,
+connection binding and handling of non-reusable internal authentication state remain open.
 
 | Concern | Contract |
 | --- | --- |
@@ -901,7 +909,8 @@ template does not implicitly combine accounts, grants or OAuth state. Cross-Pool
 an explicit authorized path to the owning capability, not duplicated ownership or copied tokens.
 Shared authentication does not merge private Agent context or selected model subscriptions.
 
-For example, one Euphony Linear Resource uses a managed login. A review Agent reads issues while
+For example, an Euphony Pool owns an authentication Resource and a Linear Resource connected to
+it through a Conduit. A review Agent reads issues while
 an implementation Agent may update them through a different Conduit. Removing the review Agent
 preserves the implementation Agent's access. The Resource's authentication state and each caller's
 connection/authorization state remain independently observable. See the

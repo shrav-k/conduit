@@ -9,8 +9,9 @@ a plugin may verify that its work is already satisfied and finish sooner. Cachin
 optimizations remain implementation concerns. Implementation has not started.
 
 Plugins declare their typed inputs and outputs; graph nodes select plugins and bind values to
-those contracts. Implementations can still be local scripts or processes. Dependency semantics
-and the detailed invocation protocol remain under review.
+those contracts. Output bindings establish dependencies; explicit prerequisites cover ordering
+without data transfer. Implementations can still be local scripts or processes. Output readiness,
+completion and the detailed invocation protocol remain under review.
 
 | Family | Instance represents |
 | --- | --- |

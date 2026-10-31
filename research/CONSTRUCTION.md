@@ -93,15 +93,22 @@ Exact types, output names and authorization/context transport remain open. Exist
 can shorten the plugin's execution without changing its declared interface. Reusing the plugin
 across templates does not require each template to repeat its schemas.
 
-**Next proposal:** a binding from one node's output to another node's input establishes a
-dependency on that output becoming available. Explicit prerequisite ordering handles relationships
-without a transferred value, such as populating a directory before validating it. This has not
-yet been ruled on. Detailed readiness/completion conditions and concurrency policy remain separate.
+**Accepted dependency rule:** binding one node's output to another node's input establishes an
+execution dependency. Explicit prerequisites express ordering without transferring a value,
+such as populating a directory before validating it. Output bindings do not require a duplicate
+ordering declaration. Exact binding/prerequisite syntax, readiness/completion conditions and
+concurrency policy remain separate choices.
+
+**Next proposal:** a plugin contract may declare an output usable while its execution continues,
+or publish it upon successful completion. A connection-maintenance plugin could expose a ready
+connection without terminating; an ordinary script could return its result when it finishes.
+Allowing such early outputs is under review. This does not select process ownership, teardown,
+readiness-loss propagation or automatic downstream retry behavior.
 
 ### Optimization-compatible properties
 
-Typed input/output ownership is accepted above. The remaining properties below are design
-recommendations, not a cache specification:
+Typed input/output ownership and dependency wiring are accepted above. Remaining details below
+are design recommendations, not a cache specification:
 
 | Property | Why it helps independent implementations |
 | --- | --- |
@@ -283,11 +290,15 @@ The [authoring boundary](#template-yaml-and-compose-inspired-composition) is als
 retain the typed YAML envelope and configuration, with an inline or explicitly referenced graph.
 Exact graph/binding syntax remains open; multi-object composition can follow later.
 
-Plugins now own their typed input/output contracts; nodes select plugins and bind values. Next
-decide whether output bindings establish execution dependencies, with explicit ordering where
-no value is transferred. Use authentication feeding connection setup and directory population
-preceding validation as the examples. The existing sketch illustrates this proposed ordering;
-it does not establish the ruling by itself.
+Plugins own their typed input/output contracts; nodes select plugins and bind values. Output
+bindings establish dependencies, with explicit prerequisites when no value is transferred.
+Authentication feeding connection setup and directory population preceding validation illustrate
+the two forms. Exact YAML syntax in the sketch remains illustrative.
+
+Next distinguish when an output becomes usable from when its producer finishes. Compare a finite
+authentication/script result with a connection-maintenance plugin that can report readiness while
+continuing to run. Decide whether the plugin contract may support both, before specifying how
+readiness loss or failure affects consumers. This does not imply a separate runtime family.
 
 Then work through the same reusable Agent template started twice, using an illustrative sequence:
 

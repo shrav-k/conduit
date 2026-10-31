@@ -505,13 +505,21 @@ Resource specs use these fields in both template and instance forms:
 
 | Field | Contract |
 | --- | --- |
-| `spec.type` | A type-contract reference with separate `name` and `version` fields. This is distinct from a registry object reference using kind/form/name. |
+| `spec.type` | A type-contract reference with separate `group`, `name` and `version` fields. This is distinct from a registry object reference using kind/form/name. |
 | `spec.config` | Type-specific settings validated by the selected contract schema. Unknown fields are rejected except in schema-declared open maps. |
 | `spec.conduits` | The consumer's Conduit declarations. Their entry shape and contents remain under review. |
 
-The type name/version are not combined into one string. Allowed type identifiers and version
-labels remain open; example values do not establish that grammar. This field layout neither
-adds a registered object family nor prescribes the plugin's configuration fields.
+Resource types have logical groups independent of installation packages. A plugin package may
+supply types from several groups; changing implementation packaging need not rename contracts.
+Group and type name are separate fields, not a slash-delimited identifier. Use `spec.type.group`
+for the group, `spec.type.name` for the type within it, and `spec.type.version` for its contract
+version. The group catalog is extensible; it is not a fixed list of Resource kinds.
+
+Core group names, contract ownership/third-party collision rules, allowed identifiers and version
+labels remain open. Examples do not settle those choices. Groups and type contracts add no
+registered object family, assign no Pool ownership and grant no access. The investigation in
+[Resource typing](research/RESOURCES.md) proposes grouping and interface boundaries for review;
+its candidate catalog is not an accepted set of built-in types.
 
 Resource type contracts are versioned independently of the common object `apiVersion`.
 The common format can remain unchanged while a type's configuration/behavior contract evolves.

@@ -1,6 +1,6 @@
 # REVIEW SCENARIO ONLY. Not a complete accepted schema or executable operations.
 # Family kind plus top-level form is accepted; payloads remain illustrative.
-# Resource fields type {name, version}, config and conduits are accepted. Contract IDs/version
+# Resource fields type {group, name, version}, config and conduits are accepted. Group/type/version
 # labels and all type-specific config below are synthetic, not approved plugin schemas.
 # These Resource templates declare no Conduits; the container/entry shape remains undecided.
 # Names are unique per family across both forms. These examples use explicit instance names;
@@ -17,13 +17,13 @@ scenario: four-families-with-exclusive-resource-ownership
 # Fixture-only capabilities for the structural checker, NOT registered Conduit objects or
 # an authoring API for contracts. Real integrations supply their schemas and supported behavior.
 fixtureResourceContracts:
-  - type: {name: example/workspace, version: v1alpha1}
+  - type: {group: example, name: workspace, version: v1alpha1}
     supportedModes: [create, attach]
-  - type: {name: example/memory-storage, version: v1alpha1}
+  - type: {group: example, name: memory-storage, version: v1alpha1}
     supportedModes: [create, attach]
-  - type: {name: example/mcp-access, version: v1alpha1}
+  - type: {group: example, name: mcp-access, version: v1alpha1}
     supportedModes: [attach]
-  - type: {name: example/native-skills, version: v1alpha1}
+  - type: {group: example, name: native-skills, version: v1alpha1}
     supportedModes: [attach]
 
 templates:
@@ -32,7 +32,7 @@ templates:
     form: template
     metadata: {name: workspace}
     spec:
-      type: {name: example/workspace, version: v1alpha1}
+      type: {group: example, name: workspace, version: v1alpha1}
       config: {mode: attach}
 
   - apiVersion: conduit.example/v1alpha1
@@ -40,7 +40,7 @@ templates:
     form: template
     metadata: {name: knowledge}
     spec:
-      type: {name: example/memory-storage, version: v1alpha1}
+      type: {group: example, name: memory-storage, version: v1alpha1}
       config: {mode: create}
 
   - apiVersion: conduit.example/v1alpha1
@@ -48,7 +48,7 @@ templates:
     form: template
     metadata: {name: native-mcp}
     spec:
-      type: {name: example/mcp-access, version: v1alpha1}
+      type: {group: example, name: mcp-access, version: v1alpha1}
       config: {mode: attach, transport: streamable-http, url: "https://tools.example/mcp"}
 
   - apiVersion: conduit.example/v1alpha1
@@ -56,7 +56,7 @@ templates:
     form: template
     metadata: {name: native-skills}
     spec:
-      type: {name: example/native-skills, version: v1alpha1}
+      type: {group: example, name: native-skills, version: v1alpha1}
       config: {mode: attach}
 
   - apiVersion: conduit.example/v1alpha1

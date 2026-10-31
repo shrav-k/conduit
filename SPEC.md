@@ -126,8 +126,11 @@ The common envelope is `apiVersion`, `kind`, `form`, `metadata`, `spec`, with sy
 plus a top-level `form` identifying a template or instance. Validation must
 distinguish both family and form; sharing a kind does not imply identical payloads or operations.
 
-Resource specs use `type: {name, version}`, schema-validated `config`, and `conduits` for
+Resource specs use `type: {group, name, version}`, schema-validated `config`, and `conduits` for
 connection declarations. The type reference is distinct from registry kind/form/name references.
+Logical type groups are independent of plugin packaging; group and type name are separate
+fields, never a combined slash-delimited identifier. New groups and types can extend the catalog;
+the initial grouping and third-party naming rules remain under review.
 Type contracts have their own schema versions, independent of common object `apiVersion` and
 plugin implementation releases. Allowed type identifiers/version labels, Conduit declaration
 contents and migration details remain open.

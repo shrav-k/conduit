@@ -37,10 +37,13 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 - Typed configuration rejects unknown fields except in schema-declared open maps. Plugin
   schemas may define fields and open maps; map keys/values still follow their contracts.
 - Resource specs have a dedicated, schema-validated block for type-specific settings alongside
-  common fields: `spec.type` contains separate `name` and `version` fields, `spec.config` holds
+  common fields: `spec.type` contains separate `group`, `name` and `version` fields, `spec.config` holds
   the type's settings, and `spec.conduits` declares connections. Type contracts are versioned
   independently of common apiVersion and plugin releases. Allowed identifiers/version labels
   and declaration contents remain open; type references are not registry object references.
+- Logical type groups are independent of implementation packages. A package may supply several
+  groups/types. The catalog remains open to new groups and types; no slash-delimited type name.
+  The initial groups and third-party contract ownership/collision rules remain for review.
 - Create/replacement writes require their applicable schemas. An unavailable required schema
   rejects the write, preserving source YAML and any existing registry object.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
@@ -101,24 +104,26 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Settle **Resource type organization and implementation packaging together** before enforcing
-a name grammar. Resource fields remain `spec.type: {name, version}`, `spec.config` and
-`spec.conduits`. The proposed qualified names are not yet accepted: `tools/mcp` and `io/local`
-are useful examples for deciding what each part means, not a settled package/module system.
+Review **Resource responsibilities, grouping and compatibility** using the new
+[Resource investigation](research/RESOURCES.md). Logical groups independent of packages and
+separate `type.group`, `type.name`, `type.version` fields are settled. The candidate core groups
+are `filesystem`, `storage`, `search` and `integration`; `content` and `identity` require further
+boundary work. These names/types remain proposals, not required v0 implementations.
 
-Compare two arrangements: a logical type group containing Resource types, with implementation
-packages supplying one or more types; or an installable package whose exported types form its
-public naming hierarchy. Prefer the first provisionally so implementation rebundling need not
-rename contracts. Use **Resource type** for the schema/behavior contract rather than introducing
-an ambiguous public “module.” Neither arrangement adds a runtime object family or settles a
-package manager. Decide collision/namespace ownership and third-party qualification before
-finalizing identifiers; category names such as `tools` alone do not identify a publisher.
+Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
 
-Work through a built-in set offering MCP and local-filesystem types, an Euphony Linear Resource
-template configuring the MCP type, and Pool-created instances. Distinguish shipping contracts
-and starter templates from creating Resources. Service/workspace selection belongs in the
-appropriate typed configuration and supported identity/access mechanisms; a generic label does
-not prove workspace isolation. Then settle version labels and Conduit declaration structure.
+1. **Catalog boundaries:** whether the four core groups describe useful responsibilities;
+   when a variant warrants another type rather than configuration or an operation.
+2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
+   for discovery and explicit contracts for activation, connection matching and effects.
+3. **Extension identity:** who defines a contract, how new groups/types enter the catalog and
+   how conflicting definitions or multiple implementations are handled. A group is not a publisher.
+
+Test local folders/worktrees, Linear MCP, AWS CLI, credential services, separate memory
+storage/search, native skills and communication history. Keep Session-private preparation,
+Pool ownership, external target identity and Conduit flow distinct. Then settle version labels
+and Conduit declaration structure; do not introduce a generic package manager or catalog of
+every provider operation merely to classify these examples.
 
 The preparation baseline is settled: attempt during explicit preparation, required by default,
 optional failures reported, successful attachments retained for retry, explicit cancellation
@@ -139,10 +144,11 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 
 | Question | Example and considerations |
 | --- | --- |
-| How are types organized and implementations distributed? | Compare logical group/type names such as tools/mcp and io/local with installable-package/type names. Define contract ownership, third-party collision rules, built-in types/templates and the effect of rebundling an implementation. Keep Resource types, configured templates and Pool-owned instances distinct; no package/module hierarchy is accepted yet. |
+| Which groups and types form the useful core? | Evaluate filesystem, storage, search and integration against the Resource investigation; content and identity remain boundary candidates. Groups are extensible and independent of packages. Decide naming/contract ownership and collision handling separately from category labels; built-in types/templates do not create Resource instances. |
+| What establishes compatibility across types? | Evaluate explicit versioned consumer interfaces and per-instance supported operations. A shared group, matching JSON shape or provider name does not establish behavioral compatibility. Keep declared support, current availability and permissions distinguishable without requiring a large capability framework. |
 | How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
-| What is genuinely common across types? | Resource specs use type {name, version}, config and conduits. Settle allowed type identifiers/version labels and the contents/shape of connection declarations. Type-contract versions stay independent of common apiVersion and plugin releases. Add other common descriptors only when examples require them. |
+| What is genuinely common across types? | Resource specs use type {group, name, version}, config and conduits. Settle allowed identifiers/version labels and the contents/shape of connection declarations. Type-contract versions stay independent of common apiVersion and plugin releases. Distinguish type-contract declarations from observed per-instance support; add common descriptors only when examples require them. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
 | How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
 | What lifecycle does each type actually need? | A path attachment need not start a service; an MCP integration may connect/spawn a client; search can attach to an existing index or build one where supported. Define necessary effects, readiness, retry and cleanup per type before requiring generic provisioning state. |

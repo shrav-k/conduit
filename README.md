@@ -69,6 +69,7 @@ Read in order:
 
 | Research | Purpose |
 | --- | --- |
+| [Resource typing and groups](research/RESOURCES.md) | Extensible type contracts, candidate core groups, capabilities, plugin boundaries and scenario-based review. |
 | [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios; shared state and participant lifetimes. |
 | [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, configuration-language papers and candidate expression of the four families. |
 | [Template/instance scenario](research/templates-instances.scenario.yaml) | Synthetic review data: templates, explicit operations and expected ownership. Not an accepted configuration/API schema. |

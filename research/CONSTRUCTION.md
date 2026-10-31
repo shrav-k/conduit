@@ -134,9 +134,9 @@ long-lived processes and handles must be managed by the instance beyond it.
 **Accepted authoring responsibility:** templates declare typed ongoing runtime behavior, using
 defaults supplied by their type; setup graphs supply prepared inputs. The
 [MCP walkthrough](#mcp-setup-and-instance-runtime-walkthrough) illustrates this boundary.
-Exact runtime fields and startup coordination remain open, including the proposed instance
-management from the moment a process is started during setup. Monitoring, reconnect, restart,
-credential refresh and cleanup need type-specific contracts; this boundary does not select
+Graphs may request startup of that declared runtime before setup finishes, with the instance
+managing it from startup. Exact runtime fields and start/wait bindings remain open. Monitoring,
+reconnect, restart, credential refresh and cleanup need type-specific contracts; this boundary does not select
 automatic recovery or rerunning the entire graph. Plugins may be invoked for a later explicit
 lifecycle operation without remaining live between operations.
 
@@ -268,9 +268,10 @@ instance and observing its results remain different operations.
 
 ## MCP setup and instance runtime walkthrough
 
-Templates declaring typed runtime behavior and graphs supplying prepared inputs are accepted.
-Graphs perform setup; instances manage ongoing behavior. The YAML and startup/recovery mechanics
-below remain proposals, not an accepted runtime schema or a second operation-request recipe.
+Templates declaring typed runtime behavior and graphs supplying prepared inputs are accepted,
+as is graph-requested runtime startup during setup under immediate instance management.
+Graphs perform setup; instances manage ongoing behavior. The YAML, detailed startup bindings
+and recovery mechanics remain proposals, not an accepted runtime schema or a second operation-request recipe.
 
 ### Objects in the example
 
@@ -351,17 +352,16 @@ defaults have not been selected.
 
 ### Avoiding a fragile process handoff
 
-**Recommendation:** an instance exists before its setup graph executes, and ongoing processes
-started during setup are managed on its behalf from the outset. Registration alone still starts
-nothing. A node asks the instance's runtime services to start or prepare managed work, instead
-of launching an untracked daemon and eventually returning its PID for adoption.
+**Accepted:** a setup graph may request a managed start of its declared runtime before the
+remaining setup steps finish. The instance manages it from startup, including while later setup
+steps run. Registration alone still starts nothing; the graph runs on explicit instance start.
+There is no required final ownership transfer from a setup plugin to the instance.
 
 This is logical ownership, not a requirement to reparent OS processes, start one supervisor per
 instance or create another Resource for every helper. A graph may prepare runtime inputs only;
 where setup needs a live service for later validation/migration, an explicit managed-start step
 can start it before the remaining graph completes. Exact start/wait bindings remain open.
 
-The next ruling is whether the graph may request that managed start before setup completes.
 For a database Resource, the illustrative sequence is:
 
 ```text
@@ -369,15 +369,11 @@ prepare database files → request instance-managed service start
   → wait until usable → apply migrations → finish setup
 ```
 
-The instance would manage the service from startup, including while migrations run. A failed
-migration would not erase that ownership or imply that setup succeeded. Retrying, retaining or
-stopping the service would follow separately selected recovery/cleanup rules. Creating or
-attaching the Resource still goes through its Pool; this adds no new runtime object family.
-
-The alternative is a strict setup-then-runtime sequence. It avoids runtime startup inside the
-graph, but migrations against the service would need a separate post-start phase. Recommend
-allowing the graph to request managed startup, keeping required ordering in the existing graph.
-This is a proposal; it does not authorize implicit restarts or repeat creation effects.
+The instance manages the service while migrations run. A failed migration does not erase that
+ownership or imply that setup succeeded. Retrying, retaining or stopping the service follows
+separately selected recovery/cleanup rules. Creating or attaching the Resource still goes
+through its Pool; this adds no new runtime object family. Allowing managed startup during setup
+does not authorize implicit restarts or repeated creation effects.
 
 The MCP scenario then proceeds as follows:
 
@@ -392,6 +388,26 @@ The MCP scenario then proceeds as follows:
 For stdio this may include managing a client-launched server process; for a remote endpoint it
 may involve a client configuration/authentication binding without any persistent local daemon.
 Successful graph completion records establishment, not a guarantee of future availability.
+
+### Failure after runtime startup
+
+**Next proposal:** if a required setup step fails after the declared runtime starts, normally
+keep that runtime under instance management and running for inspection or an explicit setup
+retry. Report setup as incomplete/failed independently of whether its process is running.
+Explicit stop/cancellation can request runtime shutdown without deleting backing data. Exact
+status labels and cancellation mechanics remain open.
+
+For the database example, a failed migration leaves an inspectable managed service; it does not
+trigger another migration attempt or create another database automatically. The existing rule
+retaining successful Conduit attachments during partial preparation remains applicable. Extending
+retention to a running service is the choice under review, not a re-ruling of attachment retention.
+
+The alternative normally stops the runtime started for setup when a required step fails,
+preserving its files, registry identity and recorded results. This avoids keeping an unused
+service running but requires a service restart before an in-service inspection or retry.
+Both approaches preserve current authority, avoid presumed rollback of external effects and
+require reconciliation before repeating an operation whose outcome is unknown. Neither selects
+automatic retry or a universal response to a later failure after successful setup.
 
 ### Changes and failures to test
 
@@ -467,13 +483,14 @@ presented as the current model.
 ## Next discussion
 
 Templates declare typed ongoing runtime behavior with type-provided defaults; graphs supply
-prepared inputs. Next use the [database example](#avoiding-a-fragile-process-handoff) to decide
-whether a graph may request instance-managed runtime startup before its remaining setup steps
-finish. Exact fields and start/wait bindings remain open.
+prepared inputs. Graphs may request startup of that runtime before setup finishes; instances
+manage it from startup. Exact fields and start/wait bindings remain open.
 
-Then examine setup failure and the [MCP connection](#mcp-setup-and-instance-runtime-walkthrough)
-losing access after setup. Select supported recovery behavior without conflating transport
-recovery, credential refresh, replacement model execution and uncertain-write replay.
+Next use the [failed-migration example](#failure-after-runtime-startup) to choose whether an
+already-started runtime normally remains running or is stopped after required setup failure.
+Then examine the [MCP connection](#mcp-setup-and-instance-runtime-walkthrough) losing access after
+setup. Select supported recovery behavior without conflating transport recovery, credential
+refresh, replacement model execution and uncertain-write replay.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

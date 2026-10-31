@@ -14,9 +14,10 @@ without data transfer. Contracts can declare outputs usable during setup or upon
 completion, with validity/lifetime rules declared per output. **Graphs establish instances;
 instances manage ongoing processes, connections and availability.** Setup plugins can finish
 while the established instance continues. Templates declare typed ongoing runtime behavior,
-using type-provided defaults; graphs supply prepared inputs. Exact runtime fields, startup
-coordination and recovery details remain under review. Plugin implementations can still be
-local scripts or processes.
+using type-provided defaults; graphs supply prepared inputs. A graph may request startup of
+the declared runtime before setup finishes, with the instance managing it from startup.
+Exact runtime fields, start/wait bindings and recovery details remain under review. Plugin
+implementations can still be local scripts or processes.
 
 | Family | Instance represents |
 | --- | --- |

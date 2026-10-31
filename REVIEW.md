@@ -12,13 +12,15 @@ now own typed inputs/outputs, setup publication timing and per-output validity/l
 values, and those bindings establish dependencies alongside explicit prerequisites. Graphs establish
 instances; instances manage ongoing processes, connections and availability. Setup nodes do not
 remain live to supervise the capabilities they establish. Templates declare typed ongoing
-runtime behavior, using type-provided defaults; setup graphs supply prepared inputs.
+runtime behavior, using type-provided defaults; setup graphs supply prepared inputs. Graphs may
+request startup of the declared runtime during setup, under immediate instance management.
 
-Next review [runtime startup during setup](research/CONSTRUCTION.md#avoiding-a-fragile-process-handoff):
-can the graph request an instance-managed database start, then run migrations before setup
-finishes? Compare that with finishing the graph before runtime startup. Startup coordination,
-status fields and recovery policies remain open. The MCP walkthrough remains the connection
-example. Caching/build optimizations remain implementation concerns. The checkpoint and detailed
+Next review [failure after runtime startup](research/CONSTRUCTION.md#failure-after-runtime-startup):
+if a required migration fails, should the managed database normally keep running for inspection
+and retry, or should setup failure stop it while preserving its data? Retaining successful
+Conduit attachments remains the baseline; the runtime's failure default is not yet selected.
+Exact start/wait bindings, status fields and recovery policies remain open. The MCP walkthrough
+remains the connection example. Caching/build optimizations remain implementation concerns. The checkpoint and detailed
 agenda below preserve the pre-inquiry discussion for comparison; no additional runtime family
 is selected.
 

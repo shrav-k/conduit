@@ -131,11 +131,13 @@ or require the completed graph to become a monitoring loop. Setup completion the
 from continuing instance readiness. Early output publication remains useful within setup;
 long-lived processes and handles must be managed by the instance beyond it.
 
-**Still open:** how the template specifies ongoing runtime behavior, how setup supplies prepared
-values/processes to that runtime, and when ownership is acknowledged if setup fails midway.
-Monitoring, reconnect, restart, credential refresh and cleanup need type-specific contracts;
-this boundary does not select automatic recovery or rerunning the entire graph. Plugins may
-be invoked for a later explicit lifecycle operation without remaining live between operations.
+**Still open:** how the template specifies ongoing runtime behavior and how setup supplies its
+prepared values/processes. The [MCP walkthrough](#mcp-setup-and-instance-runtime-walkthrough)
+compares the options and proposes instance management from the moment a process is started,
+avoiding a separate ownership transfer at graph completion. Monitoring, reconnect, restart,
+credential refresh and cleanup need type-specific contracts; this boundary does not select
+automatic recovery or rerunning the entire graph. Plugins may be invoked for a later explicit
+lifecycle operation without remaining live between operations.
 
 ### Optimization-compatible properties
 
@@ -161,7 +163,7 @@ It contains configuration and an inline plugin graph by default, with an optiona
 graph-source reference for reuse. Both forms have the same execution semantics: the graph runs
 on each instance start. A graph does not replace object identity, configuration schemas or
 reusable defaults. Exact graph fields, source-reference syntax and detailed plugin schemas remain open;
-the sketches below do not settle them. Code remains in the plugin implementations.
+the sketches below do not settle them. Executable behavior remains in implementation code.
 
 ### What to preserve and what to change
 
@@ -263,6 +265,139 @@ clear. For now, the template YAML remains sufficient with its explicit dependenc
 choices can supply per-instance values through the same typed fields. Registration, starting an
 instance and observing its results remain different operations.
 
+## MCP setup and instance runtime walkthrough
+
+**Proposal for discussion, not an accepted runtime schema.** The accepted boundary is that
+graphs perform setup and instances manage ongoing behavior. The choices below define how to
+express and implement that boundary without a second operation-request recipe.
+
+### Objects in the example
+
+A Pool named Euphony owns an MCP-access Resource describing the configured service. Agent A
+opens a Conduit to that Resource; Agent B can open another, selecting its own permitted service
+identity. Shared Resource configuration does not imply shared authentication state or clients.
+The service identity is separate from the Agent's Claude/Codex subscription identity. Linear is
+an illustrative service, not a tested authentication or transport implementation here.
+
+The Conduit instance manages its participant-specific access relationship. A Resource instance
+manages any service it actually operates. Connecting to a remote MCP offering does not make
+Conduit the owner of that provider's server. If an existing native agent hosts the MCP client,
+its integration must report what it can observe/control; missing support remains explicit. This
+example does not require routing all calls through a Conduit proxy or abandoning native tools.
+
+MCP itself is a protocol, not this object model. Its [transport specification](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports)
+distinguishes client-launched stdio subprocesses from Streamable HTTP requests. An ongoing
+Conduit relationship need not mean an always-open socket. Its [versioning contract](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning)
+also distinguishes current per-request metadata from older initialization-based sessions.
+Keep protocol/version handling in the runtime implementation, not a universal hard-coded
+handshake graph. Sources checked 2026-10-31; deployed provider compatibility remains unverified.
+
+### Where ongoing behavior is declared
+
+All three options retain instance ownership; they differ in how runtime intent is supplied.
+
+| Option | Example | Tradeoff |
+| --- | --- | --- |
+| Typed runtime configuration in the template; graph supplies prepared inputs — recommended | Declare an MCP runtime contract and its supported policies; bind its authentication input to a setup result. | Behavior is inspectable before effects. Type-provided defaults can keep ordinary templates short; avoid repeating endpoint/account settings in both sections. |
+| Setup graph produces the runtime declaration | A node returns the complete client/process specification for the instance to manage. | Flexible when setup discovers structure, but what will run is harder to inspect in advance and more policy is hidden in plugin output. |
+| Ongoing behavior is fixed by the object type | An MCP type always constructs its built-in client after setup. | Small configuration surface, but customization or alternative implementations may require changing the type/code rather than selecting supported configuration. |
+
+The recommendation can use defaults supplied by the selected type. It need not require every
+author to name another implementation or repeat a standard policy. Resolved inspection would
+show effective runtime intent. A runtime contract describes behavior the instance's code
+supports; it is not another registry family or separately authored runtime instance.
+Setup plugins and runtime implementations may share code or a distribution package. Their
+different responsibilities do not require two incompatible plugin ecosystems; packaging/ABI
+remain open.
+
+This draws on [Compose service configuration](https://docs.docker.com/reference/compose-file/services/),
+which describes runtime commands, health checks and restart policies alongside reusable service
+definitions. Our inference is to make ongoing behavior explicit while keeping its mechanism in
+code. Conduit's graph still runs at instance start, rather than Docker's image-build phase.
+
+Partial illustrative YAML for the first option follows. Field names, runtime identifiers and
+plugin contracts are proposed, not implemented. Endpoint/account choices occur once; the graph
+and runtime refer to them. The consumer is supplied by the enclosing Agent's declaration as
+already agreed. Filters, full authorization and error contracts are omitted from this sketch.
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Conduit
+form: template
+metadata:
+  name: service-access
+spec:
+  config:
+    target: {kind: Resource, form: instance, name: euphony-mcp}
+    serviceIdentity: euphony-work
+  graph:
+    nodes:
+      authenticate:
+        plugin: {group: auth, name: service-login, version: v1alpha1}
+        inputs:
+          target: {from: config, field: target}
+          identity: {from: config, field: serviceIdentity}
+  runtime:
+    implementation: {group: integration, name: mcp-client, version: v1alpha1}
+    inputs:
+      target: {from: config, field: target}
+      authentication: {from: node, name: authenticate, output: binding}
+```
+
+Here `binding` would be a protected authentication reference usable by the runtime, not a token
+embedded in exported YAML. The runtime depends on that setup result. The instance retains its
+selected configuration and resolved identities; prepared credentials/handles and current
+observations remain managed state. Exact serialized bindings and restart representation still
+need definition. Runtime policy fields are intentionally absent: reconnect, refresh and restart
+defaults have not been selected.
+
+### Avoiding a fragile process handoff
+
+**Recommendation:** an instance exists before its setup graph executes, and ongoing processes
+started during setup are managed on its behalf from the outset. Registration alone still starts
+nothing. A node asks the instance's runtime services to start or prepare managed work, instead
+of launching an untracked daemon and eventually returning its PID for adoption.
+
+This is logical ownership, not a requirement to reparent OS processes, start one supervisor per
+instance or create another Resource for every helper. A graph may prepare runtime inputs only;
+where setup needs a live service for later validation/migration, an explicit managed-start step
+can start it before the remaining graph completes. Exact start/wait bindings remain open.
+
+The MCP scenario then proceeds as follows:
+
+1. Start the existing or newly registered Conduit instance with its selected endpoint, identity
+   and current authority. Resolve configuration and required contracts before their effects.
+2. Run the authentication node. It verifies existing access or waits for supported sign-in.
+3. Once prerequisites are satisfied, establish the instance-managed client/access binding and
+   report what is usable. Native-client management may be delegated through its integration.
+4. Finish setup once its required work succeeds. Ongoing operations and their status belong
+   to the instance, even though all setup nodes have finished.
+
+For stdio this may include managing a client-launched server process; for a remote endpoint it
+may involve a client configuration/authentication binding without any persistent local daemon.
+Successful graph completion records establishment, not a guarantee of future availability.
+
+### Changes and failures to test
+
+| Event | Proposed interpretation and retained constraints |
+| --- | --- |
+| Sign-in needs a person | Setup remains waiting with explicit progress; no assertion that authentication succeeded. |
+| A later required setup step fails | The instance remains not fully prepared. Existing partial-success rules preserve useful successful work for retry; management of a started helper is not lost. Cancellation/cleanup remains explicit. |
+| Conduit crashes after starting a helper but before recording success | Reconcile using supported runtime/native evidence. Unknown state does not justify blindly starting a duplicate; no arbitrary spawn-and-report convention can guarantee recovery. The implementation contract is still required. |
+| A prepared connection later fails | The instance reports the observed gap. Reconnect or reauthentication follows its supported, selected policy; neither follows automatically from declaring the instance owner. |
+| A tool write loses its response | Restoring transport is separate from replaying the write. Preserve the existing uncertain-outcome/reconciliation rules. |
+| Runtime status cannot be observed | Report uncertainty or the integration's coverage gap; neither historical setup success nor a stored reference proves current health. |
+| Consumer closes access | End its logical connection under the established last-consumer rule. Preserve other consumers, the Pool-owned Resource and external service data. |
+
+The runtime implementation can invoke a finite auth/repair operation later where supported;
+this does not turn the original setup graph into an always-running recovery loop. Starting a
+replacement model execution remains distinct from repairing a service connection.
+
+The same distinction fits simpler types: a symlink needs no resident linking node, a Git
+worktree needs no permanently running Git process, and an owned local database may need a
+supervised service. Each type defines its actual ongoing behavior; no mandatory health-polling
+loop or universal restart policy follows from the word instance.
+
 ## Repeated instantiation is fundamental
 
 ```text
@@ -315,54 +450,22 @@ presented as the current model.
 
 ## Next discussion
 
-The execution baseline is settled: run the plugin graph on each instance start, with plugins
-able to verify and reuse already-satisfied state. Implementation optimizations remain deferred.
+Use the [MCP walkthrough](#mcp-setup-and-instance-runtime-walkthrough) to settle runtime
+configuration and setup behavior before selecting field names:
 
-The [authoring boundary](#template-yaml-and-compose-inspired-composition) is also settled:
-retain the typed YAML envelope and configuration, with an inline or explicitly referenced graph.
-Exact graph/binding syntax remains open; multi-object composition can follow later.
+1. Choose whether the template declares typed ongoing behavior with setup-result bindings,
+   the graph produces that declaration, or the type fixes behavior implicitly. The first is
+   recommended, using type-provided defaults to avoid repeated configuration.
+2. Review management from the moment setup starts a helper, including a failure before setup
+   completes. Avoid an untracked process followed by a mandatory final ownership-transfer step.
+3. Select supported responses to disconnection and expired authentication, keeping service
+   recovery separate from starting a replacement model execution or replaying an uncertain write.
 
-Plugins own their typed input/output contracts; nodes select plugins and bind values. Output
-bindings establish dependencies, with explicit prerequisites when no value is transferred.
-Authentication feeding connection setup and directory population preceding validation illustrate
-the two forms. Exact YAML syntax in the sketch remains illustrative.
+These are proposals. Graphs performing setup and instances managing ongoing behavior are already
+accepted, as are plugin-owned typed inputs/outputs, dependency wiring, setup output publication
+and per-output validity/lifetime. Exact runtime schemas, packaging, start/wait bindings and
+recovery policies remain open.
 
-Plugins may publish declared usable outputs during setup or upon successful completion, with
-validity/lifetime declared independently for each output. The instance owns ongoing behavior
-and availability; the graph is not a long-lived monitor. Use one MCP connection to settle the
-setup-to-runtime boundary as a whole:
-
-1. What does the template declare about the connection's ongoing runtime, and what does its
-   implementation already know? Avoid duplicating endpoint/account configuration in both places.
-2. How do successful authentication and prepared transport reach the instance runtime, so the
-   setup node can finish? Include failure before management of a started process is established.
-3. On a later disconnect, what state does the instance expose and what recovery is supported?
-   Distinguish reconnecting a transport from renewing login or starting a new model execution.
-
-Runtime declarations, handoff mechanics and recovery policies remain open. Review a concrete
-template/instance example before selecting their field names; no additional runtime family or
-mandatory per-instance supervisor process is implied.
-
-Then work through the same reusable Agent template started twice, using an illustrative sequence:
-
-```text
-prepare instance-private state
-  → authenticate the selected account
-  → establish configured Conduit instances
-  → report the Agent ready
-```
-
-| Case | Authentication behavior | Resulting instances |
-| --- | --- | --- |
-| First start requires sign-in | The plugin performs the supported sign-in flow and verifies the selected identity. | An Agent and its configured connections, with their own runtime state. |
-| Another start has a valid existing login | The same plugin verifies current identity/usability and can return sooner. | A separate Agent and its configured connections; template reuse does not merge private context or connection identities. |
-
-The example is an intended contract scenario, not verified native-provider behavior or a new
-schema. A real adapter must support the selected account/state separation. Opening a fresh
-connection versus explicitly joining a shared one remains a declared choice.
-
-Use those two executions to settle prerequisite semantics, interaction/failure reporting and
-what a successful result promises within the plugin-owned contract. Then express
-the reusable graph and instance views in YAML. Defer cache layouts and build-system internals.
-Agent remains the proposed replacement for Session; preserve account, private-context,
-Resource-ownership and access requirements while reviewing the vocabulary.
+Then apply the same contract to two Agent instances using different accounts, followed by a
+local directory and a managed database. Preserve repeated template use, instance-private state,
+Pool ownership and current authority. Agent remains the proposed replacement for Session.

@@ -17,8 +17,9 @@ to the same external data or create independent backing data, explicitly accordi
 contract. Connections use Resources through their owning Pools, including any storage they
 need for communication. They can request provisioning through a Pool but do not own Resources.
 
-Resources should be simple and unitary; Pools group them into useful sets. Storage, search
-and MCP access are separate Resources by default, even when they use one backend. Minimize
+Each Resource has one responsibility and its related operations; Pools group Resources into
+useful sets. Storage, search and MCP access are separate Resources by default, even when they
+use one backend. Minimize
 duplicated configuration and state within those explicit boundaries. Define Resource templates
 and instances first, then how Pools group and coordinate them. Pool creation and Resource
 provisioning remain explicit, distinct effects. Persistent Pool declarations and their binding

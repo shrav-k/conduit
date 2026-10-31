@@ -505,15 +505,17 @@ backing data, attachment to existing backing data, or both explicitly. Different
 may therefore reach the same native target without sharing registry ownership. Creating a
 new instance does not prove that files, credentials, quotas or remote data were copied.
 
-Resources should be as simple and unitary as possible. Model storage, search and MCP access
-as separate Resources by default, and group them in Pools, including when one provider supplies
+Resources should be as simple and unitary as possible: one responsibility with its related
+operations. A storage Resource may read/write/delete records, a search Resource runs queries,
+and an MCP-access Resource handles its configured integration. Keep those responsibilities as
+separate Resources by default and group them in Pools, including when one provider supplies
 all three. Separate registrations do not require separate backend processes or copied data.
-How those Resources depend on or connect to each other remains open.
+Dependency/connection representation and exact type schemas remain open.
 
 A repository, storage collection, search capability, skill, document or provider access is an
-example, not a closed taxonomy. The granularity within a responsibility remains under review,
-including whether related operations or native tools stay together. The unitary principle does
-not by itself decide that every native file, ticket or record needs its own registry object.
+example, not a closed taxonomy. Related operations stay within their Resource; each operation
+or native tool does not require a separate Resource merely because it is independently callable.
+Native files, tickets and records likewise need not each become a registry object.
 Labels aid selection, never identity, authority or implicit ownership transfer.
 
 Resource instances record enough identity/contract information to resolve their source and

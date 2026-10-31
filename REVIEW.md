@@ -45,7 +45,8 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Storage, search and MCP access are separate Resources by default, grouped in Pools, even
-  when backed by one provider. Operation granularity and dependency wiring remain open.
+  when backed by one provider. Each Resource has one responsibility with related operations;
+  individually callable operations/tools do not each require a Resource. Dependency wiring is open.
 - Different Pools may create independent backing data or attach distinct instances to shared
   backing data where the contract supports it. One Resource instance never has multiple owners.
 - A local-folder Resource describes the configured folder. Session symlinks are preparation
@@ -75,10 +76,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Clarify **unitary Resource granularity** next. Storage, search and MCP access are separate by
-default. Decide whether a single responsibility can retain related operations, such as storage
-read/write/update, or whether each operation/tool should be a Resource. Then express the three
-Resource templates/instances and their dependency/connection boundaries before Pool mechanics.
+Clarify **Resource dependencies and connections** next. One responsibility with related
+operations is settled; storage, search and MCP access remain separate. Compare typed references
+handled by integrations with explicit Conduits for logical Resource-to-Resource access, such as
+search reading storage. Then express template/instance configuration before Pool mechanics.
 Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
 ruling remains paused.
 
@@ -95,7 +96,6 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How small is a unitary Resource? | Storage, search and MCP access are separate by default. Decide whether each responsibility includes related operations or whether operations/tools require separate Resources. Preserve the folder/symlink and per-attachment MCP identity boundaries. |
 | How do separate Resources depend on each other? | Trace storage → search → MCP access. Decide how typed references, Conduits and native integration configuration express dependencies/connections without duplicating backend settings. Sharing a Pool alone does not grant access; ownership remains with each Resource's Pool. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |

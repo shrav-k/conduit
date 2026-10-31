@@ -24,10 +24,11 @@ templates and instances: inspect, author, instantiate, connect, configure, stop,
 Interface permissions and narrower/multiple-Interface policies are deferred while the model is
 developed. Normal interaction uses Conduits and runtime-supported operations; Resource creation
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
-Whether administrative edits may also change fixed instance definitions in place is the
-[next review question](REVIEW.md#next-discussion). The documentation audit groups all remaining
-protocol rulings into [seven closure bundles](REVIEW.md#remaining-decision-bundles), separate from
-implementation details and future extensions.
+Changing an instance's fixed setup graph or control definitions requires a replacement in v0,
+including through the Interface. Supported settings, connections and lifecycle remain manageable.
+R1 is settled; [six review bundles remain](REVIEW.md#remaining-decision-bundles), beginning with
+[graph execution semantics](REVIEW.md#next-discussion). Implementation details and future
+extensions are tracked separately.
 
 Templates contain complete establishment instructions and declare what instance configuration
 can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit

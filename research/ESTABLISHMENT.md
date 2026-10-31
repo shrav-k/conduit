@@ -143,8 +143,9 @@ reusable YAML and ordinary status exports must not become a credential archive.
 After completion, retain outcomes/native identities under existing retention rules. Instances
 already retain their resolved setup graph independently of the source template. The representation
 of creation-only inputs versus applied settings remains in R6 of the closure agenda. Incomplete
-attempts need recoverable effective inputs; full template history is unnecessary. R1 separately
-addresses any administrative exception to fixed instance definitions.
+attempts need recoverable effective inputs; full template history is unnecessary. R1 confirms
+that fixed-definition changes require a replacement instance even for Interface administration;
+in-place definition upgrades remain deferred.
 
 ## Case 1: a Claude subscription Agent
 

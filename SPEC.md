@@ -84,9 +84,10 @@ Normal interactions use Conduits and supported runtime operations. Broad authori
 an unsupported provider action executable or turn an uncertain result into confirmed state.
 Repair belongs to Interface administration; its route when management objects are unavailable
 remains an implementation question. A separate restricted recovery role is not a v0 requirement.
-Whether administrative changes may edit fixed instance definitions in place is under review;
-do not infer that exception from unrestricted authority alone. Interface scoping is deferred,
-while frontend transport and runtime application mechanics remain open.
+Fixed setup graphs and control definitions require a replacement instance in v0, including for
+Interface administration. Supported settings, connections and lifecycle operations remain
+available. Interface scoping is deferred; frontend transport and runtime application mechanics
+remain open.
 
 ## Templates are complete construction and change contracts
 
@@ -130,8 +131,9 @@ In v0, the retained setup graph and control definitions are fixed. Changing thei
 constraints or handler bindings requires a new instance from a revised definition. Declared
 settings, dynamic attachments, live access restrictions and provider catalogs retain their agreed
 behavior. Plugin binary-version and compatible implementation-update policies remain separate.
-The unrestricted Interface ruling reopens whether owner administration has an in-place definition
-edit exception; that exception is not yet selected. Agent controls retain the agreed contract.
+This replacement rule applies to Interface administration as well as Agent requests. A replacement
+may explicitly reuse existing backing data where supported; replacing the registered instance
+does not authorize deleting that data or silently transferring its connections and permissions.
 
 Template intent, instance configuration, requested changes and observed state must remain
 distinguishable. Configuration changes advance the instance's stored settings only after the
@@ -355,8 +357,9 @@ remaining choices and staged evidence.
 
 The five families, template/instance forms, Pool ownership and shared service authentication,
 complete construction templates, typed handlers and template-declared change boundaries are
-settled direction, including Pool-owned reusable authentication Resources. The remaining rulings
-are consolidated in [seven review bundles](REVIEW.md#remaining-decision-bundles): administrative
-definition changes, graph semantics, retirement, connection selection/routing, activation,
-configuration/extension resolution, and communication scope. Proposed solutions remain proposals.
+settled direction, including Pool-owned reusable authentication Resources. R1 confirms replacement
+for fixed-definition changes, including Interface administration. The [six remaining review
+bundles](REVIEW.md#remaining-decision-bundles) cover graph semantics, retirement, connection
+selection/routing, activation, configuration/extension resolution, and communication scope.
+Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

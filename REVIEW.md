@@ -4,38 +4,46 @@ Updated: 2026-10-31. Audited all 11 repository Markdown documents for current co
 unresolved decisions, conflicting recommendations and obsolete questions. Source research remains
 dated evidence; this audit did not rerun provider investigations or validate a runtime.
 
-**The review is not complete yet.** Seven connected decision bundles remain below. They are
-recommendations, not newly accepted requirements. Field names, implementation choices and future
-catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
+**The review is not complete yet.** R1 is accepted; six connected decision bundles remain below.
+Their recommendations are not newly accepted requirements. Field names, implementation choices
+and future catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
 remain the accepted design; research supplies evidence rather than a second decision queue.
 Implementation has not started. Work remains on research/conduits-as-graphs; the earlier baseline
 is preserved on main at c013f0a.
 
 ## Next discussion
 
-Resolve **R1: unrestricted administration versus changing an instance's definition** first.
-The Interface's unrestricted v0 authority is accepted. The remaining question is how its changes
-are applied, given the earlier fixed-definition rule.
+Resolve **R2: the execution language for setup and change-handler graphs** next. Typed plugin
+operations, output-implied dependencies and explicit ordering are accepted. The remaining choice
+is whether authors also need branching, loops and dynamically generated graph nodes in v0.
 
-| Example | What changes | Current interpretation |
+**Recommendation:** begin with finite, acyclic dependency graphs of typed operations. Authors
+compose meaningful steps; plugins implement provider-specific procedure. Existing reusable
+composition can establish the declared entries in a Pool without adding a graph-language loop.
+Independent steps may execute concurrently where supported. The graph can wait for human input
+and resume valid progress; finite structure does not impose a short execution time or prevent
+instances from maintaining ongoing connections.
+
+| Example | Visible graph composition | Procedure inside a supporting plugin |
 | --- | --- | --- |
-| Set a search limit from 10 to 15 through an existing control. | A supported setting. | Allowed; retain the applied value after confirmation. |
-| Attach another memory Resource through a Conduit. | A live relationship. | Allowed through connection operations. |
-| Stop an Agent, repair its connection or inspect its state. | Lifecycle/management state. | Interface administration has authority; report actual outcomes. |
-| Expand a control's range from 1–100 to 1–1000, or replace its handler. | The definition of permitted behavior. | Previously required a new instance; an Interface exception is unresolved. |
-| Rewrite database setup steps after some steps ran. | The setup definition and interpretation of retained progress. | In-place editing needs migration/recovery semantics not yet defined. |
+| Authenticate and connect a service. | Authenticate → connect using the verified binding. | Check an existing login, request interaction when needed, handle the provider's challenges. |
+| Establish a database. | Prepare backing → request instance-managed startup → migrate using its ready endpoint. | Provider-specific readiness checks and one operation's recovery procedure. |
+| Establish a Pool. | Reusable composition step uses declared Resource entries and bindings; extra checks can be explicit nodes. | Instantiate each entry through its own setup contract, retaining partial outcomes. |
 
-**Recommendation:** the Interface can administer every object, while fixed-definition changes
-use a replacement instance in v0. It can edit templates, instantiate replacements and deliberately
-reconnect consumers. Replacement does not necessarily recreate data: a new Resource can explicitly
-attach to existing backing when its type supports it. It does not silently inherit identity,
-connections, credentials or private Agent context.
+This proposal does not make plugins permanent supervisors: instances still own ongoing runtime.
+It also does not impose acyclicity on the network of Conduit connections. Retry safety, recorded
+progress and output validity still apply; an internal plugin loop cannot bypass those contracts.
 
-The alternative is in-place administrative definition upgrades, requiring rules for in-flight
-work, old graph progress, changed handler contracts and partially applied upgrades. Editing YAML
-alone does not establish how a running process adopts the edit. This is execution meaning, not a
-new permission limit. Graph versus YAML is not the mutability boundary: either can contain fixed
-definitions, and a supported change handler can itself be a graph.
+The alternative exposes typed conditional branches and/or iteration directly to authors. That
+makes custom orchestration possible without writing a plugin, but requires shared semantics for
+skipped outputs, branch selection, iteration identity and recovery. A narrower middle option is
+authored conditions while deferring loops and dynamic fan-out. None is accepted yet.
+
+**R1 accepted:** fixed setup graphs and control definitions require replacement instances in v0,
+including through the unrestricted Interface. Supported settings, attachments and lifecycle remain
+manageable; backing data may be explicitly reused where supported. This keeps running work and
+retained progress tied to a stable definition without adding in-place upgrade semantics. Graph
+versus YAML is not the mutability boundary; a supported change handler can itself be a graph.
 
 ## Settled foundation
 
@@ -44,7 +52,7 @@ definitions, and a supported change handler can itself be a graph.
 | Model | Interface, Agent, Resource, Pool and Conduit; template and instance forms. Rust-owned runtime, replaceable frontends, Pi as reference. |
 | Administration | Unrestricted v0 Interfaces, reusable frontend attachments and shared Interface control. Delegated Agent commands coexist without taking over or gaining Interface authority. Interface scoping is deferred. |
 | Construction | Typed YAML with inline/referenced setup graphs; typed plugins and output-implied dependencies. Instances own ongoing behavior. Direct complete-instance creation and repeated template use are both supported. |
-| Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
+| Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. R1 requires replacement for fixed-definition changes, including Interface administration. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Composition/access | Pool-local Resource entries, reusable composition step, capability matching, ready Resources usable during partial setup. Composite Conduits retain per-consumer participation. Filters narrow complete authorized paths. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
@@ -53,12 +61,12 @@ definitions, and a supported change handler can itself be a graph.
 
 ## Remaining decision bundles
 
-Agree each bundle's behavior or explicitly defer it. Recommendations become normative only after
-a ruling. Draft related schemas/examples together instead of voting on every field separately.
+R1 is settled; agree or explicitly defer R2–R7. Recommendations become normative only after a
+ruling. Draft related schemas/examples together instead of voting on every field separately.
 
 | ID | Contract needing a ruling | Recommended v0 direction | Alternative adds |
 | --- | --- | --- | --- |
-| R1 | Can administration edit fixed definitions in place? | Replace instances for graph/control-definition changes. | An explicit upgrade, migration and recovery contract. |
+| R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 | What execution semantics do authored graphs guarantee? | Finite dependency graphs, typed bindings and declared plugin continuation; provider loops/branching inside plugins initially. | Language/recovery semantics for user-authored branching, loops or dynamic fan-out. |
 | R3 | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit component retirement before deleting an owning Pool; no implicit cascade or ownership transfer. New participation after flow end opens a new Conduit instance. | Cascade/transfer semantics or a same-ID reopening contract. |
 | R4 | How are connections selected, delegated and routed? | Resolve creation selections once; live access matches within current rules. Explicit target/identity, no silent fallback. Delegation follows logical participation until withdrawal/current limits remove it. | Automatic rerouting, grant expiry or dynamic provisioning policies. |
@@ -70,7 +78,8 @@ a ruling. Draft related schemas/examples together instead of voting on every fie
 
 Ordering, early/completion outputs, per-output lifetime, instance-managed startup, retained partial
 success and safe retry are accepted. Decide how much orchestration authors can express and what
-a generic engine must interpret. Recommend a bounded graph with plugin-owned provider procedure.
+a generic engine must interpret. Recommend a finite, acyclic graph with plugin-owned provider
+procedure, as illustrated above. Author-level conditions, loops and dynamic fan-out remain open.
 
 An authentication node may wait for interaction; a database node may request instance-managed
 startup; migrations can then use its ready endpoint. Retain attempt/input/output identity to reject

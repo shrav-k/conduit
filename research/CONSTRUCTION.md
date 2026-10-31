@@ -90,9 +90,10 @@ for explicit repair rather than silently reseeding defaults.
 
 Authority and implementation capability are distinct: an external provider may not support an
 operation, a process may be unavailable, or an outcome may be uncertain. Those conditions remain
-visible. **Open:** whether unrestricted administration also permits in-place edits to retained
-setup graphs and control definitions. The prior replacement rule remains the baseline for
-Agent operations; an administrative exception needs its own application/recovery semantics.
+visible. **Accepted (R1):** changes to retained setup graphs and control definitions require a
+replacement instance, including through Interface administration. Supported settings, connections
+and lifecycle operations remain available. Replacement can explicitly reuse backing data where
+supported; it does not imply deletion, automatic rebinding or in-place migration of running work.
 
 CLI, terminal UI and automated test clients should use the same management capabilities and
 outcome semantics. A frontend renders controls and state; it should not privately implement
@@ -288,8 +289,8 @@ search-control example shows how a template limit and narrower Conduit restricti
 Templates reuse declared type-control defaults and may customize the exposed surface. Exact
 selection notation, change-handler representation, transition rules, storage fields, revision
 mechanics and implementation-version compatibility remain for grouped review. The retained setup
-graph and control definitions remain fixed for ordinary Agent controls. R1 in the closure agenda
-asks whether unrestricted Interface administration should have an in-place upgrade exception.
+graph and control definitions remain fixed for both Agent requests and Interface administration.
+R1 confirms replacement instances for definition changes; in-place upgrades remain deferred.
 Configuration changes apply one at a time per target by default, with declared safe parallelism.
 They normally check the caller's expected configuration revision at application, with explicit
 contract exceptions for safe unconditional operations.
@@ -637,7 +638,8 @@ settings remain [separate from outstanding requests](CONFIGURATION.md#requested-
 [Per-target control coordination](CONFIGURATION.md#concurrent-configuration-controls) is accepted.
 [Default revision checks](CONFIGURATION.md#stale-configuration-requests) address stale requests.
 [Instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings)
-remain the baseline for Agent controls; an Interface administration exception is under review.
+apply to Agent requests and Interface administration alike: R1 requires replacement for changes
+to fixed definitions, with supported settings and lifecycle operations still available.
 Typed filters and access-path composition remain accepted for delegated access.
 [Bootstrap management access](#bootstrap-management-access) and
 [initial management authority](#initial-management-authority) are accepted, as are
@@ -645,8 +647,9 @@ Typed filters and access-path composition remain accepted for delegated access.
 [shared Interface control](#direct-agent-control-from-shared-interfaces) and
 [delegated Agent control](#agent-originated-control-alongside-interfaces).
 [Later startup and explicit repair](#reusing-and-repairing-the-system-bootstrap) are accepted;
-the [v0 Interface has unrestricted administration](#v0-interface-administration). The next ruling
-clarifies whether that includes in-place changes to fixed instance definitions.
+the [v0 Interface has unrestricted administration](#v0-interface-administration). R1 confirms
+replacement for fixed-definition changes. The next ruling, R2, addresses how much execution
+logic authors express in graphs and how much remains inside typed plugins.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

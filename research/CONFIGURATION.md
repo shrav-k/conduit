@@ -255,11 +255,12 @@ in-flight-work and recovery rules. This does not choose plugin binary pinning or
 implementation-update policy, or authorize automatic data/permission migration and connection
 rebinding when an instance is replaced.
 
-**Administrative boundary under review:** the Interface now has unrestricted v0 authority to
-inspect and administer all objects, with Interface scoping deferred. This leaves a specific choice
-between preserving the replacement rule for fixed definitions and adding owner-driven in-place
-definition edits. The latter would need application, in-flight-work and recovery semantics.
-No such exception is assumed yet; the existing Agent control contract remains unchanged.
+**Accepted administrative boundary (R1):** the unrestricted v0 Interface also uses replacement
+instances for fixed-definition changes. It can revise templates, create replacements and
+explicitly reconnect consumers, alongside normal controls and lifecycle operations. A replacement
+may explicitly attach to existing backing data where supported; no data deletion or automatic
+transfer of connections/permissions is implied. This avoids introducing migration of running
+work and retained graph progress into v0. Interface scoping remains deferred.
 
 ## Recommendation and reading guide
 

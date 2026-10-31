@@ -42,7 +42,9 @@ all five families: authoring, creation, connections, configuration, lifecycle an
 Interface scopes and differentiated authority across multiple Interfaces are deferred while the
 rest of the protocol is developed. This changes Interface permissions, not delegated Agent access.
 Normal interactions use Conduits; supported runtime behavior determines how changes take effect.
-An administrative exception for editing fixed instance definitions in place remains under review.
+Changing fixed setup graphs or control definitions requires a replacement instance in v0,
+including through this unrestricted Interface. Supported settings, connections and lifecycle
+operations remain available.
 
 The user authors templates, adds Resource-template references to a Pool configuration, establishes
 the Pool, its Resources and shared service authentication, then starts Agents with Conduits to
@@ -203,9 +205,13 @@ Existing controls still change their permitted settings; dynamic attachments, cu
 and declared dynamic provider catalogs remain live. In-place definition upgrades are deferred.
 This does not select plugin binary pinning or compatible implementation-update policy. A new
 instance does not automatically acquire the old one's bindings, private context or permissions.
-The unrestricted v0 Interface ruling leaves one explicit question: whether owner administration
-can edit these definitions in place. Until resolved, no administrative upgrade/patch mechanism is
-assumed; the existing Agent-facing control contract remains in effect.
+R1 confirms that this applies to Interface administration as well as Agent requests. Broad
+administrative authority does not introduce an in-place definition-upgrade mechanism. The
+Interface can revise templates, create replacement instances and explicitly reconnect consumers.
+A replacement may explicitly reuse existing backing data where the type supports attachment;
+replacement does not itself authorize backing-data deletion. This keeps the interpretation of
+running work, retained setup progress and control handlers fixed without requiring upgrade
+migration rules in v0.
 
 ### Conduits and configurable endpoints
 

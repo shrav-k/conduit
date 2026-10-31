@@ -249,11 +249,26 @@ An instance's YAML view describes the concrete object: its resolved settings, Re
 Conduit bindings and system-owned observations. Configuration-only export omits status, as
 already agreed. It is not another hand-authored copy of the graph with success fields filled in.
 
-To restart consistently, an instance needs an identifiable executable recipe or binding that
-cannot silently change when the source template is edited. Whether it retains a resolved graph
-or a versioned graph reference needs a separate contract. This is distinct from retaining every
-original YAML file, comment or historical template revision. No blanket template-history archive
-or cache mechanism is being selected here. Export must report any dependencies needed for reuse.
+To restart consistently, an instance needs an executable recipe that cannot silently change
+when the source template is edited. **Next proposal:** retain the resolved setup graph and
+runtime configuration in the instance's own spec. An inline or referenced template graph would
+both produce that current instance definition. Ordinary checked instance updates can change it;
+how an update affects incomplete setup or a running execution remains a separate transition rule.
+
+For example, creating Agent A from a template with an authentication-then-preparation graph
+gives A that graph as its active configuration. Adding another setup step to the template later
+affects newly created instances, not A's next start. Deleting the source template does not remove
+A's recipe. The alternative is an immutable versioned graph reference on A that must remain
+resolvable independently of the original template registration.
+
+Retaining the current graph is not a source-template snapshot archive or input/override history.
+It does not copy plugin implementations, Resource contents, credentials or live handles. Dynamic
+input/output bindings remain typed references; observed results and execution progress remain
+managed state. Plugins and other referenced dependencies must still be available and compatible,
+and current access rules still apply. The exact resolved representation and schema remain open.
+Configuration export must report its dependencies; neither option silently follows editable
+source files or introduces a cache mechanism. This chooses the instance's logical content and
+inspection contract, not a requirement for physically duplicated storage of identical graphs.
 
 Compose also suggests a future convenience view: select several Agent, Pool, Resource and Conduit
 templates, supply settings and express their relationships together. This can be an authoring
@@ -445,18 +460,16 @@ service processes and other failure categories still need their own supported co
 
 ### Consumer behavior during an outage
 
-**Next proposal:** a connection that was required during setup becoming unavailable afterward
+**Accepted default:** a connection that was required during setup becoming unavailable afterward
 does not automatically pause the whole consumer. Report the missing dependency, prevent affected
 Conduit-managed operations from proceeding through unavailable access, and allow independent
 capabilities/work to continue. A running Agent could keep editing local files while its Linear
 connection recovers; it could not claim its Linear update succeeded. This does not start an extra
 model turn or promise operation-level controls beyond an integration's actual coverage.
 
-The alternative pauses the entire consumer until a required connection is restored. Required
-connections would still block initial preparation in either approach. Existing mandatory stop
-rules, such as isolated execution whose access cannot be revoked live, remain applicable.
-The proposed continuing behavior is a default under review; exact readiness labels, how runtime
-dependencies are declared and stricter type-specific behavior remain open.
+Required connections still block initial preparation. Existing mandatory stop rules, such as
+isolated execution whose access cannot be revoked live, remain applicable. Exact readiness
+labels, how runtime dependencies are declared and stricter type-specific behavior remain open.
 
 ### Changes and failures to test
 
@@ -465,7 +478,7 @@ dependencies are declared and stricter type-specific behavior remain open.
 | Sign-in needs a person | Setup remains waiting with explicit progress; no assertion that authentication succeeded. |
 | A later required setup step fails | The instance remains not fully prepared. Its already-started runtime normally remains managed and running; inspection, retry or shutdown is explicit. Successful Conduit attachments remain retained. |
 | Conduit crashes after starting a helper but before recording success | Reconcile using supported runtime/native evidence. Unknown state does not justify blindly starting a duplicate; no arbitrary spawn-and-report convention can guarantee recovery. The implementation contract is still required. |
-| A prepared MCP connection suffers a temporary transport failure | The instance reports the gap and attempts bounded reconnection by default where supported; templates may select manual recovery. Exhaustion or interactive sign-in needs explicit action. Consumer-wide effects remain under review. |
+| A prepared MCP connection suffers a temporary transport failure | The instance reports the gap and attempts bounded reconnection by default where supported; templates may select manual recovery. Exhaustion or interactive sign-in needs explicit action. Consumers normally continue independent work, subject to existing mandatory stop rules. |
 | A tool write loses its response | Restoring transport is separate from replaying the write. Preserve the existing uncertain-outcome/reconciliation rules. |
 | Runtime status cannot be observed | Report uncertainty or the integration's coverage gap; neither historical setup success nor a stored reference proves current health. |
 | Consumer closes access | End its logical connection under the established last-consumer rule. Preserve other consumers, the Pool-owned Resource and external service data. |
@@ -538,9 +551,13 @@ manage it from startup. Exact fields and start/wait bindings remain open.
 Required setup failure normally retains the managed running runtime while setup remains incomplete.
 Explicit retries of unchanged setup continue from valid recorded progress. Temporary MCP transport
 failure after successful setup defaults to bounded automatic reconnection where supported, with
-a manual option. Next examine [consumer behavior during an outage](#consumer-behavior-during-an-outage):
-allow independent work while reporting the missing dependency, or pause the entire consumer?
-Initial required-dependency checks and existing mandatory stop rules remain applicable.
+a manual option. Consumers continue independent work while missing dependencies are reported;
+initial required-dependency checks and existing mandatory stop rules remain applicable.
+
+Next settle [instance executable configuration](#instance-yaml-and-an-optional-composition-view):
+retain the resolved graph in the instance spec or an immutable independently resolvable reference.
+Then review how explicit configuration changes interact with incomplete setup and running state.
+Neither choice requires preserving source-template history or freezing authority/Resource data.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

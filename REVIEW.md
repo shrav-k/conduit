@@ -17,15 +17,17 @@ request startup of the declared runtime during setup, under immediate instance m
 Required setup failure normally leaves that runtime managed and running, with setup incomplete;
 inspection, retry or shutdown is explicit. Unchanged setup retries continue from valid recorded
 progress. Temporary MCP transport failure after successful setup defaults to bounded automatic
-reconnection where supported; templates can select manual recovery.
+reconnection where supported; templates can select manual recovery. Consumers normally continue
+independent work while the unavailable dependency is reported; initial preparation still requires
+required connections, and existing mandatory stop rules remain applicable.
 
-Next review [consumer behavior during an outage](research/CONSTRUCTION.md#consumer-behavior-during-an-outage):
-when a connection required during setup becomes unavailable afterward, should the consumer
-continue independent work or pause entirely? Connection recovery, setup retry and uncertain-write
-replay remain separate contracts. Exact start/wait bindings, status fields and retry limits remain
-open. Caching/build optimizations remain implementation concerns. The checkpoint and detailed
-agenda below preserve the pre-inquiry discussion for comparison; no additional runtime family
-is selected.
+Next review [instance executable configuration](research/CONSTRUCTION.md#instance-yaml-and-an-optional-composition-view):
+retain the resolved setup graph and runtime configuration in the instance's own spec, or retain
+an immutable versioned graph reference that must remain resolvable? This is current executable
+configuration, not mandatory template history. Exact fields, status representation and retry
+limits remain open. Caching/build optimizations remain implementation concerns. The checkpoint
+and detailed agenda below preserve the pre-inquiry discussion for comparison; no additional
+runtime family is selected.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive

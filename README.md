@@ -20,8 +20,9 @@ Required setup failure normally leaves that runtime managed and running, with se
 inspection, retry or shutdown is explicit. Unchanged setup retries continue from still-valid
 recorded progress. After successful setup, temporary MCP transport failures use bounded automatic
 reconnection by default where supported, with a manual option. This does not replay tool writes
-or start model work. Exact fields, start/wait bindings and recovery limits remain under review.
-Plugin implementations can still be local scripts or processes.
+or start model work. Consumers normally continue independent work while unavailable connections
+are reported. Exact fields, start/wait bindings and recovery limits remain under review. Plugin
+implementations can still be local scripts or processes.
 
 | Family | Instance represents |
 | --- | --- |

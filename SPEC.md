@@ -140,7 +140,10 @@ late rebinding or a second editable connection inventory. Exact binding syntax r
 Pool templates use named local Resource entries and can bind dependencies to those entries.
 Each Pool instantiation resolves them to its own Resource instances and their stable IDs; local
 names are composition references, not registry aliases. Reusing a Pool template does not imply
-shared Resource identity or credentials. Exact field names and setup-graph integration remain open.
+shared Resource identity or credentials. Normal Pool setup uses a reusable graph step that consumes
+the entries and bindings and establishes Resources through their own setup contracts. Custom graphs
+can reference the same entries for additional ordering or checks. This runs only during explicitly
+requested setup. Exact field names, plugin contracts and graph syntax remain open.
 
 Separate these contracts:
 

@@ -430,7 +430,9 @@ than introducing an implicit deep merge; this example assumes the authentication
 config is entirely its account selection. Runtime/type settings remain separate. More complicated
 child edits and creation overrides need their own explicit syntax rather than guessed merge rules.
 
-The Pool's setup graph performs the composition. Mapping order alone is not execution order.
+The accepted default is a reusable composition step in the Pool's setup graph. It reads the
+entries and bindings, invokes each Resource's setup contract and exposes their results. Custom
+graphs can refer to the same entries for extra ordering or checks. Mapping order alone is not execution order.
 Registration can establish identities before required preparation succeeds; the service cannot
 complete required preparation until its authentication dependency is usable. An illustrative
 resolution could be:
@@ -480,12 +482,20 @@ Resource uses its authorized connection to the authentication Resource, which ma
 login. The Agent's model subscription stays independent. Detaching the Agent preserves both
 Pool-owned Resources and the login for other permitted consumers.
 
-**Review now:** how the Pool's setup graph consumes its declared composition. Recommend a reusable
-composition step that reads the entries and bindings, establishes the Resources through their own
-contracts and exposes their results. Custom graphs could refer to the same entries for additional
-ordering/checks. The alternative authors a setup node per entry, still referencing its declaration
-rather than duplicating configuration. Neither approach starts work merely by registering YAML or
-introduces a background reconciler. Exact step contracts, graph integration and results remain open.
+**Review now:** whether ready Resources are normally usable while their Pool setup remains incomplete.
+Extend this example with a local checkout that has no dependency on the Linear login:
+
+| Resource | Setup observation | Proposed availability |
+| --- | --- | --- |
+| Checkout | Ready | Available through authorized Conduits. |
+| Authentication | Waiting for user consent | Required authenticated capability is not ready. |
+| Linear service | Waiting on authentication | Its dependent service access is unavailable. |
+
+Recommend allowing the ready checkout to be used while reporting the Pool's incomplete setup.
+This honors each consumer's required dependencies and any declared gates; it does not treat a
+running process as a fully prepared Resource. The alternative gates all Resource access on the
+Pool's required setup succeeding. Both preserve partial work under the existing recovery rules.
+Exact aggregate status/completion fields and explicit whole-Pool gates remain open.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

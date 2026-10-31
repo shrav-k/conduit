@@ -858,8 +858,15 @@ dependency binding to refer to another entry in that composition. For example, `
 authentication requirement to `auth`. Instantiating the Pool resolves that reference to the
 authentication Resource created for this Pool, and the consumer retains its resolved stable target
 ID. Another instantiation produces distinct owned Resources. Local entry names are not global
-registry aliases or an alternative instance identity; referencing one grants no access. Exact YAML
-keys and how setup graphs consume these declarations remain open.
+registry aliases or an alternative instance identity; referencing one grants no access.
+
+**Accepted default setup:** a reusable composition step in the Pool's setup graph consumes its
+declared Resource entries and dependency bindings, establishes the Resources through their own
+setup contracts and exposes the results. Custom graphs can reference the same entries for extra
+ordering or checks; authors need not restate Resource configuration or hand-wire every component's
+setup. Required dependencies govern preparation, not YAML mapping order. This preserves each
+Resource's runtime ownership, authorization and recovery contract. Exact operation names, typed
+results and graph syntax remain open; partial Pool readiness is a separate decision.
 
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one

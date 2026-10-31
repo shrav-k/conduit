@@ -23,33 +23,18 @@ foundations; exact declaration/implementation details below remain open.
 
 ## Next discussion
 
-**Settled:** reusable authentication is a Pool-owned Resource that service Resources access through
-Conduits. Pool templates can assemble that composition. One account may support different
-provider-appropriate credentials; this is not a Resource per token or a sixth family. The
-[Linear walkthrough](research/CONDUITS.md#5-access-linear-through-mcp) now uses this separation.
+The [specification](SPEC.md#shared-pool-access-and-authentication) and
+[design contracts](DESIGN.md#pools) retain the settled rules. For this walkthrough:
 
-**Settled composition:** reusable Resource templates declare required connections; the Pool supplies
-concrete targets during instantiation. Each instance retains its resolved Conduit bindings. This
-does not introduce automatic account selection, late rebinding, duplicate endpoint assignments or
-a template-parameter DSL. Concrete syntax remains open.
-
-**Settled compatibility:** required connections name versioned capability contracts describing
-operations and behavior. Different Resource types can fulfill the same contract; the Pool still
-selects the target explicitly. Type/group names, matching fields or contract declarations alone
-are not evidence of actual compatibility, current authority or readiness. Exact identifiers,
-version matching and conformance mechanisms remain open.
-
-**Settled catalogs:** integration capability contracts can define discovery and invocation while
-providers supply concrete operation catalogs and schemas dynamically. Preserve permitted native
-MCP tools without a separate Conduit contract for every tool or a generic model-facing wrapper.
-Discovery adds no authority; fixed operation contracts remain valid for other capabilities. Detailed
-refresh, caching and schema-change behavior remain open.
-
-**Settled delegation:** an actor authorized to delegate access can establish another consumer's
-Conduit attachment with an explicit subset of that access in one action. Record the delegation
-with the attachment; no separate prior Agent-permission setup is required. Requested YAML is not
-self-issued permission, filters remain narrowing-only, and onward delegation is not implied.
-Detailed issuance, lifetime and revocation semantics remain open.
+| Settled boundary | Meaning |
+| --- | --- |
+| Shared authentication | Pool-owned authentication Resources serve other Resources through Conduits, using provider-appropriate bindings. No Resource per token or additional family is implied. |
+| Dependency composition | Resource templates declare requirements; Pools supply targets; consumers retain resolved bindings. No automatic account selection or silent rebinding. |
+| Capability contracts | Versioned behavior contracts allow compatible Resource types to satisfy a requirement. Compatibility, authority and readiness remain separate checks. |
+| Dynamic catalogs | Integrations can discover provider-native operations and schemas without a separate Conduit contract per tool. Discovery grants nothing; fixed catalogs remain valid elsewhere. |
+| Delegation | An authorized creator can delegate a subset while establishing another consumer's attachment. Requested YAML grants nothing; filters narrow access; onward delegation is not implied. |
+| Local entries | Pool-local component names resolve to that Pool's Resource instances and stable IDs. They are not registry aliases or a second provisioning ledger. |
+| Default setup | A reusable graph step consumes the entries and bindings and invokes each Resource's setup contract. Custom graphs can reference the same entries for extra ordering/checks. Setup is explicitly requested. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -57,23 +42,17 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Settled local composition:** Pool templates name local Resource entries such as `auth` and
-`linear`; dependency bindings can refer to them. Each Pool instantiation resolves those references
-to its own Resource instances and stable IDs. These are composition references, not registry
-aliases or a second provisioning ledger. Exact YAML keys and graph integration remain open.
+**Next ruling — partial Pool setup and access:** should already-ready Resources normally be usable
+through authorized Conduits while other Resources in their Pool are still waiting or have failed?
+Recommend Resource-level availability with explicit Pool setup status. For example, a ready local
+checkout remains usable while authentication waits for consent and its dependent Linear service
+is not ready. Required connections still block their own consumer's preparation; a running process
+alone does not prove readiness. Declared gates and access restrictions must still hold.
 
-**Next ruling — use composition from the setup graph:** should the normal Pool setup graph call
-a reusable composition step that reads these entries and bindings, establishes the Resources and
-exposes their results? Recommend this, with custom graphs able to reference the same entries for
-additional ordering or checks. The Pool declares components and wiring once; the reusable step
-coordinates their required preparation and invokes each Resource's own establishment contract.
-This runs only during explicitly requested setup, not registration or background reconciliation.
-
-The alternative requires explicit setup nodes for each Resource, also referencing the same entries
-without restating their configuration. That offers visible per-component orchestration but makes
-ordinary Pool authors maintain more graph wiring. Exact operation names, result schemas and custom
-graph composition remain open; neither option changes authorization, safe retry, Resource ownership
-or the distinction between registration and readiness.
+The alternative withholds all Resource access until the Pool's required setup succeeds. Both retain
+successful partial work under the existing recovery rules; neither promises rollback of external
+effects. Exact Pool status fields, aggregate completion criteria and explicit whole-Pool gates
+remain open. This ruling concerns access to ready components, not automatic retries or cleanup.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -114,7 +93,7 @@ Pool without deciding every grouping feature first.
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Type-aware grouping | Decide which inventory/compatibility views a Pool derives from its owned Resources. Labels/selectors may select its Resources or templates where appropriate; matching foreign Resources does not confer ownership. |
-| Establishment declarations | Local Resource composition entries are accepted. Define how setup graphs consume them; prefer instance identity and ordinary operation outcomes over a second provisioning-plan ledger. Earlier persistent plan-entry/binding proposals are parked; missing-target/replacement rules were not settled. |
+| Establishment declarations | Local Resource entries and a reusable default composition step are accepted. Define typed results and custom graph integration; prefer instance identity and ordinary operation outcomes over a second provisioning-plan ledger. Earlier persistent plan-entry/binding proposals are parked; missing-target/replacement rules were not settled. |
 | Partial establishment | Templates carry setup choices; graph/lifecycle contracts coordinate required work and partial results. Define Pool readiness and later Resource additions without conflating registry atomicity with rollback of external effects. |
 | Backing and retirement | Two Pools may intentionally attach separate Resource instances to the same external backing. Define conflicts, cleanup authority, ownership transfer if supported, and retirement with active consumers or retained data. An unowned registration is not permission to delete backing data. |
 | Durable content | Map task/personal records and conversation stores to Pool-owned Resources. Contexts are not alternative Resource owners; each message, cursor or file need not become a top-level Resource. Conduit-supporting durable Resources still need an owner. |

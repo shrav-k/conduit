@@ -50,7 +50,12 @@ Credential handling and native-versus-isolated enforcement remain separate from 
 The default Interface is a reusable instance with identifiable CLI, terminal and test-client
 attachments, including multiple clients at once. Separate Interface instances remain available
 for different configurations. Attachment grants no additional authority and does not override
-target-specific exclusive-control rules or require an always-running process.
+target-specific control requirements or require an always-running process.
+
+Direct user-control of an Agent belongs to its controlling Interface. All authorized frontend
+attachments of that Interface can issue input, cancellation and settings commands through the
+permitted Conduit paths. Requests retain caller/attachment attribution and target checks; switching
+between those frontends needs no controller handoff. Agent-originated control remains under review.
 
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.

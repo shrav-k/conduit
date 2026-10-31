@@ -44,7 +44,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
 | Definition boundary | Setup graphs and control definitions are fixed per instance in v0. Change them through a revised definition and new instance; declared settings and dynamic connections/catalogs remain supported. In-place definition upgrades are deferred. |
 | Bootstrap and authority | Initial local startup seeds a system Pool, its management Resource, the default Interface and their management Conduit. One local owner is established from the initializing OS-user context; Agents receive explicit delegated Conduit access. Credential handling/enforcement remain separate. |
-| Frontend attachments | CLI, terminal and test clients can concurrently attach to a reusable default Interface. Attachments remain identifiable and use current caller authority; separate Interface instances remain possible. Target-specific control rules still apply. |
+| Frontend attachments and control | Clients attach to a reusable Interface with caller/attachment attribution. An Agent's direct user-control belongs to its controlling Interface; all authorized attachments can issue commands through permitted Conduits. Target checks and coordination still apply; no handoff is needed between those frontends. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -61,20 +61,19 @@ and [system bootstrap](research/CONSTRUCTION.md#bootstrap-management-access) are
 
 The [local-owner authority model](research/CONSTRUCTION.md#initial-management-authority) and
 [reusable frontend attachments](research/CONSTRUCTION.md#interfaces-and-frontend-attachments)
-are accepted. The existing Agent rule remains one controlling frontend for direct user input,
-cancellation and settings, while other authorized frontends observe.
+are accepted, as is [shared Interface control](research/CONSTRUCTION.md#direct-agent-control-from-shared-interfaces).
 
-**Next ruling — mapping direct Agent control:** should that control belong to an individual
-frontend attachment rather than its shared Interface? Recommend this to preserve the existing
-rule: a terminal and CLI can share an Interface without both becoming controllers of the same
-Agent. An authorized transfer changes which attachment controls that Agent without replacing the
-Interface or adding a confirmation step.
+**Next ruling — Agent commands alongside user control:** should an authorized Agent be able to
+invoke another Agent's permitted controls through its own Conduit without taking over the user
+Interface's control? Recommend this so a coordinator can, for example, pause a worker it is allowed
+to manage while the user's Interface remains available for direct commands. The target applies
+current authority, relevant state checks and its coordination rules to each request.
 
-The alternative deliberately revises the earlier rule: control belongs to the Interface and its
-authorized frontend attachments can all issue direct Agent commands. Both retain caller authority,
-Conduit routing and target operation checks. This concerns direct frontend control, not a registry-
-wide lock; Agent-originated commands, precise transfer/loss handling and transport remain separate.
-See the [control example](research/CONSTRUCTION.md#direct-agent-control-from-shared-interfaces).
+The alternative requires an exclusive controller handoff between the Interface and the commanding
+Agent. Coexisting callers would not imply simultaneous effects, automatic priority for either
+actor, or additional rights. Input scheduling, busy handling and particular control support remain
+in target contracts; ordinary communication delivery/wake behavior remains a separate discussion.
+See the [Agent-control example](research/CONSTRUCTION.md#agent-originated-control-alongside-interfaces).
 
 Then review these connected contracts, one bundle at a time:
 

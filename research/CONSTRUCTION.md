@@ -143,8 +143,8 @@ For example, the owner opens a terminal UI, inspects the same registry with a CL
 then closes the terminal. These can be attachments to one Interface; closing the frontend does
 not delete its registered identity. Each operation still passes through the Interface's permitted
 Conduit path and target contract. Sharing an Interface neither grants a client the owner's
-authority nor overrides a target's exclusive-control requirements. The existing default of one
-controlling frontend for an Agent remains a separate mapping question.
+authority nor overrides target control requirements. Direct Agent control is shared across the
+controlling Interface's authorized attachments as described below.
 
 Reuse avoids turning every short CLI invocation into another persistent domain object. This selects
 identity/attachment semantics, not process layout, authentication mechanics or how last-client disconnection affects
@@ -153,21 +153,34 @@ logical participation required by its lifecycle contract.
 
 ### Direct Agent control from shared Interfaces
 
-The earlier Agent policy allows one controlling frontend for direct input, cancellation and
-settings, with other authorized frontends observing. **Proposal for the next ruling:** identify
-that controller by its frontend attachment, rather than granting control to the shared Interface
-as a whole. This makes the earlier policy explicit within the reusable-Interface model.
+**Accepted:** an Agent's direct user-control belongs to its controlling Interface. All authorized
+attachments of that Interface can issue direct input, cancellation and settings commands. For
+example, a terminal can submit work to Agent A while a CLI attached to the same Interface requests
+a permitted setting change; the CLI need not take control from the terminal first.
 
-For example, a terminal controls Agent A while a CLI attachment to the same Interface inspects
-its progress. To direct A from the CLI, an authorized transfer makes the CLI attachment its
-controller; choosing the new frontend can include that transfer without another confirmation.
-The Interface and Agent identities persist. Other permitted operations and control of other
-Agents remain independent.
+Each request retains the acting user and attachment attribution, current authority, permitted
+Conduit path and target checks. The common Interface does not turn an observing-only grant into
+control permission. Configuration changes still use the accepted coordination/revision rules;
+simultaneous callers do not imply concurrent effects. Precise input scheduling, control across
+distinct Interfaces and disconnect/recovery details remain open.
 
-The alternative revises the earlier policy to Interface-wide control: all of that Interface's
-authorized attachments can directly command A. Neither choice bypasses authority, Conduits or
-configuration checks. Agent-originated commands, exact takeover/disconnection recovery and any
-implementation mechanism remain open; no global Interface lock or new object family is proposed.
+### Agent-originated control alongside Interfaces
+
+**Proposal for the next ruling:** delegated Agent control can coexist with direct user-control
+through an Interface. The commanding Agent uses its own authorized Conduit and identity without
+first taking over the user Interface's control. A coordinator permitted to pause a worker could
+invoke that control while the user's terminal and CLI remain able to direct the worker through
+their controlling Interface.
+
+The target enforces the relevant operation, authority, state and coordination contract. This
+neither gives an Agent the owner's access nor establishes implicit precedence between human and
+Agent requests. Which commands can wait, interrupt, conflict or run independently remains part
+of the target's supported behavior. This also does not decide ordinary message delivery or wakeup.
+
+The alternative uses an exclusive controller handoff between Interface and Agent. Recommend
+coexistence through explicit permissions so routine automation does not require transferring the
+user's control. Management rights must still be delegated; access to a conversation alone does
+not imply permission to pause, reconfigure or otherwise control its Agent.
 
 ## A common interaction contract
 
@@ -590,8 +603,9 @@ settings remain [separate from outstanding requests](CONFIGURATION.md#requested-
 is settled for v0, alongside typed filters and access-path composition.
 [Bootstrap management access](#bootstrap-management-access) and
 [initial management authority](#initial-management-authority) are accepted, as are
-[reusable frontend attachments](#interfaces-and-frontend-attachments). The next ruling maps
-[direct Agent control](#direct-agent-control-from-shared-interfaces) to those attachments.
+[reusable frontend attachments](#interfaces-and-frontend-attachments) and
+[shared Interface control](#direct-agent-control-from-shared-interfaces). The next ruling concerns
+[Agent-originated control alongside Interfaces](#agent-originated-control-alongside-interfaces).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

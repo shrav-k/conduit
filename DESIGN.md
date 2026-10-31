@@ -56,7 +56,8 @@ terminal and test clients attach to it, with multiple clients supported at once.
 remains identifiable and subject to current caller authority. Another Interface can be instantiated
 for a different configuration or separately selected endpoint. Opening a frontend need not create
 an Interface object; sharing an Interface neither grants authority nor overrides the target's
-exclusive-control rules. This does not require an always-running process.
+control requirements. Direct Agent control is shared across its controlling Interface's authorized
+attachments as described under runtime/presentation. This does not require an always-running process.
 
 **Accepted bootstrap:** initial local startup seeds a minimal system Pool owning a management
 Resource, a default Interface and a management Conduit connecting them. A small runtime bootstrap
@@ -636,13 +637,17 @@ it does not own credentials, model calls or authoritative execution state. Pi te
 components may be reused, but Pi's agent loop and Pi Durable are research references.
 A memory backend or frontend change must not replace Conduit's execution loop.
 
-The existing default is one controlling frontend for direct input, cancellation and settings,
-with other frontends observing. Multiple clients may now attach to one reusable Interface;
-the concrete controller identity and its relationship to Agent-originated control remain in review.
-This creates no path around Conduits. Moving
-control to another frontend requires no extra confirmation. Disconnecting detaches and
-preserves supported ongoing execution. Keep persisted history, current model context,
-frontend state and shared Resource content distinct.
+**Accepted shared Interface control:** an Agent's direct user-control belongs to its controlling
+Interface. All authorized frontend attachments of that Interface can issue input, cancellation and
+settings commands; a terminal and CLI need no controller handoff between them. Each request keeps
+its caller/attachment identity and passes through its permitted Conduit path and target contract.
+Sharing the Interface grants no additional permission and does not bypass configuration revision
+checks or per-target coordination. Simultaneous submission does not promise simultaneous execution.
+
+The relationship to Agent-originated commands, control across distinct Interfaces and loss/recovery
+details remain open. Disconnecting a frontend detaches and preserves supported ongoing Agent
+execution. Keep persisted history, current model context, frontend state and shared Resource
+content distinct.
 
 ### Lifecycle and continuity
 

@@ -25,10 +25,14 @@ Change a template/creation draft and instantiate again to change that definition
 be opened or removed without changing the instance's underlying function; shared context is a
 Pool-owned Resource exposed through Conduits. See [fixed definitions and changing connections](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections).
 
-Next clarify [Agent replacement and continuity](research/CONSTRUCTION.md#next-discussion): are
-configured model/account changes replacements with shared context carried through a Resource,
-or can a fixed template explicitly support switching them as runtime operations? The earlier
-same-Session-across-switches contract needs review; immutable definitions alone do not decide it.
+Next refine [Agent access and model selection](research/CONSTRUCTION.md#agent-access-and-model-selection):
+keep runtime/account/access fixed and permit supported model changes within a declared provider/
+model domain. GPT-to-Claude and subscription-account switches create new Agents; compatible
+within-domain switches may keep their identity. Decide whether the immutable selection rule
+normally allows all currently compatible models within that boundary, optionally narrowed by a
+model list, or requires an explicit list for every choice. Initial/current model fields, switch
+timing and restart persistence remain proposals. This replaces the earlier all-model-changes
+versus all-switches-preserve-identity framing.
 Current authority rules remain live. Exact fields, metadata editing rules, status representation
 and retry limits remain open. Caching/build optimizations remain implementation concerns. The
 checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison; the
@@ -195,7 +199,7 @@ retry, then retire a Pool with active users and retained conversation history. S
 | How are instances addressed and rebound? | Open-new uses establishment configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle retry identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
-| How do replacement instances preserve continuity? | The active branch keeps instance definitions immutable. Change a template/creation draft and instantiate again; shared context/resources are exposed through new Conduits. Define which Agent settings require replacement, permitted attachment operations and explicit context handoff without rewriting the old instance or automatically retargeting ID-bound relationships. |
+| How do replacement instances preserve continuity? | The active branch keeps instance definitions immutable. Runtime/account/access or provider-domain changes create a new Agent, with shared context/resources exposed through Conduits. Supported model selection within the fixed boundary may retain identity. Define the selection rule and replacement handoff without rewriting specs or automatically retargeting ID-bound relationships. |
 | How do attachments end and flows recover? | Last logical consumer/peer departure ends the flow and closes providers; temporary transport failure does not itself detach. Define explicit detach, crash/lease detection, incomplete cleanup, one-time completion and later reopening/new-instance identity. Backing Resources and retained evidence survive; Session reconnect/resume rules remain unchanged. |
 | What does deletion mean for templates and instances? | Preserve checked deletion and external-data protection. Distinguish ordinary incoming references from ownership dependencies and live runtime constraints. Session deletion already requires confirmed execution end. Define other families without silent cascades or implicit shutdown. |
 

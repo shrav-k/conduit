@@ -330,9 +330,73 @@ No automatic replacement/deletion of the old instance or copying of its private 
 
 This supersedes the earlier editable-instance proposal. It removes the need to reconcile a
 running setup graph against in-place definition edits. Metadata naming/label rules remain a
-separate question. The earlier model/account switching semantics also need explicit review:
-whether those selections are fixed instance configuration or values changeable through an
-operation expressly supported by the unchanged template is not selected by immutability alone.
+separate question. Model choice need not be the same kind of setting as runtime or subscription
+identity: the distinction below refines how immutability applies to Agents.
+
+### Agent access and model selection
+
+**User clarification:** do not require a new Agent for every model change. A change such as
+Astra to Sol may be supported within the same subscription/access, whereas GPT to Claude should
+require a new Agent. Changing the subscription account remains distinct from selecting another
+model available through that account. The named models are the user's illustrative labels, not
+verified provider identifiers or a promise that a particular runtime supports such switching.
+
+**Recommended contract:** separate the immutable execution/access boundary and model-selection
+rule from the current selected model. This expresses model choice independently in configuration,
+while validating it against the access and runtime that will actually execute it.
+
+| Concern | Meaning and proposed treatment |
+| --- | --- |
+| Runtime implementation | The native agent integration or Conduit-owned execution runtime. Fixed by the instance definition. |
+| Model access | The selected provider route/endpoint and account/subscription or API principal. Fixed; credential refresh/rotation for the same identity is managed state. A new principal/access route requires a new Agent. |
+| Model-selection rule | A fixed provider/model domain and any narrower list or capability requirements. Part of the immutable definition. A shared credential or common API protocol does not widen that domain. |
+| Initial model | The template's initial choice within the selection rule; retained as creation configuration. Exact field layout remains open. |
+| Current model | Runtime-managed selection, changeable through a supported typed operation within the rule. Actual selections are attributable to the operations/turns that used them. |
+
+A future gateway may offer models from more than one provider behind one credential or endpoint.
+Therefore same account, same URL or protocol compatibility alone cannot satisfy the requested
+GPT/Claude boundary. The integration needs to identify the eligible model domain; do not infer
+it solely from display-name prefixes. This is a model contract within the existing Agent family,
+not another registry-object family or a mandated new access-profile object.
+
+The effective selectable models must satisfy all of: the instance's model-selection rule, the
+runtime's supported operations/capabilities, availability through its fixed access configuration,
+and current authority. A same-domain model with unsupported context/tool requirements is not
+automatically a usable replacement. Adding a Conduit does not rewrite or broaden this rule.
+
+Partial illustrative instance inspection follows. Field names and domain/list syntax are proposals;
+`status` is observed state and is not submitted in configuration writes. Account/route labels are
+references, not credentials, and their concrete binding through integrations remains type-defined.
+
+```yaml
+spec:
+  config:
+    runtime: example-agent-runtime
+    access:
+      route: example-openai-access
+      account: work
+    modelSelection:
+      domain: openai
+      initial: astra
+      allowed: [astra, sol]
+status:
+  currentModel: sol
+```
+
+Here selecting Sol changes managed state through the declared operation; it does not edit
+`initial`, `allowed`, account or graph. Updating the list or execution/access boundary requires
+a new instance. Crossing from GPT to Claude, or switching subscription identities, creates a
+new Agent that can recover permitted shared context through a Pool-owned Resource and Conduit.
+Switching within the permitted domain can retain the Agent's identity and context access when
+the runtime supports it; this is not a guarantee of identical context limits or native state formats.
+
+**Next proposal:** allow currently compatible models within the fixed provider/access boundary
+by default, with an optional narrower list. The rule stays immutable while matching availability
+can change, so a newly available compatible model need not force an instance replacement. The
+alternative requires every permitted model to be enumerated at creation. The explicit list in
+the sketch illustrates narrowing and does not settle the default. Unknown compatibility or
+authorization is not proof of eligibility. Catalog discovery, exact policy syntax, switch timing,
+handling a failed switch and retention of the selection across restarts remain open.
 
 ## MCP setup and instance runtime walkthrough
 
@@ -613,12 +677,12 @@ of the source template. Those definitions are immutable; change a template/creat
 instantiate again for a different definition. Dynamic Conduit connections and shared context
 Resources are accepted. Current authority and Resource data remain live.
 
-Next revisit Agent model/account switching. One approach fixes those choices in the spec and
-creates a new Agent when they change, with permitted context carried through Resource/Conduit
-access. Another lets an unchanged template expressly support runtime switching. This affects
-the earlier guarantee of keeping one logical Session across switches, so it must be resolved
-explicitly rather than silently redefining the participant identity. Shared memory does not
-require a new Conversation family or copying native execution state.
+Next refine [Agent access and model selection](#agent-access-and-model-selection). A supported
+model switch inside the fixed runtime/access and model domain can remain within one Agent;
+changing subscription identity or crossing GPT/Claude requires a new Agent. Choose a selection
+rule based on currently compatible models with optional narrowing, or an explicit model list.
+Then define the runtime operation's timing/state behavior. Shared context across replacement
+Agents continues through Pool-owned Resources and Conduits; no new Conversation family is needed.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

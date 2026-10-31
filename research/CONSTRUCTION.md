@@ -496,10 +496,10 @@ This honors each consumer's required dependencies and any declared gates; it doe
 running process as a fully prepared Resource. Preserve partial work under the existing recovery rules.
 Exact aggregate status/completion fields and explicit whole-Pool gates remain open.
 
-**Accepted composition; lifecycle under review:** [one reusable access Conduit](CONDUITS.md#can-there-be-one-euphony-access-conduit)
-can compose these distinct connections. Next, decide whether each consumer's composite attachment
-tracks its own component participation. Ready Pool Resources do not themselves settle a composite
-Conduit's required components, status or detach behavior.
+**Accepted composition and participation:** [one reusable access Conduit](CONDUITS.md#can-there-be-one-euphony-access-conduit)
+can compose these distinct connections; each consumer's attachment tracks its own component
+participation. Exact aggregate readiness and cleanup recovery remain open. The next review is the
+[filter declaration/implementation boundary](CONDUITS.md#filter-declaration-and-implementation).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

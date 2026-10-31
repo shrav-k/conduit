@@ -117,8 +117,10 @@ continue. Partial failure retains successful attachments for retry; explicit can
 Reusable Conduit templates can compose other Conduits. An Agent can declare an access bundle such
 as `euphony-access`, retaining each component's targets, authority, explicit open/join intent and
 lifecycle. The bundle has a Conduit instance; it introduces no object family or mandatory process.
-Supporting Resources remain Pool-owned. Component attachment ownership, aggregate readiness and
-detach propagation still need concrete contracts.
+Each consumer's composite attachment tracks its own component participation for access, readiness
+and cleanup. Detaching a consumer releases only its participation; component Conduits, clients and
+authentication can still be shared. Supporting Resources remain Pool-owned. Exact attachment
+representation, aggregate readiness and component reuse rules remain open.
 
 Logical consumers/peers keep a flow alive, including between polls or during a temporary socket
 failure. The last departure ends the flow and releases its owned connections/leases. This

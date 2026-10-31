@@ -465,18 +465,18 @@ euphony-access                    composite Conduit; component names illustrativ
   Linear MCP                     shared service authentication + per-caller restrictions
 ```
 
-**Next proposal — per-consumer component participation.** Each consumer's composite attachment
+**Accepted per-consumer component participation.** Each consumer's composite attachment
 tracks its participation in the components, so access, readiness and cleanup remain attributable.
 These are logical attachments, not a requirement for another upstream client, provider login or
-Resource per consumer. Component Conduit instances may be explicitly shared. The alternative keeps
-one shared set of component attachments on the composite and checks caller authority at dispatch;
-it still cannot turn shared participation into shared caller privileges.
+Resource per consumer. Component Conduit instances may be explicitly shared. Detaching A releases
+only A's participation through the composite; B and independent attachments remain unaffected.
 
-To test the proposal, let A and B use one composite with required repository access and optional
+For the lifecycle example, let A and B use one composite with required repository access and optional
 Linear access. The optional marking is an example choice; declarations otherwise default to required.
-The following applies existing lifecycle rules to the proposed per-consumer relationships:
+The following illustrates existing lifecycle rules with the accepted per-consumer relationships;
+exact aggregate status and required/optional composition fields remain open:
 
-| Event | Proposed behavior |
+| Event | Lifecycle illustration |
 | --- | --- |
 | A prepares while Linear awaits login | A can finish preparation if its required repository connection is ready; report its unavailable optional Linear connection. Marking Linear required would instead keep A's preparation incomplete while retaining successful attachments. |
 | B joins the composite | Establish B's permitted component participation, preserving B's identity and restrictions even when component flows/clients are shared. A's existing access does not authorize B. |
@@ -499,6 +499,30 @@ Selecting the group must not make authority transitive: repository access does n
 communication membership, posting a link does not grant access to its target, and possession
 of an AWS credential does not imply every operation is allowed by Conduit's managed policy.
 Existing narrowing-only filters and capability-tuple composition remain applicable.
+
+### Filter declaration and implementation
+
+**Proposal for review:** use typed filter declarations with meanings defined by capability or
+constraint contracts; supporting plugins implement validation and enforcement. Templates and
+attachments can expose inspectable restrictions without embedding the checking procedure at each
+use site. A user can implement a new contract with a small plugin, including a script or graph
+where needed. Contract identity is separate from the implementation package.
+
+| Example restriction | Declaration describes | Implementation must establish |
+| --- | --- | --- |
+| Repository subtree | Permitted paths and operations | Whether the actual access stays within the selected paths, using the integration's supported filesystem controls. |
+| Linear issue access | Permitted native operations and workspace/team constraints | Whether the request and relevant targets satisfy those constraints; tool-name filtering alone may be insufficient. |
+| Resource configuration control | Permitted values or bounds for a supported control | Whether the requested value and current transition satisfy the target contract and caller restrictions. |
+
+These are candidate constraint meanings, not accepted schemas or verified provider support.
+Filters narrow existing grants; they neither issue permission nor silently rewrite requests.
+Unsupported restrictions retain the existing unavailable/reporting behavior. This proposal adds
+no blanket interception or sandbox guarantee to native execution.
+
+The alternative authors the filter procedure directly as a graph/script with typed inputs and
+decision outputs. Recommend declarative contracts as the normal authoring surface, keeping those
+procedures in their implementations. Exact operators, names, schemas, composition and conformance
+tests remain separate choices.
 
 ## Review sequence and tests
 

@@ -36,7 +36,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Local entries | Pool-local component names resolve to that Pool's Resource instances and stable IDs. They are not registry aliases or a second provisioning ledger. |
 | Default setup | A reusable graph step consumes the entries and bindings and invokes each Resource's setup contract. Custom graphs can reference the same entries for extra ordering/checks. Setup is explicitly requested. |
 | Partial availability | Ready Resources remain usable through authorized Conduits during incomplete Pool setup. Their prerequisites and declared gates still apply; component and Pool status remain distinct. |
-| Composite Conduits | Reusable Conduit templates can compose other Conduits into an access bundle, preserving component targets, authority and lifecycle. Supporting Resources remain Pool-owned. |
+| Composite Conduits | Reusable bundles preserve component targets, authority and lifecycle. Each consumer's attachment tracks its own component participation and detach cleanup; underlying flows/clients/authentication may still be shared. Supporting Resources remain Pool-owned. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -44,19 +44,18 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — component participation per consumer:** when several consumers use a composite,
-should each consumer's attachment track its own participation in the components? Recommend this
-logical relationship so readiness, granted access and detach cleanup can be attributed to the
-consumer. Component Conduit instances, clients and authentication may still be shared explicitly;
-per-consumer participation does not require duplicate provider connections or login.
+**Next ruling — declaring and implementing filters:** should Conduit filters be typed declarations
+with semantics defined by capability/constraint contracts and enforcement implemented by supporting
+plugins? Recommend this: YAML selects allowed operations, paths or provider-specific target limits;
+the relevant implementation performs the checks. Custom code can add a filter contract, and its
+implementation can use plugin operations/graphs. Naming a constraint is not proof of enforcement.
 
-The alternative keeps one shared set of component attachments owned by the composite, checking each
-caller's permissions at dispatch. Both must preserve caller authority; the distinction is whether
-component participation and its cleanup are represented for each consumer. See the
-[lifecycle example](research/CONDUITS.md#can-there-be-one-euphony-access-conduit): reusing existing
-required/optional, retained-progress and last-consumer rules would make detachment release only
-that consumer's participation. Exact records, component reuse selection and aggregate status remain
-open. Resource availability and a consumer's preparation are still separate facts.
+The alternative makes user-authored filter graphs/scripts the primary declaration of a restriction,
+with their contracts specifying inputs and decisions. That offers direct procedural customization
+but leaves more of the policy's meaning in executable code. Both must remain narrowing-only and
+respect actual integration coverage. See the [filter example](research/CONDUITS.md#filter-declaration-and-implementation).
+Exact vocabulary, schemas, expression operators and filter composition remain open; this ruling
+does not require comprehensive native interception or sandboxing in v0.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -125,9 +124,9 @@ and reconcile a lost response. Keep identities, state and operation outcomes dis
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Endpoint contract | Generalize Interface/Agent control, Resource access, Resource-to-Resource dependencies and platform management. Define endpoint roles, filtered capabilities and request/result/observation paths without assuming one network topology. |
-| Authority and filtering | Define the detailed issuance/lifetime contract for accepted delegation during attachment establishment. Authenticate the actor/consumer; filters narrow granted authority. Define complete resource/operation/constraint combinations and current checks. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
+| Authority and filtering | Select filter declaration/implementation boundaries; define complete resource/operation/constraint combinations and current checks. Settle issuance/lifetime details for accepted attachment delegation. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
 | Communication Resources | Explore direct exchange, conversations and shared context as agent-oriented capabilities, potentially backed by storage Resources. Separate retained content from routing and runtime bookkeeping. No rooms-only topology or communication schema is selected. |
-| Composition and supporting Resources | Composite Conduits are accepted. Resolve per-consumer component participation, readiness and detach propagation, plus provisioning rights for Pool-owned supporting Resources. Avoid duplicated setup or implied external rollback. |
+| Composition and supporting Resources | Composite Conduits and per-consumer component participation are accepted. Define attachment representation, aggregate readiness and cleanup recovery, plus provisioning rights for Pool-owned supporting Resources. Avoid duplicated setup or implied external rollback. |
 | Delivery and attention | Define ordering, durable acceptance, acknowledgement, replay, offline delivery and backpressure for selected communication types. Distinguish available data, notices, queued input and starting model work; current access is checked at delivery. Wake behavior belongs to an explicit supported contract. |
 | Coordination and coverage | Identify shared backing conflicts, quotas and advisory versus enforced exclusion. Native operations outside mediation do not acquire guarantees through a Conduit label. Multi-frontend control should fit the same authority/outcome model. |
 

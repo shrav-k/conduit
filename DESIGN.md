@@ -1048,9 +1048,18 @@ shared authentication and durable content, remain Pool-owned.
 
 Composition must preserve caller attribution and restrictions at each component. It does not
 combine provider identities or imply permission to use every component. Individual components
-remain inspectable. Exact child attachment ownership, required/optional and readiness aggregation,
-detach propagation and YAML representation remain open. Ready Pool Resources do not by themselves
-prove that an Agent's required composite connection has completed preparation.
+remain inspectable.
+
+**Accepted participation boundary:** each consumer's composite attachment tracks its own
+participation in the components, making access, readiness and detach cleanup attributable to that
+consumer. A leaving releases A's participation through the composite and preserves B's participation
+and any independent attachments. Component Conduit instances, upstream clients and authentication
+may still be shared explicitly; logical participation does not require duplicate provider login,
+processes or Resources. Existing last-consumer and Resource-ownership rules continue to apply.
+
+Exact attachment representation, component reuse selection, required/optional and readiness
+aggregation, cleanup recovery and YAML remain open. Ready Pool Resources do not by themselves prove
+that an Agent's required composite connection has completed preparation.
 
 ### Explicit joining and instantiation
 

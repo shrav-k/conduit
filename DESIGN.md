@@ -2,7 +2,9 @@
 
 **Branch context:** these contracts preserve the `main` baseline at `c013f0a`. The active
 [construction proposal](research/CONSTRUCTION.md) reserves Conduits for ongoing connections,
-places construction graphs in templates and proposes Agent as the replacement for Session.
+places construction graphs in templates, uses Agent in place of Session and adds Interface
+as the fifth family. The basic Interface provides broad local management across families;
+Interfaces and Agents interact through Conduits using target-defined operations.
 Detailed identity and lifecycle choices remain open; the baseline below has not been silently
 rewritten to assume them.
 The active branch now uses [immutable instance definitions with dynamic Conduits](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections);

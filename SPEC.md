@@ -4,8 +4,9 @@ Updated: 2026-10-31. Accepted working model; implementation has not started.
 
 **Branch context:** this specification preserves the model saved on `main` at `c013f0a`.
 The active [construction proposal](research/CONSTRUCTION.md) separates universal template
-construction from ongoing Conduits and proposes Agent as the replacement for Session. Use it
-for the current discussion; the model below remains the comparison baseline.
+construction from ongoing Conduits, uses Agent in place of Session and adds Interface as the
+fifth family. The basic Interface is the broad management entry point for multiple frontends
+and tests. Use that proposal for current discussion; the model below remains the comparison baseline.
 The active branch keeps [instance definitions immutable while connections can change](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections).
 
 ## Working model

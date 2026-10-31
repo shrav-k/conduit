@@ -360,8 +360,10 @@ A Resource template supplies reusable configuration for a type's creation/attach
 Only a Pool creates its Resource instances; registering a template does not deploy anything.
 Define Resource templates and instances before Pool grouping/provisioning machinery. Compare
 a local path exposed by symlink, an MCP service connection and hybrid database search to find
-the minimum common contract and the necessary type-specific differences. Separate configured
-backing capability from per-consumer preparation; do not assume each needs a registered object.
+the minimum common contract and the necessary type-specific differences. For the accepted
+local-folder case, the Resource describes the folder attachment and Session symlinks are
+preparation state. Removing a symlink leaves the Resource and backing folder intact. Other
+consumer boundaries remain under review; do not assume each helper needs a registered object.
 
 Pool instances remain the ownership boundary. Pool registration and provisioning are separate
 explicit effects, optionally combined by a frontend with separate outcomes. Persistent Pool

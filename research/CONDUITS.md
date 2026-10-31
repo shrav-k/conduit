@@ -41,13 +41,18 @@ An access connection selects permitted Resources and operations. Session activat
 can prepare a participant's local path projection, subject to adapter and execution-mode
 capabilities.
 
+For the local-folder case, the Resource instance identifies the configured folder attachment.
+Per-Session symlinks are preparation state, not separate Resource instances. Removing one
+symlink preserves that Resource, its backing folder and other Sessions' views. This boundary
+is accepted; exact placement, cleanup timing and other projection mechanisms remain open.
+
 Two symlinks to the same checkout expose the same working files. Creating another symlink
 does not create a separate editing environment, a read-only boundary or an isolated account.
 Separate worktrees provide different working trees, although some repository administration
 and references remain shared. Git documents that separation explicitly.
 [Git worktree](https://git-scm.com/docs/git-worktree)
 
-Proposed state separation:
+State separation (folder/symlink identity is settled; remaining details are for review):
 
 | State | Natural responsibility to test |
 | --- | --- |

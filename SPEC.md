@@ -55,6 +55,10 @@ distinct even when they intentionally attach to the same repository, vault or re
 Contracts must distinguish creating new backing data from attaching to existing data. Separate
 registrations do not prove separate files, credentials, quotas or mutation targets.
 
+For a local folder, one Resource instance describes the configured folder; per-Session symlinks
+are preparation state. Removing one symlink preserves the Resource and backing folder, without
+affecting other Sessions' views. This does not require the same consumer lifecycle for every type.
+
 Conduits access Resources through their owning Pools. A connection that needs conversation
 storage requests it from a selected Pool, then uses that Pool-owned Resource. Connections and
 Sessions may use several Pools; this does not make them owners of the Resources. Cross-Pool
@@ -185,6 +189,7 @@ defines the remaining selections and staged evidence.
 | Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
 | Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
+| Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
 | Pool registration and provisioning | Registering a Pool does not itself provision Resources. Explicit provisioning has its own outcome, including when a frontend combines registration and provisioning. The declaration/binding representation remains under review. |
 | One template, several Pools | Pools create distinct Resource instances; each has exactly one owner. A foreign Resource cannot become a local member through a label or reference. |
 | Shared versus independent backing | Both explicit attachment to shared backing and provisioning independent backing are expressible; target identity and actual enforcement are reported. |

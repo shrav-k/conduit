@@ -518,8 +518,15 @@ symlink, an MCP connection and hybrid search over a database are contrasting exa
 interchangeable implementations of a fixed lifecycle. Settle their typed configuration,
 backing identity, operations and shared/per-consumer state before deciding Pool grouping.
 A type contract defines semantics; a template supplies reusable configuration for that contract.
-The minimum common fields and the boundary between a Resource and its prepared Session view
-remain open in [REVIEW.md](REVIEW.md#1-resource-templates-and-instances).
+The minimum common fields and consumer boundaries for other Resource types remain open in
+[REVIEW.md](REVIEW.md#1-resource-templates-and-instances).
+
+For a local folder, the Resource instance describes the configured folder attachment. Each
+Session's symlink is preparation state, not another Resource instance. Two Sessions may use
+the same Resource through different local paths; removing one prepared symlink leaves the
+Resource, its owning Pool, backing folder and other Session's view intact. Creating another
+symlink does not copy the folder or isolate concurrent edits. Exact path placement and cleanup
+timing remain open; other Resource types may require different consumer lifetimes.
 
 ### Native resources and integrations
 

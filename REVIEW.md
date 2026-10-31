@@ -46,6 +46,8 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
   backing data where the contract supports it. One Resource instance never has multiple owners.
+- A local-folder Resource describes the configured folder. Session symlinks are preparation
+  state, not separate Resources; removing one preserves the Resource, folder and other views.
 - A connection requests supporting Resources through a Pool. Its shared operational state,
   participant attachments and backing Resource lifetimes are distinct.
 - Open-new and join-existing connection intents are explicit. Filters narrow; activation in
@@ -68,10 +70,11 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Start with a **local-folder Resource template and instance**, then compare an MCP service and
-hybrid database search. For each, distinguish the configured capability/backing target from
-what is prepared for a consuming Session. Derive the shared Resource contract from those
-examples before designing type-aware Pools. The pending missing-plan-target ruling is paused.
+The **local-folder boundary** is settled: folder attachment is the Resource; Session symlinks
+are preparation. Compare an MCP service next, especially whether service identity is fixed
+by its Resource instance or selected per Session attachment, then hybrid database search.
+Use these examples to settle template/instance fields and the common Resource contract before
+designing type-aware Pools. The pending missing-plan-target ruling remains paused.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -86,10 +89,10 @@ examples before designing type-aware Pools. The pending missing-plan-target ruli
 
 | Question | Example and considerations |
 | --- | --- |
-| What does a Resource instance identify? | Compare the configured backing capability with a consumer-specific prepared view. Is a folder Resource the path attachment, each exposed symlink, or either under distinct contracts? Which state needs independent identity/lifecycle? |
+| What does a Resource instance identify for other types? | The local-folder instance identifies the folder attachment; symlinks are Session preparation. For MCP and search, distinguish configured service/data target, service identity and prepared client/query context. Which state needs independent identity/lifecycle? |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
-| What is shared and what is prepared per consumer? | A folder may have several symlink projections; an MCP service may need separate authenticated clients; search may use per-connection query filters. These are candidate boundaries, not settled object layouts. Separate backing, auth, client and operation lifetimes without registering every helper. |
+| What is shared and what is prepared per consumer? | Folder symlinks are Session preparation. MCP may need separate authenticated clients; search may use per-connection query filters. Decide whether an MCP instance fixes a service identity or allows permitted identities per attachment. Other type boundaries remain proposals; avoid registering every helper. |
 | How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
 | What lifecycle does each type actually need? | A path attachment need not start a service; an MCP integration may connect/spawn a client; search can attach to an existing index or build one where supported. Define necessary effects, readiness, retry and cleanup per type before requiring generic provisioning state. |
 
@@ -97,7 +100,7 @@ Use these examples as design probes, not a closed list of types or an accepted s
 
 | Example | Questions the contract must answer |
 | --- | --- |
-| Local filesystem exposed by symlink | Which path is configured? Where is each Session's view prepared? What survives detachment? Which writes reach shared backing? |
+| Local filesystem exposed by symlink | The folder Resource survives removal of a prepared symlink. Settle configured source paths, Session-local path placement and cleanup timing; symlinks share backing files and do not isolate writes. |
 | MCP service connection | Which server/configuration is reused? Who authenticates each client? Which tools/resources/prompts are exposed, and which processes must exist? A Conduit Resource is distinct from MCP's protocol resource primitive. |
 | Hybrid search over a database | Which collection/index is targeted? What are query/filter/result contracts and freshness? Does attachment start any work, and who owns indexing if offered? |
 

@@ -463,8 +463,10 @@ Plugin configuration needs a named/versioned schema. These parser details remain
 
 Unknown-field rejection is accepted for templates and instances, except in schema-declared
 open maps. Plugin schemas can define their own fields and open maps; map keys/values retain
-their declared constraints. Unavailable-schema handling remains distinct from unavailable
-runtime support and is still under review.
+their declared constraints. Create/replacement writes require their applicable schemas: an
+unavailable required schema rejects the write while preserving source YAML and any existing
+registry object. Accepting otherwise valid configuration with unavailable runtime/service
+dependencies remains a separate readiness choice under review.
 
 The complete instance spec is authoritative for configuration. Template-origin information
 is optional; it is not required to operate or edit an instance. The representation must still
@@ -501,7 +503,8 @@ Choose the actual API group and version progression separately from the illustra
 | Model/account refresh fails | Report failure; no alternate-account or API-billing fallback. |
 | Communication peer is offline | Report contract-specific pending/unavailable state without an implicit model turn. |
 | Tool effect may have occurred but response is missing | Outcome remains unknown until reconciliation; no unsafe automatic repetition. |
-| A plugin schema or protocol feature is unsupported | Explain the unavailable capability; do not drop restrictions. |
+| A required configuration schema is unavailable | Reject create/replacement and preserve the YAML and any existing registered object. |
+| A runtime or protocol feature is unsupported | Explain the unavailable capability; do not drop restrictions. |
 
 ## Scope of validation
 

@@ -35,7 +35,8 @@ The complete instance `spec` is then edited directly. Draft assignments replace 
 values; editing a nested child preserves its siblings. Creation and replacement updates store
 declared schema defaults explicitly; templates preserve authored omissions. Template history
 is optional; continuing Resource and authority dependencies are explicit on the instance.
-Unknown configuration fields are rejected except within schema-declared open maps.
+Creation and replacement require the applicable schemas. Unknown configuration fields are
+rejected except within schema-declared open maps.
 Current-access checks and actual execution evidence remain required.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable

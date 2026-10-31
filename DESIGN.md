@@ -318,8 +318,15 @@ maps whose schemas explicitly allow arbitrary keys. For example, `metadata.lable
 unknown field; custom keys inside the declared `metadata.labels` map are permitted. Keys and
 values still obey the map's contract; openness is limited to the declared location. Plugin
 contracts can define their own fields and open maps under the same rule. Unknown fields are
-not silently discarded or retained outside those locations. Handling unavailable schemas
-separately from unavailable runtimes remains in review.
+not silently discarded or retained outside those locations.
+
+Create and replacement writes require the applicable configuration schemas, including required
+plugin schemas. If a required schema is unavailable, reject the write: preserve source YAML
+and any existing registered object rather than register an unvalidated replacement or new
+object. This supports field validation and declared-default materialization. It governs these
+configuration writes; it does not equate schema availability with installed runtime support
+or external-service readiness. Registration when those operational dependencies are unavailable
+remains in review.
 
 Configuration changes, package preparation, binding establishment and agent execution have
 different effects. Their operations must say what they do. A Session export is not evidence

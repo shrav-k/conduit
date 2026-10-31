@@ -31,6 +31,8 @@ outcomes rather than a long sequence of individual field rulings.
   Unchanged updates still require current authorization and matching ID/version checks.
 - Typed configuration rejects unknown fields except in schema-declared open maps. Plugin
   schemas may define fields and open maps; map keys/values still follow their contracts.
+- Create/replacement writes require their applicable schemas. An unavailable required schema
+  rejects the write, preserving source YAML and any existing registry object.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -54,10 +56,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **schema availability and validation outcomes**. Unknown-field handling is
-settled; distinguish an unavailable schema from a valid configuration whose runtime is absent.
-Then resolve remaining field-value rules and establish Pool provisioning/ownership and
-instance lifecycle together.
+Continue with **valid configuration versus operational readiness**. Schemas are required for
+create/replacement writes; decide whether otherwise valid configuration can be registered when
+its plugin runtime is missing or a configured external service is offline. Then resolve
+remaining field-value rules and establish Pool provisioning/ownership and instance lifecycle.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -146,7 +148,7 @@ unsupported hooks and a change of model/account without leaking private context.
 
 | Question | Example and considerations |
 | --- | --- |
-| What do offline validation and explicit probes promise? | Decide whether an unavailable required schema prevents registry writes or permits an explicitly unvalidated object; distinguish missing runtime support from missing validation capability. Separate syntax, reference, semantic and transition checks from network/login/process effects. Preview does not freeze current access. Preserve multiple scoped errors and unknown live facts. |
+| What do offline validation and explicit probes promise? | Required schemas must be available for create/replacement writes. Decide whether otherwise valid configuration may be registered when runtime/service dependencies are unavailable, and how readiness is reported. Separate syntax, reference, semantic and transition checks from network/login/process effects. Preview does not freeze current access. Preserve multiple scoped errors and unknown live facts. |
 | How are diagnostics and status represented? | Choose metadata/status field names, source locations, stable categories, evaluated versions and independently reported validity, auth, readiness and enforcement. Avoid one universal ready flag. |
 | What are version/migration boundaries? | Choose API group/version, family/form schemas and plugin dialect. Separate template config versions, instance resolved versions, record revisions and runtime releases. Unknown semantics must not silently degrade to a familiar version. |
 | How do edits and batches remain recoverable? | Specify existing baseline storage/association/lifecycle, checked import/export and rebind, source preservation and batch atomicity. Local registry atomicity does not imply rollback of external provisioning. |

@@ -20,6 +20,8 @@ need for communication. They can request provisioning through a Pool but do not 
 Creating a Pool registers its identity, configuration and Resource plan. Provisioning is
 requested explicitly to create or attach the planned Resources. A frontend may combine both
 in one explicit action while reporting their outcomes separately.
+Each named plan entry retains its created Resource's identity across provisioning runs;
+additional creation is explicit.
 
 Opening a new connection and joining an existing connection are explicit, distinct intents.
 Sharing a connection does not implicitly share credentials or private context.

@@ -361,8 +361,11 @@ its Resource instances; registering a template does not deploy anything. Pool te
 select Resource templates and defaults, while Pool instances provide the ownership boundary
 for actual provisioning. Pool creation registers identity, configuration and its Resource plan;
 executing the plan requires an explicit provisioning request. Frontends may combine registration
-and provisioning in one explicit action with separate outcomes. Repeated plans, ownership
-assignment, partial provisioning, failures and retries still need concrete contracts.
+and provisioning in one explicit action with separate outcomes. Each named plan entry retains
+a binding to its created Resource ID across runs. Distinct entries can use the same template;
+additional creation remains explicit. Reuse does not overwrite the Resource spec or repeat
+native creation effects. Entry changes, missing targets, replacement, partial provisioning and
+failure handling still need concrete contracts.
 
 Reuse templates across Pools, not membership of one Resource instance. Contracts distinguish
 new backing data from attachment to existing data. Two local registrations can refer to the
@@ -404,7 +407,7 @@ status and partial effects need explicit semantics.
 | Relationship | Proposed composition | Case to test |
 | --- | --- | --- |
 | Template expansion and creation edits | Assignments replace whole field values, including objects/lists; nested-child edits preserve siblings. | Assigning `[c]` to `[a, b]` produces `[c]`; no implicit append, parameter mapping or historical delta is required. |
-| Pool provisioning selections | Select templates and explicit creation intents; instance identity matters. | Two intentional instances of one template must not be deduplicated as one. |
+| Pool provisioning selections | Named entries retain created Resource-ID bindings across runs; further creation is explicit. | Two entries using one template can create distinct Resources; rerunning reuses each binding without repeating creation effects. |
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
 | Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |
 | Independent authorized paths | Union of complete constrained capabilities. | Read `src/**` plus write `docs/**` does not create write access to `src/**`. |

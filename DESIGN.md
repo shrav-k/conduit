@@ -616,8 +616,16 @@ plan. Registration alone does not execute that plan or create its planned Resour
 Provisioning must be requested explicitly to create or attach the planned Resources through
 their owning Pool. A frontend may offer registration and provisioning as one explicit action,
 while preserving separate outcomes and reporting readiness. A successful registration does
-not imply successful provisioning. Exact operation syntax, repeated-run behavior and partial
-provisioning rules remain open; no background reconciler is implied.
+not imply successful provisioning. Exact operation syntax and partial provisioning rules
+remain open; no background reconciler is implied.
+
+Each named Resource-plan entry retains a binding to the stable ID of the Resource instance
+it creates. Subsequent provisioning runs reuse that identity. Bindings are per entry within
+the Pool, not per template: separate entries can create distinct Resources from one template.
+Additional creation is explicit. Reusing a binding does not overwrite the Resource's complete
+spec, reapply its creation template or repeat native creation effects. Retrying incomplete work
+still follows the operation-outcome and safe-retry rules. Plan-entry edits, removal, renaming,
+missing targets and explicit replacement remain separate lifecycle choices under review.
 
 Resource templates can be selected by explicit references and labels where supported.
 Selection among an existing Pool's owned instances is another operation. Exact selector

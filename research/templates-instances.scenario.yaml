@@ -2,16 +2,17 @@
 # Family kind plus top-level form is accepted; payloads remain illustrative.
 # Resource fields type {group, name, version}, config and conduits are accepted. Group/type/version
 # labels and all type-specific config below are synthetic, not approved plugin schemas.
-# The config.mode examples are one candidate representation; whether create/attach belongs
-# in persistent Resource config or only in the provisioning request remains unresolved.
+# Establishment intent belongs in template spec. config.mode is illustrative; its retention
+# in the resulting instance and the type-defined transition are still under review.
 # These Resource templates declare no Conduits; the container/entry shape remains undecided.
 # Names are unique per family across both forms. These examples use explicit instance names;
 # the default is template name plus a generated unique suffix (exact format remains open).
-# References explicitly use kind/form/name. The wrapper and operation fields remain illustrative.
+# References explicitly use kind/form/name. operations below are test-harness stimuli, not
+# an authored operation language. This fixture does not validate the pending form transition.
 # All paths, accounts, provider identifiers and targets are synthetic. No grants or secrets.
 # Templates register reusable configuration; only explicit Pool operations create Resources.
-# This scenario exercises template-based creation. Direct creation from complete instance YAML
-# is also supported, with an explicit unique name and the same Pool ownership requirements.
+# This scenario exercises template-based creation. Direct instance import is under review
+# where exports lack establishment-only information; Pool ownership remains required.
 # Pool resourcePlans below are a parked grouping/provisioning proposal, not a required layer.
 # Review Resource types and consumer boundaries first; use that result to simplify Pool syntax.
 scenario: four-families-with-exclusive-resource-ownership

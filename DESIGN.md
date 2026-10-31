@@ -15,8 +15,8 @@ the same lifecycle. This does not remove the accepted account, memory or recover
 ## Families, templates and instances
 
 The four families are Session, Resource, Pool and Conduit. Each has a template describing
-reusable configuration and an instance representing something established. An instance need
-not have a running process. Session templates replace the separate Profile concept. A Conduit
+how to establish an instance, and an instance recording its configuration and observed state.
+An instance need not have a running process. Session templates replace the separate Profile concept. A Conduit
 instance represents a live filtered flow; an attachment is a consumer or peer's logical
 participation. These terms introduce no additional families.
 
@@ -39,25 +39,43 @@ reconciliation are separate effects. No automatic reconciler or cascading purge 
 Instance creation/materialization details, reference extensions and lifecycle operations
 remain in [REVIEW.md](REVIEW.md).
 
-### Template changes and resolved configuration
+### Establishment contracts and instance state
 
-Across Session, Resource, Pool and Conduit, create an instance either from complete instance
-YAML or from a template and creation choices. Templates are optional creation helpers. Both
-paths produce a complete instance `spec`, authoritative for that instance's configuration,
-and follow the same validation and authority rules. Direct creation requires an explicit
-unique name. Resource creation always goes through its owning Pool; complete YAML cannot
-bypass that operation. This choice does not combine creation, provisioning and execution.
-Later changes edit the instance directly through checked updates. Editing or
-deleting the creation template does not change an existing instance or create a requirement
-to recover the template before operating it. Adding a Resource to a Pool template therefore
-does not provision it in existing Pools.
+Across all four families, templates carry the configuration needed to establish an instance,
+including creation/attachment choices and declared dependencies. Establishment behavior belongs
+in typed configuration, not in a separately authored operation-request recipe. For
+`local-directory`, create versus attach is declared in the Resource template's spec. Exact
+field placement within typed config and the resulting instance representation remain in review.
+A type contract defines what the declaration means; a template configures that contract, and
+the implementing adapter performs its effects.
 
-Template use expands its configuration into an instance draft. Callers customize ordinary
-instance fields through YAML, CLI or API; v0 has no separately declared template parameters
-or parameter-to-field mappings. Edits may be automated and require no interactive step.
-Normal validation and default materialization apply to the resulting configuration. Draft
-edits prepare a complete configuration submission; they do not introduce a partial-update
-registry protocol or a retained override layer.
+An explicit lifecycle action selects the configuration and when to establish it. It need not
+carry a second description of how to establish it. Pool ownership, an instance name, and any
+declared contextual inputs still have to resolve; references need not embed credentials or
+external data. Resource creation always goes through its owning Pool. Registration, external
+provisioning and execution remain distinguishable effects, even when one user action combines
+them. No background reconciler, automatic model restart or new operation-document family is
+introduced. Internal requests, outcome tracking and safe retries remain runtime responsibilities.
+
+The resulting instance retains complete configuration for its ongoing use in `spec`, and
+system-observed state in `status`. Successful creation cannot be established by authoring a
+ready status. Templates and instances need not have identical fields: creation-only settings,
+ongoing settings and generated results need a type-defined transition. The exact split is
+open; do not silently equate instantiation with copying the template spec unchanged.
+
+Later changes edit the instance directly through checked updates. Editing or deleting the
+creation template does not change an existing instance or require recovering the template
+before operating it. Adding a Resource to a Pool template does not provision it in existing
+Pools. Instance updates must respect each type's transition rules, not rerun establishment
+merely because configuration is saved.
+
+Callers customize ordinary typed fields through YAML, CLI or API. There is no accepted generic
+parameter/mapping language or handwritten lifecycle script requirement. Whether examples need
+additional language features is open to evidence. Validation and default materialization apply
+to the resulting instance configuration. The earlier direct-instance creation path is under
+review where an exported instance lacks establishment-only information: import must not invent
+create/attach intent or require a parallel operation recipe. One-off configurations need not
+imply a permanently registered template; the precise authoring path remains to be settled.
 
 Template-origin information may be retained optionally. No source-template snapshots,
 input/override history or persistent template-version binding is required to operate the
@@ -143,8 +161,8 @@ local or remote. Registry presence grants no access and need not name every nati
 
 Templates name reusable concepts; instance names distinguish specific creations. Template-based
 creation defaults to the template's name plus a generated unique suffix, such as `reviewer-7f3a`.
-Callers may supply an explicit unique name instead. Direct creation without a template requires
-an explicit unique name. Both paths obey per-family uniqueness across forms. Exact suffix
+Callers may supply an explicit unique name instead. The one-off/import path under review retains
+the explicit-unique-name requirement. All paths obey per-family uniqueness across forms. Exact suffix
 format, name constraints and generated-collision handling remain open. Generated names remain
 separate from stable system IDs, and a specific instance name does not imply automatic expiry.
 
@@ -363,11 +381,11 @@ language must express. [REVIEW.md](REVIEW.md) focuses the remaining choices on t
 
 A Session template is reusable configuration for any number of independent Sessions. It specifies
 runtime/model/account defaults, execution preferences and requirements, optional permission
-limits, default connection choices, and activation instructions. A Session can be created
-directly from complete instance YAML or from one Session template; v0 defers inheritance
+limits, default connection choices, and activation instructions. Establishment uses one Session
+template's configuration; one-off/import syntax remains under review. V0 defers inheritance
 and composition between Session templates.
 
-Both creation paths produce the Session's complete spec. The Session operates from that spec
+Establishment produces the Session's complete spec. The Session operates from that spec
 and explicit live dependencies; retain actual execution settings.
 Permission limits remain current. Whether referenced resource content follows source updates
 is a separate open choice.
@@ -506,7 +524,7 @@ Resource specs use these fields in both template and instance forms:
 | Field | Contract |
 | --- | --- |
 | `spec.type` | A type-contract reference with separate `group`, `name` and `version` fields. This is distinct from a registry object reference using kind/form/name. |
-| `spec.config` | Type-specific settings validated by the selected contract schema. Unknown fields are rejected except in schema-declared open maps. |
+| `spec.config` | Type-specific settings validated for the selected type and form. Templates declare establishment intent; instances retain their ongoing configuration. The transition and exact fields remain in review. Unknown fields are rejected except in schema-declared open maps. |
 | `spec.conduits` | The consumer's Conduit declarations. Their entry shape and contents remain under review. |
 
 Resource types have logical groups independent of installation packages. A plugin package may
@@ -589,13 +607,14 @@ The `git-worktree` type additionally represents its relationship to a Git reposi
 supported worktree-management operations. Both retain Pool ownership, Session-specific
 preparation and explicit backing-data cleanup rules.
 
-In v0, `local-directory` supports two explicit operations through its Pool: attach an existing
-directory or create a new one. Attachment never creates a missing path. A fresh creation
-reports a conflict when its target already exists instead of silently adopting it. Registration
+In v0, `local-directory` declares establishment intent in its template spec: attach an existing
+directory or create a new one through its Pool. Attachment never creates a missing path.
+A fresh creation reports a conflict when its target already exists instead of silently adopting it. Registration
 alone performs neither operation, and backing-data cleanup remains separate. Retries still use
 recorded operation outcomes and the existing safe-retry rules; an uncertain outcome does not
-justify blindly repeating creation. Exact operation/configuration syntax, Git-worktree-specific
-modes and any shared directory interface remain open.
+justify blindly repeating creation. Instantiation reads this declared intent rather than asking
+the caller to assemble a separate provisioning recipe. Exact configuration/transition syntax,
+Git-worktree-specific modes and any shared directory interface remain open.
 
 Local-directory templates may contain relative backing paths. Creation resolves them against
 an explicit base and saves the resulting absolute host path in the complete instance spec.
@@ -748,8 +767,8 @@ purging retained history. Ownership cleanup and backing-data cleanup remain sepa
 
 ## Conduits
 
-A Conduit template describes a reusable typed interaction. Opening from that template or
-complete instance configuration establishes an authorized flow with resolved endpoints,
+A Conduit template describes how to establish a reusable typed interaction. Opening from
+that configuration establishes an authorized flow with resolved endpoints,
 logical attachments and connection state. Session and Resource templates can reference
 Conduit templates as connection declarations; the resulting consumer instances retain those
 declarations in their configuration. Explicit preparation of a Session or Resource normally
@@ -814,8 +833,9 @@ recovery and composition details remain in [REVIEW.md](REVIEW.md).
 Connection establishment supports both intents explicitly:
 
 - **Join an existing instance:** establish participation in a specified existing relationship.
-- **Open a new connection:** create a relationship from a Conduit template or complete instance
-  configuration, subject to the contract's endpoints, authority and provisioning requirements.
+- **Open a new connection:** create a relationship from its establishment configuration,
+  subject to the contract's endpoints, authority and provisioning requirements. One-off/import
+  syntax remains in review alongside the template-to-instance transition.
 
 Reusing a template name does not implicitly choose between these intents. For example,
 two Sessions can join the same discussion, or create separate discussions from the same

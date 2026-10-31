@@ -82,16 +82,16 @@ No automatic purge follows from a missing Pool reference.
 
 ## How instances work together
 
-1. **Create a Session.** Use complete instance YAML with an explicit unique name, or materialize
-   one template and creation choices. Later edits target the instance; current access limits
-   are represented explicitly. V0 defers Session-template inheritance.
+1. **Create a Session.** Establish it from typed template configuration. One-off configuration
+   and instance import are under review where establishment information differs. Later edits
+   target the instance; current access limits are explicit. V0 defers Session-template inheritance.
 2. **Register Pools, then explicitly create/attach Resources.** Pool registration and Resource
    provisioning are separate effects; a frontend may combine them in one explicit action with
    separate outcomes. The Pool owns the resulting instances. Persistent creation declarations
    and their bindings are back under review pending Resource contracts; no background
    reconciler is implied.
-3. **Open or join a connection explicitly.** Opening uses a Conduit template or complete
-   instance configuration; joining targets an existing connection. Reusing a template name
+3. **Open or join a connection explicitly.** Opening uses declared establishment configuration;
+   joining targets an existing connection. Reusing a template name
    does not choose between these operations or imply shared clients, credentials or private context.
    Session and Resource templates can reference Conduit templates to describe flows their
    instances will establish. The enclosing instance automatically supplies the consumer endpoint;
@@ -135,7 +135,10 @@ Within `filesystem`, `local-directory` and `git-worktree` are distinct types. Bo
 directory; Git-specific management belongs to the worktree contract. Their detailed schemas
 remain open. In v0, local-directory supports explicit attachment and creation through its Pool:
 attachment requires an existing directory; fresh creation conflicts with an existing target.
-Registration performs neither effect, and cleanup remains separate.
+Create/attach intent belongs in the Resource template's spec; triggering establishment does
+not require a separate operation-request recipe. Registration performs neither effect, and
+cleanup remains separate. The type contract must define how establishment settings become
+instance configuration and observed results; exact fields remain open.
 Relative local-directory template paths resolve against an explicit creation base; the complete
 instance stores an absolute host backing path. Session-local exposure is separate.
 An agent-communication group is a candidate for direct messaging, conversations and shared
@@ -158,17 +161,18 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   names allowed. Exact suffix format and name constraints remain open.
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
-- Across all four families, create instances from complete instance YAML or from a template
-  expanded into an instance draft, customized through ordinary instance fields. V0 has no
-  separately declared template parameters or parameter-to-field mapping language. Edits can
-  be automated through YAML/CLI/API without an interactive step. Assigning a field replaces
-  its whole value, including objects/lists; editing a nested child preserves its siblings.
-  Direct creation requires an
-  explicit unique name; Resources still
-  require Pool-mediated creation. Both paths produce the authoritative instance spec and
-  obey the same validation and authority rules. Creation, provisioning and execution retain
-  separate contracts. Later changes edit the instance directly; its creation template can
-  change or disappear without changing the instance.
+- Across all four families, templates contain the establishment configuration; explicit
+  lifecycle actions select when to realize it. Typed transitions produce instance configuration
+  and observations; instantiation need not copy every template field into the instance.
+  Establishment-only settings, ongoing settings and generated results need explicit semantics.
+  Users edit ordinary typed fields; no separate operation-recipe or generic parameter/mapping
+  language is required. Assigning a field replaces its whole value, including objects/lists;
+  editing a nested child preserves its siblings. Resources require Pool-mediated creation.
+  Registration, provisioning and execution remain distinct effects. Later changes edit the
+  instance directly; its creation template can change or disappear without changing it.
+- Direct creation/import from complete instance YAML is being reviewed where instance exports
+  omit establishment information. Preserve the one-off use case without guessing missing
+  create/attach intent or adding a parallel request recipe. Exact authoring syntax remains open.
 - Template-origin information is optional; no source snapshots or input/override history are
   required. Continuing Resource and authority dependencies must be explicit on the instance.
   Current-access checks, Resource data, runtime status and actual execution evidence remain
@@ -230,7 +234,7 @@ defines the remaining selections and staged evidence.
 | Interaction | Observable outcome |
 | --- | --- |
 | Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
-| Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
+| Establishment from configuration | A Resource template carries create/attach intent. A lifecycle trigger uses that intent through the owning Pool; actual outcomes become instance observations. Instance import must report missing establishment information, with its exact authoring path still under review. |
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
 | Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. |
 | Resource connections | Explicit consumer preparation attempts declared open/join actions under applicable authority and filters. Required failure blocks that consumer's preparation; optional failure is reported and permits continuation. Registration alone starts nothing; unrelated consumers are unaffected. |

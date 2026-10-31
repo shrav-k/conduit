@@ -265,8 +265,8 @@ preparation, not extra Resources. Their edits still affect the same target. For 
 writers, provision a `filesystem` / `git-worktree` Resource for each workspace through the Pool.
 The repository's shared administration and remote remain distinct from each working tree.
 
-Selecting a filesystem group cannot determine copy-versus-share behavior. The type and creation
-operation must state it. Removing a projection or registration preserves backing data under
+Selecting a filesystem group cannot determine copy-versus-share behavior. The type contract and
+establishment configuration must state it. Removing a projection or registration preserves backing data under
 the accepted cleanup rules. No file-locking guarantee arises from ownership or naming.
 
 ### Linear MCP and AWS CLI
@@ -381,86 +381,83 @@ an executable compatibility promise. Pool mechanics should follow these tested c
 
 ## YAML, identity and extension rules
 
-### Provisioning request versus Resource configuration
+### Template establishment and instance state
 
-**Unresolved design comparison.** An operation is a request to Conduit's API, implemented
-through the relevant Resource adapter. CLI, UI, MCP and automation can issue the request;
-it need not be a newly registered object or a handwritten provisioning script. The request
-itself can be serialized as YAML without becoming another object family. Exact command names,
-request fields and plugin configuration below are illustrative.
+**Accepted direction:** Resource templates contain establishment choices in their spec, including
+local-directory create versus attach. Across the four families, users should not need a separate
+operation-request recipe to supply missing setup behavior. An explicit lifecycle action triggers
+what the configuration declares. **Proposed details below:** exact config/status fields and what
+survives in the instance are not settled. The type contract defines semantics; the adapter
+implements them. Template YAML need not contain shell scripts or reproduce adapter code.
 
-Assume the `euphony-folder` Resource template selects the accepted `filesystem` group and
-`local-directory` type, with a candidate `spec.config.path` value of `./repo`. The Pool instance
-`euphony-development` already exists. An explicit request might be:
-
-```yaml
-# Operation request, not a registry object or an approved API schema.
-operation: provision-resource
-poolRef: {kind: Pool, form: instance, name: euphony-development}
-templateRef: {kind: Resource, form: template, name: euphony-folder}
-action: attach
-basePath: /work/euphony
-```
-
-A possible CLI expression of that same request is:
-
-```text
-conduit resource provision --pool euphony-development --template euphony-folder --action attach --base /work/euphony
-```
-
-This command is proposed syntax, not an implemented command. A caller could instead supply
-complete instance configuration through the Pool; a template is optional. A template-based
-request uses the already-agreed generated instance name unless the caller explicitly supplies one.
-
-The proposed combined operation proceeds as follows:
-
-1. Resolve the Pool/template identities, validate the draft and applicable authority, resolve
-   the relative path against the explicit base, and materialize the complete instance settings.
-2. Establish the Pool-owned registration and dispatch the selected backing action with tracked
-   operation identity/outcomes. Registration and the filesystem effect remain distinguishable;
-   a frontend need not make the caller issue two separate commands.
-3. For `attach`, verify that the directory exists and establish its usable attachment. For
-   `create`, request creation of a new directory; an existing target conflicts. Missing runtime,
-   permission failure and uncertain external outcomes follow the existing readiness/retry rules.
-4. Report what was registered and what actually succeeded. Session-specific exposure occurs
-   later during preparation; a symlink is not created merely by saving Resource configuration.
-
-The exact ordering/retention of failed registrations is still open; this example does not
-promise a transaction spanning the registry and filesystem. A failure must not be presented as
-successful provisioning, and a lost response must not trigger blind repeat creation.
-
-In the operation-input option, either successful route produces the same directory settings:
+Consider this abbreviated template, using an absolute path to keep contextual resolution out
+of the example. The common apiVersion is omitted because its identifier remains undecided.
 
 ```yaml
-# Abbreviated instance spec; version label and config field spelling are illustrative.
+kind: Resource
+form: template
+metadata:
+  name: euphony-folder
 spec:
   type: {group: filesystem, name: local-directory, version: v1alpha1}
   config:
     path: /work/euphony/repo
+    establish: create
 ```
 
-The instance also has its own identity and Pool ownership. Recorded operation evidence still
-distinguishes whether the backing was created or attached; removing `action` from the spec
-does not erase that fact or authorize cleanup. Exporting current configuration need not be a
-complete instruction for reproducing its original establishment. Current configuration and
-a repeatable setup request serve different purposes.
+Selecting this template for establishment through Pool `euphony-development` is sufficient to
+choose creation; the caller does not also supply an action flag or request manifest. Selecting
+the owning Pool is still necessary. A different template, or an ordinary edit to the typed
+configuration before use, can declare `establish: attach`. No implicit create-or-adopt behavior
+is introduced. A complete reusable declaration can reference external inputs; completeness does
+not require embedding credentials, every dependency's contents, or a literal owning Pool.
+How Pool/context supplies declared values such as a relative-path base remains for review.
 
-| Choice | Where attach/create is supplied | Useful property | Tradeoff |
-| --- | --- | --- | --- |
-| Operation input, recommended | The explicit request, through CLI/API or a saved YAML request. | The instance spec describes the resulting configured directory; the same template can establish new or existing backing. | Setup automation must retain or supply its operation intent separately from an instance-only export. |
-| Persistent Resource configuration | A candidate field such as `spec.config.mode`. An explicit provisioning call reads it. | One Resource configuration includes both directory settings and the chosen establishment policy. | Define what that field means after success, on edits and on later provisioning; the field must not silently cause recreation. |
+The type contract must explain the transition, rather than treating it as a blind config copy:
 
-Both choices preserve the accepted rule that registration alone starts neither action. The
-configuration option does not inherently require a background controller or automatic deletion.
-Likewise, the operation option does not force manual CLI use: an authorized agent or automation
-can submit the same request, and a future Pool setup declaration could supply a reusable action
-default. That is separate from storing the action in the Resource's ongoing configuration.
-Pool declaration syntax and whether such defaults are needed remain parked for later review;
-no new recipe family or mandatory provisioning ledger is proposed.
+| Stage | Example responsibility |
+| --- | --- |
+| Validate and resolve | Verify schema/authority/owner, apply declared defaults and resolve any relative path against its explicit base. Registration alone performs no native action. |
+| Establish | The directory adapter follows the declared create/attach intent. Fresh create conflicts with an existing target; attach fails when the directory is absent. |
+| Record the instance | Assign identity/Pool ownership, retain ongoing settings, and report the actual establishment outcome and readiness. Failed/pending outcomes remain visible. |
+| Use and prepare consumers | Sessions receive their own prepared paths through Conduits. This does not repeat backing creation or register another Resource per symlink. |
 
-The immediate question is whether attach/create belongs in the Resource's persistent spec.
-The separate question is how callers author and reuse a request. Do not conflate these with
-whether provisioning is explicit, whether YAML is supported, or which implementation executes it.
+One candidate inspection result after success is:
+
+```yaml
+# Abbreviated inspection, not authorable status or an approved schema.
+kind: Resource
+form: instance
+metadata:
+  name: euphony-folder-7f3a
+spec:
+  type: {group: filesystem, name: local-directory, version: v1alpha1}
+  config:
+    path: /work/euphony/repo
+status:
+  establishment: {outcome: created}
+  readiness: ready
+```
+
+The owning Pool and stable ID also exist, but their field layout is omitted. Here the action is
+consumed during establishment and its result is reported. An alternative retains the selected
+mode as immutable establishment configuration on the instance. Both keep intent in the template;
+review which information is necessary for recovery/export without a mandatory full template
+snapshot or override history. Instance spec remains usable configuration, not an editable claim
+that the external effect succeeded. Status fields are system-owned and excluded from config writes.
+
+Reattempting incomplete establishment is different from instantiating another Resource. Internal
+operation identities/outcomes prevent unsafe blind retries without making users author a request
+language. After a directory has been established, losing it does not by itself authorize recreating
+it. Updating instance settings also does not silently replay creation. Exact failure-state retention,
+recovery and permitted instance transitions still require decisions.
+
+Two useful design tests follow. First, an exported instance lacking create/attach intent cannot
+promise to be a complete setup recipe: define an explicit conversion to establishment configuration,
+or retain enough declared intent, rather than guessing. Second, a template can be comprehensive
+without being a universal workflow engine: plugin-defined fields, references and lifecycle behavior
+may cover the examples. [Configuration research](CONFIGURATION.md#establishment-in-configuration)
+compares Compose, Docker's lifecycle boundaries and Kubernetes before proposing extra syntax.
 
 ### Type reference and extension identity
 
@@ -549,8 +546,8 @@ Recommended discussion sequence:
 
 1. Use the accepted four groups and directory/worktree split for concrete type review; do not
    repeat those rulings. Local-directory create/attach intent and absolute instance backing paths
-   are also settled. Review operation-versus-configuration placement, Session preparation and
-   symlink behavior next.
+   are also settled, with establishment intent in the template spec. Review the typed transition
+   to instance settings/status, failure/retry and export together, then Session preparation/symlinks.
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
    dependencies, preparation and one failure each. Evaluate content and identity, retaining
    the agent-communication candidate for the detailed communication review.

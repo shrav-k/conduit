@@ -19,16 +19,18 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   may supply explicit unique names; exact suffix format and name constraints remain open.
 - Readable object references explicitly include kind, form and name. Kind/name locates the
   target and form validates its intended use; wrong-form targets are rejected.
-- Templates and creation choices produce a complete instance spec across all four families.
+- Templates contain the establishment configuration across all four families. Lifecycle actions
+  select when to realize it; users do not assemble a separate operation-request recipe.
+  Local-directory create/attach intent belongs in the template spec. Type-defined transitions
+  produce ongoing instance configuration and observed status; their exact fields remain open.
   Later edits target that instance; its creation template can change or disappear independently.
   No template history or input/override ledger is required. Continuing Resource and authority
   dependencies are explicit; current-access checks and actual execution evidence remain.
-- Direct creation from complete instance YAML is also supported, with an explicit unique name.
-  Both paths use the same validation and authority rules; Resource creation still goes through
-  a Pool. Creation, provisioning and execution remain distinct effects.
-- Template use expands an instance draft customized through ordinary instance fields, with no
-  separate parameter declarations/mappings. YAML/CLI/API editing may be fully automated;
-  registry submissions remain complete configurations.
+- Direct-instance creation/import is under review where exports omit establishment information.
+  Preserve one-off authoring without guessing create/attach intent or requiring a parallel recipe.
+  Resource creation still goes through a Pool. Registration, provisioning and execution remain
+  distinct effects. Ordinary typed-field editing remains the baseline; no generic parameter,
+  mapping or scripting language is approved. Templates need not have identical instance fields.
 - Draft assignments replace whole field values, including objects/lists. Nested-child edits
   preserve siblings; preserving or adding entries requires deliberate edits, not implicit merges.
 - Instance creation and checked replacement updates store declared schema defaults explicitly.
@@ -124,11 +126,12 @@ view without diverting the current Resource walkthrough into choosing a communic
 
 Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
 
-1. **Concrete type contracts:** local-directory's explicit creation/attachment intent and absolute
-   instance backing paths are settled. Use the [provisioning walkthrough](research/RESOURCES.md#provisioning-request-versus-resource-configuration)
-   to distinguish operation intent from stored configuration and from how requests are reused,
-   then define Session preparation, symlink behavior and one failure. Review Git-worktree-specific
-   behavior separately, then records, search and MCP. Earlier boundaries need no further ruling.
+1. **Template-to-instance transition:** use the [directory walkthrough](research/RESOURCES.md#template-establishment-and-instance-state)
+   to specify creation-only settings, ongoing settings and observed results. Local-directory
+   create/attach intent is in the template spec; absolute instance backing paths are settled.
+   Test success, existing-path conflict, retry and instance export/reuse together. Then cover
+   Session preparation/symlinks, Git-worktree, storage, search and MCP rather than inventing a
+   universal lifecycle from the folder example.
 2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
    for discovery and explicit contracts for activation, connection matching and effects.
 3. **Extension identity:** who defines a contract, how new groups/types enter the catalog and
@@ -162,7 +165,7 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 | Which types belong in the working core? | Filesystem, storage, search and integration are accepted groups; local-directory and git-worktree are distinct filesystem types. Work through their contracts and other candidate types; content, identity and agent communication remain extensions to explore. Decide contract ownership/collision handling separately; shipping types/templates does not create Resource instances. |
 | What establishes compatibility across types? | Evaluate explicit versioned consumer interfaces and per-instance supported operations. A shared group, matching JSON shape or provider name does not establish behavioral compatibility. Keep declared support, current availability and permissions distinguishable without requiring a large capability framework. |
 | How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
-| What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
+| What belongs in the type contract, template and instance? | The contract defines establishment and ongoing behavior. The template supplies all establishment choices/references; the instance records ongoing spec and observed status. Decide whether create/attach remains as immutable instance configuration or only as an establishment outcome. Define form-specific validation and field transitions without a second recipe or mandatory template history. |
 | What is genuinely common across types? | Resource specs use type {group, name, version}, config and conduits. Settle allowed identifiers/version labels and the contents/shape of connection declarations. Type-contract versions stay independent of common apiVersion and plugin releases. Distinguish type-contract declarations from observed per-instance support; add common descriptors only when examples require them. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
 | How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
@@ -172,7 +175,7 @@ Use these examples as design probes, not a closed list of types or an accepted s
 
 | Example | Questions the contract must answer |
 | --- | --- |
-| Local filesystem exposed by symlink | Local-directory supports explicit attachment and creation. Relative template paths resolve against an explicit creation base; instances store absolute host paths. Decide whether create/attach intent belongs to the operation or persistent config, then symlink resolution, Session-local placement and cleanup timing. Removing a prepared symlink preserves the Resource. Symlinks share backing files and do not isolate writes. |
+| Local filesystem exposed by symlink | Template config declares create/attach; relative paths resolve against an explicit base and instances store absolute host paths. Work through establishment fields and reported results, then symlink resolution, Session-local placement and cleanup timing. Removing a prepared symlink preserves the Resource. Symlinks share backing files and do not isolate writes. |
 | MCP service connection | Service identity may differ per attachment within target/access constraints. Settle auth storage/refresh, exposed tools/resources/prompts and required processes. A Conduit Resource is distinct from MCP's protocol resource primitive. |
 | Hybrid search over a database | Express separate storage, search and MCP-access Resources, including when supplied by one backend. Settle responsibilities, dependencies, query/filter/result contracts, freshness and indexing ownership if offered. |
 
@@ -199,7 +202,7 @@ ordinary operation outcomes can supply the needed behavior without a parallel de
 | What should type-aware grouping do? | Group unitary Resources using declared types/capabilities, compatible Session preparation and supported operations. Derive inventory views where possible. Decide what Pools select, validate or coordinate without duplicating Resource configuration or silently activating capabilities. |
 | Do Pool instances need retained creation declarations? | Compare template-time expansion/explicit Resource operations with persistent declarations and per-entry bindings. Keep the least state needed for repeated operations, later additions and partial work. Only define declaration-edit edge cases if this mechanism remains necessary. |
 | How are partial outcomes handled? | Use Resource-specific effects to identify required/optional work, dependencies, independent progress and success/blocked/unknown reporting. Reuse operation IDs/outcomes for safe retry before adding a second reconciliation system. Registration remains distinct from provisioning. |
-| How is Resource creation requested through a Pool? | Local-directory already distinguishes create-new-backing from attach-existing. Compare operation inputs with persistent config using the provisioning walkthrough; a request can itself be YAML and may later receive Pool setup defaults. Settle owner assignment, dispatch, partial failure and readiness without introducing another object family. A connection requiring a conversation store must resolve its provisioning Pool. |
+| How does a Pool establish configured Resources? | Read establishment choices from typed configuration. Resolve owner/name/context without a separate operation recipe. Settle template references or inline configuration, partial failure and readiness; avoid duplicate setup state. A connection requiring a conversation store must resolve its provisioning Pool. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |
 | How do separate instances describe shared backing? | Two Pools attach to the same Linear workspace or local directory; another pair provisions separate worktrees. Record the distinction, management/deletion authority, credential boundaries and conflicts on the actual backing target across registrations. |
 | What happens when ownership ends or changes? | Define whether transfer is supported, which authority is required, and how owner deletion handles active uses, retained data and incomplete provisioning. An unowned Resource is a lifecycle problem, not automatic proof that its backing data can be purged. |
@@ -214,7 +217,9 @@ retry, then retire a Pool with active users and retained conversation history. S
 | Question | Example and considerations |
 | --- | --- |
 | What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
-| How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
+| How does one-off authoring and instance reuse work? | Can an unregistered template document supply establishment configuration? What can instance export reconstruct, and which choices must authors explicitly add? No guessed create/attach policy, imported ready status, or automatic recreation of lost backing. Decide this alongside the transition, not as a new operation language. |
+| Is more language expressiveness needed? | First test typed YAML declarations, references, explicit dependencies and form-specific transitions. Add reusable composition, declared contextual inputs or typed lifecycle steps only for a concrete gap; assess ordering, retries and errors before a Dockerfile-like DSL or arbitrary expressions. |
+| How are instances addressed and rebound? | Open-new uses establishment configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle retry identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
 | How do instance configuration edits take effect? | Checked updates edit the complete instance spec; templates do not propagate changes. Define validation, active-work boundaries, partial failure and restart requirements. Distinguish changes to instance settings from live authority, Resource content and matching. |

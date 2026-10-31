@@ -1,8 +1,8 @@
 # Conduit
 
 Conduit has four concept families: **Session, Resource, Pool and Conduit**. Each has a
-**template** form describing reusable configuration and an **instance** form representing
-something established. An instance can persist without a running process.
+**template** form describing how to establish an instance and an **instance** form recording
+its configuration and observed state. An instance can persist without a running process.
 
 | Family | Template | Instance |
 | --- | --- | --- |
@@ -46,11 +46,13 @@ consumer or peer's logical participation in a Conduit, not another object family
 uses its family as `kind` and a top-level `form` to identify a template or instance. Names are
 unique per family across both forms: templates name reusable concepts, while instances have
 names generated from the template name plus a unique suffix unless an explicit unique name
-is supplied. Readable object references include `kind`, `form` and `name`. Create instances
-either by expanding a template and editing ordinary instance fields or directly from complete
-instance YAML. Direct creation requires an explicit unique name; Resource creation always
-goes through a Pool.
-The complete instance `spec` is then edited directly. Draft assignments replace whole field
+is supplied. Readable object references include `kind`, `form` and `name`. Templates contain
+establishment choices such as create versus attach; users trigger their realization without
+assembling a separate operation-request recipe. Resource creation always goes through a Pool.
+Typed contracts define the transition from template configuration to an instance's ongoing
+`spec` and observed `status`; the exact field split is in review. Direct import of instance
+configuration also needs review where establishment information is absent.
+The instance `spec` is then edited directly. Draft assignments replace whole field
 values; editing a nested child preserves its siblings. Creation and replacement updates store
 declared schema defaults explicitly; templates preserve authored omissions. Template history
 is optional; continuing Resource and authority dependencies are explicit on the instance.
@@ -74,7 +76,7 @@ Read in order:
 | [Resource typing and groups](research/RESOURCES.md) | Working core groups, candidate types and agent communication, capabilities, plugin boundaries and scenario-based review. |
 | [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios; shared state and participant lifetimes. |
 | [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, configuration-language papers and candidate expression of the four families. |
-| [Template/instance scenario](research/templates-instances.scenario.yaml) | Synthetic review data: templates, explicit operations and expected ownership. Not an accepted configuration/API schema. |
+| [Template/instance scenario](research/templates-instances.scenario.yaml) | Synthetic test steps and expected ownership. Does not specify an authored operation language or validate the pending template-to-instance transition. |
 | [Pi connectors and context](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP and Chord. |
 | [Pi runtime and Durable](research/PI_RUNTIME.md) | Detailed execution, recovery, frontend, storage and ecosystem evidence. |
 

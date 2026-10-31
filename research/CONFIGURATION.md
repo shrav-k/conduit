@@ -3,7 +3,8 @@
 Updated 2026-10-31. **Research evidence and proposed schema, not an executable specification.**
 Current contracts live in [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md). The five families
 are Interface, Agent, Resource, Pool and Conduit. Templates specify both complete establishment
-and permitted instance-configuration changes. Resource instances remain Pool-owned.
+and permitted instance-configuration changes. Pools own Resources and normally establish shared
+service authentication; Conduits narrow each caller's access to those capabilities.
 
 This report retains Kubernetes/Docker research, language comparisons, papers and prior offline
 probes. Historical fixtures and quoted source terminology do not define the current protocol.
@@ -115,7 +116,7 @@ and Agent-to-Agent interaction, without confusing ownership, authority and activ
 
 These are proposed design criteria, not a claim that one notation guarantees them. A short
 file can conceal a complicated resolution process; a longer explicit graph can be easier to
-inspect. Judge the result by the user's ability to explain and change a Agent's effective
+inspect. Judge the result by the user's ability to explain and change an Agent's effective
 configuration, not just line count.
 
 ## What to borrow
@@ -176,11 +177,11 @@ results. A template does not need a handwritten field-mapping program or shell s
 contract. For instance, local-directory's create/attach choice need not remain an ongoing command
 on a successfully established directory; exactly where that intent is retained remains open.
 
-The concrete authentication/indexing cases now demonstrate the need for multi-stage execution,
-typed outputs, dependency ordering, interaction waits and recovery. The open question is who
-authors those stages. [Establishment research](ESTABLISHMENT.md) recommends template-declared
-outcomes and composition, plugin-owned resumable procedures, and an engine protocol for
-coordination/observations. YAML can encode that contract; a different parser would not supply
+The authentication/indexing cases require multi-stage execution, typed outputs, ordering,
+interaction waits and recovery. Templates compose typed plugin operations through inline or
+referenced graphs; instances manage ongoing runtime state. [Establishment research](ESTABLISHMENT.md)
+provides the failure cases behind that boundary. Shared service authentication is normally
+established through Pool-owned capabilities, independently of each consumer attachment. YAML can encode that contract; a different parser would not supply
 its semantics. General user-authored loops, scripts or replayable programs remain alternatives
 to evaluate against demonstrated composition needs, not implied requirements or permanently
 prohibited extensions. Do not treat a static settings schema as the complete lifecycle contract.
@@ -196,7 +197,7 @@ reviewed together so the exported configuration makes only promises it can actua
 The most useful Kubernetes idea is that configuration is a representation of API objects,
 with desired and observed state kept distinct. Its object conventions give identity,
 concurrency and change tracking separate roles. A successful write is not proof that a
-controller has achieved the requested result. This maps well to a Agent whose configuration
+controller has achieved the requested result. This maps well to an Agent whose configuration
 is valid while authentication or Resource preparation is still unavailable.
 [Objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) ·
 [API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md)
@@ -264,7 +265,7 @@ groups using HCL, JSON or Compose input. Their shared ecosystem does not make th
 evaluation or effects interchangeable.
 
 This is useful for Conduit: declaring a Resource, preparing its native package and invoking
-it are different operations. A Agent template can describe preparation without turning ordinary
+it are different operations. An Agent template can describe preparation without turning ordinary
 configuration loading into an implicit build or agent execution.
 
 ### Compose is accessible because it provides a domain model
@@ -421,9 +422,9 @@ remain reusable. Conduits carry operations and data, including Resource-to-Resou
 
 Observation, configuration changes, content writes, setup effects and connection membership
 must remain distinguishable. Type constraints, template-selected controls, current authority
-and Conduit restrictions do not merge like ordinary draft values. The earlier four-family
-[scenario fixture](templates-instances.scenario.yaml) remains evidence about those earlier
-structural relationships only; it does not validate the new control contract.
+and Conduit restrictions do not merge like ordinary draft values. Shared authentication,
+per-caller authority and client reuse require distinct configuration meanings. Exact YAML examples
+must follow the current contracts.
 
 Pool provisioning-plan/binding proposals are still parked in the
 [review agenda](../REVIEW.md#2-pool-grouping-and-resource-ownership). No new control declaration
@@ -476,7 +477,7 @@ A local registry transaction cannot roll back an already completed external prov
 Operation IDs and uncertain-effect reconciliation remain necessary.
 
 A connection opening may depend on Pool provisioning and Agent activation, but it must not
-hide those outcomes. Show missing prerequisites, per-participant authentication, partially
+hide those outcomes. Show missing prerequisites, shared service authentication, caller access, partially
 available components and unsupported restrictions. A single `ready` field cannot express all
 of these. Ordinary references may become unavailable after deletion; ownership dependencies
 need additional lifecycle rules, not accidental cascading behavior.
@@ -542,12 +543,10 @@ Choose the actual API group and version progression separately from the illustra
 
 ## Scope of validation
 
-The companion YAML is a synthetic test scenario, with template descriptions, harness actions
-and expected relations. Its `operations` list describes test stimuli, not a user-authored
-operation language. It does not yet validate the proposed template-to-instance transition,
-and is not an API implementation or a live provisioning plan. Structural checks cover parsing, reference/form
-consistency, exclusive ownership and separation of open/join intent; they do not prove adapter
-behavior, authorization, native compatibility or a completed deployment.
+Documentation/link checks establish consistency only. They do not prove authentication,
+adapter behavior, configuration enforcement or a completed deployment. The next examples should
+cover one shared provider binding, distinct caller permissions, native tool exposure and independent
+revocation before any implementation test is described as conformance.
 
 The Compose/Kustomize probes and papers above remain evidence about reference systems. They
 do not validate a Conduit runtime. No provider enrollment, real resource provisioning or model

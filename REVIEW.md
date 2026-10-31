@@ -16,56 +16,48 @@ The working foundations are reusable typed YAML templates with inline/referenced
 instance configuration independent of later template edits; runtime-owned behavior; dynamic Conduit
 attachments; Pool-only Resource creation/ownership; current authority; and safe outcome/retry
 handling. Plugins declare inputs/outputs, graph bindings imply dependencies, and instances manage
-processes even when started during setup. **Templates specify complete establishment and which
-instance configuration may change within what parameters.** This is settled protocol direction;
-its declaration/implementation details below remain open.
+processes even when started during setup. **Pools normally establish shared service authentication;
+Conduits authorize and narrow each caller's use. Templates specify establishment, ongoing behavior
+and permitted changes, implemented by typed plugin operations or graphs.** These are working
+foundations; exact declaration/implementation details below remain open.
 
 ## Next discussion
 
-**Start with the management Interface and the common interaction contract.** The basic Interface
-has the broadest local management scope. It is the primary user path for authoring Resource/Agent
-templates, adding Resource templates to Pool configurations, instantiating Pools and Agents with
-Conduits to those Pools, and observing all instances. CLI, terminal UI and tests use the same capabilities.
-Observing/instantiating is distinct from modifying a running target: the latter requires a Conduit.
-Agents can invoke target operations through Conduits as well. Resource creation still belongs
-to a Pool, and broad management authority cannot manufacture an unsupported provider operation.
+**Start with how shared authentication is represented and reused inside a Pool.** Repeated
+per-Agent provider login is no longer the baseline. The [Linear walkthrough](research/CONDUITS.md#5-access-linear-through-mcp)
+establishes one shared service capability, gives Agents different filtered access, changes a
+supported setting and removes one consumer without disturbing the others.
 
-| Contract bundle | Questions to resolve together |
+**First ruling:** when authentication is reusable across capabilities, should it be represented as
+a Pool-owned Resource connected to service Resources by Conduits, or remain internal to each
+service Resource? The recommendation is a reusable authentication Resource where it has an
+independent lifecycle or multiple consumers; a Pool preset can compose the objects so the user
+still configures one integration. This is a proposed representation, not a sixth family or a
+Resource per token. It must also explain the simplest one-service case without unnecessary setup.
+
+Use a provider account needed by MCP and a CLI as the comparison. Sharing the account source does
+not imply that the same token is valid for both. Define who selects the identity, obtains each
+supported credential, coordinates refresh and reports expiry. Avoid adding a generic secret-transfer
+path merely because two Resources need the same identity.
+
+Then review these connected contracts, one bundle at a time:
+
+| Order | Contract and concrete outcome |
 | --- | --- |
-| Declaration and exposure | How do templates select named controls and constraints from type/plugin contracts? Are all controls explicitly listed, or can versioned defaults be expanded for inspection? Distinguish configuration settings from data operations, lifecycle and connection membership. |
-| Constraints and Conduit filtering | How are value types/ranges, related-field rules, dynamic eligible choices and old-to-new transition conditions represented? Validate the proposed intersection of type support, template limits, current authority and connection restrictions; avoid merge precedence or silent value rewriting. |
-| Invocation and application | What common request/result/observation contract distinguishes received, pending, applied, failed and unknown outcomes? Do settings use typed field updates, named operations or both? How are application behavior and restart/replacement requirements made inspectable without a universal scheduler? |
-| Handlers and recovery | Does a control reference a runtime operation, a plugin operation, or optionally a composed graph? Which setup primitives can be reused? Settle concurrency/version checks, safe retries, cancellation, persistence across starts and invalidation of setup progress as one contract. |
-| Evolution and management | Can a running instance change its control envelope, setup graph or implementation, and by which separate management contract? Source-template edits must not silently alter it. Settle bootstrap/identity and management of Conduits without a recursive connection-per-request requirement. |
+| 1 | **Resource and authentication composition:** name the owned capabilities, shared bindings, consumers and lifecycle boundaries. Include provider-required per-consumer exceptions and cross-Pool use. |
+| 2 | **Access through Conduits:** select capabilities and current caller authority; narrow operations/parameters; expose native tool contracts over a supported mediated path. Separate use of a credential from permission to retrieve it. |
+| 3 | **Complete templates and handlers:** establish the capability, maintain runtime state and apply declared changes using plugin operations/graphs. Define readiness, interaction waits, outcomes, safe retry and supported replacement together. |
+| 4 | **YAML and inspection:** render those relationships with typed fields, references and defaults; distinguish authored intent, effective controls, pending changes and observed state. No new generic operation manifest is required. |
+| 5 | **Interface and experiment:** exercise the same authoring, Pool setup, attachment, observation and management contracts through terminal and headless clients, then verify native integrations. |
 
-**Current walkthrough:** [Linear MCP from establishment to shutdown](research/CONDUITS.md#5-access-linear-through-mcp).
-An Interface instantiates a Pool-owned service Resource and establishes shared service authentication;
-two Agents attach without repeating the provider login and receive separately filtered access.
-Compare an explicit per-consumer identity variant. Distinguish provider-native tools from direct
-provider transport: an external Agent may use a Conduit-managed MCP endpoint, while an owned runtime
-can mediate internally. Follow invocation, a declared client-timeout change through a management
-Conduit, and detachment. Shared Resource configuration/authentication, per-attachment authority,
-provider content and template edits are separate. Timeout/control semantics remain proposals.
+The Interface remains the broad local management entry. Pool ownership, shared service
+authentication, separate model subscriptions/private Agent state, provider-native tools and
+Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
+transitions, concurrency checks, contract evolution and bootstrap remain unresolved.
 
-**Next structural ruling:** should templates bind lifecycle, invocation and configuration-change
-handlers to either one typed plugin operation or a graph, with instances owning ongoing activity?
-Internal handlers need not be externally callable. This is a shared implementation boundary, not
-an extra object family or an obligation to wrap each request in a graph. Follow with database startup,
-migrations and recovery to test its limits before selecting exact fields.
-
-Retain the [bounded search-control fragment](research/CONFIGURATION.md#a-bounded-control-example)
-as a later constraint probe: template range 1–100, narrower Conduit cap 20, requests for 15, 80 and
-an unrelated field. Compare Interface, Agent and headless clients; test invalid transitions and
-lost responses as well as accepted values. These probes do not settle every control's policy.
-
-No final command names, transport, invocation envelope or universal live-config patch is selected.
-Template construction is still comprehensive: invoking start does not require assembling another
-setup recipe. Model switching remains an integration example in the construction research; pending
-selection supersession is no longer a core-review question.
-
-The sections below retain relevant unresolved work for later bundles. Resources precede detailed
-Pool grouping; the Interface walkthrough uses the established Pool-ownership boundary without
-assuming a persistent provisioning-plan ledger.
+Keep [the bounded search control](research/CONFIGURATION.md#a-bounded-control-example) and database
+startup/migrations as later counterexamples. They test whether the same contracts work beyond MCP
+without promoting one provider's timeout, queue or process behavior into universal rules.
 
 ## 1. Resource templates and instances
 
@@ -73,7 +65,8 @@ assuming a persistent provisioning-plan ledger.
 | --- | --- |
 | Types and compatibility | Keep filesystem, storage, search and integration groups; distinguish local-directory and git-worktree. Explore content, identity and agent-communication types. Define type group/name/version identifiers and compatible consumer contracts independently of plugin packages. Shared shapes/names alone do not prove behavioral compatibility. |
 | Establishment and runtime | Use an existing directory with Agent-local symlinks, explicit new-directory creation, remote filesystem and Git worktree. Retain create/attach intent in the complete template recipe, explicit path base and absolute instance path. Define type-specific setup outputs, waits, readiness, effects and cleanup. |
-| Shared versus per-consumer state | Symlinks are consumer preparation, not additional Resources. Support explicit shared service authentication in a Pool-owned Resource and permitted per-attachment identities. Define binding selection, credential/refresh ownership and client reuse independently of caller authorization; avoid repeated logins or registering every helper. Shared backing does not imply shared private state or exclusive writing. |
+| Authentication representation | Decide when reusable service authentication is its own Pool-owned Resource versus internal binding state. Preserve one lifecycle/refresh owner, protected references, supported provider identities and separate caller authority. Explicit per-consumer exceptions do not reinstate repeated login as the normal path. |
+| Shared versus per-consumer state | Symlinks are preparation state, not additional Resources. Define client reuse, idle cleanup and attachment-local state separately from shared credentials; detaching a consumer must preserve Resource-owned state still needed elsewhere. |
 | Storage, search and MCP | Keep separate unitary Resources connected by Conduits. Define storage/search operations, index/input dependencies, freshness, indexing ownership and how MCP exposes existing contracts without silently combining responsibilities. |
 | Typed dependencies | Define generated outputs, revisions, expiring handles and prerequisites; diagnose blocking cycles. Preserve one authored connection declaration and derive reverse views rather than maintaining conflicting endpoint copies. |
 
@@ -90,6 +83,7 @@ Pool without deciding every grouping feature first.
 | Partial establishment | Templates carry setup choices; graph/lifecycle contracts coordinate required work and partial results. Define Pool readiness and later Resource additions without conflating registry atomicity with rollback of external effects. |
 | Backing and retirement | Two Pools may intentionally attach separate Resource instances to the same external backing. Define conflicts, cleanup authority, ownership transfer if supported, and retirement with active consumers or retained data. An unowned registration is not permission to delete backing data. |
 | Durable content | Map task/personal records and conversation stores to Pool-owned Resources. Contexts are not alternative Resource owners; each message, cursor or file need not become a top-level Resource. Conduit-supporting durable Resources still need an owner. |
+| Shared access lifecycle | Define how Pool setup presents login/renewal once for a shared capability, how partial readiness is shown, and how retirement affects its users. Cross-Pool access must preserve the credential owner's authority and provider restrictions. |
 
 **Walkthrough:** create shared and independent backing through two Pools, fail during setup,
 retry, and retire an owner with active users. Show survivors and unknown outcomes explicitly.
@@ -100,7 +94,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Templates declare the allowed surface and parameters; settle its schema, type implementation binding, Conduit filtering and applied-state representation. Control-envelope/graph changes, generic patches and metadata rules are unresolved; do not assume all fields are editable or fixed. |
+| Configuration changes versus state | Templates declare the allowed surface, parameters and handlers; settle typed operation/graph bindings, Conduit filtering, related-field/transition constraints, concurrency checks and applied-state representation. Control-envelope/graph changes, generic patches and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |
@@ -130,7 +124,7 @@ fall behind. Withdraw access before delivery; show permitted results and unresol
 | YAML surface and references | Define string keys, duplicate keys, scalars/units, aliases, path bases and explicit environment inputs. Preserve separate type versions and checked template writes. Secrets/handles are protected references, not ordinary reusable values. |
 | Graph/runtime representation | Settle inline/source graph resolution, input/output bindings, managed start/readiness operations and runtime defaults. Instance export retains the resolved graph without copying code/data. Multi-object composition and caches remain later conveniences. |
 | Activation | Define type-compatible instructions/skills, native config projections, duplicates and cleanup. Preparation defaults to required connections; optional failure continues and partial success is retained. Dynamic attachment uses supported operations, not authored-spec edits. |
-| Adapter contracts | Distinguish Rust-owned execution/provider connectors from native-agent adapters. Report supported auth, control, context conversion, hooks, cancel/reconnect, subagents and telemetry. Reuse native skill/plugin tooling and provider-native MCP contracts. |
+| Adapter contracts | Distinguish Rust-owned execution/provider connectors from native-agent adapters. Report shared service auth, native model-account support, control, context conversion, hooks, cancel/reconnect, subagents and telemetry. Provider-native MCP tools can be proxied without a generic replacement vocabulary; direct paths need separate coverage evidence. |
 | Isolation and access | Verify separate subscriptions and private Agent state, explicit config sources, native default and optional required isolation. Define the first isolated implementation/network matching later. Broad Interface control does not change selected execution mode or provider credentials. |
 | Memory and workspaces | Select backend/search limits and content contexts; retain bounded excerpts/references, explicit reads, lifecycle/revision checks, direct read-only sharing, usage coverage and explicit safe workspace cleanup. |
 
@@ -151,24 +145,28 @@ before coding or live account testing.
 1. **Management entry point:** one broad Interface discovers all five families, authors/resolves
    templates, composes Pools, validates drafts, creates instances and observes outcomes. Use a headless client and terminal
    against the same management path; define bootstrap explicitly.
-2. **Construction and ownership:** filesystem, authentication and database/indexing examples,
+2. **Shared service access:** establish a Pool capability and service login once; attach two Agents
+   with different restrictions; preserve native tool schemas and record each caller. Detach/revoke
+   one caller while the other continues. Separately expire/revoke the shared login and report its
+   wider effect. Use synthetic provider behavior before any live sign-in.
+3. **Construction and ownership:** filesystem, authentication and database/indexing examples,
    including waiting and partial failure; repeated instantiation through two Pools; Resource-only
    Pool ownership; dynamic Conduit open/join/detach.
-3. **Actors and controls:** resolve a template's configurable surface and constraints; an Interface
+4. **Actors and controls:** resolve a template's configurable surface and constraints; an Interface
    and an Agent invoke the same target contract through Conduits. Exercise
    immediate, pending and unknown results, permissions changing before application, and unsupported
    operations without requiring universal queueing or provider-specific settings in the core.
    Include template limits, narrower parameter filters, related-field/transition checks, unsupported
    handlers and unchanged existing instances after source-template edits.
-4. **Real integration:** later verify two Claude and two Codex/OpenAI subscriptions with independent
+5. **Real integration:** later verify two Claude and two Codex/OpenAI subscriptions with independent
    credentials/private state; a minimal Rust-owned runtime/terminal, native adapters, one memory
    backend, workspace and MCP/skill integration. Record actual observability/control limits.
-5. **Communication:** after its contract is selected, demonstrate multiple participants, retained
+6. **Communication:** after its contract is selected, demonstrate multiple participants, retained
    data in Pool-owned Resources, current-access delivery, recovery and independent frontend views.
 
 Failure fixtures must cover stale template edits, attempts to bypass Conduit-mediated changes, wrong-account
 login, missing references, foreign-Pool ownership, ambiguous creation/write results, partial setup,
-expired interaction, stale completion, cancellation after effects, auth failure, last consumer
-loss and owner retirement. Neither native enforcement nor live provider compatibility is established
+expired interaction, stale completion, cancellation after effects, shared-login failure versus caller
+revocation, last-consumer loss without shared-credential deletion, and owner retirement. Neither native enforcement nor live provider compatibility is established
 by a synthetic test. Supporting evidence remains in [configuration](research/CONFIGURATION.md),
 [Pi connectors](research/PI_CONNECTORS.md) and [Pi runtime](research/PI_RUNTIME.md).

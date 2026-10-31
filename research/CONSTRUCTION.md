@@ -18,7 +18,7 @@ both forms; an instance need not have a dedicated process or be continuously run
 | Interface | The user-facing authoring, observation and creation layer. It establishes Conduits for interaction with running instances and can be expressed through different frontends. |
 | Agent | An autonomous participant with its own execution/access boundary and private context. It initiates actions and can expose operations for other participants to invoke. |
 | Resource | A unitary capability, data source or service, created or attached through exactly one owning Pool. |
-| Pool | The ownership and creation boundary for its Resource instances; grouping can reflect their types and capabilities. |
+| Pool | Owns and establishes Resources and organizes their shared service authentication; grouping reflects capability contracts. |
 | Conduit | A connection between endpoints through which permitted interactions and data flow, with filtering and connection state. |
 
 **Interface is the fifth working family.** Agent replaces Session in this proposal. An Agent
@@ -57,8 +57,9 @@ The intended user journey is:
 
 1. Use an Interface to author Resource templates and an Agent template.
 2. Add selected Resource-template references and creation settings to a Pool configuration.
-3. Instantiate the Pool and run its configured establishment lifecycle to create/attach its Resources.
-4. Instantiate Agents whose declared Conduits connect them to the relevant Pools/capabilities.
+3. Instantiate the Pool and establish its Resources and shared service authentication.
+4. Instantiate Agents whose declared Conduits authorize access to those capabilities without
+   repeating the provider login merely because a new consumer attaches.
 5. Observe the resulting instances; use Conduits from the Interface to request supported changes.
 
 Resource templates remain reusable definitions; Pool ownership applies to the concrete Resource
@@ -138,9 +139,9 @@ Graph plugins and runtime implementations may share typed operations and code, b
 packaging and operation discovery are still undecided.
 
 The [Linear MCP walkthrough](CONDUITS.md#5-access-linear-through-mcp) follows one shared Resource
-through shared service authentication, individually authorized attachments, invocation, a proposed configuration control and
-shutdown. It tests using a single plugin operation or a graph as a handler while keeping ongoing
-state instance-owned; that handler representation remains a review recommendation.
+through shared service authentication, individually authorized attachments, invocation, a proposed
+configuration control and shutdown. Handlers use a typed plugin operation or graph while ongoing
+state remains instance-owned; the exact handler schema and exposure rules remain under review.
 
 ## Instance configuration and supported changes
 
@@ -308,38 +309,30 @@ the credential to Agents. See the [Linear walkthrough](CONDUITS.md#5-access-line
 External native clients can use a Conduit-managed MCP endpoint preserving provider-native tools;
 direct provider connections require separately verified native interception/control support.
 
-The following partial Conduit template illustrates the **per-attachment identity variant** only,
-not mandatory authentication for each consumer. Shared mode instead establishes the binding with
-the Resource and authorizes each attachment to use it. Syntax remains illustrative, not validated:
+The primary shared-access sequence is:
 
-```yaml
-apiVersion: example/v0alpha1
-kind: Conduit
-form: template
-metadata:
-  name: service-access
-spec:
-  config:
-    target: {kind: Resource, form: instance, name: euphony-mcp}
-    serviceIdentity: euphony-work
-  graph:
-    nodes:
-      authenticate:
-        plugin: {group: auth, name: service-login, version: v1alpha1}
-        inputs:
-          target: {from: config, field: target}
-          identity: {from: config, field: serviceIdentity}
-  runtime:
-    implementation: {group: integration, name: mcp-client, version: v1alpha1}
-    inputs:
-      target: {from: config, field: target}
-      authentication: {from: node, name: authenticate, output: binding}
+```text
+Pool establishment
+  → instantiate service capability
+  → verify or establish its authorized provider binding
+  → prepare Resource-managed runtime/client state
+
+Agent attachment
+  → identify caller and check authority
+  → resolve permitted capability and filters
+  → expose native operations through the supported mediated route
 ```
 
-The enclosing consumer supplies its identity. Authentication produces a protected binding, not a
-token embedded in YAML. The instance manages prepared runtime state after the setup node finishes.
-Exact output/start bindings and serialized state remain open. Linear/provider compatibility has
-not been live-tested; neither a proxy-only topology nor universal native-client hotplug is assumed.
+The first sequence may wait for provider consent; the second does not repeat that login for
+another Agent. The Resource owns shared authentication/refresh while each Conduit owns its caller
+relationship. If a provider requires separate identities, an explicitly selected variant prepares
+that authentication at the corresponding attachment boundary. Neither mode changes the Agent's
+model subscription or makes credentials ordinary exported values.
+
+Exact authentication representation is the next review question: a reusable Pool-owned capability
+versus a binding internal to one service Resource. This example selects the shared lifetime and
+access semantics without prematurely choosing new YAML fields. Resource-to-Resource use still
+follows Conduits. Native interception/hotplug and provider compatibility remain unverified.
 
 MCP's [transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports) and
 [versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning) contracts

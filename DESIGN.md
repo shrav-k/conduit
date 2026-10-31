@@ -9,6 +9,10 @@ Prefer minimal bookkeeping: retain authoritative configuration, identity, author
 operation evidence; derive views rather than maintain parallel editable descriptions. Shared
 contracts need not impose the same lifecycle, process model or implementation on every type.
 
+**Primary access model:** establish capabilities and service authentication through a Pool once,
+then let authorized Agents and Interfaces use them through individually restricted Conduits.
+Sharing service access is the normal path, not an optional optimization of per-Agent logins.
+
 ## Families, templates and instances
 
 The five families are **Interface, Agent, Resource, Pool and Conduit**, each with template and
@@ -22,7 +26,7 @@ supporting concepts, not additional families.
 | Interface | User-facing authoring, observation, creation and connection capabilities. | An interaction endpoint presented through a CLI, terminal or other frontend. |
 | Agent | Runtime/account/model configuration, activation, connections and supported controls. | An autonomous participant with private context, concrete configuration and executions. |
 | Resource | Typed creation/attachment, ongoing capability and supported controls. | One unitary capability with exactly one owning Pool. |
-| Pool | Resource-template selections, establishment behavior and supported management controls. | The ownership/creation boundary for its Resource instances. |
+| Pool | Resource composition, shared service-access setup and supported management controls. | Owns its Resource instances and organizes their authentication/access lifecycle. |
 | Conduit | Endpoints, interaction/filtering behavior, setup and supported controls. | A connection with concrete participants, filtering and connection state. |
 
 Resource creation/attachment always goes through its owning Pool, including supporting Resources
@@ -37,7 +41,9 @@ compose Pools from Resource templates, instantiate Pools and Agents, and observe
 Running targets are manipulated through Conduits; visibility is not a direct-edit exception.
 
 The user authors templates, adds Resource-template references to a Pool configuration, establishes
-the Pool and its Resources, then starts Agents with Conduits to those Pools. The Interface can
+the Pool, its Resources and shared service authentication, then starts Agents with Conduits to
+those Pools. New attachments use the established capability without repeating provider login.
+The Interface can
 open further Conduits to inspect supported controls and request changes. Agents use that same
 interaction contract on other targets. A frontend presents it rather than independently performing
 provider effects. The Interface identifies the endpoint; the acting human identity remains distinct.
@@ -58,6 +64,11 @@ A template combines creation/attachment intent, initial configuration, an inline
 setup graph, typed ongoing runtime behavior and its configuration-change contract. Plugins supply
 typed implementations. Starting uses that complete recipe; a caller does not assemble another
 setup-operation document. Ordinary creation choices edit typed fields before instantiation.
+
+Named handlers implement establishment, supported invocations and permitted changes using a typed
+plugin operation or a composed graph. A handler is a procedure, not a sixth family or a mandatory
+process. Internal setup operations are not automatically callable by consumers. Instances own
+ongoing activity produced by handlers; exact declaration and invocation schemas remain open.
 
 The instance retains the resolved graph, runtime configuration, applicable controls and explicit
 dependencies independently of later source-template edits/deletion. Source history or stored
@@ -491,6 +502,12 @@ own runtime needs supported provider/account adapters, with validated subscripti
 eligibility, identity evidence, credential namespaces and refresh ownership. Successful
 login alone does not prove concurrent-account correctness.
 
+Shared [Pool service authentication](#shared-access-and-authentication) supplies capabilities such
+as Linear, GitHub, AWS or a password manager without another service login for each Agent. It does
+not replace an Agent's explicitly selected model subscription or merge private state. Reuse of
+model-account credentials is governed by that runtime's account contract; do not automatically
+redirect model requests to a Pool's service identity.
+
 Coordinate credential reuse separately from Agent history. Do not switch accounts by
 swapping one global credential directory or blindly cloning rotating credentials. An
 Agent template is distinct from a native agent's login profile. The credential/state
@@ -806,8 +823,8 @@ Users compose a Pool through an Interface, referencing reusable Resource templat
 establishment settings. A Pool template describes those selections, defaults, policies and
 permitted management/configuration changes. A Pool
 instance creates/attaches and exclusively owns its Resource instances. Pools remain the
-resource-supply boundary for Agents and connections, including skills, tools, memory and
-connection support such as conversation storage. A Pool need not run a process.
+resource-supply and shared service-access boundary for Agents and connections, including skills,
+tools, memory and connection support such as conversation storage. A Pool need not run a process.
 
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one
@@ -846,6 +863,49 @@ Pool retirement, possible ownership transfer, active-use handling and incomplete
 need explicit contracts. Deleting a grouping cannot silently orphan deployed Resources under
 this model. The response to an orphan does not imply deleting attached external data or
 purging retained history. Ownership cleanup and backing-data cleanup remain separate.
+
+### Shared access and authentication
+
+**Accepted:** Pools are the normal place to establish and manage shared service access. Their
+owned capabilities retain the selected provider bindings so multiple authorized Agents can use
+them without each completing provider login. This applies beyond MCP: a suitable integration can
+manage database, repository, cloud or credential-service access. Actual provider support and any
+interactive renewal requirements remain explicit.
+
+A binding means a managed association to an authorized service identity, not a copied secret in
+configuration. Plugins implement authentication; instance runtimes own continuing state/refresh.
+The Pool owns and organizes the capability rather than introducing a second authentication engine.
+One service Resource can manage its binding; reusable authentication across several Resources may
+justify a separate Pool-owned capability. That representation is the next review decision, not a
+new object family or a requirement for a Resource per token.
+
+| Concern | Contract |
+| --- | --- |
+| Service authority | The provider identity and grant bound to the capability; reuse is intentional and must be supported. |
+| Caller authority | The Agent/Interface identity and its current permission to use that capability. Shared login does not mean identical rights. |
+| Connection restrictions | Each Conduit narrows permitted Resources, operations and parameters. Pool membership or a matching label does not grant access alone. |
+| Credential custody | Keep upstream authentication with its managed owner. Ordinary capability use does not hand the provider token to the caller. Secret retrieval/injection is a separate explicit operation where supported. |
+| Transport | Shared identity does not mandate one socket/client/process. Clients can be pooled or separate while refresh has one coordinated owner. |
+| Attribution | Record the actual caller and Conduit locally. The provider may attribute all calls to the shared service identity; do not invent per-Agent upstream attribution. |
+| Lifetime | Detachment releases the flow's own state, not shared credentials or another consumer's client. Login failure/revocation can affect all users of that binding. |
+
+The selected binding's provider permissions, Resource policy, caller authority and Conduit filters
+all constrain use. An additional authorized Agent attaches to the existing capability; it does
+not rerun its service login as a mandatory attachment step. Revoking just that Agent's access leaves
+the binding available to others. Templates declare supported shared setup and management controls;
+binding replacement, logout, refresh failures and idle runtime policy need explicit type semantics.
+
+Per-consumer service identities remain an explicit exception when selected or required by the
+provider. Several identities can target the same service. Matching endpoints or using a common
+template does not implicitly combine accounts, grants or OAuth state. Cross-Pool reuse also needs
+an explicit authorized path to the owning capability, not duplicated ownership or copied tokens.
+Shared authentication does not merge private Agent context or selected model subscriptions.
+
+For example, one Euphony Linear Resource uses a managed login. A review Agent reads issues while
+an implementation Agent may update them through a different Conduit. Removing the review Agent
+preserves the implementation Agent's access. The Resource's authentication state and each caller's
+connection/authorization state remain independently observable. See the
+[full walkthrough](research/CONDUITS.md#5-access-linear-through-mcp).
 
 ## Conduits
 
@@ -903,17 +963,18 @@ Every supporting Resource is created/attached through, and exclusively owned by,
 Routing state and cursors need not each be registered Resources; durable shared content still
 follows Pool ownership and current access rules.
 
-A live Conduit ends when its last logical consumer or peer detaches. Close any remaining
-provider-side connections; providers alone do not keep the flow alive. A subscription remains
+A live Conduit ends when its last logical consumer or peer detaches. Release remaining
+connections/leases owned by that flow; preserve Resource-owned authentication and clients serving
+other flows. Providers alone do not keep the Conduit alive. A subscription remains
 attached between polls, and temporary transport failure affects readiness without removing
 that attachment. Ending the flow does not delete its template, backing Resources or retained
 configuration/operation evidence, and does not prove an already accepted remote operation was
 cancelled. Report incomplete or unknown cleanup rather than claiming confirmed disconnection.
 Crash detection, explicit detach and later reopening/reuse rules still need concrete contracts.
 
-Agent-owned participant attachments remain a useful direction for ordinary Pool access;
-shared connection state can have a different authority and lifetime. Template reuse or joining
-a connection does not merge private Agent context, credentials or access. Connection identity
+Participant attachment state describes the individual relationship; Resource-owned shared
+authentication and connection support can have a different authority and lifetime. Template reuse
+or joining alone does not merge private Agent context, credentials or access. Connection identity
 is separate from process, transport and backing-Resource identity. Further authoritative-state,
 recovery and composition details remain in [REVIEW.md](REVIEW.md).
 
@@ -929,7 +990,8 @@ Connection establishment supports both intents explicitly:
 Reusing a template name does not implicitly choose between these intents. For example,
 two Agents can join the same discussion, or create separate discussions from the same
 template. This choice does not by itself determine whether clients, credentials, backing
-data or processes are shared. Joining preserves participant-specific access/authentication;
+data or processes are shared. Joining preserves participant-specific caller authorization while
+service authentication follows the explicitly configured shared or per-consumer mode;
 creating another relationship does not imply copying its underlying Resources.
 
 Exact selection syntax, instance addressing/identity, repeat-request behavior and explicit
@@ -981,21 +1043,9 @@ account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP serv
 
 Resource templates for MCP services describe reusable endpoint/process/transport/authentication
 setup. Pool-owned instances and connection attachments realize that setup under current access.
-Support explicitly shared service authentication managed through a Pool-owned Resource: authorized
-Agents use its service identity through individually restricted Conduits without each repeating
-the provider login. Pool ownership organizes this capability; membership alone grants no use of
-it. Keep the upstream credential with its managed owner, rather than copying it into every Agent.
-The Resource's runtime manages the shared binding/refresh; attachment state tracks each caller's
-authorized relationship. Shared authentication does not require a single upstream socket/client.
-
-Different permitted service identities per attachment remain supported where the integration
-allows them; this is an alternative, not a requirement to authenticate every Agent independently.
-Resolve the explicitly selected mode within the Resource's target/access constraints. A different
-login alone does not require another Resource instance. Service authentication remains separate
-from model subscriptions. Exact mode fields, credential storage and client reuse remain open;
-do not automatically share a binding merely because endpoint addresses match. Shared-identity
-provider attribution differs from Conduit's per-Agent attribution, and revoking one attachment
-does not inherently revoke the shared service login.
+Use the [shared Pool access contract](#shared-access-and-authentication), with an explicit
+per-consumer identity exception where necessary. A different login alone does not require another
+service Resource instance; binding representation and native support determine the valid setup.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration
 from effective selections. Registration, provider authentication and Conduit Agent
 authority are distinct. Reusing a definition does not promise shared live clients, OAuth

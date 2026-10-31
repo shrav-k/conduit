@@ -1,31 +1,30 @@
 # Pi re-review: connectors, context and communication
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
-now define five families and templates that declare establishment plus permitted configuration
-changes. Earlier Session/four-family terminology and architecture proposals below identify the
-research context, not competing current contracts. Read the
-[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
-how this evidence informs Interface and Conduit behavior.
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
 Research date: 2026-10-30. **Recommendations for discussion, not new accepted contracts.**
 The source review used the earlier Session/Resource/Pool/Conduit vocabulary. Current design
 uses Interface and Agent alongside Resource, Pool and Conduit. Activation remains consumer
 behavior; Conduit owns its Rust runtime and replaceable frontends.
 
-Read this report's recommendation, then [the configuration proposal](CONFIGURATION.md)
-and [the synthetic template/instance scenario](templates-instances.scenario.yaml). The earlier
+Read this report's recommendation, then [the configuration research](CONFIGURATION.md). The earlier
 [Pi investigation](PI_RUNTIME.md) remains the detailed source for Durable, frontend
 coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) groups the rulings.
 
 ## Recommendation
 
-The source findings inform the four-family template/instance model:
+The source findings inform the current five-family template/instance model:
 
 | Concept | Refinement proposed from this investigation |
 | --- | --- |
-| Session | Templates keep account choices and activation explicit; instances retain original history and execution evidence; construct a separate, permission-checked context projection for each model request. Record the losses and transformations. |
+| Agent | Templates keep account choices and activation explicit; instances retain original history and execution evidence; construct a separate, permission-checked context projection for each model request. Record the losses and transformations. |
 | Resource | Reusable templates describe native contracts; Pool-owned instances record backing identity and compatibility. Provider catalogs, account access and tested behavior are different observations. |
-| Pool | Templates describe provisioning selections; instances exclusively own the Resources they create/attach. Ownership does not itself grant access or activate content. |
+| Pool | Establish owned Resources and shared service authentication; refresh and service identity are separate from caller rights. Ownership alone does not grant use or activate content. |
+| Interface | Present authoring, setup interactions, inspection and Conduit-mediated control across replaceable frontends. |
 | Conduit | Templates define interactions; opened connections realize them, requesting any supporting Resources through Pools. Resource calls, requests for agent work, retained notifications and observable state need different completion and recovery semantics. |
 
 Build Rust protocol adapters beneath Conduit's runtime, with provider definitions and
@@ -226,11 +225,12 @@ Proposed Conduit adaptation:
 - Namespace credentials, refresh locks, catalog caches and logout by **account registration
   and provider**. Preserve provider identity; do not fake different providers just to separate accounts.
 - Give every execution an explicit account binding. Reuse credential ownership where supported,
-  while keeping native/private Session state separate. Persist no token in exported YAML/history.
+  while keeping native/private Agent state separate. Persist no token in exported YAML/history.
 - Inject a deliberately constructed environment and credential resolver. Pi's environment
   override falls back to its base context for empty/missing values; an overlay is not isolation.
-- Separate provider auth from MCP/resource-service auth. Sharing a Resource definition must
-  not accidentally share an OAuth grant, endpoint-derived state or Session root directory.
+- Separate model-provider auth from service auth. Pool-owned service capabilities normally share
+  their managed binding across authorized Agents; template reuse alone does not share an OAuth grant.
+  Coordinate refresh centrally and retain per-caller Conduit permissions/private Agent state.
 - Treat callback-port contention during concurrent enrollment, refresh/logout races, re-login,
   provider account verification and stale-worker results as adapter test cases. Four accounts
   can be enrolled sequentially while subsequent executions run concurrently.
@@ -321,11 +321,10 @@ own runtime can retain richer structured history; native integrations may offer 
 transcript or opaque resume handle. Report which path was used. This refines the existing
 portable-checkpoint guarantee rather than replacing it with universal full-history fidelity.
 
-Before a model/account switch, close or explicitly classify outstanding tool effects, record
-the execution boundary, reconstruct permitted context, then apply target conversion. An
-unknown tool outcome stays unknown even if the wire format needs a placeholder. Invalidate
-opaque continuation across an account/endpoint change unless the adapter positively proves
-compatibility. A new account is not a reason to change the logical Session ID.
+Before a supported model change, classify outstanding effects and apply the runtime's transition
+contract. Account/provider-boundary changes require a new Agent under the current design; transfer
+permitted context explicitly through Pool-owned Resources and Conduits. Unknown tool outcomes
+remain unknown, and opaque continuation must not be reused across incompatible identities.
 
 Budget before dispatch, including activated prompts/tool descriptions and reserved output.
 Prefer preserving recent tool-call/result groups and recording omitted material to blindly
@@ -388,7 +387,7 @@ names cannot always be sent unchanged to every model's tool-name grammar.
 **Version correction:** the inspected client advertises `2025-11-25` and older versions.
 MCP `2026-07-28` removes protocol sessions/initialization in favor of per-request metadata
 and discovery, replaces subscription transport behavior, and removes old SSE resumption.
-Tasks become a redesigned optional extension. Conduit Session identity therefore must not
+Tasks become a redesigned optional extension. Conduit Agent identity therefore must not
 depend on an MCP transport session or JSON-RPC request ID.
 [Current changes](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
 
@@ -450,7 +449,7 @@ Exact names, fan-out, persistence and wake defaults remain proposals.
 | MCP | Familiar capability invocation, resource access and optional long-running task handles. | Protocol version and negotiated extensions matter; no implied Session lifecycle policy. |
 | [A2A task lifecycle](https://a2a-protocol.org/latest/topics/life-of-a-task/) | Separate immediate messages, longer work, artifacts and contextual grouping. | Its `contextId` groups interaction; it is not permission to import private model history. Task IDs need not become Linear issue IDs. |
 | [NATS JetStream](https://docs.nats.io/learn/jetstream/pull-consumers) | Pull-based bounded consumption, independent consumers and explicit acknowledgements. | Delivery acknowledgement is not proof an agent completed work. A broker is optional for a local v0. |
-| [Zenoh entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html) | Separate publication, query/reply, storage and liveliness behind related addressing. | A live subscription is not retained history; native protocol sessions are not Conduit Sessions. |
+| [Zenoh entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html) | Separate publication, query/reply, storage and liveliness behind related addressing. | A live subscription is not retained history; native protocol sessions are not Conduit Agents. |
 | agentwatch / Pi ecosystem | Practical catch-up, attachment claims and integration hooks. | Their attention, expiry and topology policies are not inherited. |
 
 ### Flows the contract must make unambiguous
@@ -474,9 +473,9 @@ completes work nor owns cancellation of an independently running Session.
 dispatch. Queued content is checked again on delivery. Content already in native model context
 cannot be erased; required isolated revocation follows the existing stop/explicit-restart rule.
 
-**Model/account handoff:** the receiving execution uses the same Session when resuming, with
-fresh current authority and a compatible projection. Its binding identity remains attributable;
-its provider connection and credential state need not be reused.
+**Model/account handoff:** compatible model changes may use the existing Agent's declared control.
+Changing its model-account/provider boundary creates a new Agent; continuity comes through explicit
+shared-context access. Neither handoff nor shared service login merges private Agent histories.
 
 **Attention policy:** recommend passive delivery by default, with explicit future hooks for
 selected requests to start work. Treat receipt, notification, context inclusion and execution

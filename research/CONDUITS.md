@@ -1,14 +1,13 @@
 # Conduit templates, connections and Pool-owned Resources
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
-now define five families and templates that declare establishment plus permitted configuration
-changes. Earlier architecture proposals below identify the
-research context, not competing current contracts. Read the
-[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
-how this evidence informs Interface and Conduit behavior.
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
 Updated: 2026-10-31. The five-family template/instance model, exclusive Pool ownership,
-Pool-only Resource creation and explicit open/join intents are accepted. Detailed interaction,
+Pool-managed shared service authentication, Pool-only Resource creation, typed handlers and explicit open/join intents are accepted. Detailed interaction,
 state and lifecycle proposals below remain for review; no schema or implementation is implied.
 [DESIGN.md](../DESIGN.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) groups questions.
 No live login, deployment or provider mutation was performed for this research.
@@ -20,7 +19,7 @@ No live login, deployment or provider mutation was performed for this research.
 | Interface | User authoring, observation, creation and permitted connection capabilities. | The user-facing endpoint for instantiation and Conduit-mediated control. |
 | Agent | Account/model/runtime choices, limits and activation instructions. | Durable participant with private context and executions. |
 | Resource | How to create or attach a typed capability. | Deployed/attached capability belonging to exactly one Pool instance. |
-| Pool | Resource provisioning choices, defaults and policies. | Creates and exclusively owns its Resource instances. |
+| Pool | Resource composition, shared authentication setup, defaults and policies. | Owns its Resources and organizes their shared service-access lifecycle. |
 | Conduit | Interaction, endpoint, filter and support requirements. | A live filtered flow with logical attachments and connection state, implemented by the engine/plugins. |
 
 Template identity, instance identity, participant attachments and individual operations are
@@ -41,8 +40,9 @@ Other consumers, backing Resources and outcomes survive; delivered data/external
 not rolled back. Retry/timeout and incomplete cleanup rules remain open.
 A Conduit has instance-managed behavior in the common runtime/plugins, which perform transfers and
 maintain clients or sync work. Logical consumer/peer attachments keep it live between polls and
-during temporary transport failure. The last consumer/peer detaching ends the flow and closes
-provider-side connections. Templates, backing Resources and retained evidence remain separate.
+during temporary transport failure. The last consumer/peer detaching ends the flow and releases
+its owned connections/leases. Shared Resource-owned credentials and clients survive according to
+their own lifecycle; templates, backing Resources and retained evidence remain separate.
 
 A connection that needs backing Resources must request them through an identified Pool.
 Connection supervision and participant attachments can have different lifetimes from those
@@ -105,8 +105,8 @@ requests and a routing service. Each participant can have its own identity, deli
 and context. Shared conversation storage need not be editable shared working memory.
 
 One Agent leaving can remove its attachment while the flow remains for other consumers/peers.
-The last one leaving ends the live Conduit and closes remaining provider-side connections;
-retained history belongs to a Pool-owned Resource and can outlive the flow. Later use of that
+The last one leaving ends the live Conduit and releases its own connection state; shared
+Resource-owned services and retained history can outlive the flow. Later use of that
 history does not by itself reopen the old instance. One-time transfer completion/detachment
 and reopening/new-instance identity remain under review.
 
@@ -132,8 +132,9 @@ one possible interaction example, not the universal Conduit abstraction.
 ### 3. Access a 1Password account or vault
 
 The Pool instantiates a Resource template to attach a credential service or selected vault
-capabilities, and owns that attachment instance. The Conduit establishes authorized access. An Agent's attachment
-resolves the chosen native account/grant and how authentication is obtained and refreshed.
+capabilities, and owns that instance. It normally establishes a supported shared service binding;
+each Agent's Conduit authorizes and filters use of the capability without another provider login.
+The managed capability owns authentication and refresh; the Agent owns its private context.
 
 Do not require every credential service to implement one login per Agent, and do not
 assume reuse is safe. 1Password distinguishes desktop-app integration, manual sign-in,
@@ -142,7 +143,7 @@ must report the actual mode and principal, with an explicit choice of reuse vers
 [Sign-in modes](https://developer.1password.com/docs/cli/sign-in-manually/)
 · [Service-account CLI configuration](https://developer.1password.com/docs/service-accounts/use-with-1password-cli/)
 
-Several independently authenticated clients still access the same vault and items. Login
+Shared or separately authenticated clients may still access the same vault and items. Login
 state, secret revisions, refresh/logout effects and provider limits are separate concerns.
 The model subscription account is another identity again; a Claude account does not determine
 the identity used at 1Password, AWS or Linear.
@@ -157,8 +158,11 @@ settle, not permission implied by Pool membership.
 
 Distinguish the executable, authentication configuration and the AWS targets. Account,
 IAM role, region, service and concrete deployment target affect what an operation means.
-The adapter can prepare Agent-specific configuration and credential references, then
-run native commands without requiring a resident process for every attachment.
+The Pool-owned capability can manage shared service authentication and invoke native commands
+through an adapter; Conduits narrow each caller's allowed operations/targets. Agent-specific
+projections are optional integration behavior, not mandatory independent sign-in. If a native
+CLI path needs credential injection, expose that as a supported operation and report the coverage;
+do not equate injection into unrestricted shell access with enforced per-command filtering.
 
 AWS already distinguishes named CLI profiles from SSO-session configuration; multiple
 profiles can reference one SSO session. Separate profile names alone therefore do not prove
@@ -184,8 +188,8 @@ direction without making deployment orchestration a prerequisite for v0.
 ### 5. Access Linear through MCP
 
 This expanded walkthrough tests the boundary between templates, plugins, graphs, ongoing runtime
-and permitted changes. **The architecture and example controls below are proposals**, applying
-the accepted five-family model. They do not select YAML fields, a plugin ABI, process topology or
+and permitted changes. **Shared Pool authentication and separately restricted access are accepted
+direction; the concrete controls and wiring remain illustrative.** They do not select YAML fields, a plugin ABI, process topology or
 new universal retry policy. No provider call, login or live mediation test was performed.
 
 Provider facts: Linear documents a managed remote MCP endpoint at `https://mcp.linear.app/mcp`,
@@ -200,8 +204,7 @@ An Interface authors templates and asks an Euphony Pool to instantiate a Linear 
 The user establishes a shared service login for that Resource. Two Agents open individually
 restricted access Conduits without separately logging into Linear. The Interface can also open a
 management Conduit to the Resource. Opening access does not grant configuration control or give
-the Agent the upstream credential. This shared-authentication example replaces the earlier default
-walkthrough of two separate logins; per-attachment identities remain an explicit supported option.
+the Agent the upstream credential. Per-attachment identities remain an explicit supported exception.
 
 | Element | Responsibility in this example |
 | --- | --- |
@@ -356,16 +359,16 @@ external outcomes; local cancellation does not prove a remote write was undone. 
 Linear's hosted server. Deleting a registration, purging retained evidence and deleting external
 issues are separate operations with separate authority.
 
-#### The structural ruling this tests
+#### The common mechanism illustrated
 
-**Recommendation for review:** templates bind named lifecycle, invocation and configuration-change
+**Working mechanism:** templates bind named lifecycle, invocation and configuration-change
 handlers to a typed plugin operation or a composed graph. Instances own ongoing state and services.
 A handler identifies the procedure; it is not a sixth object family and need not be a process.
 The template/type contract determines which handlers are externally callable; internal setup
 helpers are not automatically exposed through an access Conduit.
 
 This preserves small plugin contributions and reusable graphs without making every function a
-Resource or every Resource a permanent process. Resolve this shared mechanism first; detailed
+Resource or every Resource a permanent process. Detailed handler schemas remain open;
 timeout values, queueing and transport implementation can remain type-specific. A subsequent
 database walkthrough should test managed startup, migrations and recovery before finalizing the
 handler schema.
@@ -441,9 +444,9 @@ Prefer independent typed components and references over one giant provider-speci
 euphony-access                    proposed grouped selection / composite
   repository access              shared checkout or selected task worktree
   coordination                   shared exchange + participant delivery state
-  credential access              explicit native authentication boundary
+  credential access              Pool-owned managed service binding
   AWS capability                 target-specific operations; optional credential dependency
-  Linear MCP                     native service + participant-specific clients/authentication
+  Linear MCP                     shared service authentication + per-caller restrictions
 ```
 
 The grouping can make one user action convenient without requiring one shared token,
@@ -452,10 +455,11 @@ startup ordering, status, rollback limits and cleanup. For example, Linear login
 need not remove repository access, while a deploy requiring unavailable credentials cannot
 proceed. External writes already completed cannot be undone merely by failing an aggregate.
 
-The [establishment investigation](ESTABLISHMENT.md) makes these lifecycle questions the next
-review priority. It proposes typed prerequisite/output contracts, plugin-owned resumable stages
-and engine coordination. Authentication waits and expiring access belong to the relevant
-attachment/account; ordering or output references never substitute for a permitted Conduit.
+The [establishment investigation](ESTABLISHMENT.md) supplies dependency/output and recovery cases
+for typed plugin graphs. Shared authentication waits and refresh belong to the managed capability;
+caller authorization/attachment state belongs to the relationship. An explicitly selected
+per-consumer service identity uses its own declared boundary. Ordering or output references never
+substitute for a permitted Conduit.
 This does not choose a composite-Conduit schema or a general workflow language.
 
 Selecting the group must not make authority transitive: repository access does not grant
@@ -465,12 +469,10 @@ Existing narrowing-only filters and capability-tuple composition remain applicab
 
 ## Review sequence and tests
 
-With the five families, complete instance specs, Pool ownership and explicit open/join intents
-settled, define materialization and state responsibilities/lifetimes together.
-Follow with endpoint/authentication contracts,
-operation coordination and composition before choosing concrete YAML fields. The existing
-scenario fixture illustrates templates, explicit Pool provisioning and connection open/join
-requests. Its fields are proposals, not an accepted authoring or API schema.
+With the five families, complete instance specs, Pool-managed shared authentication and explicit
+open/join intents settled, review authentication reuse and state ownership first. Follow with
+endpoint/filter contracts, lifecycle handlers and YAML representation. [REVIEW.md](../REVIEW.md)
+is the single agenda; supporting examples do not establish an executable schema.
 
 Use these change cases alongside the five happy paths:
 
@@ -480,7 +482,8 @@ Use these change cases alongside the five happy paths:
 3. The last consumer/peer leaves and the flow ends; later participation must follow the
    reopening/new-instance contract still to be chosen, with retained history considered separately.
 4. Two different Conduits reach the same checkout, vault item, issue or deployment target.
-5. A credential refresh or logout occurs while another client is active.
+5. A shared credential refresh/logout occurs while several clients are active; distinguish its
+   impact from revoking just one caller's Conduit permission.
 6. A write is accepted remotely and its local caller disappears before learning the outcome.
 7. One optional component fails; a dependent required operation remains unavailable without
    falsely marking every other capability broken or claiming rollback of completed effects.

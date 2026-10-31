@@ -1,20 +1,19 @@
 # Pi runtime, Durable and ecosystem research
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#template-defined-configuration-changes)
-now define five families and templates that declare establishment plus permitted configuration
-changes. Earlier Session/four-family terminology and architecture proposals below identify the
-research context, not competing current contracts. Read the
-[control-contract synthesis](CONFIGURATION.md#template-defined-changes-research-synthesis) for
-how this evidence informs Interface and Conduit behavior.
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
-Source investigation: 2026-10-30. This report provides evidence for **Session, Resource, Pool and Conduit templates
-and instances**. Current contracts live in [SPEC.md](../SPEC.md) and
+Source investigation: 2026-10-30. This report provides source evidence for the current **Interface, Agent, Resource, Pool and
+Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../SPEC.md) and
 [DESIGN.md](../DESIGN.md); open decisions are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 
 The later [Pi re-review](PI_CONNECTORS.md) refreshes provider/authentication, context
-conversion, MCP version compatibility and Chord evidence against the four-family template/instance model.
+conversion, MCP version compatibility and Chord evidence for the current template/instance model.
 Start there for those topics and the [YAML proposal](CONFIGURATION.md); use this
 report for the detailed Durable, frontend and ecosystem investigation. Proposals in either
 report still require a ruling before becoming accepted contracts.
@@ -477,7 +476,7 @@ library remains implementation planning.
 
 ### Fit to the model
 
-These components implement the four-family template/instance model; they are not additional domain concepts.
+These components support the five-family template/instance model; they are not additional domain concepts.
 Session templates supply execution and activation instructions. Sessions own private execution state.
 Resource instances are created and exclusively owned by Pools, then accessed through
 connections. Reusable templates remain distinct from those instances. Frontends present the
@@ -565,7 +564,7 @@ merely because a reference offers one.
 ## Proposed experiment sequence
 
 The current [experiment order](PI_CONNECTORS.md#validation-performed-and-next-experiment)
-and [four-family acceptance agenda](../REVIEW.md#initial-experiment)
+and [acceptance agenda](../REVIEW.md#initial-experiment)
 are maintained together. The Durable-specific fault cases below supplement that plan;
 they do not define a second implementation sequence.
 

@@ -7,6 +7,8 @@
 # Templates register reusable configuration; only explicit Pool operations create Resources.
 # This scenario exercises template-based creation. Direct creation from complete instance YAML
 # is also supported, with an explicit unique name and the same Pool ownership requirements.
+# Pool resourcePlans below are a parked grouping/provisioning proposal, not a required layer.
+# Review Resource types and consumer boundaries first; use that result to simplify Pool syntax.
 scenario: four-families-with-exclusive-resource-ownership
 
 templates:
@@ -105,7 +107,7 @@ templates:
 # The illustrative inputs below supply ordinary instance-field values, not separately
 # declared template parameters or a parameter-mapping language.
 # instanceRef/poolRef names refer to outputs of earlier operations in this scenario.
-# Pool creation registers the owner and plan; provisioning is explicitly requested separately.
+# Pool creation registers the owner/configuration; provisioning is explicitly requested separately.
 # A frontend may combine these intents while retaining separate outcomes. The operation names
 # below remain illustrative; no assertion of external atomicity or successful auth.
 operations:

@@ -316,8 +316,8 @@ can be automated; normal validation and default materialization apply to the com
 Instances operate from and edit their own configuration; changes or deletion of the creation
 template do not alter it. No historical source snapshots or input/override ledger are required.
 Resource and authority dependencies are explicit; configuration does not freeze current access
-or backing data. A Pool's explicit Resource-template references for future provisioning remain
-ordinary dependencies, distinct from its own creation template.
+or backing data. Any explicit Resource-template references for future provisioning remain
+ordinary dependencies, distinct from an instance's own creation template.
 
 Instance creation and checked replacement updates materialize declared schema defaults into
 saved/exported specs. Instance equality compares these materialized values; templates retain
@@ -356,17 +356,20 @@ itself place content in model context.
 
 ### Resources and Pools
 
-A Resource template describes supported creation/attachment behavior. Only a Pool creates
-its Resource instances; registering a template does not deploy anything. Pool templates can
-select Resource templates and defaults, while Pool instances provide the ownership boundary
-for actual provisioning. Pool creation registers identity, configuration and its Resource plan;
-executing the plan requires an explicit provisioning request. Frontends may combine registration
-and provisioning in one explicit action with separate outcomes. Each named plan entry retains
-a binding to its created Resource ID across runs. Distinct entries can use the same template;
-additional creation remains explicit. Reuse does not overwrite the Resource spec or repeat
-native creation effects. Removing an entry ends its association while preserving the registered,
-Pool-owned Resource until explicit cleanup. Other entry changes, missing targets, replacement,
-partial provisioning and failure handling still need concrete contracts.
+A Resource template supplies reusable configuration for a type's creation/attachment contract.
+Only a Pool creates its Resource instances; registering a template does not deploy anything.
+Define Resource templates and instances before Pool grouping/provisioning machinery. Compare
+a local path exposed by symlink, an MCP service connection and hybrid database search to find
+the minimum common contract and the necessary type-specific differences. Separate configured
+backing capability from per-consumer preparation; do not assume each needs a registered object.
+
+Pool instances remain the ownership boundary. Pool registration and provisioning are separate
+explicit effects, optionally combined by a frontend with separate outcomes. Persistent Pool
+creation declarations and per-entry Resource bindings are back under review; the earlier
+proposal is consolidated in [REVIEW.md](../REVIEW.md#2-pool-grouping-and-resource-ownership).
+Prefer minimal bookkeeping and derived inventory views. Explore how Pools can use declared
+Resource types/capabilities for grouping and coordination without duplicating instance specs
+or embedding every provider's behavior in the Pool schema.
 
 Reuse templates across Pools, not membership of one Resource instance. Contracts distinguish
 new backing data from attachment to existing data. Two local registrations can refer to the

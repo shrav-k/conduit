@@ -17,12 +17,11 @@ to the same external data or create independent backing data, explicitly accordi
 contract. Connections use Resources through their owning Pools, including any storage they
 need for communication. They can request provisioning through a Pool but do not own Resources.
 
-Creating a Pool registers its identity, configuration and Resource plan. Provisioning is
-requested explicitly to create or attach the planned Resources. A frontend may combine both
-in one explicit action while reporting their outcomes separately.
-Each named plan entry retains its created Resource's identity across provisioning runs;
-additional creation is explicit. Removing an entry leaves its Resource registered and owned
-by the Pool until explicit cleanup.
+Prefer the least bookkeeping that preserves clear behavior. Define Resource templates and
+instances first, using local paths, MCP connections and database search as contrasting examples;
+then define how Pools group and coordinate those typed capabilities. Pool creation and Resource
+provisioning remain explicit, distinct effects. Persistent Pool declarations and their binding
+mechanics are back under review rather than prerequisites for defining Resources.
 
 Opening a new connection and joining an existing connection are explicit, distinct intents.
 Sharing a connection does not implicitly share credentials or private context.

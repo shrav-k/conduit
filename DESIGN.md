@@ -5,6 +5,12 @@ records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choice
 The common authoring envelope is settled; detailed fields, transports, storage engines
 and implementation layout remain under review.
 
+Prefer minimal bookkeeping: keep authoritative instance configuration and necessary identity,
+authority and operation evidence; derive views where possible rather than maintain parallel
+editable descriptions. Define Resource contracts before Pool grouping/provisioning mechanics.
+Type-specific differences should guide composition without forcing every capability through
+the same lifecycle. This does not remove the accepted account, memory or recovery guarantees.
+
 ## Families, templates and instances
 
 The four families are Session, Resource, Pool and Conduit. Each has a template describing
@@ -58,8 +64,8 @@ settings or operation-outcome evidence.
 
 Complete configuration can contain explicit references: continuing Resource and authority
 dependencies must be represented on the instance, with no implicit live inheritance from
-its creation template. Explicit references to templates for future creation, such as a Pool's
-Resource plan, remain subject to normal reference checks. Creation choices must satisfy
+its creation template. Any explicit references to templates for future creation remain
+subject to normal reference checks. Creation choices must satisfy
 required constraints; copying configuration never grants authority. Current access checks,
 Resource data and matching remain independent of the retained spec. Runtime observations
 belong in `status`. Content-version rules, materialization details and family-specific
@@ -507,6 +513,14 @@ Resource instances record enough identity/contract information to resolve their 
 supported operations. Provider-owned data retains native contracts; attaching it does not
 make Conduit the owner of the provider account or authorize deleting that backing data.
 
+Resource templates and instances are the next design focus. A local path exposed through a
+symlink, an MCP connection and hybrid search over a database are contrasting examples, not
+interchangeable implementations of a fixed lifecycle. Settle their typed configuration,
+backing identity, operations and shared/per-consumer state before deciding Pool grouping.
+A type contract defines semantics; a template supplies reusable configuration for that contract.
+The minimum common fields and the boundary between a Resource and its prepared Session view
+remain open in [REVIEW.md](REVIEW.md#1-resource-templates-and-instances).
+
 ### Native resources and integrations
 
 Users bring compatible skills/plugins through Pools and Conduits. User-level native
@@ -611,25 +625,18 @@ instance creates/attaches and exclusively owns its Resource instances. Pools rem
 resource-supply boundary for Sessions and connections, including skills, tools, memory and
 connection support such as conversation storage. A Pool need not run a process.
 
-Creating a Pool registers its identity and configuration, including any declared Resource
-plan. Registration alone does not execute that plan or create its planned Resource instances.
-Provisioning must be requested explicitly to create or attach the planned Resources through
-their owning Pool. A frontend may offer registration and provisioning as one explicit action,
-while preserving separate outcomes and reporting readiness. A successful registration does
-not imply successful provisioning. Exact operation syntax and partial provisioning rules
-remain open; no background reconciler is implied.
+Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
+to create or attach Resources through their owning Pool. A frontend may offer both in one
+explicit action with separate outcomes; successful registration does not imply provisioning.
+No background reconciler is implied.
 
-Each named Resource-plan entry retains a binding to the stable ID of the Resource instance
-it creates. Subsequent provisioning runs reuse that identity. Bindings are per entry within
-the Pool, not per template: separate entries can create distinct Resources from one template.
-Additional creation is explicit. Reusing a binding does not overwrite the Resource's complete
-spec, reapply its creation template or repeat native creation effects. Retrying incomplete work
-still follows the operation-outcome and safe-retry rules.
-
-Removing a plan entry ends that entry's association with its Resource. The Resource remains
-registered and owned by the same Pool, available under its existing access rules until explicit
-cleanup. Entry removal does not unregister the Resource or delete backing files/service data.
-Other entry edits, renaming, missing targets and explicit replacement remain under review.
+Persistent Resource declarations and per-entry bindings are back under review until Resource
+contracts are defined. The previous Pool proposal and its lifecycle rulings are consolidated
+in [REVIEW.md](REVIEW.md#2-pool-grouping-and-resource-ownership); they should not force extra
+configuration/state layers into the Resource model. Pools should account for Resource types
+when grouping and coordinating capabilities. Exact grouping behavior, provisioning syntax and
+partial outcomes remain open. Stable identity, explicit effects, safe retry and separate
+backing-data cleanup remain requirements regardless of the chosen representation.
 
 Resource templates can be selected by explicit references and labels where supported.
 Selection among an existing Pool's owned instances is another operation. Exact selector
@@ -644,7 +651,7 @@ management have distinct meanings.
 
 Creating a Resource for a connection must identify its owning Pool; the connection requests
 provisioning through that Pool. How provisioning retries partial work or resolves dynamic
-support requirements remains open. A template registration alone does not execute a plan.
+support requirements remains open. A template registration alone does not create Resources.
 
 When launching against a Pool, its access defaults apply only if no explicit selection
 is supplied. Explicit selection replaces those defaults; extending them requires an

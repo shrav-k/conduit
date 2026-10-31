@@ -4,6 +4,10 @@ Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family model; [DESIGN.m
 records accepted behavior. This agenda contains unresolved choices, grouped around connected
 outcomes rather than a long sequence of individual field rulings.
 
+**Review Resources before Pools.** Prefer the least bookkeeping that preserves required behavior.
+Use concrete Resource types to establish templates, instances and consumer access, then derive
+Pool grouping and provisioning. A persistent declaration/binding layer is not a prerequisite.
+
 ## Starting point
 
 - Session, Resource, Pool and Conduit each have template and instance forms. Profile means a
@@ -36,13 +40,8 @@ outcomes rather than a long sequence of individual field rulings.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
   configured service. Report readiness gaps/unknowns and block affected operations; registration
   does not imply activation or relax authority, validation or Pool ownership.
-- Pool creation registers identity, configuration and its Resource plan; provisioning is
-  requested explicitly. A frontend may combine both intents in one explicit action with
-  separate registration and provisioning outcomes.
-- Each named plan entry retains its created Resource's stable ID across provisioning runs.
-  Bindings are per entry, not per template; additional creation is explicit. Reuse alone
-  neither overwrites the Resource spec nor repeats native creation effects. Removing an entry
-  ends its association, leaving the Resource registered and Pool-owned until explicit cleanup.
+- Pool registration and Resource provisioning are separate explicit effects. Pool declaration
+  and binding mechanics are paused for reconsideration after the Resource contracts below.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -61,43 +60,70 @@ operations → observed result**, then one change and one failure. Resolve relat
 one contract. Move accepted conclusions into DESIGN.md and remove settled questions here.
 
 Do not assume that fewer family names imply one universal schema, lifecycle or merge algorithm.
+For each proposed field or stored relationship, identify its consumer and why it cannot be
+derived from existing authoritative configuration. Do not add uniform state to all types for
+one type's needs. A Resource template configures a type; it does not define the type's semantics.
 The candidate [scenario YAML](research/templates-instances.scenario.yaml) is a review fixture,
 not an accepted authoring/API format. It contains no real credentials or executable operations.
 
 ## Next discussion
 
-Continue with **missing bound Resources and explicit replacement**. Entry removal preserves
-the Resource; decide what provisioning does when an entry remains but its bound Resource is
-missing. Then resolve other entry edits/renames, partial outcomes and ownership transitions.
-Remaining field-value rules stay on the agenda below.
+Start with a **local-folder Resource template and instance**, then compare an MCP service and
+hybrid database search. For each, distinguish the configured capability/backing target from
+what is prepared for a consuming Session. Derive the shared Resource contract from those
+examples before designing type-aware Pools. The pending missing-plan-target ruling is paused.
 
 | Group | Outcome to settle |
 | --- | --- |
-| 1. Forms, identity and instance creation | One clear authoring/inspection/reference model for all four families. |
-| 2. Pool provisioning and Resource ownership | How instances are created, shared backing is represented, and ownership changes safely. |
-| 3. Instance lifecycle and change | Which state survives edits, detach, restart and deletion; which operations cause effects. |
+| 1. Resource templates and instances | A small common contract, typed configuration and clear backing/consumer boundaries. |
+| 2. Pool grouping and Resource ownership | Group and coordinate understood Resource types with minimal duplicated state. |
+| 3. Object configuration and lifecycle | Remaining field/reference rules, change semantics and required runtime state. |
 | 4. Connections, authority and communication | Initial extensible interaction contracts and their observable guarantees. |
 | 5. Resolution, activation and integrations | How selected capabilities become usable in each runtime without hiding native behavior. |
 | 6. Validation, evolution and experiment | Language conformance and the smallest convincing end-to-end evidence. |
 
-## 1. Forms, identity and instance creation
+## 1. Resource templates and instances
 
 | Question | Example and considerations |
 | --- | --- |
-| What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
-| How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
+| What does a Resource instance identify? | Compare the configured backing capability with a consumer-specific prepared view. Is a folder Resource the path attachment, each exposed symlink, or either under distinct contracts? Which state needs independent identity/lifecycle? |
+| What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
+| What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
+| What is shared and what is prepared per consumer? | A folder may have several symlink projections; an MCP service may need separate authenticated clients; search may use per-connection query filters. These are candidate boundaries, not settled object layouts. Separate backing, auth, client and operation lifetimes without registering every helper. |
+| How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
+| What lifecycle does each type actually need? | A path attachment need not start a service; an MCP integration may connect/spawn a client; search can attach to an existing index or build one where supported. Define necessary effects, readiness, retry and cleanup per type before requiring generic provisioning state. |
 
-**Walkthrough:** create two instances from one template, edit one instance, then rename, edit
-and delete the template. Show independent instance specs and explicit dependencies, including
-a Pool's Resource-template references for future provisioning. Repeat with a name collision
-and direct creation from exported configuration with a distinct name.
+Use these examples as design probes, not a closed list of types or an accepted schema:
 
-## 2. Pool provisioning and Resource ownership
+| Example | Questions the contract must answer |
+| --- | --- |
+| Local filesystem exposed by symlink | Which path is configured? Where is each Session's view prepared? What survives detachment? Which writes reach shared backing? |
+| MCP service connection | Which server/configuration is reused? Who authenticates each client? Which tools/resources/prompts are exposed, and which processes must exist? A Conduit Resource is distinct from MCP's protocol resource primitive. |
+| Hybrid search over a database | Which collection/index is targeted? What are query/filter/result contracts and freshness? Does attachment start any work, and who owns indexing if offered? |
+
+**Walkthrough:** write one template and complete instance for the filesystem example, attach
+two Sessions and remove one. Repeat for MCP and search. Record only the configuration/state
+needed to explain the observed differences. Keep an owning Pool reference without designing
+its grouping or provisioning machinery yet.
+
+## 2. Pool grouping and Resource ownership
+
+Return here after the Resource examples. Ownership and Pool-mediated creation remain accepted;
+the representation of creation/grouping instructions is being reconsidered.
+
+**Parked declaration proposal:** named entries in a Pool's configuration previously retained
+their created Resource IDs across provisioning runs; reuse did not overwrite specs or repeat
+native creation effects. Removing an entry ended that association while retaining its registered,
+Pool-owned Resource until explicit cleanup. Those rulings describe that proposed mechanism,
+whose necessity is now under review. Missing targets, entry edits/renames, re-addition and
+replacement were not settled. Prefer a simpler representation if Resource instances and
+ordinary operation outcomes can supply the needed behavior without a parallel declaration ledger.
 
 | Question | Example and considerations |
 | --- | --- |
-| What do other plan-entry changes do? | Define edits, renames, re-adding a removed entry, missing bound targets and explicit replacement. Entry removal preserves the Resource and Pool ownership; retained entries reuse their Resource-ID bindings. Distinguish the plan's creation instructions from each Resource's authoritative spec. Reuse does not imply automatic overwrite, replacement or background reconciliation. |
-| How does a plan handle partial outcomes? | Define required/optional items, dependencies, independent work, success/blocked/unknown reporting and safe retry. Registration remains distinct from provisioning, including in a combined frontend action. |
+| What should type-aware grouping do? | Explore grouping by declared types/capabilities, compatible Session preparation and supported operations. Derive inventory views where possible. Decide what Pools select, validate or coordinate without duplicating Resource configuration or silently activating capabilities. |
+| Do Pool instances need retained creation declarations? | Compare template-time expansion/explicit Resource operations with persistent declarations and per-entry bindings. Keep the least state needed for repeated operations, later additions and partial work. Only define declaration-edit edge cases if this mechanism remains necessary. |
+| How are partial outcomes handled? | Use Resource-specific effects to identify required/optional work, dependencies, independent progress and success/blocked/unknown reporting. Reuse operation IDs/outcomes for safe retry before adding a second reconciliation system. Registration remains distinct from provisioning. |
 | How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |
 | How do separate instances describe shared backing? | Two Pools attach to the same Linear workspace or local directory; another pair provisions separate worktrees. Record the distinction, management/deletion authority, credential boundaries and conflicts on the actual backing target across registrations. |
@@ -108,10 +134,12 @@ and direct creation from exported configuration with a distinct name.
 backing modes. Open a connection needing storage in a third Pool. Fail halfway through provisioning,
 retry, then retire a Pool with active users and retained conversation history. Show exact survivors.
 
-## 3. Instance lifecycle and change
+## 3. Object configuration and lifecycle
 
 | Question | Example and considerations |
 | --- | --- |
+| What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
+| How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
 | How do instance configuration edits take effect? | Checked updates edit the complete instance spec; templates do not propagate changes. Define validation, active-work boundaries, partial failure and restart requirements. Distinguish changes to instance settings from live authority, Resource content and matching. |
@@ -171,8 +199,9 @@ unsupported hooks and a change of model/account without leaking private context.
 Implementation has not started. Settle the contracts above and define a bounded experiment
 before moving from documentation into implementation or live account testing.
 
-1. **Offline model:** author reusable templates, instantiate two Pools, express both separate
-   and shared backing, and open/join connections with inspectable ownership and no orphan path.
+1. **Offline model:** first establish filesystem, MCP and search Resource templates/instances
+   and consumer boundaries; then express type-aware grouping in two Pools, separate/shared
+   backing, and open/join connections with inspectable ownership and no orphan path.
 2. **Accounts:** verify two Claude and two Codex/OpenAI subscription identities, independent
    credential refresh/logout and private Session state; record unsupported behavior explicitly.
 3. **Runtime:** a minimal Rust-owned model/tool loop and terminal, with native-agent adapters

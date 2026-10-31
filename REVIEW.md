@@ -57,16 +57,23 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — names within Pool composition:** should a Pool template name local Resource entries,
-such as `auth` and `linear`, and let dependency bindings refer to those entries? Recommend these
-local composition names, resolved to actual Resource identities when the Pool is instantiated.
-Two instances of the same Pool template would create separate owned Resources without requiring
-users to rewrite generated registry names. These names would be template-local references, not
-registry aliases, a new namespace or a second runtime binding ledger.
+**Settled local composition:** Pool templates name local Resource entries such as `auth` and
+`linear`; dependency bindings can refer to them. Each Pool instantiation resolves those references
+to its own Resource instances and stable IDs. These are composition references, not registry
+aliases or a second provisioning ledger. Exact YAML keys and graph integration remain open.
 
-The alternative assigns explicit registry instance names in the Pool template and requires suitable
-names at each instantiation. Exact YAML keys and how Pool-owned Resource outputs are inspected
-remain separate; the example tests the local-reference mechanism before fixing that syntax.
+**Next ruling — use composition from the setup graph:** should the normal Pool setup graph call
+a reusable composition step that reads these entries and bindings, establishes the Resources and
+exposes their results? Recommend this, with custom graphs able to reference the same entries for
+additional ordering or checks. The Pool declares components and wiring once; the reusable step
+coordinates their required preparation and invokes each Resource's own establishment contract.
+This runs only during explicitly requested setup, not registration or background reconciliation.
+
+The alternative requires explicit setup nodes for each Resource, also referencing the same entries
+without restating their configuration. That offers visible per-component orchestration but makes
+ordinary Pool authors maintain more graph wiring. Exact operation names, result schemas and custom
+graph composition remain open; neither option changes authorization, safe retry, Resource ownership
+or the distinction between registration and readiness.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -107,7 +114,7 @@ Pool without deciding every grouping feature first.
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Type-aware grouping | Decide which inventory/compatibility views a Pool derives from its owned Resources. Labels/selectors may select its Resources or templates where appropriate; matching foreign Resources does not confer ownership. |
-| Establishment declarations | Decide whether retained creation entries are needed at all. Prefer instance identity and ordinary operation outcomes over a second provisioning-plan ledger. Earlier plan-entry/binding proposals are parked; missing-target/replacement rules were not settled. |
+| Establishment declarations | Local Resource composition entries are accepted. Define how setup graphs consume them; prefer instance identity and ordinary operation outcomes over a second provisioning-plan ledger. Earlier persistent plan-entry/binding proposals are parked; missing-target/replacement rules were not settled. |
 | Partial establishment | Templates carry setup choices; graph/lifecycle contracts coordinate required work and partial results. Define Pool readiness and later Resource additions without conflating registry atomicity with rollback of external effects. |
 | Backing and retirement | Two Pools may intentionally attach separate Resource instances to the same external backing. Define conflicts, cleanup authority, ownership transfer if supported, and retirement with active consumers or retained data. An unowned registration is not permission to delete backing data. |
 | Durable content | Map task/personal records and conversation stores to Pool-owned Resources. Contexts are not alternative Resource owners; each message, cursor or file need not become a top-level Resource. Conduit-supporting durable Resources still need an owner. |
@@ -150,7 +157,7 @@ fall behind. Withdraw access before delivery; show permitted results and unresol
 | Area | Remaining decisions and examples |
 | --- | --- |
 | YAML surface and references | Define string keys, duplicate keys, scalars/units, aliases, path bases and explicit environment inputs. Preserve separate type versions and checked template writes. Secrets/handles are protected references, not ordinary reusable values. |
-| Graph/runtime representation | Settle inline/source graph resolution, input/output bindings, managed start/readiness operations and runtime defaults. Instance export retains the resolved graph without copying code/data. Multi-object composition and caches remain later conveniences. |
+| Graph/runtime representation | Settle inline/source graph resolution, input/output bindings, managed start/readiness operations and runtime defaults. Instance export retains the resolved graph without copying code/data. General cross-family composition bundles and caches remain later conveniences; Pool Resource composition is part of the current design. |
 | Activation | Define type-compatible instructions/skills, native config projections, duplicates and cleanup. Preparation defaults to required connections; optional failure continues and partial success is retained. Dynamic attachment uses supported operations, not authored-spec edits. |
 | Adapter contracts | Distinguish Rust-owned execution/provider connectors from native-agent adapters. Report shared service auth, native model-account support, control, context conversion, hooks, cancel/reconnect, subagents and telemetry. Provider-native MCP tools can be proxied without a generic replacement vocabulary; direct paths need separate coverage evidence. |
 | Isolation and access | Verify separate subscriptions and private Agent state, explicit config sources, native default and optional required isolation. Define the first isolated implementation/network matching later. Broad Interface control does not change selected execution mode or provider credentials. |

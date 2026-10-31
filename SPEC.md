@@ -137,6 +137,11 @@ bindings. The same service template can therefore use work authentication in one
 authentication in another. This does not imply automatic account matching, additional permission,
 late rebinding or a second editable connection inventory. Exact binding syntax remains open.
 
+Pool templates use named local Resource entries and can bind dependencies to those entries.
+Each Pool instantiation resolves them to its own Resource instances and their stable IDs; local
+names are composition references, not registry aliases. Reusing a Pool template does not imply
+shared Resource identity or credentials. Exact field names and setup-graph integration remain open.
+
 Separate these contracts:
 
 - **Provider identity:** what the service authorizes, centrally managed for the capability.

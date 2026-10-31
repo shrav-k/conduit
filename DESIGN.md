@@ -853,15 +853,23 @@ connection assignment on the consumer instance, with derived reverse views. Late
 edits do not silently rebind established connections. Compatibility uses the capability contracts
 above; exact declaration syntax, version matching and explicit rebinding controls remain open.
 
+**Accepted local composition:** Pool templates name their Resource entries locally, allowing a
+dependency binding to refer to another entry in that composition. For example, `linear` binds its
+authentication requirement to `auth`. Instantiating the Pool resolves that reference to the
+authentication Resource created for this Pool, and the consumer retains its resolved stable target
+ID. Another instantiation produces distinct owned Resources. Local entry names are not global
+registry aliases or an alternative instance identity; referencing one grants no access. Exact YAML
+keys and how setup graphs consume these declarations remain open.
+
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one
 explicit action with separate outcomes; successful registration does not imply provisioning.
 No background reconciler is implied.
 
 Persistent provisioning plans and per-entry creation-history bindings remain under review; these
-are separate from the accepted dependency bindings above. The previous proposal is consolidated
-in [REVIEW.md](REVIEW.md#2-pool-grouping-and-resource-ownership); they should not force extra
-configuration/state layers into the Resource model. Pools group unitary Resources and should
+are separate from accepted local composition declarations and resolved dependency bindings. The
+previous proposal is consolidated in [REVIEW.md](REVIEW.md#2-pool-grouping-and-resource-ownership);
+they should not force extra configuration/state layers into the Resource model. Pools group unitary Resources and should
 account for their types when coordinating capabilities. Exact grouping behavior, provisioning
 syntax and partial outcomes remain open. Stable identity, explicit effects, safe retry and separate
 backing-data cleanup remain requirements regardless of the chosen representation.

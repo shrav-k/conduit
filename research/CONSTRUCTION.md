@@ -346,10 +346,10 @@ handshake in every graph.
 ### Connected Pool and Agent YAML draft
 
 **Review sketch, not accepted schema or runnable configuration.** This combines the accepted
-ownership, shared authentication, dependency binding, capability matching, dynamic provider catalogs
-and delegation rules. Field layout beyond the settled envelope and Resource type/config/conduits
-fields is proposed. All type, capability, plugin, graph and bundle identifiers below are illustrative;
-no referenced implementation is installed or validated by this example. The source paths are
+ownership, shared authentication, local Resource entries, dependency binding, capability matching,
+dynamic provider catalogs and delegation rules. Field layout beyond the settled envelope and
+Resource type/config/conduits fields is proposed. All type, capability, plugin, graph and bundle
+identifiers below are illustrative; no referenced implementation is installed or validated by this example. The source paths are
 placeholders, not files to execute. Full graph/runtime definitions are omitted to focus on composition.
 
 The management Interface acts for the authorized user. Assume a reusable template catalog:
@@ -419,10 +419,10 @@ spec:
         authentication: {localResource: auth}
 ```
 
-`auth` and `linear` are proposed local composition names. They are neither registry aliases nor
-preassigned instance names. `localResource: auth` means the Resource created from that entry in
-this particular Pool instantiation. Another Pool created from the same template gets different
-owned instances. Proposed `bindings` supplies the target for the service's declared `authentication`
+`auth` and `linear` illustrate the accepted local-entry mechanism. They are neither registry aliases
+nor preassigned instance names. Proposed `localResource: auth` syntax means the Resource created
+from that entry in this particular Pool instantiation. Another Pool created from the same template
+gets different owned instances. Proposed `bindings` supplies the target for the service's declared `authentication`
 connection; it does not create a second connection or an independent runtime binding ledger.
 
 The `config` block supplies ordinary creation configuration. Assignment replaces that field rather
@@ -480,10 +480,17 @@ Resource uses its authorized connection to the authentication Resource, which ma
 login. The Agent's model subscription stays independent. Detaching the Agent preserves both
 Pool-owned Resources and the login for other permitted consumers.
 
-**Review now:** whether named local Resource entries are the right Pool composition primitive.
-The names of `resources`, `bindings`, `localResource`, `requires` and `requestedAccess`, exact
-capability/bundle identifiers and the graph-source syntax are still proposals. This example does
-not choose an API version, provider implementation, complete permission language or plugin ABI.
+**Review now:** how the Pool's setup graph consumes its declared composition. Recommend a reusable
+composition step that reads the entries and bindings, establishes the Resources through their own
+contracts and exposes their results. Custom graphs could refer to the same entries for additional
+ordering/checks. The alternative authors a setup node per entry, still referencing its declaration
+rather than duplicating configuration. Neither approach starts work merely by registering YAML or
+introduces a background reconciler. Exact step contracts, graph integration and results remain open.
+
+Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
+`requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax
+are still proposals. This example does not choose an API version, provider implementation,
+complete permission language or plugin ABI.
 
 ### What the research contributes
 

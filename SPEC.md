@@ -114,7 +114,11 @@ Local-directory and git-worktree are distinct types. Groups are independent of p
 content, identity and agent-communication groups remain candidates.
 
 A folder Resource describes backing directory access; each Agent's symlink is preparation state.
-MCP service identity may differ per attachment where supported, separately from model subscriptions.
+Service authentication can be shared through a Pool-owned Resource, with separately authorized,
+filtered Agent attachments and no repeated provider login per Agent. Distinct service identities
+per attachment remain supported where available. Neither mode changes model subscriptions or
+grants access merely through Pool membership. Provider-native MCP tools may be exposed through
+a Conduit-managed endpoint; preserving their contract does not imply a direct provider connection.
 Resource-to-Resource access uses Conduits. Activation instructions belong to the consumer; Pool
 membership and availability alone do not load skills/documents into model context.
 

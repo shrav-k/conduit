@@ -197,55 +197,62 @@ that our proposed adapter can enforce arbitrary workspace or parameter restricti
 #### The objects and their responsibilities
 
 An Interface authors templates and asks an Euphony Pool to instantiate a Linear MCP Resource.
-Two Agents open access Conduits to that Resource, selected through its owning Pool. The Interface
-can separately open a management Conduit to the Resource. Opening access does not grant control
-over the Resource's configuration.
+The user establishes a shared service login for that Resource. Two Agents open individually
+restricted access Conduits without separately logging into Linear. The Interface can also open a
+management Conduit to the Resource. Opening access does not grant configuration control or give
+the Agent the upstream credential. This shared-authentication example replaces the earlier default
+walkthrough of two separate logins; per-attachment identities remain an explicit supported option.
 
 | Element | Responsibility in this example |
 | --- | --- |
 | Resource template | Service target, constraints, establishment recipe, supported runtime and exposed operations/controls. |
-| Resource instance | The concrete Pool-owned service capability and its applicable configuration/state. It need not run its own daemon. |
-| Access Conduit instance | The permitted relationship, filters and per-attachment client/authentication lifetime; Agent A and B can use different permitted service identities. |
+| Resource instance | The concrete Pool-owned service capability, shared upstream authentication/refresh and applicable configuration/state. It need not run its own daemon. |
+| Access Conduit instance | Each Agent's authorized relationship, filters and local attachment state. It uses the explicitly shared binding here; a different mode can select a permitted per-attachment service identity. |
 | Management Conduit instance | The Interface's permitted path for inspection and supported changes on the Resource. |
 | Plugin implementation | Typed operations for authentication, MCP interaction or runtime control. One package may supply several operations; packaging is not Resource identity. |
 | Graph | Ordering and value bindings for a procedure requiring several operations. Its nodes do not become permanent supervisors. |
 
-The Pool owns the Resource; it need not relay every network request. A plugin implementation can
-serve many instances without sharing their credentials or state. A common endpoint does not imply
-a common OAuth grant, private cache or authenticated client. Per-attachment clients are managed
-runtime state, not additional Resources merely because there are two of them.
+The Pool owns the Resource; it need not relay every network request. This is Pool-managed access
+implemented by an owned Resource, not a reason to add a second authentication implementation to
+the Pool itself. A plugin can serve many instances; endpoint equality never implicitly shares
+credentials. Sharing the chosen service identity also does not require sharing a single socket or
+protocol session. The integration may reuse clients or keep separate upstream clients under the
+same managed identity. Those clients are runtime state, not automatically additional Resources.
 
 #### Establish the service and its attachments
 
-The Resource's establishment recipe validates its configured service target and prepares the
-capability to accept supported attachments. This does not prove that every prospective consumer
-is logged in. Service validation that requires authentication belongs after an identity is available.
+The Resource's establishment recipe validates its target, authenticates or verifies the selected
+shared service identity, prepares the instance-managed upstream client and discovers supported
+capabilities. Authentication may wait for a user once, or again if provider consent expires; it is
+not repeated merely because another Agent attaches. A protected binding stays with the managed
+Resource, not in exported YAML or the Agent's tool arguments. A workspace constraint requires
+supported verification rather than inference from the local Resource name.
 
-For each Agent, the access template supplies an attachment procedure:
+For each Agent, the access template supplies a different procedure:
 
 ```text
-select permitted service identity
-  → authenticate or verify an existing login
-  → prepare the instance-managed MCP client
-  → discover capabilities in that authorization context
-  → expose the permitted operations to the Agent
+identify and authorize the Conduit caller
+  → verify permission to use the Resource's shared service binding
+  → resolve that attachment's permitted operations and filters
+  → expose the supported provider tool surface to the Agent
 ```
 
-These are proposed operation boundaries, not required individual plugins. One integration may
-perform several steps. Authentication may wait for a user; its result is a protected binding,
-not a token embedded in exported YAML. The service identity is separate from the Agent's model
-subscription. A workspace constraint must be verified by supported evidence, not inferred from
-the local Resource name.
+These are proposed operation boundaries, not required individual plugins. Local caller identity
+and authority are distinct from the provider identity and the Agent's model subscription. Provider
+permission, Resource policy and the caller's Conduit restrictions all limit effective access.
+Joining a Pool alone does not grant use of the shared login. Native-client registration/approval
+may still be needed, but it need not entail another provider sign-in.
 
-The Conduit instance manages its attachment/client from startup, including supported refresh and
-reconnection. Setup finishes when its declared prerequisites are satisfied. An auth graph node
-does not remain running forever to own the connection. Resource-wide status describes the shared
-capability; attachment status describes the individual authorized path. One failed login need
-not disable the other Agent, whereas a provider outage can affect both.
+The Resource instance manages shared authentication, refresh and upstream clients. Each Conduit
+manages its attachment and any consumer-facing transport. Setup nodes finish after preparing that
+instance-managed state. Expiration of the shared login affects its users; revoking only A's access
+does not disable B or revoke the shared login. In the per-attachment identity variant, authentication
+can instead be prepared for each attachment, and one failed login need not affect another.
 
 MCP defines named tools with input schemas, `tools/list` discovery and `tools/call` invocation.
-Its tool list can depend on the authorization supplied with a request. Therefore discovery must
-respect the authenticated context; one shared catalog is not proof that all consumers can use it.
+Its tool list can depend on the authorization supplied with a request. Upstream discovery uses the
+selected service identity; downstream exposure is additionally narrowed for each Conduit caller.
+One shared upstream catalog is not proof that all consumers can use every tool.
 [MCP tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
 An ongoing logical relationship does not require an always-open socket: Streamable HTTP uses
 requests and can stream responses. The adapter must negotiate what the deployed service actually
@@ -255,20 +262,34 @@ supports rather than assume it implements every feature of the cited specificati
 #### Invoke a provider operation
 
 Suppose Agent A requests an issue read through the provider-native tool schema. “Read issue” here
-is a description, not a verified Linear tool identifier. The proposed mediated route is:
+is a description, not a verified Linear tool identifier. For an external native Agent using MCP,
+the proposed route is:
 
 ```text
 Agent A's native tool call
-  → its access Conduit checks current authority, filters and inputs
-  → Resource operation handler uses A's authorized attachment binding
-  → MCP plugin invokes the provider operation
+  → Conduit-managed MCP endpoint preserves the permitted Linear tool contract
+  → A's access Conduit checks current authority, filters and inputs
+  → Resource handler uses the explicitly shared upstream identity
+  → MCP client plugin invokes Linear's real MCP server
   → provider result and recorded outcome return through the same relationship
 ```
 
-The Resource exposes the capability contract; the Conduit supplies the authorized access context.
-This logical route does not require a separate network hop or process for every box. A compatible
-native client configuration or adapter must actually route the call through mediation. Direct
-native calls outside that route remain outside its inspection/enforcement coverage.
+In this mode the native Agent connects to a Conduit-managed MCP server, not directly to Linear's
+hosted URL. Preserve Linear's operations and schemas; do not require the model to wrap them in a
+generic `conduit.execute` tool. A provider-specific registration can still appear as Linear in
+the client's tool surface, subject to its naming rules, while inspection makes the mediated route
+explicit. No combined server for all providers is required.
+
+A Conduit-owned Agent runtime can apply the same handler/filter boundary internally, without an
+extra MCP server. A literal direct provider connection remains a separate mode: only supported,
+verified native interception can give it Conduit controls. Provider-native contracts and direct
+network routing are different promises. Each box above is logical, not a mandatory process/hop.
+
+Keep the downstream caller's authentication separate from the upstream Linear grant. Conduit must
+not accept a token intended only for Linear as authorization to its own HTTP MCP endpoint. Its
+managed upstream client uses the properly acquired service credential; sharing authorized use of
+that client is different from passing incoming bearer tokens through unchecked.
+[MCP token handling](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization#token-handling)
 
 An ordinary pass-through call can use one typed plugin operation. It does not need a new graph
 or Conduit instance per request. A procedure that checks, transforms and combines several results
@@ -280,8 +301,10 @@ and filters; discovery alone adds no permission. A team/workspace restriction ma
 resolution or other provider-specific checks; a
 tool-name filter alone cannot establish it. Unsupported restrictions must be reported. Separate
 clients can still mutate the same issues and consume shared quotas; duplication provides neither
-data isolation nor automatic conflict resolution. After an uncertain write, reconcile available
-evidence rather than blindly replaying it.
+data isolation nor automatic conflict resolution. Linear sees the configured shared service
+principal unless its own supported delegation mechanism supplies finer attribution. Conduit
+records the actual Agent/Conduit responsible; it must not claim those identities appear in the
+provider audit trail. After an uncertain write, reconcile evidence rather than blindly replaying it.
 
 #### Change running configuration through a management Conduit
 
@@ -321,10 +344,11 @@ operations. None implies permission to replace the running instance's entire def
 
 #### Detach and stop without confusing ownership
 
-Detaching A releases its relationship and the client state owned by that attachment. B remains
-connected. The last logical consumer leaving an access Conduit ends that flow, while the Resource
-remains registered and Pool-owned. Closing a client does not inherently revoke a reusable service
-login or delete provider data.
+Detaching A releases its relationship and consumer-local state. B continues using the shared
+service capability. The last logical consumer leaving an access Conduit ends that flow, while
+the Resource remains registered and Pool-owned. It may retain its authorized service binding for
+future consumers; upstream idle-client policy is separate. Detachment does not inherently revoke
+the shared login or delete provider data.
 
 Stopping the Resource, if its contract supports it, stops serving through that Resource and affects
 all its consumers. Its runtime must report how in-flight calls drain or cancel and retain unknown

@@ -138,7 +138,7 @@ Graph plugins and runtime implementations may share typed operations and code, b
 packaging and operation discovery are still undecided.
 
 The [Linear MCP walkthrough](CONDUITS.md#5-access-linear-through-mcp) follows one shared Resource
-through separate authenticated attachments, invocation, a proposed configuration control and
+through shared service authentication, individually authorized attachments, invocation, a proposed configuration control and
 shutdown. It tests using a single plugin operation or a graph as a handler while keeping ongoing
 state instance-owned; that handler representation remains a review recommendation.
 
@@ -300,11 +300,17 @@ the retained instance graph; editing a source file does not silently change regi
 ### MCP setup and instance runtime walkthrough
 
 A Pool owns an MCP-access Resource. Two Agents can connect through separate Conduits using
-different permitted service identities. Those identities are distinct from their model subscriptions.
-The Resource describes the service capability; each Conduit manages its access relationship.
-Native clients may host the actual MCP connection, with observable/control coverage reported.
+one shared service login managed by that Resource, or different permitted service identities where
+supported. These identities are distinct from their model subscriptions. The Resource describes
+the service capability; each Conduit manages its authorized access relationship. Shared mode keeps
+upstream authentication/refresh with the Resource and supplies filtered access without distributing
+the credential to Agents. See the [Linear walkthrough](CONDUITS.md#5-access-linear-through-mcp).
+External native clients can use a Conduit-managed MCP endpoint preserving provider-native tools;
+direct provider connections require separately verified native interception/control support.
 
-Partial Conduit template, again illustrative rather than a validated schema:
+The following partial Conduit template illustrates the **per-attachment identity variant** only,
+not mandatory authentication for each consumer. Shared mode instead establishes the binding with
+the Resource and authorizes each attachment to use it. Syntax remains illustrative, not validated:
 
 ```yaml
 apiVersion: example/v0alpha1

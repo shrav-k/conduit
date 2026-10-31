@@ -39,11 +39,13 @@ to a Pool, and broad management authority cannot manufacture an unsupported prov
 | Evolution and management | Can a running instance change its control envelope, setup graph or implementation, and by which separate management contract? Source-template edits must not silently alter it. Settle bootstrap/identity and management of Conduits without a recursive connection-per-request requirement. |
 
 **Current walkthrough:** [Linear MCP from establishment to shutdown](research/CONDUITS.md#5-access-linear-through-mcp).
-An Interface instantiates a Pool-owned service Resource; two Agents attach with separately permitted
-service identities. Follow authentication, native tool invocation, a declared client-timeout change
-through a management Conduit, and one consumer detaching. Distinguish shared Resource configuration,
-per-attachment state, provider content and template edits. The example's timeout/control semantics
-are proposals, not new protocol defaults or claims about Linear's settings.
+An Interface instantiates a Pool-owned service Resource and establishes shared service authentication;
+two Agents attach without repeating the provider login and receive separately filtered access.
+Compare an explicit per-consumer identity variant. Distinguish provider-native tools from direct
+provider transport: an external Agent may use a Conduit-managed MCP endpoint, while an owned runtime
+can mediate internally. Follow invocation, a declared client-timeout change through a management
+Conduit, and detachment. Shared Resource configuration/authentication, per-attachment authority,
+provider content and template edits are separate. Timeout/control semantics remain proposals.
 
 **Next structural ruling:** should templates bind lifecycle, invocation and configuration-change
 handlers to either one typed plugin operation or a graph, with instances owning ongoing activity?
@@ -71,7 +73,7 @@ assuming a persistent provisioning-plan ledger.
 | --- | --- |
 | Types and compatibility | Keep filesystem, storage, search and integration groups; distinguish local-directory and git-worktree. Explore content, identity and agent-communication types. Define type group/name/version identifiers and compatible consumer contracts independently of plugin packages. Shared shapes/names alone do not prove behavioral compatibility. |
 | Establishment and runtime | Use an existing directory with Agent-local symlinks, explicit new-directory creation, remote filesystem and Git worktree. Retain create/attach intent in the complete template recipe, explicit path base and absolute instance path. Define type-specific setup outputs, waits, readiness, effects and cleanup. |
-| Shared versus per-consumer state | Symlinks are consumer preparation, not additional Resources. MCP service identities may differ per attachment. Define client/auth lifetime and observable support without registering every helper. Shared backing does not imply shared private state or exclusive writing. |
+| Shared versus per-consumer state | Symlinks are consumer preparation, not additional Resources. Support explicit shared service authentication in a Pool-owned Resource and permitted per-attachment identities. Define binding selection, credential/refresh ownership and client reuse independently of caller authorization; avoid repeated logins or registering every helper. Shared backing does not imply shared private state or exclusive writing. |
 | Storage, search and MCP | Keep separate unitary Resources connected by Conduits. Define storage/search operations, index/input dependencies, freshness, indexing ownership and how MCP exposes existing contracts without silently combining responsibilities. |
 | Typed dependencies | Define generated outputs, revisions, expiring handles and prerequisites; diagnose blocking cycles. Preserve one authored connection declaration and derive reverse views rather than maintaining conflicting endpoint copies. |
 

@@ -981,11 +981,21 @@ account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP serv
 
 Resource templates for MCP services describe reusable endpoint/process/transport/authentication
 setup. Pool-owned instances and connection attachments realize that setup under current access.
-Different Agents may use the same MCP Resource through different permitted service identities,
-where the integration supports it. Resolve that identity per Agent attachment within the
-Resource's target and access constraints; a different login alone does not require another
-Resource instance. Service authentication is separate from the Agent's model subscription.
-Credential storage, refresh and client/process lifetimes remain separate contract details.
+Support explicitly shared service authentication managed through a Pool-owned Resource: authorized
+Agents use its service identity through individually restricted Conduits without each repeating
+the provider login. Pool ownership organizes this capability; membership alone grants no use of
+it. Keep the upstream credential with its managed owner, rather than copying it into every Agent.
+The Resource's runtime manages the shared binding/refresh; attachment state tracks each caller's
+authorized relationship. Shared authentication does not require a single upstream socket/client.
+
+Different permitted service identities per attachment remain supported where the integration
+allows them; this is an alternative, not a requirement to authenticate every Agent independently.
+Resolve the explicitly selected mode within the Resource's target/access constraints. A different
+login alone does not require another Resource instance. Service authentication remains separate
+from model subscriptions. Exact mode fields, credential storage and client reuse remain open;
+do not automatically share a binding merely because endpoint addresses match. Shared-identity
+provider attribution differs from Conduit's per-Agent attribution, and revoking one attachment
+does not inherently revoke the shared service login.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration
 from effective selections. Registration, provider authentication and Conduit Agent
 authority are distinct. Reusing a definition does not promise shared live clients, OAuth
@@ -993,9 +1003,19 @@ state or backend persistence. Avoid rewriting global settings for each launch an
 inherited/plugin connections and host configuration behavior.
 
 Preserve provider-native tool names, schemas, descriptions, results and workflows where
-possible. A common gateway or separate provider endpoints can provide mediation; no one
-combined endpoint is required. Integration capabilities must cover nested calls and actual
-dispatch rather than treating discovery lists as enforcement.
+possible. This is contract compatibility, not a promise that an external native client connects
+directly to the provider's hosted MCP URL. A Conduit-managed MCP proxy can expose the permitted
+provider tools and invoke the real upstream service; its endpoint and authentication boundary
+are distinct. Provider-specific entries can remain separate, with client-required namespacing;
+no combined gateway or generic replacement tool is required. A Conduit-owned runtime may mediate
+internally without another MCP server. Literal direct provider connections only have the controls
+their verified native integration supports. Integration capabilities must cover nested calls and
+actual dispatch rather than treating discovery lists as enforcement.
+
+Authenticate the local caller separately from authorizing the upstream service request. Do not
+accept a Linear token as a bearer credential for a different Conduit MCP audience. Protected
+references and a supported upstream OAuth/token flow are distinct from token passthrough.
+[MCP authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
 
 The long-term direction is attribution and inspection of outgoing MCP calls, with permission
 checks that can allow, limit or block them. V0 need not implement comprehensive upstream

@@ -114,10 +114,14 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   required. Continuing Resource and authority dependencies must be explicit on the instance.
   Current-access checks, Resource data, runtime status and actual execution evidence remain
   separate from configuration.
+- Instance creation and checked replacement updates materialize declared schema defaults into
+  saved/exported instance specs. Template YAML preserves omissions. Fields without declared
+  defaults retain their required/optional semantics.
 - Create/update intent is explicit. Updates replace complete authored configuration and use
   separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
-- Unchanged authored values preserve the configuration version after checks. Omission remains
-  different from explicitly setting a default; presentation-only differences do not count.
+- Unchanged configuration preserves its version after checks. Compare instances after default
+  materialization, so omission and an equivalent explicit default produce the same stored
+  value. Templates retain that authored distinction; presentation-only differences do not count.
 - CLI/editor edits retain recoverable baselines; absent baselines need explicit preparation.
   Status is rejected on normal writes and omitted with system IDs/versions from reusable exports.
 - Deletion is checked; registration removal, native shutdown and backing-data purge are distinct.

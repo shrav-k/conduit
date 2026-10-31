@@ -21,6 +21,9 @@ outcomes rather than a long sequence of individual field rulings.
 - Direct creation from complete instance YAML is also supported, with an explicit unique name.
   Both paths use the same validation and authority rules; Resource creation still goes through
   a Pool. Creation, provisioning and execution remain distinct effects.
+- Instance creation and checked replacement updates store declared schema defaults explicitly.
+  Instance equality compares materialized values; templates preserve authored omissions.
+  Unchanged updates still require current authorization and matching ID/version checks.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -44,9 +47,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **defaults and materialization**. Direct and template-based creation are settled;
-define how declared defaults and creation choices become complete instance configuration.
-Then establish Pool provisioning/ownership and instance lifecycle together.
+Continue with **template expansion and creation edits**. Defaults are materialized in saved
+instances; decide whether template use is ordinary instance-field editing or requires a
+separate declared-input mapping. Then establish Pool provisioning/ownership and instance
+lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -61,7 +65,8 @@ Then establish Pool provisioning/ownership and instance lifecycle together.
 
 | Question | Example and considerations |
 | --- | --- |
-| How is complete instance configuration materialized? | Define each form's fields, creation inputs, defaults and validation. Reconcile materialization with authored omission/default distinctions and checked full replacement. References may stay live; external contents and system-owned status are not copied into spec. No retained override layer or general inheritance language is implied. |
+| How do callers customize a template at creation? | Compare expansion into an instance draft with ordinary spec-field edits against separately declared inputs mapped to the spec. Edits can be automated without an interactive step. Define supported fields and replacement/addition semantics without a retained override layer or general inheritance language. |
+| What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
 | How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 
 **Walkthrough:** create two instances from one template, edit one instance, then rename, edit

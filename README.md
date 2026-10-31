@@ -30,8 +30,9 @@ names generated from the template name plus a unique suffix unless an explicit u
 is supplied. Readable object references include `kind`, `form` and `name`. Create instances
 either from a template and creation choices or directly from complete instance YAML. Direct
 creation requires an explicit unique name; Resource creation always goes through a Pool.
-The complete instance `spec` is then edited directly. Template history is optional; continuing
-Resource and authority dependencies are explicit on the instance.
+The complete instance `spec` is then edited directly. Creation and replacement updates store
+declared schema defaults explicitly; templates preserve authored omissions. Template history
+is optional; continuing Resource and authority dependencies are explicit on the instance.
 Current-access checks and actual execution evidence remain required.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable

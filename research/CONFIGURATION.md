@@ -316,6 +316,11 @@ Resource and authority dependencies are explicit; configuration does not freeze 
 or backing data. A Pool's explicit Resource-template references for future provisioning remain
 ordinary dependencies, distinct from its own creation template.
 
+Instance creation and checked replacement updates materialize declared schema defaults into
+saved/exported specs. Instance equality compares these materialized values; templates retain
+authored omission distinctions. Missing fields without defaults follow their required/optional
+contracts. This is application behavior; a schema's default annotation alone does not supply it.
+
 Keep authoring interpretation, template configuration version, resolved instance configuration,
 retained-record revision, source digest, plugin release and native protocol version separate.
 A reusable template is configuration for a typed capability; its contract schema defines
@@ -401,7 +406,8 @@ status and partial effects need explicit semantics.
 | Session activation and provisioning dependencies | Explicit ordering with distinct effects and failure rules. | Loading a guide, obtaining credentials and creating storage are not interchangeable steps. |
 | Intent versus observation | Compare and record, rather than merge. | A failed deployment does not silently rewrite the authored template. |
 
-Omission, null, empty collections, reset, ordering and duplicate identity need per-field rules.
+Default materialization is settled; remaining omission, null, empty-collection, reset, ordering
+and duplicate-identity details need per-field rules.
 A possible v0 approach is explicit whole-list replacement plus an explicit add operation;
 this is not a universal default. Retained instance settings and current access rules must both
 survive configuration composition. A Pool's default access selection applies only when no

@@ -179,7 +179,11 @@ a template is distinct from provisioning instances or launching execution.
 
 A v0 update replaces the complete authored configuration, including `spec` and editable
 metadata. Omitting an optional field removes its explicit setting; the field's omission,
-default and validation rules apply instead of retaining its previous value. The object's
+default and validation rules apply instead of retaining its previous value. Instance creation
+and checked replacement updates materialize declared schema defaults into the saved `spec`;
+configuration-only exports include those explicit values. Template YAML preserves authored
+omissions. Fields without declared defaults retain their required/optional semantics; this
+does not invent values or copy runtime observations into configuration. The object's
 identity is preserved, and Conduit continues to maintain its system-owned version information
 and status. Clients can edit a retrieved configuration copy before submitting it with the
 original baseline. Partial patches are deferred.
@@ -206,20 +210,23 @@ object forms, client disconnection and transient helper-process cleanup remain r
 An unowned Resource is an ownership inconsistency to resolve, not automatic purge authority.
 The existing retain-until-explicit-purge rule remains; automatic orphan collection is not selected.
 
-The configuration version covers `spec` and author-editable metadata. Changes to those
+The configuration version covers stored `spec` and author-editable metadata. Changes to those
 values invalidate the prior version for updates; status-only changes do not. The check
 does not freeze live permissions or replace authorization at the time of the operation.
 
-After authorization and the required ID/version checks pass, submitting unchanged authored
+After authorization and the required ID/version checks pass, submitting unchanged
 configuration reports an unchanged result and retains the current configuration version.
 Record the operation outcome without invalidating other edits. Stale submissions still
 conflict even if their submitted configuration matches the current values.
 
-Equality compares parsed authored values, ignoring presentation-only formatting, comments
-and mapping-key order. An omitted field remains distinct from explicitly setting its default,
-even if both currently resolve to the same value. Lists follow their field-specific order
-rules. Scalar normalization, individual list contracts and version-transition details remain
-to be specified; equality does not compare resolved runtime state.
+Equality ignores presentation-only formatting, comments and mapping-key order. For instances,
+compare the candidate configuration after declared defaults are materialized with the stored
+configuration. Omitting a defaulted field and explicitly supplying the same value are equivalent;
+if no stored configuration value changes, retain the version. For templates, compare parsed
+authored values: omission remains distinct from explicitly setting a default. Lists follow
+their field-specific order rules. Scalar normalization, individual list contracts and
+version-transition details remain open; equality does not compare runtime state, current
+Resource contents or live authority. Source YAML files are not silently rewritten.
 
 Clients may reread, reconcile and retry within their permissions without mandatory human
 approval. Simply substituting a newly read version does not reconcile an older edit.

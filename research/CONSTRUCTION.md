@@ -52,16 +52,42 @@ composition and ordering. Plugin interfaces still need inputs, outputs and failu
 plugins do not need to become independently running Agent/Resource/Pool/Conduit objects.
 Their implementation may launch a process while executing a node without changing this distinction.
 
-The open point is **when the graph's steps execute**:
+**Accepted execution baseline:** the plugin graph runs each time an instance is started.
+There is no required separate template-build execution phase in the protocol. The template stays
+reusable; each start supplies the applicable instance bindings and evaluates the graph's operations.
 
-- While preparing a reusable template, analogous to image construction.
-- At each instantiation, using that instance's actual bindings.
-- In two explicitly separated phases, if both are intended.
+A plugin can finish quickly when it establishes that its intended work is already satisfied.
+For example, an authentication plugin checks the selected account's current login and either
+returns a verified usable result or performs the required sign-in. It does not need to force a
+new login merely because another instance starts. Existing login is a current-state observation,
+not proof that an old cached authentication result is still valid.
 
-Do not choose among these without clarification. Installing runtime dependencies, authenticating
-a particular account and creating Agent-local links are useful probes because their inputs and
-lifetimes differ. The earlier construction-ownership proposal is not a prerequisite or ruling.
-Shared templates must not accidentally retain an instance's private authentication or live handles.
+This does not require repeating external creation effects blindly. Each operation retains its
+declared intent: fresh creation, attachment, verification or another explicit action. Safe retry
+and uncertain-outcome handling remain applicable. Exact restart/continuation behavior for an
+existing instance still needs a lifecycle contract; it does not introduce a second template phase.
+
+Caching, shared preparation and other build/runtime optimizations belong to implementations and
+later work. The protocol should leave room for them without defining image layers, cache stores,
+cache keys, scheduling algorithms or a particular artifact format now. A conforming implementation
+can execute without an optimization layer. Shared templates must not acquire an instance's private
+authentication state or live handles.
+
+## Protocol properties that leave room for optimization
+
+The following are design recommendations for the node contract, not a cache specification:
+
+| Property | Why it helps independent implementations |
+| --- | --- |
+| Identifiable, versioned plugin operations and named graph nodes | Gives an operation and its meaning an inspectable identity. Exact identifier syntax remains open. |
+| Explicit inputs, relevant bindings and typed outputs | Makes dependencies visible rather than hiding them in shell state or ambient account selection. |
+| Explicit ordering and readiness requirements | Allows independent work to be scheduled without changing required behavior. |
+| Declared effects and observable results | Distinguishes a reusable calculation, a verified existing condition, an external write and an unresolved outcome. Exact classifications remain open. |
+
+Optimization must preserve the current operation contract, identity, authority and result semantics.
+Matching YAML alone cannot establish that credentials remain valid or external data is unchanged.
+These boundaries allow future caching or reuse where supported without making those mechanisms
+part of the basic template-to-instance model.
 
 ## YAML and graphs are compatible
 
@@ -107,8 +133,9 @@ blocks; a login step or directory-linking step is not thereby a Conduit. Agent, 
 and Conduit instances are the managed objects. Some may be idle or have no dedicated process.
 
 Execution tracking and recovery details remain for later design. No first-class construction-run
-family or mandatory construction-state ownership scheme is selected here. Settle the reusable
-template/graph/instance relationship and execution timing before returning to those details.
+family or mandatory construction-state ownership scheme is selected here. The graph-on-start
+rule is settled; execution bookkeeping must support it without replacing reusable templates
+with per-instance construction definitions.
 
 ## What survives the research
 
@@ -136,11 +163,29 @@ presented as the current model.
 
 ## Next discussion
 
-The immediate question is timing: do plugin graph steps prepare the reusable template, execute
-for each instantiation, or occupy explicitly separated preparation/instantiation phases?
-Use runtime installation, account authentication and instance-local linking as the examples.
+The execution baseline is settled: run the plugin graph on each instance start, with plugins
+able to verify and reuse already-satisfied state. Implementation optimizations remain deferred.
 
-Once clarified, show one complete reusable template and two instances created from it. Only
-then settle its authoring syntax, node contracts and minimal execution/recovery evidence.
-Agent remains the proposed replacement for Session; preserve the established account, private
-context, Resource ownership and access requirements while reviewing the vocabulary.
+Work through the same reusable Agent template started twice, using an illustrative sequence:
+
+```text
+prepare instance-private state
+  → authenticate the selected account
+  → establish configured Conduit instances
+  → report the Agent ready
+```
+
+| Case | Authentication behavior | Resulting instances |
+| --- | --- | --- |
+| First start requires sign-in | The plugin performs the supported sign-in flow and verifies the selected identity. | An Agent and its configured connections, with their own runtime state. |
+| Another start has a valid existing login | The same plugin verifies current identity/usability and can return sooner. | A separate Agent and its configured connections; template reuse does not merge private context or connection identities. |
+
+The example is an intended contract scenario, not verified native-provider behavior or a new
+schema. A real adapter must support the selected account/state separation. Opening a fresh
+connection versus explicitly joining a shared one remains a declared choice.
+
+Use those two executions to define the minimum plugin-node contract together: inputs, outputs,
+prerequisites, interaction/failure reporting and what a successful result promises. Then express
+the reusable graph and instance views in YAML. Defer cache layouts and build-system internals.
+Agent remains the proposed replacement for Session; preserve account, private-context,
+Resource-ownership and access requirements while reviewing the vocabulary.

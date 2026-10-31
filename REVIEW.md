@@ -7,10 +7,11 @@ outcomes rather than a long sequence of individual field rulings.
 **Active branch discussion:** [Construction templates and runtime instances](research/CONSTRUCTION.md).
 Reserve Conduits for ongoing connections and filters; move construction graphs into the common
 template mechanism across all families. Agent is the proposed name replacing Session. Start
-with the [base-concept question](research/CONSTRUCTION.md#next-discussion): whether plugin graph
-steps prepare a reusable template, run at each instantiation, or occupy explicitly separated
-phases. Repeated instantiation is fundamental; the previous construction-ownership question
-is withdrawn.
+with the [next walkthrough](research/CONSTRUCTION.md#next-discussion): the same reusable Agent
+template started twice, first requiring login and then with a valid existing login. Each start
+runs the plugin graph; plugins may verify already-satisfied state. Define the node contract from
+these cases, leaving caching and other build optimizations to later implementations. Repeated
+instantiation remains fundamental; no construction-ownership scheme has been selected.
 The checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.

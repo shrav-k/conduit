@@ -245,10 +245,23 @@ another Conduit does not silently rewrite an Agent's template or broaden a contr
 
 ### Lifecycle protocol under review
 
-**Accepted graph boundary:** plugins declare typed inputs/outputs; graph nodes bind them. Output
-bindings imply dependencies; explicit prerequisites cover ordering without data. Per-output
-publication timing and validity/lifetime are declared separately. A graph runs each instance start;
-plugins may verify already-satisfied work. This does not authorize repeating uncertain effects.
+**Accepted graph boundary (R2):** v0 setup and change-handler graphs are finite, acyclic dependency
+graphs of typed plugin operations. Plugins declare typed inputs/outputs; graph nodes bind them.
+Output bindings imply dependencies; explicit prerequisites cover ordering without data. Branching,
+loops and provider-specific procedure remain inside plugins initially. User-authored conditions,
+iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
+supported; interaction waits and valid-progress recovery do not require authored loops.
+
+For example, authenticate → connect → initialize remains visible composition, while the
+authentication plugin handles an existing-login check, challenges and provider polling. The
+reusable Pool composition step can establish declared entries through their own setup contracts;
+authors need not write a loop. Plugins still obey current authority and safe recovery contracts.
+This choice limits execution-language complexity without restricting the network of ongoing
+Conduit connections to an acyclic topology or giving setup nodes ownership of live services.
+
+Per-output publication timing and validity/lifetime are declared separately. A graph runs each
+instance start; plugins may verify already-satisfied work. This does not authorize repeating
+uncertain effects.
 
 Templates declare ongoing runtime behavior, using type defaults; graphs supply prepared inputs.
 A graph may request instance-managed runtime startup during setup, such as starting a database

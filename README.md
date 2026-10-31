@@ -26,13 +26,14 @@ developed. Normal interaction uses Conduits and runtime-supported operations; Re
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
 Changing an instance's fixed setup graph or control definitions requires a replacement in v0,
 including through the Interface. Supported settings, connections and lifecycle remain manageable.
-R1 is settled; [six review bundles remain](REVIEW.md#remaining-decision-bundles), beginning with
-[graph execution semantics](REVIEW.md#next-discussion). Implementation details and future
+R1 and R2 are settled; [five review bundles remain](REVIEW.md#remaining-decision-bundles), beginning
+with [ownership and retirement](REVIEW.md#next-discussion). Implementation details and future
 extensions are tracked separately.
 
 Templates contain complete establishment instructions and declare what instance configuration
 can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit
-plugin dependencies make this inspectable. Instances manage ongoing behavior; Interfaces and
+plugin dependencies make this inspectable. V0 graphs compose finite dependencies between typed
+steps; branching and loops stay inside plugins. Instances manage ongoing behavior; Interfaces and
 Agents request permitted changes through Conduits. Type/plugin implementations supply the actual
 operations, while templates expose and constrain them.
 

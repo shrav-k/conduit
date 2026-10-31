@@ -24,7 +24,10 @@ YAML represents this contract; a different notation would not itself supply iden
 or readiness. An author can compose existing operations without spelling out OAuth exchanges or
 filesystem syscalls. Provider-internal steps remain code unless exposing them is useful to the
 public contract. No general workflow language, per-step Resource or extra operation document is
-required. Exact branching, handler and continuation schemas remain in review.
+required. R2 selects finite, acyclic dependency graphs: provider branching/loops remain inside
+plugins, while interaction waits, valid-progress recovery and independent parallel steps are
+supported. Authored conditions, iteration and dynamic graph fan-out are deferred. Exact handler
+and continuation schemas remain drafting work within this boundary.
 
 For ordinary service access, establishment happens through the owning Pool's capability and
 manages its shared authentication. Consumer attachment authorizes use of that capability; it is
@@ -89,7 +92,9 @@ through ordinary typed fields; this proposal does not reinstate a generic parame
 
 ## Ordering and dependency semantics
 
-Recommend **strict prerequisite order with bounded parallelism for independent work**:
+**Accepted R2 boundary:** finite, acyclic execution dependencies with strict prerequisite order
+and supported parallelism for independent work. The following elaborates the contract; exact
+concurrency limits and representations remain to be drafted:
 
 - A dependent action starts only when its named inputs and required conditions are satisfied.
   A folder attachment may require existence; a query surface may require a completed index build.
@@ -548,17 +553,17 @@ operation/type-version references and Conduit input routing need design before t
 The engine handles dependencies, persistence and retry; each plugin action must support its
 claimed continuation behavior.
 
-This adds genuine flexibility: a user can compose a novel supported sequence without writing a
-new plugin. It also adds public semantics: what edits do to an interrupted graph, how stage IDs
-survive retries, when output handles are valid, which completed work is reused and what cancelling
-a composite releases. A fixed linear graph is much smaller than a general language with loops,
-arbitrary expressions or shell execution, but these semantics still cannot be skipped.
+This lets a user compose a supported sequence without writing a new plugin. R1 keeps the resolved
+graph fixed for the instance; R2 selects finite dependencies, including independent parallel steps.
+Recovery still needs stable step identity, valid output handles, evidence of reusable completed
+work and explicit cancellation outcomes. Those responsibilities remain even though authored
+branching/loops and dynamic graph expansion are deferred.
 
 The accepted design combines **typed template configuration with inline or referenced graphs**
 across the five families. A handler can use one plugin operation or compose several operations;
 there is no new workflow family. Graphs call typed operations rather than reimplementing every
-SSH exchange or bypassing worktree identity checks. R2 concerns the graph language's initial
-execution features, not whether template graph composition is allowed.
+SSH exchange or bypassing worktree identity checks. R2 confirms this initial execution boundary;
+provider procedure stays inside plugins without moving ongoing supervision out of instances.
 
 ## What the first protocol must settle
 
@@ -572,16 +577,17 @@ The core should expose a derived dependency/progress view without making authors
 second plan. Plugins must identify meaningful resumable boundaries; the engine must not promise
 crash-safe continuation of arbitrary code. Retry state and outputs must survive ordinary restart,
 with compatibility/coverage gaps explicit. Template graphs compose typed plugin operations;
-provider-internal stages need not become authored nodes. General loops/branches, arbitrary shell
-hooks and deterministic code replay are not implied by that composition boundary.
+provider-internal stages need not become authored nodes. General authored loops/branches and
+dynamic graph fan-out are deferred under R2. Arbitrary shell hooks and deterministic code replay
+are not implied by that composition boundary.
 Bound work through declared deadlines, retry/backoff limits and concurrency where supported.
 The exact policy fields are open; an interaction wait and an in-flight provider call may need
 different timeout behavior, and timing out either does not prove cancellation completed.
 
 The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
-These cases support R2's graph execution/recovery contract, R3's ownership lifecycle and R6's
-configuration/export profile. Direct complete-instance creation, graph composition and the
-template/plugin/instance responsibility split are already accepted. The next schema packet should
+These cases illustrate the accepted R2 graph boundary and support the remaining R3 ownership
+lifecycle and R6 configuration/export profile. Direct complete-instance creation, graph composition
+and the template/plugin/instance responsibility split are already accepted. The next schema packet should
 render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 
 ## Evidence gates before implementation and live experiments

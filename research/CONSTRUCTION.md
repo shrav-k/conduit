@@ -348,6 +348,7 @@ Configuration-only export excludes system-owned status and must identify require
 | Concern | Accepted contract |
 | --- | --- |
 | Inputs and outputs | Plugins declare typed contracts; graph nodes select plugins and bind values rather than independently redefining their interfaces. |
+| V0 execution language (R2) | Finite, acyclic dependency graphs. Branching/loops stay inside plugins; authored conditions, iteration and dynamic graph fan-out are deferred. Interaction waits, valid-progress recovery and independent parallel steps remain supported. |
 | Ordering | Output-to-input bindings imply dependencies. Explicit prerequisites express ordering without data transfer. |
 | Publication | Contracts may publish usable outputs during setup or upon completion. Early publication can unblock later setup; it does not turn a node into a permanent supervisor. |
 | Validity/lifetime | Declared per output, independently of publication timing. Persistent descriptions and expiring handles may have different rules. |
@@ -358,6 +359,12 @@ Named/versioned plugin operations, explicit bindings and meaningful results supp
 optimization. Exact identifiers, schemas, effect descriptors and graph scheduling remain open.
 A local script/process can implement a plugin. Its setup result is evidence about that operation;
 ongoing availability belongs to instance state.
+
+An authentication plugin may check an existing login or wait for a provider challenge before
+publishing its binding. A Pool composition plugin may establish declared Resource entries through
+their setup contracts. Neither requires authored branching or loops in the v0 graph language.
+This boundary preserves composable steps while leaving provider procedure in code. It does not
+restrict ongoing Conduit topology or allow plugin internals to bypass authority/recovery rules.
 
 ### Setup ends; instances continue
 
@@ -648,8 +655,8 @@ Typed filters and access-path composition remain accepted for delegated access.
 [delegated Agent control](#agent-originated-control-alongside-interfaces).
 [Later startup and explicit repair](#reusing-and-repairing-the-system-bootstrap) are accepted;
 the [v0 Interface has unrestricted administration](#v0-interface-administration). R1 confirms
-replacement for fixed-definition changes. The next ruling, R2, addresses how much execution
-logic authors express in graphs and how much remains inside typed plugins.
+replacement for fixed-definition changes. R2 selects finite dependency graphs, with branching
+and loops inside plugins. R3 next addresses ownership, retirement and ended Conduit identity.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax
@@ -686,5 +693,6 @@ Pool-mediated creation and a configuration change, including rejection and uncer
 The same template mechanism must express an Agent, a search Resource, a filesystem Resource and
 a Conduit's own supported settings without turning every control into an object or imposing one
 provider's queueing behavior. Keep setup graphs, runtime handlers and persistent observations
-separate. Change handlers may already use a typed plugin operation or graph; exact fields and
-the graph language's v0 breadth remain in R2/R6 rather than reopening that choice.
+separate. Change handlers may use a typed plugin operation or graph; R2 fixes the v0 language
+boundary. Exact fields and extension/implementation resolution belong to R6. Draft recovery
+examples within the accepted contracts rather than reopening graph composition or its breadth.

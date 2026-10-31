@@ -564,7 +564,8 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-Use the [single closure agenda](../REVIEW.md#remaining-decision-bundles), especially R2/R3/R6.
+Use the [single closure agenda](../REVIEW.md#remaining-decision-bundles), especially R3/R6, within
+R2's accepted finite-graph execution boundary.
 The following are schema/example drafting tasks, not another sequence of product rulings:
 
 1. Use the accepted four groups and directory/worktree split for concrete type review; do not

@@ -370,9 +370,12 @@ interaction waits and recovery. Templates compose typed plugin operations throug
 referenced graphs; instances manage ongoing runtime state. [Establishment research](ESTABLISHMENT.md)
 provides the failure cases behind that boundary. Shared service authentication is normally
 established through Pool-owned capabilities, independently of each consumer attachment. YAML can encode that contract; a different parser would not supply
-its semantics. General user-authored loops, scripts or replayable programs remain alternatives
-to evaluate against demonstrated composition needs, not implied requirements or permanently
-prohibited extensions. Do not treat a static settings schema as the complete lifecycle contract.
+its semantics. R2 selects finite, acyclic graphs of typed steps for v0, with branching/loops inside
+plugins and supported interaction waits, valid-progress recovery and independent parallel work.
+Authored conditions, iteration and dynamic graph fan-out are deferred extensions. Scripts can
+implement typed plugins without introducing arbitrary shell execution or a general replayable
+programming language into the graph contract. A static settings schema alone is still insufficient
+to describe establishment and supported changes.
 
 Keep the existing small operational guarantees: outcome evidence and idempotent/safe retry where
 supported are runtime concerns, not another document users must maintain. No template snapshots,

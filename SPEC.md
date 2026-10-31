@@ -118,9 +118,14 @@ types do not impose an exhaustive Conduit-wide domain lifecycle enum. Plugins de
 requirements and follow-up behavior. This neither requires MCP between internal Rust components
 nor changes provider-native tool preservation. Exact mappings and client support remain to be verified.
 
-Plugins declare typed inputs/outputs. Graph bindings imply dependencies; explicit prerequisites
-cover ordering without data. Graphs run at instance start, while plugins may verify already
-satisfied work. A graph can request instance-managed service startup before later setup steps.
+Plugins declare typed inputs/outputs. V0 setup and change-handler graphs are finite, acyclic
+dependency graphs. Bindings imply dependencies; explicit prerequisites cover ordering without
+data. Branching, loops and provider-specific procedure stay inside plugins initially; authored
+conditions, iteration and dynamic graph fan-out are deferred. Graphs support interaction waits,
+valid-progress recovery and independent parallel steps where supported. This does not constrain
+the topology of ongoing Conduit connections. Graphs run at instance start, while plugins may
+verify already-satisfied work. A graph can request instance-managed service startup before later
+setup steps.
 Instances manage ongoing processes and availability; setup nodes do not become permanent supervisors.
 
 Instances retain their resolved graph, concrete configuration and applicable change contract
@@ -358,8 +363,9 @@ remaining choices and staged evidence.
 The five families, template/instance forms, Pool ownership and shared service authentication,
 complete construction templates, typed handlers and template-declared change boundaries are
 settled direction, including Pool-owned reusable authentication Resources. R1 confirms replacement
-for fixed-definition changes, including Interface administration. The [six remaining review
-bundles](REVIEW.md#remaining-decision-bundles) cover graph semantics, retirement, connection
-selection/routing, activation, configuration/extension resolution, and communication scope.
+for fixed-definition changes, including Interface administration. R2 selects finite dependency
+graphs with branching/loops inside plugins. The [five remaining review
+bundles](REVIEW.md#remaining-decision-bundles) cover retirement, connection selection/routing,
+activation, configuration/extension resolution, and communication scope.
 Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

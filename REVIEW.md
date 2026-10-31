@@ -35,6 +35,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Delegation | An authorized creator can delegate a subset while establishing another consumer's attachment. Requested YAML grants nothing; filters narrow access; onward delegation is not implied. |
 | Local entries | Pool-local component names resolve to that Pool's Resource instances and stable IDs. They are not registry aliases or a second provisioning ledger. |
 | Default setup | A reusable graph step consumes the entries and bindings and invokes each Resource's setup contract. Custom graphs can reference the same entries for extra ordering/checks. Setup is explicitly requested. |
+| Partial availability | Ready Resources remain usable through authorized Conduits during incomplete Pool setup. Their prerequisites and declared gates still apply; component and Pool status remain distinct. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -42,17 +43,19 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — partial Pool setup and access:** should already-ready Resources normally be usable
-through authorized Conduits while other Resources in their Pool are still waiting or have failed?
-Recommend Resource-level availability with explicit Pool setup status. For example, a ready local
-checkout remains usable while authentication waits for consent and its dependent Linear service
-is not ready. Required connections still block their own consumer's preparation; a running process
-alone does not prove readiness. Declared gates and access restrictions must still hold.
+**Next ruling — reusable access bundles:** should a Conduit template be able to compose other
+Conduit templates, allowing an Agent to declare one `euphony-access` connection that establishes
+repository and Linear connections? Recommend this reusable composition, preserving the component
+Conduits' distinct targets, authority, open/join intent and lifecycle. It need not add a process or
+object family, and supporting Resources remain Pool-owned. Pool readiness does not itself decide
+the composite's preparation or failure policy.
 
-The alternative withholds all Resource access until the Pool's required setup succeeds. Both retain
-successful partial work under the existing recovery rules; neither promises rollback of external
-effects. Exact Pool status fields, aggregate completion criteria and explicit whole-Pool gates
-remain open. This ruling concerns access to ready components, not automatic retries or cleanup.
+The alternative keeps the connections as separate declarations in the Agent template, without a
+composite Conduit instance. Both preserve individual access controls; the choice is whether the
+access bundle is itself a reusable Conduit template/instance or only consumer configuration.
+Exact child attachment ownership, required/optional behavior, status and detach propagation remain
+open. See the [grouped access example](research/CONDUITS.md#can-there-be-one-euphony-access-conduit)
+before fixing YAML or treating a bundle as one undifferentiated connection.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -94,7 +97,7 @@ Pool without deciding every grouping feature first.
 | --- | --- |
 | Type-aware grouping | Decide which inventory/compatibility views a Pool derives from its owned Resources. Labels/selectors may select its Resources or templates where appropriate; matching foreign Resources does not confer ownership. |
 | Establishment declarations | Local Resource entries and a reusable default composition step are accepted. Define typed results and custom graph integration; prefer instance identity and ordinary operation outcomes over a second provisioning-plan ledger. Earlier persistent plan-entry/binding proposals are parked; missing-target/replacement rules were not settled. |
-| Partial establishment | Templates carry setup choices; graph/lifecycle contracts coordinate required work and partial results. Define Pool readiness and later Resource additions without conflating registry atomicity with rollback of external effects. |
+| Partial establishment | Ready Resources remain usable during incomplete Pool setup, subject to their prerequisites and gates. Define aggregate status/completion and later Resource additions without conflating registry atomicity with rollback of external effects. |
 | Backing and retirement | Two Pools may intentionally attach separate Resource instances to the same external backing. Define conflicts, cleanup authority, ownership transfer if supported, and retirement with active consumers or retained data. An unowned registration is not permission to delete backing data. |
 | Durable content | Map task/personal records and conversation stores to Pool-owned Resources. Contexts are not alternative Resource owners; each message, cursor or file need not become a top-level Resource. Conduit-supporting durable Resources still need an owner. |
 | Shared access lifecycle | Define how Pool setup presents login/renewal once for a shared capability, how partial readiness is shown, and how retirement affects its users. Cross-Pool access must preserve the credential owner's authority and provider restrictions. |

@@ -453,6 +453,15 @@ Two candidates are a composite Conduit template referencing others, or a named s
 connection choices in Agent configuration. Both fit the five-family model; neither is yet
 selected. Opening and joining constituents must remain explicit.
 
+**Current recommendation for review:** support reusable composite Conduit templates. An Agent
+could declare `euphony-access` once; its instance would compose repository and Linear Conduits
+without combining their identities, permissions or provider state. A custom setup graph can
+establish the components, while ongoing attachment/lifecycle state belongs to the instances.
+This need not add a daemon or transfer ownership of any supporting Resource out of its Pool.
+The alternative puts separate connection declarations on the Agent and creates no composite
+Conduit instance. Exact child ownership, required/optional policy and detach propagation remain
+open; selecting the composition mechanism would not settle those details.
+
 Prefer independent typed components and references over one giant provider-specific payload:
 
 ```text

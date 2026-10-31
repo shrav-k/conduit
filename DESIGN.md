@@ -866,7 +866,15 @@ setup contracts and exposes the results. Custom graphs can reference the same en
 ordering or checks; authors need not restate Resource configuration or hand-wire every component's
 setup. Required dependencies govern preparation, not YAML mapping order. This preserves each
 Resource's runtime ownership, authorization and recovery contract. Exact operation names, typed
-results and graph syntax remain open; partial Pool readiness is a separate decision.
+results and graph syntax remain open.
+
+**Accepted partial availability:** ready Resources are normally usable through authorized Conduits
+while other components of their Pool are waiting or have failed. Each Resource's own prerequisites
+and any declared gates still apply. A ready checkout can be used while shared authentication waits
+for consent and Linear remains unavailable. Report the Pool's incomplete setup and component
+states; do not infer readiness merely from a running process. Successful partial work remains
+retained under the existing recovery rules. Aggregate status/completion fields and explicit
+whole-Pool gate contracts remain open; this adds no automatic retry or cleanup behavior.
 
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one

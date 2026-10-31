@@ -482,20 +482,23 @@ Resource uses its authorized connection to the authentication Resource, which ma
 login. The Agent's model subscription stays independent. Detaching the Agent preserves both
 Pool-owned Resources and the login for other permitted consumers.
 
-**Review now:** whether ready Resources are normally usable while their Pool setup remains incomplete.
-Extend this example with a local checkout that has no dependency on the Linear login:
+**Accepted partial availability:** ready Resources remain usable while their Pool setup is
+incomplete. Extend this example with a local checkout that has no dependency on the Linear login:
 
-| Resource | Setup observation | Proposed availability |
+| Resource | Setup observation | Availability |
 | --- | --- | --- |
 | Checkout | Ready | Available through authorized Conduits. |
 | Authentication | Waiting for user consent | Required authenticated capability is not ready. |
 | Linear service | Waiting on authentication | Its dependent service access is unavailable. |
 
-Recommend allowing the ready checkout to be used while reporting the Pool's incomplete setup.
+Allow the ready checkout to be used while reporting the Pool's incomplete setup.
 This honors each consumer's required dependencies and any declared gates; it does not treat a
-running process as a fully prepared Resource. The alternative gates all Resource access on the
-Pool's required setup succeeding. Both preserve partial work under the existing recovery rules.
+running process as a fully prepared Resource. Preserve partial work under the existing recovery rules.
 Exact aggregate status/completion fields and explicit whole-Pool gates remain open.
+
+**Review next:** whether [one reusable access Conduit](CONDUITS.md#can-there-be-one-euphony-access-conduit)
+should compose these distinct connections for a consumer. Ready Pool Resources do not themselves
+settle a composite Conduit's required components, status or detach behavior.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

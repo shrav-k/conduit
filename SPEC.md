@@ -145,6 +145,11 @@ the entries and bindings and establishes Resources through their own setup contr
 can reference the same entries for additional ordering or checks. This runs only during explicitly
 requested setup. Exact field names, plugin contracts and graph syntax remain open.
 
+During partial Pool setup, ready Resources remain usable through authorized Conduits while other
+components wait or fail. Each Resource's prerequisites and declared gates still apply; report the
+Pool's incomplete setup without withholding unrelated ready capabilities. This preserves partial
+work under the existing recovery rules and does not equate a running process with readiness.
+
 Separate these contracts:
 
 - **Provider identity:** what the service authorizes, centrally managed for the capability.

@@ -11,17 +11,16 @@ replacement for Session. [Plugin contracts](research/CONSTRUCTION.md#plugin-cont
 now own typed inputs/outputs, setup publication timing and per-output validity/lifetime; nodes bind
 values, and those bindings establish dependencies alongside explicit prerequisites. Graphs establish
 instances; instances manage ongoing processes, connections and availability. Setup nodes do not
-remain live to supervise the capabilities they establish.
+remain live to supervise the capabilities they establish. Templates declare typed ongoing
+runtime behavior, using type-provided defaults; setup graphs supply prepared inputs.
 
-Next use the [MCP setup-to-runtime walkthrough](research/CONSTRUCTION.md#mcp-setup-and-instance-runtime-walkthrough) to define
-what a template declares about ongoing runtime, how setup supplies its results/processes, and how
-the instance handles later disconnection. Compare explicit template runtime configuration with
-graph-produced or type-fixed behavior.
-Also review instance management from process start, avoiding a fragile final ownership transfer.
-These are proposals; status fields and recovery policies remain open. Caching/build optimizations
-remain implementation concerns. The checkpoint and
-detailed agenda below preserve the pre-inquiry discussion for comparison; no additional runtime
-family is selected.
+Next review [runtime startup during setup](research/CONSTRUCTION.md#avoiding-a-fragile-process-handoff):
+can the graph request an instance-managed database start, then run migrations before setup
+finishes? Compare that with finishing the graph before runtime startup. Startup coordination,
+status fields and recovery policies remain open. The MCP walkthrough remains the connection
+example. Caching/build optimizations remain implementation concerns. The checkpoint and detailed
+agenda below preserve the pre-inquiry discussion for comparison; no additional runtime family
+is selected.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive

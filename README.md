@@ -13,8 +13,10 @@ those contracts. Output bindings establish dependencies; explicit prerequisites 
 without data transfer. Contracts can declare outputs usable during setup or upon successful
 completion, with validity/lifetime rules declared per output. **Graphs establish instances;
 instances manage ongoing processes, connections and availability.** Setup plugins can finish
-while the established instance continues. Runtime configuration, setup handoff and recovery
-details remain under review; plugin implementations can still be local scripts or processes.
+while the established instance continues. Templates declare typed ongoing runtime behavior,
+using type-provided defaults; graphs supply prepared inputs. Exact runtime fields, startup
+coordination and recovery details remain under review. Plugin implementations can still be
+local scripts or processes.
 
 | Family | Instance represents |
 | --- | --- |

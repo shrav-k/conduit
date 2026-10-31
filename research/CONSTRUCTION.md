@@ -131,10 +131,11 @@ or require the completed graph to become a monitoring loop. Setup completion the
 from continuing instance readiness. Early output publication remains useful within setup;
 long-lived processes and handles must be managed by the instance beyond it.
 
-**Still open:** how the template specifies ongoing runtime behavior and how setup supplies its
-prepared values/processes. The [MCP walkthrough](#mcp-setup-and-instance-runtime-walkthrough)
-compares the options and proposes instance management from the moment a process is started,
-avoiding a separate ownership transfer at graph completion. Monitoring, reconnect, restart,
+**Accepted authoring responsibility:** templates declare typed ongoing runtime behavior, using
+defaults supplied by their type; setup graphs supply prepared inputs. The
+[MCP walkthrough](#mcp-setup-and-instance-runtime-walkthrough) illustrates this boundary.
+Exact runtime fields and startup coordination remain open, including the proposed instance
+management from the moment a process is started during setup. Monitoring, reconnect, restart,
 credential refresh and cleanup need type-specific contracts; this boundary does not select
 automatic recovery or rerunning the entire graph. Plugins may be invoked for a later explicit
 lifecycle operation without remaining live between operations.
@@ -267,9 +268,9 @@ instance and observing its results remain different operations.
 
 ## MCP setup and instance runtime walkthrough
 
-**Proposal for discussion, not an accepted runtime schema.** The accepted boundary is that
-graphs perform setup and instances manage ongoing behavior. The choices below define how to
-express and implement that boundary without a second operation-request recipe.
+Templates declaring typed runtime behavior and graphs supplying prepared inputs are accepted.
+Graphs perform setup; instances manage ongoing behavior. The YAML and startup/recovery mechanics
+below remain proposals, not an accepted runtime schema or a second operation-request recipe.
 
 ### Objects in the example
 
@@ -294,18 +295,15 @@ handshake graph. Sources checked 2026-10-31; deployed provider compatibility rem
 
 ### Where ongoing behavior is declared
 
-All three options retain instance ownership; they differ in how runtime intent is supplied.
+**Accepted:** the template declares typed ongoing runtime behavior; the setup graph supplies
+prepared inputs, such as an authentication binding. This keeps intended behavior inspectable
+before effects while allowing setup to resolve values only known at execution time. Endpoint
+and account settings should not be duplicated across configuration, graph and runtime declarations.
 
-| Option | Example | Tradeoff |
-| --- | --- | --- |
-| Typed runtime configuration in the template; graph supplies prepared inputs — recommended | Declare an MCP runtime contract and its supported policies; bind its authentication input to a setup result. | Behavior is inspectable before effects. Type-provided defaults can keep ordinary templates short; avoid repeating endpoint/account settings in both sections. |
-| Setup graph produces the runtime declaration | A node returns the complete client/process specification for the instance to manage. | Flexible when setup discovers structure, but what will run is harder to inspect in advance and more policy is hidden in plugin output. |
-| Ongoing behavior is fixed by the object type | An MCP type always constructs its built-in client after setup. | Small configuration surface, but customization or alternative implementations may require changing the type/code rather than selecting supported configuration. |
-
-The recommendation can use defaults supplied by the selected type. It need not require every
-author to name another implementation or repeat a standard policy. Resolved inspection would
-show effective runtime intent. A runtime contract describes behavior the instance's code
-supports; it is not another registry family or separately authored runtime instance.
+Defaults supplied by the selected type keep ordinary templates short. Authors need not name
+another implementation or repeat a standard policy when the type already supplies it. Resolved
+inspection shows effective runtime intent. A runtime contract describes behavior the instance's
+code supports; it is not another registry family or separately authored runtime instance.
 Setup plugins and runtime implementations may share code or a distribution package. Their
 different responsibilities do not require two incompatible plugin ecosystems; packaging/ABI
 remain open.
@@ -315,7 +313,7 @@ which describes runtime commands, health checks and restart policies alongside r
 definitions. Our inference is to make ongoing behavior explicit while keeping its mechanism in
 code. Conduit's graph still runs at instance start, rather than Docker's image-build phase.
 
-Partial illustrative YAML for the first option follows. Field names, runtime identifiers and
+Partial illustrative YAML for this accepted boundary follows. Field names, runtime identifiers and
 plugin contracts are proposed, not implemented. Endpoint/account choices occur once; the graph
 and runtime refer to them. The consumer is supplied by the enclosing Agent's declaration as
 already agreed. Filters, full authorization and error contracts are omitted from this sketch.
@@ -362,6 +360,24 @@ This is logical ownership, not a requirement to reparent OS processes, start one
 instance or create another Resource for every helper. A graph may prepare runtime inputs only;
 where setup needs a live service for later validation/migration, an explicit managed-start step
 can start it before the remaining graph completes. Exact start/wait bindings remain open.
+
+The next ruling is whether the graph may request that managed start before setup completes.
+For a database Resource, the illustrative sequence is:
+
+```text
+prepare database files → request instance-managed service start
+  → wait until usable → apply migrations → finish setup
+```
+
+The instance would manage the service from startup, including while migrations run. A failed
+migration would not erase that ownership or imply that setup succeeded. Retrying, retaining or
+stopping the service would follow separately selected recovery/cleanup rules. Creating or
+attaching the Resource still goes through its Pool; this adds no new runtime object family.
+
+The alternative is a strict setup-then-runtime sequence. It avoids runtime startup inside the
+graph, but migrations against the service would need a separate post-start phase. Recommend
+allowing the graph to request managed startup, keeping required ordering in the existing graph.
+This is a proposal; it does not authorize implicit restarts or repeat creation effects.
 
 The MCP scenario then proceeds as follows:
 
@@ -450,22 +466,16 @@ presented as the current model.
 
 ## Next discussion
 
-Use the [MCP walkthrough](#mcp-setup-and-instance-runtime-walkthrough) to settle runtime
-configuration and setup behavior before selecting field names:
+Templates declare typed ongoing runtime behavior with type-provided defaults; graphs supply
+prepared inputs. Next use the [database example](#avoiding-a-fragile-process-handoff) to decide
+whether a graph may request instance-managed runtime startup before its remaining setup steps
+finish. Exact fields and start/wait bindings remain open.
 
-1. Choose whether the template declares typed ongoing behavior with setup-result bindings,
-   the graph produces that declaration, or the type fixes behavior implicitly. The first is
-   recommended, using type-provided defaults to avoid repeated configuration.
-2. Review management from the moment setup starts a helper, including a failure before setup
-   completes. Avoid an untracked process followed by a mandatory final ownership-transfer step.
-3. Select supported responses to disconnection and expired authentication, keeping service
-   recovery separate from starting a replacement model execution or replaying an uncertain write.
+Then examine setup failure and the [MCP connection](#mcp-setup-and-instance-runtime-walkthrough)
+losing access after setup. Select supported recovery behavior without conflating transport
+recovery, credential refresh, replacement model execution and uncertain-write replay.
 
-These are proposals. Graphs performing setup and instances managing ongoing behavior are already
-accepted, as are plugin-owned typed inputs/outputs, dependency wiring, setup output publication
-and per-output validity/lifetime. Exact runtime schemas, packaging, start/wait bindings and
+Apply the same contract to two Agent instances using different accounts and to a local directory.
+Preserve repeated template use, instance-private state, Pool ownership and current authority.
+Agent remains the proposed replacement for Session. Runtime packaging, status syntax and
 recovery policies remain open.
-
-Then apply the same contract to two Agent instances using different accounts, followed by a
-local directory and a managed database. Preserve repeated template use, instance-private state,
-Pool ownership and current authority. Agent remains the proposed replacement for Session.

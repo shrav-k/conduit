@@ -65,8 +65,18 @@ establishes this initial set before its operations can be invoked. The managemen
 core template/registry management and instance-creation capabilities through the same five-family
 model. Resource creation still goes through its owning Pool. No application Pool, Agent or external
 service login is required first; this does not introduce a second registry or require a new daemon.
-Built-in definitions, recovery/protection, exact management operations and frontend transport/lifecycle
-remain open.
+Built-in definitions, exact management operations and frontend transport/lifecycle remain open.
+
+**Accepted later startup:** reuse the registered system Pool, management Resource and default
+Interface with their existing identities, saved settings and grants, subject to current access
+checks. Missing or inconsistent expected components are reported for explicitly requested repair;
+ordinary startup does not recreate them from defaults or silently retarget established bindings.
+Preserve available records and backing data. An unavailable registry or service is not evidence
+of deletion or a fresh installation. Supported reconnection to the same targets is distinct from
+replacing registered objects. Repair is a deliberately requested operation, not an additional
+confirmation on every launch. Its entry point, authority verification, exact steps, system
+protection and partial initial-setup recovery remain open; this ruling does not preserve ended
+flows or automatically restart Agent work.
 
 **Accepted initial authority:** v0 establishes one local registry owner using the initializing
 OS-user context, without separate Conduit login. The default Interface acts for that owner;

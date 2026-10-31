@@ -44,6 +44,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
 | Definition boundary | Setup graphs and control definitions are fixed per instance in v0. Change them through a revised definition and new instance; declared settings and dynamic connections/catalogs remain supported. In-place definition upgrades are deferred. |
 | Bootstrap and authority | Initial local startup seeds a system Pool, its management Resource, the default Interface and their management Conduit. One local owner is established from the initializing OS-user context; Agents receive explicit delegated Conduit access. Credential handling/enforcement remain separate. |
+| Later startup | Reuse registered system objects and current settings/grants. Missing or inconsistent components require explicit repair; no silent reseeding or retargeting. Supported reconnection remains available, and unavailability does not establish deletion. |
 | Actor control | Authorized frontends share their reusable Interface's direct Agent control; delegated Agents can also command the target through their own Conduits without a handoff. Caller/attachment attribution, current authority, state checks and target coordination apply, with no automatic actor priority. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
@@ -64,17 +65,20 @@ The [local-owner authority model](research/CONSTRUCTION.md#initial-management-au
 are accepted, along with [shared Interface control](research/CONSTRUCTION.md#direct-agent-control-from-shared-interfaces)
 and [delegated Agent commands](research/CONSTRUCTION.md#agent-originated-control-alongside-interfaces).
 
-**Next ruling — later startup and system repair:** should subsequent startup reuse the registered
-system Pool, management Resource and default Interface with their identities/settings/authority,
-requiring explicit repair if an expected component is missing or inconsistent? Recommend this so
-ordinary startup cannot silently replace those objects or restore default permissions. Reconnecting
-to the same targets through supported Conduit lifecycle operations is distinct from replacing them.
+[Startup reuse and explicit repair](research/CONSTRUCTION.md#reusing-and-repairing-the-system-bootstrap)
+are accepted. Exact repair mechanics and partial initial-setup recovery remain open.
 
-The alternative automatically recreates confirmed-missing system components from defaults; unknown
-availability still does not prove deletion. Explicit repair is an authorized operation, not a new
-confirmation for every launch. It would preserve backing data and report replacements; exact repair
-steps, initial partial-setup recovery and Conduit reopening remain to be defined. See the
-[restart/repair example](research/CONSTRUCTION.md#reusing-and-repairing-the-system-bootstrap).
+**Next ruling — reaching repair when management is broken:** should the local owner have a narrow
+recovery entry point that works without the normal Interface/management Conduit? Recommend using
+the bootstrap runtime to inspect and explicitly repair the system management path, reusing checked
+registry/lifecycle operations and recording outcomes. This would be an explicit exception for
+bootstrap repair, not a second general management API or an Agent's implicit permission.
+
+The alternative first establishes a temporary recovery Interface and Conduit, keeping repair
+behind the normal object path but requiring that path to be constructible. Neither approach
+silently resets grants, treats an unreadable registry as empty, or authorizes backing-data deletion.
+Exact owner recognition and repair actions remain separate. See the
+[recovery entry example](research/CONSTRUCTION.md#reaching-repair-without-the-management-path).
 
 Then review these connected contracts, one bundle at a time:
 

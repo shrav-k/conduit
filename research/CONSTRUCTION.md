@@ -116,7 +116,7 @@ management operations, process layout and transports remain open. No new object 
 
 ### Reusing and repairing the system bootstrap
 
-**Proposal for the next ruling:** later startup reuses the registered system Pool, management
+**Accepted:** later startup reuses the registered system Pool, management
 Resource and default Interface, retaining their identities, saved settings and recorded authority
 while applying current access checks. It does not repeat initial seeding or silently substitute
 bundled defaults. If an expected component is missing or inconsistent, preserve available
@@ -128,12 +128,35 @@ contract. A deleted management Resource is different: its prior ID is missing, s
 the gap instead of substituting a new Resource with the same name. An unreadable registry is not
 evidence of a fresh installation.
 
-The alternative recreates confirmed-missing system components automatically from defaults.
-Recommend explicit repair to keep ordinary startup from changing established identities or grants.
 Repair means a deliberately requested operation by an authorized actor, not mandatory human
 confirmation on each launch. Exact repair authority/steps, partial initial setup recovery and
 Conduit reopening remain open. A retained object does not imply a live process or socket; this
-proposal neither keeps ended flows alive nor starts replacement Agent work or application setup.
+rule neither keeps ended flows alive nor starts replacement Agent work or application setup.
+
+### Reaching repair without the management path
+
+**Proposal for the next ruling:** provide the local owner a narrow recovery entry point in the
+bootstrap runtime, available when the normal Interface or management Conduit cannot be used.
+It inspects the system management path and performs explicitly requested repair using the same
+checked registry/lifecycle operations and outcome recording where applicable. Recovery does not
+depend on first repairing the connection needed to request it.
+
+For example, if the management Resource registration is confirmed missing, ordinary startup
+reports that gap. The owner can enter recovery to inspect surviving objects and deliberately
+request the supported repair. Any replacement has a new identity; affected bindings need explicit
+reconciliation. A missing registration does not authorize purging its backing data, restoring
+default grants, or rewriting the fixed definition of a surviving instance. If registry state
+cannot be read reliably, recovery reports that uncertainty instead of treating it as empty.
+
+This would extend the initial bootstrap exception only to repairing system management access.
+Application operations continue through Interfaces/Agents and authorized Conduits. Exact owner
+recognition, repair actions and credential mechanisms remain open; running as the same OS user
+does not by itself establish an Agent's managed recovery authority.
+
+The alternative constructs a temporary recovery Interface and Conduit before repairs can run.
+That retains the normal invocation path but adds prerequisites to recovery. The proposed direct
+entry is a shared runtime capability a local frontend can expose, not frontend-specific repair
+logic, another object family, or an always-running emergency service.
 
 ### Initial management authority
 
@@ -625,8 +648,9 @@ is settled for v0, alongside typed filters and access-path composition.
 [initial management authority](#initial-management-authority) are accepted, as are
 [reusable frontend attachments](#interfaces-and-frontend-attachments) and
 [shared Interface control](#direct-agent-control-from-shared-interfaces) and
-[delegated Agent control](#agent-originated-control-alongside-interfaces). The next ruling concerns
-[later startup and system repair](#reusing-and-repairing-the-system-bootstrap).
+[delegated Agent control](#agent-originated-control-alongside-interfaces).
+[Later startup and explicit repair](#reusing-and-repairing-the-system-bootstrap) are accepted;
+the next ruling concerns [reaching repair without the management path](#reaching-repair-without-the-management-path).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

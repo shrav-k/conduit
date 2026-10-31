@@ -42,6 +42,12 @@ and a management Conduit connecting them. A small runtime bootstrap establishes 
 subsequent template/registry management and instance creation use that managed path. No application
 Pool or external login is required first. Resource creation still goes through its owning Pool.
 
+Later startup reuses the registered system Pool, management Resource and default Interface,
+preserving their identities, settings and grants under current access checks. Missing or
+inconsistent expected components require explicit repair; startup does not silently recreate
+them from defaults. Reconnecting to the same permitted targets remains supported. Unavailability
+does not establish deletion or a fresh installation; backing data remains preserved.
+
 V0 establishes one local registry owner from the initializing OS-user context, without a separate
 Conduit login. The default Interface acts for that owner. Agents receive explicit delegated access
 through their own Conduits; sharing the owner's OS account does not itself constitute that grant.
@@ -74,8 +80,8 @@ actor has automatic priority. Ordinary message delivery and wake behavior remain
 
 Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
 interaction principle. Broad Interface access does not manufacture unsupported provider controls.
-Owner/client binding, bootstrap recovery/protection, frontend transport and control across
-distinct Interfaces remain open.
+Owner/client binding, the repair entry point and system protection, frontend transport and control
+across distinct Interfaces remain open.
 
 ## Templates are complete construction and change contracts
 

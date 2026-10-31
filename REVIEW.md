@@ -36,6 +36,9 @@ outcomes rather than a long sequence of individual field rulings.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
   configured service. Report readiness gaps/unknowns and block affected operations; registration
   does not imply activation or relax authority, validation or Pool ownership.
+- Pool creation registers identity, configuration and its Resource plan; provisioning is
+  requested explicitly. A frontend may combine both intents in one explicit action with
+  separate registration and provisioning outcomes.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -59,10 +62,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **Pool creation and Resource provisioning**. Configuration validity and runtime
-readiness are separate; decide whether creating a Pool only establishes its registered owner
-and spec or also requests execution of its Resource plan. Then resolve provisioning outcomes,
-ownership and instance lifecycle. Remaining field-value rules stay on the agenda below.
+Continue with **Resource-plan identity and repeated provisioning**. Pool registration and
+provisioning are separate intents; decide how plan entries relate to created Resources when
+a plan runs again. Then resolve partial outcomes, ownership and instance lifecycle. Remaining
+field-value rules stay on the agenda below.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -89,7 +92,8 @@ and direct creation from exported configuration with a distinct name.
 
 | Question | Example and considerations |
 | --- | --- |
-| What does creating a Pool instance do? | Does it only establish the ownership boundary and spec, or also request the instance's declared Resource plan? Consider an explicit combined frontend action while keeping registration/provisioning outcomes distinct. Define required/optional items, dependency order, partial success and retry. No implicit background controller is assumed. |
+| What does repeating a Resource plan mean? | Decide whether named plan entries retain bindings to created Resource IDs or each new run creates a fresh set. Distinguish retries from deliberate additional creation, changed/deleted entries, missing Resources and template edits. No automatic replacement or background reconciliation is implied. |
+| How does a plan handle partial outcomes? | Define required/optional items, dependencies, independent work, success/blocked/unknown reporting and safe retry. Registration remains distinct from provisioning, including in a combined frontend action. |
 | How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |
 | How do separate instances describe shared backing? | Two Pools attach to the same Linear workspace or local directory; another pair provisions separate worktrees. Record the distinction, management/deletion authority, credential boundaries and conflicts on the actual backing target across registrations. |

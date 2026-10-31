@@ -65,10 +65,10 @@ No automatic purge follows from a missing Pool reference.
 1. **Create a Session.** Use complete instance YAML with an explicit unique name, or materialize
    one template and creation choices. Later edits target the instance; current access limits
    are represented explicitly. V0 defers Session-template inheritance.
-2. **Establish Pools and their Resources.** Pool templates describe intended provisioning;
-   explicit operations create Pool instances and create/attach their Resource instances.
-   Existing instances retain resolved settings until explicit reconfiguration. The operation
-   sequence and partial-failure behavior remain open. No background reconciler is implied.
+2. **Register Pools, then request provisioning.** Pool creation records identity, configuration
+   and the declared Resource plan. Explicit provisioning creates or attaches the planned
+   Resources. A frontend may combine both in one explicit action with separate outcomes.
+   Repeat-run and partial-failure details remain open; no background reconciler is implied.
 3. **Open or join a connection explicitly.** Opening uses a Conduit template or complete
    instance configuration; joining targets an existing connection. Reusing a template name
    does not choose between these operations or imply shared clients, credentials or private context.
@@ -177,6 +177,7 @@ defines the remaining selections and staged evidence.
 | --- | --- |
 | Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
 | Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
+| Pool registration and provisioning | Registering a Pool does not execute its Resource plan. Explicit provisioning has its own outcome, including when a frontend combines registration and provisioning. |
 | One template, several Pools | Pools create distinct Resource instances; each has exactly one owner. A foreign Resource cannot become a local member through a label or reference. |
 | Shared versus independent backing | Both explicit attachment to shared backing and provisioning independent backing are expressible; target identity and actual enforcement are reported. |
 | Connection support | Opening a connection requiring storage provisions it through an identified Pool. Joining reuses the intended connection without creating a duplicate conversation. |

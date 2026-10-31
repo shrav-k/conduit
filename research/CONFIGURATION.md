@@ -349,7 +349,7 @@ and live dependencies are explicit.
 Resource-service authentication is separate from model-account selection. A native agent's
 login profile is not a Session template or Session history store.
 
-Templates choose how permitted Resources are prepared: advertise skills, register native
+Session specs choose how permitted Resources are prepared: advertise skills, register native
 MCP configuration, prepare a workspace or load relevant instructions. Operations need ordering,
 compatibility, required/optional behavior and cleanup rules. A Resource's presence does not
 itself place content in model context.
@@ -359,8 +359,10 @@ itself place content in model context.
 A Resource template describes supported creation/attachment behavior. Only a Pool creates
 its Resource instances; registering a template does not deploy anything. Pool templates can
 select Resource templates and defaults, while Pool instances provide the ownership boundary
-for actual provisioning. Ownership assignment, partial provisioning, failures and retries need
-one explicit contract so an instance cannot be published as usable without an owner.
+for actual provisioning. Pool creation registers identity, configuration and its Resource plan;
+executing the plan requires an explicit provisioning request. Frontends may combine registration
+and provisioning in one explicit action with separate outcomes. Repeated plans, ownership
+assignment, partial provisioning, failures and retries still need concrete contracts.
 
 Reuse templates across Pools, not membership of one Resource instance. Contracts distinguish
 new backing data from attachment to existing data. Two local registrations can refer to the

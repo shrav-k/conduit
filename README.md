@@ -17,6 +17,10 @@ to the same external data or create independent backing data, explicitly accordi
 contract. Connections use Resources through their owning Pools, including any storage they
 need for communication. They can request provisioning through a Pool but do not own Resources.
 
+Creating a Pool registers its identity, configuration and Resource plan. Provisioning is
+requested explicitly to create or attach the planned Resources. A frontend may combine both
+in one explicit action while reporting their outcomes separately.
+
 Opening a new connection and joining an existing connection are explicit, distinct intents.
 Sharing a connection does not implicitly share credentials or private context.
 Session templates supply the activation behavior previously called a Profile; instances retain

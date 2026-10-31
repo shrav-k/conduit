@@ -611,6 +611,14 @@ instance creates/attaches and exclusively owns its Resource instances. Pools rem
 resource-supply boundary for Sessions and connections, including skills, tools, memory and
 connection support such as conversation storage. A Pool need not run a process.
 
+Creating a Pool registers its identity and configuration, including any declared Resource
+plan. Registration alone does not execute that plan or create its planned Resource instances.
+Provisioning must be requested explicitly to create or attach the planned Resources through
+their owning Pool. A frontend may offer registration and provisioning as one explicit action,
+while preserving separate outcomes and reporting readiness. A successful registration does
+not imply successful provisioning. Exact operation syntax, repeated-run behavior and partial
+provisioning rules remain open; no background reconciler is implied.
+
 Resource templates can be selected by explicit references and labels where supported.
 Selection among an existing Pool's owned instances is another operation. Exact selector
 syntax, target domains and refresh rules remain open; neither labels nor references can
@@ -623,9 +631,8 @@ establish access. Pool ownership, current access, Session activation and native 
 management have distinct meanings.
 
 Creating a Resource for a connection must identify its owning Pool; the connection requests
-provisioning through that Pool. Which explicit operation establishes a Pool, starts its
-Resource plan, retries partial provisioning or resolves dynamic support requirements remains
-open. A template registration alone does not execute a provisioning plan.
+provisioning through that Pool. How provisioning retries partial work or resolves dynamic
+support requirements remains open. A template registration alone does not execute a plan.
 
 When launching against a Pool, its access defaults apply only if no explicit selection
 is supplied. Explicit selection replaces those defaults; extending them requires an

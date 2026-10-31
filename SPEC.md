@@ -47,6 +47,11 @@ Conduit login. The default Interface acts for that owner. Agents receive explici
 through their own Conduits; sharing the owner's OS account does not itself constitute that grant.
 Credential handling and native-versus-isolated enforcement remain separate from this authority model.
 
+The default Interface is a reusable instance with identifiable CLI, terminal and test-client
+attachments, including multiple clients at once. Separate Interface instances remain available
+for different configurations. Attachment grants no additional authority and does not override
+target-specific exclusive-control rules or require an always-running process.
+
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.
 2. **Compose Pools.** Select Resource templates, establishment settings and intended shared service
@@ -61,7 +66,8 @@ Credential handling and native-versus-isolated enforcement remain separate from 
 
 Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
 interaction principle. Broad Interface access does not manufacture unsupported provider controls.
-Owner/client binding, bootstrap recovery/protection and precise frontend attachment remain open.
+Owner/client binding, bootstrap recovery/protection, frontend transport and target-control mapping
+remain open.
 
 ## Templates are complete construction and change contracts
 

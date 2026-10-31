@@ -51,13 +51,20 @@ provider effects. The Interface identifies the endpoint; the acting human identi
 CLI, terminal UI and test clients should exercise the same contract. The initial Interface's broad
 scope need not be hard-coded into every future Interface.
 
+**Accepted frontend relationship:** the default Interface is a reusable logical instance. CLI,
+terminal and test clients attach to it, with multiple clients supported at once. Each attachment
+remains identifiable and subject to current caller authority. Another Interface can be instantiated
+for a different configuration or separately selected endpoint. Opening a frontend need not create
+an Interface object; sharing an Interface neither grants authority nor overrides the target's
+exclusive-control rules. This does not require an always-running process.
+
 **Accepted bootstrap:** initial local startup seeds a minimal system Pool owning a management
 Resource, a default Interface and a management Conduit connecting them. A small runtime bootstrap
 establishes this initial set before its operations can be invoked. The management Resource exposes
 core template/registry management and instance-creation capabilities through the same five-family
 model. Resource creation still goes through its owning Pool. No application Pool, Agent or external
 service login is required first; this does not introduce a second registry or require a new daemon.
-Built-in definitions, recovery/protection, exact management operations and frontend attachment
+Built-in definitions, recovery/protection, exact management operations and frontend transport/lifecycle
 remain open.
 
 **Accepted initial authority:** v0 establishes one local registry owner using the initializing
@@ -630,8 +637,9 @@ components may be reused, but Pi's agent loop and Pi Durable are research refere
 A memory backend or frontend change must not replace Conduit's execution loop.
 
 The existing default is one controlling frontend for direct input, cancellation and settings,
-with other frontends observing. Its mapping to Interface attachments and Agent-originated control
-now needs review; it does not create a path around Conduits. Moving
+with other frontends observing. Multiple clients may now attach to one reusable Interface;
+the concrete controller identity and its relationship to Agent-originated control remain in review.
+This creates no path around Conduits. Moving
 control to another frontend requires no extra confirmation. Disconnecting detaches and
 preserves supported ongoing execution. Keep persisted history, current model context,
 frontend state and shared Resource content distinct.

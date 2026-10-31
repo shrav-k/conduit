@@ -44,6 +44,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
 | Definition boundary | Setup graphs and control definitions are fixed per instance in v0. Change them through a revised definition and new instance; declared settings and dynamic connections/catalogs remain supported. In-place definition upgrades are deferred. |
 | Bootstrap and authority | Initial local startup seeds a system Pool, its management Resource, the default Interface and their management Conduit. One local owner is established from the initializing OS-user context; Agents receive explicit delegated Conduit access. Credential handling/enforcement remain separate. |
+| Frontend attachments | CLI, terminal and test clients can concurrently attach to a reusable default Interface. Attachments remain identifiable and use current caller authority; separate Interface instances remain possible. Target-specific control rules still apply. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -58,20 +59,22 @@ storage fields, revision granularity and native-client support remain open.
 The [definition boundary](research/CONFIGURATION.md#instance-definitions-and-permitted-settings)
 and [system bootstrap](research/CONSTRUCTION.md#bootstrap-management-access) are accepted for v0.
 
-The [local-owner authority model](research/CONSTRUCTION.md#initial-management-authority) is
-accepted. Continue with how frontends use the seeded Interface.
+The [local-owner authority model](research/CONSTRUCTION.md#initial-management-authority) and
+[reusable frontend attachments](research/CONSTRUCTION.md#interfaces-and-frontend-attachments)
+are accepted. The existing Agent rule remains one controlling frontend for direct user input,
+cancellation and settings, while other authorized frontends observe.
 
-**Next ruling — Interface identity and frontend attachments:** should the default Interface be a
-reusable instance that CLI, terminal and test clients attach to, with multiple clients supported?
-Recommend this so a CLI invocation or reopened terminal does not require another Interface object.
-Each attachment remains identifiable and uses current caller authority. Separate Interface
-instances remain available for different definitions or explicitly separate access endpoints.
+**Next ruling — mapping direct Agent control:** should that control belong to an individual
+frontend attachment rather than its shared Interface? Recommend this to preserve the existing
+rule: a terminal and CLI can share an Interface without both becoming controllers of the same
+Agent. An authorized transfer changes which attachment controls that Agent without replacing the
+Interface or adding a confirmation step.
 
-The alternative creates a fresh Interface instance for each frontend run. This choice concerns
-logical identity, not a mandatory always-running process or new credentials for every command.
-It does not grant authority on attachment or change target-specific exclusive-control rules,
-including the existing Agent frontend-control default. Last-client behavior and transport details
-remain open. See the [frontend example](research/CONSTRUCTION.md#interfaces-and-frontend-attachments).
+The alternative deliberately revises the earlier rule: control belongs to the Interface and its
+authorized frontend attachments can all issue direct Agent commands. Both retain caller authority,
+Conduit routing and target operation checks. This concerns direct frontend control, not a registry-
+wide lock; Agent-originated commands, precise transfer/loss handling and transport remain separate.
+See the [control example](research/CONSTRUCTION.md#direct-agent-control-from-shared-interfaces).
 
 Then review these connected contracts, one bundle at a time:
 

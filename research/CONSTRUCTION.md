@@ -24,7 +24,8 @@ both forms; an instance need not have a dedicated process or be continuously run
 **Interface is the fifth working family.** Agent replaces Session in this proposal. An Agent
 retains durable identity separately from its executions; no additional Session family is implied.
 An Interface is not the human identity itself. A CLI, terminal UI or browser is a frontend that
-presents it, not another domain-object family. Exact frontend attachment semantics remain open.
+presents it, not another domain-object family. Multiple identifiable frontends can attach to the
+reusable default Interface; exact transport and target-control mapping remain open.
 
 Agents and users are actors. Resources expose capabilities; a running indexer or database does
 not become an Agent merely because it has background processes. An Agent can also be a target:
@@ -127,12 +128,12 @@ launched under the owner's OS user is not itself the Agent's management grant. I
 records do not introduce a new managed object family.
 
 This is an authority model, not proof that native processes sharing host privileges cannot obtain
-each other's access. Client authentication, credential storage and runtime enforcement need their declared native/isolated
-coverage. Exact owner recognition, delegated-client binding and recovery remain open.
+each other's access. Client authentication, credential storage and runtime enforcement need their
+declared native/isolated coverage. Exact owner recognition, delegated-client binding and recovery remain open.
 
 ### Interfaces and frontend attachments
 
-**Proposal for the next ruling:** the default Interface is a reusable logical instance. CLI,
+**Accepted:** the default Interface is a reusable logical instance. CLI,
 terminal and test clients attach to it rather than creating another Interface for each run.
 Multiple frontend attachments can use it, retaining identifiable requests and current caller
 authority. A separate Interface can be instantiated when another definition or access endpoint
@@ -145,11 +146,28 @@ Conduit path and target contract. Sharing an Interface neither grants a client t
 authority nor overrides a target's exclusive-control requirements. The existing default of one
 controlling frontend for an Agent remains a separate mapping question.
 
-The alternative creates an Interface instance for each frontend run. Reuse avoids turning every
-short CLI invocation into another persistent domain object. This selects identity/attachment
-semantics, not process layout, authentication mechanics or how last-client disconnection affects
+Reuse avoids turning every short CLI invocation into another persistent domain object. This selects
+identity/attachment semantics, not process layout, authentication mechanics or how last-client disconnection affects
 live connections. A retained Interface record alone does not keep a Conduit alive without the
 logical participation required by its lifecycle contract.
+
+### Direct Agent control from shared Interfaces
+
+The earlier Agent policy allows one controlling frontend for direct input, cancellation and
+settings, with other authorized frontends observing. **Proposal for the next ruling:** identify
+that controller by its frontend attachment, rather than granting control to the shared Interface
+as a whole. This makes the earlier policy explicit within the reusable-Interface model.
+
+For example, a terminal controls Agent A while a CLI attachment to the same Interface inspects
+its progress. To direct A from the CLI, an authorized transfer makes the CLI attachment its
+controller; choosing the new frontend can include that transfer without another confirmation.
+The Interface and Agent identities persist. Other permitted operations and control of other
+Agents remain independent.
+
+The alternative revises the earlier policy to Interface-wide control: all of that Interface's
+authorized attachments can directly command A. Neither choice bypasses authority, Conduits or
+configuration checks. Agent-originated commands, exact takeover/disconnection recovery and any
+implementation mechanism remain open; no global Interface lock or new object family is proposed.
 
 ## A common interaction contract
 
@@ -571,8 +589,9 @@ settings remain [separate from outstanding requests](CONFIGURATION.md#requested-
 [Instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings)
 is settled for v0, alongside typed filters and access-path composition.
 [Bootstrap management access](#bootstrap-management-access) and
-[initial management authority](#initial-management-authority) are accepted. The next ruling concerns
-[Interface identity and frontend attachments](#interfaces-and-frontend-attachments).
+[initial management authority](#initial-management-authority) are accepted, as are
+[reusable frontend attachments](#interfaces-and-frontend-attachments). The next ruling maps
+[direct Agent control](#direct-agent-control-from-shared-interfaces) to those attachments.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

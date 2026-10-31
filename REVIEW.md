@@ -29,6 +29,8 @@ outcomes rather than a long sequence of individual field rulings.
 - Instance creation and checked replacement updates store declared schema defaults explicitly.
   Instance equality compares materialized values; templates preserve authored omissions.
   Unchanged updates still require current authorization and matching ID/version checks.
+- Typed configuration rejects unknown fields except in schema-declared open maps. Plugin
+  schemas may define fields and open maps; map keys/values still follow their contracts.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -52,9 +54,10 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **typed validation boundaries and field values**. Draft assignment semantics
-are settled; decide how schemas handle unknown fields and intentional extension maps, then
-remaining value rules. Establish Pool provisioning/ownership and instance lifecycle together.
+Continue with **schema availability and validation outcomes**. Unknown-field handling is
+settled; distinguish an unavailable schema from a valid configuration whose runtime is absent.
+Then resolve remaining field-value rules and establish Pool provisioning/ownership and
+instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -127,7 +130,7 @@ completion, omission and unknown outcomes without inventing a model turn or wide
 
 | Question | Example and considerations |
 | --- | --- |
-| What is the constrained YAML data surface? | Define string keys, duplicate/unknown-field rejection, scalars/units, null/empty/omitted values, aliases and normalization. Choose explicit configuration roots, path bases and environment inputs. Credentials are references, not ordinary interpolated values. |
+| What is the constrained YAML data surface? | Within the accepted strict unknown-field rule, define string keys, duplicate-key handling, scalars/units, null/empty/omitted values, aliases and normalization. Choose explicit configuration roots, path bases and environment inputs. Credentials are references, not ordinary interpolated values. |
 | How do defaults and selections compose? | Materialize Session-template connection choices, selected Pool defaults and creation choices in the instance spec. Explicit selection already replaces Pool defaults unless add is requested. Define other precedence, list ordering and duplicate identity without a universal deep merge. |
 | What is the activation contract? | Session specs contain instructions and structured preparation, initially supplied by templates. Distinguish these from Pool provisioning and connection startup. Define required/optional actions, ordering, compatibility, duplicate skills/commands, refresh and cleanup of projections. |
 | What are the first adapter contracts? | Separate own-runtime model providers from native-agent adapters. Define reported support for credentials, context conversion, hooks, reconnect/cancel, subagents and telemetry; do not infer support from model branding. |
@@ -143,7 +146,7 @@ unsupported hooks and a change of model/account without leaking private context.
 
 | Question | Example and considerations |
 | --- | --- |
-| What do offline validation and explicit probes promise? | Separate syntax, reference, semantic and transition checks from network/login/process effects. Preview does not freeze current access. Preserve multiple scoped errors and unknown live facts. |
+| What do offline validation and explicit probes promise? | Decide whether an unavailable required schema prevents registry writes or permits an explicitly unvalidated object; distinguish missing runtime support from missing validation capability. Separate syntax, reference, semantic and transition checks from network/login/process effects. Preview does not freeze current access. Preserve multiple scoped errors and unknown live facts. |
 | How are diagnostics and status represented? | Choose metadata/status field names, source locations, stable categories, evaluated versions and independently reported validity, auth, readiness and enforcement. Avoid one universal ready flag. |
 | What are version/migration boundaries? | Choose API group/version, family/form schemas and plugin dialect. Separate template config versions, instance resolved versions, record revisions and runtime releases. Unknown semantics must not silently degrade to a familiar version. |
 | How do edits and batches remain recoverable? | Specify existing baseline storage/association/lifecycle, checked import/export and rebind, source preservation and batch atomicity. Local registry atomicity does not imply rollback of external provisioning. |

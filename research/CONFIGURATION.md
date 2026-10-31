@@ -457,9 +457,14 @@ macros. A general include or inheritance language can wait. Decide how optional 
 configurations acquire identity/provenance and whether they can later be promoted to templates.
 
 A constrained [YAML 1.2](https://yaml.org/spec/1.2.2/) surface should use string keys, reject
-duplicate keys/unknown core fields, define finite numeric/unit types and bound alias expansion.
+duplicate keys, define finite numeric/unit types and bound alias expansion.
 Do not silently expand shell/environment strings or interpret unsupported null/empty values.
 Plugin configuration needs a named/versioned schema. These parser details remain proposals.
+
+Unknown-field rejection is accepted for templates and instances, except in schema-declared
+open maps. Plugin schemas can define their own fields and open maps; map keys/values retain
+their declared constraints. Unavailable-schema handling remains distinct from unavailable
+runtime support and is still under review.
 
 The complete instance spec is authoritative for configuration. Template-origin information
 is optional; it is not required to operate or edit an instance. The representation must still

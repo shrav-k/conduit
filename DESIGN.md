@@ -313,6 +313,14 @@ an unsupported native extension or an expired credential. Error/status reporting
 identify the relevant object and field, explain the limitation, and preserve unknowns.
 Exact diagnostic codes, stages and partial-failure policy remain open.
 
+Typed configuration rejects unknown fields for both templates and instances, except within
+maps whose schemas explicitly allow arbitrary keys. For example, `metadata.lables` is an
+unknown field; custom keys inside the declared `metadata.labels` map are permitted. Keys and
+values still obey the map's contract; openness is limited to the declared location. Plugin
+contracts can define their own fields and open maps under the same rule. Unknown fields are
+not silently discarded or retained outside those locations. Handling unavailable schemas
+separately from unavailable runtimes remains in review.
+
 Configuration changes, package preparation, binding establishment and agent execution have
 different effects. Their operations must say what they do. A Session export is not evidence
 of a running execution, and restoring configuration must preserve the explicit-resume and

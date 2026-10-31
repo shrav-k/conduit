@@ -122,6 +122,9 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
 - Instance creation and checked replacement updates materialize declared schema defaults into
   saved/exported instance specs. Template YAML preserves omissions. Fields without declared
   defaults retain their required/optional semantics.
+- Typed configuration rejects unknown fields except within maps explicitly declared open by
+  their schemas. Plugin contracts may define their own fields and open maps; keys and values
+  still obey the applicable map contract.
 - Create/update intent is explicit. Updates replace complete authored configuration and use
   separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
 - Unchanged configuration preserves its version after checks. Compare instances after default

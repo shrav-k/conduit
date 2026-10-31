@@ -3,8 +3,8 @@
 Updated: 2026-10-31. **Active working direction; detailed protocol schemas remain open.**
 The pre-inquiry design is preserved on `main` at
 [`c013f0a`](https://github.com/shrav-k/conduit/tree/c013f0a20c0c579f511aea84fdc6804b66417b96).
-This branch uses five families and immutable instance definitions. Earlier explorations remain
-in Git. No implementation or live provider operation has been performed.
+This branch uses five working families. The boundary between fixed instance definitions and
+Conduit-mediated configuration changes is being reviewed. Earlier explorations remain in Git. No implementation or live provider operation has been performed.
 
 ## Base concepts
 
@@ -14,7 +14,7 @@ both forms; an instance need not have a dedicated process or be continuously run
 
 | Family | Definition and responsibility |
 | --- | --- |
-| Interface | A human-facing interaction endpoint through which a user discovers and controls the system. It can be expressed through different frontends. |
+| Interface | The user-facing observation and creation layer. It establishes Conduits for interaction with existing instances and can be expressed through different frontends. |
 | Agent | An autonomous participant with its own execution/access boundary and private context. It initiates actions and can expose operations for other participants to invoke. |
 | Resource | A unitary capability, data source or service, created or attached through exactly one owning Pool. |
 | Pool | The ownership and creation boundary for its Resource instances; grouping can reflect their types and capabilities. |
@@ -35,19 +35,24 @@ nodes compose a setup graph shared by all template families. A login or linking 
 thereby a Conduit. Family, template/instance form, setup graph and YAML representation are
 separate concepts.
 
-## The management Interface
+## The observation and creation Interface
 
-**User direction:** the basic Interface is the main entry point for users and has the broadest
-local management scope. It can see the configured system and instantiate Pools, Resources,
-Agents and Conduits from their templates. It is also the common entry point for testing.
+**User direction:** the basic Interface observes the configured system, can choose any available
+template to instantiate an object, and can establish Conduits. Interacting with or changing a
+running target requires a Conduit to that target. Broad visibility is not a direct-edit exception.
 
-| Capability | Expected behavior of the initial management Interface |
+| Path | Expected behavior of the initial Interface |
 | --- | --- |
-| Discover | List and inspect templates and instances across all families, their contracts, relationships and reported state. |
-| Prepare | Select a template, customize ordinary typed creation fields, validate and inspect the resolved definition before effects. |
-| Establish | Instantiate and explicitly start objects using their declared graphs. Resource creation/attachment goes through an owning Pool. |
-| Operate | Invoke supported lifecycle and runtime operations; create or remove Conduit connections. |
-| Observe | Inspect progress, human-interaction waits, results, current state and known coverage gaps through the same contracts exposed to clients. |
+| Observation | Discover available templates and instantiated objects across families; inspect their reported state and relationships. |
+| Creation | Select a template, customize ordinary creation fields and instantiate using the declared construction contract. Resource creation/attachment still belongs to an owning Pool. |
+| Connection | Create or join a permitted Conduit to a target or targets. |
+| Interaction | Through that Conduit, inspect supported controls and request configuration/lifecycle changes. The target validates and applies them under its contract. |
+| Feedback | Present observed state, progress and operation outcomes, distinguishing requested changes from changes actually applied. |
+
+The Interface provides observability and entry points, not a parallel implementation of target
+behavior. An existing Pool's Resource-creation operation must still respect its access/ownership
+contract; listing or selecting a template does not bypass that contract. The exact platform
+creation endpoint and its relationship to Pool operations remain part of the bootstrap review.
 
 This broad scope is the default management Interface's configuration, not a reason to hard-code
 unrestricted authority into every future Interface. Narrower Interfaces can be supported later.
@@ -68,8 +73,9 @@ identity fields and delegation rules remain for review; the existing account sep
 **Bootstrap question:** the first Interface must be able to reach registry/template management
 and establish Conduits before application instances exist. A proposed solution is a local runtime
 bootstrap that establishes the management Interface and its initial management connection.
-Registry operations are platform capabilities, not a sixth domain family. Their endpoint
-representation, root authority and recovery path are not yet selected. Do not hide this circularity
+Registry operations need a defined platform surface. Their endpoint representation, root
+authority and recovery path are not yet selected. Whether the proposed additional object stack
+means a separate management layer or another object family remains to be clarified. Do not hide this circularity
 by requiring a pre-existing application Pool or Conduit to create the very first one.
 
 ## A common interaction contract
@@ -80,9 +86,10 @@ runtime owns the operation's meaning and application. The protocol should genera
 not standardize each provider's settings or scheduling choices.
 
 ```text
-User → frontend → Interface ── Conduit ──→ platform or instance capability
-                  Agent    ── Conduit ──→ platform or instance capability
-                            ← results, state and supported events
+User → frontend → Interface → observation / template instantiation
+                  Interface ── Conduit ──→ existing instance
+                  Agent     ── Conduit ──→ existing instance
+                             ← results, state and supported events
 ```
 
 The shared contract below is a proposal for the next grouped review, not a finalized API:
@@ -113,42 +120,57 @@ family to support every verb or hide provider-native tool names behind generic r
 Graph plugins and runtime implementations may share typed operations and code, but exact ABI,
 packaging and operation discovery are still undecided.
 
-## Immutable definitions and changing connections
+## Instance configuration and supported changes
 
-**Accepted:** templates and creation drafts are editable; an instance's resolved definition is
-immutable. Its spec retains its resolved setup graph and typed runtime configuration independently
-of later template edits or deletion. A different underlying function requires a new instance.
-No pending-spec mechanism or arbitrary live instance-spec patch is part of this model.
+**Reopened:** do not settle blanket instance-spec immutability before defining interaction.
+The earlier fixed-definition rule was too broad to answer the user's current question. A running
+instance may expose configuration changes through a Conduit; which fields can change, and what
+application requires, belongs to its type/runtime contract. No arbitrary direct registry edit of
+a running target is implied by the Interface's visibility.
 
-| Fixed definition | Mutable state within its supported contract |
+Three things need distinct meanings, without prematurely fixing their serialized field layout:
+
+| Layer | Meaning |
 | --- | --- |
-| Setup graph, runtime implementation and behavioral boundaries | Setup progress, execution state, current availability and supported lifecycle outcomes. |
-| Declared initial settings and permitted runtime controls | Current settings changed through declared operations, where the type supports them. |
-| Connection/activation behavior and constraints | Actual Conduit attachments and their state, including dynamically added or removed connections. |
-| Resource configuration and ownership contract | Resource contents and the results of permitted operations. |
-| References to authority and data | Current access decisions and data; definition immutability does not freeze either. |
+| Template | A reusable construction recipe and defaults. Editing it does not silently update existing instances. |
+| Instance configuration | The concrete configuration established for one instance, including whatever settings its contract permits changing through a Conduit. |
+| Observed state | What the instance reports as actually applied, running or available. A requested configuration change cannot assert its own success. |
 
-The target type decides which settings are runtime controls. This boundary must be inspectable;
-a frontend must not guess whether a field can be changed. Adding a Conduit does not broaden the
-target's fixed function. Unsupported control remains unsupported even for the broad management
-Interface. This is distinct from changing templates to establish differently configured instances.
+**Proposed protocol boundary:** an endpoint advertises supported configuration/control operations;
+an Interface or Agent invokes them over a permitted Conduit; the target validates the change,
+applies it as supported and reports its outcome. The protocol carries typed intent and evidence.
+The target contract determines whether a particular change is live, requires restart, requires a
+replacement instance, or is unsupported. These categories are review candidates, not a mandatory
+universal mutation API or a final field-by-field policy.
 
-Connection membership is derived from actual relationships, not a duplicate editable list in
-every endpoint. Supported attachment operations may regenerate native MCP configuration or
-Agent-local symlinks. Native hot attachment is not universally guaranteed. Closing one Conduit
-does not delete backing data or other consumers; the last logical consumer/peer ends its flow.
-Temporary transport failure does not itself detach that consumer.
+This keeps two questions separate: *through what path may a change be requested?* and *which
+changes can that target support?* Requiring a Conduit answers the first; it does not by itself
+make every spec/graph field editable or immutable. Whole-object replacement versus typed settings
+updates, version checks, concurrent changes and the stored requested/applied representation remain
+open. Do not import provider-specific queue behavior into that core discussion.
+
+Instances still retain their resolved setup graph and configuration independently of later source
+template edits/deletion. This is self-contained execution configuration, not mandatory template
+history. If changes to that retained configuration are supported, their effect on future starts
+and recorded setup progress needs an explicit contract. The source template does not acquire the
+instance's live state. Current authority and Resource data remain live throughout.
+
+Conduit attachments can be added/removed. Current membership is derived from actual relationships,
+not duplicate editable endpoint lists. Supported attachment operations may regenerate native MCP
+configuration or Agent-local symlinks; native hot attachment is not universally guaranteed. Closing
+one Conduit does not delete backing data or other consumers. The last logical consumer/peer ends
+its flow; temporary transport failure does not itself detach that consumer.
 
 Shared context is a Pool-owned Resource exposed to participating instances through Conduits.
-An old and new Agent can read the same permitted context without modifying either definition
-or automatically copying private native state. New instances have new IDs; existing bindings
-are not silently retargeted. Metadata rename/label mutability is a separate open contract.
+A replacement Agent can access the same permitted context without automatically inheriting private
+native state. New instances have new IDs; existing bindings are not silently retargeted. Resource
+ownership, current access and explicit cleanup remain independent of the configuration-edit policy.
 
 ### Agent access and model selection
 
-Model selection illustrates the general boundary; it is no longer a separate core-protocol
-review track. The previously selected Agent policy is retained here as an integration contract
-example, not a universal rule for Resource operations:
+Model selection is no longer a separate core-protocol review track. Previously selected Agent
+behavior is retained here as an integration example to test against the general change contract;
+it does not settle immutability for all instance types:
 
 - Runtime/account/access and provider domain remain fixed; credential refresh for the same
   identity is runtime state. Different subscription identities or GPT-to-Claude transitions
@@ -227,16 +249,18 @@ without retaining the original graph as an endless monitoring loop.
 | Runtime/effect state unknown | Reconcile supported observations; do not invent success or launch duplicates. Report native integration coverage gaps. |
 
 Exact start/wait binding syntax, retained progress, cancellation and recovery compatibility remain
-open. Updating a recipe creates another instance. Retrying an existing one cannot substitute an
-edited graph. Recovery is instance/type behavior, not a universal operation scheduling algorithm.
+open. Reuse of recorded progress assumes the same effective setup. If future contracts allow changes
+to setup inputs or graphs, they must define invalidation or replacement before reusing that progress.
+Recovery is instance/type behavior, not a universal operation scheduling algorithm.
 
 ## Template YAML and Compose-inspired composition
 
 Keep the common envelope: `apiVersion`, `kind`, top-level `form`, `metadata`, `spec`, and a
 system-owned inspection `status`. Resource contracts retain separate type group/name/version
 and typed settings. Names, stable IDs, strict schemas and reference bindings remain applicable;
-registry update rules now concern editable templates and any separately allowed metadata, not
-replacement of immutable instance definitions. Exact Interface schema and API versions remain open.
+registry update rules for templates remain applicable. Their relationship to Conduit-mediated
+instance configuration changes must be resolved rather than assumed. Exact Interface schema and
+API versions remain open.
 
 Partial illustrative Agent template; fields, plugin names and reference notation are proposals,
 not installed contracts. It omits full runtime, authority and private-state details:
@@ -337,8 +361,8 @@ its syntax until the individual contracts work. Detailed supporting research rem
 
 ## Next discussion
 
-Review the common interaction contract with the management Interface as the concrete entry point:
-discovery, typed invocation, lifecycle/runtime state and observable outcomes. Work through
+Review the common interaction contract with the Interface as the observation/creation entry point:
+discovery, connection establishment, typed configuration/control changes and observable outcomes. Work through
 Interface → Pool → Resource creation, then Interface → Agent control and Agent → Agent control.
 Use the same rules with different target contracts; do not return to one model's queue policy.
 

@@ -14,30 +14,32 @@ Avoid making one provider's queue, settings or process model universal. Group ru
 reviewing every option independently; require each stored relationship to justify its bookkeeping.
 
 The working foundations are reusable typed YAML templates with inline/referenced setup graphs;
-immutable resolved instance definitions; runtime-owned ongoing behavior; dynamic Conduit
+instance configuration independent of later template edits; runtime-owned behavior; dynamic Conduit
 attachments; Pool-only Resource creation/ownership; current authority; and safe outcome/retry
 handling. Plugins declare inputs/outputs, graph bindings imply dependencies, and instances manage
-processes even when started during setup. These do not need to be re-decided for each example.
+processes even when started during setup. Blanket instance immutability is reopened: first define
+Conduit-mediated change, then decide what each contract permits changing.
 
 ## Next discussion
 
 **Start with the management Interface and the common interaction contract.** The basic Interface
 has the broadest local management scope, sees templates/instances across families and can establish
 Pools, Resources, Agents and Conduits. CLI, terminal UI and tests use the same capabilities.
+Observing/instantiating is distinct from modifying a running target: the latter requires a Conduit.
 Agents can invoke target operations through Conduits as well. Resource creation still belongs
 to a Pool, and broad management authority cannot manufacture an unsupported provider operation.
 
 | Contract bundle | Questions to resolve together |
 | --- | --- |
 | Discover and invoke | How does an endpoint advertise supported typed operations and observations? What is common request/result structure versus type-specific content? How are capabilities discovered through filtered Conduits while retaining native provider names? |
-| Control and observe | How do immutable definitions distinguish initial settings, allowed runtime controls and current state? Which result distinctions are common, and how do a pending command, progress, interaction wait and actual application appear consistently to frontends and Agents? |
-| Identity and bootstrap | How does the first Interface obtain its management connection and user authority? How is registry/template management addressed before application instances exist? Distinguish user, Interface instance, frontend client and Agent identities without inventing a sixth family. |
+| Control and observe | How do templates, concrete instance configuration and observed state differ? Which changes can target contracts permit live, on restart or only through replacement? Which result distinctions are common, and how do a pending command, progress, interaction wait and actual application appear consistently to frontends and Agents? |
+| Identity and bootstrap | How does the first Interface obtain its management connection and user authority? How is registry/template management addressed before application instances exist? Distinguish user, Interface instance, frontend client and Agent identities. Clarify whether the proposed additional object stack is a separate layer or an additional family. |
 | Concurrent use and recovery | Which concurrency, cancellation, retry and event capabilities must operations declare? Preserve inspectable outcomes and current authority; leave provider ordering/coalescing to their contracts. How do multiple frontends observe/control one Interface or target? |
 
 **Walkthrough for this discussion:** a user opens the management Interface, inspects a Pool
 template, creates the Pool, and creates/attaches a directory Resource through it. The user starts
-two Agents from templates and connects them to permitted Resources. The Interface invokes an
-Agent runtime control, then an authorized Agent invokes that same control on a peer. Compare an
+two Agents from templates and connects them to permitted Resources. The Interface opens a Conduit to request an
+Agent configuration change, then an authorized Agent invokes that same operation on a peer. Compare an
 immediate result, pending work and an uncertain result. Show what a CLI, terminal UI and test
 client receive without assigning each a separate execution engine.
 
@@ -83,7 +85,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Immutable definition versus state | Define discoverable runtime controls and observations. Graph/runtime changes require new instances; dynamic connections do not rewrite specs. Settle metadata edits separately. Template update checks and deletion checks still apply without reviving generic instance replacement. |
+| Configuration changes versus state | Define changes requested through Conduits, applied configuration and observation. Decide what is mutable by type, whether a change requires restart/replacement, concurrency checks and what persists across starts. Graph changes, generic patches and metadata rules are unresolved; do not assume all fields are editable or fixed. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |
@@ -146,7 +148,7 @@ before coding or live account testing.
 5. **Communication:** after its contract is selected, demonstrate multiple participants, retained
    data in Pool-owned Resources, current-access delivery, recovery and independent frontend views.
 
-Failure fixtures must cover stale template edits, immutable-instance edit attempts, wrong-account
+Failure fixtures must cover stale template edits, attempts to bypass Conduit-mediated changes, wrong-account
 login, missing references, foreign-Pool ownership, ambiguous creation/write results, partial setup,
 expired interaction, stale completion, cancellation after effects, auth failure, last consumer
 loss and owner retirement. Neither native enforcement nor live provider compatibility is established

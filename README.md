@@ -6,7 +6,7 @@ forms. Implementation has not started.
 
 | Family | Responsibility |
 | --- | --- |
-| Interface | The human-facing entry point for discovering and controlling the system, usable through different frontends. |
+| Interface | The user-facing observation and creation layer; opens Conduits to interact with instances, through different frontends. |
 | Agent | An autonomous participant that acts through Conduits and can expose operations to other participants. |
 | Resource | A unitary capability, data source or service owned by exactly one Pool instance. |
 | Pool | The ownership and creation boundary for Resource instances. |
@@ -14,15 +14,17 @@ forms. Implementation has not started.
 
 The first **management Interface** has system-wide visibility and management scope in the local
 installation: inspect templates and instances, instantiate Pools, Resources, Agents and Conduits,
-and invoke their supported lifecycle operations. Resource creation still goes through an owning
-Pool. CLI, terminal UI and test clients should exercise the same interaction contracts; choosing
+and establish Conduits through which it requests supported configuration/lifecycle changes.
+Visibility does not permit bypassing that interaction path. Resource creation still goes through
+an owning Pool. CLI, terminal UI and test clients should exercise the same interaction contracts; choosing
 a frontend must not select a different management implementation.
 
 Templates contain typed YAML configuration and an inline or referenced setup graph of focused
 plugins. One template can create many instances. Graphs establish instances; instances manage
-ongoing behavior. Each instance retains an immutable resolved definition. Its declared operations,
-runtime state and Conduit connections can evolve within that definition. Provider-specific
-settings, switching and recovery details belong to type/integration contracts.
+ongoing behavior. Instances retain their own resolved configuration independently of source
+template edits. We are reviewing which settings can change through Conduits and which require
+restart or replacement; blanket instance immutability is not settled. Provider-specific settings,
+switching and recovery details belong to type/integration contracts.
 
 **Active proposal:** [Construction, interfaces and runtime interaction](research/CONSTRUCTION.md).
 Agent replaces Session in this proposal. Conduit owns its runtime in Rust, with a Pi-inspired

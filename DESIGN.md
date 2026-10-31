@@ -7,8 +7,9 @@ as the fifth family. The basic Interface provides broad local management across 
 Interfaces and Agents interact through Conduits using target-defined operations.
 Detailed identity and lifecycle choices remain open; the baseline below has not been silently
 rewritten to assume them.
-The active branch now uses [immutable instance definitions with dynamic Conduits](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections);
-editable-instance contracts below remain historical comparison material, not current branch guidance.
+The active branch is reviewing [instance configuration and supported changes](research/CONSTRUCTION.md#instance-configuration-and-supported-changes):
+Interfaces observe/create; changes to running targets go through Conduits. Blanket immutability
+is reopened. The older editable-instance rules below are comparison material, not a settled answer.
 
 Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.

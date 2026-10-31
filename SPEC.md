@@ -7,7 +7,8 @@ The active [construction proposal](research/CONSTRUCTION.md) separates universal
 construction from ongoing Conduits, uses Agent in place of Session and adds Interface as the
 fifth family. The basic Interface is the broad management entry point for multiple frontends
 and tests. Use that proposal for current discussion; the model below remains the comparison baseline.
-The active branch keeps [instance definitions immutable while connections can change](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections).
+The active branch is reviewing [which instance configuration can change through Conduits](research/CONSTRUCTION.md#instance-configuration-and-supported-changes);
+blanket instance immutability is reopened after clarifying the Interface boundary.
 
 ## Working model
 

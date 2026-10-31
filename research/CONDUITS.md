@@ -26,7 +26,8 @@ to establish; the enclosing instance supplies the consumer endpoint automaticall
 preparation normally attempts each configured open/join under current authority and reports
 the result; registration alone opens nothing. Required connection failure blocks its consumer's
 completion of preparation; optional failure is reported and permits continuation. Unrelated
-consumers are unaffected. Omission defaults, retry/timeout and partial cleanup rules remain open.
+consumers are unaffected. Declarations default to required; optional must be explicit and saved
+instance configuration materializes the default. Retry/timeout and partial cleanup rules remain open.
 A Conduit has no independent runtime; the engine/plugins perform transfers and
 maintain clients or sync work. Logical consumer/peer attachments keep it live between polls and
 during temporary transport failure. The last consumer/peer detaching ends the flow and closes

@@ -99,7 +99,8 @@ No automatic purge follows from a missing Pool reference.
    choose open versus join. Explicit consumer preparation normally attempts those declared
    actions and reports their outcomes; registration remains passive. A failed required connection
    blocks its consumer's completion of preparation; optional failures are reported and allow
-   preparation to continue. Unrelated consumers are unaffected. Omission defaults, remote
+   preparation to continue. Declarations default to required; optional is explicit, and saved
+   instance configuration materializes the default. Unrelated consumers are unaffected. Remote
    endpoint selection, exact fields and retry/cleanup details remain open.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted

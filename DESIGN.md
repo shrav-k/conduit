@@ -690,11 +690,12 @@ Conduit templates as connection declarations; the resulting consumer instances r
 declarations in their configuration. Explicit preparation of a Session or Resource normally
 attempts each declaration's configured open/join action, rather than waiting for first use.
 Registering configuration alone opens nothing. Report connection/authentication outcomes as
-part of preparation; an attempt does not imply successful establishment. Declarations
-distinguish required and optional connections. A failed required connection prevents its
+part of preparation; an attempt does not imply successful establishment. Declarations default
+to required; optional connections must be marked explicitly. Saved instance configuration
+materializes this default, while templates may omit it. A failed required connection prevents its
 consumer from completing preparation; an optional failure is reported and preparation may
-continue. Unrelated consumers are unaffected. The default when unspecified, retry/timeout
-rules, partial cleanup, ordering and reconfiguration remain under review. Declarations do not
+continue. Unrelated consumers are unaffected. Retry/timeout rules, partial cleanup, ordering
+and reconfiguration remain under review. Declarations do not
 require authoring the same endpoint relationship twice.
 
 For a declaration inside a Session or Resource, the enclosing instance supplies the consumer

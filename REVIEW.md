@@ -59,7 +59,8 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 - Explicit Session/Resource preparation normally attempts declared open/join actions and reports
   their outcomes. Registration alone starts nothing. Required connection failure blocks the
   declaring consumer's completion of preparation; optional failure is reported and allows
-  preparation to continue. Unrelated consumers are unaffected; omission defaults and retries are open.
+  preparation to continue. Required is the default; optional must be explicit. Saved instance
+  configuration materializes that default. Unrelated consumers are unaffected; retries remain open.
 - The last logical consumer/peer detaching ends a live Conduit and closes remaining provider-side
   connections. Sync subscriptions remain attached between polls or temporary transport failures.
   Backing Resources, templates and retained evidence survive; crash/detach detection remains open.
@@ -92,10 +93,11 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Settle **the default for required/optional connections** next: required, optional, or always
-explicit in each declaration. Required failure blocks the declaring consumer's preparation;
-optional failure is reported and permits continuation. Retry/timeout and partial cleanup
-remain separate choices; the rule does not interrupt unrelated consumers.
+Settle **partial preparation** next. If one required Conduit fails after others connect,
+decide whether successful attachments stay available for retry or are detached automatically.
+Required is the default; optional failures are reported and permit preparation to continue.
+Preserve unrelated consumers, backing Resources and known operation outcomes under either choice.
+Retry/timeout and cleanup details still need review.
 Remote endpoint selection and exact declaration fields still need review. Keep declarations
 distinct from resolved state and avoid duplicate authored assignments.
 Live Conduit lifetime is now settled around logical consumer/peer attachments; reopening and
@@ -116,7 +118,7 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation normally attempts the declared open/join action. Required failure blocks that consumer's preparation; optional failure is reported and permits continuation. Settle omission defaults, remote references, retries/timeouts, partial cleanup and ordering. Distinguish declarations from resolved connection state and later edits without competing editable copies. Pool ownership/access still apply. |
+| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation normally attempts declared open/join. Required is the default and failure blocks that consumer's preparation; explicit optional failures are reported and permit continuation. Settle remote references, retries/timeouts, partial cleanup and ordering. Distinguish declarations from resolved connection state and later edits without competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |

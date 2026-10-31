@@ -5,7 +5,8 @@ The accepted model has four families, each with template and instance forms. Res
 instances are created only through, and owned exclusively by, a Pool instance. Conduit
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
 envelope, family kinds with top-level forms, explicit kind/form/name references, identity and
-checked-edit contracts; template binding and lifecycle remain open outside retained Session rules.
+checked-edit contracts. All four instance families retain resolved settings until explicit
+reconfiguration; provenance details and lifecycle operations remain open.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -304,6 +305,11 @@ remain illustrative; status shape, command names, operation payloads and instanc
 Reusable template registration, instance creation, native provisioning and starting
 execution must remain distinguishable even if a frontend offers a combined operation.
 
+All four instance families retain resolved behavioral/provisioning configuration until explicit
+reconfiguration. Later template edits affect new instances. Access limits still apply live;
+retaining settings does not freeze Resource data or matching within established access rules.
+An edited Pool resource plan does not automatically provision Resources in existing Pools.
+
 Keep authoring interpretation, template configuration version, resolved instance configuration,
 retained-record revision, source digest, plugin release and native protocol version separate.
 A reusable template is configuration for a typed capability; its contract schema defines
@@ -389,7 +395,7 @@ status and partial effects need explicit semantics.
 
 Omission, null, empty collections, reset, ordering and duplicate identity need per-field rules.
 A possible v0 approach is explicit whole-list replacement plus an explicit add operation;
-this is not a universal default. Existing Session behavior and current access rules must both
+this is not a universal default. Retained instance settings and current access rules must both
 survive configuration composition. A Pool's default access selection applies only when no
 explicit replacement is supplied; combination with Session-template choices remains open.
 
@@ -439,9 +445,10 @@ Do not silently expand shell/environment strings or interpret unsupported null/e
 Plugin configuration needs a named/versioned schema. These parser details remain proposals.
 
 Instance creation should explain source template identity/version, supplied inputs, Pool
-ownership where applicable, native backing target and requested effects. How templates are
-version-pinned or followed outside Session behavior remains open; template edits must not
-silently cause unrelated execution or access expansion.
+ownership where applicable, native backing target and requested effects. Retaining resolved
+settings is accepted across all families; source-provenance retention and explicit reconfiguration
+operations remain open. Template behavioral edits do not automatically change existing instances;
+current access limits still apply.
 
 Keep the accepted checked-write/baseline/export rules in DESIGN.md rather than duplicating
 them here. Decide how exporting a template differs from exporting an instance specification,

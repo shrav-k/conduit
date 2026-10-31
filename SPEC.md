@@ -67,8 +67,8 @@ No automatic purge follows from a missing Pool reference.
    remain live. V0 defers Session-template inheritance.
 2. **Establish Pools and their Resources.** Pool templates describe intended provisioning;
    explicit operations create Pool instances and create/attach their Resource instances.
-   The operation sequence, partial-failure behavior and effects of later template edits remain
-   to be specified. No background reconciler is implied.
+   Existing instances retain resolved settings until explicit reconfiguration. The operation
+   sequence and partial-failure behavior remain open. No background reconciler is implied.
 3. **Open or join a connection explicitly.** Opening uses a Conduit template to establish a
    new instance; joining targets an existing one. Reusing a template name does not choose
    between these operations or imply shared clients, credentials or private context.
@@ -104,6 +104,10 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   names allowed. Exact suffix format and name constraints remain open.
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
+- Across all four families, instances retain resolved behavioral/provisioning configuration
+  from creation until explicit reconfiguration. Template edits affect new instances; existing
+  instances adopt changes explicitly. Current access limits remain live, and Resource data is
+  not frozen by retaining configuration.
 - Create/update intent is explicit. Updates replace complete authored configuration and use
   separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
 - Unchanged authored values preserve the configuration version after checks. Omission remains

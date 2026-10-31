@@ -28,8 +28,24 @@ Resource identity/ownership, backing identity, authentication and process lifeti
 The shared distinction does not impose one lifecycle or mandatory process on every family.
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
-Named versus inline templates, version binding outside Session behavior, reference
-extensions and lifecycle operations remain in [REVIEW.md](REVIEW.md).
+Named versus inline templates, binding provenance, reference extensions and lifecycle
+operations remain in [REVIEW.md](REVIEW.md).
+
+### Template changes and resolved configuration
+
+Across Session, Resource, Pool and Conduit, an instance retains the resolved behavioral and
+provisioning configuration used at creation until it is explicitly reconfigured. Template
+edits affect new instances; existing instances adopt changed settings through explicit
+reconfiguration. For example, adding a Resource to a Pool template does not automatically
+provision it in existing Pools, and editing a Conduit template's behavior does not change
+connections already opened from it.
+
+Current access limits continue to apply live. Retaining configuration does not freeze
+Resource data, current resource matching within established rules, or authority. It does
+not by itself pin the contents loaded from a referenced Resource; content-version and
+activation-refresh rules remain separate choices. Binding provenance and the family-specific
+operations for adopting settings, handling active work and applying external effects remain
+in review.
 
 ## Configuration language
 
@@ -291,10 +307,9 @@ runtime/model/account defaults, execution preferences and requirements, optional
 limits, default connection choices, and activation instructions. A Session starts from
 one Session template; v0 defers inheritance and composition between Session templates.
 
-Resolve behavioral defaults at Session creation and retain them until explicit
-reconfiguration. Later Session template edits affect new Sessions. Record configuration origins,
-overrides and actual execution settings. Permission limits remain live; behavioral
-snapshots never freeze access or allow overrides to weaken required limits. Whether
+Session behavioral defaults follow the shared resolved-configuration rule above. Record
+configuration origins, overrides and actual execution settings. Permission limits remain
+live; behavioral snapshots never allow overrides to weaken required limits. Whether
 referenced resource content follows source updates is a separate open choice.
 
 ### Activation instructions
@@ -600,8 +615,8 @@ template. This choice does not by itself determine whether clients, credentials,
 data or processes are shared. Joining preserves participant-specific access/authentication;
 creating another relationship does not imply copying its underlying Resources.
 
-Exact selection syntax, instance addressing/identity, repeat-request behavior and the
-template-to-instance configuration-change rules remain open. Both modes belong within
+Exact selection syntax, instance addressing/identity, repeat-request behavior and explicit
+connection-reconfiguration operations remain open. Both modes belong within
 the existing Conduit concept, rather than requiring another top-level kind.
 
 ### Resource selection and activation
@@ -626,7 +641,8 @@ Selection supports IDs, owning contexts, metadata predicates and path patterns w
 integration supports them. Matches within established access rules are live. Authorized
 connection, filter and Session-template limit changes apply to subsequent managed requests and are shown
 and recorded; they do not silently change model/account defaults or inject context.
-Pool provisioning/selection changes and behavioral activation updates remain separate open questions.
+Template behavioral/provisioning edits require explicit instance reconfiguration. How that
+operation applies Pool provisioning/selection and activation changes remains open.
 
 If an isolated execution cannot revoke removed access live, stop it and require explicit
 restart under current rules, preserving Session identity. Managed requests use new rules

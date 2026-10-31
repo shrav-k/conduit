@@ -14,6 +14,9 @@ outcomes rather than a long sequence of individual field rulings.
   may supply explicit unique names; exact suffix format and name constraints remain open.
 - Readable object references explicitly include kind, form and name. Kind/name locates the
   target and form validates its intended use; wrong-form targets are rejected.
+- All four instance families retain resolved behavioral/provisioning settings until explicit
+  reconfiguration. Template edits affect new instances; access limits still apply live, and
+  retained settings do not freeze Resource data.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -37,9 +40,9 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **template binding and change**. Object forms, naming and readable references
-are settled; choose what each instance retains from its template and how later changes apply.
-Then establish Pool creation/ownership and instance lifecycle together.
+Continue with **template provenance and reconfiguration**. Instances retain resolved settings;
+choose how they record their source template and inputs, then define explicit adoption of
+changes. Establish Pool creation/ownership and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -54,7 +57,7 @@ Then establish Pool creation/ownership and instance lifecycle together.
 
 | Question | Example and considerations |
 | --- | --- |
-| What does a template binding retain? | Record template identity, version and explicit inputs. Session behavioral snapshots already persist until reconfiguration; choose corresponding rules for Pool, Resource and Conduit instances without freezing live limits. Does an edited or deleted template affect existing instances? |
+| What provenance does a template binding retain? | Resolved settings persist across all four families. Decide which source-template identity/version, explicit inputs/overrides and source content to retain, including across reconfiguration or template deletion. Current authority still applies. |
 | Which fields belong to each form? | Family and form jointly select the contract. Distinguish authored template configuration, instance inputs and system-owned observations; the common envelope does not require identical payloads. |
 | Must templates be independently registered? | Compare named reusable templates with inline definitions for one-off creation. Define identity, export, source attribution and allowed inputs without introducing arbitrary string interpolation or an inheritance language. |
 | How are instances addressed and rebound? | Open-new targets a template; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
@@ -84,7 +87,7 @@ retry, then retire a Pool with active users and retained conversation history. S
 | --- | --- |
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
-| Which changes apply live? | Current access limits already apply live; Session behavioral changes require explicit reconfiguration. Define other template edits, Resource versions, provisioning plan changes, connection configuration and operation boundaries during active work. |
+| How does explicit reconfiguration take effect? | Template behavioral/provisioning edits require explicit adoption across all four families; access limits remain live. Define validation, overrides, active-work boundaries, partial failure and restart requirements. Distinguish changes to instance settings from live Resource content and matching. |
 | What persists after the last participant leaves? | Contrast a durable exchange, an ephemeral request, a service client and its retained outcome. Define runtime restart/recovery and whether a connection can exist with no attached Sessions. Session reconnect/resume rules remain unchanged. |
 | What does deletion mean for templates and instances? | Preserve checked deletion and external-data protection. Distinguish ordinary incoming references from ownership dependencies and live runtime constraints. Session deletion already requires confirmed execution end. Define other families without silent cascades or implicit shutdown. |
 

@@ -13,13 +13,19 @@ No live login, deployment or provider mutation was performed for this research.
 | Session | Account/model/runtime choices, limits and activation instructions. | Durable participant with private context and executions. |
 | Resource | How to create or attach a typed capability. | Deployed/attached capability belonging to exactly one Pool instance. |
 | Pool | Resource provisioning choices, defaults and policies. | Creates and exclusively owns its Resource instances. |
-| Conduit | Interaction, endpoint, filter and support requirements. | An opened connection with participants, shared operational state and any runtime. |
+| Conduit | Interaction, endpoint, filter and support requirements. | A live filtered flow with logical attachments and connection state, implemented by the engine/plugins. |
 
 Template identity, instance identity, participant attachments and individual operations are
 distinct. Opening a Conduit template establishes a new connection; joining selects an existing
 one. Reusing a template does not implicitly choose either operation or share credentials.
 Instances need not have resident processes. One authority per fact is useful without making
 every fact belong to one Session, connection or backend.
+
+Session and Resource templates can reference Conduit templates as declarations of connections
+to establish. A Conduit has no independent runtime; the engine/plugins perform transfers and
+maintain clients or sync work. Logical consumer/peer attachments keep it live between polls and
+during temporary transport failure. The last consumer/peer detaching ends the flow and closes
+provider-side connections. Templates, backing Resources and retained evidence remain separate.
 
 A connection that needs backing Resources must request them through an identified Pool.
 Connection supervision and participant attachments can have different lifetimes from those
@@ -75,10 +81,11 @@ A communication connection may have several participants, shared retained exchan
 requests and a routing service. Each participant can have its own identity, delivery state
 and context. Shared conversation storage need not be editable shared working memory.
 
-For a discussion contract, one Session leaving might remove only its live attachment;
-the relationship and retained history could remain for others and later participants.
-For an ephemeral call, completion might release all transient runtime state while retaining
-only an operation result. These are different contracts, not one universal cleanup rule.
+One Session leaving can remove its attachment while the flow remains for other consumers/peers.
+The last one leaving ends the live Conduit and closes remaining provider-side connections;
+retained history belongs to a Pool-owned Resource and can outlive the flow. Later use of that
+history does not by itself reopen the old instance. One-time transfer completion/detachment
+and reopening/new-instance identity remain under review.
 
 Agentwatch demonstrates the separation: its room code persists posts before delivery,
 keeps live membership in memory, and uses per-room ordering independently of the lifetime
@@ -90,13 +97,13 @@ describe the implemented history behavior.
 [Room implementation](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-server/src/rooms.rs)
 · [History read](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-mcp/src/tools/room_read.rs)
 
-A shared runtime must identify what authority it uses to read/write its Pool-owned backing storage.
+The engine/plugin implementing a flow must identify its authority to access Pool-owned storage.
 A process serving two Sessions must not silently use one participant's broader credentials
 for the other's requests. Joining communication also must not confer repository access,
 import private context or automatically start a model turn.
 
-Still open: which exchanges are durable, what keeps a relationship alive, who administers
-it, how new participants join, and which state survives loss of the runtime. "Room" remains
+Still open: which exchanges are durable, how lost consumers are detected, who administers
+the flow, how new participants join, and recovery after engine failure. "Room" remains
 one possible interaction example, not the universal Conduit abstraction.
 
 ### 3. Access a 1Password account or vault
@@ -274,7 +281,8 @@ Use these change cases alongside the five happy paths:
 1. Two Sessions join one instance; then create separate instances from the same template.
    Show exactly which state is shared and private, including any shared backing data.
 2. One detaches, crashes, changes account or loses permission; the other continues where valid.
-3. The last participant leaves; then a new participant arrives and the runtime restarts.
+3. The last consumer/peer leaves and the flow ends; later participation must follow the
+   reopening/new-instance contract still to be chosen, with retained history considered separately.
 4. Two different Conduits reach the same checkout, vault item, issue or deployment target.
 5. A credential refresh or logout occurs while another client is active.
 6. A write is accepted remotely and its local caller disappears before learning the outcome.

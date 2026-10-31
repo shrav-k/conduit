@@ -9,7 +9,7 @@ something established. An instance can persist without a running process.
 | Session | Model/agent/account defaults, activation instructions, limits and connection choices. | A durable participant with private context and executions. |
 | Resource | How to create or attach data or a capability. | A concrete capability owned by exactly one Pool instance. |
 | Pool | Resource provisioning selections, defaults and policies. | The ownership and creation boundary for its Resource instances. |
-| Conduit | Endpoints, interaction contract, filters and supporting-resource requirements. | An opened **connection**, with participants and operational state. |
+| Conduit | Interaction, endpoint and filtering configuration for a flow. | A live filtered flow with logical consumer/peer attachments and connection state. |
 
 Resource instances are created only through a Pool. Templates can be reused across Pools;
 the same Resource instance cannot belong to several Pools. Separate instances may attach
@@ -26,11 +26,17 @@ and instances first, then how Pools group and coordinate them. Pool creation and
 provisioning remain explicit, distinct effects. Persistent Pool declarations and their binding
 mechanics are back under review rather than prerequisites for defining Resources.
 
-Opening a new connection and joining an existing connection are explicit, distinct intents.
-Sharing a connection does not implicitly share credentials or private context.
+Session and Resource templates can reference Conduit templates to describe connections to
+establish for their instances. The engine and plugins implement the flow; a Conduit does not
+have its own independent runtime. It can transfer data once, maintain access or synchronize
+over time. Registration alone starts no flow. Opening a new Conduit and joining an existing
+one remain explicit, distinct intents; sharing does not imply shared credentials/private context.
+Logical consumers/peers keep a live Conduit attached, including between sync polls or during
+temporary transport failure. When the last one detaches, the flow ends and remaining
+provider-side connections close. Templates, backing Resources and retained evidence survive.
 Session templates supply the activation behavior previously called a Profile; instances retain
-it in their own configuration. Profile is no longer a separate family. **Connection** names a
-Conduit instance, not an additional family.
+it in their own configuration. Profile is no longer a separate family. An **attachment** is a
+consumer or peer's logical participation in a Conduit, not another object family.
 
 **Retain YAML; define the language through typed objects and explicit semantics.** Each object
 uses its family as `kind` and a top-level `form` to identify a template or instance. Names are

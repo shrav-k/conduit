@@ -14,10 +14,10 @@ process or every family to have identical lifecycle operations.
 | **Session** | Runtime/model/account defaults, activation instructions, required limits and default connection choices. | A durable participant with resolved settings, private context/history and executions. |
 | **Resource** | A typed recipe for creating or attaching data/capabilities, with supported configuration and behavior. | A particular provisioned or attached capability with identity, backing-source information and exactly one owning Pool instance. |
 | **Pool** | Resource-template selections, provisioning defaults and policies. | An ownership boundary that creates and contains its own Resource instances. |
-| **Conduit** | A typed interaction contract, endpoint requirements, filters and supporting-resource requirements. | An opened **connection** with resolved endpoints, participant attachments and any shared operational state. |
+| **Conduit** | A typed interaction contract, endpoint requirements, filters and supporting-resource requirements. | A live filtered flow with resolved endpoints, logical consumer/peer attachments and connection state. |
 
-Profile is the former name for a Session template, not a fifth family. Connection is the
-instance term for Conduit, not a fifth family. A plugin's type schema describes valid
+Profile is the former name for a Session template. An attachment is a consumer or peer's
+logical participation in a Conduit; neither term adds a family. A plugin's type schema describes valid
 contracts; a template supplies reusable configuration for such a contract. Neither template
 form nor instance form implies an additional general-purpose programming language.
 
@@ -39,7 +39,7 @@ flowchart LR
     PT[Pool template] -->|instantiate| P[Pool instance]
     RT[Resource template] -->|provision or attach through Pool| R[Resource instance]
     P -->|creates and exclusively owns| R
-    CT[Conduit template] -->|open| C[Connection: Conduit instance]
+    CT[Conduit template] -->|open| C[Live flow: Conduit instance]
     S <-->|join and interact| C
     C -->|authorized access / provisioning request| P
 ```
@@ -93,16 +93,21 @@ No automatic purge follows from a missing Pool reference.
 3. **Open or join a connection explicitly.** Opening uses a Conduit template or complete
    instance configuration; joining targets an existing connection. Reusing a template name
    does not choose between these operations or imply shared clients, credentials or private context.
+   Session and Resource templates can reference Conduit templates to describe flows their
+   instances will establish. Exact declaration fields and preparation triggers remain open.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.
-5. **Keep lifetimes distinct.** A participant can detach while shared conversation storage
-   remains. A remote operation can continue after its initiating client exits. The connection,
-   its Pool-owned Resources, participant state and underlying processes need separate contracts.
+5. **End the live flow after the last consumer/peer detaches.** Close remaining provider-side
+   connections. Logical subscriptions stay attached between polls or during temporary transport
+   failure. Templates, backing Resources and retained evidence survive; ending a Conduit does
+   not establish cancellation of an already accepted remote operation.
 
 Session activation, Pool provisioning and connection supervision are different responsibilities.
 The first prepares a participant; the second creates/attaches owned Resources; the third
-implements an interaction. Their ordering and dependency rules remain for review.
+implements an interaction through the engine/plugins. A Conduit has no independent runtime.
+One-time transfers, persistent access and ongoing sync may use different interaction contracts.
+Their ordering and dependency rules remain for review.
 
 ## Configuration language
 
@@ -201,6 +206,7 @@ defines the remaining selections and staged evidence.
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
 | Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. |
 | Resource connections | A search Resource's access to storage is expressed through a Conduit under applicable authority and filters. This is a logical relationship, not a separate Conduit per query/socket; endpoint syntax and establishment remain open. |
+| Conduit lifetime | A sync subscription stays attached between polls or during transport failure. The last logical consumer/peer detaching ends the flow and closes provider-side connections; Resources and retained evidence survive. |
 | Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
 | MCP authentication | Two Sessions can use one MCP Resource with different permitted service identities where supported. Resolve identity per attachment within target/access constraints; shared configuration does not imply shared authentication state. |
 | Pool registration and provisioning | Registering a Pool does not itself provision Resources. Explicit provisioning has its own outcome, including when a frontend combines registration and provisioning. The declaration/binding representation remains under review. |

@@ -11,7 +11,8 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 ## Starting point
 
 - Session, Resource, Pool and Conduit each have template and instance forms. Profile means a
-  Session template; an opened connection is a Conduit instance. Neither adds a family.
+  Session template; a Conduit instance is a live filtered flow. An attachment is logical
+  consumer/peer participation, not a transport socket or another family.
 - Objects use one family `kind` plus a top-level `form` identifying a template or instance.
   Names are unique per kind across both forms in the local registry. Templates name reusable
   concepts; instances default to the template name plus a generated unique suffix. Callers
@@ -50,6 +51,12 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 - Logical Resource-to-Resource access uses Conduits, including search reading storage.
   Pool grouping alone does not establish the connection or grant access. This does not create
   a Conduit per query/socket; declaration syntax and connection creation remain open.
+- Resource and Session templates can reference Conduit templates to declare flows for their
+  instances. The engine/plugins perform the work; a Conduit has no independent runtime.
+  One-time transfers, persistent access and ongoing sync are examples, not a closed taxonomy.
+- The last logical consumer/peer detaching ends a live Conduit and closes remaining provider-side
+  connections. Sync subscriptions remain attached between polls or temporary transport failures.
+  Backing Resources, templates and retained evidence survive; crash/detach detection remains open.
 - Different Pools may create independent backing data or attach distinct instances to shared
   backing data where the contract supports it. One Resource instance never has multiple owners.
 - A local-folder Resource describes the configured folder. Session symlinks are preparation
@@ -79,10 +86,12 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Clarify **where Resource connection endpoints are authored** next. Resource-to-Resource access
-uses Conduits. Decide whether the Conduit is the single authored location for endpoint wiring,
-with derived connection views on Resources, or whether Resources also select/mirror their
-connection assignments. Then express template/instance configuration before Pool mechanics.
+Make **consumer-declared Conduits** concrete next. Resource/Session templates can reference
+Conduit templates; distinguish those declarations from the established instance's resolved
+state. Decide whether the enclosing consumer implicitly supplies its own endpoint, then settle
+remote endpoint selection and preparation triggers. Avoid duplicate authored assignments.
+Live Conduit lifetime is now settled around logical consumer/peer attachments; reopening and
+configuration changes remain separate choices. Express template/instance YAML before Pool mechanics.
 Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
 ruling remains paused.
 
@@ -99,7 +108,7 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How are Resource connections declared? | Trace storage → search → MCP access through Conduits. Choose one authoritative place for endpoint wiring; distinguish Resource requirements from established connections and derived inspection views. Settle references/compatibility, required/optional connections and creation without duplicating backend settings. Pool ownership and access rules still apply. |
+| How are Resource connections declared? | A Resource template can reference a Conduit template as a Session template does. Decide implicit local-consumer identity versus explicit endpoints, remote references, open/join selection and preparation triggers. Distinguish the consumer's declaration from resolved connection state and choose how later changes are applied without competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
@@ -156,7 +165,7 @@ retry, then retire a Pool with active users and retained conversation history. S
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
 | How do instance configuration edits take effect? | Checked updates edit the complete instance spec; templates do not propagate changes. Define validation, active-work boundaries, partial failure and restart requirements. Distinguish changes to instance settings from live authority, Resource content and matching. |
-| What persists after the last participant leaves? | Contrast a durable exchange, an ephemeral request, a service client and its retained outcome. Define runtime restart/recovery and whether a connection can exist with no attached Sessions. Session reconnect/resume rules remain unchanged. |
+| How do attachments end and flows recover? | Last logical consumer/peer departure ends the flow and closes providers; temporary transport failure does not itself detach. Define explicit detach, crash/lease detection, incomplete cleanup, one-time completion and later reopening/new-instance identity. Backing Resources and retained evidence survive; Session reconnect/resume rules remain unchanged. |
 | What does deletion mean for templates and instances? | Preserve checked deletion and external-data protection. Distinguish ordinary incoming references from ownership dependencies and live runtime constraints. Session deletion already requires confirmed execution end. Define other families without silent cascades or implicit shutdown. |
 
 **Walkthrough:** one participant changes model/account, another disconnects, then the connection

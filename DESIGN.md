@@ -16,15 +16,16 @@ the same lifecycle. This does not remove the accepted account, memory or recover
 
 The four families are Session, Resource, Pool and Conduit. Each has a template describing
 reusable configuration and an instance representing something established. An instance need
-not have a running process. Session templates replace the separate Profile concept; a
-Conduit instance is called a connection. Neither term introduces another family.
+not have a running process. Session templates replace the separate Profile concept. A Conduit
+instance represents a live filtered flow; an attachment is a consumer or peer's logical
+participation. These terms introduce no additional families.
 
 | Family | Template responsibility | Instance responsibility |
 | --- | --- | --- |
 | Session | Model/agent/account defaults, limits, activation and connection choices. | Durable participant identity, private context, resolved behavior and executions. |
 | Resource | Typed create/attach configuration for data or capabilities. | Concrete capability with native backing identity and exactly one owning Pool instance. |
 | Pool | Resource-template selections, provisioning defaults and policy. | Creates and exclusively owns its Resource instances. |
-| Conduit | Interaction contract, endpoints, filters and supporting-resource requirements. | Opened connection, resolved endpoints, participants and operational state. |
+| Conduit | Interaction contract, endpoints, filters and supporting-resource requirements. | Live filtered flow, resolved endpoints, logical attachments and connection state. |
 
 Templates can be reused. Creating instances does not mutate a template into an instance.
 Resource instances are created only through their owning Pool, including attachment of
@@ -683,8 +684,13 @@ purging retained history. Ownership cleanup and backing-data cleanup remain sepa
 ## Conduits
 
 A Conduit template describes a reusable typed interaction. Opening from that template or
-complete instance configuration creates an authorized **connection**, a Conduit instance with
-resolved endpoints, participant attachments and operational state.
+complete instance configuration establishes an authorized flow with resolved endpoints,
+logical attachments and connection state. Session and Resource templates can reference
+Conduit templates as connection declarations; the resulting consumer instances retain those
+declarations in their configuration. The system establishes the selected flow when requested
+through the consumer's lifecycle. Registering configuration alone does not open it. Exact
+declaration fields, preparation triggers and reconfiguration remain under review; declarations
+are not a requirement to author the same endpoint relationship twice.
 Conduits are the extensible interaction layer across the four families. Pool access and
 Session communication are examples, not a closed list of endpoint roles or protocols.
 
@@ -695,16 +701,27 @@ that connection or grant access. This models logical relationships, without crea
 Conduit for every query or underlying socket. Exact endpoint declarations, connection creation
 and runtime state placement remain open.
 
-A connection may use a shared runtime, retained history and per-participant clients. Every
-supporting Resource is created/attached through, and exclusively owned by, a Pool. Connection
-bookkeeping such as routing state and cursors need not each be registered Resources, but durable
-shared content cannot use this distinction to bypass Pool ownership or current access rules.
+The Conduit engine and plugins perform transfers, maintain clients and run synchronization.
+An individual Conduit has no independent runtime of its own. One-time transfer, persistent
+access and ongoing sync are supported directions with different interaction semantics, not
+a closed taxonomy. Logical connection state is distinct from transport clients and backing data.
+Every supporting Resource is created/attached through, and exclusively owned by, a Pool.
+Routing state and cursors need not each be registered Resources; durable shared content still
+follows Pool ownership and current access rules.
+
+A live Conduit ends when its last logical consumer or peer detaches. Close any remaining
+provider-side connections; providers alone do not keep the flow alive. A subscription remains
+attached between polls, and temporary transport failure affects readiness without removing
+that attachment. Ending the flow does not delete its template, backing Resources or retained
+configuration/operation evidence, and does not prove an already accepted remote operation was
+cancelled. Report incomplete or unknown cleanup rather than claiming confirmed disconnection.
+Crash detection, explicit detach and later reopening/reuse rules still need concrete contracts.
 
 Session-owned participant attachments remain a useful direction for ordinary Pool access;
 shared connection state can have a different authority and lifetime. Template reuse or joining
 a connection does not merge private Session context, credentials or access. Connection identity
-is separate from process, transport and backing-Resource identity. The exact authoritative
-records, instance lifetime, supervision and composition remain in [REVIEW.md](REVIEW.md).
+is separate from process, transport and backing-Resource identity. Further authoritative-state,
+recovery and composition details remain in [REVIEW.md](REVIEW.md).
 
 ### Explicit joining and instantiation
 
@@ -731,7 +748,7 @@ Activation instructions belong to the Session spec and are applied by the Sessio
 are narrowing-only: removing a constraint can reveal an existing grant, but a filter
 cannot create one. Exact type names, endpoint forms, lifecycle and composition remain open.
 Session activation prepares the participant. Pool operations create/attach supporting
-Resources; connection supervision runs any shared interaction service. Their ordering and
+Resources; the engine and plugins execute and supervise Conduit flows. Their ordering and
 failure behavior are unresolved, but a connection cannot provision an unowned Resource or
 assume the Session's loading instructions merely because it requested storage.
 

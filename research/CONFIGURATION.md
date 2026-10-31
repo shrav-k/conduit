@@ -401,15 +401,22 @@ purge a local checkout, provider data or retained conversation history.
 ### Conduits and connections
 
 A Conduit template describes a versioned interaction contract, endpoint roles, requested
-operations, filters and support requirements. Opening from a template or complete configuration
-creates a connection; joining selects
-an existing connection. Participants have their own authenticated attachments. Neither join
-nor template reuse silently shares credentials, clients or private Session history.
+operations, filters and support requirements. Resource and Session templates can reference
+Conduit templates to declare flows their instances will establish. Registration alone starts
+no flow. Opening establishes a Conduit instance; joining selects an existing one. Logical
+attachments and their authentication remain distinct from transport sockets and shared data.
 
-A connection's shared bookkeeping and runtime are distinct from its backing Resources. If it
-needs retained conversation storage, it requests provisioning through a selected Pool, which
-owns the resulting Resource. Each Resource access follows the owner Pool and current authority;
-connections do not introduce a second unscoped provisioning path.
+Conduits carry and filter data; the engine/plugins implement one-time transfers, persistent
+access or ongoing sync without an independent runtime per Conduit. The last logical consumer
+or peer detaching ends the flow and closes any remaining provider-side connections. Between
+polls or during transport failure, a logical subscription remains attached. Backing Resources,
+templates and retained evidence survive. Cleanup completion and attachment/crash detection
+must be reported distinctly from transport readiness.
+
+If a flow needs retained conversation storage, it requests provisioning through a selected
+Pool, which owns the Resource. Each access follows the owner Pool and current authority;
+connections do not introduce a second unscoped provisioning path. Consumer declaration fields,
+endpoint resolution, preparation triggers and later reconfiguration remain open.
 
 Candidate interaction families remain capability requests, retained exchanges and observations.
 They need different success, cancellation, retention and recovery meanings. A communication
@@ -422,7 +429,7 @@ status and partial effects need explicit semantics.
 | Relationship | Proposed composition | Case to test |
 | --- | --- | --- |
 | Template expansion and creation edits | Assignments replace whole field values, including objects/lists; nested-child edits preserve siblings. | Assigning `[c]` to `[a, b]` produces `[c]`; no implicit append, parameter mapping or historical delta is required. |
-| Pool provisioning selections | Named entries retain created Resource-ID bindings across runs; further creation is explicit. | Two entries using one template can create distinct Resources; rerunning reuses each binding without repeating creation effects. |
+| Pool provisioning selections | Reconsider after unitary Resource contracts: template expansion/explicit operations versus retained declarations. | Avoid a parallel creation ledger unless needed; preserve explicit effects, safe retry and exclusive ownership. |
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
 | Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |
 | Independent authorized paths | Union of complete constrained capabilities. | Read `src/**` plus write `docs/**` does not create write access to `src/**`. |

@@ -1,5 +1,5 @@
 # REVIEW SCENARIO ONLY. Not a complete accepted schema or executable operations.
-# Family kind plus explicit form is accepted; spec.form placement is illustrative.
+# Family kind plus top-level form is accepted; payloads remain illustrative.
 # The wrapper, reference.form and operation fields remain illustrative candidates.
 # All paths, accounts, provider identifiers and targets are synthetic. No grants or secrets.
 # Templates register reusable configuration; only explicit Pool operations create Resources.
@@ -8,42 +8,42 @@ scenario: four-families-with-exclusive-resource-ownership
 templates:
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
+    form: template
     metadata: {name: workspace}
     spec:
-      form: template
       contract: workspace.example/v1alpha1
       supportedModes: [create, attach]
 
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
+    form: template
     metadata: {name: knowledge}
     spec:
-      form: template
       contract: memory.example/v1alpha1
       supportedModes: [create, attach]
 
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
+    form: template
     metadata: {name: native-mcp}
     spec:
-      form: template
       contract: mcp.example/v1alpha1
       supportedModes: [attach]
       defaults: {transport: streamable-http, url: "https://tools.example/mcp"}
 
   - apiVersion: conduit.example/v1alpha1
     kind: Resource
+    form: template
     metadata: {name: native-skills}
     spec:
-      form: template
       contract: skills.example/v1alpha1
       supportedModes: [attach]
 
   - apiVersion: conduit.example/v1alpha1
     kind: Pool
+    form: template
     metadata: {name: euphony-domain}
     spec:
-      form: template
       resourcePlans:
         - {name: checkout, templateRef: {kind: Resource, form: template, name: workspace}}
         - {name: notes, templateRef: {kind: Resource, form: template, name: knowledge}}
@@ -53,18 +53,18 @@ templates:
 
   - apiVersion: conduit.example/v1alpha1
     kind: Conduit
+    form: template
     metadata: {name: pool-access}
     spec:
-      form: template
       contract: resource-access.example/v1alpha1
       endpointRoles: {participant: Session, source: Pool}
       requestedOperations: [read, search]
 
   - apiVersion: conduit.example/v1alpha1
     kind: Conduit
+    form: template
     metadata: {name: discussion}
     spec:
-      form: template
       contract: retained-exchange.example/v1alpha1
       endpointRoles: {participants: Session}
       supportRequirements:
@@ -75,9 +75,9 @@ templates:
 
   - apiVersion: conduit.example/v1alpha1
     kind: Session
+    form: template
     metadata: {name: claude-engineer}
     spec:
-      form: template
       defaults: {runtime: conduit, provider: claude-example, model: example-model}
       connectionDefaults:
         - {intent: open, templateRef: {kind: Conduit, form: template, name: pool-access}}
@@ -86,9 +86,9 @@ templates:
 
   - apiVersion: conduit.example/v1alpha1
     kind: Session
+    form: template
     metadata: {name: openai-engineer}
     spec:
-      form: template
       defaults: {runtime: conduit, provider: openai-example, model: example-model}
       connectionDefaults:
         - {intent: open, templateRef: {kind: Conduit, form: template, name: pool-access}}

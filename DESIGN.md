@@ -2,7 +2,7 @@
 
 Updated: 2026-10-30. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
-The common authoring envelope remains; form placement, detailed fields, transports, storage engines
+The common authoring envelope is settled; detailed fields, transports, storage engines
 and implementation layout remain under review.
 
 ## Families, templates and instances
@@ -28,8 +28,8 @@ Resource identity/ownership, backing identity, authentication and process lifeti
 The shared distinction does not impose one lifecycle or mandatory process on every family.
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
-Named versus inline templates, version binding outside Session behavior, form placement,
-reference qualification and lifecycle operations remain in [REVIEW.md](REVIEW.md).
+Named versus inline templates, version binding outside Session behavior, reference
+qualification and lifecycle operations remain in [REVIEW.md](REVIEW.md).
 
 ## Configuration language
 
@@ -39,15 +39,17 @@ and behavioral contracts across every entry point.
 CLI/API/frontends must interpret the same objects consistently. Future generators can
 emit this model; they cannot bypass its validation or authority rules.
 
-Each object uses its family as `kind` and explicitly identifies its template or instance
-form. Form is a structural distinction, not an observed lifecycle state: instantiation creates
-a separate object rather than changing the template's form. Placement of the form discriminator
-and exact reference syntax remain open. The common authoring envelope remains:
+Each object uses its family as `kind` and a top-level `form` beside it to identify a template
+or instance. Form is a structural distinction, not an observed lifecycle state: instantiation
+creates a separate object rather than changing the template's form. Family and form jointly
+determine how to interpret `spec`; exact reference syntax remains open. The common authoring
+envelope is:
 
 | Field | Meaning |
 | --- | --- |
 | `apiVersion` | The versioned contract used to interpret the object. |
 | `kind` | The family: `Session`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
+| `form` | The template/instance distinction, at the top level alongside `kind`. |
 | `metadata` | Author-editable naming/labels and system-owned identity/version information, with ownership defined per field. |
 | `spec` | Configuration defined by the family and form's contract. |
 

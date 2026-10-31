@@ -4,8 +4,8 @@
 The accepted model has four families, each with template and instance forms. Resource
 instances are created only through, and owned exclusively by, a Pool instance. Conduit
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
-envelope, family kinds with explicit forms, identity and checked-edit contracts; form placement
-and lifecycle are open.
+envelope, family kinds with top-level forms, identity and checked-edit contracts; reference
+qualification and lifecycle are open.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -293,14 +293,14 @@ popularity alone.
 
 ## Proposed template and instance forms
 
-The accepted representation uses one family `kind` plus an explicit template/instance form.
+The accepted representation uses one family `kind` plus a top-level template/instance `form`.
 Family and form jointly determine the schema and operations; templates and instances do not
-need identical payloads. The form discriminator could sit beside `kind` or inside `spec`;
-its placement and reference qualification remain under review.
+need identical payloads. `form` sits beside `kind`; `spec` contains the configuration for that
+family and form. Reference qualification remains under review.
 
-The scenario fixture's `spec.form` is **an illustrative placement**, not an accepted field
-location. Status shape, command names, operation payloads and instance export also remain
-open. Reusable template registration, instance creation, native provisioning and starting
+The scenario fixture follows the accepted envelope. Its payloads and reference syntax remain
+illustrative; status shape, command names, operation payloads and instance export are open.
+Reusable template registration, instance creation, native provisioning and starting
 execution must remain distinguishable even if a frontend offers a combined operation.
 
 Keep authoring interpretation, template configuration version, resolved instance configuration,

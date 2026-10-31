@@ -62,8 +62,9 @@ remain open. Room-based behavior is one candidate, not the universal Conduit pri
 ### 1. Expose Euphony repositories as local paths
 
 The Pool creates or attaches repository/workspace Resource instances according to their template
-establishment configuration. One-off/import syntax remains under review where an instance export
-lacks creation-only settings; this does not require a separate authored operation recipe.
+establishment configuration. Direct creation from complete instance configuration is accepted;
+the R6 profile must make establishment inputs/export semantics explicit. No separate authored
+operation recipe is required.
 An access connection selects permitted Resources and operations. Agent activation
 can prepare a participant's local path projection, subject to adapter and execution-mode
 capabilities.
@@ -335,8 +336,9 @@ policy, not a protocol-wide rule.
 The Interface requests 60 seconds through its management Conduit. The target checks the caller's
 current authority, the control's bounds and transition conditions. Its change handler applies the
 setting to the managed request path and reports whether 60 seconds is confirmed in use, pending,
-failed or uncertain. A successful request receipt alone does not prove application. The precise
-common outcome vocabulary and concurrency checks remain under review.
+failed or uncertain. Receipt alone does not prove application. MCP carries extensible plugin
+results; configuration changes use the accepted target coordination and revision checks. Exact
+payload fields remain for the schema packet, without a closed Conduit domain-state enum.
 
 This change can be a single runtime/plugin operation; it does not require repeating login or
 Resource establishment. A more involved permitted change could run a graph. In both cases the
@@ -551,10 +553,10 @@ evaluation implementation remain open. This rule does not prescribe a new policy
 
 ## Review sequence and tests
 
-With the five families, complete instance specs, Pool-managed shared authentication and explicit
-open/join intents settled, review authentication reuse and state ownership first. Follow with
-endpoint/filter contracts, lifecycle handlers and YAML representation. [REVIEW.md](../REVIEW.md)
-is the single agenda; supporting examples do not establish an executable schema.
+The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
+Authentication reuse, composite participation, typed filters and access-path composition are
+accepted. These examples now support R3's retirement/reopening, R4's selection/routing and R7's
+communication contract. Detailed syntax belongs to R6; examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:
 
@@ -574,5 +576,6 @@ Use these change cases alongside the five happy paths:
 
 This changes the review order, not the accepted envelope, identity/update rules, private Agent context, Agent
 activation, Pool ownership/access route or backing-data preservation.
-Participant/connection state placement, topology, communication semantics and composition
-remain proposals; exclusive Pool ownership of Resource instances is settled.
+Detailed attachment representation, topology and communication semantics remain open; composite
+participation and exclusive Pool ownership are settled. The closure agenda separates those
+decisions from implementation work.

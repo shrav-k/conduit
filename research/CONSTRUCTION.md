@@ -232,7 +232,8 @@ User → frontend → Interface ── management Conduit ──→ management R
                              ← results, state and supported events
 ```
 
-The shared contract below is a proposal for the next grouped review, not a finalized API:
+The table summarizes the accepted interaction boundary; exact wire schemas and type-specific
+behavior still need the configuration/contract packet:
 
 | Protocol responsibility | Type/integration responsibility |
 | --- | --- |
@@ -287,7 +288,8 @@ search-control example shows how a template limit and narrower Conduit restricti
 Templates reuse declared type-control defaults and may customize the exposed surface. Exact
 selection notation, change-handler representation, transition rules, storage fields, revision
 mechanics and implementation-version compatibility remain for grouped review. The retained setup
-graph and control definitions are fixed in v0; changing them requires a new instance.
+graph and control definitions remain fixed for ordinary Agent controls. R1 in the closure agenda
+asks whether unrestricted Interface administration should have an in-place upgrade exception.
 Configuration changes apply one at a time per target by default, with declared safe parallelism.
 They normally check the caller's expected configuration revision at application, with explicit
 contract exceptions for safe unconditional operations.
@@ -673,12 +675,13 @@ its syntax until the individual contracts work. Detailed supporting research rem
 
 ## Next discussion
 
-Use the [grouped review](../REVIEW.md#next-discussion) to formalize template-declared controls:
-exposure/defaults, typed value and transition constraints, invocation/application, and contract
-evolution. Test authoring through an Interface, Pool-mediated creation and then a configuration
-change over a Conduit. Include a narrower parameter filter, rejected change and uncertain outcome.
+Use the [closure agenda](../REVIEW.md#remaining-decision-bundles) for the remaining decisions.
+Control exposure/defaults, named invocation, applied-state evidence, concurrency and revision
+checks are already accepted. Test their concrete representation through Interface authoring,
+Pool-mediated creation and a configuration change, including rejection and uncertain outcomes.
 
 The same template mechanism must express an Agent, a search Resource, a filesystem Resource and
 a Conduit's own supported settings without turning every control into an object or imposing one
 provider's queueing behavior. Keep setup graphs, runtime handlers and persistent observations
-separate; decide whether change handlers may compose graphs without prematurely requiring one.
+separate. Change handlers may already use a typed plugin operation or graph; exact fields and
+the graph language's v0 breadth remain in R2/R6 rather than reopening that choice.

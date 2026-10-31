@@ -331,9 +331,9 @@ local or remote. Registry presence grants no access and need not name every nati
 
 Templates name reusable concepts; instance names distinguish specific creations. Template-based
 creation defaults to the template's name plus a generated unique suffix, such as `reviewer-7f3a`.
-Callers may supply an explicit unique name instead. The one-off/import path under review retains
-the explicit-unique-name requirement. All paths obey per-family uniqueness across forms. Exact suffix
-format, name constraints and generated-collision handling remain open. Generated names remain
+Callers may supply an explicit unique name instead. Direct creation from complete instance
+configuration also requires an explicit unique name. All paths obey per-family uniqueness across
+forms. Exact suffix format, name constraints and generated-collision handling remain open. Generated names remain
 separate from stable system IDs, and a specific instance name does not imply automatic expiry.
 
 V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
@@ -560,9 +560,9 @@ language must express. [REVIEW.md](REVIEW.md) focuses the remaining choices on t
 An Agent template is reusable configuration for any number of independent Agents. It specifies
 runtime/model/account defaults, execution preferences and requirements, optional permission
 limits, default connection choices, activation instructions and the exposed configuration controls
-with their constraints. Establishment uses one Agent
-template's configuration; one-off/import syntax remains under review. V0 defers inheritance
-and composition between Agent templates.
+with their constraints. Establishment uses one Agent template's configuration or a directly
+authored complete instance definition. Export/creation representation belongs to the configuration
+profile; direct creation itself is accepted. V0 defers inheritance and composition between Agent templates.
 
 Establishment produces the Agent's complete spec. The Agent operates from that spec
 and explicit live dependencies; retain actual execution settings.
@@ -813,7 +813,7 @@ backing identity, operations and shared/per-consumer state before deciding Pool 
 A type contract defines supported semantics; a template supplies reusable establishment
 configuration and declares the permitted configuration changes within that support.
 The minimum common fields and consumer boundaries for other Resource types remain open in
-[REVIEW.md](REVIEW.md#1-resource-templates-and-instances).
+[REVIEW.md](REVIEW.md#remaining-decision-bundles).
 
 For a local folder, the Resource instance describes the configured folder attachment. Each
 Agent's symlink is preparation state, not another Resource instance. Two Agents may use
@@ -991,13 +991,11 @@ to create or attach Resources through their owning Pool. A frontend may offer bo
 explicit action with separate outcomes; successful registration does not imply provisioning.
 No background reconciler is implied.
 
-Persistent provisioning plans and per-entry creation-history bindings remain under review; these
-are separate from accepted local composition declarations and resolved dependency bindings. The
-previous proposal is consolidated in [REVIEW.md](REVIEW.md#2-pool-grouping-and-resource-ownership);
-they should not force extra configuration/state layers into the Resource model. Pools group unitary Resources and should
-account for their types when coordinating capabilities. Exact grouping behavior, provisioning
-syntax and partial outcomes remain open. Stable identity, explicit effects, safe retry and separate
-backing-data cleanup remain requirements regardless of the chosen representation.
+Use the accepted local composition declarations, resolved instance bindings and ordinary operation
+evidence without requiring a second provisioning-plan ledger. Pools group unitary Resources and
+derive useful views from their contracts. Remaining selector, retirement and representation choices
+are consolidated in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
+effects, safe retry and separate backing-data cleanup remain requirements.
 
 Resource templates can be selected by explicit references and labels where supported.
 Selection among an existing Pool's owned instances is another operation. Exact selector
@@ -1177,8 +1175,8 @@ Connection establishment supports both intents explicitly:
 
 - **Join an existing instance:** establish participation in a specified existing relationship.
 - **Open a new connection:** create a relationship from its establishment configuration,
-  subject to the contract's endpoints, authority and provisioning requirements. One-off/import
-  syntax remains in review alongside the template-to-instance transition.
+  subject to the contract's endpoints, authority and provisioning requirements. This can use a
+  template or a complete direct definition; exact export/creation fields remain for the schema packet.
 
 Reusing a template name does not implicitly choose between these intents. For example,
 two Agents can join the same discussion, or create separate discussions from the same

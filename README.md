@@ -25,7 +25,9 @@ Interface permissions and narrower/multiple-Interface policies are deferred whil
 developed. Normal interaction uses Conduits and runtime-supported operations; Resource creation
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
 Whether administrative edits may also change fixed instance definitions in place is the
-[next review question](REVIEW.md#next-discussion).
+[next review question](REVIEW.md#next-discussion). The documentation audit groups all remaining
+protocol rulings into [seven closure bundles](REVIEW.md#remaining-decision-bundles), separate from
+implementation details and future extensions.
 
 Templates contain complete establishment instructions and declare what instance configuration
 can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit

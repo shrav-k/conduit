@@ -140,10 +140,11 @@ snapshot or override-history ledger. Internal continuation state can be opaque t
 its phase and recovery options remain inspectable. Secret-bearing state needs protected storage;
 reusable YAML and ordinary status exports must not become a credential archive.
 
-After completion, retain outcomes/native identities under existing retention rules. Whether
-creation-only choices also remain immutable instance configuration is still open. While an
-attempt is incomplete, its effective setup inputs must remain recoverable; deleting the source
-template must not force Conduit to guess them. Full template history is unnecessary.
+After completion, retain outcomes/native identities under existing retention rules. Instances
+already retain their resolved setup graph independently of the source template. The representation
+of creation-only inputs versus applied settings remains in R6 of the closure agenda. Incomplete
+attempts need recoverable effective inputs; full template history is unnecessary. R1 separately
+addresses any administrative exception to fixed instance definitions.
 
 ## Case 1: a Claude subscription Agent
 
@@ -515,7 +516,7 @@ or provider quotas. On restart, inspect Git's actual registration and retained e
 before repeating add. Explicit cleanup checks active consumers, local work and the existing
 preservation rules; Agent closure does not automatically remove a worktree or its branch.
 
-### What option 2 would add
+### Custom graph composition
 
 Suppose the user wants a custom ready-to-use workspace: create a worktree, populate fixtures,
 then perform a supported validation. An illustrative graph fragment inside establishment
@@ -552,12 +553,11 @@ survive retries, when output handles are valid, which completed work is reused a
 a composite releases. A fixed linear graph is much smaller than a general language with loops,
 arbitrary expressions or shell execution, but these semantics still cannot be skipped.
 
-A useful combined design is **ordinary typed configuration for standard Resource lifecycles,
-plus optional typed graphs for custom composition**. A graph should call complete safe operations,
-not allow bypassing a worktree type's identity checks or hard-code every SSH protocol exchange.
-Whether that composition layer belongs in v0, and whether its authoring home is a Pool template
-or another existing family's contract, remains a single connected ruling rather than an assumed
-new workflow family. This is the question to resolve from the filesystem examples.
+The accepted design combines **typed template configuration with inline or referenced graphs**
+across the five families. A handler can use one plugin operation or compose several operations;
+there is no new workflow family. Graphs call typed operations rather than reimplementing every
+SSH exchange or bypassing worktree identity checks. R2 concerns the graph language's initial
+execution features, not whether template graph composition is allowed.
 
 ## What the first protocol must settle
 
@@ -577,18 +577,11 @@ Bound work through declared deadlines, retry/backoff limits and concurrency wher
 The exact policy fields are open; an interaction wait and an in-flight provider call may need
 different timeout behavior, and timing out either does not prove cancellation completed.
 
-Review these connected rulings before choosing more field names:
-
-1. Render the accepted template/plugin/instance split with user-visible progress and recovery,
-   including shared authentication that survives consumer detachment.
-2. Define dependency inputs, output types/lifetimes and readiness gates together. Preserve
-   Conduit-mediated access and distinguish blocking startup cycles from valid communication graphs.
-3. Define attempt continuation, interaction waits, failure/retry and cancellation together,
-   including who may resume setup and how this differs from restarting a model execution.
-4. Decide creation-only field retention and one-off/import behavior using both failed and successful
-   establishment. An instance export must not falsely promise a complete reproducible deployment.
-5. Use a concrete composition to choose graph/handler fields and necessary branching, without
-   reopening the selected typed YAML plus graph approach or imposing a full workflow language.
+The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
+These cases support R2's graph execution/recovery contract, R3's ownership lifecycle and R6's
+configuration/export profile. Direct complete-instance creation, graph composition and the
+template/plugin/instance responsibility split are already accepted. The next schema packet should
+render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 
 ## Evidence gates before implementation and live experiments
 

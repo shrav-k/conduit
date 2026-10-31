@@ -81,7 +81,7 @@ For Conduit, the proposed split is:
 | Model catalog | Model IDs, operation families, modalities, limits, reasoning options, prices when known, source/freshness. | That a live request succeeds or reported pricing equals subscription cost. |
 | Account binding | Selected registration, credential resolution/refresh ownership, identity evidence and account-specific availability. | Permission to expose unrelated files, tools or memory to that account. |
 
-These are implementation responsibilities under Session/Resource contracts,
+These are implementation responsibilities under Agent/Resource contracts,
 not additional top-level concepts. An external Codex or Claude Code runtime is a separate
 adapter: it owns its loop, native history and supported authentication. A model-provider
 adapter supplies inference to Conduit's loop. A frontend supplies neither.
@@ -194,7 +194,7 @@ that those requirements have been tested against services.
 
 Image generation and classification should have separate operation contracts. A provider
 being selectable for classification must not make it appear usable as a conversational
-Session model. Add each provider definition with its explicit endpoint/auth/compatibility
+Agent model. Add each provider definition with its explicit endpoint/auth/compatibility
 fixtures; sharing a wire adapter should reduce duplication without hiding exceptions.
 
 Pi's normalized stream distinguishes text, thinking and tool-call starts/deltas/ends,
@@ -289,8 +289,8 @@ generated fields. Unmatched tool results are not comprehensively validated by th
 
 ```mermaid
 flowchart LR
-    H[Retained Session history] --> C[Context construction]
-    P[Session activation results] --> C
+    H[Retained Agent history] --> C[Context construction]
+    P[Agent activation results] --> C
     R[Permitted Resource revisions] --> C
     K[Applicable checkpoint] --> C
     C --> A[Target protocol projection]
@@ -332,7 +332,7 @@ truncating serialized JSON. A smaller target may require compaction; failed comp
 not erase history or automatically repeat unsafe tool effects. Compaction is a model operation
 whose provider/account/usage needs attribution. Exact thresholds remain an experiment choice.
 
-## Session activation and Pool resources
+## Agent activation and Pool resources
 
 Pi advertises skill metadata before loading full instructions. Packages can bundle skills,
 prompts, themes and executable extensions; package selections narrow what the package
@@ -342,18 +342,18 @@ selected precedence rules. [Skills][skills] · [Packages][packages]
 
 The proposed preparation sequence is:
 
-1. Read the Session's complete instance spec, materialized at creation, and resolve its explicit dependencies.
+1. Read the Agent's complete instance spec, materialized at creation, and resolve its explicit dependencies.
 2. Open/join selected connections explicitly; resolve owner-Pool Resource access and current authority.
    Any required new Resource is provisioned through its Pool before use.
 3. Build the permitted Resource inventory, including source versions and compatibility.
-4. Apply **activation rules in the Session spec** to that inventory: advertise skills, register permitted
+4. Apply **activation rules in the Agent spec** to that inventory: advertise skills, register permitted
    tools, mount an authorized workspace, or load selected instruction content within a budget.
 5. Record results, skipped resources, conflicts, unsupported capabilities and content provenance.
-6. Let the Session start its model turn using that resolved preparation result.
+6. Let the Agent start its model turn using that resolved preparation result.
 
 This avoids a circular bootstrap where the model must discover and install the tools needed
 to load its own instructions. Structured preparation actions can run before inference;
-free-text behavioral instructions remain agent guidance. The Session template can contain both,
+free-text behavioral instructions remain agent guidance. The Agent template can contain both,
 distinguished explicitly. A Conduit never becomes an installation script.
 
 Recommended v0 rules: same Resource UID/revision/action activates once; incompatible versions
@@ -434,11 +434,11 @@ Conduit's retain-until-purge policy. [agentwatch README][agentwatch]
 
 | Family | Example | Success means | Recovery needs |
 | --- | --- | --- | --- |
-| Capability request | Read memory; call a permitted MCP tool; ask another Session for a review. | A defined result or explicit pending work handle, with effect outcome separately tracked. | Correlation, authority, idempotency/reconciliation, deadlines and cancellation semantics. |
-| Retained exchange | Deliver a finding to selected Sessions, including one currently offline. | Durable acceptance for named recipients; processing is a later fact. | Stable event IDs, recipient progress, deduplication, bounded replay and current-access checks. |
+| Capability request | Read memory; call a permitted MCP tool; ask another Agent for a review. | A defined result or explicit pending work handle, with effect outcome separately tracked. | Correlation, authority, idempotency/reconciliation, deadlines and cancellation semantics. |
+| Retained exchange | Deliver a finding to selected Agents, including one currently offline. | Durable acceptance for named recipients; processing is a later fact. | Stable event IDs, recipient progress, deduplication, bounded replay and current-access checks. |
 | Observation | Follow execution status, presence or the current Resource inventory. | A sufficiently current view, not receipt of every intermediate change. | Snapshot/version, bounded/coalesced deltas, gap reporting and resubscription. |
 
-“Capability request” can share an envelope across Pool resources and Sessions without
+“Capability request” can share an envelope across Pool resources and Agents without
 pretending that a file read and a model turn cost the same or complete synchronously.
 Request handles, events and observations are supporting contracts, not new top-level nouns.
 Exact names, fan-out, persistence and wake defaults remain proposals.
@@ -446,7 +446,7 @@ Exact names, fan-out, persistence and wake defaults remain proposals.
 | Reference | Best lesson | Boundary to retain |
 | --- | --- | --- |
 | Chord | Typed references, principal-specific interfaces, snapshot/delta flow and routing. | Reference lifetime and coalesced state do not provide a durable conversation ledger. |
-| MCP | Familiar capability invocation, resource access and optional long-running task handles. | Protocol version and negotiated extensions matter; no implied Session lifecycle policy. |
+| MCP | Familiar capability invocation, resource access and optional long-running task handles. | Protocol version and negotiated extensions matter; no implied Agent lifecycle policy. |
 | [A2A task lifecycle](https://a2a-protocol.org/latest/topics/life-of-a-task/) | Separate immediate messages, longer work, artifacts and contextual grouping. | Its `contextId` groups interaction; it is not permission to import private model history. Task IDs need not become Linear issue IDs. |
 | [NATS JetStream](https://docs.nats.io/learn/jetstream/pull-consumers) | Pull-based bounded consumption, independent consumers and explicit acknowledgements. | Delivery acknowledgement is not proof an agent completed work. A broker is optional for a local v0. |
 | [Zenoh entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html) | Separate publication, query/reply, storage and liveliness behind related addressing. | A live subscription is not retained history; native protocol sessions are not Conduit Agents. |
@@ -454,7 +454,7 @@ Exact names, fan-out, persistence and wake defaults remain proposals.
 
 ### Flows the contract must make unambiguous
 
-**Review request:** Session A addresses B through an authorized binding, with an operation
+**Review request:** Agent A addresses B through an authorized binding, with an operation
 ID and pinned artifact references. Admission records accepted or rejected. B may remain idle
 until permitted execution is triggered. A can inspect progress without launching B. Completion
 records a result with provenance. A timeout while waiting does not cancel accepted work unless
@@ -467,7 +467,7 @@ still-permitted content. Content may be retained while its delivery is withheld.
 
 **Slow observer:** repeated token/progress updates may collapse into a newer snapshot, while
 an accepted work request or final outcome remains retrievable. A UI disconnect neither
-completes work nor owns cancellation of an independently running Session.
+completes work nor owns cancellation of an independently running Agent.
 
 **Permission change:** narrowing the Conduit immediately changes future managed reads and
 dispatch. Queued content is checked again on delivery. Content already in native model context
@@ -487,8 +487,8 @@ unbounded model turns; bound work, concurrency and repeated triggers.
 
 Pi telemetry explicitly separates diagnostic spans from durable application state, supports
 explicit propagation and links, and includes adapter conformance cases. Adopt that separation:
-Session/execution/account/Conduit operation IDs are authoritative; trace IDs are optional
-correlation. Forks and cross-Session requests may link traces without falsely making all work
+Agent/execution/account/Conduit operation IDs are authoritative; trace IDs are optional
+correlation. Forks and cross-Agent requests may link traces without falsely making all work
 one nested call. [Telemetry][telemetry]
 
 Keep durable usage observations distinct from sampled/exported traces. Include compaction,
@@ -531,7 +531,7 @@ Temporary probe files were kept outside the product repository.
 
 The next experiment should be specified in this order:
 
-1. Resolve the YAML graph offline: template/instance references, independent Sessions, exclusive
+1. Resolve the YAML graph offline: template/instance references, independent Agents, exclusive
    Pool ownership, narrowing-only filters, explicit activation and visible diagnostics. Use the examples and failure matrix
    in [CONFIGURATION.md](CONFIGURATION.md).
 2. Verify supported account enrollment/identity and independent refresh/logout for the four
@@ -544,7 +544,8 @@ The next experiment should be specified in this order:
    are the smallest useful comparison. Do not make a broker or tracker mandatory to prove it.
 
 For discussion, resolve the grouped choices in [REVIEW.md](../REVIEW.md#next-discussion)
-before converting these proposals into requirements or starting implementation.
+before converting these proposals into requirements or starting implementation. R5 covers activation;
+R7 covers the communication contract. Those closure bundles replace a separate Pi review queue.
 
 [factories]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/all.ts
 [provider-interface]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/models.ts

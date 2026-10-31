@@ -45,7 +45,7 @@ contract is a definition, not an additional Interface instance or object family.
 should configure instances; they should not repeatedly author capabilities already defined by
 a type's implementation and schema.
 
-**Main proposed rule:** group by responsibility; select and operate through explicit contracts.
+**Working rule:** group by responsibility; select and operate through explicit contracts.
 Do not infer read/write behavior, isolation, compatibility or lifetime from the group name.
 
 ## Evidence from other systems
@@ -81,7 +81,7 @@ Pi's pinned [package documentation](https://github.com/earendil-works/pi/blob/04
 bundles skills, prompts, themes and extensions as a distribution unit. Its declared selections
 can narrow those contents. This supports retaining native bundles while recognizing different
 activation requirements. A bundle's installation format does not guarantee its executable
-extensions work in Conduit's runtime. The [existing Pi investigation](PI_CONNECTORS.md#session-activation-and-pool-resources)
+extensions work in Conduit's runtime. The [existing Pi investigation](PI_CONNECTORS.md#agent-activation-and-pool-resources)
 documents that compatibility boundary. No Pi runtime dependency follows from this finding.
 
 ### Research methods and their limits
@@ -564,7 +564,8 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-Recommended discussion sequence:
+Use the [single closure agenda](../REVIEW.md#remaining-decision-bundles), especially R2/R3/R6.
+The following are schema/example drafting tasks, not another sequence of product rulings:
 
 1. Use the accepted four groups and directory/worktree split for concrete type review; do not
    repeat those rulings. Local-directory create/attach intent and absolute instance backing paths

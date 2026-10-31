@@ -376,8 +376,9 @@ prohibited extensions. Do not treat a static settings schema as the complete lif
 Keep the existing small operational guarantees: outcome evidence and idempotent/safe retry where
 supported are runtime concerns, not another document users must maintain. No template snapshots,
 override ledger, permanent declarative controller or per-step registered object is implied. Direct
-instance import, incomplete establishment recovery and changing creation-only fields must be
-reviewed together so the exported configuration makes only promises it can actually support.
+instance creation is already accepted. Its export representation, incomplete establishment recovery
+and creation-only fields belong together in the R6 configuration profile, so exports make only
+promises they can support.
 
 ## Kubernetes: an API model with configuration semantics
 
@@ -613,9 +614,10 @@ and Conduit restrictions do not merge like ordinary draft values. Shared authent
 per-caller authority and client reuse require distinct configuration meanings. Exact YAML examples
 must follow the current contracts.
 
-Pool provisioning-plan/binding proposals are still parked in the
-[review agenda](../REVIEW.md#2-pool-grouping-and-resource-ownership). No new control declaration
-requires reviving that ledger or making every operation/parameter another registry object.
+Pool composition uses the accepted local entries, resolved instance bindings and ordinary operation
+evidence. No separate provisioning-plan ledger is required. Remaining selection/retirement choices
+are consolidated in the [closure agenda](../REVIEW.md#remaining-decision-bundles); controls do not
+make every operation or parameter another registry object.
 
 ## Composition needs several operators
 

@@ -309,6 +309,8 @@ Retain [registry/authoring contracts](DESIGN.md#configuration-language):
   use replacement/explicit child edits rather than an implicit deep merge or parameter DSL.
 - Materialized instance defaults, strict known schemas, and separate validation versus operational
   readiness. Missing runtime/service can be reported without inventing success.
+- Repeated template instantiation or direct creation from complete instance configuration; Resource
+  creation still goes through its owning Pool. Export is not a snapshot of external data or credentials.
 - Checked template edits with separate ID/version preconditions and recoverable edit baselines.
   These are not a bypass for running-instance controls. Controls coordinate application per target;
   they check expected configuration revisions by default, with explicit contract exceptions.
@@ -353,7 +355,8 @@ remaining choices and staged evidence.
 
 The five families, template/instance forms, Pool ownership and shared service authentication,
 complete construction templates, typed handlers and template-declared change boundaries are
-settled direction, including Pool-owned reusable authentication Resources. Concrete binding and
-authentication-operation schemas, control schemas, Conduit filtering/composition,
-lifecycle transitions and communication topology
-remain open. Resolve them with complete examples rather than provider-specific micro-rulings.
+settled direction, including Pool-owned reusable authentication Resources. The remaining rulings
+are consolidated in [seven review bundles](REVIEW.md#remaining-decision-bundles): administrative
+definition changes, graph semantics, retirement, connection selection/routing, activation,
+configuration/extension resolution, and communication scope. Proposed solutions remain proposals.
+Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

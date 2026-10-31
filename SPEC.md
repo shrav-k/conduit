@@ -94,7 +94,9 @@ No automatic purge follows from a missing Pool reference.
    instance configuration; joining targets an existing connection. Reusing a template name
    does not choose between these operations or imply shared clients, credentials or private context.
    Session and Resource templates can reference Conduit templates to describe flows their
-   instances will establish. Exact declaration fields and preparation triggers remain open.
+   instances will establish. The enclosing instance automatically supplies the consumer endpoint;
+   it need not repeat its identity in the declaration. This grants no authority and does not
+   choose open versus join. Remote endpoint selection, fields and preparation triggers remain open.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.

@@ -402,8 +402,11 @@ purge a local checkout, provider data or retained conversation history.
 
 A Conduit template describes a versioned interaction contract, endpoint roles, requested
 operations, filters and support requirements. Resource and Session templates can reference
-Conduit templates to declare flows their instances will establish. Registration alone starts
-no flow. Opening establishes a Conduit instance; joining selects an existing one. Logical
+Conduit templates to declare flows their instances will establish. The enclosing instance
+automatically supplies the consumer endpoint; no local-endpoint marker or generated instance
+name is needed in the reusable template. This grants no authority and does not determine
+open/join intent or preparation timing. Registration alone starts no flow.
+Opening establishes a Conduit instance; joining selects an existing one. Logical
 attachments and their authentication remain distinct from transport sockets and shared data.
 
 Conduits carry and filter data; the engine/plugins implement one-time transfers, persistent

@@ -691,6 +691,13 @@ declarations in their configuration. The system establishes the selected flow wh
 through the consumer's lifecycle. Registering configuration alone does not open it. Exact
 declaration fields, preparation triggers and reconfiguration remain under review; declarations
 are not a requirement to author the same endpoint relationship twice.
+
+For a declaration inside a Session or Resource, the enclosing instance supplies the consumer
+endpoint automatically. A reusable search template declaring `storage-read` can therefore be
+used by `search-a` and `search-b`, each resolving itself as the consumer without an authored
+local-endpoint marker or generated instance name in the template. This supplies endpoint
+identity only: authority checks, explicit open/join intent and preparation timing remain
+separate. Remote endpoint selection and exact declaration syntax still require review.
 Conduits are the extensible interaction layer across the four families. Pool access and
 Session communication are examples, not a closed list of endpoint roles or protocols.
 

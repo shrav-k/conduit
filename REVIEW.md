@@ -52,7 +52,9 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   Pool grouping alone does not establish the connection or grant access. This does not create
   a Conduit per query/socket; declaration syntax and connection creation remain open.
 - Resource and Session templates can reference Conduit templates to declare flows for their
-  instances. The engine/plugins perform the work; a Conduit has no independent runtime.
+  instances. The enclosing instance automatically supplies the consumer endpoint without a
+  local-endpoint marker; this grants no authority or implicit open/join choice.
+  The engine/plugins perform the work; a Conduit has no independent runtime.
   One-time transfers, persistent access and ongoing sync are examples, not a closed taxonomy.
 - The last logical consumer/peer detaching ends a live Conduit and closes remaining provider-side
   connections. Sync subscriptions remain attached between polls or temporary transport failures.
@@ -86,10 +88,11 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Make **consumer-declared Conduits** concrete next. Resource/Session templates can reference
-Conduit templates; distinguish those declarations from the established instance's resolved
-state. Decide whether the enclosing consumer implicitly supplies its own endpoint, then settle
-remote endpoint selection and preparation triggers. Avoid duplicate authored assignments.
+Settle **when consumer-declared Conduits are established** next: during explicit consumer
+preparation/start by default, or on demand at first use. Registration alone remains passive.
+The enclosing instance supplies the consumer endpoint; remote endpoint selection, required/
+optional connections and exact declaration fields still need review. Keep declarations distinct
+from resolved state and avoid duplicate authored assignments.
 Live Conduit lifetime is now settled around logical consumer/peer attachments; reopening and
 configuration changes remain separate choices. Express template/instance YAML before Pool mechanics.
 Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
@@ -108,7 +111,7 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How are Resource connections declared? | A Resource template can reference a Conduit template as a Session template does. Decide implicit local-consumer identity versus explicit endpoints, remote references, open/join selection and preparation triggers. Distinguish the consumer's declaration from resolved connection state and choose how later changes are applied without competing editable copies. Pool ownership/access still apply. |
+| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity automatically. Settle remote references, explicit open/join selection, preparation versus first-use establishment, and required/optional behavior. Distinguish the consumer's declaration from resolved connection state and choose how later changes are applied without competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |

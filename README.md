@@ -27,7 +27,8 @@ provisioning remain explicit, distinct effects. Persistent Pool declarations and
 mechanics are back under review rather than prerequisites for defining Resources.
 
 Session and Resource templates can reference Conduit templates to describe connections to
-establish for their instances. The engine and plugins implement the flow; a Conduit does not
+establish for their instances; the enclosing instance automatically supplies the consumer
+endpoint. The engine and plugins implement the flow; a Conduit does not
 have its own independent runtime. It can transfer data once, maintain access or synchronize
 over time. Registration alone starts no flow. Opening a new Conduit and joining an existing
 one remain explicit, distinct intents; sharing does not imply shared credentials/private context.

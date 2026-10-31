@@ -22,7 +22,9 @@ Instances need not have resident processes. One authority per fact is useful wit
 every fact belong to one Session, connection or backend.
 
 Session and Resource templates can reference Conduit templates as declarations of connections
-to establish. A Conduit has no independent runtime; the engine/plugins perform transfers and
+to establish; the enclosing instance supplies the consumer endpoint automatically. Explicit
+open/join intent, authority and preparation timing remain separate.
+A Conduit has no independent runtime; the engine/plugins perform transfers and
 maintain clients or sync work. Logical consumer/peer attachments keep it live between polls and
 during temporary transport failure. The last consumer/peer detaching ends the flow and closes
 provider-side connections. Templates, backing Resources and retained evidence remain separate.

@@ -28,8 +28,9 @@ uses its family as `kind` and a top-level `form` to identify a template or insta
 unique per family across both forms: templates name reusable concepts, while instances have
 names generated from the template name plus a unique suffix unless an explicit unique name
 is supplied. Readable object references include `kind`, `form` and `name`. Create instances
-either from a template and creation choices or directly from complete instance YAML. Direct
-creation requires an explicit unique name; Resource creation always goes through a Pool.
+either by expanding a template and editing ordinary instance fields or directly from complete
+instance YAML. Direct creation requires an explicit unique name; Resource creation always
+goes through a Pool.
 The complete instance `spec` is then edited directly. Creation and replacement updates store
 declared schema defaults explicitly; templates preserve authored omissions. Template history
 is optional; continuing Resource and authority dependencies are explicit on the instance.

@@ -105,7 +105,10 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
 - Across all four families, create instances from complete instance YAML or from a template
-  and creation choices. Direct creation requires an explicit unique name; Resources still
+  expanded into an instance draft, customized through ordinary instance fields. V0 has no
+  separately declared template parameters or parameter-to-field mapping language. Edits can
+  be automated through YAML/CLI/API without an interactive step. Direct creation requires an
+  explicit unique name; Resources still
   require Pool-mediated creation. Both paths produce the authoritative instance spec and
   obey the same validation and authority rules. Creation, provisioning and execution retain
   separate contracts. Later changes edit the instance directly; its creation template can
@@ -127,8 +130,8 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
 - Deletion is checked; registration removal, native shutdown and backing-data purge are distinct.
   Pool ownership introduces lifecycle obligations that ordinary reference behavior does not settle.
 
-References, defaults, template inputs, selectors, filters, activation and provisioning require
-field-specific semantics. There is no universal deep merge or implicit textual substitution.
+References, defaults, creation-time field edits, selectors, filters, activation and provisioning
+require field-specific semantics. There is no universal deep merge or implicit textual substitution.
 Authored intent, resolved configuration, observations and operation outcomes stay distinguishable.
 
 ## Implementation direction and retained behavior

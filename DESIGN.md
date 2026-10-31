@@ -44,6 +44,13 @@ deleting the creation template does not change an existing instance or create a 
 to recover the template before operating it. Adding a Resource to a Pool template therefore
 does not provision it in existing Pools.
 
+Template use expands its configuration into an instance draft. Callers customize ordinary
+instance fields through YAML, CLI or API; v0 has no separately declared template parameters
+or parameter-to-field mappings. Edits may be automated and require no interactive step.
+Normal validation and default materialization apply to the resulting configuration. Draft
+edits prepare a complete configuration submission; they do not introduce a partial-update
+registry protocol or a retained override layer.
+
 Template-origin information may be retained optionally. No source-template snapshots,
 input/override history or persistent template-version binding is required to operate the
 instance. This does not remove stable IDs, configuration-version checks, actual execution
@@ -281,7 +288,7 @@ defaults and updates. Collection order and duplicate identity must have defined 
 
 | Relationship | Established constraint; details still to settle |
 | --- | --- |
-| Session template → Session | Materialize creation choices within required constraints into the instance spec. Continuing authority is explicit. Per-field replacement/addition syntax and default-Conduit precedence are open. |
+| Session template → Session | Expand to an instance draft and edit ordinary fields within required constraints. Continuing authority is explicit. Field-edit/value semantics and default-Conduit precedence are open. |
 | Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Template reuse across Pools creates distinct instances. Selectors cannot assign a foreign instance to another owner; target domains and live behavior remain open. |
 | Session → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
 | Session activation | Instructions materialized in the Session spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |

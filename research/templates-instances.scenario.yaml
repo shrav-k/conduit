@@ -102,6 +102,8 @@ templates:
 # Descriptions of requests and their expected identities, NOT command/API payloads to run.
 # Requests are scenario inputs, not required retained provenance; results show identities,
 # not the complete instance specs that creation must materialize.
+# The illustrative inputs below supply ordinary instance-field values, not separately
+# declared template parameters or a parameter-mapping language.
 # instanceRef/poolRef names refer to outputs of earlier operations in this scenario.
 # Creating a Pool establishes the owner; provisioning is shown separately, not selected as
 # the required v0 operation sequence. No assertion of external atomicity or successful auth.

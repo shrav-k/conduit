@@ -21,6 +21,9 @@ outcomes rather than a long sequence of individual field rulings.
 - Direct creation from complete instance YAML is also supported, with an explicit unique name.
   Both paths use the same validation and authority rules; Resource creation still goes through
   a Pool. Creation, provisioning and execution remain distinct effects.
+- Template use expands an instance draft customized through ordinary instance fields, with no
+  separate parameter declarations/mappings. YAML/CLI/API editing may be fully automated;
+  registry submissions remain complete configurations.
 - Instance creation and checked replacement updates store declared schema defaults explicitly.
   Instance equality compares materialized values; templates preserve authored omissions.
   Unchanged updates still require current authorization and matching ID/version checks.
@@ -47,10 +50,9 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **template expansion and creation edits**. Defaults are materialized in saved
-instances; decide whether template use is ordinary instance-field editing or requires a
-separate declared-input mapping. Then establish Pool provisioning/ownership and instance
-lifecycle together.
+Continue with **draft-edit and field-value semantics**. Template expansion uses ordinary
+instance fields; settle how assignments treat objects and lists, then define remaining
+validation rules. Establish Pool provisioning/ownership and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -65,7 +67,7 @@ lifecycle together.
 
 | Question | Example and considerations |
 | --- | --- |
-| How do callers customize a template at creation? | Compare expansion into an instance draft with ordinary spec-field edits against separately declared inputs mapped to the spec. Edits can be automated without an interactive step. Define supported fields and replacement/addition semantics without a retained override layer or general inheritance language. |
+| How do draft edits treat objects and lists? | Compare replacement of an explicitly assigned field with field-specific merge behavior. Setting a nested child can leave its siblings intact; assigning a whole list may replace it rather than append. Distinguish client draft editing from the already-selected complete registry replacement protocol. |
 | What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
 | How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 
@@ -79,7 +81,7 @@ and direct creation from exported configuration with a distinct name.
 | Question | Example and considerations |
 | --- | --- |
 | What does creating a Pool instance do? | Does it only establish the ownership boundary, or also explicitly request the template's Resource plan? Define registration versus provisioning, required/optional items, dependency order, partial success and retry. No implicit background controller is assumed. |
-| How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, template inputs, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
+| How is Resource creation requested through a Pool? | Define create-new-backing versus attach-existing, instance field values, native target identity, owner assignment and readiness. A connection requiring a conversation store must name or resolve its provisioning Pool before a Resource is usable. |
 | How are selectors used now? | Explicit references/labels can select templates or a Pool's own Resource instances. Decide which contexts permit each, live behavior and duplicate rules. Matching a foreign Resource must not adopt it or make it a second member. |
 | How do separate instances describe shared backing? | Two Pools attach to the same Linear workspace or local directory; another pair provisions separate worktrees. Record the distinction, management/deletion authority, credential boundaries and conflicts on the actual backing target across registrations. |
 | What happens when ownership ends or changes? | Define whether transfer is supported, which authority is required, and how owner deletion handles active uses, retained data and incomplete provisioning. An unowned Resource is a lifecycle problem, not automatic proof that its backing data can be purged. |

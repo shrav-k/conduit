@@ -310,6 +310,9 @@ execution must remain distinguishable even if a frontend offers a combined opera
 Templates and creation choices materialize complete instance specs across all four families;
 direct creation from complete instance YAML is also supported under the same validation,
 authority and Pool-ownership requirements, with an explicit unique name.
+Template expansion produces an instance draft customized through ordinary instance fields.
+V0 introduces no separate template-parameter declarations or mappings. YAML/CLI/API edits
+can be automated; normal validation and default materialization apply to the complete result.
 Instances operate from and edit their own configuration; changes or deletion of the creation
 template do not alter it. No historical source snapshots or input/override ledger are required.
 Resource and authority dependencies are explicit; configuration does not freeze current access
@@ -398,7 +401,7 @@ status and partial effects need explicit semantics.
 
 | Relationship | Proposed composition | Case to test |
 | --- | --- | --- |
-| Template defaults and creation choices | Field-specific replacement/addition materialized in the instance spec. | A Session's selected model replaces a default without overriding required constraints; no historical delta is required. |
+| Template expansion and creation edits | Ordinary instance fields; object/list edit semantics still need specification. | A Session's selected model changes its normal instance field within required constraints; no parameter mapping or historical delta is required. |
 | Pool provisioning selections | Select templates and explicit creation intents; instance identity matters. | Two intentional instances of one template must not be deduplicated as one. |
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
 | Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |

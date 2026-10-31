@@ -38,6 +38,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Partial availability | Ready Resources remain usable through authorized Conduits during incomplete Pool setup. Their prerequisites and declared gates still apply; component and Pool status remain distinct. |
 | Composite Conduits | Reusable bundles preserve component targets, authority and lifecycle. Each consumer's attachment tracks its own component participation and detach cleanup; underlying flows/clients/authentication may still be shared. Supporting Resources remain Pool-owned. |
 | Filters and paths | Typed declarations are implemented by supporting plugins. Every applicable restriction on the chosen path must pass; independent paths preserve complete target/operation/parameter combinations. Custom filter contracts can use scripts/graphs. |
+| Configuration controls | Templates expose named typed controls backed by handlers. Type contracts can supply reusable schemas/implementations; frontends can still present field editing. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -45,20 +46,19 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — how a template exposes configuration changes:** should changes use named typed
-controls, backed by a supported operation or graph handler, rather than treating writable fields
-as the primary interaction contract? Recommend named controls. For example, `set-query-limit`
-accepts a typed `limit` value and applies it to the search Resource's configuration. A control can
-also accept several related settings together. Type contracts can supply reusable schemas/handlers;
-templates select and constrain them. A frontend may still present an ordinary field editor.
+**Next ruling — common application semantics:** should named controls expose a small shared,
+structured contract for application requirements/effects and separate progress/outcomes, with
+plugins supplying the details? Recommend this so every Interface/Agent can distinguish a change
+that can apply live, must wait for a supported boundary, or needs restart/replacement from whether
+the request is pending, applied, failed or uncertain. These are illustrative meanings, not a chosen
+enum or mandatory state machine. Requirements may depend on inputs/current state and must be rechecked.
 
-The alternative marks configuration fields writable and binds change handlers to those fields;
-clients submit edits to the permitted fields. Both approaches use authorized Conduits, typed
-validation and explicit outcomes; neither exposes an unrestricted whole-spec patch. See the
-[bounded control example](research/CONFIGURATION.md#a-bounded-control-example). This ruling selects
-the interaction contract, not exact command/YAML syntax, omitted-control defaults, handler graph
-syntax, update atomicity or requested/applied-state storage. No extra operation-request manifest
-is required of users by either approach.
+The alternative leaves those meanings entirely in each plugin's result format. Both retain typed
+control inputs/outputs, but a shared layer lets generic clients explain what a change requires and
+what actually happened without provider-specific interpretation. See the
+[application example](research/CONFIGURATION.md#application-requirements-and-outcomes).
+Exact fields, vocabulary, automatic versus explicit restart, concurrency and storage of requested/
+applied settings remain open. The proposal adds no mandatory preflight operation or extra confirmation.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -114,7 +114,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Templates declare the allowed surface, parameters and handlers; settle typed operation/graph bindings, Conduit filtering, related-field/transition constraints, concurrency checks and applied-state representation. Control-envelope/graph changes, generic patches and metadata rules remain unresolved. |
+| Configuration changes versus state | Named typed controls backed by handlers are accepted. Define common application semantics, operation/graph bindings, related-field/transition constraints, concurrency checks and applied-state representation. Control-envelope/graph changes and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |

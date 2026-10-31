@@ -88,9 +88,16 @@ or establishment intent rather than inventing it. Current schema/default rules s
 
 ### Template-defined configuration changes
 
-The template must make the allowed configuration changes and their parameters inspectable.
-Type/plugin contracts provide actual supported behavior; templates configure the exposed surface.
-A declaration cannot make an unsupported runtime operation work or grant caller authority.
+**Accepted control surface:** templates expose permitted configuration changes as named typed
+controls backed by handlers. A control such as `set-query-limit` accepts typed inputs, applies
+the supported change and reports its outcome. One control can cover several related settings;
+this does not itself guarantee atomic application. Type/plugin contracts can supply reusable
+schemas and implementations; templates select and constrain the exposed surface.
+
+Frontends may present ordinary field editing and invoke the corresponding control through an
+authorized Conduit. The interaction does not require a separate user-authored operation manifest
+or make all instance fields writable. A declaration cannot make an unsupported runtime operation
+work or grant caller authority. Omitted-control defaults and exact field/handler bindings remain open.
 
 The following is the **recommended contract shape for review**, not finalized YAML or a mandatory
 field list. Shared versioned type definitions can avoid copying schemas into every template, but
@@ -98,7 +105,7 @@ the resolved template/instance must make its effective contract visible.
 
 | Concern | Meaning to expose |
 | --- | --- |
-| Configurable surface | Which settings or named controls are exposed, their types, and which configuration they affect. |
+| Configurable surface | Which named controls are exposed, their types, and which configuration they affect. |
 | Value constraints | Allowed values, ranges, units, shapes and related-field conditions. Static limits differ from runtime-discovered eligible choices. |
 | Transition conditions | Whether this change is valid from the current state, including readiness, active work and other prerequisites. Valid endpoints alone do not prove a valid transition. |
 | Application behavior | The supported operation/handler and whether it applies live, waits, needs a restart, or requires a new instance. Concrete categories/defaults remain to be selected. |

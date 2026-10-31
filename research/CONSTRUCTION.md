@@ -149,6 +149,8 @@ state remains instance-owned; the exact handler schema and exposure rules remain
 **Accepted direction:** a template specifies both how to establish an instance and which of its
 configuration can change within declared parameters. Type/plugin contracts supply implementation
 support; the template exposes/constrains it; a Conduit provides the permitted path to use it.
+Permitted configuration changes use named typed controls backed by handlers. A frontend may render
+field editing while invoking the same control; it does not create a direct instance-edit path.
 The complete contract is defined in [DESIGN.md](../DESIGN.md#template-defined-configuration-changes).
 
 A template is a reusable recipe, an instance has its own concrete configuration/change contract,
@@ -499,8 +501,8 @@ Exact aggregate status/completion fields and explicit whole-Pool gates remain op
 **Accepted composition and participation:** [one reusable access Conduit](CONDUITS.md#can-there-be-one-euphony-access-conduit)
 can compose these distinct connections; each consumer's attachment tracks its own component
 participation. Exact aggregate readiness and cleanup recovery remain open. The next review is the
-[template-defined control surface](CONFIGURATION.md#a-bounded-control-example); typed filters and
-their access-path composition are settled at the semantic level.
+[common application semantics for named controls](CONFIGURATION.md#application-requirements-and-outcomes);
+typed filters and their access-path composition are settled at the semantic level.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

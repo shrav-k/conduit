@@ -69,23 +69,42 @@ remain necessary after static validation. Model-specific dynamic choices, filesy
 and filtering changes on a Conduit need the same semantic distinctions but different handlers.
 
 **Questions this example leaves open:** explicit exposure versus type-provided control defaults;
-field-level constraints versus named operations; cross-field/transition predicate language;
+field bindings and cross-field/transition predicate language;
 application/restart/replacement declarations; handler versus composed change graph; version checks;
 contract evolution and persistence of pending/applied settings. These are grouped in
 [REVIEW.md](../REVIEW.md), rather than decided by this fragment.
 
-**Current ruling proposal:** use named typed controls as the normal interaction contract for
+**Accepted:** use named typed controls as the normal interaction contract for
 configuration changes. In the sketch, a caller invokes `set-query-limit` with `limit: 15` through
 an authorized Conduit. Its declared handler validates/applies the change; the result and observed
 state establish what happened. A frontend can render this as editing a query-limit field. Shared
 type contracts can supply the input schema and handler rather than copying them into every template.
 
-The alternative makes field edits primary: declare `config.queryLimit` writable with a change
-handler, and submit a permitted field edit through the Conduit. Recommend named controls because
-one contract can represent a coordinated change to several settings and expose its transition and
+A control can represent a coordinated change to several settings and expose its transition and
 application behavior directly. This does not promise atomic updates or make ordinary provider
 content operations configuration changes. Exact field bindings, control defaults and handler
-notation remain open; neither approach requires a separate user-authored operation manifest.
+notation remain open; no separate user-authored operation manifest is required.
+
+### Application requirements and outcomes
+
+**Proposal for review:** give named controls a small shared, structured contract describing
+application requirements/effects separately from progress and outcomes. Plugins supply the actual
+supported behavior and details. Inputs/current state may determine requirements, so inspection is
+not a reservation or guarantee; relevant conditions and authority are rechecked at application.
+
+| Illustrative control behavior | Application requirement/effect | Independent progress/outcome |
+| --- | --- | --- |
+| Change a search limit supported live | Apply without restarting the runtime. | May still be pending, confirmed applied or uncertain after a lost response. |
+| Change a setting at a supported boundary | Wait until the runtime can safely apply it. | Waiting is not proof the new setting is active. |
+| Change a setting requiring restart | A runtime restart is needed to take effect. | A restart requirement is distinct from a restart having started or the setting becoming active. |
+
+Recommend a common interpretation for these distinctions so CLI, UI, headless clients and Agents
+can explain the same operation. The alternative uses only each plugin's typed result format,
+requiring plugin-specific interpretation of application behavior. Exact vocabulary and status
+schemas remain open; these examples do not impose a universal scheduler or state machine.
+Automatic versus explicit restart/replacement, requested/applied configuration storage and
+concurrency remain separate decisions. No mandatory preflight request or additional approval
+step follows from exposing the contract.
 
 ## Recommendation and reading guide
 

@@ -64,8 +64,13 @@ embedding code, credentials or backing data in YAML.
 | --- | --- |
 | Establishment | Initial settings, create/attach intent, dependencies and an inline or referenced setup graph. |
 | Ongoing behavior | The typed runtime behavior the instance manages after and, where needed, during setup. |
-| Allowed changes | The exposed configurable surface and its valid parameters/conditions, within implementation support. |
+| Allowed changes | Named typed controls, their handlers and valid parameters/conditions, within implementation support. |
 | Observations | How the system reports actual configuration, execution and operation outcomes separately from intent. |
+
+Permitted configuration changes are exposed as named typed controls backed by handlers. Type
+contracts can supply reusable schemas and implementations; templates select and constrain them.
+A frontend can present ordinary field editing while invoking the relevant control through a
+Conduit. This requires no separate user-authored operation-request document.
 
 Plugins declare typed inputs/outputs. Graph bindings imply dependencies; explicit prerequisites
 cover ordering without data. Graphs run at instance start, while plugins may verify already

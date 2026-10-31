@@ -97,8 +97,10 @@ No automatic purge follows from a missing Pool reference.
    instances will establish. The enclosing instance automatically supplies the consumer endpoint;
    it need not repeat its identity in the declaration. This grants no authority and does not
    choose open versus join. Explicit consumer preparation normally attempts those declared
-   actions and reports their outcomes; registration remains passive. Remote endpoint selection,
-   fields, required/optional behavior and preparation failure handling remain open.
+   actions and reports their outcomes; registration remains passive. A failed required connection
+   blocks its consumer's completion of preparation; optional failures are reported and allow
+   preparation to continue. Unrelated consumers are unaffected. Omission defaults, remote
+   endpoint selection, exact fields and retry/cleanup details remain open.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.
@@ -209,7 +211,7 @@ defines the remaining selections and staged evidence.
 | Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
 | Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. |
-| Resource connections | A search Resource's access to storage is expressed through a Conduit under applicable authority and filters. Explicit consumer preparation attempts its declared open/join action and reports the result; registration alone starts nothing. Endpoint syntax and failure handling remain open. |
+| Resource connections | Explicit consumer preparation attempts declared open/join actions under applicable authority and filters. Required failure blocks that consumer's preparation; optional failure is reported and permits continuation. Registration alone starts nothing; unrelated consumers are unaffected. |
 | Conduit lifetime | A sync subscription stays attached between polls or during transport failure. The last logical consumer/peer detaching ends the flow and closes provider-side connections; Resources and retained evidence survive. |
 | Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
 | MCP authentication | Two Sessions can use one MCP Resource with different permitted service identities where supported. Resolve identity per attachment within target/access constraints; shared configuration does not imply shared authentication state. |

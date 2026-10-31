@@ -406,7 +406,9 @@ Conduit templates to declare flows their instances will establish. The enclosing
 automatically supplies the consumer endpoint; no local-endpoint marker or generated instance
 name is needed in the reusable template. This grants no authority or implicit open/join intent.
 Explicit consumer preparation normally attempts declared open/join actions and reports their
-outcomes, rather than waiting for first use. Registration alone starts no flow.
+outcomes, rather than waiting for first use. A failed required connection blocks that consumer's
+completion of preparation; optional failure is reported and permits continuation. Unrelated
+consumers are unaffected. Registration alone starts no flow.
 Opening establishes a Conduit instance; joining selects an existing one. Logical
 attachments and their authentication remain distinct from transport sockets and shared data.
 
@@ -420,8 +422,8 @@ must be reported distinctly from transport readiness.
 If a flow needs retained conversation storage, it requests provisioning through a selected
 Pool, which owns the Resource. Each access follows the owner Pool and current authority;
 connections do not introduce a second unscoped provisioning path. Consumer declaration fields,
-remote endpoint resolution, required/optional behavior, preparation failure handling and later
-reconfiguration remain open.
+remote endpoint resolution, required/optional omission defaults, retry/timeout and partial
+cleanup behavior, and later reconfiguration remain open.
 
 Candidate interaction families remain capability requests, retained exchanges and observations.
 They need different success, cancellation, retention and recovery meanings. A communication

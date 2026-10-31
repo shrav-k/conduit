@@ -2,9 +2,10 @@
 
 Research: 2026-10-31. **Evidence, accepted working groups and proposals; no implementation.**
 Logical type groups independent of plugin packages, separate `spec.type.group`, `spec.type.name`
-and `spec.type.version` fields, and the four core group names are accepted. Individual types,
-consumer interfaces and extension governance still need review. An agent-communication group
-is a candidate for further design, alongside content and identity.
+and `spec.type.version` fields, and the four core group names are accepted. Filesystem's
+`local-directory` and `git-worktree` are distinct accepted type boundaries. Their detailed
+contracts, other types, consumer interfaces and extension governance still need review. An
+agent-communication group is a candidate for further design, alongside content and identity.
 
 Read alongside [DESIGN.md](../DESIGN.md#resources), [the review agenda](../REVIEW.md),
 [connection scenarios](CONDUITS.md) and [configuration research](CONFIGURATION.md).
@@ -129,7 +130,7 @@ cover the variation. Add an operation within the type when it belongs to the sam
 | Another directory path | Same type, different instance/configuration. | Target changes; path-access contract does not. |
 | Another Linear workspace or permitted account | Usually same MCP type. | Target/authentication choices do not create new protocol semantics; restrictions must actually be supportable. |
 | Local-process vs HTTP MCP transport | Same MCP type with typed transport alternatives, provisionally. | Preserve native MCP surface; process preparation differs and must be explicit. Split if one schema cannot describe lifecycle clearly. |
-| Git worktree creation vs attaching a plain folder | Separate candidate type. | Worktree creation/cleanup and repository relationships add obligations beyond folder exposure. |
+| Git worktree management vs plain folder access | Accepted separate types: local-directory and git-worktree. | Worktree creation/cleanup and repository relationships add obligations beyond folder exposure. Detailed schemas and supported modes remain open. |
 | Keyword, vector and hybrid retrieval | Capabilities/configuration of an index/query type when the result contract remains valid. | An algorithm name alone is insufficient reason for three types. Different guarantees may justify a separate type. |
 | Native SQL vs revisioned Conduit records | Different contracts/types or an explicit adapter. | A generic database API does not inherently satisfy Conduit's record lifecycle. |
 | Records vs append-only history | Separate candidate storage types. | Update/conflict/ordering operations differ; common persistence is not enough. |
@@ -143,9 +144,10 @@ another registered instance.
 
 ## Candidate catalog
 
-The four core group names are accepted; individual type names and additional groups below
-remain proposals. The two separate columns deliberately avoid a compound identifier. “Core”
-identifies the initial working catalog, not all required v0 features.
+The four core group names and the distinction between `local-directory` and `git-worktree` are
+accepted; other type names and additional groups below remain proposals. The two separate
+columns deliberately avoid a compound identifier. “Core” identifies the initial working
+catalog, not all required v0 features.
 
 ### Alternatives considered
 
@@ -166,9 +168,9 @@ definition or adding a catch-all executable type with unvalidated configuration.
 
 ### Accepted working core groups
 
-| Group | Responsibility | Candidate type names | Confidence and boundary |
+| Group | Responsibility | Type names and status | Confidence and boundary |
 | --- | --- | --- | --- |
-| `filesystem` | A filesystem tree and its supported access/lifecycle. | `local-directory`, `git-worktree`; later `remote-tree`. | High for directory/worktree boundary. More precise than `io`, which could include nearly every Resource. A remote tree must state its semantics. |
+| `filesystem` | A filesystem tree and its supported access/lifecycle. | Accepted: `local-directory`, `git-worktree`. Candidate: `remote-tree`. | Directory/worktree separation is settled; schemas, modes and any shared interface remain open. A remote tree must state its semantics. |
 | `storage` | Persist and retrieve a defined data model. | `records`, `blobs`, `append-log`, `graph`. | High for separating persistence from retrieval ranking. Revisioned records and append-only logs should not pretend to have identical operations. |
 | `search` | Retrieve relevant references/results from configured sources or an index. | `index`, possibly `federated-query`. | High for independence from storage; lower for exact type names and whether index maintenance belongs here or a separate processor. |
 | `integration` | Expose a configured native service/tool surface without requiring a new domain model. | `mcp`, `cli`, `http-api`. | High for MCP access; CLI and arbitrary HTTP need narrower contracts before inclusion. Broader and more accurate than `tools` for data/prompt access. |
@@ -245,6 +247,10 @@ their infrastructure, or force every provider into this list before the first ex
 ## Worked mappings and difficult cases
 
 ### Euphony code and concurrent writers
+
+The directory/worktree type distinction is accepted; the remaining detailed configuration and
+lifecycle choices in this walkthrough are proposals. Plain directory access does not imply
+Git management, even when the folder happens to contain a checkout.
 
 Attach an existing checkout as a `filesystem` / `local-directory` Resource through its Pool.
 Two Sessions can receive separate symlinks from their Conduit attachments; those symlinks are
@@ -451,7 +457,8 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 
 Recommended discussion sequence:
 
-1. Use the accepted four groups for concrete type review; do not repeat the grouping ruling.
+1. Use the accepted four groups and directory/worktree split for concrete type review; do not
+   repeat those rulings. Start with local-directory create/attach modes.
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
    dependencies, preparation and one failure each. Evaluate content and identity, retaining
    the agent-communication candidate for the detailed communication review.

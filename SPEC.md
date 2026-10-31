@@ -131,8 +131,11 @@ connection declarations. The type reference is distinct from registry kind/form/
 Logical type groups are independent of plugin packaging; group and type name are separate
 fields, never a combined slash-delimited identifier. The first working core groups are
 `filesystem`, `storage`, `search` and `integration`; new groups and types can extend the catalog.
+Within `filesystem`, `local-directory` and `git-worktree` are distinct types. Both expose a
+directory; Git-specific management belongs to the worktree contract. Their detailed schemas
+and initial implementation scope remain open.
 An agent-communication group is a candidate for direct messaging, conversations and shared
-context. Its contracts and name remain open, alongside individual core types and third-party
+context. Its contracts and name remain open, alongside other core types and third-party
 naming rules.
 Type contracts have their own schema versions, independent of common object `apiVersion` and
 plugin implementation releases. Allowed type identifiers/version labels, Conduit declaration

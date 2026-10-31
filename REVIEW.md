@@ -43,9 +43,12 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   and declaration contents remain open; type references are not registry object references.
 - Logical type groups are independent of implementation packages. A package may supply several
   groups/types. The catalog remains open to new groups and types; no slash-delimited type name.
-  The working core groups are filesystem, storage, search and integration. Individual types and
-  third-party contract ownership/collision rules remain for review. Keep an agent-communication
+  The working core groups are filesystem, storage, search and integration. Detailed type contracts
+  and third-party contract ownership/collision rules remain for review. Keep an agent-communication
   group as a candidate, with direct messaging, conversations and shared context as design probes.
+- Filesystem has separate `local-directory` and `git-worktree` types: shared directory access,
+  with Git-specific management in the latter. Exact schemas, supported management modes and
+  any shared interface remain open; this does not require both implementations immediately.
 - Create/replacement writes require their applicable schemas. An unavailable required schema
   rejects the write, preserving source YAML and any existing registry object.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
@@ -109,15 +112,16 @@ not an accepted authoring/API format. It contains no real credentials or executa
 Review **Resource responsibilities, grouping and compatibility** using the new
 [Resource investigation](research/RESOURCES.md). Logical groups independent of packages and
 separate `type.group`, `type.name`, `type.version` fields are settled. The working core groups
-`filesystem`, `storage`, `search` and `integration` are accepted. Individual types remain open;
+`filesystem`, `storage`, `search` and `integration` are accepted. Filesystem's `local-directory`
+and `git-worktree` are distinct types; other individual types remain open.
 `content` and `identity` require further boundary work. Keep an agent-communication group in
 view without diverting the current Resource walkthrough into choosing a communication model.
 
 Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
 
-1. **Concrete type boundaries:** walk through local-directory configuration, preparation and
-   one failure, then records, search and MCP. Decide when a variant warrants another type
-   rather than configuration or an operation; the four core groups need no further ruling.
+1. **Concrete type contracts:** start with local-directory creation/attachment intent, then
+   configuration, preparation and one failure. Review Git-worktree-specific behavior separately,
+   then records, search and MCP. The four core groups and directory/worktree split are settled.
 2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
    for discovery and explicit contracts for activation, connection matching and effects.
 3. **Extension identity:** who defines a contract, how new groups/types enter the catalog and
@@ -148,7 +152,7 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 
 | Question | Example and considerations |
 | --- | --- |
-| Which types belong in the working core? | Filesystem, storage, search and integration are accepted groups. Work through concrete type contracts; content, identity and agent communication remain candidate extensions. Groups are extensible and independent of packages. Decide contract ownership/collision handling separately; shipping types/templates does not create Resource instances. |
+| Which types belong in the working core? | Filesystem, storage, search and integration are accepted groups; local-directory and git-worktree are distinct filesystem types. Work through their contracts and other candidate types; content, identity and agent communication remain extensions to explore. Decide contract ownership/collision handling separately; shipping types/templates does not create Resource instances. |
 | What establishes compatibility across types? | Evaluate explicit versioned consumer interfaces and per-instance supported operations. A shared group, matching JSON shape or provider name does not establish behavioral compatibility. Keep declared support, current availability and permissions distinguishable without requiring a large capability framework. |
 | How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
@@ -161,7 +165,7 @@ Use these examples as design probes, not a closed list of types or an accepted s
 
 | Example | Questions the contract must answer |
 | --- | --- |
-| Local filesystem exposed by symlink | The folder Resource survives removal of a prepared symlink. Settle configured source paths, Session-local path placement and cleanup timing; symlinks share backing files and do not isolate writes. |
+| Local filesystem exposed by symlink | Local-directory and git-worktree are distinct types. For local-directory, decide whether v0 supports attachment only or explicit creation as well; then settle source paths, Session-local placement and cleanup timing. Removing a prepared symlink preserves the Resource. Symlinks share backing files and do not isolate writes. |
 | MCP service connection | Service identity may differ per attachment within target/access constraints. Settle auth storage/refresh, exposed tools/resources/prompts and required processes. A Conduit Resource is distinct from MCP's protocol resource primitive. |
 | Hybrid search over a database | Express separate storage, search and MCP-access Resources, including when supplied by one backend. Settle responsibilities, dependencies, query/filter/result contracts, freshness and indexing ownership if offered. |
 

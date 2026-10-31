@@ -524,7 +524,10 @@ The first working catalog uses four core groups:
 | `search` | Retrieve relevant results from configured sources. |
 | `integration` | Expose configured native service/tool interfaces. |
 
-These group boundaries are accepted; individual types and implementation scope still need review.
+These group boundaries are accepted. Within `filesystem`, `local-directory` and `git-worktree`
+are separate types: both expose directory access, while the latter also has Git-specific
+creation, attachment and cleanup obligations. This selects contract boundaries, not a
+requirement to implement both immediately. Other types and implementation scope need review.
 Keep an additional agent-communication group under consideration for direct messaging,
 multi-participant conversations and shared context. Agent-specific contracts can justify a
 distinct group even when they use familiar storage/integration mechanisms. Its name, types,
@@ -579,6 +582,13 @@ the same Resource through different local paths; removing one prepared symlink l
 Resource, its owning Pool, backing folder and other Session's view intact. Creating another
 symlink does not copy the folder or isolate concurrent edits. Exact path placement and cleanup
 timing remain open; other Resource types may require different consumer lifetimes.
+
+The `local-directory` type defines folder access without Git lifecycle management. Registering
+a checkout under that type does not imply managing its branches or worktree creation/removal.
+The `git-worktree` type additionally represents its relationship to a Git repository and the
+supported worktree-management operations. Both retain Pool ownership, Session-specific
+preparation and explicit backing-data cleanup rules. Exact configuration, supported create/attach
+modes and any shared directory interface remain open.
 
 ### Native resources and integrations
 

@@ -151,9 +151,12 @@ direction without making deployment orchestration a prerequisite for v0.
 ### 5. Access Linear through MCP
 
 A reusable Resource template can describe the native Linear MCP service. A Pool creates an
-attachment instance; different Sessions establish authorized clients through it. Another Pool
-can create its own distinct instance targeting the same service. A common endpoint does not imply a common
-OAuth grant, private cache or transport session. Linear hosts its remote server and supports
+attachment instance; different Sessions establish authorized clients through it. Conduit's
+accepted contract allows different permitted service identities per Session attachment where
+supported, within the Resource's target/access constraints; the login alone need not create
+another Resource. Another Pool can create its own distinct instance targeting the same service.
+A common endpoint does not imply a common OAuth grant, private cache or transport session.
+Linear hosts its remote server and supports
 OAuth setup as well as token-based authentication; it also documents read-only access.
 [Linear MCP](https://linear.app/docs/mcp)
 

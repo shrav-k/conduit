@@ -363,7 +363,10 @@ a local path exposed by symlink, an MCP service connection and hybrid database s
 the minimum common contract and the necessary type-specific differences. For the accepted
 local-folder case, the Resource describes the folder attachment and Session symlinks are
 preparation state. Removing a symlink leaves the Resource and backing folder intact. Other
-consumer boundaries remain under review; do not assume each helper needs a registered object.
+types have different boundaries: MCP permits service identity per Session attachment within
+target/access constraints where supported, without requiring duplicate Resources per login.
+Credential handling and further consumer boundaries remain under review; do not assume each
+helper needs a registered object.
 
 Pool instances remain the ownership boundary. Pool registration and provisioning are separate
 explicit effects, optionally combined by a frontend with separate outcomes. Persistent Pool

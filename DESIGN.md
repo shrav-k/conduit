@@ -752,6 +752,11 @@ account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP serv
 
 Resource templates for MCP services describe reusable endpoint/process/transport/authentication
 setup. Pool-owned instances and connection attachments realize that setup under current access.
+Different Sessions may use the same MCP Resource through different permitted service identities,
+where the integration supports it. Resolve that identity per Session attachment within the
+Resource's target and access constraints; a different login alone does not require another
+Resource instance. Service authentication is separate from the Session's model subscription.
+Credential storage, refresh and client/process lifetimes remain separate contract details.
 Conduit's runtime owns its MCP clients; external-agent adapters prepare native registration
 from effective selections. Registration, provider authentication and Conduit Session
 authority are distinct. Reusing a definition does not promise shared live clients, OAuth

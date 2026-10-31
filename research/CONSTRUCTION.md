@@ -499,7 +499,8 @@ Exact aggregate status/completion fields and explicit whole-Pool gates remain op
 **Accepted composition and participation:** [one reusable access Conduit](CONDUITS.md#can-there-be-one-euphony-access-conduit)
 can compose these distinct connections; each consumer's attachment tracks its own component
 participation. Exact aggregate readiness and cleanup recovery remain open. The next review is the
-[composition of typed filters across access paths](CONDUITS.md#filter-composition-across-access-paths).
+[template-defined control surface](CONFIGURATION.md#a-bounded-control-example); typed filters and
+their access-path composition are settled at the semantic level.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

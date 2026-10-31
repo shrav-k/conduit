@@ -106,8 +106,8 @@ the resolved template/instance must make its effective contract visible.
 | Recovery and retention | Supported retry/cancel/reconciliation and what applied settings persist across restarts. No universal queue or rollback policy is implied. |
 
 A template may constrain the values and controls it exposes within its implementation's support.
-We recommend constraint intersection rather than last-writer-wins overlays: type support, template
-limits, current authority and Conduit filters all apply. Exact authoring shorthand/defaults,
+The accepted access-path rule intersects applicable type support, template limits, current authority
+and Conduit filters; none overrides another to widen access. Exact authoring shorthand/defaults,
 cross-field expressions, handler composition and control-contract evolution remain open.
 
 A setting's value and the rule governing its permitted changes are distinct. Changing a value
@@ -1102,9 +1102,19 @@ selects the restriction and its parameters; implementation code performs the che
 Users can implement new filter contracts through plugins, including scripts or graphs. Contract
 identity remains separate from the implementation package. This preserves inspectable policy
 without requiring each template to embed the checking procedure. Exact schemas, vocabulary,
-expression operators, composition and conformance tests remain open. Filters still only narrow
+expression operators and conformance tests remain open. Filters still only narrow
 authority; unsupported restrictions must be reported rather than dropped. No additional v0
 agent-wide interception or sandbox guarantee follows from this declaration format.
+
+**Accepted composition:** every applicable restriction along the path used for a request must
+pass. Composite and component filters apply together with current authority and target limits;
+a component cannot widen an enclosing restriction. Independent authorized paths remain complete
+alternatives. Preserve target, operation and parameter constraints together: read access to
+Euphony on one path plus update access to Demo on another does not authorize updating Euphony.
+Actor-wide and target-wide restrictions still apply wherever relevant. This does not intersect
+unrelated connections or grant access through a Resource's internal dependencies. Routing/fallback,
+Boolean alternatives within a filter, conflict diagnostics and evaluation implementation remain
+open; a policy engine may represent the rule without separate physical hops for each restriction.
 
 ### Authority and current access
 

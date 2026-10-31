@@ -74,6 +74,19 @@ application/restart/replacement declarations; handler versus composed change gra
 contract evolution and persistence of pending/applied settings. These are grouped in
 [REVIEW.md](../REVIEW.md), rather than decided by this fragment.
 
+**Current ruling proposal:** use named typed controls as the normal interaction contract for
+configuration changes. In the sketch, a caller invokes `set-query-limit` with `limit: 15` through
+an authorized Conduit. Its declared handler validates/applies the change; the result and observed
+state establish what happened. A frontend can render this as editing a query-limit field. Shared
+type contracts can supply the input schema and handler rather than copying them into every template.
+
+The alternative makes field edits primary: declare `config.queryLimit` writable with a change
+handler, and submit a permitted field edit through the Conduit. Recommend named controls because
+one contract can represent a coordinated change to several settings and expose its transition and
+application behavior directly. This does not promise atomic updates or make ordinary provider
+content operations configuration changes. Exact field bindings, control defaults and handler
+notation remain open; neither approach requires a separate user-authored operation manifest.
+
 ## Recommendation and reading guide
 
 Use **YAML/JSON as an authoring surface over a typed, versioned graph of the five families and their template/instance forms**.
@@ -432,13 +445,13 @@ requires reviving that ledger or making every operation/parameter another regist
 
 ## Composition needs several operators
 
-| Relationship | Proposed composition | Case to test |
+| Relationship | Composition direction | Case to test |
 | --- | --- | --- |
 | Template expansion and creation edits | Assignments replace whole field values, including objects/lists; nested-child edits preserve siblings. | Assigning `[c]` to `[a, b]` produces `[c]`; no implicit append, parameter mapping or historical delta is required. |
-| Pool provisioning selections | Reconsider after unitary Resource contracts: template expansion/explicit operations versus retained declarations. | Avoid a parallel creation ledger unless needed; preserve explicit effects, safe retry and exclusive ownership. |
+| Pool provisioning selections | Named local Resource entries and dependency bindings, consumed by a reusable default setup step. | Resolve targets to this Pool's actual Resources; preserve explicit effects, safe retry and exclusive ownership without a second provisioning ledger. |
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
-| Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |
-| Independent authorized paths | Union of complete constrained capabilities. | Read `src/**` plus write `docs/**` does not create write access to `src/**`. |
+| Filters and required limits | Accepted: intersection of all applicable restrictions along the path used. | Repeating a constraint never widens access; a component cannot relax its enclosing restriction. |
+| Independent authorized paths | Accepted: complete constrained alternatives, preserving target/operation associations. | Read `src/**` plus write `docs/**` does not create write access to `src/**`; actor-wide and target-wide limits still apply. |
 | Agent activation and provisioning dependencies | Explicit ordering with distinct effects and failure rules. | Loading a guide, obtaining credentials and creating storage are not interchangeable steps. |
 | Intent versus observation | Compare and record, rather than merge. | A failed deployment does not silently rewrite the authored template. |
 
@@ -446,8 +459,8 @@ Default materialization and draft field replacement are settled. Preserving, add
 entries requires deliberate edits; this does not introduce a partial-update registry protocol.
 Remaining omission, null, empty-collection, reset, ordering and duplicate-identity details need
 per-field rules. A Pool's default access selection applies only when no explicit replacement is
-supplied; combination with Agent-spec choices remains open. Access-path composition keeps its
-separate semantics.
+supplied; combination with Agent-spec choices remains open. Access-path composition is settled
+as above; filter-expression syntax and runtime routing remain separate decisions.
 
 ## Validation and effects are separate contracts
 

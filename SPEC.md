@@ -98,14 +98,17 @@ available behavior, not additional permission or a changed instance-control cont
 
 Filters narrow authority and target capabilities. An allowed operation name alone does not
 establish that every parameter is allowed. Discovery, dispatch and current-state validation must
-agree. The proposed constraint composition is intersection of implementation support, template
-limits, current authority and Conduit restrictions; exact schema and expression language are open.
-A filter does not silently rewrite the requested value or grant access.
+agree. Every applicable restriction along the path used for a request must pass, including target
+support/limits, current authority and composite/component restrictions. Independent authorized paths
+remain complete alternatives: target, operation and parameter constraints stay associated within
+each path. Reading Euphony through one path and updating Demo through another does not permit
+updating Euphony. Actor-wide and target-wide limits still apply wherever relevant. Exact filter
+syntax and routing remain open. A filter does not silently rewrite a request or grant access.
 
 Filters normally use typed declarations with defined semantics, backed by supporting plugins for
 validation and enforcement. Custom code can implement new filter contracts, including through
 scripts or graphs; restrictions remain inspectable in configuration. A declaration alone does not
-prove enforcement. Exact filter schemas, operators and composition rules remain open.
+prove enforcement. Exact filter schemas, operators and expression-level composition remain open.
 
 An authorized user or Agent can delegate an explicit subset of service access while establishing
 another consumer's Conduit attachment. Record that delegation with the attachment; a separate

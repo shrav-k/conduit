@@ -520,11 +520,11 @@ Unsupported restrictions retain the existing unavailable/reporting behavior. Thi
 no blanket interception or sandbox guarantee to native execution.
 
 Declarative contracts are the normal authoring surface; checking procedures live in their
-implementations. Exact operators, names, schemas, composition and conformance tests remain open.
+implementations. Exact operators, names, schemas and conformance tests remain open.
 
 ### Filter composition across access paths
 
-**Proposal for review:** require all applicable restrictions along the path used for a request
+**Accepted:** require all applicable restrictions along the path used for a request
 to pass. Intersect target support/limits, current caller authority and the composite/component
 filters that apply to that operation. A component's wider allowance cannot override its parent's
 narrower restriction. This is a rule for logical authorization, not a required sequence of network
@@ -547,7 +547,7 @@ another path is a separate routing decision, not settled here.
 Within one path, an Euphony-only composite and a Demo-only component have no common permitted
 workspace. Report the unusable access rather than treating either declaration as an override.
 Exact conflict diagnostics, filter expression syntax, Boolean alternatives within a layer and
-evaluation implementation remain open. This recommendation does not prescribe a new policy engine.
+evaluation implementation remain open. This rule does not prescribe a new policy engine.
 
 ## Review sequence and tests
 

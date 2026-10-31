@@ -37,7 +37,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Default setup | A reusable graph step consumes the entries and bindings and invokes each Resource's setup contract. Custom graphs can reference the same entries for extra ordering/checks. Setup is explicitly requested. |
 | Partial availability | Ready Resources remain usable through authorized Conduits during incomplete Pool setup. Their prerequisites and declared gates still apply; component and Pool status remain distinct. |
 | Composite Conduits | Reusable bundles preserve component targets, authority and lifecycle. Each consumer's attachment tracks its own component participation and detach cleanup; underlying flows/clients/authentication may still be shared. Supporting Resources remain Pool-owned. |
-| Typed filters | Inspectable declarations have defined semantics, with validation/enforcement supplied by supporting plugins. Custom code can implement new filter contracts, including through scripts/graphs. |
+| Filters and paths | Typed declarations are implemented by supporting plugins. Every applicable restriction on the chosen path must pass; independent paths preserve complete target/operation/parameter combinations. Custom filter contracts can use scripts/graphs. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -45,19 +45,20 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — composition along access paths:** should every applicable restriction on the path
-used for a request have to pass, with independent authorized paths remaining separate complete
-choices? Recommend intersection along a path, including applicable composite and component limits.
-A component cannot relax its enclosing restriction. Separate paths must preserve the
-association between target, operation and other constraints rather than merging each field's
-allowlist independently.
+**Next ruling — how a template exposes configuration changes:** should changes use named typed
+controls, backed by a supported operation or graph handler, rather than treating writable fields
+as the primary interaction contract? Recommend named controls. For example, `set-query-limit`
+accepts a typed `limit` value and applies it to the search Resource's configuration. A control can
+also accept several related settings together. Type contracts can supply reusable schemas/handlers;
+templates select and constrain them. A frontend may still present an ordinary field editor.
 
-For example, one path permits reading Euphony issues and another updating Demo issues; neither
-permits updating Euphony. Actor-wide or target-wide exclusions still apply wherever relevant.
-This is not a requirement to intersect every connection attached to an Agent, and does not decide
-routing or automatic fallback. See the [composition example](research/CONDUITS.md#filter-composition-across-access-paths).
-Exact syntax, Boolean alternatives within a filter, diagnostics and runtime policy representation
-remain open. This is an access decision rule, not a mandate for one policy engine or storage format.
+The alternative marks configuration fields writable and binds change handlers to those fields;
+clients submit edits to the permitted fields. Both approaches use authorized Conduits, typed
+validation and explicit outcomes; neither exposes an unrestricted whole-spec patch. See the
+[bounded control example](research/CONFIGURATION.md#a-bounded-control-example). This ruling selects
+the interaction contract, not exact command/YAML syntax, omitted-control defaults, handler graph
+syntax, update atomicity or requested/applied-state storage. No extra operation-request manifest
+is required of users by either approach.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -74,8 +75,8 @@ authentication, separate model subscriptions/private Agent state, provider-nativ
 Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
 transitions, concurrency checks, contract evolution and bootstrap remain unresolved.
 
-Keep [the bounded search control](research/CONFIGURATION.md#a-bounded-control-example) and database
-startup/migrations as later counterexamples. They test whether the same contracts work beyond MCP
+Use [the bounded search control](research/CONFIGURATION.md#a-bounded-control-example) now, followed
+by database startup/migrations. They test whether the same contracts work beyond MCP
 without promoting one provider's timeout, queue or process behavior into universal rules.
 
 ## 1. Resource templates and instances
@@ -126,7 +127,7 @@ and reconcile a lost response. Keep identities, state and operation outcomes dis
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Endpoint contract | Generalize Interface/Agent control, Resource access, Resource-to-Resource dependencies and platform management. Define endpoint roles, filtered capabilities and request/result/observation paths without assuming one network topology. |
-| Authority and filtering | Typed filter declarations backed by plugins are accepted. Define composition of complete resource/operation/constraint combinations and current checks. Settle issuance/lifetime details for accepted attachment delegation. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
+| Authority and filtering | Typed filters and intersection along each complete authorized path are accepted. Define expression syntax, diagnostics, routing and current checks. Settle issuance/lifetime details for accepted attachment delegation. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
 | Communication Resources | Explore direct exchange, conversations and shared context as agent-oriented capabilities, potentially backed by storage Resources. Separate retained content from routing and runtime bookkeeping. No rooms-only topology or communication schema is selected. |
 | Composition and supporting Resources | Composite Conduits and per-consumer component participation are accepted. Define attachment representation, aggregate readiness and cleanup recovery, plus provisioning rights for Pool-owned supporting Resources. Avoid duplicated setup or implied external rollback. |
 | Delivery and attention | Define ordering, durable acceptance, acknowledgement, replay, offline delivery and backpressure for selected communication types. Distinguish available data, notices, queued input and starting model work; current access is checked at delivery. Wake behavior belongs to an explicit supported contract. |

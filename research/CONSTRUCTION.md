@@ -48,8 +48,9 @@ a template repository. Avoid adding these merely because the analogy is useful.
 
 A plugin supplies a focused operation, often backed by a script or process: authenticate, link
 a directory, prepare a configuration file or perform another specific action. A graph supplies
-composition and ordering. Plugin interfaces still need inputs, outputs and failure behavior;
-plugins do not need to become independently running Agent/Resource/Pool/Conduit objects.
+composition and ordering. Plugins declare their typed input/output contracts; detailed schemas
+and failure behavior remain to be defined. Plugins do not need to become independently running
+Agent/Resource/Pool/Conduit objects.
 Their implementation may launch a process while executing a node without changing this distinction.
 
 **Accepted execution baseline:** the plugin graph runs each time an instance is started.
@@ -75,7 +76,32 @@ authentication state or live handles.
 
 ## Protocol properties that leave room for optimization
 
-The following are design recommendations for the node contract, not a cache specification:
+### Plugin contracts and graph nodes
+
+**Accepted contract boundary:** each plugin declares its typed inputs and outputs. A graph node
+selects the plugin and binds values to that contract; it does not independently redefine the
+plugin's interface around a generic command. A plugin can still be implemented as a local
+script or process. No particular process protocol, schema language or installation mechanism
+is selected by this ruling.
+
+| Illustrative plugin | Contract supplied by the plugin | Bindings supplied by a graph node |
+| --- | --- | --- |
+| Authentication | Accept an account reference; return a verified identity result. | Select the account from template configuration. |
+| Directory linking | Accept an authorized directory reference and destination; return a prepared projection result. | Select the permitted directory and the instance-local destination. |
+
+Exact types, output names and authorization/context transport remain open. Existing authentication
+can shorten the plugin's execution without changing its declared interface. Reusing the plugin
+across templates does not require each template to repeat its schemas.
+
+**Next proposal:** a binding from one node's output to another node's input establishes a
+dependency on that output becoming available. Explicit prerequisite ordering handles relationships
+without a transferred value, such as populating a directory before validating it. This has not
+yet been ruled on. Detailed readiness/completion conditions and concurrency policy remain separate.
+
+### Optimization-compatible properties
+
+Typed input/output ownership is accepted above. The remaining properties below are design
+recommendations, not a cache specification:
 
 | Property | Why it helps independent implementations |
 | --- | --- |
@@ -95,7 +121,7 @@ part of the basic template-to-instance model.
 It contains configuration and an inline plugin graph by default, with an optional explicit
 graph-source reference for reuse. Both forms have the same execution semantics: the graph runs
 on each instance start. A graph does not replace object identity, configuration schemas or
-reusable defaults. Exact graph fields, source-reference syntax and plugin contracts remain open;
+reusable defaults. Exact graph fields, source-reference syntax and detailed plugin schemas remain open;
 the sketches below do not settle them. Code remains in the plugin implementations.
 
 ### What to preserve and what to change
@@ -257,6 +283,12 @@ The [authoring boundary](#template-yaml-and-compose-inspired-composition) is als
 retain the typed YAML envelope and configuration, with an inline or explicitly referenced graph.
 Exact graph/binding syntax remains open; multi-object composition can follow later.
 
+Plugins now own their typed input/output contracts; nodes select plugins and bind values. Next
+decide whether output bindings establish execution dependencies, with explicit ordering where
+no value is transferred. Use authentication feeding connection setup and directory population
+preceding validation as the examples. The existing sketch illustrates this proposed ordering;
+it does not establish the ruling by itself.
+
 Then work through the same reusable Agent template started twice, using an illustrative sequence:
 
 ```text
@@ -275,8 +307,8 @@ The example is an intended contract scenario, not verified native-provider behav
 schema. A real adapter must support the selected account/state separation. Opening a fresh
 connection versus explicitly joining a shared one remains a declared choice.
 
-Use those two executions to define the minimum plugin-node contract together: inputs, outputs,
-prerequisites, interaction/failure reporting and what a successful result promises. Then express
+Use those two executions to settle prerequisite semantics, interaction/failure reporting and
+what a successful result promises within the plugin-owned contract. Then express
 the reusable graph and instance views in YAML. Defer cache layouts and build-system internals.
 Agent remains the proposed replacement for Session; preserve account, private-context,
 Resource-ownership and access requirements while reviewing the vocabulary.

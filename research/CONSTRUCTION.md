@@ -252,8 +252,9 @@ already agreed. It is not another hand-authored copy of the graph with success f
 **Accepted:** each instance retains its resolved setup graph and runtime configuration in its
 own spec. Inline and referenced template graphs both produce that current instance definition;
 future starts and retries do not depend on the source template remaining registered or unchanged.
-Ordinary checked instance updates can change its definition within the type's transition rules;
-their effect on incomplete setup or a running execution remains under review below.
+The instance definition is immutable after instantiation. Changing its graph or configured
+function means editing a template/creation draft and creating a new instance, not replacing
+the existing spec. Runtime operations and connections can still evolve as described below.
 
 For example, creating Agent A from a template with an authentication-then-preparation graph
 gives A that graph as its active configuration. Adding another setup step to the template later
@@ -280,25 +281,58 @@ clear. For now, the template YAML remains sufficient with its explicit dependenc
 choices can supply per-instance values through the same typed fields. Registration, starting an
 instance and observing its results remain different operations.
 
-### Editing instance configuration
+### Immutable definitions and changing connections
 
-**Next proposal:** saving an allowed, checked update to an instance's setup graph or behavioral/
-runtime configuration leaves current setup/execution on its active configuration until explicit
-reconfiguration or a future start. Inspection distinguishes the saved configuration version from
-the version actually in use and reports pending changes. Current authority restrictions still
-apply live; this proposal does not freeze permissions, Resource data or external service state.
+**Accepted direction:** templates are editable; an instantiated definition is fixed. There is
+no generic outside edit of the instance spec or its graph, pending-spec application mechanism,
+or automatic rewrite of an instance after a template changes. Creation choices can still be
+supplied through ordinary typed fields before instantiation. Restart/retry uses that instance's
+retained definition; correcting the recipe means creating another instance.
 
-For example, changing an Agent instance's configured model does not silently switch its active
-execution. Adding a node to an incomplete setup graph does not splice it into a pending retry.
-Applying the edited definition is explicit and must use a supported transition; the caller may
-request save and application together without authoring a second configuration recipe. Whether
-changed setup can reuse any prior progress remains a separate compatibility rule.
+**Connections remain dynamic:** users or authorized agents can create/open and remove Conduits
+that connect an existing instance to additional Resources or other instances. This changes its
+relationships through the declared runtime contract, not its underlying function or setup graph.
+Initial connection declarations can remain in the frozen spec; current connection membership
+and outcomes are managed state, with inspection derived from the actual Conduit relationships.
+There is no requirement to edit the Agent's spec to add a connection or keep a second authored
+list synchronized with it.
 
-The alternative applies supported changes on save and reports those requiring a restart or
-other explicit transition. Both approaches obey the type's permitted updates and retain actual
-execution settings. The proposal concerns application timing, not automatic restart, a new
-approval requirement or a mandatory archive of every earlier configuration. Exact status fields
-and reconfiguration mechanics remain open.
+| Fixed definition | State and operations that may evolve within its contract |
+| --- | --- |
+| Resolved setup graph and runtime behavior | Start, stop, retry, progress, availability and supported recovery. |
+| Declared connection/activation behavior and constraints | Open/join/detach/end Conduits; prepare currently permitted capabilities. |
+| Resource configuration and ownership contract | Read/write its contents and create or attach Resources through the owning Pool's supported operations. |
+| Explicit references to authority and data | Current access decisions and current Resource data; immutability does not freeze either. |
+
+Native-client configuration files or symlinks may be updated as generated preparation state by
+an attachment operation. This does not allow arbitrary edits to the instance's authored contract.
+If a native integration cannot attach a capability live, report that limit and use only its
+supported lifecycle operations; no universal hot-attachment guarantee is assumed. Closing a
+Conduit ends access through that connection without implicitly deleting the backing Resource,
+files or retained data.
+The existing last-consumer rule and explicit cleanup requirements continue to apply.
+
+**Shared context is a Resource:** create or attach it through an owning Pool and expose it to
+each participating instance through a Conduit. A new instance can access the same permitted
+memory Resource as an older instance without changing either definition or inheriting private
+native state automatically.
+
+```text
+Pool owns memory Resource M
+  Agent A -- Conduit A --> M
+  Agent B -- Conduit B --> M
+```
+
+Changing the template can produce Agent B with a different fixed definition. Connecting B to M
+provides shared context under current access. Removing Conduit A does not remove M or Conduit B.
+New instances receive new identities; existing ID-bound relationships are not silently retargeted.
+No automatic replacement/deletion of the old instance or copying of its private state is implied.
+
+This supersedes the earlier editable-instance proposal. It removes the need to reconcile a
+running setup graph against in-place definition edits. Metadata naming/label rules remain a
+separate question. The earlier model/account switching semantics also need explicit review:
+whether those selections are fixed instance configuration or values changeable through an
+operation expressly supported by the unchanged template is not selected by immutability alone.
 
 ## MCP setup and instance runtime walkthrough
 
@@ -456,9 +490,10 @@ If valid continuation cannot be established, report the unresolved condition rat
 silently replaying earlier creation effects. Exact invalidation/repair mechanics remain open.
 
 This concerns continuation of retained incomplete setup, not a new instance start, cross-start
-output caching or automatic retry. The graph-on-each-start rule remains. Changed configuration,
-graph/plugin compatibility and the exact retained progress representation need separate review;
-no full template-history archive or additional runtime family is introduced.
+output caching or automatic retry. The graph-on-each-start rule remains. Instance definitions
+cannot be edited between retries; a changed recipe creates a different instance. Plugin/runtime
+compatibility and the exact retained progress representation still need review. No full
+template-history archive or additional runtime family is introduced.
 
 ### Connection recovery after successful setup
 
@@ -574,10 +609,16 @@ a manual option. Consumers continue independent work while missing dependencies 
 initial required-dependency checks and existing mandatory stop rules remain applicable.
 
 Instances retain their resolved graph and runtime configuration in their own spec, independently
-of the source template. Next review [editing instance configuration](#editing-instance-configuration):
-explicit application of saved changes, or applying supported changes on save? Then define
-compatible reuse of progress when an edited graph/configuration is explicitly adopted. Current
-authority and Resource data remain live; no template-history archive is required.
+of the source template. Those definitions are immutable; change a template/creation draft and
+instantiate again for a different definition. Dynamic Conduit connections and shared context
+Resources are accepted. Current authority and Resource data remain live.
+
+Next revisit Agent model/account switching. One approach fixes those choices in the spec and
+creates a new Agent when they change, with permitted context carried through Resource/Conduit
+access. Another lets an unchanged template expressly support runtime switching. This affects
+the earlier guarantee of keeping one logical Session across switches, so it must be resolved
+explicitly rather than silently redefining the participant identity. Shared memory does not
+require a new Conversation family or copying native execution state.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

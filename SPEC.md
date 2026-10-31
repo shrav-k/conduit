@@ -6,6 +6,7 @@ Updated: 2026-10-31. Accepted working model; implementation has not started.
 The active [construction proposal](research/CONSTRUCTION.md) separates universal template
 construction from ongoing Conduits and proposes Agent as the replacement for Session. Use it
 for the current discussion; the model below remains the comparison baseline.
+The active branch keeps [instance definitions immutable while connections can change](research/CONSTRUCTION.md#immutable-definitions-and-changing-connections).
 
 ## Working model
 

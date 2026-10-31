@@ -107,7 +107,9 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
 - Across all four families, create instances from complete instance YAML or from a template
   expanded into an instance draft, customized through ordinary instance fields. V0 has no
   separately declared template parameters or parameter-to-field mapping language. Edits can
-  be automated through YAML/CLI/API without an interactive step. Direct creation requires an
+  be automated through YAML/CLI/API without an interactive step. Assigning a field replaces
+  its whole value, including objects/lists; editing a nested child preserves its siblings.
+  Direct creation requires an
   explicit unique name; Resources still
   require Pool-mediated creation. Both paths produce the authoritative instance spec and
   obey the same validation and authority rules. Creation, provisioning and execution retain
@@ -130,8 +132,9 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
 - Deletion is checked; registration removal, native shutdown and backing-data purge are distinct.
   Pool ownership introduces lifecycle obligations that ordinary reference behavior does not settle.
 
-References, defaults, creation-time field edits, selectors, filters, activation and provisioning
-require field-specific semantics. There is no universal deep merge or implicit textual substitution.
+References, defaults, field values, selectors, filters, activation and provisioning require
+field-specific semantics. Draft assignments do not implicitly merge objects or append lists;
+there is no implicit textual substitution.
 Authored intent, resolved configuration, observations and operation outcomes stay distinguishable.
 
 ## Implementation direction and retained behavior

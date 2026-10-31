@@ -24,6 +24,8 @@ outcomes rather than a long sequence of individual field rulings.
 - Template use expands an instance draft customized through ordinary instance fields, with no
   separate parameter declarations/mappings. YAML/CLI/API editing may be fully automated;
   registry submissions remain complete configurations.
+- Draft assignments replace whole field values, including objects/lists. Nested-child edits
+  preserve siblings; preserving or adding entries requires deliberate edits, not implicit merges.
 - Instance creation and checked replacement updates store declared schema defaults explicitly.
   Instance equality compares materialized values; templates preserve authored omissions.
   Unchanged updates still require current authorization and matching ID/version checks.
@@ -50,9 +52,9 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **draft-edit and field-value semantics**. Template expansion uses ordinary
-instance fields; settle how assignments treat objects and lists, then define remaining
-validation rules. Establish Pool provisioning/ownership and instance lifecycle together.
+Continue with **typed validation boundaries and field values**. Draft assignment semantics
+are settled; decide how schemas handle unknown fields and intentional extension maps, then
+remaining value rules. Establish Pool provisioning/ownership and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -67,7 +69,6 @@ validation rules. Establish Pool provisioning/ownership and instance lifecycle t
 
 | Question | Example and considerations |
 | --- | --- |
-| How do draft edits treat objects and lists? | Compare replacement of an explicitly assigned field with field-specific merge behavior. Setting a nested child can leave its siblings intact; assigning a whole list may replace it rather than append. Distinguish client draft editing from the already-selected complete registry replacement protocol. |
 | What are the remaining materialization rules? | Declared defaults are stored in instances; template omissions are preserved. Define each form's fields, scalar/list normalization, null/empty behavior, required/optional validation and version transitions. References may stay live; external contents and system-owned status are not copied into spec. |
 | How are instances addressed and rebound? | Open-new uses a template or complete configuration; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 

@@ -31,7 +31,8 @@ is supplied. Readable object references include `kind`, `form` and `name`. Creat
 either by expanding a template and editing ordinary instance fields or directly from complete
 instance YAML. Direct creation requires an explicit unique name; Resource creation always
 goes through a Pool.
-The complete instance `spec` is then edited directly. Creation and replacement updates store
+The complete instance `spec` is then edited directly. Draft assignments replace whole field
+values; editing a nested child preserves its siblings. Creation and replacement updates store
 declared schema defaults explicitly; templates preserve authored omissions. Template history
 is optional; continuing Resource and authority dependencies are explicit on the instance.
 Current-access checks and actual execution evidence remain required.

@@ -282,13 +282,20 @@ contracts where possible instead of flattening every integration into one generi
 
 ### Composition follows the relationship
 
-There is no universal deep-merge rule. Each public field and operation must state the
-meaning of omission, explicit values, empty collections, nullable values where supported,
-defaults and updates. Collection order and duplicate identity must have defined meanings.
+In draft editing, explicitly assigning a field replaces its entire value, including an object
+or list. Assigning `[c]` to a field containing `[a, b]` produces `[c]`. Editing a nested child
+leaves its siblings intact; assigning its parent replaces that entire object. Retaining,
+adding or removing entries requires deliberate edits, with no implicit object merge or list
+append. Normal validation and default materialization still apply to the resulting draft.
+These are client editing semantics; the registry still accepts complete checked replacements.
+
+Field contracts separately define omission, empty collections, nullable values, defaults,
+collection order and duplicate identity. Relationship operations such as combining authorized
+access paths retain their own semantics; field assignment does not redefine those operations.
 
 | Relationship | Established constraint; details still to settle |
 | --- | --- |
-| Session template → Session | Expand to an instance draft and edit ordinary fields within required constraints. Continuing authority is explicit. Field-edit/value semantics and default-Conduit precedence are open. |
+| Session template → Session | Expand to an instance draft and edit ordinary fields within required constraints. Assignments replace field values. Continuing authority is explicit; default-Conduit precedence remains open. |
 | Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Template reuse across Pools creates distinct instances. Selectors cannot assign a foreign instance to another owner; target domains and live behavior remain open. |
 | Session → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
 | Session activation | Instructions materialized in the Session spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |

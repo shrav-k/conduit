@@ -401,7 +401,7 @@ status and partial effects need explicit semantics.
 
 | Relationship | Proposed composition | Case to test |
 | --- | --- | --- |
-| Template expansion and creation edits | Ordinary instance fields; object/list edit semantics still need specification. | A Session's selected model changes its normal instance field within required constraints; no parameter mapping or historical delta is required. |
+| Template expansion and creation edits | Assignments replace whole field values, including objects/lists; nested-child edits preserve siblings. | Assigning `[c]` to `[a, b]` produces `[c]`; no implicit append, parameter mapping or historical delta is required. |
 | Pool provisioning selections | Select templates and explicit creation intents; instance identity matters. | Two intentional instances of one template must not be deduplicated as one. |
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
 | Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |
@@ -409,12 +409,12 @@ status and partial effects need explicit semantics.
 | Session activation and provisioning dependencies | Explicit ordering with distinct effects and failure rules. | Loading a guide, obtaining credentials and creating storage are not interchangeable steps. |
 | Intent versus observation | Compare and record, rather than merge. | A failed deployment does not silently rewrite the authored template. |
 
-Default materialization is settled; remaining omission, null, empty-collection, reset, ordering
-and duplicate-identity details need per-field rules.
-A possible v0 approach is explicit whole-list replacement plus an explicit add operation;
-this is not a universal default. Retained instance settings and current access rules must both
-survive configuration composition. A Pool's default access selection applies only when no
-explicit replacement is supplied; combination with Session-spec choices remains open.
+Default materialization and draft field replacement are settled. Preserving, adding or removing
+entries requires deliberate edits; this does not introduce a partial-update registry protocol.
+Remaining omission, null, empty-collection, reset, ordering and duplicate-identity details need
+per-field rules. A Pool's default access selection applies only when no explicit replacement is
+supplied; combination with Session-spec choices remains open. Access-path composition keeps its
+separate semantics.
 
 ## Validation and effects are separate contracts
 

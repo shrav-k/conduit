@@ -126,6 +126,11 @@ The common envelope is `apiVersion`, `kind`, `form`, `metadata`, `spec`, with sy
 plus a top-level `form` identifying a template or instance. Validation must
 distinguish both family and form; sharing a kind does not imply identical payloads or operations.
 
+Within a Resource spec, type-specific settings occupy a dedicated block alongside common
+fields such as Conduit declarations. The selected type's schema validates that block under
+the normal unknown-field rules. The separation is settled; field names and type/version
+identifier syntax remain open.
+
 Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#configuration-language):
 
 - Stable IDs survive rename; replacement objects receive new IDs. Readable references record

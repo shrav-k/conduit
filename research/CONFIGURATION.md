@@ -330,6 +330,12 @@ A reusable template is configuration for a typed capability; its contract schema
 what that configuration means. Template inheritance or arbitrary expression evaluation is
 not required to obtain reuse.
 
+Resource specs now separate a dedicated type-specific configuration block from common fields
+such as Conduit declarations. The selected contract schema validates the block, including
+unknown-field rejection except in declared open maps. Field names and the way type/schema
+versions relate to the common object apiVersion remain under review; plugin release identity
+does not substitute for configuration meaning.
+
 Stable object identity and expected-ID/configuration-version checks remain accepted. Names
 are unique within each family across both forms in the single local registry. A template
 uses a reusable concept name; an instance defaults to that name plus a generated unique suffix,

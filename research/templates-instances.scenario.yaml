@@ -1,5 +1,7 @@
 # REVIEW SCENARIO ONLY. Not a complete accepted schema or executable operations.
 # Family kind plus top-level form is accepted; payloads remain illustrative.
+# This fixture checks identities/ownership; Resource payloads predate the dedicated typed
+# configuration block and will be replaced with schema examples once field names are settled.
 # Names are unique per family across both forms. These examples use explicit instance names;
 # the default is template name plus a generated unique suffix (exact format remains open).
 # References explicitly use kind/form/name. The wrapper and operation fields remain illustrative.

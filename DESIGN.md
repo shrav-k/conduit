@@ -501,6 +501,13 @@ contract. It is reusable configuration, not a deployed capability, and need not 
 Pool merely to exist. Creating or attaching a Resource instance is exclusively a Pool operation.
 Every instance has exactly one owning Pool; one instance cannot be a member of several Pools.
 
+Resource specs keep type-specific settings in a dedicated configuration block alongside
+common fields such as Conduit declarations. The selected type contract validates that block;
+it is not an untyped extension map. Unknown fields are rejected except in schema-declared
+open maps. This separation applies to template and instance forms. `type`, `config` and
+`conduits` are illustrative field names; their exact names and type/version identifiers
+remain under review.
+
 The same template may create distinct instances in multiple Pools. A contract supports new
 backing data, attachment to existing backing data, or both explicitly. Different instances
 may therefore reach the same native target without sharing registry ownership. Creating a

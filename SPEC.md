@@ -163,6 +163,14 @@ search and MCP access are separate Resources by default even when supplied by on
 Local-directory and git-worktree are distinct types. Groups are independent of plugin packaging;
 content, identity and agent-communication groups remain candidates.
 
+Required connections match named, versioned **capability contracts** describing operations and
+behavior a consumer can rely on. Different Resource types can fulfill the same contract; the Pool
+still selects the concrete target explicitly. For example, local-directory and git-worktree could
+both provide directory access while retaining distinct setup/lifecycle types. A capability contract
+is a definition, not another managed family or the user-facing Interface. Similar names or schemas
+alone do not prove compatibility, authority or readiness. Exact identifiers and version matching
+remain open.
+
 A folder Resource describes backing directory access; each Agent's symlink is preparation state.
 Service access follows the [shared Pool authentication contract](#shared-pool-access-and-authentication).
 Resource-to-Resource access uses Conduits. Activation instructions belong to the consumer; Pool

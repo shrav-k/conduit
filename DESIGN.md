@@ -659,6 +659,20 @@ Plugin implementation releases are separate from both versions; a plugin release
 not substitute for either contract version. Version identifiers and compatibility/migration
 details remain open.
 
+**Accepted compatibility boundary:** required connections name a versioned capability contract,
+describing the operations and behavioral guarantees a consumer needs. Different Resource types
+may fulfill that same contract; consumers need not require a particular concrete Resource type.
+A Resource type still defines configuration, establishment and lifecycle. A capability contract
+defines the promised consumer-facing behavior; it is not an Interface instance or a sixth family.
+
+For example, local-directory and git-worktree could both fulfill a directory-access contract while
+retaining distinct creation and cleanup rules. This is a compatibility example, not a finalized
+contract name or guarantee of identical filesystem behavior. Matching requires the promised
+semantics, not merely a shared group, operation name or data shape. Pool target selection remains
+explicit; provider/account constraints, current permissions and readiness remain separate checks.
+Capability identifiers, compatible-version rules, conformance evidence and any supported adaptation
+remain open. A matching declaration is not proof of actual implementation or current availability.
+
 The same template may create distinct instances in multiple Pools. A contract supports new
 backing data, attachment to existing backing data, or both explicitly. Different instances
 may therefore reach the same native target without sharing registry ownership. Creating a
@@ -836,8 +850,8 @@ reusable template. This also applies to other Resource dependencies, such as sea
 This separates reusable requirements from creation-time wiring. It is not automatic account
 selection, a new template-parameter DSL or permission granted by Pool membership. Keep one resolved
 connection assignment on the consumer instance, with derived reverse views. Later template/Pool
-edits do not silently rebind established connections. Exact declaration syntax, compatibility
-matching and controls for explicit rebinding remain open.
+edits do not silently rebind established connections. Compatibility uses the capability contracts
+above; exact declaration syntax, version matching and explicit rebinding controls remain open.
 
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one

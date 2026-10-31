@@ -33,19 +33,24 @@ concrete targets during instantiation. Each instance retains its resolved Condui
 does not introduce automatic account selection, late rebinding, duplicate endpoint assignments or
 a template-parameter DSL. Concrete syntax remains open.
 
-**Next ruling — dependency compatibility:** should a required connection name a versioned capability
-contract, allowing different compatible Resource types to fulfill it, rather than requiring one
-concrete Resource type? Recommend capability contracts where actual interchangeability is useful.
-For example, local-directory and git-worktree could both provide a directory-access contract while
-retaining different setup/lifecycle types. This is a contract definition, not another managed family
-and not the user-facing Interface concept. Exact names/version matching remain open.
+**Settled compatibility:** required connections name versioned capability contracts describing
+operations and behavior. Different Resource types can fulfill the same contract; the Pool still
+selects the target explicitly. Type/group names, matching fields or contract declarations alone
+are not evidence of actual compatibility, current authority or readiness. Exact identifiers,
+version matching and conformance mechanisms remain open.
 
-The target is still selected explicitly by the Pool. Matching requires the promised operations and
-behavior, not just similar names or fields. Provider/account constraints, current permissions and
-readiness remain separate checks. The alternative binds dependencies to concrete Resource types
-initially, reducing contract machinery but coupling consumers to particular Resource types.
-Use the [compatibility research](research/RESOURCES.md#what-should-actually-drive-compatibility) as
-the starting point, then apply the result to reusable authentication and storage/search dependencies.
+**Next ruling — native operation catalogs:** should an integration contract describe discovery
+and invocation while allowing its concrete provider operations to be discovered dynamically?
+Recommend this for MCP: Conduit validates its MCP-access contract, then preserves the permitted
+Linear tool catalog and native schemas rather than requiring a new Conduit contract definition for
+every Linear tool. These discovery/invocation operations are an integration boundary, not a demand
+that the model call a generic wrapper instead of Linear's tools.
+
+The alternative statically declares each provider operation in Conduit's contracts before it can
+be exposed. That gives a more fixed catalog but adds translation and maintenance for native
+integrations. Dynamic exposure must still obey current grants/filters; provider discovery grants
+no authority and does not silently rewrite an instance's control contract. Detailed catalog changes,
+caching and invocation-time schema validation can follow after choosing this boundary.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -70,7 +75,7 @@ without promoting one provider's timeout, queue or process behavior into univers
 
 | Area | Remaining decisions and examples |
 | --- | --- |
-| Types and compatibility | Keep filesystem, storage, search and integration groups; distinguish local-directory and git-worktree. Explore content, identity and agent-communication types. Define type group/name/version identifiers and compatible consumer contracts independently of plugin packages. Shared shapes/names alone do not prove behavioral compatibility. |
+| Types and compatibility | Keep filesystem, storage, search and integration groups; distinguish local-directory and git-worktree. Explore content, identity and agent-communication types. Define type/capability identifiers, version compatibility and conformance independently of plugin packages. Shared shapes/names alone do not prove behavioral compatibility. |
 | Establishment and runtime | Use an existing directory with Agent-local symlinks, explicit new-directory creation, remote filesystem and Git worktree. Retain create/attach intent in the complete template recipe, explicit path base and absolute instance path. Define type-specific setup outputs, waits, readiness, effects and cleanup. |
 | Authentication contract | Reusable authentication is a Pool-owned Resource. Define its type/operations and supported bindings while preserving one lifecycle/refresh owner, protected references and separate caller authority. Non-reusable internal state and explicit per-consumer exceptions remain to be specified. |
 | Shared versus per-consumer state | Symlinks are preparation state, not additional Resources. Define client reuse, idle cleanup and attachment-local state separately from shared credentials; detaching a consumer must preserve Resource-owned state still needed elsewhere. |

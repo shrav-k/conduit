@@ -332,7 +332,8 @@ model subscription or makes credentials ordinary exported values.
 
 Reusable authentication is a Pool-owned Resource. Resource templates declare connection needs;
 Pool composition supplies concrete targets at instantiation, retained as resolved instance
-bindings. Compatibility matching, exact operations and YAML fields remain open. No separate
+bindings. Compatibility uses named, versioned capability contracts; exact version matching,
+operations and YAML fields remain open. No separate
 Resource per token is implied. Native interception/hotplug and provider compatibility remain unverified.
 
 MCP's [transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports) and

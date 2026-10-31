@@ -34,14 +34,14 @@ The harder design issue is what a type promises. A useful catalog distinguishes:
 | --- | --- | --- |
 | Group | Stable organization of related Resource contracts. | `storage` |
 | Type and contract version | Configuration and behavioral contract for one responsibility. | A versioned record-store type. |
-| Consumer interface, proposed | Operations/semantics another component can depend on across compatible types. | Read a record by stable ID and revision. |
+| Capability contract | Versioned operations/behavior a consumer can depend on across compatible Resource types. | Read a record by stable ID and revision. |
 | Implementation package | Code and schemas delivering one or more contracts. | One package could implement storage, search and MCP access. |
 | Resource template | Reusable values for a selected type. | Euphony's knowledge-store defaults. |
 | Resource instance | Concrete configured capability, exclusively owned by a Pool. | The attached Euphony knowledge store. |
 | Consumer attachment | Current authorized use through a Conduit, including private preparation. | One Agent's permissions, cursor or filesystem projection; normally uses the shared service binding. |
 
-The five managed families remain Interface, Agent, Resource, Pool and Conduit. A consumer
-interface here means a type contract, not an additional Interface instance or object family. Ordinary users
+The five managed families remain Interface, Agent, Resource, Pool and Conduit. A capability
+contract is a definition, not an additional Interface instance or object family. Ordinary users
 should configure instances; they should not repeatedly author capabilities already defined by
 a type's implementation and schema.
 
@@ -352,16 +352,18 @@ the only possible Resource contract for this scenario.
 
 ## What should actually drive compatibility
 
-**Proposal:** a small set of versioned interfaces, introduced only where real consumers need
-interchangeability. Type-group membership should help discovery, not imply interface inheritance.
+**Accepted direction:** required connections match named, versioned capability contracts covering
+operations and behavior, so different compatible Resource types can supply them. Type-group
+membership helps discovery; it does not imply capability inheritance. Exact contracts, identifiers,
+version matching and conformance mechanisms remain open.
 
 For example, a search implementation can require record enumeration and revision-aware reads.
 Two different storage types may satisfy that exact requirement. A third may only export bytes,
 so it needs an explicit adapter or is incompatible. Its placement in `storage` is insufficient.
 Resource templates declare connection requirements; Pool composition supplies their concrete
 targets at instantiation. The instance retains its resolved Conduit binding, without duplicate
-endpoint assignments. That composition boundary is accepted; using versioned capability contracts
-for compatibility remains the next review ruling.
+endpoint assignments. Both this composition boundary and capability-based compatibility are
+accepted. Provider/account constraints, current authority and readiness remain separate checks.
 
 | Fact | Proposed authority | Example |
 | --- | --- | --- |
@@ -377,8 +379,9 @@ its absence is a compatibility/readiness failure; it is not silently downgraded 
 Groups, advertised capabilities and schema validity do not prove enforcement by a remote server.
 An instance author may request narrower use, but cannot declare unsupported behavior into existence.
 
-For v0, prefer concrete adapters and only the shared interfaces needed by the experiment.
-The open design question is how far to formalize this before implementation. A universal trait
+For v0, prefer concrete adapters and only the capability contracts needed by the experiment.
+The next question is how stable contracts expose dynamic provider catalogs such as MCP tools.
+A universal trait
 registry, multiple inheritance, generated method wrappers for every service, or a policy field
 per provider call would add bookkeeping before demonstrating value.
 

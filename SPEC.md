@@ -22,7 +22,7 @@ Shared service identity does not merge private Agent context or model-subscripti
 | Interface | User-facing authoring, observation and creation; establishes Conduits for interacting with running targets. |
 | Agent | Autonomous participant with runtime/access configuration, private context and executions; may initiate or receive operations. |
 | Resource | One responsibility with related operations, exposed as a particular capability, data source or service. |
-| Pool | Owns and establishes Resource instances, composes reusable templates and organizes shared service authentication/access. |
+| Pool | Makes Resource templates available for provisioning, owns resulting Resource instances and organizes shared service authentication/access. Template availability alone creates nothing. |
 | Conduit | Carries permitted interactions/data between endpoints, applying filtering and maintaining connection state. |
 
 Agent replaces the former Session name. Plugins implement typed operations and runtime behavior;
@@ -73,11 +73,12 @@ actor has automatic priority. Ordinary message delivery and wake behavior remain
 
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.
-2. **Compose Pools.** Select Resource templates, establishment settings and intended shared service
-   identities; supply concrete targets for the templates' declared connection dependencies.
-3. **Establish Pools and Resources.** Register/instantiate and explicitly run the configured
-   establishment lifecycle, completing needed service authentication. An Interface may combine these
-   actions while reporting separate outcomes. Existing valid authentication can be reused.
+2. **Compose Pools.** Make Resource templates and their provisioning settings available through a
+   Pool. Catalog membership describes what it can provision; it does not request deployment.
+3. **Establish selected Resources.** Register/instantiate the Pool, then provision selected Resources
+   through an explicit action or declared setup-graph step. Resolve their dependency targets and
+   complete needed service authentication. An Interface may combine these actions while reporting
+   separate outcomes. Existing valid authentication can be reused.
 4. **Establish Agents.** Instantiate Agent templates and authorize their Conduits to the relevant
    Pools/capabilities. Attaching a new Agent does not inherently trigger another provider sign-in.
 5. **Observe and interact.** Observe state; establish a Conduit to a running target to request its
@@ -227,23 +228,26 @@ compose the authentication and service Resources automatically. This adds no obj
 requirement for a Resource per token, and makes the Pool neither a mandatory network hop nor process.
 
 Reusable Resource templates declare required connections; Pool composition supplies their concrete
-targets during instantiation. Each resulting instance retains its explicit resolved Conduit
-bindings. The same service template can therefore use work authentication in one Pool and personal
+targets when the selected Resources are instantiated. Each resulting instance retains its explicit
+resolved Conduit bindings. The same service template can use work authentication in one Pool and personal
 authentication in another. This does not imply automatic account matching, additional permission,
 late rebinding or a second editable connection inventory. Exact binding syntax remains open.
 
 Pool templates use named local Resource entries and can bind dependencies to those entries.
-Each Pool instantiation resolves them to its own Resource instances and their stable IDs; local
-names are composition references, not registry aliases. Reusing a Pool template does not imply
-shared Resource identity or credentials. Normal Pool setup uses a reusable graph step that consumes
-the entries and bindings and establishes Resources through their own setup contracts. Custom graphs
-can reference the same entries for additional ordering or checks. This runs only during explicitly
-requested setup. Exact field names, plugin contracts and graph syntax remain open.
+The entries describe available provisioning choices. Adding one does not create an instance,
+authenticate a service or establish an Agent connection. During selected Resource provisioning,
+local bindings resolve to concrete Pool-owned instances and their stable IDs; local names are
+composition references, not registry aliases. Reusing a Pool template does not imply shared
+Resource identity or credentials. A reusable graph step can establish a selected composition
+through the Resources' own setup contracts. It must not interpret every available catalog entry
+as a deployment request. Custom graphs can reference entries for extra ordering or checks.
+Exact catalog/selection fields, plugin contracts and graph syntax remain open.
 
 During partial Pool setup, ready Resources remain usable through authorized Conduits while other
 components wait or fail. Each Resource's prerequisites and declared gates still apply; report the
 Pool's incomplete setup without withholding unrelated ready capabilities. This preserves partial
 work under the existing recovery rules and does not equate a running process with readiness.
+Unselected catalog entries are not pending or failed setup components.
 
 Separate these contracts:
 

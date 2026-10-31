@@ -13,28 +13,35 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-Resolve **R4: connection selection, delegation and routing** next. Start with how configuration
-selects what to establish, then settle route/identity choice and the lifetime of delegated access.
-Current access checks, narrowing-only filters and stable-ID bindings are already accepted.
+Continue **R4: connection selection, delegation and routing** with a clarified Pool model.
+The user clarified that adding Resource templates only outlines what a Pool can provision;
+it must not automatically deploy instances. Neither earlier R4 selection/defaults proposal was
+accepted. They conflated template availability with a deployment selection and assumed an
+unsettled Pool-provided connection-default feature.
 
-| Situation | Recommended behavior, not yet a ruling |
+| View/action | Meaning |
 | --- | --- |
-| A Pool template selects Resource templates labeled `domain=euphony`. | Resolve that selection once during instantiation into concrete Resource entries. Later matching templates do not provision new Resources without an explicit action. |
-| A live access filter matches existing permitted Resources labeled `domain=euphony`. | Continue the accepted live-matching behavior. Availability can change without provisioning anything or injecting new context. |
-| An Agent declares memory access; its selected Pool offers repository and Linear access defaults; the caller explicitly selects repository access only as the additional selection. | Preserve the Agent's declared memory connection; add repository access. The explicit additional selection replaces Pool defaults, so Linear is omitted. It does not silently remove declared dependencies. |
-| Two routes can reach Linear through different accounts or restrictions. | Resolve the intended path and service identity explicitly. Do not choose by discovery order, silently fall back to another account or combine grants from different paths. |
-| The frontend that delegated a worker's access closes. | Keep the grant with that worker's logical participation, subject to current limits/revocation. Frontend lifetime does not itself remove the worker's access. |
+| Available Resource templates | Recipes this Pool can provision, with relevant settings and dependency declarations. Adding a recipe creates no Resource instance or login. |
+| Owned Resource instances | Concrete Resources actually created/attached through this Pool, with their own identities and reported readiness. |
+| Provisioning | An explicit action or declared setup-graph step selects what to instantiate. A reusable composition step handles that selection and its declared dependencies. |
+| Conduit attachment | An Agent/Interface gains authorized access to a capability. Pool catalog membership alone neither opens this connection nor grants access. |
 
-The first recommendation concerns selection of templates to instantiate; it does not freeze
-Resource contents or change live access filtering. Creation choices remain distinct from the
-explicit request that runs setup. The second composition rule treats Pool defaults as additional
-connections, preserving declarations already resolved in the Agent. Deliberately editing a draft
-or invoking a supported connection operation remains possible; implicit list replacement must not
-silently remove a required dependency. Neither selection nor defaults confer authority.
+For example, Euphony can offer checkout, Linear and notes templates while initially owning no
+application Resources. Provisioning a checkout creates one owned workspace. Later, a selected
+setup composition can establish shared authentication plus Linear access. Attaching another Agent
+uses those Resources through authorized Conduits; it need not repeat provider login. Adding a
+search template to the catalog still deploys nothing.
 
-Alternatives include provisioning when selector matches change, making one explicit selection
-replace all connection declarations, automatic route fallback, or grants tied to the issuing
-frontend/expiring leases. Each changes observable behavior and must be selected explicitly.
+“Pool defaults” meant an optional launch-time suggestion such as repository + Linear connections,
+carried forward from the earlier project/scope model. It did not mean Resource configuration
+defaults, available templates, owned instances or permission grants. Its place in the current
+model is unresolved. **Recommendation:** omit Pool-provided default Agent connections in v0;
+use Agent-declared Conduits and explicit later connection operations. Reusable composite Conduit
+templates already let an Agent select a bundle. This avoids an unnecessary merge/precedence layer.
+
+Whether selectors update the available-template catalog live is separate from provisioning and
+remains open. Current matching over existing permitted Resources stays live as already agreed.
+After clarifying this composition, settle explicit route/service identity and delegation lifetime.
 
 ## Settled foundation
 
@@ -61,7 +68,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
-| R4 | How are connections selected, delegated and routed? | Resolve creation selections once; live access matches within current rules. Explicit target/identity, no silent fallback. Delegation follows logical participation until withdrawal/current limits remove it. | Automatic rerouting, grant expiry or dynamic provisioning policies. |
+| R4 — in review | How are connections selected, delegated and routed? | Clarified: Pool templates describe provisioning availability, not automatic deployment. Proposed: omit Pool-provided default Agent connections; resolve route/service identity explicitly; delegation follows logical participation under current limits. Catalog-selector refresh remains open. | Optional connection presets/precedence, automatic routing or grant-expiry policies. |
 | R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
@@ -113,14 +120,17 @@ partial bulk retirement. [Ownership scenarios](research/CONDUITS.md#supporting-r
 
 ### R4 — selection, delegation and routing
 
-Recommend resolving template/Pool provisioning selectors into an explicit creation selection;
-later matching templates do not automatically provision Resources. Matches within already
-authorized Resource access remain live. Stable-ID bindings still require explicit rebinding.
+Pool template availability, selected provisioning, owned instances and consumer attachments must
+be distinct. The user clarified that catalog additions do not deploy. The previous proposal to
+resolve a provisioning selection at Pool instantiation was not accepted; the timing/refresh of
+available-template selectors remains to settle without conflating it with execution. Matches
+within established authorized Resource access stay live; stable-ID bindings require explicit rebind.
 
-Settle precedence between Agent-declared connections, Pool launch defaults and explicit selections.
-Recommend preserving declared dependencies, applying Pool defaults only to an otherwise unspecified
-additional selection, and replacing only the explicitly named selection. Avoid a global merge
-that silently drops required dependencies.
+Pool-provided default Agent connections were assumed in the previous question, not established
+for this model. Recommend omitting them in v0: Agent templates declare starting Conduits, including
+reusable bundles, and explicit operations add/remove connections later. If optional Pool presets
+are retained instead, their selection and precedence need a separate contract. No connection
+selection creates authority or silently removes a required dependency.
 
 Retain the selected capability/service identity per attachment. Resolve multiple routes explicitly;
 do not choose by discovery order or silently fall back to a different account. Recommend delegation

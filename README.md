@@ -16,7 +16,7 @@ remain separate.
 | Interface | The user-facing authoring, observation and creation layer; opens Conduits to interact with instances, through different frontends. |
 | Agent | An autonomous participant that acts through Conduits and can expose operations to other participants. |
 | Resource | A unitary capability, data source or service owned by exactly one Pool instance. |
-| Pool | Owns and establishes Resource instances and organizes their shared service access/authentication. |
+| Pool | Makes Resource templates available for provisioning, owns resulting Resource instances and organizes shared service access/authentication. Listing a template does not deploy it. |
 | Conduit | A connection carrying permitted interactions and data between endpoints, with filtering. |
 
 The v0 **management Interface** is the user's unrestricted administration surface across all

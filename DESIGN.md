@@ -969,15 +969,19 @@ with an explanation. Exact creation/base/branch/path settings remain open.
 ## Pools
 
 Users compose a Pool through an Interface, referencing reusable Resource templates and their
-establishment settings. A Pool template describes those selections, defaults, policies and
-permitted management/configuration changes. A Pool
-instance creates/attaches and exclusively owns its Resource instances. Pools remain the
-resource-supply and shared service-access boundary for Agents and connections, including skills,
+establishment settings. These entries describe what the Pool can provision; listing or adding a
+template does not create/attach a Resource instance, authenticate a service or connect an Agent.
+The available-template catalog and the Pool's owned Resource instances are distinct views, not
+new object families. A Pool template describes that availability, provisioning settings, policies
+and permitted management/configuration changes. A Pool instance creates/attaches selected
+Resources through explicit provisioning or declared setup-graph steps and exclusively owns the
+resulting Resource instances. Pools remain the resource-supply and shared service-access boundary
+for Agents and connections, including skills,
 tools, memory and connection support such as conversation storage. A Pool need not run a process.
 
 **Accepted dependency composition:** reusable Resource templates declare their required connections;
-Pool composition supplies the concrete targets during instantiation. The consumer instance supplies
-its own local endpoint and retains the resolved Conduit declaration/target binding. For example,
+Pool composition supplies concrete targets during selected Resource instantiation. The consumer
+instance supplies its own local endpoint and retains the resolved Conduit declaration/target binding. For example,
 one reusable MCP template can connect to Euphony's authentication Resource in a work Pool and to a
 personal authentication Resource in another Pool without embedding either concrete identity in the
 reusable template. This also applies to other Resource dependencies, such as search using storage.
@@ -990,14 +994,17 @@ above; exact declaration syntax, version matching and explicit rebinding control
 
 **Accepted local composition:** Pool templates name their Resource entries locally, allowing a
 dependency binding to refer to another entry in that composition. For example, `linear` binds its
-authentication requirement to `auth`. Instantiating the Pool resolves that reference to the
-authentication Resource created for this Pool, and the consumer retains its resolved stable target
-ID. Another instantiation produces distinct owned Resources. Local entry names are not global
-registry aliases or an alternative instance identity; referencing one grants no access.
+authentication requirement to `auth`. Provisioning the selected composition resolves that reference
+to the concrete authentication Resource for this Pool, and the consumer retains its resolved stable
+target ID. Catalog entries alone have no deployed Resource identity. Other Pool instances own their
+own deployed Resources; template reuse alone does not share instance identity. Local entry names
+are not global registry aliases or an alternative instance identity; referencing one grants no access.
 
-**Accepted default setup:** a reusable composition step in the Pool's setup graph consumes its
-declared Resource entries and dependency bindings, establishes the Resources through their own
-setup contracts and exposes the results. Custom graphs can reference the same entries for extra
+**Accepted composition mechanism:** a reusable graph step consumes selected Resource entries and
+dependency bindings, establishes the Resources through their own setup contracts and exposes the
+results. The selection is a provisioning instruction, separate from merely listing available
+templates. A declared setup graph may provision a chosen composition; catalog membership alone
+must not cause all entries to deploy. Custom graphs can reference the same entries for extra
 ordering or checks; authors need not restate Resource configuration or hand-wire every component's
 setup. Required dependencies govern preparation, not YAML mapping order. This preserves each
 Resource's runtime ownership, authorization and recovery contract. Exact operation names, typed
@@ -1009,7 +1016,9 @@ and any declared gates still apply. A ready checkout can be used while shared au
 for consent and Linear remains unavailable. Report the Pool's incomplete setup and component
 states; do not infer readiness merely from a running process. Successful partial work remains
 retained under the existing recovery rules. Aggregate status/completion fields and explicit
-whole-Pool gate contracts remain open; this adds no automatic retry or cleanup behavior.
+whole-Pool gate contracts remain open; this adds no automatic retry or cleanup behavior. Templates
+merely available in the catalog are not pending/failed setup components; only requested setup
+contributes such progress and readiness obligations.
 
 Creating a Pool registers its identity and configuration. Provisioning is explicitly requested
 to create or attach Resources through their owning Pool. A frontend may offer both in one
@@ -1037,10 +1046,12 @@ Creating a Resource for a connection must identify its owning Pool; the connecti
 provisioning through that Pool. How provisioning retries partial work or resolves dynamic
 support requirements remains open. A template registration alone does not create Resources.
 
-When launching against a Pool, its access defaults apply only if no explicit selection
-is supplied. Explicit selection replaces those defaults; extending them requires an
-explicit add action. Agent limits and exclusions always constrain the result.
-Combination with connection choices materialized in the Agent spec remains open.
+**R4 clarification pending:** an earlier project/scope rule used launch-time access defaults.
+Whether Pools should supply an analogous default set of Agent connections is not settled in the
+current model. Such a preset would be a convenience suggestion, not Pool contents, automatic
+provisioning or an access grant. Agent-declared Conduits and explicit connection operations already
+provide selection without that feature. Keep Pool-provided defaults and precedence rules proposed
+until reviewed; Agent limits and current authority constrain every actual connection.
 
 **Accepted retirement (R3):** keep a Pool instance registered until its owned Resource instances
 have been explicitly retired through their supported lifecycle and checked unregistration.

@@ -18,7 +18,7 @@ both forms; an instance need not have a dedicated process or be continuously run
 | Interface | The user-facing authoring, observation and creation layer. It establishes Conduits for interaction with running instances and can be expressed through different frontends. |
 | Agent | An autonomous participant with its own execution/access boundary and private context. It initiates actions and can expose operations for other participants to invoke. |
 | Resource | A unitary capability, data source or service, created or attached through exactly one owning Pool. |
-| Pool | Owns and establishes Resources and organizes their shared service authentication; grouping reflects capability contracts. |
+| Pool | Makes Resource templates available for provisioning, owns resulting Resources and organizes shared authentication. Catalog membership alone does not deploy anything. |
 | Conduit | A connection between endpoints through which permitted interactions and data flow, with filtering and connection state. |
 
 **Interface is the fifth working family.** Agent replaces Session in this proposal. An Agent
@@ -60,7 +60,8 @@ The intended user journey is:
 1. Use an Interface to author Resource templates and an Agent template.
 2. Add selected Resource-template references and creation settings to a Pool configuration,
    supplying concrete targets for their declared connection requirements.
-3. Instantiate the Pool and establish its Resources and shared service authentication.
+3. Instantiate the Pool, then provision selected Resources and shared service authentication through
+   an explicit action or declared setup-graph step. Available templates alone do not deploy.
 4. Instantiate Agents whose declared Conduits authorize access to those capabilities without
    repeating the provider login merely because a new consumer attaches.
 5. Observe the resulting instances; use Conduits from the Interface to request supported changes.
@@ -539,7 +540,7 @@ syntax is separate from the already-selected kind/form/name syntax for registere
 The requested bundle names the service's desired use of authentication; its compatibility requirement
 does not itself grant that use. Pool establishment must be authorized to delegate the actual access.
 
-**The Pool composes instances and supplies the dependency target.**
+**The Pool lists available templates and dependency bindings; selected provisioning creates instances.**
 
 ```yaml
 apiVersion: example/v0alpha1
@@ -563,8 +564,9 @@ spec:
 
 `auth` and `linear` illustrate the accepted local-entry mechanism. They are neither registry aliases
 nor preassigned instance names. Proposed `localResource: auth` syntax means the Resource created
-from that entry in this particular Pool instantiation. Another Pool created from the same template
-gets different owned instances. Proposed `bindings` supplies the target for the service's declared `authentication`
+from that entry when this Pool provisions the selected composition. Merely listing `auth` and
+`linear` creates neither instance. Another Pool can provision its own instances from the same
+templates. Proposed `bindings` supplies the target for the service's declared `authentication`
 connection; it does not create a second connection or an independent runtime binding ledger.
 
 The `config` block supplies ordinary creation configuration. Assignment replaces that field rather
@@ -572,8 +574,10 @@ than introducing an implicit deep merge; this example assumes the authentication
 config is entirely its account selection. Runtime/type settings remain separate. More complicated
 child edits and creation overrides need their own explicit syntax rather than guessed merge rules.
 
-The accepted default is a reusable composition step in the Pool's setup graph. It reads the
-entries and bindings, invokes each Resource's setup contract and exposes their results. Custom
+The accepted reusable composition step reads selected entries and bindings, invokes their Resource
+setup contracts and exposes the results. For this example, assume the referenced setup graph
+explicitly selects `auth` and `linear`; the catalog itself does not request that provisioning.
+The graph and its selection syntax are omitted here, not inferred from the `resources` map. Custom
 graphs can refer to the same entries for extra ordering or checks. Mapping order alone is not execution order.
 Registration can establish identities before required preparation succeeds; the service cannot
 complete required preparation until its authentication dependency is usable. An illustrative

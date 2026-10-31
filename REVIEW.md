@@ -37,6 +37,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Default setup | A reusable graph step consumes the entries and bindings and invokes each Resource's setup contract. Custom graphs can reference the same entries for extra ordering/checks. Setup is explicitly requested. |
 | Partial availability | Ready Resources remain usable through authorized Conduits during incomplete Pool setup. Their prerequisites and declared gates still apply; component and Pool status remain distinct. |
 | Composite Conduits | Reusable bundles preserve component targets, authority and lifecycle. Each consumer's attachment tracks its own component participation and detach cleanup; underlying flows/clients/authentication may still be shared. Supporting Resources remain Pool-owned. |
+| Typed filters | Inspectable declarations have defined semantics, with validation/enforcement supplied by supporting plugins. Custom code can implement new filter contracts, including through scripts/graphs. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -44,18 +45,19 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-**Next ruling — declaring and implementing filters:** should Conduit filters be typed declarations
-with semantics defined by capability/constraint contracts and enforcement implemented by supporting
-plugins? Recommend this: YAML selects allowed operations, paths or provider-specific target limits;
-the relevant implementation performs the checks. Custom code can add a filter contract, and its
-implementation can use plugin operations/graphs. Naming a constraint is not proof of enforcement.
+**Next ruling — composition along access paths:** should every applicable restriction on the path
+used for a request have to pass, with independent authorized paths remaining separate complete
+choices? Recommend intersection along a path, including applicable composite and component limits.
+A component cannot relax its enclosing restriction. Separate paths must preserve the
+association between target, operation and other constraints rather than merging each field's
+allowlist independently.
 
-The alternative makes user-authored filter graphs/scripts the primary declaration of a restriction,
-with their contracts specifying inputs and decisions. That offers direct procedural customization
-but leaves more of the policy's meaning in executable code. Both must remain narrowing-only and
-respect actual integration coverage. See the [filter example](research/CONDUITS.md#filter-declaration-and-implementation).
-Exact vocabulary, schemas, expression operators and filter composition remain open; this ruling
-does not require comprehensive native interception or sandboxing in v0.
+For example, one path permits reading Euphony issues and another updating Demo issues; neither
+permits updating Euphony. Actor-wide or target-wide exclusions still apply wherever relevant.
+This is not a requirement to intersect every connection attached to an Agent, and does not decide
+routing or automatic fallback. See the [composition example](research/CONDUITS.md#filter-composition-across-access-paths).
+Exact syntax, Boolean alternatives within a filter, diagnostics and runtime policy representation
+remain open. This is an access decision rule, not a mandate for one policy engine or storage format.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -124,7 +126,7 @@ and reconcile a lost response. Keep identities, state and operation outcomes dis
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Endpoint contract | Generalize Interface/Agent control, Resource access, Resource-to-Resource dependencies and platform management. Define endpoint roles, filtered capabilities and request/result/observation paths without assuming one network topology. |
-| Authority and filtering | Select filter declaration/implementation boundaries; define complete resource/operation/constraint combinations and current checks. Settle issuance/lifetime details for accepted attachment delegation. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
+| Authority and filtering | Typed filter declarations backed by plugins are accepted. Define composition of complete resource/operation/constraint combinations and current checks. Settle issuance/lifetime details for accepted attachment delegation. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
 | Communication Resources | Explore direct exchange, conversations and shared context as agent-oriented capabilities, potentially backed by storage Resources. Separate retained content from routing and runtime bookkeeping. No rooms-only topology or communication schema is selected. |
 | Composition and supporting Resources | Composite Conduits and per-consumer component participation are accepted. Define attachment representation, aggregate readiness and cleanup recovery, plus provisioning rights for Pool-owned supporting Resources. Avoid duplicated setup or implied external rollback. |
 | Delivery and attention | Define ordering, durable acceptance, acknowledgement, replay, offline delivery and backpressure for selected communication types. Distinguish available data, notices, queued input and starting model work; current access is checked at delivery. Wake behavior belongs to an explicit supported contract. |

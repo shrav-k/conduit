@@ -1092,6 +1092,20 @@ Resources; the engine and plugins execute and supervise Conduit flows. Their ord
 failure behavior are unresolved, but a connection cannot provision an unowned Resource or
 assume the Agent's loading instructions merely because it requested storage.
 
+### Typed filters
+
+**Accepted:** Conduit filters normally use typed declarations with defined semantics, validated
+and enforced by supporting plugins. Capability or constraint contracts define the meaning of
+restrictions such as permitted operations, paths, provider targets or control values. Configuration
+selects the restriction and its parameters; implementation code performs the checks.
+
+Users can implement new filter contracts through plugins, including scripts or graphs. Contract
+identity remains separate from the implementation package. This preserves inspectable policy
+without requiring each template to embed the checking procedure. Exact schemas, vocabulary,
+expression operators, composition and conformance tests remain open. Filters still only narrow
+authority; unsupported restrictions must be reported rather than dropped. No additional v0
+agent-wide interception or sandbox guarantee follows from this declaration format.
+
 ### Authority and current access
 
 Permissions name operations per Resource contract, with convenience bundles expanding

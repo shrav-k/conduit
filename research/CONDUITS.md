@@ -502,7 +502,7 @@ Existing narrowing-only filters and capability-tuple composition remain applicab
 
 ### Filter declaration and implementation
 
-**Proposal for review:** use typed filter declarations with meanings defined by capability or
+**Accepted:** use typed filter declarations with meanings defined by capability or
 constraint contracts; supporting plugins implement validation and enforcement. Templates and
 attachments can expose inspectable restrictions without embedding the checking procedure at each
 use site. A user can implement a new contract with a small plugin, including a script or graph
@@ -516,13 +516,38 @@ where needed. Contract identity is separate from the implementation package.
 
 These are candidate constraint meanings, not accepted schemas or verified provider support.
 Filters narrow existing grants; they neither issue permission nor silently rewrite requests.
-Unsupported restrictions retain the existing unavailable/reporting behavior. This proposal adds
+Unsupported restrictions retain the existing unavailable/reporting behavior. This authoring choice adds
 no blanket interception or sandbox guarantee to native execution.
 
-The alternative authors the filter procedure directly as a graph/script with typed inputs and
-decision outputs. Recommend declarative contracts as the normal authoring surface, keeping those
-procedures in their implementations. Exact operators, names, schemas, composition and conformance
-tests remain separate choices.
+Declarative contracts are the normal authoring surface; checking procedures live in their
+implementations. Exact operators, names, schemas, composition and conformance tests remain open.
+
+### Filter composition across access paths
+
+**Proposal for review:** require all applicable restrictions along the path used for a request
+to pass. Intersect target support/limits, current caller authority and the composite/component
+filters that apply to that operation. A component's wider allowance cannot override its parent's
+narrower restriction. This is a rule for logical authorization, not a required sequence of network
+hops, and does not treat an entire Pool's internal dependency graph as the caller's access path.
+
+Independent authorized paths remain distinct complete choices. Preserve the target, operation,
+input and other constraints together, including applicable actor-wide or target-wide exclusions.
+Do not combine field-wise allowlists into permissions that no complete path authorizes:
+
+| Available path | Complete permitted combination in this example |
+| --- | --- |
+| A | Read issues in Euphony. |
+| B | Update issues in Demo. |
+
+Reading Euphony can use A; updating Demo can use B. Updating Euphony cannot borrow the operation
+from B and the target from A. An unrelated read-only path also does not make every other path
+read-only. The actual path used must authorize the complete request; whether/how a runtime chooses
+another path is a separate routing decision, not settled here.
+
+Within one path, an Euphony-only composite and a Demo-only component have no common permitted
+workspace. Report the unusable access rather than treating either declaration as an override.
+Exact conflict diagnostics, filter expression syntax, Boolean alternatives within a layer and
+evaluation implementation remain open. This recommendation does not prescribe a new policy engine.
 
 ## Review sequence and tests
 

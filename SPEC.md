@@ -102,6 +102,11 @@ agree. The proposed constraint composition is intersection of implementation sup
 limits, current authority and Conduit restrictions; exact schema and expression language are open.
 A filter does not silently rewrite the requested value or grant access.
 
+Filters normally use typed declarations with defined semantics, backed by supporting plugins for
+validation and enforcement. Custom code can implement new filter contracts, including through
+scripts or graphs; restrictions remain inspectable in configuration. A declaration alone does not
+prove enforcement. Exact filter schemas, operators and composition rules remain open.
+
 An authorized user or Agent can delegate an explicit subset of service access while establishing
 another consumer's Conduit attachment. Record that delegation with the attachment; a separate
 Agent-permission setup is not required first. The creator must be permitted to delegate it, and

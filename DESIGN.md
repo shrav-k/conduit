@@ -687,17 +687,20 @@ A Conduit template describes a reusable typed interaction. Opening from that tem
 complete instance configuration establishes an authorized flow with resolved endpoints,
 logical attachments and connection state. Session and Resource templates can reference
 Conduit templates as connection declarations; the resulting consumer instances retain those
-declarations in their configuration. The system establishes the selected flow when requested
-through the consumer's lifecycle. Registering configuration alone does not open it. Exact
-declaration fields, preparation triggers and reconfiguration remain under review; declarations
-are not a requirement to author the same endpoint relationship twice.
+declarations in their configuration. Explicit preparation of a Session or Resource normally
+attempts each declaration's configured open/join action, rather than waiting for first use.
+Registering configuration alone opens nothing. Report connection/authentication outcomes as
+part of preparation; an attempt does not imply successful establishment. Required/optional
+behavior, failure handling, ordering and reconfiguration remain under review. Declarations
+do not require authoring the same endpoint relationship twice.
 
 For a declaration inside a Session or Resource, the enclosing instance supplies the consumer
 endpoint automatically. A reusable search template declaring `storage-read` can therefore be
 used by `search-a` and `search-b`, each resolving itself as the consumer without an authored
 local-endpoint marker or generated instance name in the template. This supplies endpoint
-identity only: authority checks, explicit open/join intent and preparation timing remain
-separate. Remote endpoint selection and exact declaration syntax still require review.
+identity only; authority checks and explicit open/join intent still apply. Preparation supplies
+the default establishment trigger. Remote endpoint selection and exact declaration syntax
+still require review.
 Conduits are the extensible interaction layer across the four families. Pool access and
 Session communication are examples, not a closed list of endpoint roles or protocols.
 

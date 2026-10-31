@@ -23,7 +23,9 @@ every fact belong to one Session, connection or backend.
 
 Session and Resource templates can reference Conduit templates as declarations of connections
 to establish; the enclosing instance supplies the consumer endpoint automatically. Explicit
-open/join intent, authority and preparation timing remain separate.
+preparation normally attempts each configured open/join under current authority and reports
+the result; registration alone opens nothing. Required/optional behavior and failure handling
+remain open.
 A Conduit has no independent runtime; the engine/plugins perform transfers and
 maintain clients or sync work. Logical consumer/peer attachments keep it live between polls and
 during temporary transport failure. The last consumer/peer detaching ends the flow and closes

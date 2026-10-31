@@ -96,7 +96,9 @@ No automatic purge follows from a missing Pool reference.
    Session and Resource templates can reference Conduit templates to describe flows their
    instances will establish. The enclosing instance automatically supplies the consumer endpoint;
    it need not repeat its identity in the declaration. This grants no authority and does not
-   choose open versus join. Remote endpoint selection, fields and preparation triggers remain open.
+   choose open versus join. Explicit consumer preparation normally attempts those declared
+   actions and reports their outcomes; registration remains passive. Remote endpoint selection,
+   fields, required/optional behavior and preparation failure handling remain open.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.
@@ -207,7 +209,7 @@ defines the remaining selections and staged evidence.
 | Direct creation | Complete instance YAML can create a named instance without registering a template. Resource creation still requires an owning Pool; both paths obey the same validation and authority rules. |
 | Typed Resources | Filesystem, MCP and search examples have explicit type-specific configuration, operations and consumer state. A template configures a contract; it does not define a new type. Pool grouping follows these semantics. |
 | Unitary composition | Each Resource has one responsibility with related operations. Storage, search and MCP access are separate Resources by default, grouped in Pools; this does not require separate backend processes/data. |
-| Resource connections | A search Resource's access to storage is expressed through a Conduit under applicable authority and filters. This is a logical relationship, not a separate Conduit per query/socket; endpoint syntax and establishment remain open. |
+| Resource connections | A search Resource's access to storage is expressed through a Conduit under applicable authority and filters. Explicit consumer preparation attempts its declared open/join action and reports the result; registration alone starts nothing. Endpoint syntax and failure handling remain open. |
 | Conduit lifetime | A sync subscription stays attached between polls or during transport failure. The last logical consumer/peer detaching ends the flow and closes provider-side connections; Resources and retained evidence survive. |
 | Folder preparation | Two Sessions use one folder Resource through their own symlinks. Preparing/removing a symlink creates/deletes no Resource or backing folder and does not affect the other Session's view. |
 | MCP authentication | Two Sessions can use one MCP Resource with different permitted service identities where supported. Resolve identity per attachment within target/access constraints; shared configuration does not imply shared authentication state. |

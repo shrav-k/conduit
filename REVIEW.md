@@ -56,6 +56,8 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   local-endpoint marker; this grants no authority or implicit open/join choice.
   The engine/plugins perform the work; a Conduit has no independent runtime.
   One-time transfers, persistent access and ongoing sync are examples, not a closed taxonomy.
+- Explicit Session/Resource preparation normally attempts declared open/join actions and reports
+  their outcomes. Registration alone starts nothing; required/optional and failure behavior are open.
 - The last logical consumer/peer detaching ends a live Conduit and closes remaining provider-side
   connections. Sync subscriptions remain attached between polls or temporary transport failures.
   Backing Resources, templates and retained evidence survive; crash/detach detection remains open.
@@ -88,11 +90,11 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Settle **when consumer-declared Conduits are established** next: during explicit consumer
-preparation/start by default, or on demand at first use. Registration alone remains passive.
-The enclosing instance supplies the consumer endpoint; remote endpoint selection, required/
-optional connections and exact declaration fields still need review. Keep declarations distinct
-from resolved state and avoid duplicate authored assignments.
+Settle **how connection failures affect preparation** next. Declared open/join actions are
+normally attempted during explicit consumer preparation. Decide required versus optional
+connections, readiness/progress with missing connections and the default when unspecified.
+Remote endpoint selection and exact declaration fields still need review. Keep declarations
+distinct from resolved state and avoid duplicate authored assignments.
 Live Conduit lifetime is now settled around logical consumer/peer attachments; reopening and
 configuration changes remain separate choices. Express template/instance YAML before Pool mechanics.
 Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
@@ -111,7 +113,7 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity automatically. Settle remote references, explicit open/join selection, preparation versus first-use establishment, and required/optional behavior. Distinguish the consumer's declaration from resolved connection state and choose how later changes are applied without competing editable copies. Pool ownership/access still apply. |
+| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation normally attempts the declared open/join action. Settle remote references, required/optional semantics/defaults, failure handling and ordering. Distinguish declarations from resolved connection state and choose how later changes apply without competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
 | What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |

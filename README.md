@@ -1,5 +1,9 @@
 # Conduit
 
+**Branch inquiry:** [Conduits as graphs](research/CONDUIT_GRAPHS.md) explores a possible change
+to the model below. It is not an accepted replacement. The cleaned baseline is saved on `main`
+at `c013f0a`; this branch keeps the inquiry separate.
+
 Conduit connects models, agents and capabilities through four families, each with a reusable
 **template** and a concrete **instance** form. Templates describe how to establish instances;
 instances retain their own configuration and observed state.

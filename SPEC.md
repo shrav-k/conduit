@@ -97,8 +97,9 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   resolved identity, and established explicit bindings require explicit rebind to another ID.
 - Use one local registry with names unique per family across templates and instances. A Session
   template and Session instance cannot both be named `reviewer`. Templates name reusable concepts;
-  instances have distinct, specific names. Instance-name generation and explicit form checks in
-  references remain open; resolving a name must never silently substitute the wrong form.
+  instances default to the template name plus a generated unique suffix, with explicit unique
+  names allowed. Suffix format and explicit form checks in references remain open; resolving
+  a name must never silently substitute the wrong form.
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
 - Create/update intent is explicit. Updates replace complete authored configuration and use

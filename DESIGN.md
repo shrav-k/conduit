@@ -96,10 +96,12 @@ this registry naming boundary. Additional Pool-local display names and optional 
 references remain open. The registry catalogs definitions and IDs while backing data may be
 local or remote. Registry presence grants no access and need not name every native item globally.
 
-Templates name reusable concepts; instance names distinguish specific creations. Prefer
-automatically generated instance names or a readable base with a unique suffix; the default
-scheme, caller-supplied names and collision handling remain for review. Generated names remain
-separate from stable system IDs, and a specific instance name does not imply automatic expiry.
+Templates name reusable concepts; instance names distinguish specific creations. By default,
+an instance receives its template's name plus a generated unique suffix, such as `reviewer-7f3a`.
+Callers may supply an explicit unique name instead, including for long-lived instances. Both
+paths obey per-family uniqueness across forms. Exact suffix format, name constraints and
+generated-collision handling remain open. Generated names remain separate from stable system
+IDs, and a specific instance name does not imply automatic expiry.
 Whether readable references carry an explicit expected `form` remains open. Reference contracts
 must still distinguish template from instance targets even though kind/name lookup is unambiguous.
 

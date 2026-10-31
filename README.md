@@ -25,8 +25,9 @@ longer a separate family. **Connection** names a Conduit instance, not an additi
 **Retain YAML; define the language through typed objects and explicit semantics.** Each object
 uses its family as `kind` and a top-level `form` to identify a template or instance. Names are
 unique per family across both forms: templates name reusable concepts, while instances have
-distinct, specific names. Instance-name generation, reference details and family-specific
-lifecycle contracts are the next design work; identity and checked-update rules remain.
+names generated from the template name plus a unique suffix unless an explicit unique name
+is supplied. Reference details and family-specific lifecycle contracts are the next design
+work; identity and checked-update rules remain.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable
 frontends and integrations. Provider-native tools, MCP, native skills, trackers and memory

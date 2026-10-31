@@ -311,9 +311,9 @@ not required to obtain reuse.
 
 Stable object identity and expected-ID/configuration-version checks remain accepted. Names
 are unique within each family across both forms in the single local registry. A template
-uses a reusable concept name; each instance has a distinct, specific name. Generated naming
-and explicit form checks in references remain open. The fixture's hand-authored instance
-names do not choose a default generation scheme. Opening twice from a Conduit template
+uses a reusable concept name; an instance defaults to that name plus a generated unique suffix,
+with explicit unique names also allowed. Suffix format and explicit form checks in references
+remain open. The fixture uses explicit instance names for readability. Opening twice from a Conduit template
 intentionally creates two connections; retrying the same create request must instead follow
 the operation-outcome contract. Exact idempotency/identity fields are open.
 

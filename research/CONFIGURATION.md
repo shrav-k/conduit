@@ -333,8 +333,10 @@ not required to obtain reuse.
 Resource specs now separate a dedicated type-specific configuration block from common fields
 such as Conduit declarations. The selected contract schema validates the block, including
 unknown-field rejection except in declared open maps. Field names and the way type/schema
-versions relate to the common object apiVersion remain under review; plugin release identity
-does not substitute for configuration meaning.
+versions are referenced remain under review. Resource type contracts have independently
+selected schema versions, separate from the common object apiVersion and plugin implementation
+releases. A type contract can evolve without changing the common format; compatibility and
+migration rules still require explicit design. No extra registered object family is implied.
 
 Stable object identity and expected-ID/configuration-version checks remain accepted. Names
 are unique within each family across both forms in the single local registry. A template

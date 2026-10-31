@@ -128,8 +128,9 @@ distinguish both family and form; sharing a kind does not imply identical payloa
 
 Within a Resource spec, type-specific settings occupy a dedicated block alongside common
 fields such as Conduit declarations. The selected type's schema validates that block under
-the normal unknown-field rules. The separation is settled; field names and type/version
-identifier syntax remain open.
+the normal unknown-field rules. Resource type contracts have their own schema versions,
+independent of the common object `apiVersion`; plugin implementation releases are separate
+from both. Field names, type/version reference syntax and migration details remain open.
 
 Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#configuration-language):
 

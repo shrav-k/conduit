@@ -88,7 +88,7 @@ determine how to interpret `spec`. The common authoring envelope is:
 
 | Field | Meaning |
 | --- | --- |
-| `apiVersion` | The versioned contract used to interpret the object. |
+| `apiVersion` | The common object contract version. A Resource's selected type contract has its own separate schema version. |
 | `kind` | The family: `Session`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
 | `form` | The template/instance distinction, at the top level alongside `kind`. |
 | `metadata` | Author-editable naming/labels and system-owned identity/version information, with ownership defined per field. |
@@ -507,6 +507,12 @@ it is not an untyped extension map. Unknown fields are rejected except in schema
 open maps. This separation applies to template and instance forms. `type`, `config` and
 `conduits` are illustrative field names; their exact names and type/version identifiers
 remain under review.
+
+Resource type contracts are versioned independently of the common object `apiVersion`.
+The common format can remain unchanged while a type's configuration/behavior contract evolves.
+Plugin implementation releases are separate from both versions; a plugin release number does
+not substitute for either contract version. This adds no registered object family. Type
+reference syntax, version identifiers and compatibility/migration details remain open.
 
 The same template may create distinct instances in multiple Pools. A contract supports new
 backing data, attachment to existing backing data, or both explicitly. Different instances

@@ -37,7 +37,9 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
 - Typed configuration rejects unknown fields except in schema-declared open maps. Plugin
   schemas may define fields and open maps; map keys/values still follow their contracts.
 - Resource specs have a dedicated, schema-validated block for type-specific settings alongside
-  common fields such as Conduit declarations. Field names and type/version identifiers are open.
+  common fields such as Conduit declarations. Resource type contracts are versioned independently
+  of the common object apiVersion and plugin implementation releases. Field names and type/version
+  reference syntax remain open; this adds no object family.
 - Create/replacement writes require their applicable schemas. An unavailable required schema
   rejects the write, preserving source YAML and any existing registry object.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
@@ -98,11 +100,12 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Settle **Resource type identification and versioning** next. A dedicated typed configuration
-block alongside common fields is accepted. Decide whether its type contract has its own schema
-version, separate from the common object `apiVersion`, then choose reference syntax and field
-names. Keep contract meaning distinct from plugin implementation releases. Use the result to
-express filesystem, storage, search and MCP-access template/instance examples with declared Conduits.
+Settle **Resource field names and type references** next. The dedicated typed configuration
+block and independently versioned type contract are accepted. Compare an explicit name/version
+reference with a compact versioned string, alongside proposed common fields `type`, `config`
+and `conduits`. Then define allowed identifiers and use the shape for filesystem, storage,
+search and MCP-access template/instance examples. Common apiVersion, type-contract version
+and plugin release remain distinct.
 
 The preparation baseline is settled: attempt during explicit preparation, required by default,
 optional failures reported, successful attachments retained for retry, explicit cancellation
@@ -125,7 +128,7 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 | --- | --- |
 | How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
-| What is genuinely common across types? | The dedicated typed configuration block sits alongside common fields. Settle Resource type identity/schema versioning relative to the common object apiVersion, then field names and type reference syntax. Keep plugin release versions distinct. Add other common descriptors only when examples require them. |
+| What is genuinely common across types? | The dedicated typed configuration block sits alongside common fields. Type-contract versions are independent of common apiVersion and plugin releases. Settle field names, type reference shape and allowed identifiers/version labels. Add other common descriptors only when examples require them. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
 | How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
 | What lifecycle does each type actually need? | A path attachment need not start a service; an MCP integration may connect/spawn a client; search can attach to an existing index or build one where supported. Define necessary effects, readiness, retry and cleanup per type before requiring generic provisioning state. |

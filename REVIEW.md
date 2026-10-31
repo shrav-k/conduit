@@ -9,7 +9,8 @@ outcomes rather than a long sequence of individual field rulings.
 - Session, Resource, Pool and Conduit each have template and instance forms. Profile means a
   Session template; an opened connection is a Conduit instance. Neither adds a family.
 - Objects use one family `kind` plus a top-level `form` identifying a template or instance.
-  Qualification in names and references remains to be settled.
+  Names are unique per kind across both forms in the local registry. Templates name reusable
+  concepts; instances have distinct, specific names, with generation details still open.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -33,9 +34,9 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **naming, references and template binding**. With `kind` and top-level `form`
-settled, decide how a Session template, Pool instance and existing connection are addressed
-unambiguously. Then establish Pool creation/ownership and instance lifecycle together.
+Continue with **instance-name generation, reference checks and template binding**. Kind/name
+uniqueness is settled; choose generated-name behavior and how references validate the intended
+form. Then establish Pool creation/ownership and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -50,7 +51,8 @@ unambiguously. Then establish Pool creation/ownership and instance lifecycle tog
 
 | Question | Example and considerations |
 | --- | --- |
-| How are names and references qualified? | A Session template and Session instance could both be called `reviewer`. Decide the unique-name boundary and readable reference form, optional direct IDs, and whether Pool-local display names are merely aliases or a naming boundary. Retain one registry and stable IDs. |
+| How are instance names assigned? | Compare a readable base plus unique suffix with opaque generated names. Decide defaults, explicit names, collision handling and retry behavior. Names remain unique across both forms within each kind; template names describe reusable concepts. |
+| How do references check form? | Kind/name resolves one object. Decide whether references explicitly carry an expected form or typed fields supply it, and how wrong-form targets are reported. Optional direct IDs and Pool-local display names remain open; neither changes registry uniqueness or Pool ownership. |
 | Which fields belong to each form? | Family and form jointly select the contract. Distinguish authored template configuration, instance inputs and system-owned observations; the common envelope does not require identical payloads. |
 | What does a template binding retain? | Record template identity, version and explicit inputs. Session behavioral snapshots already persist until reconfiguration; choose corresponding rules for Pool, Resource and Conduit instances without freezing live limits. Does an edited or deleted template affect existing instances? |
 | Must templates be independently registered? | Compare named reusable templates with inline definitions for one-off creation. Define identity, export, source attribution and allowed inputs without introducing arbitrary string interpolation or an inheritance language. |

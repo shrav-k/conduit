@@ -89,12 +89,19 @@ Authored YAML normally references an object by `kind` and `name`. Conduit record
 ID of the object selected when that reference resolves. Authors need not copy generated IDs
 into ordinary references; the readable lookup and the resolved identity remain distinguishable.
 
-V0 resolves references within one local registry. Names must identify an unambiguous object
-in their qualified naming boundary. How readable references qualify template/instance form
-is open; so is whether instance display names gain a
-Pool-local qualification. No namespace or cross-registry mechanism is selected by this
-refactor. The registry catalogs definitions and IDs while backing data may be local or remote.
-Registry presence grants no access and need not name every native item globally.
+V0 resolves references within one local registry. Names are unique per family `kind` across
+both forms: a Session template and Session instance cannot both be named `reviewer`; a Resource
+may use that name because it belongs to another family. Pool ownership does not partition
+this registry naming boundary. Additional Pool-local display names and optional direct-ID
+references remain open. The registry catalogs definitions and IDs while backing data may be
+local or remote. Registry presence grants no access and need not name every native item globally.
+
+Templates name reusable concepts; instance names distinguish specific creations. Prefer
+automatically generated instance names or a readable base with a unique suffix; the default
+scheme, caller-supplied names and collision handling remain for review. Generated names remain
+separate from stable system IDs, and a specific instance name does not imply automatic expiry.
+Whether readable references carry an explicit expected `form` remains open. Reference contracts
+must still distinguish template from instance targets even though kind/name lookup is unambiguous.
 
 V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
 After a rename, the old name becomes available for reuse. A fresh lookup of that old name

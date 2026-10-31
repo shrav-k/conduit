@@ -309,11 +309,13 @@ A reusable template is configuration for a typed capability; its contract schema
 what that configuration means. Template inheritance or arbitrary expression evaluation is
 not required to obtain reuse.
 
-Stable object identity and expected-ID/configuration-version checks remain accepted. Template
-and instance references must resolve to the intended form. The single local registry remains;
-name qualification and uniqueness across forms need an explicit rule. Opening twice from a
-Conduit template intentionally creates two connections; retrying the same create request must
-instead follow the operation-outcome contract. Exact idempotency/identity fields are open.
+Stable object identity and expected-ID/configuration-version checks remain accepted. Names
+are unique within each family across both forms in the single local registry. A template
+uses a reusable concept name; each instance has a distinct, specific name. Generated naming
+and explicit form checks in references remain open. The fixture's hand-authored instance
+names do not choose a default generation scheme. Opening twice from a Conduit template
+intentionally creates two connections; retrying the same create request must instead follow
+the operation-outcome contract. Exact idempotency/identity fields are open.
 
 ## How the families connect
 

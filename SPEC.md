@@ -108,6 +108,9 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   from creation until explicit reconfiguration. Template edits affect new instances; existing
   instances adopt changes explicitly. Current access limits remain live, and Resource data is
   not frozen by retaining configuration.
+- Each creation and explicit reconfiguration retains the source template's stable ID and
+  configuration version, explicit inputs/overrides, and the resulting resolved configuration.
+  Retention of complete source-template content and behavior after its deletion remain open.
 - Create/update intent is explicit. Updates replace complete authored configuration and use
   separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
 - Unchanged authored values preserve the configuration version after checks. Omission remains

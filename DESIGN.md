@@ -28,7 +28,7 @@ Resource identity/ownership, backing identity, authentication and process lifeti
 The shared distinction does not impose one lifecycle or mandatory process on every family.
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
-Named versus inline templates, binding provenance, reference extensions and lifecycle
+Named versus inline templates, source-template content retention, reference extensions and lifecycle
 operations remain in [REVIEW.md](REVIEW.md).
 
 ### Template changes and resolved configuration
@@ -43,9 +43,16 @@ connections already opened from it.
 Current access limits continue to apply live. Retaining configuration does not freeze
 Resource data, current resource matching within established rules, or authority. It does
 not by itself pin the contents loaded from a referenced Resource; content-version and
-activation-refresh rules remain separate choices. Binding provenance and the family-specific
-operations for adopting settings, handling active work and applying external effects remain
-in review.
+activation-refresh rules remain separate choices. Family-specific operations for adopting
+settings, handling active work and applying external effects remain in review.
+
+For each instance creation and explicit reconfiguration, retain the source template's stable
+ID and configuration version, the explicit inputs and overrides supplied, and the resulting
+resolved configuration. This applies to all four families and preserves the distinction
+between supplied values and the final settings. Configuration provenance describes how settings
+were resolved; operation outcomes separately establish whether their effects succeeded.
+Exact storage fields, retention of complete source-template content, and instance behavior
+after template deletion remain open.
 
 ## Configuration language
 

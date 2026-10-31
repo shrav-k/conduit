@@ -41,6 +41,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Configuration controls | Templates normally reuse their type's declared default controls, with optional narrowing or explicit selection of other supported controls. Instances retain that resolved surface. Frontends can still present field editing; plugin updates do not silently add controls. Dynamic provider-native catalogs remain separate. |
 | Control exchanges | MCP tools carry typed inputs and extensible plugin results. Reuse supported standard interaction/observation mechanisms where applicable; no exhaustive Conduit domain-state enum. Current authority and evidence still govern each operation. |
 | Configuration state | Store confirmed applied settings; keep outstanding requests separately. Plugins establish application evidence. An uncertain outcome is reported alongside the last confirmed value without claiming it is still active. |
+| Change coordination | Apply configuration changes one at a time per target instance across its Conduits, unless its contract declares safe parallelism. Ordinary Resource use and queueing/rejection follow their own supported contracts. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -57,17 +58,21 @@ The [configuration-state rule](research/CONFIGURATION.md#requested-and-applied-c
 is also accepted: confirmed settings and outstanding requests remain separate. Exact storage fields
 and plugin application evidence remain to be specified.
 
-**Next ruling — concurrent configuration controls:** should changes apply one at a time per target
-instance by default, with a type/plugin contract able to allow safe parallel application? Recommend
-this as a shared fallback across all Conduits to the target. For example, two Agents changing one
-search Resource's limit would not run conflicting handlers concurrently merely because they use
-different connections. A type could declare that independent settings can change in parallel.
+The [coordination default](research/CONFIGURATION.md#concurrent-configuration-controls) is accepted:
+one configuration change applies at a time per target, with declared safe parallelism allowed.
 
-The alternative requires each type to define its concurrency policy without a shared default.
-This ruling would not choose whether a busy target queues or rejects a request, prevent ordinary
-Resource use, guarantee atomic effects, or settle stale-state/version checks. Those remain part
-of the supported control contract. See the
-[concurrency example](research/CONFIGURATION.md#concurrent-configuration-controls).
+**Next ruling — stale configuration requests:** should configuration controls normally require
+the caller's expected configuration revision, checked when the change is applied, with explicit
+contract exceptions for safe operations that do not need that precondition? Recommend this so
+serial execution cannot silently turn an edit based on old settings into an overwrite of a newer
+decision. For example, both Agents inspect revision R; A's change advances it; B's request based
+on R reports a conflict. B can reread, reconcile and submit again within its authority.
+
+The alternative makes preconditions optional unless a control explicitly requires them. Revision
+values can come from inspection and be carried by clients; no human confirmation or separate
+authored request document is required. Exact revision granularity, MCP representation and how
+checks compose with declared safe parallelism remain open. See the
+[stale-request example](research/CONFIGURATION.md#stale-configuration-requests).
 
 Then review these connected contracts, one bundle at a time:
 
@@ -82,7 +87,7 @@ Then review these connected contracts, one bundle at a time:
 The Interface remains the broad local management entry. Pool ownership, shared service
 authentication, separate model subscriptions/private Agent state, provider-native tools and
 Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
-transitions, concurrency checks, contract evolution and bootstrap remain unresolved.
+transitions, state preconditions, contract evolution and bootstrap remain unresolved.
 
 Use [the bounded search control](research/CONFIGURATION.md#a-bounded-control-example) now, followed
 by database startup/migrations. They test whether the same contracts work beyond MCP
@@ -123,7 +128,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Named controls, type-default reuse, extensible MCP exchanges and confirmed settings separate from requests are accepted. Settle storage fields, handler bindings, transition constraints and concurrency. Control-envelope/graph changes and metadata rules remain unresolved. |
+| Configuration changes versus state | Named controls, type-default reuse, extensible MCP exchanges, confirmed settings separate from requests and per-target coordination are accepted. Settle storage fields, handler bindings, transition/state preconditions and safe-parallelism details. Control-envelope/graph changes and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |

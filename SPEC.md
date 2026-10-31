@@ -98,8 +98,12 @@ handler confirms application. Pending or uncertain requests remain separate; a l
 value is not presented as currently active when the outcome is unknown. Plugins define evidence
 of application. Initial creation settings likewise do not prove setup has run.
 
+Configuration changes apply one at a time per target instance by default, across all its Conduits.
+A type/plugin contract may allow safe parallel application. Ordinary Resource use follows its own
+rules; queueing versus rejection remains plugin-defined. Ordering alone does not detect stale intent.
+
 Blanket instance immutability is replaced by explicit change contracts. Exact mutable fields,
-change-handler syntax, plugin application behavior, concurrency, contract migration and storage
+change-handler syntax, plugin application behavior, state preconditions, contract migration and storage
 layout remain for grouped review. This is neither a promise that every setting is mutable nor a
 generic unrestricted spec-patch API.
 
@@ -261,8 +265,8 @@ Retain [registry/authoring contracts](DESIGN.md#configuration-language):
 - Materialized instance defaults, strict known schemas, and separate validation versus operational
   readiness. Missing runtime/service can be reported without inventing success.
 - Checked template edits with separate ID/version preconditions and recoverable edit baselines.
-  These are not a bypass for running-instance controls. Their runtime concurrency counterpart
-  remains under review.
+  These are not a bypass for running-instance controls. Controls coordinate application per target;
+  their state/version-precondition contract remains under review.
 - Status is not authored success. Configuration exports omit system-owned state. Registration
   removal, execution shutdown and backing-data purge have distinct contracts.
 

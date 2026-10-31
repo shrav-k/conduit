@@ -132,8 +132,15 @@ Generic Interfaces can render the exchange; richer automation can interpret a pl
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in
 [review](REVIEW.md#next-discussion). Confirmed settings and outstanding requests remain separate
-under the accepted instance-state rule. Coordination of overlapping changes is the next review
-boundary; accepting a request does not itself select a queue or automatic reconciliation policy.
+under the accepted instance-state rule; accepting a request does not itself select a queue or
+automatic reconciliation policy.
+
+**Accepted coordination:** configuration changes apply one at a time per target instance by
+default, across all authorized Conduits to it. The type/plugin contract can declare safe parallel
+application. Ordinary Resource operations retain their own concurrency rules. Whether a busy
+target queues or rejects another change remains plugin-defined. Serial application does not
+by itself prevent a later request from relying on stale settings or make external effects atomic.
+State preconditions, conflict domains and uncertain in-flight effects remain for review.
 
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority
@@ -304,8 +311,9 @@ handling and exact rebind operations remain open.
 The checked full-replacement workflow below governs **template/authoring registry edits**.
 It does not authorize replacing a running instance's spec through a generic registry write.
 Instance configuration changes use the template-declared control contract through a Conduit.
-Their precise concurrency/version and partial-change semantics remain to be settled; checked
-identity and safe outcomes remain necessary. Registry deletion rules below retain their own scope.
+They apply one at a time per target by default unless the contract allows safe parallelism.
+Their version/precondition and partial-change semantics remain to be settled; checked identity
+and safe outcomes remain necessary. Registry deletion rules below retain their own scope.
 
 The local registry holds active configuration in v0. YAML is explicitly applied or exported;
 editing an input configuration file alone does not change registry objects, and CLI/API edits

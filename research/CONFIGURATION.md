@@ -203,21 +203,38 @@ Provider-specific workflows remain extensible.
 
 ### Concurrent configuration controls
 
-**Proposal for the next ruling:** apply configuration changes one at a time per target instance
+**Accepted:** apply configuration changes one at a time per target instance
 by default; allow safe parallel application when its type/plugin contract declares support.
 Coordination belongs at the target, so separate authorized Conduits do not create independent
 permission to run conflicting changes simultaneously.
 
 For example, Agent A requests a search limit of 15 while Agent B requests 20 through a different
-Conduit. Under the proposed default, their handlers do not apply those changes concurrently. A
+Conduit. Under this default, their handlers do not apply those changes concurrently. A
 type could instead allow changes to independent settings in parallel. Ordinary searches and data
 operations are not automatically serialized by this configuration-control rule.
 
-The alternative is a required type-specific concurrency policy without a shared default. Exact
-admission, waiting/rejection, conflict domains and treatment of uncertain in-flight effects remain
-to be defined. Ordering alone does not establish whether a request was based on stale settings,
-guarantee atomic native effects, or cover mutations outside actual mediation. State preconditions
-and external coordination still need their own supported contracts.
+Queueing versus rejection remains plugin-defined. Exact admission, conflict domains and treatment
+of uncertain in-flight effects remain to be defined. Ordering alone does not establish whether a
+request was based on stale settings, guarantee atomic native effects, or cover mutations outside
+actual mediation. State preconditions and external coordination still need their own supported contracts.
+
+### Stale configuration requests
+
+**Proposal for the next ruling:** require an expected configuration revision by default on named
+configuration controls, checked at application; allow a control contract to explicitly declare
+safe semantics that do not require that precondition. This concerns instance configuration changes,
+not every provider tool call or Resource-content operation.
+
+For example, A and B inspect revision R with query limit 10. A changes it to 15 and confirmation
+advances the revision. B's later request to set 20 still names R, so it reports a conflict instead
+of silently overwriting A's decision. B can inspect the newer state and deliberately reconcile
+before submitting again. Merely substituting the latest revision is not reconciliation.
+
+The alternative permits unconditional requests unless the control requires a precondition.
+Inspection/clients can carry revisions without a new authored operation manifest or mandatory
+human approval. The target must coordinate the check with application, not only test it at
+discovery or enqueue time. Exact revision scope, MCP mapping, safe-parallel checks and treatment
+of unobservable external changes remain open; a local revision cannot prove unseen provider state.
 
 ## Recommendation and reading guide
 

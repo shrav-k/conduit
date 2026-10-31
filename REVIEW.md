@@ -17,9 +17,9 @@ outcomes rather than a long sequence of individual field rulings.
 - All four instance families retain resolved behavioral/provisioning settings until explicit
   reconfiguration. Template edits affect new instances; access limits still apply live, and
   retained settings do not freeze Resource data.
-- Each creation and explicit reconfiguration retains source template ID/configuration version,
-  explicit inputs/overrides and resolved settings. Complete source-template content retention
-  remains open.
+- Mandatory template/input provenance is reopened. The proposed direction uses templates to
+  produce complete instance configuration, with historical lineage optional. Exact source
+  snapshots have not been selected; actual execution evidence and current-access rules remain.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -43,10 +43,11 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **source-template retention and deletion**. Provenance includes source identity,
-version, inputs/overrides and resolved settings; decide whether exact source content remains
-available and how template deletion affects instances. Then define explicit reconfiguration
-and establish Pool creation/ownership and instance lifecycle together.
+Continue with **templates as creation helpers and complete instance configuration**. Decide
+whether inputs/overrides are temporary creation choices rather than required retained history.
+Walk through direct instance edits, template deletion and explicit live-access dependencies
+before adding provenance fields or source snapshots. Then establish Pool creation/ownership
+and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -61,7 +62,8 @@ and establish Pool creation/ownership and instance lifecycle together.
 
 | Question | Example and considerations |
 | --- | --- |
-| Is exact source-template content retained? | Source ID/version, inputs/overrides and resolved settings are retained for creation and reconfiguration. Decide whether the complete authored template configuration used remains available after edits/deletion, how it relates to explicit purge, and what happens when source content is unavailable. Current authority still applies. |
+| Is the instance configuration self-contained after creation? | Proposed: materialize template values and creation choices into the instance's complete spec, then edit the instance directly. No required template history, input deltas or source snapshots. References to live Resources remain explicit; configuration completeness does not serialize runtime status or Resource contents. Decide whether any optional source hint is useful. |
+| What remains live if templates are creation-only? | Existing access limits must continue to apply. Represent ongoing authority explicitly in instance settings/references rather than implicit inheritance from a historical template. Determine template-deletion effects and avoid treating a saved spec as frozen permission. |
 | Which fields belong to each form? | Family and form jointly select the contract. Distinguish authored template configuration, instance inputs and system-owned observations; the common envelope does not require identical payloads. |
 | Must templates be independently registered? | Compare named reusable templates with inline definitions for one-off creation. Define identity, export, source attribution and allowed inputs without introducing arbitrary string interpolation or an inheritance language. |
 | How are instances addressed and rebound? | Open-new targets a template; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |

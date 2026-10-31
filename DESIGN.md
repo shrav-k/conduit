@@ -28,8 +28,8 @@ Resource identity/ownership, backing identity, authentication and process lifeti
 The shared distinction does not impose one lifecycle or mandatory process on every family.
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
-Named versus inline templates, source-template content retention, reference extensions and lifecycle
-operations remain in [REVIEW.md](REVIEW.md).
+Complete instance configuration, its relationship to templates, reference extensions and
+lifecycle operations remain in [REVIEW.md](REVIEW.md).
 
 ### Template changes and resolved configuration
 
@@ -46,13 +46,14 @@ not by itself pin the contents loaded from a referenced Resource; content-versio
 activation-refresh rules remain separate choices. Family-specific operations for adopting
 settings, handling active work and applying external effects remain in review.
 
-For each instance creation and explicit reconfiguration, retain the source template's stable
-ID and configuration version, the explicit inputs and overrides supplied, and the resulting
-resolved configuration. This applies to all four families and preserves the distinction
-between supplied values and the final settings. Configuration provenance describes how settings
-were resolved; operation outcomes separately establish whether their effects succeeded.
-Exact storage fields, retention of complete source-template content, and instance behavior
-after template deletion remain open.
+**Under renewed review:** mandatory retention of template ID/version, creation inputs/overrides
+and their derivation history. The proposed simplification uses a template and creation-time
+choices to produce a complete instance `spec`; the instance then owns that configuration and
+is edited directly. Historical template content and input deltas would not be required to
+operate it. Exact source-template content retention has not been selected. This proposal must
+also resolve explicit live-access dependencies and deletion/reconfiguration behavior before
+replacing the existing template relationship. Operation outcomes and actual execution settings
+remain separate evidence requirements.
 
 ## Configuration language
 
@@ -243,8 +244,8 @@ top-level concepts:
 
 | Representation | Responsibility |
 | --- | --- |
-| Authored intent | Explicit settings, references, requested relationships and constraints, with their configuration sources. |
-| Resolved configuration | Effective behavioral values and selected references, with defaults/overrides and origins explainable. A Session retains resolved behavior under the rules below. |
+| Authored intent | Explicit settings, references, requested relationships and constraints. Durable retention of creation-time source/input history is under review. |
+| Resolved configuration | Effective behavioral values and selected references. Resolution may explain defaults/overrides without requiring a persistent derivation history; complete instance-spec representation is under review. Instances retain resolved behavior under the rules above. |
 | Observed state | Current binding, compatibility, authentication, preparation and execution information, including unknown or unsupported coverage. |
 | Operation evidence | Actual attempts, effects, results and unresolved outcomes attributed to the Session/execution and integration. |
 
@@ -314,10 +315,11 @@ runtime/model/account defaults, execution preferences and requirements, optional
 limits, default connection choices, and activation instructions. A Session starts from
 one Session template; v0 defers inheritance and composition between Session templates.
 
-Session behavioral defaults follow the shared resolved-configuration rule above. Record
-configuration origins, overrides and actual execution settings. Permission limits remain
-live; behavioral snapshots never allow overrides to weaken required limits. Whether
-referenced resource content follows source updates is a separate open choice.
+Session behavioral defaults follow the shared resolved-configuration rule above. Retain actual
+execution settings; mandatory template/input history is reopened with the shared instance
+configuration model. Permission limits remain live; behavioral snapshots never allow overrides
+to weaken required limits. Whether referenced resource content follows source updates is a
+separate open choice.
 
 ### Activation instructions
 
@@ -648,6 +650,8 @@ Selection supports IDs, owning contexts, metadata predicates and path patterns w
 integration supports them. Matches within established access rules are live. Authorized
 connection, filter and Session-template limit changes apply to subsequent managed requests and are shown
 and recorded; they do not silently change model/account defaults or inject context.
+If templates become creation-only, the instance must explicitly represent any continuing
+access-limit dependency; replacing implicit template-limit inheritance is part of the open review.
 Template behavioral/provisioning edits require explicit instance reconfiguration. How that
 operation applies Pool provisioning/selection and activation changes remains open.
 

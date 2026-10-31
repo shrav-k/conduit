@@ -6,8 +6,8 @@ instances are created only through, and owned exclusively by, a Pool instance. C
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
 envelope, family kinds with top-level forms, explicit kind/form/name references, identity and
 checked-edit contracts. All four instance families retain resolved settings until explicit
-reconfiguration, with source ID/version and explicit inputs/overrides recorded. Complete
-source-template content retention and lifecycle operations remain open.
+reconfiguration. Mandatory source/input provenance is reopened in favor of a proposed complete
+instance spec produced from a creation-only template. Exact source snapshots remain unselected.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -310,9 +310,10 @@ All four instance families retain resolved behavioral/provisioning configuration
 reconfiguration. Later template edits affect new instances. Access limits still apply live;
 retaining settings does not freeze Resource data or matching within established access rules.
 An edited Pool resource plan does not automatically provision Resources in existing Pools.
-Each creation and explicit reconfiguration retains source template ID/configuration version,
-explicit inputs/overrides and resulting resolved settings. Retaining the complete source
-template configuration remains a separate choice.
+Mandatory template/input history is under renewed review. The proposed simpler model uses
+creation-time inputs only to materialize complete instance configuration, then operates and
+edits that instance independently. It does not require historical source snapshots; continuing
+access dependencies must still be explicit and current.
 
 Keep authoring interpretation, template configuration version, resolved instance configuration,
 retained-record revision, source digest, plugin release and native protocol version separate.
@@ -448,10 +449,11 @@ duplicate keys/unknown core fields, define finite numeric/unit types and bound a
 Do not silently expand shell/environment strings or interpret unsupported null/empty values.
 Plugin configuration needs a named/versioned schema. These parser details remain proposals.
 
-Creation and explicit reconfiguration retain source template ID/configuration version, explicit
-inputs/overrides and resolved settings across all families. The concrete representation should
-also explain Pool ownership where applicable, native backing target and requested effects.
-Complete source-template content retention and reconfiguration operations remain open.
+Mandatory source/input history is reopened. A complete instance spec may preserve everything
+needed to operate without retaining the creation delta or source template. The representation
+must still distinguish Pool ownership, native backing target, requested effects and observations.
+Whether to adopt this model, keep optional lineage, and replace implicit template-limit
+inheritance with explicit live dependencies remains open.
 Template behavioral edits do not automatically change existing instances; current access
 limits still apply.
 

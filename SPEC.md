@@ -100,8 +100,10 @@ No automatic purge follows from a missing Pool reference.
    actions and reports their outcomes; registration remains passive. A failed required connection
    blocks its consumer's completion of preparation; optional failures are reported and allow
    preparation to continue. Declarations default to required; optional is explicit, and saved
-   instance configuration materializes the default. Unrelated consumers are unaffected. Remote
-   endpoint selection, exact fields and retry/cleanup details remain open.
+   instance configuration materializes the default. Partial failure retains successful attachments
+   for retry; explicit cancellation detaches those retained by the preparation without undoing
+   delivered data or external effects. Other consumers and backing Resources are preserved.
+   Remote endpoint selection, exact fields and retry/cleanup details remain open.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
    operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.

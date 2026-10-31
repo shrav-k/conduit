@@ -694,9 +694,16 @@ part of preparation; an attempt does not imply successful establishment. Declara
 to required; optional connections must be marked explicitly. Saved instance configuration
 materializes this default, while templates may omit it. A failed required connection prevents its
 consumer from completing preparation; an optional failure is reported and preparation may
-continue. Unrelated consumers are unaffected. Retry/timeout rules, partial cleanup, ordering
-and reconfiguration remain under review. Declarations do not
-require authoring the same endpoint relationship twice.
+continue. Unrelated consumers are unaffected. Declarations do not require authoring the same
+endpoint relationship twice.
+
+If preparation partially succeeds before a required connection fails, retain successful
+attachments for retry. The consumer remains unprepared but partly connected; retry reuses
+retained attachments that remain usable under current access. Explicit cancellation detaches
+the attachments retained by that preparation. Preserve other consumers, backing Resources and
+recorded outcomes; cancellation does not undo data already delivered or accepted external
+effects. The last-consumer rule governs when a flow ends. Retry/timeout rules, incomplete
+cleanup, ordering and reconfiguration remain under review.
 
 For a declaration inside a Session or Resource, the enclosing instance supplies the consumer
 endpoint automatically. A reusable search template declaring `storage-read` can therefore be

@@ -60,7 +60,10 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   their outcomes. Registration alone starts nothing. Required connection failure blocks the
   declaring consumer's completion of preparation; optional failure is reported and allows
   preparation to continue. Required is the default; optional must be explicit. Saved instance
-  configuration materializes that default. Unrelated consumers are unaffected; retries remain open.
+  configuration materializes that default. Unrelated consumers are unaffected; retry timing remains open.
+- Partial preparation retains successful attachments for retry while the consumer stays
+  unprepared. Explicit cancellation detaches those attachments; other consumers, backing
+  Resources and recorded outcomes survive. Delivered data/external effects are not rolled back.
 - The last logical consumer/peer detaching ends a live Conduit and closes remaining provider-side
   connections. Sync subscriptions remain attached between polls or temporary transport failures.
   Backing Resources, templates and retained evidence survive; crash/detach detection remains open.
@@ -93,17 +96,17 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Settle **partial preparation** next. If one required Conduit fails after others connect,
-decide whether successful attachments stay available for retry or are detached automatically.
-Required is the default; optional failures are reported and permit preparation to continue.
-Preserve unrelated consumers, backing Resources and known operation outcomes under either choice.
-Retry/timeout and cleanup details still need review.
-Remote endpoint selection and exact declaration fields still need review. Keep declarations
-distinct from resolved state and avoid duplicate authored assignments.
-Live Conduit lifetime is now settled around logical consumer/peer attachments; reopening and
-configuration changes remain separate choices. Express template/instance YAML before Pool mechanics.
-Folder symlinks remain preparation; MCP identity can vary per attachment. The missing-plan-target
-ruling remains paused.
+Make **Resource YAML structure** concrete next. Decide how the spec separates common fields,
+the selected type contract and type-specific configuration; then express one filesystem,
+storage, search and MCP-access template/instance with consumer-declared Conduits. A dedicated
+typed configuration block versus plugin fields alongside common fields is the first choice;
+exact names and type/version identifiers remain proposals until ruled on.
+
+The preparation baseline is settled: attempt during explicit preparation, required by default,
+optional failures reported, successful attachments retained for retry, explicit cancellation
+detaching them. Detailed retry timing, incomplete cleanup, ordering and later reconfiguration
+stay on the agenda without blocking a configuration sketch. Remote endpoint selection still
+needs review. Pool declaration mechanics and the missing-plan-target ruling remain paused.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -118,9 +121,9 @@ ruling remains paused.
 
 | Question | Example and considerations |
 | --- | --- |
-| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation normally attempts declared open/join. Required is the default and failure blocks that consumer's preparation; explicit optional failures are reported and permit continuation. Settle remote references, retries/timeouts, partial cleanup and ordering. Distinguish declarations from resolved connection state and later edits without competing editable copies. Pool ownership/access still apply. |
+| How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
-| What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Identify any additional common capabilities, operation or readiness descriptors through the examples; keep type-specific fields in typed contracts. Avoid an exhaustive built-in Resource taxonomy. |
+| What is genuinely common across types? | Start with the accepted identity/envelope and exclusive owner. Choose where the type discriminator, common connection declarations and typed plugin configuration live in spec. Compare a dedicated configuration block with type-specific fields alongside common fields; exact names/version syntax remain open. Add other common descriptors only when examples require them. |
 | What is shared and what is prepared per consumer? | Folder symlinks are preparation; MCP identities resolve per attachment. Define credential storage/refresh, client lifetime and search query/filter state without registering every helper. A reusable configuration does not imply shared private state. |
 | How are backing data and conflicts represented? | Two instances can attach to the same target; two consumers may share one instance. Distinguish deliberate creation from attachment, read/write conflicts, shared quotas and native data ownership. Do not infer an exclusive writer from registry ownership. |
 | What lifecycle does each type actually need? | A path attachment need not start a service; an MCP integration may connect/spawn a client; search can attach to an existing index or build one where supported. Define necessary effects, readiness, retry and cleanup per type before requiring generic provisioning state. |

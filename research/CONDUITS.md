@@ -27,7 +27,10 @@ preparation normally attempts each configured open/join under current authority 
 the result; registration alone opens nothing. Required connection failure blocks its consumer's
 completion of preparation; optional failure is reported and permits continuation. Unrelated
 consumers are unaffected. Declarations default to required; optional must be explicit and saved
-instance configuration materializes the default. Retry/timeout and partial cleanup rules remain open.
+instance configuration materializes the default. Partial preparation retains successful
+attachments for retry; explicit cancellation detaches those retained by the preparation.
+Other consumers, backing Resources and outcomes survive; delivered data/external effects are
+not rolled back. Retry/timeout and incomplete cleanup rules remain open.
 A Conduit has no independent runtime; the engine/plugins perform transfers and
 maintain clients or sync work. Logical consumer/peer attachments keep it live between polls and
 during temporary transport failure. The last consumer/peer detaching ends the flow and closes

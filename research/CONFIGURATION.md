@@ -410,6 +410,9 @@ outcomes, rather than waiting for first use. A failed required connection blocks
 completion of preparation; optional failure is reported and permits continuation. Unrelated
 consumers are unaffected. Declarations default to required, with optional selected explicitly;
 saved instance configuration materializes that default. Registration alone starts no flow.
+Partial preparation retains successful attachments for retry while the consumer remains
+unprepared. Explicit cancellation detaches those retained by the preparation, preserving other
+consumers, backing Resources and outcomes without undoing delivered data or external effects.
 Opening establishes a Conduit instance; joining selects an existing one. Logical
 attachments and their authentication remain distinct from transport sockets and shared data.
 
@@ -423,7 +426,7 @@ must be reported distinctly from transport readiness.
 If a flow needs retained conversation storage, it requests provisioning through a selected
 Pool, which owns the Resource. Each access follows the owner Pool and current authority;
 connections do not introduce a second unscoped provisioning path. Consumer declaration fields,
-remote endpoint resolution, retry/timeout and partial cleanup behavior, and later
+remote endpoint resolution, retry/timeout and incomplete cleanup behavior, and later
 reconfiguration remain open.
 
 Candidate interaction families remain capability requests, retained exchanges and observations.

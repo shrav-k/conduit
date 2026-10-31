@@ -252,6 +252,10 @@ their infrastructure, or force every provider into this list before the first ex
 The directory/worktree type distinction and local-directory's explicit attach/create operations
 are accepted. Attachment requires an existing directory; fresh creation conflicts with an
 existing target. Neither operation happens on registration, and cleanup remains separate.
+Relative template paths resolve against an explicit creation base; the complete instance saves
+an absolute host backing path. For example, `./repo` with base `/work/euphony` becomes
+`/work/euphony/repo`, independently of later launch directories. This does not yet select
+symlink-resolution behavior or the Session's prepared path.
 Remaining detailed configuration and lifecycle choices in this walkthrough are proposals.
 Plain directory access does not imply Git management, even when the folder contains a checkout.
 
@@ -461,8 +465,9 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 Recommended discussion sequence:
 
 1. Use the accepted four groups and directory/worktree split for concrete type review; do not
-   repeat those rulings. Local-directory create/attach intent is also settled; review backing-path
-   interpretation and Session preparation next.
+   repeat those rulings. Local-directory create/attach intent and absolute instance backing paths
+   are also settled. Review operation-versus-configuration placement, Session preparation and
+   symlink behavior next.
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
    dependencies, preparation and one failure each. Evaluate content and identity, retaining
    the agent-communication candidate for the detailed communication review.

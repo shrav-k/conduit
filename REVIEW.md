@@ -50,7 +50,10 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   with Git-specific management in the latter. Local-directory supports explicit attachment and
   creation through its Pool in v0: attachment requires an existing directory; fresh creation
   conflicts with an existing target. Registration and cleanup remain separate effects. Exact
-  schemas, path interpretation, Git-specific modes and any shared interface remain open.
+  schemas, Git-specific modes and any shared interface remain open.
+- Local-directory templates may use relative backing paths resolved against an explicit
+  creation base. Complete instances store absolute host paths, independent of later shell
+  working directories. Symlink resolution and Session-local exposure remain separate choices.
 - Create/replacement writes require their applicable schemas. An unavailable required schema
   rejects the write, preserving source YAML and any existing registry object.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
@@ -121,10 +124,10 @@ view without diverting the current Resource walkthrough into choosing a communic
 
 Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
 
-1. **Concrete type contracts:** local-directory's explicit creation/attachment intent is settled.
-   Next define backing-path interpretation in reusable templates and complete instances, then
-   Session preparation and one failure. Review Git-worktree-specific behavior separately, then
-   records, search and MCP. The core groups and directory/worktree split need no further ruling.
+1. **Concrete type contracts:** local-directory's explicit creation/attachment intent and absolute
+   instance backing paths are settled. Next distinguish operation intent from stored configuration,
+   then define Session preparation, symlink behavior and one failure. Review Git-worktree-specific
+   behavior separately, then records, search and MCP. Earlier boundaries need no further ruling.
 2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
    for discovery and explicit contracts for activation, connection matching and effects.
 3. **Extension identity:** who defines a contract, how new groups/types enter the catalog and
@@ -168,7 +171,7 @@ Use these examples as design probes, not a closed list of types or an accepted s
 
 | Example | Questions the contract must answer |
 | --- | --- |
-| Local filesystem exposed by symlink | Local-directory supports explicit attachment and creation; Git-worktree is a distinct type. Settle backing-path interpretation, Session-local placement and cleanup timing. Compare absolute paths with relative paths resolved against an explicit base; define what complete instances store. Removing a prepared symlink preserves the Resource. Symlinks share backing files and do not isolate writes. |
+| Local filesystem exposed by symlink | Local-directory supports explicit attachment and creation. Relative template paths resolve against an explicit creation base; instances store absolute host paths. Decide whether create/attach intent belongs to the operation or persistent config, then symlink resolution, Session-local placement and cleanup timing. Removing a prepared symlink preserves the Resource. Symlinks share backing files and do not isolate writes. |
 | MCP service connection | Service identity may differ per attachment within target/access constraints. Settle auth storage/refresh, exposed tools/resources/prompts and required processes. A Conduit Resource is distinct from MCP's protocol resource primitive. |
 | Hybrid search over a database | Express separate storage, search and MCP-access Resources, including when supplied by one backend. Settle responsibilities, dependencies, query/filter/result contracts, freshness and indexing ownership if offered. |
 

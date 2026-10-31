@@ -136,6 +136,8 @@ directory; Git-specific management belongs to the worktree contract. Their detai
 remain open. In v0, local-directory supports explicit attachment and creation through its Pool:
 attachment requires an existing directory; fresh creation conflicts with an existing target.
 Registration performs neither effect, and cleanup remains separate.
+Relative local-directory template paths resolve against an explicit creation base; the complete
+instance stores an absolute host backing path. Session-local exposure is separate.
 An agent-communication group is a candidate for direct messaging, conversations and shared
 context. Its contracts and name remain open, alongside other core types and third-party
 naming rules.

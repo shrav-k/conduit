@@ -594,8 +594,15 @@ directory or create a new one. Attachment never creates a missing path. A fresh 
 reports a conflict when its target already exists instead of silently adopting it. Registration
 alone performs neither operation, and backing-data cleanup remains separate. Retries still use
 recorded operation outcomes and the existing safe-retry rules; an uncertain outcome does not
-justify blindly repeating creation. Exact operation/configuration syntax, path interpretation,
-Git-worktree-specific modes and any shared directory interface remain open.
+justify blindly repeating creation. Exact operation/configuration syntax, Git-worktree-specific
+modes and any shared directory interface remain open.
+
+Local-directory templates may contain relative backing paths. Creation resolves them against
+an explicit base and saves the resulting absolute host path in the complete instance spec.
+For example, `./repo` with base `/work/euphony` becomes `/work/euphony/repo`. Later use does
+not depend on the launching terminal's working directory or reinterpret the original relative
+path. This is the backing path, distinct from each Session's prepared path. Symlink resolution,
+Session-local placement and the exact configuration/operation fields remain open.
 
 ### Native resources and integrations
 

@@ -129,8 +129,11 @@ distinguish both family and form; sharing a kind does not imply identical payloa
 Resource specs use `type: {group, name, version}`, schema-validated `config`, and `conduits` for
 connection declarations. The type reference is distinct from registry kind/form/name references.
 Logical type groups are independent of plugin packaging; group and type name are separate
-fields, never a combined slash-delimited identifier. New groups and types can extend the catalog;
-the initial grouping and third-party naming rules remain under review.
+fields, never a combined slash-delimited identifier. The first working core groups are
+`filesystem`, `storage`, `search` and `integration`; new groups and types can extend the catalog.
+An agent-communication group is a candidate for direct messaging, conversations and shared
+context. Its contracts and name remain open, alongside individual core types and third-party
+naming rules.
 Type contracts have their own schema versions, independent of common object `apiVersion` and
 plugin implementation releases. Allowed type identifiers/version labels, Conduit declaration
 contents and migration details remain open.

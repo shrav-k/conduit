@@ -18,8 +18,10 @@ contract. Connections use Resources through their owning Pools, including any st
 need for communication. They can request provisioning through a Pool but do not own Resources.
 
 Each Resource has one responsibility and its related operations; Pools group Resources into
-useful sets. Storage, search and MCP access are separate Resources by default, even when they
-use one backend. Resource-to-Resource access also uses Conduits: for example, a search Resource
+useful sets. The working core type groups are `filesystem`, `storage`, `search` and `integration`;
+an agent-communication group remains a candidate. Storage, search and MCP access are separate
+Resources by default, even when they use one backend. Resource-to-Resource access also uses
+Conduits: for example, a search Resource
 reads a storage Resource through a logical connection. Minimize duplicated configuration and
 state within those explicit boundaries. Define Resource templates
 and instances first, then how Pools group and coordinate them. Pool creation and Resource
@@ -69,7 +71,7 @@ Read in order:
 
 | Research | Purpose |
 | --- | --- |
-| [Resource typing and groups](research/RESOURCES.md) | Extensible type contracts, candidate core groups, capabilities, plugin boundaries and scenario-based review. |
+| [Resource typing and groups](research/RESOURCES.md) | Working core groups, candidate types and agent communication, capabilities, plugin boundaries and scenario-based review. |
 | [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios; shared state and participant lifetimes. |
 | [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, configuration-language papers and candidate expression of the four families. |
 | [Template/instance scenario](research/templates-instances.scenario.yaml) | Synthetic review data: templates, explicit operations and expected ownership. Not an accepted configuration/API schema. |

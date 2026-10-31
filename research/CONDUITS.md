@@ -86,6 +86,11 @@ between writers can coordinate intent, but do not themselves lock files or preve
 
 ### 2. Coordinate the Sessions using those repositories
 
+A dedicated agent-communication Resource group is now a candidate for direct messaging,
+conversations and shared context. Agent-specific behavior can justify that distinction even
+when ordinary storage backs it. Its types and division of responsibility with live Conduits
+remain open; see [Resource typing](RESOURCES.md#agent-communication-as-a-domain-specific-group).
+
 A communication connection may have several participants, shared retained exchanges, pending
 requests and a routing service. Each participant can have its own identity, delivery state
 and context. Shared conversation storage need not be editable shared working memory.

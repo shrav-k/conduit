@@ -43,7 +43,9 @@ Pool grouping and provisioning. A persistent declaration/binding layer is not a 
   and declaration contents remain open; type references are not registry object references.
 - Logical type groups are independent of implementation packages. A package may supply several
   groups/types. The catalog remains open to new groups and types; no slash-delimited type name.
-  The initial groups and third-party contract ownership/collision rules remain for review.
+  The working core groups are filesystem, storage, search and integration. Individual types and
+  third-party contract ownership/collision rules remain for review. Keep an agent-communication
+  group as a candidate, with direct messaging, conversations and shared context as design probes.
 - Create/replacement writes require their applicable schemas. An unavailable required schema
   rejects the write, preserving source YAML and any existing registry object.
 - Otherwise valid configuration may be registered with a missing plugin runtime or offline
@@ -106,14 +108,16 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 Review **Resource responsibilities, grouping and compatibility** using the new
 [Resource investigation](research/RESOURCES.md). Logical groups independent of packages and
-separate `type.group`, `type.name`, `type.version` fields are settled. The candidate core groups
-are `filesystem`, `storage`, `search` and `integration`; `content` and `identity` require further
-boundary work. These names/types remain proposals, not required v0 implementations.
+separate `type.group`, `type.name`, `type.version` fields are settled. The working core groups
+`filesystem`, `storage`, `search` and `integration` are accepted. Individual types remain open;
+`content` and `identity` require further boundary work. Keep an agent-communication group in
+view without diverting the current Resource walkthrough into choosing a communication model.
 
 Discuss three connected outcomes, using the worked scenarios before field-by-field rulings:
 
-1. **Catalog boundaries:** whether the four core groups describe useful responsibilities;
-   when a variant warrants another type rather than configuration or an operation.
+1. **Concrete type boundaries:** walk through local-directory configuration, preparation and
+   one failure, then records, search and MCP. Decide when a variant warrants another type
+   rather than configuration or an operation; the four core groups need no further ruling.
 2. **Consumer compatibility:** whether types expose small versioned interfaces, with grouping
    for discovery and explicit contracts for activation, connection matching and effects.
 3. **Extension identity:** who defines a contract, how new groups/types enter the catalog and
@@ -144,7 +148,7 @@ needs review. Pool declaration mechanics and the missing-plan-target ruling rema
 
 | Question | Example and considerations |
 | --- | --- |
-| Which groups and types form the useful core? | Evaluate filesystem, storage, search and integration against the Resource investigation; content and identity remain boundary candidates. Groups are extensible and independent of packages. Decide naming/contract ownership and collision handling separately from category labels; built-in types/templates do not create Resource instances. |
+| Which types belong in the working core? | Filesystem, storage, search and integration are accepted groups. Work through concrete type contracts; content, identity and agent communication remain candidate extensions. Groups are extensible and independent of packages. Decide contract ownership/collision handling separately; shipping types/templates does not create Resource instances. |
 | What establishes compatibility across types? | Evaluate explicit versioned consumer interfaces and per-instance supported operations. A shared group, matching JSON shape or provider name does not establish behavioral compatibility. Keep declared support, current availability and permissions distinguishable without requiring a large capability framework. |
 | How are Resource connections declared? | The enclosing Session/Resource supplies consumer identity; explicit preparation attempts declared open/join, required by default. Partial failure retains successful attachments for retry; cancellation detaches them. Settle declaration fields, remote references, retry/timeout limits, incomplete cleanup and ordering. Keep resolved state and later edits free of competing editable copies. Pool ownership/access still apply. |
 | What belongs in the type contract, template and instance? | A plugin contract defines valid configuration and behavior; a template supplies reusable values; an instance retains its complete configuration. Work through which settings are useful to reuse for each example without another parameter or provenance layer. |
@@ -215,6 +219,7 @@ what requires explicit resume, what authority is rechecked and what remains unkn
 | Question | Example and considerations |
 | --- | --- |
 | What is the minimum typed interaction contract? | Define endpoint roles, inputs/results, capabilities, operation identity, receipt versus completion, cancellation and recovery. Pool access and Session exchange are examples, not an exhaustive endpoint taxonomy. |
+| What belongs in agent-communication Resources versus Conduits? | Explore a dedicated group for direct messages, conversations and shared context, justified by agent-specific semantics even when backed by ordinary storage. Compare Session addressing, history/context ownership and persistent capabilities with live routing/filtering and attachments. Decide whether direct messages and rooms need separate types or configuration; distinguish shared snapshots/references from mutable shared state. No name, topology or extra runtime is selected yet. |
 | How is authority established and narrowed? | Separate caller request from an authorized grant; authenticate participants and shared runtime service identity. Define reusable/inline filters, exclusions and complete resource/operation/constraint tuples across paths. Never combine unrelated fields into broader permission. |
 | How does a connection use supporting Resources? | Resolve the owning Pool, provisioning authority and access to retained history or queues. Runtime bookkeeping need not be a separate Resource per cursor, but cannot be an unscoped storage route for durable shared content. |
 | How do connections compose? | Compare a named selection with a composite Conduit template. An `euphony-access` setup can include repository, credential, AWS and Linear capabilities with separate clients, principals, failure states and lifetimes. Define dependencies and partial effects without promising external rollback. |

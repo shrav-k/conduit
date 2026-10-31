@@ -1,9 +1,10 @@
 # Resource types, groups and extensibility
 
-Research: 2026-10-31. **Evidence and proposals, not an approved catalog or implementation.**
-The accepted change is logical type groups independent of plugin packages, expressed through
-separate `spec.type.group`, `spec.type.name` and `spec.type.version` fields. Group names, built-in
-types, consumer interfaces and extension governance below still need review.
+Research: 2026-10-31. **Evidence, accepted working groups and proposals; no implementation.**
+Logical type groups independent of plugin packages, separate `spec.type.group`, `spec.type.name`
+and `spec.type.version` fields, and the four core group names are accepted. Individual types,
+consumer interfaces and extension governance still need review. An agent-communication group
+is a candidate for further design, alongside content and identity.
 
 Read alongside [DESIGN.md](../DESIGN.md#resources), [the review agenda](../REVIEW.md),
 [connection scenarios](CONDUITS.md) and [configuration research](CONFIGURATION.md).
@@ -13,10 +14,11 @@ tests, account sign-ins, runtime implementation or a benchmark.
 
 ## Recommendation
 
-Start with four working groups: **filesystem, storage, search and integration**. Evaluate
-**content** and **identity** next. These are catalog boundaries, not a commitment to implement
-every example in v0. New groups and types must remain possible without changing the four
-object families or requiring an implementation package for each group.
+The accepted working core is **filesystem, storage, search and integration**. Evaluate
+**content**, **identity** and an **agent-communication group** as additional candidates. These
+are catalog boundaries, not a commitment to implement every example in v0. New groups and
+types must remain possible without changing the four object families or requiring an
+implementation package for each group.
 
 The harder design issue is what a type promises. A useful catalog distinguishes:
 
@@ -81,7 +83,7 @@ extends taxonomy-development guidance and emphasizes explicit purpose, iterative
 and evaluation of usefulness beyond internal consistency. Its review covers 164 taxonomy
 articles. Our adaptation is to classify actual Conduit scenarios, identify counterexamples,
 and revise the groups rather than invent an exhaustive tree in advance. This is a design
-method, not empirical proof that the proposed four groups are optimal. Collaborator evaluation
+method, not empirical proof that the working four groups are optimal. Collaborator evaluation
 and working integration examples remain necessary.
 
 [Liskov and Wing, A Behavioral Notion of Subtyping (1994)](https://www.cs.cmu.edu/Groups/venari/subtype-toplas.html)
@@ -141,8 +143,9 @@ another registered instance.
 
 ## Candidate catalog
 
-All group/type names below are proposals. The two separate columns deliberately avoid a
-compound identifier. “Core” means a confident boundary to discuss, not all required v0 features.
+The four core group names are accepted; individual type names and additional groups below
+remain proposals. The two separate columns deliberately avoid a compound identifier. “Core”
+identifies the initial working catalog, not all required v0 features.
 
 ### Alternatives considered
 
@@ -156,12 +159,12 @@ compound identifier. “Core” means a confident boundary to discuss, not all r
 | Deep hierarchy: data → storage → database → vector | Detailed browsing. | Multiple plausible parents, many unstable paths, and category moves become identity migrations. | Optional catalog navigation, not mandatory type-reference nesting. |
 | Responsibility plus separate interfaces | Explains what each registration configures while supporting compatible implementations. | Requires explicit boundary examples; group names alone are intentionally insufficient for execution. | Recommended canonical grouping, tested against the scenarios below. |
 
-This comparison explains the proposed names, rather than proving that four is the final number
+This comparison explains the working core names, rather than proving that four is the final number
 of groups. Keep one canonical group for a type's identity, with multiple optional discovery
 labels. If a new type does not fit, add a coherent group instead of stretching an existing
 definition or adding a catch-all executable type with unvalidated configuration.
 
-### Proposed core groups
+### Accepted working core groups
 
 | Group | Responsibility | Candidate type names | Confidence and boundary |
 | --- | --- | --- | --- |
@@ -193,12 +196,43 @@ contents, and activation can select compatible entries without creating a Resour
 skill. Separate native executable extensions only when their runtime contract needs it. This
 preserves bring-your-own skills rather than reviving the earlier Conduit skill framework.
 
+### Agent communication as a domain-specific group
+
+Keep a distinct group for agent communication under consideration. `communication` is a
+possible name, not an accepted identifier. Its justification is the contract exposed to agents:
+Session addressing, participant context, exchanges and coordination. Familiar backing storage
+does not eliminate those semantics or require placing every such capability in `storage`.
+
+| Mode to explore | Agent-specific responsibilities to examine | Questions still open |
+| --- | --- | --- |
+| Direct messaging | Address a Session, distinguish a request from a reply, track message availability. | Dedicated mailbox type, a two-participant conversation, or a Conduit mode? Delivery, offline handling and acknowledgements remain undecided. |
+| Multi-participant conversation | Participant-visible history, topic/thread relationships and context for agents joining later. | Which state belongs to a Pool-owned Resource versus the live flow? No room topology, invitation or wake policy is selected. |
+| Shared context | Make selected knowledge, checkpoints or collaboratively maintained material available across Sessions. | Snapshot exchange, shared references, live collection or editable state? Define updates, provenance and conflicts before selecting a contract. |
+
+These are examples to test, not a closed list or three approved types. A group can cover several
+agent-focused contracts without becoming one broad Resource that promises all communication.
+Equally, direct messaging and a group conversation may turn out to share one well-defined type
+with different configuration. Decide using their behavior and lifetime, not participant count alone.
+
+The working distinction to test is: a Resource supplies a configured communication capability
+and any state it manages; a Conduit establishes the live, filtered access or exchange among
+consumers/peers. Resource instances remain Pool-owned. Conduits need no independent runtime,
+and their last-consumer lifetime rule remains accepted. A new group alone decides neither
+history retention nor when an agent wakes or loads context.
+
+Do not require a separate generic storage registration beneath every communication Resource
+solely because it stores bytes. A separately managed/shared backing capability can be another
+Pool-owned Resource connected through a Conduit; private implementation state need not create
+another public object. Which state needs that independent contract belongs in the walkthrough.
+Shared context remains an open design probe, not acceptance of the previously rejected editable
+room working-memory model.
+
 ### Extension space: examples, not reservations or a closed list
 
 | Potential group | Candidate types/use cases | Boundary to protect |
 | --- | --- | --- |
 | `execution` | A container environment, VM, job runner or browser environment. | Session remains the durable participant; a provisioned execution environment need not become another Session. Do not require this indirection for every native launch. |
-| `messaging` | Durable queue, broker topic or stream service. | Resource owns/configures backing capability; Conduit controls the live flow. No default room topology follows. |
+| `messaging` | Durable queue, broker topic or stream service. | Infrastructure-level capability; distinguish it from the agent-communication candidate above. Whether these need separate groups remains open. No default room topology follows. |
 | `observability` | Trace store, metric-query endpoint, audit sink. | Reuse storage/integration types when sufficient; use a new type only for signal-specific semantics. |
 | `coordination` | Lease service, lock service, rate/quota allocator. | Lock state has a target and authority; a category name does not make arbitrary native operations safe. |
 | `transformation` | Embedding service, parser, media conversion or indexing processor. | Model invocation/processing can have independent operation and usage contracts; avoid one type per function by default. |
@@ -285,6 +319,9 @@ needed, but is not mandatory just because a Conduit has temporary routing state.
 This supports the current Conduit model without reinstating old room decisions. A transcript,
 queue, participant read position and active transport have different ownership/lifetime needs.
 Which are durable shared Resources versus attachment state remains an interaction-contract choice.
+An agent-communication Resource may expose richer semantics over this backing, as described in
+the [candidate group](#agent-communication-as-a-domain-specific-group); generic storage is not
+the only possible Resource contract for this scenario.
 
 ## What should actually drive compatibility
 
@@ -414,9 +451,10 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 
 Recommended discussion sequence:
 
-1. Test the four core group boundaries together; adjust names before treating them as stable.
+1. Use the accepted four groups for concrete type review; do not repeat the grouping ruling.
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
-   dependencies, preparation and one failure each. Then evaluate content and identity.
+   dependencies, preparation and one failure each. Evaluate content and identity, retaining
+   the agent-communication candidate for the detailed communication review.
 3. Decide the minimum shared consumer interfaces and type-collision/implementation selection rules.
 4. Define remaining version/name grammar and connection declaration fields from those examples.
 5. Return to Pool grouping with enough information to derive useful behavior and minimize state.

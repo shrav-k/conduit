@@ -335,7 +335,7 @@ settings, and `spec.conduits` for connection declarations. The selected schema v
 including unknown-field rejection except in declared open maps. Type references differ from
 registry kind/form/name references. Logical type groups are independent of implementation
 packages; group and type name are not combined into a slash-delimited string. The extensible
-catalog and candidate core groups are investigated in [Resource typing](RESOURCES.md).
+catalog, working core groups and candidate extensions are investigated in [Resource typing](RESOURCES.md).
 Allowed identifiers/version labels and Conduit declaration
 structure remain under review. Resource type contracts have independently
 selected schema versions, separate from the common object apiVersion and plugin implementation

@@ -515,11 +515,26 @@ Group and type name are separate fields, not a slash-delimited identifier. Use `
 for the group, `spec.type.name` for the type within it, and `spec.type.version` for its contract
 version. The group catalog is extensible; it is not a fixed list of Resource kinds.
 
-Core group names, contract ownership/third-party collision rules, allowed identifiers and version
-labels remain open. Examples do not settle those choices. Groups and type contracts add no
-registered object family, assign no Pool ownership and grant no access. The investigation in
-[Resource typing](research/RESOURCES.md) proposes grouping and interface boundaries for review;
-its candidate catalog is not an accepted set of built-in types.
+The first working catalog uses four core groups:
+
+| Group | Responsibility |
+| --- | --- |
+| `filesystem` | Expose or manage filesystem trees. |
+| `storage` | Persist data with defined operations. |
+| `search` | Retrieve relevant results from configured sources. |
+| `integration` | Expose configured native service/tool interfaces. |
+
+These group boundaries are accepted; individual types and implementation scope still need review.
+Keep an additional agent-communication group under consideration for direct messaging,
+multi-participant conversations and shared context. Agent-specific contracts can justify a
+distinct group even when they use familiar storage/integration mechanisms. Its name, types,
+Resource-versus-Conduit responsibilities and shared-context semantics remain open. This does
+not select a room topology or a jointly editable memory model.
+
+Contract ownership/third-party collision rules, allowed identifiers and version labels remain
+open. Groups and type contracts add no registered object family, assign no Pool ownership and
+grant no access. [Resource typing](research/RESOURCES.md) retains the supporting investigation,
+candidate types and proposed interface boundaries; those proposals are not built-in requirements.
 
 Resource type contracts are versioned independently of the common object `apiVersion`.
 The common format can remain unchanged while a type's configuration/behavior contract evolves.

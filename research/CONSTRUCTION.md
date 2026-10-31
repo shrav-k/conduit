@@ -52,6 +52,8 @@ composition and ordering. Plugins declare their typed input/output contracts; de
 and failure behavior remain to be defined. Plugins do not need to become independently running
 Agent/Resource/Pool/Conduit objects.
 Their implementation may launch a process while executing a node without changing this distinction.
+Any process that continues after setup is managed as part of the applicable instance's runtime,
+not by keeping the construction node active indefinitely.
 
 **Accepted execution baseline:** the plugin graph runs each time an instance is started.
 There is no required separate template-build execution phase in the protocol. The template stays
@@ -78,44 +80,67 @@ authentication state or live handles.
 
 ### Plugin contracts and graph nodes
 
-**Accepted contract boundary:** each plugin declares its typed inputs and outputs. A graph node
-selects the plugin and binds values to that contract; it does not independently redefine the
-plugin's interface around a generic command. A plugin can still be implemented as a local
-script or process. No particular process protocol, schema language or installation mechanism
-is selected by this ruling.
+The following plugin/graph rules are accepted:
 
-| Illustrative plugin | Contract supplied by the plugin | Bindings supplied by a graph node |
+| Concern | Contract |
+| --- | --- |
+| Input/output ownership | Each plugin declares its typed inputs and outputs. A graph node selects the plugin and binds values; it does not independently redefine the interface around a generic command. |
+| Dependencies | Binding an output to an input creates an execution dependency. Explicit prerequisites express ordering without data transfer; output bindings need no duplicate ordering declaration. |
+| Publication during setup | A plugin contract may make an output usable before its setup operation finishes or publish it upon successful completion. This can unblock later setup steps; it does not make the node an ongoing service supervisor. Consumers still require their other prerequisites and current authority. |
+| Validity and lifetime | The plugin declares validity/lifetime rules for each output independently of publication timing. Its outputs need not share one lifetime policy. |
+
+Plugins can still be local scripts or processes. No process protocol, schema language or
+installation mechanism is selected by these rules. Exact input/output types, binding syntax,
+readiness signals and concurrency policy remain open.
+
+For example, an authentication plugin can accept an account reference and return a verified
+identity; its graph node selects the account from template configuration. A directory-linking
+plugin can accept an authorized directory reference and destination and return a projection
+result. Reusing either plugin does not require templates to repeat its schemas.
+
+Publication timing and lifetime are independent: a completed operation can produce an expiring
+handle, and an early output can describe a persisted result. A plugin could return both a
+persistent connection description and a live client handle, with different validity rules.
+Neither persistence nor prior success guarantees perpetual usability or permission. These are
+output contracts, not a requirement for the setup plugin to continue reporting health after
+its operation ends. No fixed lifetime taxonomy or cache scheme is selected.
+
+### Setup ends; instances continue
+
+**Accepted responsibility boundary:** the graph is the execution layer for setup. Instances
+manage ongoing processes, connections and current availability. A construction plugin reports
+the result of its operation; it does not remain the authority for the live capability it helped
+establish. This replaces the proposed plugin-owned live-output reporting model.
+
+The instance is the managed object, not necessarily a dedicated process. Conduit's runtime
+implements its ongoing behavior, using the applicable type/runtime implementation. How that
+code is packaged remains open. Every ongoing local helper or process belongs to an appropriate
+instance; this does not make every helper a separately registered Resource. Pool ownership of
+Resource instances remains unchanged.
+
+| Example | Setup graph establishes | Instance manages afterward |
 | --- | --- | --- |
-| Authentication | Accept an account reference; return a verified identity result. | Select the account from template configuration. |
-| Directory linking | Accept an authorized directory reference and destination; return a prepared projection result. | Select the permitted directory and the instance-local destination. |
+| Existing directory exposed to an Agent | Resolve permitted access and prepare the Agent-local symlink. | The prepared view and its lifecycle; the Pool-owned directory Resource and backing files remain distinct. No resident linking plugin is needed. |
+| MCP access | Resolve the selected service identity, authenticate and prepare the client/transport. | The live connection, its observed availability and applicable reconnect/stop behavior. The setup node need not run for the connection's lifetime. |
+| Agent account | Perform any required sign-in and verify the selected identity. | The execution's account binding and authentication state through its native/runtime integration. Refresh or renewed human sign-in is an ongoing lifecycle concern; the exact recovery contract remains open. |
+| Local database | Establish configured storage and prepare or launch the service. | The managed service and its current state. Attaching to an external database instead manages that attachment, not ownership of the remote server. |
 
-Exact types, output names and authorization/context transport remain open. Existing authentication
-can shorten the plugin's execution without changing its declared interface. Reusing the plugin
-across templates does not require each template to repeat its schemas.
+A recorded result such as “authentication succeeded” describes setup at that time. Current
+usability belongs to instance state. A later disconnect does not rewrite that historical result
+or require the completed graph to become a monitoring loop. Setup completion therefore differs
+from continuing instance readiness. Early output publication remains useful within setup;
+long-lived processes and handles must be managed by the instance beyond it.
 
-**Accepted dependency rule:** binding one node's output to another node's input establishes an
-execution dependency. Explicit prerequisites express ordering without transferring a value,
-such as populating a directory before validating it. Output bindings do not require a duplicate
-ordering declaration. Exact binding/prerequisite syntax, readiness signals and concurrency policy
-remain separate choices.
-
-**Accepted output availability:** a plugin contract can declare an output usable while its
-execution continues, or publish it upon successful completion. A connection-maintenance plugin
-can expose a ready connection without terminating; an ordinary script can return its result
-when it finishes. Consumers can use the declared usable output subject to their other prerequisites
-and current authority. Process ownership, teardown, readiness-loss propagation and automatic
-downstream retry behavior are not selected by this ruling.
-
-Publication timing does not by itself determine how long an output remains usable. A completed
-operation can produce an expiring handle; an output published early can describe an already
-persisted result. **Next proposal:** let the plugin contract declare validity/lifetime per output,
-so a persistent description and a live connection handle need not share one policy. This is under
-review; no fixed lifetime taxonomy, caching scheme or failure policy is selected.
+**Still open:** how the template specifies ongoing runtime behavior, how setup supplies prepared
+values/processes to that runtime, and when ownership is acknowledged if setup fails midway.
+Monitoring, reconnect, restart, credential refresh and cleanup need type-specific contracts;
+this boundary does not select automatic recovery or rerunning the entire graph. Plugins may
+be invoked for a later explicit lifecycle operation without remaining live between operations.
 
 ### Optimization-compatible properties
 
-Typed input/output ownership, dependency wiring and declared publication on readiness or completion
-are accepted above. Remaining details below are recommendations, not a cache specification:
+Typed input/output ownership, dependency wiring, declared publication timing and per-output
+validity/lifetime are accepted above. Remaining details below are recommendations, not a cache specification:
 
 | Property | Why it helps independent implementations |
 | --- | --- |
@@ -147,7 +172,7 @@ the sketches below do not settle them. Code remains in the plugin implementation
 | Resource types and ownership | Keep separate group/name/version and typed config. Resource instantiation still goes through its one owning Pool. |
 | Execution recipe | Express the steps as a graph of focused plugin nodes. Nodes reference configuration fields and preceding outputs where needed. |
 | Reuse | One template creates many instances. Permit graph-source reuse without inventing a setup Conduit or another runtime family. |
-| Runtime observations | Keep generated identity, readiness and execution outcomes in managed instance state; authored YAML cannot assert successful login or creation. |
+| Ongoing runtime and observations | The instance manages ongoing processes/connections and current readiness. Keep generated identity and execution outcomes in managed state; authored YAML cannot assert successful login or creation. Exact runtime configuration and setup handoff remain open. |
 
 A complete template consists of its authored contract plus explicit, resolvable dependencies.
 It need not be one enormous file. Small templates can keep their graph inline; shared/larger
@@ -260,9 +285,9 @@ blocks; a login step or directory-linking step is not thereby a Conduit. Agent, 
 and Conduit instances are the managed objects. Some may be idle or have no dedicated process.
 
 Execution tracking and recovery details remain for later design. No first-class construction-run
-family or mandatory construction-state ownership scheme is selected here. The graph-on-start
-rule is settled; execution bookkeeping must support it without replacing reusable templates
-with per-instance construction definitions.
+family is selected. The graph establishes an instance, and the instance manages ongoing behavior;
+exact setup tracking and runtime handoff remain open. Execution bookkeeping must support the
+graph-on-start rule without replacing reusable templates with per-instance construction definitions.
 
 ## What survives the research
 
@@ -302,11 +327,21 @@ bindings establish dependencies, with explicit prerequisites when no value is tr
 Authentication feeding connection setup and directory population preceding validation illustrate
 the two forms. Exact YAML syntax in the sketch remains illustrative.
 
-Plugins may publish declared usable outputs while running or upon successful completion. Next
-decide whether validity/lifetime is specified per output or once for the plugin's entire output
-set. Use a persistent connection description and a live handle from the same plugin to explain
-the difference. Then define how changes in usability are reported and affect consumers, without
-equating publication, producer completion and lasting validity. No new runtime family is implied.
+Plugins may publish declared usable outputs during setup or upon successful completion, with
+validity/lifetime declared independently for each output. The instance owns ongoing behavior
+and availability; the graph is not a long-lived monitor. Use one MCP connection to settle the
+setup-to-runtime boundary as a whole:
+
+1. What does the template declare about the connection's ongoing runtime, and what does its
+   implementation already know? Avoid duplicating endpoint/account configuration in both places.
+2. How do successful authentication and prepared transport reach the instance runtime, so the
+   setup node can finish? Include failure before management of a started process is established.
+3. On a later disconnect, what state does the instance expose and what recovery is supported?
+   Distinguish reconnecting a transport from renewing login or starting a new model execution.
+
+Runtime declarations, handoff mechanics and recovery policies remain open. Review a concrete
+template/instance example before selecting their field names; no additional runtime family or
+mandatory per-instance supervisor process is implied.
 
 Then work through the same reusable Agent template started twice, using an illustrative sequence:
 

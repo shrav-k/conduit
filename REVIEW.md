@@ -5,18 +5,20 @@ records accepted behavior. This agenda contains unresolved choices, grouped arou
 outcomes rather than a long sequence of individual field rulings.
 
 **Active branch discussion:** [Construction templates and runtime instances](research/CONSTRUCTION.md).
-Reserve Conduits for ongoing connections and filters; move construction graphs into the common
-template mechanism across all families. Agent is the proposed name replacing Session. Start
-with the [plugin-node walkthrough](research/CONSTRUCTION.md#next-discussion): plugins declare typed
-input/output contracts; nodes select plugins and bind values. Output bindings establish dependencies;
-explicit prerequisites provide ordering when no data is transferred. Plugins may publish declared
-usable outputs while running or upon successful completion. Next review per-output validity/lifetime
-versus one plugin-wide policy. The YAML authoring boundary is settled: typed configuration with
-an inline graph by default or an explicit graph-source reference, with the
-same execution semantics. Exact fields remain open. Graph execution on each start is settled;
-caching and build optimizations remain implementation concerns. Repeated instantiation
-remains fundamental; no construction-ownership scheme or extra runtime family is selected.
-The checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison.
+Conduits remain ongoing connections and filters; reusable templates contain typed configuration
+and an inline or referenced plugin graph, executed on every instance start. Agent is the proposed
+replacement for Session. [Plugin contracts](research/CONSTRUCTION.md#plugin-contracts-and-graph-nodes)
+now own typed inputs/outputs, setup publication timing and per-output validity/lifetime; nodes bind
+values, and those bindings establish dependencies alongside explicit prerequisites. Graphs establish
+instances; instances manage ongoing processes, connections and availability. Setup nodes do not
+remain live to supervise the capabilities they establish.
+
+Next use the [MCP setup-to-runtime walkthrough](research/CONSTRUCTION.md#next-discussion) to define
+what a template declares about ongoing runtime, how setup supplies its results/processes, and how
+the instance handles later disconnection. Review these together before selecting status fields or
+recovery policies. Caching/build optimizations remain implementation concerns. The checkpoint and
+detailed agenda below preserve the pre-inquiry discussion for comparison; no additional runtime
+family is selected.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive

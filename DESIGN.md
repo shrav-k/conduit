@@ -587,8 +587,15 @@ The `local-directory` type defines folder access without Git lifecycle managemen
 a checkout under that type does not imply managing its branches or worktree creation/removal.
 The `git-worktree` type additionally represents its relationship to a Git repository and the
 supported worktree-management operations. Both retain Pool ownership, Session-specific
-preparation and explicit backing-data cleanup rules. Exact configuration, supported create/attach
-modes and any shared directory interface remain open.
+preparation and explicit backing-data cleanup rules.
+
+In v0, `local-directory` supports two explicit operations through its Pool: attach an existing
+directory or create a new one. Attachment never creates a missing path. A fresh creation
+reports a conflict when its target already exists instead of silently adopting it. Registration
+alone performs neither operation, and backing-data cleanup remains separate. Retries still use
+recorded operation outcomes and the existing safe-retry rules; an uncertain outcome does not
+justify blindly repeating creation. Exact operation/configuration syntax, path interpretation,
+Git-worktree-specific modes and any shared directory interface remain open.
 
 ### Native resources and integrations
 

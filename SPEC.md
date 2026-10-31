@@ -133,7 +133,9 @@ fields, never a combined slash-delimited identifier. The first working core grou
 `filesystem`, `storage`, `search` and `integration`; new groups and types can extend the catalog.
 Within `filesystem`, `local-directory` and `git-worktree` are distinct types. Both expose a
 directory; Git-specific management belongs to the worktree contract. Their detailed schemas
-and initial implementation scope remain open.
+remain open. In v0, local-directory supports explicit attachment and creation through its Pool:
+attachment requires an existing directory; fresh creation conflicts with an existing target.
+Registration performs neither effect, and cleanup remains separate.
 An agent-communication group is a candidate for direct messaging, conversations and shared
 context. Its contracts and name remain open, alongside other core types and third-party
 naming rules.

@@ -1,8 +1,11 @@
 # Conduit
 
-**Branch inquiry:** [Conduits as graphs](research/CONDUIT_GRAPHS.md) explores a possible change
-to the model below. It is not an accepted replacement. The cleaned baseline is saved on `main`
-at `c013f0a`; this branch keeps the inquiry separate.
+**Active branch direction:** [Conduits as composable graphs](research/CONDUIT_GRAPHS.md).
+Session, Resource and Pool templates select graphs of plugin operations to establish their
+instances and continuing interactions. The report contains examples and the next rulings;
+one graph may finish setup and remain active for ongoing connections, with readiness separate
+from completion. Detailed syntax and remaining lifetime rules are open. The model below is the
+comparison baseline, saved on `main` at `c013f0a`.
 
 Conduit connects models, agents and capabilities through four families, each with a reusable
 **template** and a concrete **instance** form. Templates describe how to establish instances;
@@ -28,22 +31,24 @@ their useful contracts. Implementation has not started.
 
 | Document | Responsibility |
 | --- | --- |
-| [SPEC.md](SPEC.md) | Working vocabulary, interactions and intended outcomes. |
-| [DESIGN.md](DESIGN.md) | Accepted contracts, including configuration, accounts, memory, access and recovery; proposed additions are labeled. |
-| [REVIEW.md](REVIEW.md) | Current stopping point, grouped unresolved choices, walkthroughs and initial experiment. |
+| [SPEC.md](SPEC.md) | Baseline vocabulary, interactions and intended outcomes for comparison with the graph proposal. |
+| [DESIGN.md](DESIGN.md) | Baseline contracts, including configuration, accounts, memory, access and recovery; proposed additions are labeled. |
+| [REVIEW.md](REVIEW.md) | Active branch agenda and the preserved review checkpoint, walkthroughs and initial experiment. |
 
-**Current review:** templates carry complete establishment intent in typed YAML; users do not
-assemble a second operation-request recipe. The unresolved boundary is how plugins and the
-engine implement ordering, typed outputs, authentication waits and recovery, and whether authors
-need optional graphs of typed plugin actions. Start at [Next discussion](REVIEW.md#next-discussion).
-No lifecycle API, graph syntax or general workflow language has been selected.
+**Current review:** use the [graph proposal](research/CONDUIT_GRAPHS.md#next-rulings-and-evidence)
+to settle template bindings, plugin-operation composition and remaining lifetime details. Templates
+still supply complete setup intent without a second operation-request recipe. The earlier
+[review checkpoint](REVIEW.md#next-discussion) remains available if this direction is set aside.
+Detailed lifecycle APIs and graph syntax have not been selected.
 
 ## Research
 
-Research retains evidence, worked examples and proposals; it does not override accepted contracts.
+Research retains evidence, worked examples and proposals. Only explicitly accepted rulings
+change the branch's working model; other recommendations remain open.
 
 | Research | Purpose |
 | --- | --- |
+| [Conduits as graphs](research/CONDUIT_GRAPHS.md) | Active branch proposal: template-selected operational graphs, Docker/BuildKit lessons, plugin composition, filtering and finite/live activity. |
 | [Establishment and recovery](research/ESTABLISHMENT.md) | Template/plugin/engine boundary; filesystem examples, login, indexing, password-manager access and optional typed composition. |
 | [Resource typing and groups](research/RESOURCES.md) | Core groups, candidate types, capabilities and plugin boundaries. |
 | [Conduit connections and state](research/CONDUITS.md) | Repository, communication, credential, AWS and Linear scenarios; shared state and participant lifetimes. |

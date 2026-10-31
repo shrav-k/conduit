@@ -1,5 +1,10 @@
 # Establishment, ordering, outputs and recovery
 
+**Branch reading note:** this report preserves the earlier lifecycle investigation. The active
+[Conduits-as-graphs proposal](CONDUIT_GRAPHS.md) builds on its cases and recovery requirements
+while moving authored orchestration into Conduits. The recommendations below remain comparison
+material, not the selected execution boundary for this branch.
+
 Research: 2026-10-31. **Design investigation and recommendation, not an accepted lifecycle API.**
 The four families, template-owned establishment intent, Pool ownership and existing recovery
 rules remain accepted. The lifecycle protocol, dependency/output notation and composition boundary

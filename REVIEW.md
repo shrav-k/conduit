@@ -4,6 +4,12 @@ Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family model; [DESIGN.m
 records accepted behavior. This agenda contains unresolved choices, grouped around connected
 outcomes rather than a long sequence of individual field rulings.
 
+**Active branch discussion:** [Conduits as composable graphs](research/CONDUIT_GRAPHS.md).
+The first ruling allows one graph to finish setup, report ready and remain active for ongoing
+connections. Continue with its [ruling bundles](research/CONDUIT_GRAPHS.md#next-rulings-and-evidence):
+template bindings, operation/composition contracts and detailed lifetime behavior. The checkpoint
+and agenda below preserve the previous discussion so it can be resumed intact.
+
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive
 Pool grouping and provisioning. A persistent declaration/binding layer is not a prerequisite.

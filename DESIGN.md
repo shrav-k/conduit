@@ -1,5 +1,10 @@
 # Conduit design contracts
 
+**Branch context:** these contracts preserve the `main` baseline at `c013f0a`. The active
+[Conduit-graph proposal](research/CONDUIT_GRAPHS.md) identifies changes under investigation,
+especially establishment ownership, typed graph inputs/outputs and finite/live lifetimes.
+It has not silently replaced the contracts below.
+
 Updated: 2026-10-31. [SPEC.md](SPEC.md) defines the four-family template/instance model. This document
 records accepted behavior within it; [REVIEW.md](REVIEW.md) contains open choices.
 The common authoring envelope is settled; detailed fields, transports, storage engines

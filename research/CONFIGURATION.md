@@ -1,5 +1,9 @@
 # Configuration languages, templates and instances
 
+**Branch reading note:** [Conduits as graphs](CONDUIT_GRAPHS.md) extends this research with
+BuildKit, typed operational composition and continuing flows. This report retains the earlier
+configuration proposals and source evidence for comparison.
+
 Updated 2026-10-31. **Research evidence and proposals; this report does not define the schema.**
 The accepted model has four families, each with template and instance forms. Resource
 instances are created only through, and owned exclusively by, a Pool instance. Conduit

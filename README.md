@@ -3,8 +3,9 @@
 **Active proposal:** [Construction templates and runtime instances](research/CONSTRUCTION.md).
 Reserve **Conduit** for ongoing connections and filters. Use a shared construction language
 across templates to establish all kinds of instances. **Agent** is the proposed replacement
-for Session; its exact identity semantics and the treatment of construction executions are
-still under discussion. Implementation has not started.
+for Session. Templates are reusable, image-like definitions supporting repeated instantiation;
+focused plugin nodes compose their Dockerfile-like graphs. Graph execution timing remains open.
+Implementation has not started.
 
 | Family | Instance represents |
 | --- | --- |
@@ -13,8 +14,9 @@ still under discussion. Implementation has not started.
 | Pool | The ownership and creation boundary for its Resource instances. |
 | Conduit | An ongoing connection with concrete endpoints, filtering and connection state. |
 
-Every family retains template and instance forms. Templates describe how to establish instances;
-instances retain their configuration and observed state. Construction graphs are part of the
+Every family retains template and instance forms. One template can create many independent
+instances without being consumed or absorbing their private state; instances retain their own
+configuration and observed state. Construction graphs are part of the
 common template mechanism. A Conduit template uses that mechanism to establish a connection;
 a directory constructor or login procedure is not thereby a Conduit.
 

@@ -49,8 +49,16 @@ interaction contract on other targets. A frontend presents it rather than indepe
 provider effects. The Interface identifies the endpoint; the acting human identity remains distinct.
 
 CLI, terminal UI and test clients should exercise the same contract. The initial Interface's broad
-scope need not be hard-coded into every future Interface. Its bootstrap, management endpoint,
-frontend attachment and identity details remain open within the five-family model.
+scope need not be hard-coded into every future Interface.
+
+**Accepted bootstrap:** initial local startup seeds a minimal system Pool owning a management
+Resource, a default Interface and a management Conduit connecting them. A small runtime bootstrap
+establishes this initial set before its operations can be invoked. The management Resource exposes
+core template/registry management and instance-creation capabilities through the same five-family
+model. Resource creation still goes through its owning Pool. No application Pool, Agent or external
+service login is required first; this does not introduce a second registry or require a new daemon.
+Initial authority, built-in definitions, recovery/protection, exact management operations, frontend
+attachment and identity details remain open.
 
 ### Establishment contracts and instance state
 
@@ -185,7 +193,8 @@ Input restriction is not silent rewriting of a requested value. A value outside 
 contract is rejected/reported; transformations, if supported, need their own explicit semantics.
 No generic recursive dependency is required: a control request is carried over an established
 Conduit, not a newly registered Conduit for each request. Controlling a Conduit itself uses an
-appropriate management connection; self-modification and bootstrap details remain open.
+appropriate management connection. The initial connection is established by the accepted system
+bootstrap; authority, recovery and supported changes to live management access remain open.
 
 Configuration changes remain distinct from Resource-content writes, lifecycle actions and
 connection membership, even if they share the invocation protocol. Adding a document does not

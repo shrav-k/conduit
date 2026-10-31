@@ -43,6 +43,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Configuration state | Store confirmed applied settings; keep outstanding requests separately. Plugins establish application evidence. An uncertain outcome is reported alongside the last confirmed value without claiming it is still active. |
 | Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
 | Definition boundary | Setup graphs and control definitions are fixed per instance in v0. Change them through a revised definition and new instance; declared settings and dynamic connections/catalogs remain supported. In-place definition upgrades are deferred. |
+| Bootstrap | Initial local startup seeds a system Pool, its management Resource, the default Interface and their management Conduit. Core management uses these existing families; Resources remain Pool-owned. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -55,19 +56,19 @@ MCP exchange, reusable defaults, confirmed settings, coordination and revision c
 storage fields, revision granularity and native-client support remain open.
 
 The [definition boundary](research/CONFIGURATION.md#instance-definitions-and-permitted-settings)
-is accepted for v0. Move from individual setting changes to the management entry point.
+and [system bootstrap](research/CONSTRUCTION.md#bootstrap-management-access) are accepted for v0.
 
-**Next ruling — the first management connection:** should initial local startup seed a minimal
-system Pool with a management Resource, plus a default Interface and its management Conduit?
-Recommend this so registry/template management and instance creation use the same five-family
-model from the start. A small runtime bootstrap creates this initial set before those operations
-can be invoked through it. No application Pool, external service login or Agent is required first.
+**Next ruling — initial management authority:** should v0 establish one local registry owner from
+the initializing OS-user context, with the default Interface acting for that owner and Agents
+receiving explicit delegated access through their own Conduits? Recommend this to start locally
+without a separate Conduit login. An owner can delegate broad or narrow management access; an
+Agent's launch under the same OS user does not itself constitute that managed grant.
 
-The alternative exposes a built-in platform-management endpoint outside Pool-owned Resources.
-It needs fewer registered objects but gives that endpoint a different ownership model. The
-proposal adds no object family, separate registry, required daemon or automatic access to external
-services. Root authority, built-in definitions, protection/recovery and management schemas remain
-separate choices. See the [bootstrap walkthrough](research/CONSTRUCTION.md#bootstrap-management-access).
+The alternative requires explicit administrator-identity enrollment before the first management
+connection is authorized. Both retain actor attribution and constrained delegation. This selects
+initial authority, not a credential format or a claim of protection against another process with
+the same host privileges. Client authentication, native/isolation coverage and recovery remain
+separate. See the [authority example](research/CONSTRUCTION.md#initial-management-authority).
 
 Then review these connected contracts, one bundle at a time:
 
@@ -82,7 +83,8 @@ Then review these connected contracts, one bundle at a time:
 The Interface remains the broad local management entry. Pool ownership, shared service
 authentication, separate model subscriptions/private Agent state, provider-native tools and
 Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
-transitions, revision mechanics, implementation-version compatibility and bootstrap remain unresolved.
+transitions, revision mechanics, implementation-version compatibility and bootstrap authority/recovery
+remain unresolved.
 
 Use the bootstrap walkthrough next: enter through a frontend, inspect templates, create a Pool,
 and establish an Agent's permitted access. The bounded search control and database startup/migrations
@@ -173,7 +175,7 @@ lifecycle/authority contracts before coding or live account testing.
 
 1. **Management entry point:** one broad Interface discovers all five families, authors/resolves
    templates, composes Pools, validates drafts, creates instances and observes outcomes. Use a headless client and terminal
-   against the same management path; define bootstrap explicitly.
+   against the seeded system Pool/management Resource path; settle its authority and recovery.
 2. **Shared service access:** establish a Pool capability and service login once; attach two Agents
    with different restrictions; preserve native tool schemas and record each caller. Detach/revoke
    one caller while the other continues. Separately expire/revoke the shared login and report its

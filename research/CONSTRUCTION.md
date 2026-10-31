@@ -70,8 +70,8 @@ fields remain under review. This workflow introduces no second setup recipe outs
 
 The Interface provides authoring, observability and entry points, not a parallel implementation of target
 behavior. An existing Pool's Resource-creation operation must still respect its access/ownership
-contract; listing or selecting a template does not bypass that contract. The exact platform
-creation endpoint and its relationship to Pool operations remain part of the bootstrap review.
+contract; listing or selecting a template does not bypass that contract. The accepted Pool-owned
+management Resource exposes the platform creation path; exact operation schemas remain open.
 
 This broad scope is the default management Interface's configuration, not a reason to hard-code
 unrestricted authority into every future Interface. Narrower Interfaces can be supported later.
@@ -92,13 +92,13 @@ identity fields and delegation rules remain for review; the existing account sep
 ### Bootstrap management access
 
 The first Interface must reach registry/template management and establish Conduits before any
-application instances exist. **Proposal for the next ruling:** initial local startup seeds a
+application instances exist. **Accepted:** initial local startup seeds a
 minimal system Pool owning a management Resource, a default Interface, and a management Conduit
 connecting them. These use the existing five families. A small runtime bootstrap establishes the
 initial set before its management operations can be called, avoiding a dependency on an existing
 application Pool or Agent.
 
-The proposed walkthrough is:
+The walkthrough is:
 
 1. Local startup establishes the initial management objects and their connection.
 2. The frontend presents the default Interface, which reaches platform management through its
@@ -109,11 +109,28 @@ The proposed walkthrough is:
 4. The user creates an Agent and establishes its authorized Conduits. A subsequently authorized
    Agent can use management capabilities through its own restricted connection.
 
-The alternative is a built-in platform endpoint outside Pool-owned Resources. It reduces registered
-objects but makes management an ownership exception. Recommend the seeded Pool approach for
-consistency. The representation does not grant arbitrary callers administrative access or sign
-into external services. Initial authority, built-in definitions, recovery/protection, exact management
-operations, process layout and transports remain open; no new object family is proposed.
+This representation does not grant arbitrary callers administrative access or sign into external
+services. Initial authority, built-in definitions, recovery/protection, exact management operations,
+process layout and transports remain open; no new object family is introduced.
+
+### Initial management authority
+
+**Proposal for the next ruling:** establish one local registry owner using the initializing OS-user
+context. The default Interface conveys that owner's initial management authority without requiring
+a separate Conduit login. Other actor access is explicit: an authorized owner can delegate a
+subset through an Agent's or Interface's Conduit using the existing attachment-grant model.
+
+For example, the owner can author all templates and establish Pools, while a reviewer Agent's
+connection permits inspecting selected instances and excludes template editing. Broader delegation
+remains possible. Requests identify the acting user or Agent and the relevant connection; being
+launched under the owner's OS user is not itself the Agent's management grant. Identity/authority
+records do not introduce a new managed object family.
+
+The alternative requires explicit administrator enrollment before initial management access.
+Recommend the local-owner bootstrap for v0's personal/local use. This is an authority model, not
+proof that native processes sharing host privileges cannot obtain each other's access. Client
+authentication, credential storage and runtime enforcement need their declared native/isolated
+coverage. Exact owner recognition, delegated-client binding and recovery remain open.
 
 ## A common interaction contract
 
@@ -124,9 +141,9 @@ The protocol generalizes their discovery, validation and outcomes, while provide
 application and scheduling belong to implementations.
 
 ```text
-User → frontend → Interface → template authoring / observation / instantiation
-                  Interface ── Conduit ──→ existing instance
-                  Agent     ── Conduit ──→ existing instance
+User → frontend → Interface ── management Conduit ──→ management Resource (system Pool)
+                  Interface ── target Conduit     ──→ existing instance
+                  Agent     ── authorized Conduit ──→ existing instance
                              ← results, state and supported events
 ```
 
@@ -533,8 +550,9 @@ settings remain [separate from outstanding requests](CONFIGURATION.md#requested-
 [Per-target control coordination](CONFIGURATION.md#concurrent-configuration-controls) is accepted.
 [Default revision checks](CONFIGURATION.md#stale-configuration-requests) address stale requests.
 [Instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings)
-is settled for v0, alongside typed filters and access-path composition. The next walkthrough is
-[bootstrap management access](#bootstrap-management-access).
+is settled for v0, alongside typed filters and access-path composition.
+[Bootstrap management access](#bootstrap-management-access) is accepted; the next ruling concerns
+[initial management authority](#initial-management-authority).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

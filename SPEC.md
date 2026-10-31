@@ -37,6 +37,11 @@ The default Interface is the primary entry point, with the broadest local manage
 visibility across configured templates and instances. CLI, terminal UI and automated test clients
 use the same contracts.
 
+Initial local startup seeds a system Pool owning a management Resource, the default Interface,
+and a management Conduit connecting them. A small runtime bootstrap establishes this initial set;
+subsequent template/registry management and instance creation use that managed path. No application
+Pool or external login is required first. Resource creation still goes through its owning Pool.
+
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.
 2. **Compose Pools.** Select Resource templates, establishment settings and intended shared service
@@ -51,7 +56,7 @@ use the same contracts.
 
 Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
 interaction principle. Broad Interface access does not manufacture unsupported provider controls.
-Bootstrap of the first Interface/management connection and precise frontend attachment remain open.
+Initial authority, bootstrap recovery/protection and precise frontend attachment remain open.
 
 ## Templates are complete construction and change contracts
 

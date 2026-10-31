@@ -40,6 +40,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Filters and paths | Typed declarations are implemented by supporting plugins. Every applicable restriction on the chosen path must pass; independent paths preserve complete target/operation/parameter combinations. Custom filter contracts can use scripts/graphs. |
 | Configuration controls | Templates normally reuse their type's declared default controls, with optional narrowing or explicit selection of other supported controls. Instances retain that resolved surface. Frontends can still present field editing; plugin updates do not silently add controls. Dynamic provider-native catalogs remain separate. |
 | Control exchanges | MCP tools carry typed inputs and extensible plugin results. Reuse supported standard interaction/observation mechanisms where applicable; no exhaustive Conduit domain-state enum. Current authority and evidence still govern each operation. |
+| Configuration state | Store confirmed applied settings; keep outstanding requests separately. Plugins establish application evidence. An uncertain outcome is reported alongside the last confirmed value without claiming it is still active. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -52,18 +53,21 @@ distinguishes standard messages from plugin-defined behavior. The accepted
 [control selection](research/CONFIGURATION.md#selecting-the-exposed-controls) reuses type defaults
 without requiring every template to repeat them. Exact syntax and native-client support remain open.
 
-**Next ruling — requested versus applied configuration:** should the instance retain its last
-confirmed applied settings, with pending or uncertain requests kept separately in operation
-evidence? Recommend this: requesting a query limit of 15 does not replace a confirmed limit of 10
-until the handler establishes application. If the outcome is unknown, report that uncertainty
-alongside the last confirmed value instead of claiming it is still current. Plugins define what
-constitutes evidence and can describe partial effects through their contracts.
+The [configuration-state rule](research/CONFIGURATION.md#requested-and-applied-configuration)
+is also accepted: confirmed settings and outstanding requests remain separate. Exact storage fields
+and plugin application evidence remain to be specified.
 
-The alternative stores desired settings on acceptance and reconciles the runtime toward them.
-That makes desired configuration authoritative even while runtime observations differ. Either
-approach must distinguish intent from observation; this choice concerns persistence and recovery,
-not a universal result enum, automatic retry policy or another user-authored request manifest.
-See the [configuration-state example](research/CONFIGURATION.md#requested-and-applied-configuration).
+**Next ruling — concurrent configuration controls:** should changes apply one at a time per target
+instance by default, with a type/plugin contract able to allow safe parallel application? Recommend
+this as a shared fallback across all Conduits to the target. For example, two Agents changing one
+search Resource's limit would not run conflicting handlers concurrently merely because they use
+different connections. A type could declare that independent settings can change in parallel.
+
+The alternative requires each type to define its concurrency policy without a shared default.
+This ruling would not choose whether a busy target queues or rejects a request, prevent ordinary
+Resource use, guarantee atomic effects, or settle stale-state/version checks. Those remain part
+of the supported control contract. See the
+[concurrency example](research/CONFIGURATION.md#concurrent-configuration-controls).
 
 Then review these connected contracts, one bundle at a time:
 
@@ -119,7 +123,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Named controls, type-default reuse and extensible MCP exchanges are accepted. Settle requested/applied storage, handler bindings, transition constraints and concurrency. Control-envelope/graph changes and metadata rules remain unresolved. |
+| Configuration changes versus state | Named controls, type-default reuse, extensible MCP exchanges and confirmed settings separate from requests are accepted. Settle storage fields, handler bindings, transition constraints and concurrency. Control-envelope/graph changes and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |

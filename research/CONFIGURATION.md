@@ -179,12 +179,12 @@ are wire correlation, not Conduit's retry/idempotency guarantee; retain explicit
 where the integration can provide it. Optional MCP features and version mappings need adapter tests.
 Unchanged principles include separate model accounts, shared Pool authentication, preserved native
 provider tools, no mandatory combined gateway and no MCP server requirement for every internal
-Rust component. Exact mappings, fallback behavior, restart policy and stored requested/applied
-configuration remain open.
+Rust component. Exact mappings, fallback behavior, restart policy and storage fields remain open;
+confirmed settings and outstanding requests follow the accepted rule below.
 
 ### Requested and applied configuration
 
-**Proposal for the next ruling:** retain confirmed applied settings as instance configuration;
+**Accepted:** retain confirmed applied settings as instance configuration;
 keep outstanding requests and uncertain outcomes in the existing operation evidence. Plugins
 establish what proves application, including any partial effects. This adds no global workflow enum
 or separately authored operation document.
@@ -196,10 +196,28 @@ and the unresolved outcome; it must not assert that 10 is still active. Reconcil
 the actual result without blindly repeating the change. This does not settle exact spec/status
 fields, retention representation, atomicity or restart policy.
 
-The alternative records 15 as desired configuration when accepting the request, then reconciles
-the runtime toward it while reporting observed values separately. That is a meaningful controller
-model, but changes how saved configuration drives later execution. Prefer confirmation-based
-updates for the current explicit-control model; provider-specific workflows remain extensible.
+This fits the explicit-control model: accepting a request alone does not replace confirmed
+configuration or establish a universal desired-state reconciliation loop. Creation settings are
+still required to establish an instance; their presence does not mean they have been applied.
+Provider-specific workflows remain extensible.
+
+### Concurrent configuration controls
+
+**Proposal for the next ruling:** apply configuration changes one at a time per target instance
+by default; allow safe parallel application when its type/plugin contract declares support.
+Coordination belongs at the target, so separate authorized Conduits do not create independent
+permission to run conflicting changes simultaneously.
+
+For example, Agent A requests a search limit of 15 while Agent B requests 20 through a different
+Conduit. Under the proposed default, their handlers do not apply those changes concurrently. A
+type could instead allow changes to independent settings in parallel. Ordinary searches and data
+operations are not automatically serialized by this configuration-control rule.
+
+The alternative is a required type-specific concurrency policy without a shared default. Exact
+admission, waiting/rejection, conflict domains and treatment of uncertain in-flight effects remain
+to be defined. Ordering alone does not establish whether a request was based on stale settings,
+guarantee atomic native effects, or cover mutations outside actual mediation. State preconditions
+and external coordination still need their own supported contracts.
 
 ## Recommendation and reading guide
 

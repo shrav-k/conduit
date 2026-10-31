@@ -131,7 +131,7 @@ These are invocation semantics, not a second setup recipe assembled outside the 
 Starting an instance invokes its declared construction contract; a caller does not resupply its
 authentication/linking steps as an ad hoc operation request. Built-in management operations
 address templates, registry objects and lifecycle; type-specific operations address capabilities.
-Whether some settings share a typed update operation or use named commands remains open.
+Configuration changes use named typed controls; a control can cover related settings.
 
 The same discovery and outcome principles should cover Agent control, memory reads/updates,
 Pool-mediated Resource creation and Conduit connection management. This does not require every
@@ -153,16 +153,19 @@ Permitted configuration changes use named typed controls backed by handlers. A f
 field editing while invoking the same control; it does not create a direct instance-edit path.
 The complete contract is defined in [DESIGN.md](../DESIGN.md#template-defined-configuration-changes).
 
-A template is a reusable recipe, an instance has its own concrete configuration/change contract,
-and observed state reports what is actually applied. Editing a source template does not alter
+A template is a reusable recipe; an instance retains its concrete configuration/change contract.
+Changes advance stored settings after confirmed application, with outstanding requests recorded
+separately. Observations report actual state and uncertainty; a last confirmed value is not proof
+it is still current after an ambiguous change. Editing a source template does not alter
 existing instances. Instance configuration is not universally immutable, nor is every field
 implicitly editable. A declared setting change does not silently widen its governing constraints.
 
 [The configuration research](CONFIGURATION.md#template-defined-changes-research-synthesis) compares
 Kubernetes transitions, Docker runtime updates, schema constraints and Pi commands. Its bounded
 search-control example shows how a template limit and narrower Conduit restriction compose.
-Defaults for omitted controls, change-handler representation, transition rules, requested/applied
-storage and evolution of a running instance's own control contract remain for grouped review.
+Templates reuse declared type-control defaults and may customize the exposed surface. Exact
+selection notation, change-handler representation, transition rules, storage fields, concurrency
+and evolution of a running instance's own control contract remain for grouped review.
 
 Instances retain their resolved setup graph and runtime configuration independently of source
 changes; dynamic Conduit attachment and Resource data are separate from definition edits. If a
@@ -502,8 +505,9 @@ Exact aggregate status/completion fields and explicit whole-Pool gates remain op
 can compose these distinct connections; each consumer's attachment tracks its own component
 participation. Exact aggregate readiness and cleanup recovery remain open. Named controls use the
 accepted [extensible MCP exchange](CONFIGURATION.md#application-requirements-and-outcomes), with
-[type defaults selected by templates](CONFIGURATION.md#selecting-the-exposed-controls). The next
-review is [requested versus applied configuration](CONFIGURATION.md#requested-and-applied-configuration);
+[type defaults selected by templates](CONFIGURATION.md#selecting-the-exposed-controls). Confirmed
+settings remain [separate from outstanding requests](CONFIGURATION.md#requested-and-applied-configuration).
+The next review is [concurrent configuration controls](CONFIGURATION.md#concurrent-configuration-controls);
 typed filters and their access-path composition are settled at the semantic level.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,

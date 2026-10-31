@@ -76,10 +76,15 @@ input/override archives are not required. Current access and external data remai
 a source template does not silently change an existing instance's behavior or control boundaries.
 
 Keep template intent, concrete instance configuration, requested changes and observed state
-distinguishable. A value accepted for application is not proof that the runtime uses it. The exact
-storage split among spec, status and operation evidence remains open; it must not create conflicting
-sources of truth. Mutable settings do not make every field editable, and reusable image-like
-templates do not imply that all instance configuration is permanently fixed.
+distinguishable. **Accepted:** configuration changes advance stored instance settings only when
+the handler confirms application. Pending or uncertain requests remain separately recorded in
+operation evidence. Plugins define what establishes application and describe any partial effects.
+A last confirmed setting must not be presented as still active when the outcome is unknown.
+Initial creation settings remain establishment inputs, not evidence that setup succeeded.
+
+The exact storage split among spec, status and operation evidence remains open; it must not create
+conflicting sources of truth. Mutable settings do not make every field editable, and reusable
+image-like templates do not imply that all instance configuration is permanently fixed.
 
 Registration has no provisioning/model-execution effects. An explicit action may combine creation
 and start, reporting their outcomes separately. Resources require a Pool owner. Direct creation
@@ -126,8 +131,9 @@ remain authorized operations, not authority supplied by the preceding result.
 Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in
-[review](REVIEW.md#next-discussion). Request acceptance remains distinct from verified application;
-the storage of requested versus applied settings is the next review boundary.
+[review](REVIEW.md#next-discussion). Confirmed settings and outstanding requests remain separate
+under the accepted instance-state rule. Coordination of overlapping changes is the next review
+boundary; accepting a request does not itself select a queue or automatic reconciliation policy.
 
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority

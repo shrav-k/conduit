@@ -93,10 +93,15 @@ archive. Current authority and Resource data remain live. Changes to an existing
 permitted controls through a Conduit; the template does not silently propagate edits to it.
 
 Template intent, instance configuration, requested changes and observed state must remain
-distinguishable. Blanket instance immutability is replaced by explicit change contracts. Exact
-mutable fields, omission defaults, change-handler syntax, plugin application behavior, contract
-migration and stored requested/applied representation remain for grouped review. This is neither
-a promise that every setting is mutable nor a generic unrestricted spec-patch API.
+distinguishable. Configuration changes advance the instance's stored settings only after the
+handler confirms application. Pending or uncertain requests remain separate; a last confirmed
+value is not presented as currently active when the outcome is unknown. Plugins define evidence
+of application. Initial creation settings likewise do not prove setup has run.
+
+Blanket instance immutability is replaced by explicit change contracts. Exact mutable fields,
+change-handler syntax, plugin application behavior, concurrency, contract migration and storage
+layout remain for grouped review. This is neither a promise that every setting is mutable nor a
+generic unrestricted spec-patch API.
 
 ## Conduits expose permitted interactions
 

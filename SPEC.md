@@ -101,9 +101,13 @@ of application. Initial creation settings likewise do not prove setup has run.
 Configuration changes apply one at a time per target instance by default, across all its Conduits.
 A type/plugin contract may allow safe parallel application. Ordinary Resource use follows its own
 rules; queueing versus rejection remains plugin-defined. Ordering alone does not detect stale intent.
+Controls normally require the configuration revision the caller inspected, checked at application.
+A mismatch reports a conflict; callers can reread and reconcile. A control contract may explicitly
+allow safe unconditional operations. Inspection and clients can carry the revision without human
+confirmation; exact revision scope and MCP representation remain open.
 
 Blanket instance immutability is replaced by explicit change contracts. Exact mutable fields,
-change-handler syntax, plugin application behavior, state preconditions, contract migration and storage
+change-handler syntax, plugin application behavior, revision mechanics, contract migration and storage
 layout remain for grouped review. This is neither a promise that every setting is mutable nor a
 generic unrestricted spec-patch API.
 
@@ -266,7 +270,7 @@ Retain [registry/authoring contracts](DESIGN.md#configuration-language):
   readiness. Missing runtime/service can be reported without inventing success.
 - Checked template edits with separate ID/version preconditions and recoverable edit baselines.
   These are not a bypass for running-instance controls. Controls coordinate application per target;
-  their state/version-precondition contract remains under review.
+  they check expected configuration revisions by default, with explicit contract exceptions.
 - Status is not authored success. Configuration exports omit system-owned state. Registration
   removal, execution shutdown and backing-data purge have distinct contracts.
 

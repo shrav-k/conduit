@@ -41,7 +41,7 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Configuration controls | Templates normally reuse their type's declared default controls, with optional narrowing or explicit selection of other supported controls. Instances retain that resolved surface. Frontends can still present field editing; plugin updates do not silently add controls. Dynamic provider-native catalogs remain separate. |
 | Control exchanges | MCP tools carry typed inputs and extensible plugin results. Reuse supported standard interaction/observation mechanisms where applicable; no exhaustive Conduit domain-state enum. Current authority and evidence still govern each operation. |
 | Configuration state | Store confirmed applied settings; keep outstanding requests separately. Plugins establish application evidence. An uncertain outcome is reported alongside the last confirmed value without claiming it is still active. |
-| Change coordination | Apply configuration changes one at a time per target instance across its Conduits, unless its contract declares safe parallelism. Ordinary Resource use and queueing/rejection follow their own supported contracts. |
+| Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -49,30 +49,22 @@ Resources, and an Agent attachment requesting read access. It is a review sketch
 configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
 are illustrative; the Interface authorizes actual instantiation and delegation.
 
-The accepted [MCP exchange](research/CONFIGURATION.md#application-requirements-and-outcomes)
-distinguishes standard messages from plugin-defined behavior. The accepted
-[control selection](research/CONFIGURATION.md#selecting-the-exposed-controls) reuses type defaults
-without requiring every template to repeat them. Exact syntax and native-client support remain open.
+The [control examples](research/CONFIGURATION.md#a-bounded-control-example) cover the accepted
+MCP exchange, reusable defaults, confirmed settings, coordination and revision checks. Exact syntax,
+storage fields, revision granularity and native-client support remain open.
 
-The [configuration-state rule](research/CONFIGURATION.md#requested-and-applied-configuration)
-is also accepted: confirmed settings and outstanding requests remain separate. Exact storage fields
-and plugin application evidence remain to be specified.
+**Next ruling — instance definitions versus settings:** for v0, should an instance retain a fixed
+setup graph and control definitions, with changes to those definitions requiring a new instance?
+Recommend this while existing controls continue to change their permitted settings. For example,
+changing a query limit within 1–100 uses the existing control; replacing its handler, changing its
+allowed range or editing setup steps requires a revised template/definition and a new instance.
+Dynamic Conduit attachments, live access restrictions and provider-native catalogs remain dynamic.
 
-The [coordination default](research/CONFIGURATION.md#concurrent-configuration-controls) is accepted:
-one configuration change applies at a time per target, with declared safe parallelism allowed.
-
-**Next ruling — stale configuration requests:** should configuration controls normally require
-the caller's expected configuration revision, checked when the change is applied, with explicit
-contract exceptions for safe operations that do not need that precondition? Recommend this so
-serial execution cannot silently turn an edit based on old settings into an overwrite of a newer
-decision. For example, both Agents inspect revision R; A's change advances it; B's request based
-on R reports a conflict. B can reread, reconcile and submit again within its authority.
-
-The alternative makes preconditions optional unless a control explicitly requires them. Revision
-values can come from inspection and be carried by clients; no human confirmation or separate
-authored request document is required. Exact revision granularity, MCP representation and how
-checks compose with declared safe parallelism remain open. See the
-[stale-request example](research/CONFIGURATION.md#stale-configuration-requests).
+The alternative allows a declared in-place upgrade operation to replace those definitions, requiring
+compatibility and recovery semantics. This ruling would not pin plugin binaries or settle plugin
+release compatibility; it concerns the retained graph and control contract. It also would not
+automatically migrate data, permissions or connections when a new instance is created. See the
+[definition-boundary example](research/CONFIGURATION.md#instance-definitions-and-permitted-settings).
 
 Then review these connected contracts, one bundle at a time:
 
@@ -87,7 +79,7 @@ Then review these connected contracts, one bundle at a time:
 The Interface remains the broad local management entry. Pool ownership, shared service
 authentication, separate model subscriptions/private Agent state, provider-native tools and
 Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
-transitions, state preconditions, contract evolution and bootstrap remain unresolved.
+transitions, revision mechanics, contract evolution and bootstrap remain unresolved.
 
 Use [the bounded search control](research/CONFIGURATION.md#a-bounded-control-example) now, followed
 by database startup/migrations. They test whether the same contracts work beyond MCP
@@ -128,7 +120,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Named controls, type-default reuse, extensible MCP exchanges, confirmed settings separate from requests and per-target coordination are accepted. Settle storage fields, handler bindings, transition/state preconditions and safe-parallelism details. Control-envelope/graph changes and metadata rules remain unresolved. |
+| Configuration changes versus state | Named controls, type-default reuse, extensible MCP exchanges, confirmed settings separate from requests, per-target coordination and default revision checks are accepted. Settle storage fields, handler bindings, revision mechanics and safe-parallelism details. Control-envelope/graph changes and metadata rules remain unresolved. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |

@@ -216,11 +216,12 @@ operations are not automatically serialized by this configuration-control rule.
 Queueing versus rejection remains plugin-defined. Exact admission, conflict domains and treatment
 of uncertain in-flight effects remain to be defined. Ordering alone does not establish whether a
 request was based on stale settings, guarantee atomic native effects, or cover mutations outside
-actual mediation. State preconditions and external coordination still need their own supported contracts.
+actual mediation. The accepted state check below complements ordering; external coordination
+still needs its own supported contract.
 
 ### Stale configuration requests
 
-**Proposal for the next ruling:** require an expected configuration revision by default on named
+**Accepted:** require an expected configuration revision by default on named
 configuration controls, checked at application; allow a control contract to explicitly declare
 safe semantics that do not require that precondition. This concerns instance configuration changes,
 not every provider tool call or Resource-content operation.
@@ -230,11 +231,28 @@ advances the revision. B's later request to set 20 still names R, so it reports 
 of silently overwriting A's decision. B can inspect the newer state and deliberately reconcile
 before submitting again. Merely substituting the latest revision is not reconciliation.
 
-The alternative permits unconditional requests unless the control requires a precondition.
 Inspection/clients can carry revisions without a new authored operation manifest or mandatory
 human approval. The target must coordinate the check with application, not only test it at
 discovery or enqueue time. Exact revision scope, MCP mapping, safe-parallel checks and treatment
 of unobservable external changes remain open; a local revision cannot prove unseen provider state.
+
+### Instance definitions and permitted settings
+
+**Proposal for the next ruling:** keep each instance's resolved setup graph and control definitions
+fixed in v0. Existing controls can change their permitted settings; changing the graph, control
+schema/constraints or handler binding requires a new instance from a revised definition. An
+existing type's declared dynamic choices and provider catalogs do not become fixed snapshots.
+
+For example, a search Resource's query-limit control permits 1–100. Setting it to 15 is an ordinary
+configuration change. Replacing the handler or expanding its declared range to 200 changes the
+control definition and would require a new instance. A Conduit can still narrow the permitted
+range for a caller; current authority and attachments remain live under their own contracts.
+
+The alternative supports declared in-place upgrades of retained definitions. That could preserve
+instance identity through a structural change but requires migration, in-flight-work and recovery
+rules. Recommend deferring that mechanism in v0. This does not choose plugin binary pinning or
+compatible implementation-update policy, or authorize automatic data/permission migration and
+connection rebinding when an instance is replaced.
 
 ## Recommendation and reading guide
 

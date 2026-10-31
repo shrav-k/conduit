@@ -164,9 +164,11 @@ implicitly editable. A declared setting change does not silently widen its gover
 Kubernetes transitions, Docker runtime updates, schema constraints and Pi commands. Its bounded
 search-control example shows how a template limit and narrower Conduit restriction compose.
 Templates reuse declared type-control defaults and may customize the exposed surface. Exact
-selection notation, change-handler representation, transition rules, storage fields, state
-preconditions and evolution of a running instance's own control contract remain for grouped review.
+selection notation, change-handler representation, transition rules, storage fields, revision
+mechanics and evolution of a running instance's own control contract remain for grouped review.
 Configuration changes apply one at a time per target by default, with declared safe parallelism.
+They normally check the caller's expected configuration revision at application, with explicit
+contract exceptions for safe unconditional operations.
 
 Instances retain their resolved setup graph and runtime configuration independently of source
 changes; dynamic Conduit attachment and Resource data are separate from definition edits. If a
@@ -509,7 +511,8 @@ accepted [extensible MCP exchange](CONFIGURATION.md#application-requirements-and
 [type defaults selected by templates](CONFIGURATION.md#selecting-the-exposed-controls). Confirmed
 settings remain [separate from outstanding requests](CONFIGURATION.md#requested-and-applied-configuration).
 [Per-target control coordination](CONFIGURATION.md#concurrent-configuration-controls) is accepted.
-The next review is [stale configuration requests](CONFIGURATION.md#stale-configuration-requests);
+[Default revision checks](CONFIGURATION.md#stale-configuration-requests) address stale requests.
+The next review is [instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings);
 typed filters and their access-path composition are settled at the semantic level.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,

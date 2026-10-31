@@ -29,7 +29,7 @@ The shared distinction does not impose one lifecycle or mandatory process on eve
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
 Named versus inline templates, version binding outside Session behavior, reference
-qualification and lifecycle operations remain in [REVIEW.md](REVIEW.md).
+extensions and lifecycle operations remain in [REVIEW.md](REVIEW.md).
 
 ## Configuration language
 
@@ -42,8 +42,7 @@ emit this model; they cannot bypass its validation or authority rules.
 Each object uses its family as `kind` and a top-level `form` beside it to identify a template
 or instance. Form is a structural distinction, not an observed lifecycle state: instantiation
 creates a separate object rather than changing the template's form. Family and form jointly
-determine how to interpret `spec`; exact reference syntax remains open. The common authoring
-envelope is:
+determine how to interpret `spec`. The common authoring envelope is:
 
 | Field | Meaning |
 | --- | --- |
@@ -85,9 +84,13 @@ Every registered template and instance has a system-assigned stable ID independe
 of its name. Renaming an object preserves that ID. Deleting it and creating another object
 with the same name produces a new ID; name reuse does not make them the same object.
 
-Authored YAML normally references an object by `kind` and `name`. Conduit records the stable
-ID of the object selected when that reference resolves. Authors need not copy generated IDs
-into ordinary references; the readable lookup and the resolved identity remain distinguishable.
+Readable configuration-object references explicitly include `kind`, `form` and `name`, such
+as `{kind: Session, form: template, name: reviewer}`. Kind/name locates the object; form states
+the expected template/instance distinction and must match the target. A wrong-form target is
+rejected. Typed fields such as `templateRef` still require explicit form, and their contracts
+must agree with it. This makes the reference understandable independently of its containing field.
+Conduit records the stable ID selected when the reference resolves. Authors need not copy
+generated IDs into ordinary references; readable lookup and resolved identity remain distinct.
 
 V0 resolves references within one local registry. Names are unique per family `kind` across
 both forms: a Session template and Session instance cannot both be named `reviewer`; a Resource
@@ -102,8 +105,6 @@ Callers may supply an explicit unique name instead, including for long-lived ins
 paths obey per-family uniqueness across forms. Exact suffix format, name constraints and
 generated-collision handling remain open. Generated names remain separate from stable system
 IDs, and a specific instance name does not imply automatic expiry.
-Whether readable references carry an explicit expected `form` remains open. Reference contracts
-must still distinguish template from instance targets even though kind/name lookup is unambiguous.
 
 V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
 After a rename, the old name becomes available for reuse. A fresh lookup of that old name
@@ -114,7 +115,7 @@ A rename uses the normal checked configuration update, changing `metadata.name` 
 preserving the object's ID. The original ID/version identifies the target; the new name
 must be available within the applicable naming boundary or the update conflicts.
 
-Other registry objects retain their authored kind/name references after a rename. Report
+Other registry objects retain their authored kind/form/name references after a rename. Report
 known mismatches between a written name and its resolved target, and offer explicit checked
 reference updates. The rename does not rewrite source YAML files.
 
@@ -123,7 +124,7 @@ mismatches. An explicit option refreshes names from known, unambiguous resolved 
 exported copy only; it does not update registry objects or rebind anything. An old exported
 name can still fail or identify a different object on a fresh import.
 
-An established binding created from an explicit kind/name reference retains its resolved
+An established binding created from an explicit kind/form/name reference retains its resolved
 stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting
 the target makes it unavailable; a new object using its old name is not substituted
 automatically. Rebinding remains subject to current authority.

@@ -26,8 +26,9 @@ longer a separate family. **Connection** names a Conduit instance, not an additi
 uses its family as `kind` and a top-level `form` to identify a template or instance. Names are
 unique per family across both forms: templates name reusable concepts, while instances have
 names generated from the template name plus a unique suffix unless an explicit unique name
-is supplied. Reference details and family-specific lifecycle contracts are the next design
-work; identity and checked-update rules remain.
+is supplied. Readable object references include `kind`, `form` and `name`. Template binding
+and family-specific lifecycle contracts are the next design work; identity and checked-update
+rules remain.
 
 Conduit owns its runtime in Rust, with a custom Pi-inspired terminal first and replaceable
 frontends and integrations. Provider-native tools, MCP, native skills, trackers and memory

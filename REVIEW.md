@@ -12,6 +12,8 @@ outcomes rather than a long sequence of individual field rulings.
   Names are unique per kind across both forms in the local registry. Templates name reusable
   concepts; instances default to the template name plus a generated unique suffix. Callers
   may supply explicit unique names; exact suffix format and name constraints remain open.
+- Readable object references explicitly include kind, form and name. Kind/name locates the
+  target and form validates its intended use; wrong-form targets are rejected.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
@@ -35,9 +37,9 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **reference checks and template binding**. Kind/name uniqueness and default
-instance naming are settled; choose how references validate the intended form. Then establish
-Pool creation/ownership and instance lifecycle together.
+Continue with **template binding and change**. Object forms, naming and readable references
+are settled; choose what each instance retains from its template and how later changes apply.
+Then establish Pool creation/ownership and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
@@ -52,11 +54,10 @@ Pool creation/ownership and instance lifecycle together.
 
 | Question | Example and considerations |
 | --- | --- |
-| How do references check form? | Kind/name resolves one object. Decide whether references explicitly carry an expected form or typed fields supply it, and how wrong-form targets are reported. Optional direct IDs and Pool-local display names remain open; neither changes registry uniqueness or Pool ownership. |
-| Which fields belong to each form? | Family and form jointly select the contract. Distinguish authored template configuration, instance inputs and system-owned observations; the common envelope does not require identical payloads. |
 | What does a template binding retain? | Record template identity, version and explicit inputs. Session behavioral snapshots already persist until reconfiguration; choose corresponding rules for Pool, Resource and Conduit instances without freezing live limits. Does an edited or deleted template affect existing instances? |
+| Which fields belong to each form? | Family and form jointly select the contract. Distinguish authored template configuration, instance inputs and system-owned observations; the common envelope does not require identical payloads. |
 | Must templates be independently registered? | Compare named reusable templates with inline definitions for one-off creation. Define identity, export, source attribution and allowed inputs without introducing arbitrary string interpolation or an inheritance language. |
-| How are instances addressed and rebound? | Open-new targets a template; join-existing targets a connection instance. Define repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
+| How are instances addressed and rebound? | Open-new targets a template; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 
 **Walkthrough:** create two instances from one template, rename the template, edit it, then
 replace its old name with a different template. Show existing bindings, new creation, exported

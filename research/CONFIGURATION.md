@@ -4,8 +4,8 @@
 The accepted model has four families, each with template and instance forms. Resource
 instances are created only through, and owned exclusively by, a Pool instance. Conduit
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
-envelope, family kinds with top-level forms, identity and checked-edit contracts; reference
-qualification and lifecycle are open.
+envelope, family kinds with top-level forms, explicit kind/form/name references, identity and
+checked-edit contracts; template binding and lifecycle remain open outside retained Session rules.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -296,10 +296,11 @@ popularity alone.
 The accepted representation uses one family `kind` plus a top-level template/instance `form`.
 Family and form jointly determine the schema and operations; templates and instances do not
 need identical payloads. `form` sits beside `kind`; `spec` contains the configuration for that
-family and form. Reference qualification remains under review.
+family and form. Readable object references include `kind`, `form` and `name`: kind/name
+locates the object, while form validates the intended target. A wrong-form target is rejected.
 
-The scenario fixture follows the accepted envelope. Its payloads and reference syntax remain
-illustrative; status shape, command names, operation payloads and instance export are open.
+The scenario fixture follows the accepted envelope and readable reference shape. Its payloads
+remain illustrative; status shape, command names, operation payloads and instance export are open.
 Reusable template registration, instance creation, native provisioning and starting
 execution must remain distinguishable even if a frontend offers a combined operation.
 
@@ -312,9 +313,9 @@ not required to obtain reuse.
 Stable object identity and expected-ID/configuration-version checks remain accepted. Names
 are unique within each family across both forms in the single local registry. A template
 uses a reusable concept name; an instance defaults to that name plus a generated unique suffix,
-with explicit unique names also allowed. Suffix format and explicit form checks in references
-remain open. The fixture uses explicit instance names for readability. Opening twice from a Conduit template
-intentionally creates two connections; retrying the same create request must instead follow
+with explicit unique names also allowed. Suffix format remains open. The fixture uses explicit
+instance names for readability. Opening twice from a Conduit template intentionally creates
+two connections; retrying the same create request must instead follow
 the operation-outcome contract. Exact idempotency/identity fields are open.
 
 ## How the families connect

@@ -2,7 +2,7 @@
 # Family kind plus top-level form is accepted; payloads remain illustrative.
 # Names are unique per family across both forms. These examples use explicit instance names;
 # the default is template name plus a generated unique suffix (exact format remains open).
-# The wrapper, reference.form and operation fields remain illustrative candidates.
+# References explicitly use kind/form/name. The wrapper and operation fields remain illustrative.
 # All paths, accounts, provider identifiers and targets are synthetic. No grants or secrets.
 # Templates register reusable configuration; only explicit Pool operations create Resources.
 scenario: four-families-with-exclusive-resource-ownership

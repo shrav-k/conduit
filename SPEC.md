@@ -95,11 +95,13 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
 
 - Stable IDs survive rename; replacement objects receive new IDs. Readable references record
   resolved identity, and established explicit bindings require explicit rebind to another ID.
+- Readable configuration-object references explicitly include `kind`, `form` and `name`.
+  Kind/name locates the object; form checks the expected template/instance distinction.
+  A wrong-form target is rejected, including in fields that already imply a form.
 - Use one local registry with names unique per family across templates and instances. A Session
   template and Session instance cannot both be named `reviewer`. Templates name reusable concepts;
   instances default to the template name plus a generated unique suffix, with explicit unique
-  names allowed. Suffix format and explicit form checks in references remain open; resolving
-  a name must never silently substitute the wrong form.
+  names allowed. Exact suffix format and name constraints remain open.
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
 - Create/update intent is explicit. Updates replace complete authored configuration and use

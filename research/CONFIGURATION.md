@@ -327,9 +327,11 @@ Kubernetes uses controllers to repair desired-state drift, including replacing f
 workloads. Conduit must preserve its explicit-resume rule for stopped executions. Applying
 configuration can resolve bindings or show a preparation plan without starting model work.
 Likewise, [owner references](https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/)
-distinguish lifecycle ownership from selection. Conduit now has exclusive Pool ownership,
-but must define owner retirement and retention explicitly rather than inherit Kubernetes
-cascading deletion. Ordinary reference selection still does not assign ownership.
+distinguish lifecycle ownership from selection. R3 requires explicit retirement/unregistration
+of owned Resource instances before Pool deletion, allowing an explicit bulk action while retaining
+the Pool on partial failure. Ordinary Pool deletion does not implicitly cascade retirement;
+ownership transfer is deferred. Backing data and evidence retain their separate cleanup rules.
+Ordinary reference selection still does not assign ownership.
 
 Full server-side field ownership, admission webhooks, Kubernetes namespaces/RBAC, Helm,
 Terraform planning engines and a configuration programming language are unnecessary v0
@@ -619,8 +621,8 @@ per-caller authority and client reuse require distinct configuration meanings. E
 must follow the current contracts.
 
 Pool composition uses the accepted local entries, resolved instance bindings and ordinary operation
-evidence. No separate provisioning-plan ledger is required. Remaining selection/retirement choices
-are consolidated in the [closure agenda](../REVIEW.md#remaining-decision-bundles); controls do not
+evidence. No separate provisioning-plan ledger is required. R3 settles retirement; remaining
+selection choices are consolidated in the [closure agenda](../REVIEW.md#remaining-decision-bundles); controls do not
 make every operation or parameter another registry object.
 
 ## Composition needs several operators
@@ -727,7 +729,7 @@ Choose the actual API group and version progression separately from the illustra
 | A create response is lost | Reconcile/retry using the original operation identity, distinct from deliberate new creation. |
 | Template and instance have similar names | Form-qualified resolution must choose the intended object or fail clearly. |
 | Creation template changes or disappears | Existing instance configuration remains usable independently; explicit dependencies and current authority still apply. |
-| Pool retirement encounters active Resources | Apply the lifecycle chosen in review; never infer orphan purge permission. |
+| Pool retirement encounters active Resources | Explicitly retire/unregister owned Resources before removing the Pool; report partial failure and retain the owner. Preserve backing data and evidence under their separate cleanup rules. |
 | Model/account refresh fails | Report failure; no alternate-account or API-billing fallback. |
 | Communication peer is offline | Report contract-specific pending/unavailable state without an implicit model turn. |
 | Tool effect may have occurred but response is missing | Outcome remains unknown until reconciliation; no unsafe automatic repetition. |

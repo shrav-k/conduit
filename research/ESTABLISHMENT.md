@@ -585,8 +585,8 @@ The exact policy fields are open; an interaction wait and an in-flight provider 
 different timeout behavior, and timing out either does not prove cancellation completed.
 
 The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
-These cases illustrate the accepted R2 graph boundary and support the remaining R3 ownership
-lifecycle and R6 configuration/export profile. Direct complete-instance creation, graph composition
+These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
+the remaining R6 configuration/export profile. Direct complete-instance creation, graph composition
 and the template/plugin/instance responsibility split are already accepted. The next schema packet should
 render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 

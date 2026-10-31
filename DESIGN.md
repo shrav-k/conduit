@@ -84,6 +84,9 @@ confirmation on every launch. Repair is part of unrestricted Interface administr
 when the normal management path is unavailable, exact steps and partial initial-setup recovery
 remain open. A separately scoped recovery role and Interface restrictions are deferred; this
 ruling does not preserve ended flows or automatically restart Agent work.
+Under R3, later access after a management Conduit fully ends opens a new Conduit instance to
+the retained system objects. Transport recovery while logical participation remains intact
+continues the existing instance; reopening a terminal alone is not evidence that a flow ended.
 
 **Accepted initial authority:** v0 establishes one local registry owner using the initializing
 OS-user context, without separate Conduit login. The default Interface acts for that owner;
@@ -429,8 +432,11 @@ reconcile before retrying. Incoming references alone do not block an otherwise p
 checked deletion. Retain referring objects and their authored references, reporting affected
 relationships as unavailable; do not prune those references or cascade removal to referring
 objects. Deleting a Resource registration does not delete its owning Pool. Pool ownership
-is stronger than an ordinary incoming reference: owner retirement, transfer and incomplete
-provisioning need a lifecycle contract before a Pool deletion path can be finalized.
+is stronger than an ordinary incoming reference: a Pool instance cannot be deleted while it
+owns Resource registrations. R3 requires explicit Resource retirement first, including supported
+stop/disconnect steps and checked unregistration. An explicit bulk retirement action may handle
+the Resources and then their Pool; partial failure retains the Pool and reports unfinished work.
+Ordinary Pool deletion does not implicitly retire owned Resources. Ownership transfer is deferred.
 
 Deleting a Resource registration preserves its backing files, repositories and service data,
 including data created through Conduit. Cleanup or purge requires separate explicit operations
@@ -1012,7 +1018,7 @@ No background reconciler is implied.
 
 Use the accepted local composition declarations, resolved instance bindings and ordinary operation
 evidence without requiring a second provisioning-plan ledger. Pools group unitary Resources and
-derive useful views from their contracts. Remaining selector, retirement and representation choices
+derive useful views from their contracts. Remaining selector and representation choices
 are consolidated in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
@@ -1036,10 +1042,15 @@ is supplied. Explicit selection replaces those defaults; extending them requires
 explicit add action. Agent limits and exclusions always constrain the result.
 Combination with connection choices materialized in the Agent spec remains open.
 
-Pool retirement, possible ownership transfer, active-use handling and incomplete provisioning
-need explicit contracts. Deleting a grouping cannot silently orphan deployed Resources under
-this model. The response to an orphan does not imply deleting attached external data or
-purging retained history. Ownership cleanup and backing-data cleanup remain separate.
+**Accepted retirement (R3):** keep a Pool instance registered until its owned Resource instances
+have been explicitly retired through their supported lifecycle and checked unregistration.
+One explicit bulk action can retire the Resources and then remove the Pool. If retirement only
+partly succeeds, preserve the Pool and report remaining work; do not claim rollback of completed
+steps. This also covers Resource registrations created during incomplete Pool setup. Ordinary
+Pool deletion does not implicitly cascade retirement, and ownership transfer is deferred in v0.
+Stopping a managed client does not itself delete a remote account or stop a shared external
+service. Backing data and retained evidence follow their separate cleanup/retention contracts.
+Missing ownership remains an inconsistency to resolve, never implicit orphan-purge authority.
 
 ### Shared access and authentication
 
@@ -1156,7 +1167,13 @@ attached between polls, and temporary transport failure affects readiness withou
 that attachment. Ending the flow does not delete its template, backing Resources or retained
 configuration/operation evidence, and does not prove an already accepted remote operation was
 cancelled. Report incomplete or unknown cleanup rather than claiming confirmed disconnection.
-Crash detection, explicit detach and later reopening/reuse rules still need concrete contracts.
+**Accepted ended-flow identity (R3):** later participation opens a new Conduit instance with a
+new stable ID and fresh attachments. It may explicitly reuse the same Pool-owned Resources or
+retained conversation history within current access, without reviving the old attachments or
+automatically inheriting their grants. Temporary transport failure while logical participation
+remains intact recovers the existing instance. Unknown execution/cleanup state does not prove
+that the flow ended or authorize duplicate work. Exact crash detection and detach mechanics
+remain implementation work within these boundaries.
 
 Participant attachment state describes the individual relationship; Resource-owned shared
 authentication and connection support can have a different authority and lifetime. Template reuse
@@ -1192,7 +1209,8 @@ that an Agent's required composite connection has completed preparation.
 
 Connection establishment supports both intents explicitly:
 
-- **Join an existing instance:** establish participation in a specified existing relationship.
+- **Join an existing instance:** establish participation in a specified existing relationship
+  whose live flow has not ended.
 - **Open a new connection:** create a relationship from its establishment configuration,
   subject to the contract's endpoints, authority and provisioning requirements. This can use a
   template or a complete direct definition; exact export/creation fields remain for the schema packet.

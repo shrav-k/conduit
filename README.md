@@ -26,8 +26,8 @@ developed. Normal interaction uses Conduits and runtime-supported operations; Re
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
 Changing an instance's fixed setup graph or control definitions requires a replacement in v0,
 including through the Interface. Supported settings, connections and lifecycle remain manageable.
-R1 and R2 are settled; [five review bundles remain](REVIEW.md#remaining-decision-bundles), beginning
-with [ownership and retirement](REVIEW.md#next-discussion). Implementation details and future
+R1–R3 are settled; [four review bundles remain](REVIEW.md#remaining-decision-bundles), beginning
+with [connection selection, delegation and routing](REVIEW.md#next-discussion). Implementation details and future
 extensions are tracked separately.
 
 Templates contain complete establishment instructions and declare what instance configuration

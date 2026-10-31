@@ -49,6 +49,9 @@ preserving their identities, settings and grants under current access checks. Mi
 inconsistent expected components require explicit repair; startup does not silently recreate
 them from defaults. Reconnecting to the same permitted targets remains supported. Unavailability
 does not establish deletion or a fresh installation; backing data remains preserved.
+If a management Conduit has fully ended, later access opens a new Conduit instance to the
+retained system objects. Temporary transport failure with logical participation intact is
+recovery of the existing connection, not a fresh instance.
 
 V0 establishes one local registry owner from the initializing OS-user context, without a separate
 Conduit login. The default Interface acts for that owner. Agents receive explicit delegated access
@@ -263,6 +266,11 @@ of the shared login can affect all its users. Ending a Conduit cleans up what th
 not Resource-owned credentials or clients used by other flows. Provider logs may attribute work
 to the shared service identity; Conduit retains the actual caller/connection attribution.
 
+After the last logical consumer/peer detaches and a flow ends, later participation opens a new
+Conduit instance with a new ID and fresh attachments. The new connection may explicitly reuse
+permitted Pool-owned Resources or retained history. Temporary transport outages with participation
+intact recover the existing instance; uncertain runtime state is not proof that a flow has ended.
+
 Preserve provider-native MCP tools through supported mediation: external clients can connect to
 a Conduit-managed provider endpoint, while owned runtimes can mediate internally. Neither requires
 a generic replacement tool or one combined gateway. Direct provider paths have only their verified
@@ -295,7 +303,12 @@ membership and availability alone do not load skills/documents into model contex
 
 Conduits needing durable content use Pool-owned Resources. Routing state need not be a Resource
 per cursor. Pool ownership does not grant data access or authorize deletion of backing files.
-Retirement, transfer and orphan handling need explicit lifecycle semantics, never implicit purge.
+R3 requires explicit retirement of owned Resource instances before deleting their Pool instance:
+perform their supported stop/disconnect steps and checked unregistration. A single explicit bulk
+action may retire the Resources and then delete the Pool; partial failure retains the Pool and
+reports unfinished work. Ordinary Pool deletion does not initiate implicit cascading retirement.
+Ownership transfer is deferred. Backing files, service data and retained evidence keep their
+separate cleanup/retention rules; orphaned ownership is an inconsistency, not purge authority.
 
 ## Configuration language
 
@@ -364,8 +377,9 @@ The five families, template/instance forms, Pool ownership and shared service au
 complete construction templates, typed handlers and template-declared change boundaries are
 settled direction, including Pool-owned reusable authentication Resources. R1 confirms replacement
 for fixed-definition changes, including Interface administration. R2 selects finite dependency
-graphs with branching/loops inside plugins. The [five remaining review
-bundles](REVIEW.md#remaining-decision-bundles) cover retirement, connection selection/routing,
+graphs with branching/loops inside plugins. R3 requires explicit Resource retirement before Pool
+deletion and new instances after Conduit flow end. The [four remaining review
+bundles](REVIEW.md#remaining-decision-bundles) cover connection selection/delegation/routing,
 activation, configuration/extension resolution, and communication scope.
 Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

@@ -145,10 +145,12 @@ the gap instead of substituting a new Resource with the same name. An unreadable
 evidence of a fresh installation.
 
 Repair means a deliberately requested operation by an authorized actor, not mandatory human
-confirmation on each launch. Interface administration has repair authority; exact repair steps,
-partial initial setup recovery and Conduit reopening remain open. A retained object does not imply
-a live process or socket; this
-rule neither keeps ended flows alive nor starts replacement Agent work or application setup.
+confirmation on each launch. Interface administration has repair authority; exact repair steps
+and partial initial setup recovery remain implementation work. R3 requires a new Conduit instance
+for later access after a management flow fully ends, while retaining its Pool/Resource/Interface
+targets. A transport outage with participation intact can recover the same Conduit. A retained
+object does not imply a live process or socket; neither recovery nor observation starts replacement
+Agent work or application setup by itself.
 
 ### Initial management authority
 
@@ -656,7 +658,8 @@ Typed filters and access-path composition remain accepted for delegated access.
 [Later startup and explicit repair](#reusing-and-repairing-the-system-bootstrap) are accepted;
 the [v0 Interface has unrestricted administration](#v0-interface-administration). R1 confirms
 replacement for fixed-definition changes. R2 selects finite dependency graphs, with branching
-and loops inside plugins. R3 next addresses ownership, retirement and ended Conduit identity.
+and loops inside plugins. R3 requires explicit Resource retirement before Pool deletion and a
+new Conduit instance after flow end. R4 next addresses connection selection, delegation and routing.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

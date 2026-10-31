@@ -108,8 +108,10 @@ and context. Shared conversation storage need not be editable shared working mem
 One Agent leaving can remove its attachment while the flow remains for other consumers/peers.
 The last one leaving ends the live Conduit and releases its own connection state; shared
 Resource-owned services and retained history can outlive the flow. Later use of that
-history does not by itself reopen the old instance. One-time transfer completion/detachment
-and reopening/new-instance identity remain under review.
+history does not reopen the old instance. R3 requires a new Conduit ID and fresh attachments
+for later participation, with explicit authorized reuse of the same supporting Resources/history.
+A transport outage while participation remains intact recovers the existing instance. One-time
+transfer completion/detachment details remain part of the communication contract to draft.
 
 Agentwatch demonstrates the separation: its room code persists posts before delivery,
 keeps live membership in memory, and uses per-room ordering independently of the lifetime
@@ -438,10 +440,12 @@ connection runtime writes it. The distinction must not become an unscoped storag
 
 A collaboration Pool can own the backing conversation Resource for Agents using different
 domain Pools. Participants retain their own access. Closing a connection, detaching its last
-participant and retiring the backing Resource are separate lifecycle operations. Pool deletion,
-possible ownership transfer and partial provisioning need explicit rules. Missing ownership
-is not proof that purging the backing data is safe; existing retention and external-data
-protection remain applicable.
+participant and retiring the backing Resource are separate lifecycle operations. Under R3, a Pool
+instance stays registered until its owned Resources are explicitly retired/unregistered. A bulk
+retirement action may coordinate this; partial failure retains the Pool and reports unfinished
+work, including Resources registered during incomplete setup. Ordinary Pool deletion does not
+implicitly retire its Resources, and ownership transfer is deferred. Missing ownership is not
+proof that purging backing data is safe; existing retention and external-data protection apply.
 
 Agent activation prepares a participant. Pool provisioning creates or attaches
 Resource instances. Connection supervision operates a shared interaction service when needed.
@@ -555,16 +559,17 @@ evaluation implementation remain open. This rule does not prescribe a new policy
 
 The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
 Authentication reuse, composite participation, typed filters and access-path composition are
-accepted. These examples now support R3's retirement/reopening, R4's selection/routing and R7's
-communication contract. Detailed syntax belongs to R6; examples are not executable schemas.
+accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
+support the remaining R4 selection/delegation/routing and R7 communication contracts. Detailed
+syntax belongs to R6; examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:
 
 1. Two Agents join one instance; then create separate instances from the same template.
    Show exactly which state is shared and private, including any shared backing data.
 2. One detaches, crashes, changes account or loses permission; the other continues where valid.
-3. The last consumer/peer leaves and the flow ends; later participation must follow the
-   reopening/new-instance contract still to be chosen, with retained history considered separately.
+3. The last consumer/peer leaves and the flow ends; later participation opens a new Conduit
+   instance with fresh attachments. Explicitly reuse permitted backing/history separately.
 4. Two different Conduits reach the same checkout, vault item, issue or deployment target.
 5. A shared credential refresh/logout occurs while several clients are active; distinguish its
    impact from revoking just one caller's Conduit permission.

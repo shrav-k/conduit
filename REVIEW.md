@@ -4,7 +4,7 @@ Updated: 2026-10-31. Audited all 11 repository Markdown documents for current co
 unresolved decisions, conflicting recommendations and obsolete questions. Source research remains
 dated evidence; this audit did not rerun provider investigations or validate a runtime.
 
-**The review is not complete yet.** R1 and R2 are accepted; five connected decision bundles remain below.
+**The review is not complete yet.** R1–R3 are accepted; four connected decision bundles remain below.
 Their recommendations are not newly accepted requirements. Field names, implementation choices
 and future catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
 remain the accepted design; research supplies evidence rather than a second decision queue.
@@ -13,27 +13,28 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-Resolve **R3: ownership and retirement** next. It contains two related choices: removal of an
-owning Pool, and identity after a Conduit's last participant leaves. Neither changes the existing
-separation between registration, managed runtime, backing data and retained evidence.
+Resolve **R4: connection selection, delegation and routing** next. Start with how configuration
+selects what to establish, then settle route/identity choice and the lifetime of delegated access.
+Current access checks, narrowing-only filters and stable-ID bindings are already accepted.
 
-| Situation | Already accepted | Proposed remaining rule |
-| --- | --- | --- |
-| Remove a Pool that owns checkout and shared-authentication Resources. | Every Resource needs one owner; deleting registration does not authorize deleting backing files/service data. | Keep the Pool registered until its Resource instances have been explicitly retired/unregistered. Defer ownership transfer and implicit cascading deletion. |
-| Retire several Resources together. | Their supported lifecycle and checked deletion contracts still apply. | The Interface may offer one explicitly requested bulk retirement workflow; preserve the owner and report unfinished components if it only partly succeeds. This need not require a separate command for each Resource. |
-| The last consumer leaves a Conduit. | End the live flow and release its own connections/leases; preserve Pool-owned Resources and retained evidence. | Later participation opens a new Conduit instance, which may explicitly reuse the same Resources/history. |
-| A transport drops while a logical participant remains attached. | Reconnect under the existing connection/recovery contract; do not confuse socket loss with detachment. | This is recovery of the existing instance, outside the ended-Conduit identity choice. |
+| Situation | Recommended behavior, not yet a ruling |
+| --- | --- |
+| A Pool template selects Resource templates labeled `domain=euphony`. | Resolve that selection once during instantiation into concrete Resource entries. Later matching templates do not provision new Resources without an explicit action. |
+| A live access filter matches existing permitted Resources labeled `domain=euphony`. | Continue the accepted live-matching behavior. Availability can change without provisioning anything or injecting new context. |
+| An Agent declares memory access; its selected Pool offers repository and Linear access defaults; the caller explicitly selects repository access only as the additional selection. | Preserve the Agent's declared memory connection; add repository access. The explicit additional selection replaces Pool defaults, so Linear is omitted. It does not silently remove declared dependencies. |
+| Two routes can reach Linear through different accounts or restrictions. | Resolve the intended path and service identity explicitly. Do not choose by discovery order, silently fall back to another account or combine grants from different paths. |
+| The frontend that delegated a worker's access closes. | Keep the grant with that worker's logical participation, subject to current limits/revocation. Frontend lifetime does not itself remove the worker's access. |
 
-**Recommendation:** require explicit Resource retirement before deleting the owning Pool, and
-use a new Conduit instance after a flow has ended. Resource retirement means its supported
-stop/disconnect steps and checked unregistration; backing-data cleanup remains separate. A
-managed client shutdown does not imply deleting a remote account or stopping a shared external
-service. Missing or uncertain cleanup is reported, not silently treated as completed.
+The first recommendation concerns selection of templates to instantiate; it does not freeze
+Resource contents or change live access filtering. Creation choices remain distinct from the
+explicit request that runs setup. The second composition rule treats Pool defaults as additional
+connections, preserving declarations already resolved in the Agent. Deliberately editing a draft
+or invoking a supported connection operation remains possible; implicit list replacement must not
+silently remove a required dependency. Neither selection nor defaults confer authority.
 
-The alternatives are automatic component retirement as part of Pool deletion, or reopening an
-ended Conduit under its old ID with rules for retained participation, grants and progress. These
-two choices can be decided independently. Ordinary incoming references still do not block
-otherwise permitted checked deletion; owning a Resource is a stronger relationship.
+Alternatives include provisioning when selector matches change, making one explicit selection
+replace all connection declarations, automatic route fallback, or grants tied to the issuing
+frontend/expiring leases. Each changes observable behavior and must be selected explicitly.
 
 ## Settled foundation
 
@@ -44,6 +45,7 @@ otherwise permitted checked deletion; owning a Resource is a stronger relationsh
 | Construction | R2 selects finite, acyclic typed dependency graphs with branching/loops inside plugins; authored conditions, iteration and dynamic fan-out are deferred. Waits, valid-progress recovery and supported independent parallel steps remain. Instances own ongoing behavior. Direct complete-instance creation and repeated template use are both supported. |
 | Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. R1 requires replacement for fixed-definition changes, including Interface administration. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
+| Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
 | Composition/access | Pool-local Resource entries, reusable composition step, capability matching, ready Resources usable during partial setup. Composite Conduits retain per-consumer participation. Filters narrow complete authorized paths. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
 | Continuity/evidence | Stable identity, explicit rebind, current-access delivery, safe retries, explicit restart of stopped Agents, portable checkpoints, retained evidence and honest telemetry gaps. |
@@ -51,14 +53,14 @@ otherwise permitted checked deletion; owning a Resource is a stronger relationsh
 
 ## Remaining decision bundles
 
-R1 and R2 are settled; agree or explicitly defer R3–R7. Recommendations become normative only after a
+R1–R3 are settled; agree or explicitly defer R4–R7. Recommendations become normative only after a
 ruling. Draft related schemas/examples together instead of voting on every field separately.
 
 | ID | Contract needing a ruling | Recommended v0 direction | Alternative adds |
 | --- | --- | --- | --- |
 | R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
-| R3 | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit component retirement before deleting an owning Pool; no implicit cascade or ownership transfer. New participation after flow end opens a new Conduit instance. | Cascade/transfer semantics or a same-ID reopening contract. |
+| R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
 | R4 | How are connections selected, delegated and routed? | Resolve creation selections once; live access matches within current rules. Explicit target/identity, no silent fallback. Delegation follows logical participation until withdrawal/current limits remove it. | Automatic rerouting, grant expiry or dynamic provisioning policies. |
 | R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
@@ -89,20 +91,25 @@ remain extensible. Exact representation is drafting work within the accepted bou
 
 ### R3 — ownership and retirement
 
-Ownership, explicit cleanup and last-consumer flow end are settled; combined deletion behavior is
-not. Recommend blocking Pool deletion while it owns Resource registrations. Retire components
-explicitly; preserve backing data/evidence. An explicitly requested bulk workflow can coordinate
-this without requiring individual commands; partial retirement keeps the Pool and reports what
-remains. Active managed instances follow their lifecycle before unregistration. Defer ownership
-transfer rather than silently orphaning or adopting Resources.
+**Accepted:** keep a Pool instance registered until its Resource instances are explicitly retired:
+perform supported stop/disconnect steps and checked unregistration. An explicit bulk action may
+retire the Resources and then remove the Pool; partial failure retains the Pool and reports
+unfinished work. Ordinary Pool deletion does not implicitly retire its Resources. Ownership
+transfer is deferred. This preserves a clear owner during partial cleanup and incomplete setup.
 
-For example, the final Linear attachment leaving ends its Conduit, not the Pool's shared login.
-Deleting the Pool must account for its authentication/service Resources and other consumers.
-A later connection can use the same service or retained conversation content with a new Conduit ID.
-That new-instance preference remains a proposal, not a settled reopening rule.
+After the last logical consumer/peer detaches and a Conduit ends, later participation opens a new
+instance with a new ID and fresh attachments. It may explicitly reuse permitted Pool-owned
+Resources/history; old attachments and grants do not silently revive. Transport failure while
+participation remains intact recovers the existing instance. Unknown state does not prove end.
 
-Closure example: survivor/deletion table for detach, crash/unknown state, stop, replacement and owner
-retirement. [Ownership scenarios](research/CONDUITS.md#supporting-resources-and-lifecycle-ownership).
+Ending a Linear flow leaves the Pool's authentication/service Resources intact. Retiring those
+Resources removes their managed participation according to their contracts, not the external
+account or stored service data. Backing files, service data and retained evidence follow separate
+cleanup/retention rules. Templates remain reusable. These are lifecycle semantics, not an extra
+approval step or a requirement to issue a separate command for every component.
+
+Schema/example work: survivor/deletion table for detach, unknown state, stop, replacement and
+partial bulk retirement. [Ownership scenarios](research/CONDUITS.md#supporting-resources-and-lifecycle-ownership).
 
 ### R4 — selection, delegation and routing
 
@@ -194,8 +201,8 @@ These do not need individual product rulings unless they change an approved cont
 | README, SPEC, DESIGN | Current model retained. Direct complete-instance creation was already accepted; removed wording that still questioned it. Remaining semantics map to R1–R7. |
 | REVIEW | Replaced the sprawling agenda with this closure list, recommendations and implementation backlog. |
 | CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary is accepted; settings/export/version representation maps to R6. |
-| ESTABLISHMENT, RESOURCES | R2's execution boundary is accepted. Kept lifecycle/type cases; remaining ownership and extension choices map to R3/R6, with recovery examples drafted within settled contracts. |
-| CONDUITS | Corrected stale claims that control outcome/concurrency policy was unchosen. Lifecycle/routing/communication map to R3/R4/R7. |
+| ESTABLISHMENT, RESOURCES | R2/R3 execution and ownership boundaries are accepted. Kept lifecycle/type cases; remaining extension choices map to R6, with recovery examples drafted within settled contracts. |
+| CONDUITS | Corrected stale claims that control outcome/concurrency policy was unchosen. R3 settles retirement/ended-flow identity; routing/communication map to R4/R7. |
 | PI_CONNECTORS, PI_RUNTIME | Retained pinned evidence; removed the obsolete single-controller recommendation. Conduit-facing examples use Agent/Interface terminology. Activation/communication map to R5/R7. |
 
 No research result proves a Conduit implementation. Source-system terms remain where they describe

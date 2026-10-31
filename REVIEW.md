@@ -42,10 +42,11 @@ The [specification](SPEC.md#shared-pool-access-and-authentication) and
 | Control exchanges | MCP tools carry typed inputs and extensible plugin results. Reuse supported standard interaction/observation mechanisms where applicable; no exhaustive Conduit domain-state enum. Current authority and evidence still govern each operation. |
 | Configuration state | Store confirmed applied settings; keep outstanding requests separately. Plugins establish application evidence. An uncertain outcome is reported alongside the last confirmed value without claiming it is still active. |
 | Change coordination | Apply configuration changes one at a time per target unless its contract declares safe parallelism. Check the caller's expected configuration revision at application by default, with explicit safe-unconditional exceptions. Ordinary Resource use and queueing/rejection retain their own contracts. |
-| Definition boundary | Setup graphs and control definitions are fixed per instance in v0. Change them through a revised definition and new instance; declared settings and dynamic connections/catalogs remain supported. In-place definition upgrades are deferred. |
+| Definition boundary | Setup graphs and control definitions remain fixed for ordinary Agent controls. Whether unrestricted Interface administration may edit them in place is the next clarification; no exception is assumed yet. |
 | Bootstrap and authority | Initial local startup seeds a system Pool, its management Resource, the default Interface and their management Conduit. One local owner is established from the initializing OS-user context; Agents receive explicit delegated Conduit access. Credential handling/enforcement remain separate. |
 | Later startup | Reuse registered system objects and current settings/grants. Missing or inconsistent components require explicit repair; no silent reseeding or retargeting. Supported reconnection remains available, and unavailability does not establish deletion. |
-| Actor control | Authorized frontends share their reusable Interface's direct Agent control; delegated Agents can also command the target through their own Conduits without a handoff. Caller/attachment attribution, current authority, state checks and target coordination apply, with no automatic actor priority. |
+| Interface administration | V0 Interfaces, especially the default, have unrestricted local authority to inspect and administer all templates/instances, including repair. Interface scoping, differentiated multi-Interface authority and restricted recovery roles are deferred. Runtime capability and observed outcomes remain explicit. |
+| Actor control | Owner-operated frontends share their reusable Interface's administration and direct Agent control. Delegated Agents can also command targets through their own Conduits without a handoff. Attribution, state checks and coordination apply, with no automatic actor priority. |
 
 **Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
 shows a reusable service's authentication requirement, a Pool composing authentication/service
@@ -57,8 +58,9 @@ The [control examples](research/CONFIGURATION.md#a-bounded-control-example) cove
 MCP exchange, reusable defaults, confirmed settings, coordination and revision checks. Exact syntax,
 storage fields, revision granularity and native-client support remain open.
 
+The [system bootstrap](research/CONSTRUCTION.md#bootstrap-management-access) is accepted for v0.
 The [definition boundary](research/CONFIGURATION.md#instance-definitions-and-permitted-settings)
-and [system bootstrap](research/CONSTRUCTION.md#bootstrap-management-access) are accepted for v0.
+needs the administrative clarification below.
 
 The [local-owner authority model](research/CONSTRUCTION.md#initial-management-authority) and
 [reusable frontend attachments](research/CONSTRUCTION.md#interfaces-and-frontend-attachments)
@@ -68,17 +70,19 @@ and [delegated Agent commands](research/CONSTRUCTION.md#agent-originated-control
 [Startup reuse and explicit repair](research/CONSTRUCTION.md#reusing-and-repairing-the-system-bootstrap)
 are accepted. Exact repair mechanics and partial initial-setup recovery remain open.
 
-**Next ruling — reaching repair when management is broken:** should the local owner have a narrow
-recovery entry point that works without the normal Interface/management Conduit? Recommend using
-the bootstrap runtime to inspect and explicitly repair the system management path, reusing checked
-registry/lifecycle operations and recording outcomes. This would be an explicit exception for
-bootstrap repair, not a second general management API or an Agent's implicit permission.
+**Accepted direction — unrestricted v0 Interface:** the user can inspect and administer all
+objects, including repairing management state. Defer Interface permission scoping and a separate
+restricted recovery design while the core protocol develops. The bootstrap failure mechanics
+still need implementation work; they are not a reason to narrow the Interface's authority.
+See [Interface administration](research/CONSTRUCTION.md#v0-interface-administration).
 
-The alternative first establishes a temporary recovery Interface and Conduit, keeping repair
-behind the normal object path but requiring that path to be constructible. Neither approach
-silently resets grants, treats an unreadable registry as empty, or authorizes backing-data deletion.
-Exact owner recognition and repair actions remain separate. See the
-[recovery entry example](research/CONSTRUCTION.md#reaching-repair-without-the-management-path).
+**Next clarification — authority versus definition edits:** should this unrestricted Interface
+still replace an instance when changing its fixed setup graph or control definitions, or may it
+edit those definitions in place? Recommend retaining replacement for now: administration can
+inspect every object, change supported settings, manage connections and create replacements,
+while retained execution definitions stay coherent. The alternative allows administrative
+in-place edits and needs application, in-flight-work and recovery semantics. This question does
+not reopen the Interface's authority or give Agents an implicit administrative exception.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -90,15 +94,18 @@ Then review these connected contracts, one bundle at a time:
 | 4 | **YAML and inspection:** render those relationships with typed fields, references and defaults; distinguish authored intent, effective controls, pending changes and observed state. No new generic operation manifest is required. |
 | 5 | **Interface and experiment:** exercise the same authoring, Pool setup, attachment, observation and management contracts through terminal and headless clients, then verify native integrations. |
 
-The Interface remains the broad local management entry. Pool ownership, shared service
+The Interface is the unrestricted v0 local management entry. Pool ownership, shared service
 authentication, separate model subscriptions/private Agent state, provider-native tools and
 Conduit-mediated changes are not being reopened. Exact handler/control schemas, supported
-transitions, revision mechanics, implementation-version compatibility and bootstrap binding/recovery
-remain unresolved.
+transitions, revision mechanics, implementation-version compatibility and bootstrap recovery
+mechanics remain unresolved. Interface scoping and differentiated multi-Interface policies are
+later work, not prerequisites to resolving the remaining Resource/Conduit contracts.
 
-Use the bootstrap walkthrough next: enter through a frontend, inspect templates, create a Pool,
-and establish an Agent's permitted access. The bounded search control and database startup/migrations
-remain test cases for those paths without making provider-specific behavior universal.
+After the administrative clarification, return to the shared-capability walkthrough: inspect a
+Resource contract, compose its authentication/service dependencies in a Pool, and establish an
+Agent's filtered access. The bounded search control and database startup/migrations remain test
+cases without making provider-specific behavior universal. Do not continue Interface-scoping
+micro-rulings before the core Resource/Conduit contracts.
 
 ## 1. Resource templates and instances
 
@@ -135,7 +142,7 @@ retry, and retire an owner with active users. Show survivors and unknown outcome
 | --- | --- |
 | Form-specific schemas | Define required/optional fields, null/empty/omitted values, defaults and normalized export. Keep materialized instance defaults, strict unknown-field handling, stable IDs and kind/form/name references. Status is system-owned, not imported success. |
 | Template and instance lifecycle | Define create/start/stop/retry/retire/delete where applicable, not every verb for every family. Direct creation from complete definition and repeated template use remain supported. Registration alone performs no provisioning; Resource creation goes through its Pool. |
-| Configuration changes versus state | Control exchanges, state/coordination rules and fixed v0 graph/control definitions are accepted. Settle storage fields, handler declaration syntax, revision mechanics, safe-parallelism details and metadata rules. In-place definition upgrades are deferred; plugin implementation compatibility remains separate. |
+| Configuration changes versus state | Control exchanges and state/coordination rules are accepted. Clarify the Interface's possible in-place definition-edit exception, then settle storage fields, handler syntax, revision mechanics, safe parallelism and metadata rules. Agent controls remain bounded; plugin implementation compatibility is separate. |
 | Setup continuation | Specify minimal retained progress, typed interaction waits, version-compatible recovery, cancellation and stale-worker handling. Setup retries reuse valid progress; runtime ownership starts immediately when setup starts its service. Unknown native state cannot justify a duplicate execution. |
 | Addressing and replacement | Define direct-ID support, rebind operations, instance suffix rules and export diagnostics. New instances get new identities; replacement does not silently retarget bindings or inherit private context. Shared memory access is explicit through Conduits. |
 | Flow end and deletion | Last logical consumer/peer ends the flow; sockets alone do not define membership. Define crash/lease detection, one-time completion, explicit reopening, live deletion constraints and cleanup. Backing data and evidence survive unless separately purged. |
@@ -148,7 +155,7 @@ and reconcile a lost response. Keep identities, state and operation outcomes dis
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Endpoint contract | Generalize Interface/Agent control, Resource access, Resource-to-Resource dependencies and platform management. Define endpoint roles, filtered capabilities and request/result/observation paths without assuming one network topology. |
-| Authority and filtering | Typed filters and intersection along each complete authorized path are accepted. Define expression syntax, diagnostics, routing and current checks. Settle issuance/lifetime details for accepted attachment delegation. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
+| Authority and filtering | Typed filters and intersection along each complete authorized path are accepted. Define expression syntax, diagnostics, routing and current checks for delegated access. Settle attachment-delegation lifetime details. V0 Interfaces have unrestricted local administration; narrower Interface policies are deferred. |
 | Communication Resources | Explore direct exchange, conversations and shared context as agent-oriented capabilities, potentially backed by storage Resources. Separate retained content from routing and runtime bookkeeping. No rooms-only topology or communication schema is selected. |
 | Composition and supporting Resources | Composite Conduits and per-consumer component participation are accepted. Define attachment representation, aggregate readiness and cleanup recovery, plus provisioning rights for Pool-owned supporting Resources. Avoid duplicated setup or implied external rollback. |
 | Delivery and attention | Define ordering, durable acceptance, acknowledgement, replay, offline delivery and backpressure for selected communication types. Distinguish available data, notices, queued input and starting model work; current access is checked at delivery. Wake behavior belongs to an explicit supported contract. |
@@ -185,8 +192,8 @@ lifecycle/authority contracts before coding or live account testing.
 
 1. **Management entry point:** one broad Interface discovers all five families, authors/resolves
    templates, composes Pools, validates drafts, creates instances and observes outcomes. Use a headless client and terminal
-   against the seeded system Pool/management Resource path; settle client binding and recovery
-   under the accepted local-owner authority model.
+   against the seeded system Pool/management Resource path with unrestricted owner administration.
+   Verify recovery behavior without making Interface permission scoping an experiment prerequisite.
 2. **Shared service access:** establish a Pool capability and service login once; attach two Agents
    with different restrictions; preserve native tool schemas and record each caller. Detach/revoke
    one caller while the other continues. Separately expire/revoke the shared login and report its

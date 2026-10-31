@@ -33,9 +33,11 @@ human authority; they are not themselves the human identity.
 
 ## The user workflow
 
-The default Interface is the primary entry point, with the broadest local management scope and
-visibility across configured templates and instances. CLI, terminal UI and automated test clients
-use the same contracts.
+V0 Interfaces, especially the default Interface, are the user's unrestricted local administration
+surface: inspect and administer every template and instance, including creation, configuration,
+connections, lifecycle and repair. Interface permission scoping and differentiated policies across
+multiple Interfaces are deferred. CLI, terminal UI and automated test clients use the same contracts.
+Agent access remains explicitly delegated through Conduits.
 
 Initial local startup seeds a system Pool owning a management Resource, the default Interface,
 and a management Conduit connecting them. A small runtime bootstrap establishes this initial set;
@@ -54,9 +56,9 @@ through their own Conduits; sharing the owner's OS account does not itself const
 Credential handling and native-versus-isolated enforcement remain separate from this authority model.
 
 The default Interface is a reusable instance with identifiable CLI, terminal and test-client
-attachments, including multiple clients at once. Separate Interface instances remain available
-for different configurations. Attachment grants no additional authority and does not override
-target-specific control requirements or require an always-running process.
+attachments, including multiple clients at once. Owner-operated frontends share its v0 administrative
+authority. Separate Interface instances remain possible; narrower access policies are later work.
+This does not require an always-running process or grant an Agent the user's authority.
 
 Direct user-control of an Agent belongs to its controlling Interface. All authorized frontend
 attachments of that Interface can issue input, cancellation and settings commands through the
@@ -78,10 +80,13 @@ actor has automatic priority. Ordinary message delivery and wake behavior remain
 5. **Observe and interact.** Observe state; establish a Conduit to a running target to request its
    supported configuration changes, lifecycle actions or other operations.
 
-Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
-interaction principle. Broad Interface access does not manufacture unsupported provider controls.
-Owner/client binding, the repair entry point and system protection, frontend transport and control
-across distinct Interfaces remain open.
+Normal interactions use Conduits and supported runtime operations. Broad authority does not make
+an unsupported provider action executable or turn an uncertain result into confirmed state.
+Repair belongs to Interface administration; its route when management objects are unavailable
+remains an implementation question. A separate restricted recovery role is not a v0 requirement.
+Whether administrative changes may edit fixed instance definitions in place is under review;
+do not infer that exception from unrestricted authority alone. Interface scoping is deferred,
+while frontend transport and runtime application mechanics remain open.
 
 ## Templates are complete construction and change contracts
 
@@ -125,6 +130,8 @@ In v0, the retained setup graph and control definitions are fixed. Changing thei
 constraints or handler bindings requires a new instance from a revised definition. Declared
 settings, dynamic attachments, live access restrictions and provider catalogs retain their agreed
 behavior. Plugin binary-version and compatible implementation-update policies remain separate.
+The unrestricted Interface ruling reopens whether owner administration has an in-place definition
+edit exception; that exception is not yet selected. Agent controls retain the agreed contract.
 
 Template intent, instance configuration, requested changes and observed state must remain
 distinguishable. Configuration changes advance the instance's stored settings only after the

@@ -43,7 +43,8 @@ separate concepts.
 entry point for creating/editing Resource and Agent templates, adding Resource-template references
 to Pool configurations, instantiating Pools and Agents, observing them, and establishing Conduits
 for access and changes to running instances. CLI, terminal and other frontends express this same
-Interface contract. Broad visibility is not a direct-edit exception for running targets.
+Interface contract. V0 gives this user-facing administration surface unrestricted authority
+across the local system; Interface permission scoping is deferred.
 
 | Path | Expected behavior of the initial Interface |
 | --- | --- |
@@ -69,16 +70,29 @@ instances established through that Pool. Referencing a template does not give it
 owner. Registration remains separate from explicitly requested setup; exact Pool composition
 fields remain under review. This workflow introduces no second setup recipe outside templates/graphs.
 
-The Interface provides authoring, observability and entry points, not a parallel implementation of target
-behavior. An existing Pool's Resource-creation operation must still respect its access/ownership
-contract; listing or selecting a template does not bypass that contract. The accepted Pool-owned
-management Resource exposes the platform creation path; exact operation schemas remain open.
+The Interface provides administration through the runtime's actual operations. Resource creation
+still belongs to its Pool, and the accepted Pool-owned management Resource exposes the normal
+platform creation path. Exact operation schemas remain open. Discovery does not itself activate
+every Resource or load all its data into a conversation.
 
-This broad scope is the default management Interface's configuration, not a reason to hard-code
-unrestricted authority into every future Interface. Narrower Interfaces can be supported later.
-Its visibility concerns registered/configured objects; it does not imply automatic discovery or
-credential possession for every service on the machine or internet. Discovery also does not
-activate every Resource or load all its data into a conversation.
+### V0 Interface administration
+
+**Accepted:** Interfaces, especially the default Interface, have unrestricted local authority to
+inspect and administer all templates and instances while the design is developed. That includes
+authoring, instantiation, connections, configuration, lifecycle and repair. Narrower Interface
+permissions, differentiated policies across multiple Interfaces and a separately restricted
+recovery role are deferred. Agents retain their explicit delegated Conduit access.
+
+The Interface is the owner's administration surface even when the management setup needs repair.
+The exact recovery route remains to be designed; no separate recovery permission model is
+required in v0. Startup still reuses existing objects and reports missing/inconsistent state
+for explicit repair rather than silently reseeding defaults.
+
+Authority and implementation capability are distinct: an external provider may not support an
+operation, a process may be unavailable, or an outcome may be uncertain. Those conditions remain
+visible. **Open:** whether unrestricted administration also permits in-place edits to retained
+setup graphs and control definitions. The prior replacement rule remains the baseline for
+Agent operations; an administrative exception needs its own application/recovery semantics.
 
 CLI, terminal UI and automated test clients should use the same management capabilities and
 outcome semantics. A frontend renders controls and state; it should not privately implement
@@ -111,8 +125,9 @@ The walkthrough is:
    Agent can use management capabilities through its own restricted connection.
 
 This representation does not grant arbitrary callers administrative access or sign into external
-services. The initial authority rule is below; built-in definitions, recovery/protection, exact
-management operations, process layout and transports remain open. No new object family is introduced.
+services. The initial authority rule is below; built-in definitions, recovery mechanics, exact
+management operations, process layout and transports remain open. Interface restrictions are
+deferred. No new object family is introduced.
 
 ### Reusing and repairing the system bootstrap
 
@@ -129,41 +144,18 @@ the gap instead of substituting a new Resource with the same name. An unreadable
 evidence of a fresh installation.
 
 Repair means a deliberately requested operation by an authorized actor, not mandatory human
-confirmation on each launch. Exact repair authority/steps, partial initial setup recovery and
-Conduit reopening remain open. A retained object does not imply a live process or socket; this
+confirmation on each launch. Interface administration has repair authority; exact repair steps,
+partial initial setup recovery and Conduit reopening remain open. A retained object does not imply
+a live process or socket; this
 rule neither keeps ended flows alive nor starts replacement Agent work or application setup.
-
-### Reaching repair without the management path
-
-**Proposal for the next ruling:** provide the local owner a narrow recovery entry point in the
-bootstrap runtime, available when the normal Interface or management Conduit cannot be used.
-It inspects the system management path and performs explicitly requested repair using the same
-checked registry/lifecycle operations and outcome recording where applicable. Recovery does not
-depend on first repairing the connection needed to request it.
-
-For example, if the management Resource registration is confirmed missing, ordinary startup
-reports that gap. The owner can enter recovery to inspect surviving objects and deliberately
-request the supported repair. Any replacement has a new identity; affected bindings need explicit
-reconciliation. A missing registration does not authorize purging its backing data, restoring
-default grants, or rewriting the fixed definition of a surviving instance. If registry state
-cannot be read reliably, recovery reports that uncertainty instead of treating it as empty.
-
-This would extend the initial bootstrap exception only to repairing system management access.
-Application operations continue through Interfaces/Agents and authorized Conduits. Exact owner
-recognition, repair actions and credential mechanisms remain open; running as the same OS user
-does not by itself establish an Agent's managed recovery authority.
-
-The alternative constructs a temporary recovery Interface and Conduit before repairs can run.
-That retains the normal invocation path but adds prerequisites to recovery. The proposed direct
-entry is a shared runtime capability a local frontend can expose, not frontend-specific repair
-logic, another object family, or an always-running emergency service.
 
 ### Initial management authority
 
 **Accepted:** establish one local registry owner using the initializing OS-user
 context. The default Interface conveys that owner's initial management authority without requiring
 a separate Conduit login. Other actor access is explicit: an authorized owner can delegate a
-subset through an Agent's or Interface's Conduit using the existing attachment-grant model.
+subset through an Agent's Conduit using the existing attachment-grant model. Scoping future
+Interfaces is deferred; v0 owner-operated Interfaces have unrestricted administration.
 
 For example, the owner can author all templates and establish Pools, while a reviewer Agent's
 connection permits inspecting selected instances and excludes template editing. Broader delegation
@@ -179,16 +171,16 @@ declared native/isolated coverage. Exact owner recognition, delegated-client bin
 
 **Accepted:** the default Interface is a reusable logical instance. CLI,
 terminal and test clients attach to it rather than creating another Interface for each run.
-Multiple frontend attachments can use it, retaining identifiable requests and current caller
-authority. A separate Interface can be instantiated when another definition or access endpoint
-is wanted.
+Multiple owner-operated frontend attachments share its v0 administration authority and retain
+identifiable requests. Separate Interface definitions/endpoints remain possible; differentiated
+permissions are deferred.
 
 For example, the owner opens a terminal UI, inspects the same registry with a CLI command and
 then closes the terminal. These can be attachments to one Interface; closing the frontend does
 not delete its registered identity. Each operation still passes through the Interface's permitted
-Conduit path and target contract. Sharing an Interface neither grants a client the owner's
-authority nor overrides target control requirements. Direct Agent control is shared across the
-controlling Interface's authorized attachments as described below.
+Conduit path and runtime contract. These frontends act for the owner, while delegated Agents
+retain their own identities and grants. Direct Agent control is shared across the controlling
+Interface's frontend attachments as described below.
 
 Reuse avoids turning every short CLI invocation into another persistent domain object. This selects
 identity/attachment semantics, not process layout, authentication mechanics or how last-client disconnection affects
@@ -202,11 +194,11 @@ attachments of that Interface can issue direct input, cancellation and settings 
 example, a terminal can submit work to Agent A while a CLI attached to the same Interface requests
 a permitted setting change; the CLI need not take control from the terminal first.
 
-Each request retains the acting user and attachment attribution, current authority, permitted
-Conduit path and target checks. The common Interface does not turn an observing-only grant into
-control permission. Configuration changes still use the accepted coordination/revision rules;
-simultaneous callers do not imply concurrent effects. Precise input scheduling, control across
-distinct Interfaces and disconnect/recovery details remain open.
+Each request retains the acting user and attachment attribution, Conduit path and target checks.
+V0 owner-operated attachments have unrestricted administrative authority. Configuration changes
+still use the accepted coordination/revision rules; simultaneous callers do not imply concurrent
+effects. Interface scoping and differentiated control across Interfaces are deferred; precise
+input scheduling and disconnect/recovery mechanics remain open.
 
 ### Agent-originated control alongside Interfaces
 
@@ -643,14 +635,16 @@ settings remain [separate from outstanding requests](CONFIGURATION.md#requested-
 [Per-target control coordination](CONFIGURATION.md#concurrent-configuration-controls) is accepted.
 [Default revision checks](CONFIGURATION.md#stale-configuration-requests) address stale requests.
 [Instance definitions versus permitted settings](CONFIGURATION.md#instance-definitions-and-permitted-settings)
-is settled for v0, alongside typed filters and access-path composition.
+remain the baseline for Agent controls; an Interface administration exception is under review.
+Typed filters and access-path composition remain accepted for delegated access.
 [Bootstrap management access](#bootstrap-management-access) and
 [initial management authority](#initial-management-authority) are accepted, as are
 [reusable frontend attachments](#interfaces-and-frontend-attachments) and
 [shared Interface control](#direct-agent-control-from-shared-interfaces) and
 [delegated Agent control](#agent-originated-control-alongside-interfaces).
 [Later startup and explicit repair](#reusing-and-repairing-the-system-bootstrap) are accepted;
-the next ruling concerns [reaching repair without the management path](#reaching-repair-without-the-management-path).
+the [v0 Interface has unrestricted administration](#v0-interface-administration). The next ruling
+clarifies whether that includes in-place changes to fixed instance definitions.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

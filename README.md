@@ -5,7 +5,8 @@ Conduit connects human users, autonomous agents and capabilities through five wo
 forms. Implementation has not started.
 
 **Pools establish shared capabilities and normally manage their service authentication once.
-Agents and Interfaces use those capabilities through Conduits that narrow access for each caller.**
+Agents use those capabilities through Conduits that narrow access for each caller. Interfaces
+provide unrestricted local administration in v0.**
 This keeps service setup reusable across models without distributing provider credentials or
 repeating the same provider login for every Agent. Private Agent state and model-account selection
 remain separate.
@@ -18,13 +19,13 @@ remain separate.
 | Pool | Owns and establishes Resource instances and organizes their shared service access/authentication. |
 | Conduit | A connection carrying permitted interactions and data between endpoints, with filtering. |
 
-The first **management Interface** has system-wide visibility and management scope in the local
-installation: author and inspect templates, compose Pools using Resource templates, instantiate
-Pools with shared service access, then Agents with their configured connections,
-and establish Conduits through which it requests supported configuration/lifecycle changes.
-Visibility does not permit bypassing that interaction path. Resource creation still goes through
-an owning Pool. CLI, terminal UI and test clients should exercise the same interaction contracts; choosing
-a frontend must not select a different management implementation.
+The v0 **management Interface** is the user's unrestricted administration surface across all
+templates and instances: inspect, author, instantiate, connect, configure, stop, remove and repair.
+Interface permissions and narrower/multiple-Interface policies are deferred while the model is
+developed. Normal interaction uses Conduits and runtime-supported operations; Resource creation
+still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
+Whether administrative edits may also change fixed instance definitions in place is the
+[next review question](REVIEW.md#next-discussion).
 
 Templates contain complete establishment instructions and declare what instance configuration
 can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit

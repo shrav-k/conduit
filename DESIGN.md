@@ -10,7 +10,8 @@ operation evidence; derive views rather than maintain parallel editable descript
 contracts need not impose the same lifecycle, process model or implementation on every type.
 
 **Primary access model:** establish capabilities and service authentication through a Pool once,
-then let authorized Agents and Interfaces use them through individually restricted Conduits.
+then let authorized Agents use them through individually restricted Conduits. V0 Interfaces
+provide unrestricted local administration; differentiated Interface permissions are deferred.
 Sharing service access is the normal path, not an optional optimization of per-Agent logins.
 
 ## Families, templates and instances
@@ -35,10 +36,13 @@ Backing data, credentials and process lifetime are distinct from registry identi
 
 ### Interfaces and the user workflow
 
-The default Interface has the broadest local management scope and is the primary user entry point.
-It can discover templates and instantiated objects, author/edit Resource and Agent templates,
-compose Pools from Resource templates, instantiate Pools and Agents, and observe their state.
-Running targets are manipulated through Conduits; visibility is not a direct-edit exception.
+**Accepted v0 authority:** Interfaces, especially the default Interface, are the user's unrestricted
+local administration surface. They can inspect and administer every template and instance across
+all five families: authoring, creation, connections, configuration, lifecycle and repair. Narrower
+Interface scopes and differentiated authority across multiple Interfaces are deferred while the
+rest of the protocol is developed. This changes Interface permissions, not delegated Agent access.
+Normal interactions use Conduits; supported runtime behavior determines how changes take effect.
+An administrative exception for editing fixed instance definitions in place remains under review.
 
 The user authors templates, adds Resource-template references to a Pool configuration, establishes
 the Pool, its Resources and shared service authentication, then starts Agents with Conduits to
@@ -48,16 +52,16 @@ open further Conduits to inspect supported controls and request changes. Agents 
 interaction contract on other targets. A frontend presents it rather than independently performing
 provider effects. The Interface identifies the endpoint; the acting human identity remains distinct.
 
-CLI, terminal UI and test clients should exercise the same contract. The initial Interface's broad
-scope need not be hard-coded into every future Interface.
+CLI, terminal UI and test clients exercise the same administration contract. Future Interface
+scoping can narrow this authority; designing it is not a prerequisite for v0.
 
 **Accepted frontend relationship:** the default Interface is a reusable logical instance. CLI,
 terminal and test clients attach to it, with multiple clients supported at once. Each attachment
-remains identifiable and subject to current caller authority. Another Interface can be instantiated
-for a different configuration or separately selected endpoint. Opening a frontend need not create
-an Interface object; sharing an Interface neither grants authority nor overrides the target's
-control requirements. Direct Agent control is shared across its controlling Interface's authorized
-attachments as described under runtime/presentation. This does not require an always-running process.
+remains identifiable. Owner-operated frontends share the unrestricted v0 administration authority.
+Another Interface can be instantiated for a different configuration or endpoint; its future access
+policy is deferred. Opening a frontend need not create an Interface object. Direct Agent control
+is shared across its controlling Interface's frontends as described under runtime/presentation.
+This does not require an always-running process or give Agents the user's administrative identity.
 
 **Accepted bootstrap:** initial local startup seeds a minimal system Pool owning a management
 Resource, a default Interface and a management Conduit connecting them. A small runtime bootstrap
@@ -74,9 +78,10 @@ ordinary startup does not recreate them from defaults or silently retarget estab
 Preserve available records and backing data. An unavailable registry or service is not evidence
 of deletion or a fresh installation. Supported reconnection to the same targets is distinct from
 replacing registered objects. Repair is a deliberately requested operation, not an additional
-confirmation on every launch. Its entry point, authority verification, exact steps, system
-protection and partial initial-setup recovery remain open; this ruling does not preserve ended
-flows or automatically restart Agent work.
+confirmation on every launch. Repair is part of unrestricted Interface administration. Its route
+when the normal management path is unavailable, exact steps and partial initial-setup recovery
+remain open. A separately scoped recovery role and Interface restrictions are deferred; this
+ruling does not preserve ended flows or automatically restart Agent work.
 
 **Accepted initial authority:** v0 establishes one local registry owner using the initializing
 OS-user context, without separate Conduit login. The default Interface acts for that owner;
@@ -198,6 +203,9 @@ Existing controls still change their permitted settings; dynamic attachments, cu
 and declared dynamic provider catalogs remain live. In-place definition upgrades are deferred.
 This does not select plugin binary pinning or compatible implementation-update policy. A new
 instance does not automatically acquire the old one's bindings, private context or permissions.
+The unrestricted v0 Interface ruling leaves one explicit question: whether owner administration
+can edit these definitions in place. Until resolved, no administrative upgrade/patch mechanism is
+assumed; the existing Agent-facing control contract remains in effect.
 
 ### Conduits and configurable endpoints
 
@@ -220,8 +228,9 @@ contract is rejected/reported; transformations, if supported, need their own exp
 No generic recursive dependency is required: a control request is carried over an established
 Conduit, not a newly registered Conduit for each request. Controlling a Conduit itself uses an
 appropriate management connection. The initial connection is established by the accepted system
-bootstrap. Initial owner/delegation semantics are settled; client binding, recovery and supported
-changes to live management access remain open.
+bootstrap. The v0 Interface has unrestricted administration; Agents retain explicit delegated
+access. Runtime recovery and supported changes to live management access remain open, while
+Interface permission scoping is deferred.
 
 Configuration changes remain distinct from Resource-content writes, lifecycle actions and
 connection membership, even if they share the invocation protocol. Adding a document does not
@@ -651,8 +660,9 @@ A memory backend or frontend change must not replace Conduit's execution loop.
 Interface. All authorized frontend attachments of that Interface can issue input, cancellation and
 settings commands; a terminal and CLI need no controller handoff between them. Each request keeps
 its caller/attachment identity and passes through its permitted Conduit path and target contract.
-Sharing the Interface grants no additional permission and does not bypass configuration revision
-checks or per-target coordination. Simultaneous submission does not promise simultaneous execution.
+Owner-operated frontends use the Interface's unrestricted v0 authority; configuration revision
+checks and per-target coordination still provide meaningful outcomes. Simultaneous submission
+does not promise simultaneous execution.
 
 **Accepted delegated Agent control:** an authorized Agent may invoke another Agent's permitted
 controls through its own Conduit and identity while user-control through the Interface remains
@@ -661,7 +671,8 @@ authority, relevant state checks and target coordination. Neither actor has auto
 coexistence does not imply simultaneous execution. Ordinary communication delivery and wake
 behavior remain separate from permission to invoke a control.
 
-Control across distinct Interfaces, precise input scheduling and loss/recovery details remain open.
+Differentiated control/authority across distinct Interfaces is deferred. Precise input scheduling
+and loss/recovery mechanics remain open.
 Disconnecting a frontend detaches and preserves supported ongoing Agent execution. Keep persisted
 history, current model context, frontend state and shared Resource content distinct.
 

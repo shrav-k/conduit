@@ -63,10 +63,11 @@ This example changes default search configuration. Passing a smaller limit to on
 is a per-call input, not necessarily a persistent configuration update. Writing a knowledge record
 is a content operation. The protocol may carry all three without confusing their state effects.
 
-The template-defined control declaration is not caller authorization. A management Interface may
-see the object while a particular interaction still requires an authorized Conduit. Current checks
-remain necessary after static validation. Model-specific dynamic choices, filesystem rebinding,
-and filtering changes on a Conduit need the same semantic distinctions but different handlers.
+The template-defined control declaration is not caller authorization. Agents need delegated
+Conduit access; the v0 management Interface has unrestricted administrative authority. Normal
+interactions still need a supported implementation and evidence of application. Model-specific
+dynamic choices, filesystem rebinding and filtering changes need the same semantic distinctions
+but different handlers.
 
 **Questions this example leaves open:** exact control-selection notation;
 field bindings and cross-field/transition predicate language;
@@ -253,6 +254,12 @@ In-place upgrades of retained definitions are deferred in v0. They would require
 in-flight-work and recovery rules. This does not choose plugin binary pinning or compatible
 implementation-update policy, or authorize automatic data/permission migration and connection
 rebinding when an instance is replaced.
+
+**Administrative boundary under review:** the Interface now has unrestricted v0 authority to
+inspect and administer all objects, with Interface scoping deferred. This leaves a specific choice
+between preserving the replacement rule for fixed definitions and adding owner-driven in-place
+definition edits. The latter would need application, in-flight-work and recovery semantics.
+No such exception is assumed yet; the existing Agent control contract remains unchanged.
 
 ## Recommendation and reading guide
 

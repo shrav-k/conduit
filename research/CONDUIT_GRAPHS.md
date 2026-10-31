@@ -1,8 +1,8 @@
 # Conduits as composable operational graphs
 
 Updated: 2026-10-31. Branch: `research/conduits-as-graphs`.
-**Working direction for this branch. Mixed setup/live activity is accepted below; detailed
-contracts and YAML remain proposals.**
+**Working direction for this branch. Conduits retain template/instance forms. Setup and live
+activity may coexist; their composition boundaries, detailed contracts and YAML remain proposals.**
 No implementation, authentication, provisioning or live experiment has been performed.
 
 ## Direction and preserved baseline
@@ -26,7 +26,7 @@ that orchestration a consistent home in the Conduit family.
 | Element | Responsibility |
 | --- | --- |
 | Session/Resource/Pool template | Describe the intended instance, its configuration, and the selected Conduit entry points with the values/references they need. |
-| Conduit template | Define a reusable graph with typed inputs, plugin operations or child Conduits, dependencies and named outputs. |
+| Conduit template | The reusable graph definition: typed inputs, plugin operations or child Conduits, dependencies and named outputs. A graph is its content, not a replacement for the template form. |
 | Conduit instance | A particular invocation with resolved inputs, progress, outcomes and any continuing attachments. It need not run a dedicated process. |
 | Session/Resource/Pool instance | Retain ongoing configuration, identity and observed state. Successful setup does not require retaining a live copy of its source template. |
 | Plugin | Implement versioned operations with declared inputs, outputs, effects and recovery behavior. It may implement several Resource types and operations. |
@@ -70,35 +70,95 @@ The earlier [configuration-language research](CONFIGURATION.md) still supports t
 explicit defaults/references and inspection of effective configuration. This proposal adds
 execution semantics; changing the serialization language would not define them for us.
 
-## Template composition without a second recipe
+## Template reuse and concrete examples
 
-Recommend one selected root Conduit per lifecycle entry point. That root can call any number
-of child Conduits, preserving the user's ability to compose multiple procedures without also
-maintaining an ordering graph in every Session/Resource/Pool template. Entry-point names and
-whether direct multiple roots are useful remain open.
+A template needs a selected establishment procedure, but **it does not need its own unique
+Conduit definition**. Several Session templates can reference `native-session-setup`; many
+directory templates can reference `attach-directory`. A different account, path or selection
+usually changes the supplied configuration. A genuinely different procedure may justify a
+composed Conduit template. No automatic one-to-one template/graph pairing is proposed.
 
-The template declares account, path, provider and other domain choices once. Its Conduit
-selection binds those fields to named graph inputs. A root graph supplies outputs required by
-the subject's type contract. The engine validates and records those results; an author cannot
-assert successful status in YAML.
+| Session template | Selected setup Conduit template | Values that differ |
+| --- | --- | --- |
+| `euphony-engineer` | `native-session-setup` | Work account, selected Pool, activation settings. |
+| `personal-engineer` | `native-session-setup` | Personal account and different permitted connections. |
+| `euphony-reviewer` | `native-session-setup` | Account/runtime settings and narrower connection selections. |
 
-Here is a **syntax sketch**, not an accepted schema. Version labels, `establishment`, `inputs`,
-`nodes`, `operation`, `outputs` and reference operators below are illustrative. The `example`
-API group and operation contracts do not refer to installed software. The enclosing Pool and
-current actor are resolved execution context, not authority granted by a YAML string.
+Sharing requires compatible input/output and runtime contracts. A generic native-session graph
+can dispatch through a selected supported adapter; it cannot assume Claude and Codex have
+identical authentication mechanics. Adapters implement those differences.
+
+The proposal remains **one entry Conduit per action**, with reusable graph composition inside
+it. This is not one Conduit per object or per lifetime. A Session can have an establishment
+entry point and several ongoing Conduit declarations. Those declarations configure requested
+connections; they do not repeat the setup graph's ordering rules. A reusable setup operation
+can prepare the declarations and respect their required/optional contracts.
+
+The examples below are illustrative YAML, not validated contracts or runnable configurations.
+The API version, action fields, operation names and binding syntax remain proposed. Account
+values denote configured native account references, not secrets or newly introduced registry
+object kinds. Referenced Pools/Resources and compatible schemas must exist or resolve before
+use. Current authority is supplied by the engine, not granted by these references.
+
+### Session template: settings plus reusable procedures
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Session
+form: template
+metadata:
+  name: euphony-engineer
+spec:
+  runtime:
+    adapter: claude-code
+    account: euphony-claude-1
+  activation:
+    filesystem:
+      exposure: symlink
+      directory: workspace
+  establishment:
+    conduit: {kind: Conduit, form: template, name: native-session-setup}
+  conduits:
+    workspace:
+      conduit: {kind: Conduit, form: template, name: pool-directory-access}
+      inputs:
+        pool: {kind: Pool, form: instance, name: euphony}
+        select:
+          labels: {area: repositories}
+      required: true
+```
+
+Here the setup graph's contract accepts the typed Session configuration as its subject. It
+reads declared runtime, activation and connection fields; there is no need to hand-map every
+field to a duplicate input of the same name. The actual subject identity is the Session being
+established, not the Session template. An independently reusable access graph receives explicit
+inputs such as its Pool and selection. Exact subject/input conventions still need a ruling.
+
+The setup graph could prepare private state, invoke the selected native adapter's authentication
+procedure, verify identity, prepare the declared workspace access and report Session readiness.
+The access graph resolves matching Pool-owned directories, narrows the permitted selection and
+prepares Session-local projections according to activation settings. It does not create those
+Resource instances or choose a new account implicitly. Model execution starts only through the
+selected execution action; preparing a Session does not itself require a model turn.
+
+`personal-engineer` could use the exact same two Conduit templates with different settings.
+A Session can also open/join further Conduits later. Changing settings does not require forking
+the library graphs; adding a new procedure can use an explicitly composed graph.
+
+### Resource template: reuse one directory-attachment graph
 
 ```yaml
 apiVersion: example/v0alpha1
 kind: Resource
 form: template
 metadata:
-  name: scratch-directory
+  name: euphony-repository
 spec:
   type: {group: filesystem, name: local-directory, version: v1alpha1}
   config:
-    path: /work/euphony-scratch
+    path: /work/euphony
   establishment:
-    conduit: {kind: Conduit, form: template, name: create-directory}
+    conduit: {kind: Conduit, form: template, name: attach-directory}
     inputs:
       path: {from: subject, field: [spec, config, path]}
 ---
@@ -106,37 +166,74 @@ apiVersion: example/v0alpha1
 kind: Conduit
 form: template
 metadata:
-  name: create-directory
+  name: attach-directory
 spec:
   inputs:
     path: {type: absolute-host-path}
   nodes:
-    create:
-      operation: {group: filesystem, name: directory-create, version: v1alpha1}
+    attach:
+      operation: {group: filesystem, name: directory-attach, version: v1alpha1}
       inputs:
         path: {from: input, name: path}
   outputs:
-    backing: {from: node, name: create, output: directory}
+    backing: {from: node, name: attach, output: directory}
 ```
 
-The Resource template selects fresh creation by selecting `create-directory`; attachment would
-select an attach graph instead. This tests moving create/attach intent into graph selection
-rather than repeating it in both configuration and the graph. The intent remains in the
-Resource template. A generic graph could instead accept an explicit mode, but one template
-must not author two contradictory choices. This encoding is a proposal for review.
+A Pool-mediated invocation attaches the existing directory and establishes the Resource using
+verified results. The engine checks Pool ownership and the Resource transition contract. The
+attach operation fails if the directory is missing; it does not create it. The finite Conduit
+invocation completes while the Resource and backing directory remain.
 
-A Pool-mediated invocation establishes the Resource. The directory operation receives authorized
-execution context and returns verified backing information; the Resource transition stores
-ongoing configuration and observed outcomes. A fresh create conflicts with an existing path.
-After an uncertain create attempt, retry must reconcile the same attempt before adopting or
-creating anything. Changing the selected graph to “attach” is not an automatic recovery rule.
+Another Resource template can select this graph with another path. Selecting a `create-directory`
+graph instead would declare fresh-creation intent. That graph would use a directory-create
+operation with the accepted existing-target conflict rule. Create/attach must have one
+unambiguous source in the authored setup; this graph-selection encoding is still a proposal.
+A lost create result still requires same-attempt reconciliation rather than silently switching
+to attachment.
 
-Selecting graphs through references does not require inlining their definitions into the
-Resource template. The complete referenced configuration must resolve before effects begin.
-Ordinary template field edits remain the customization mechanism. **Named graph inputs and typed
-output bindings are an explicit extension under review** to the earlier decision to avoid a
-generic parameter/mapping DSL. Start with typed literals and field/output references, without
-arbitrary expression evaluation or implicit environment interpolation.
+The Conduit itself retains both forms. This YAML shows a **Conduit template**. Running it creates
+a **Conduit instance** with a distinct ID/name, actual bindings, progress and results. A one-node
+graph can be supplied by a standard library; users need not hand-author a wrapper for every
+basic operation. Default procedure discovery or inline graph sugar would be separate choices.
+
+### What exists after one Session is prepared
+
+The following names are illustrative, and the split of setup/access invocations is a recommendation
+under discussion rather than a newly accepted mandatory lifecycle:
+
+| Object | Role and current condition |
+| --- | --- |
+| Session template `euphony-engineer` | Reusable configuration; unchanged by instantiation. |
+| Session instance `euphony-engineer-a7f2` | Durable participant, prepared with its own private state. |
+| Conduit template `native-session-setup` | Reusable setup graph. |
+| Conduit instance `native-session-setup-b91c` | Finite invocation; completes after preparation has succeeded and continuing attachments have a defined lifetime. |
+| Conduit template `pool-directory-access` | Reusable selection/filtering/projection graph. |
+| Conduit instance `pool-directory-access-c12e` | Attached to the Session; retains any continuing access/projection state. |
+| Resource instance `euphony-repository-r4d8` | Owned by Pool `euphony`; persists independently of Session setup and access invocations. |
+
+A second Session gets its own setup and access invocations unless it explicitly joins a supported
+shared Conduit. That does not imply duplicating the underlying folder Resource, nor sharing
+credentials or private context. A filter's rules belong in the Conduit definition/configuration;
+its actual endpoint bindings and any live processing state belong to the Conduit instance.
+A pure filter need not have a persistent process or register another object of its own.
+
+### Definition format is independent of runtime identity
+
+Conduit template/instance forms survive whether a graph is written in YAML, generated by code
+or authored in a future graph editor. The reusable graph has a typed contract and a stable
+registry identity; an invocation has its own identity and observed state. An instance need not
+be a hand-maintained file, and a template is not a running filter.
+
+YAML remains the current authoring surface; alternate graph languages are not selected by this
+example. If another authoring format is added, it must produce a graph whose contracts and
+referenced versions Conduit can validate and inspect. Arbitrary code does not automatically
+become resumable because it is called a graph. Registry representation/source packaging remain
+open without adding another conceptual family.
+
+Named graph inputs and typed output bindings are an explicit extension under review to the
+previous decision to avoid a generic parameter/mapping DSL. Prefer passing a supported typed
+subject where appropriate and explicit bindings where composition crosses contracts. Start with
+literals and field/output references, not arbitrary expressions or implicit host interpolation.
 
 ## Composition and four concrete cases
 
@@ -281,32 +378,40 @@ Reusing a template name never means shared authentication or execution. Shared s
 Pool-owned Resources. A parent-child relationship governs progress/cancellation of invocations,
 not ownership of every Resource they touch.
 
-### Finite setup and retained live activity
+### Setup and access have distinguishable lifetimes
 
-A directory-create graph can finish and leave the Resource behind. A message subscription can
-be ready while remaining active. A Session setup can include both authentication that finishes
-and connections needed throughout the Session. These require an explicit lifetime contract.
+Conduits retain template and instance forms. The earlier ruling permits setup and continuing
+activity within a graph; it does **not** require Session construction and every ongoing access
+flow to share a single invocation. The current discussion is how to compose those lifetimes
+without conflating a reusable graph definition with a running connection.
 
-**Accepted in this branch review:** one Conduit graph can finish its setup steps, report ready
-and remain active for ongoing connections. Readiness and completion are distinct. It is not
-necessary to split setup and ongoing activity into separate Conduit invocations. Finite-only
-graphs can complete.
+An access Conduit can naturally authenticate, establish a connection, become ready and continue
+filtering traffic until its consumer detaches. A directory-attachment Conduit can finish after
+returning verified backing information. Both are instances of the same Conduit family; these
+behaviors need not become new fixed families or a universal `mode` enum.
 
-The detailed representation remains a proposal: completed nodes and retained live outputs;
-other graphs joining exported capabilities only where sharing is supported; activity tied to
-explicit consumers rather than merely to an open socket. Readiness criteria and behavior after
-a required live connection fails must still be defined.
+**Recommendation under review:** let a finite Session-setup Conduit compose and attach separately
+identified access Conduit instances, then complete. Required access must be ready before setup
+succeeds. Continuing access belongs to an explicit Session/consumer lifetime, so completing
+setup does not cancel it. A successful attachment must establish that lifetime explicitly;
+merely returning a child handle cannot implicitly detach it from its parent.
 
-This revises the earlier universal “last consumer leaves” rule: an authorized finite setup
-invocation must be able to run before a Session consumer exists. Its initiating lifecycle action
-provides the execution purpose; a structured authentication wait does not mean no owner remains.
-After setup, retained flows use explicit consumer lifetimes. Exact parent/child release, Session
-closure and abandoned-setup handling remain open. Separate reusable Conduits are still possible;
-the ruling does not require every setup and ongoing connection to share one invocation.
+An alternative is a single supervising invocation containing completed setup nodes and retained
+live operations. It avoids a child-lifetime handoff but couples recovery and cleanup to the
+larger invocation. Both are compatible with reusable graph definitions. Evaluate them with
+independent filter changes, expired login, setup failure and Session closure before making one
+the mandatory organization. Do not silently implement one based on the broad mixed-activity ruling.
 
-A graph's completion never automatically destroys created instances or their backing data.
-Continuing processes do not require one OS process per Conduit. Stopping a graph, canceling an
-operation, releasing a client and purging a Resource remain distinct effects.
+This also refines the original “last consumer leaves” rule. An authorized finite setup invocation
+can run before a Session consumer is ready; its initiating lifecycle action provides its purpose.
+A browser wait does not mean the invocation is abandoned. Live access later follows its explicit
+attachments. Readiness loss, stop versus completion, parent cancellation before/after attachment,
+and abandoned-setup detection still need a precise contract. Existing required/optional behavior
+and retained partial success remain relevant.
+
+Completion never automatically destroys created instances or backing data. A live filter need
+not have a dedicated OS process. Stopping an invocation, canceling an operation, releasing a
+client and purging a Resource are different effects.
 
 ### Recovery and edits
 
@@ -325,17 +430,17 @@ resume rules for stopped model executions still apply.
 
 Discuss these bundles, using the same examples throughout:
 
-The first lifetime ruling is accepted: setup and ongoing connections can coexist in one graph.
-Continue with:
+Setup and ongoing connections may coexist; template/instance forms remain. The current question
+is how those capabilities compose across invocations. Continue with:
 
 1. **Template-to-graph contract:** one root per lifecycle entry point, typed input/output bindings,
    selection of create/attach, and how verified outputs populate instance spec/status. Preserve
    one-off authoring and avoid duplicate setup fields.
 2. **Operation and composition contract:** what plugins export, how child graphs behave, required
    work and output gates, current authorization, and recovery/cancellation of partial effects.
-3. **Detailed lifetime:** readiness criteria and changes, required live-connection failures,
-   parent/child release and the relationship to consumer departure. Do not reopen whether one
-   graph may contain both finite and continuing work.
+3. **Detailed lifetime:** finite construction plus separately attached access invocations versus
+   one supervising invocation; readiness changes, required-connection failures, parent/child
+   release and consumer departure. Distinguish reusable definitions from runtime state throughout.
 
 Before implementation, test the model on an existing folder, new folder, remote filesystem,
 managed worktree, account login, password-manager access, index build and a two-Session exchange.

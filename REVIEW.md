@@ -5,10 +5,12 @@ records accepted behavior. This agenda contains unresolved choices, grouped arou
 outcomes rather than a long sequence of individual field rulings.
 
 **Active branch discussion:** [Conduits as composable graphs](research/CONDUIT_GRAPHS.md).
-The first ruling allows one graph to finish setup, report ready and remain active for ongoing
-connections. Continue with its [ruling bundles](research/CONDUIT_GRAPHS.md#next-rulings-and-evidence):
-template bindings, operation/composition contracts and detailed lifetime behavior. The checkpoint
-and agenda below preserve the previous discussion so it can be resumed intact.
+Use the [Session and Resource examples](research/CONDUIT_GRAPHS.md#template-reuse-and-concrete-examples)
+to distinguish reusable Conduit templates from bound instances. Multiple object templates can
+share one setup graph. Setup and continuing activity may coexist, but the split between a finite
+setup invocation and separately attached access invocations is under review. Continue with the
+[ruling bundles](research/CONDUIT_GRAPHS.md#next-rulings-and-evidence). The checkpoint and agenda
+below preserve the previous discussion so it can be resumed intact.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive

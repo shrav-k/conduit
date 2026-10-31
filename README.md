@@ -2,10 +2,11 @@
 
 **Active branch direction:** [Conduits as composable graphs](research/CONDUIT_GRAPHS.md).
 Session, Resource and Pool templates select graphs of plugin operations to establish their
-instances and continuing interactions. The report contains examples and the next rulings;
-one graph may finish setup and remain active for ongoing connections, with readiness separate
-from completion. Detailed syntax and remaining lifetime rules are open. The model below is the
-comparison baseline, saved on `main` at `c013f0a`.
+instances and continuing interactions. Conduits retain template/instance forms: reusable graph
+definitions and their particular executions. Several templates can reuse one graph. Setup and
+continuing activity may coexist, while the boundary between a setup invocation and separately
+attached access invocations is under review. The model below is the comparison baseline, saved
+on `main` at `c013f0a`.
 
 Conduit connects models, agents and capabilities through four families, each with a reusable
 **template** and a concrete **instance** form. Templates describe how to establish instances;

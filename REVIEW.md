@@ -7,11 +7,11 @@ outcomes rather than a long sequence of individual field rulings.
 **Active branch discussion:** [Construction templates and runtime instances](research/CONSTRUCTION.md).
 Reserve Conduits for ongoing connections and filters; move construction graphs into the common
 template mechanism across all families. Agent is the proposed name replacing Session. Start
-with the [template YAML proposal](research/CONSTRUCTION.md#template-yaml-and-compose-inspired-composition):
-preserve typed configuration and add an inline or referenced plugin graph, borrowing Compose's
-separation and resolved inspection. This authoring choice remains a recommendation. Then use the
-same template with two accounts to define the node contract. Graph execution on each start is
-settled; caching and build optimizations remain implementation concerns. Repeated instantiation
+with the [plugin-node walkthrough](research/CONSTRUCTION.md#next-discussion): use the same template
+with two accounts to define the node contract. The YAML authoring boundary is settled: typed
+configuration with an inline graph by default or an explicit graph-source reference, with the
+same execution semantics. Exact fields remain open. Graph execution on each start is settled;
+caching and build optimizations remain implementation concerns. Repeated instantiation
 remains fundamental; no construction-ownership scheme or extra runtime family is selected.
 The checkpoint and detailed agenda below preserve the pre-inquiry discussion for comparison.
 

@@ -91,10 +91,12 @@ part of the basic template-to-instance model.
 
 ## Template YAML and Compose-inspired composition
 
-**Recommendation for discussion:** preserve template YAML as the reusable, typed authoring
-contract. Add a plugin graph inside that contract, with an optional reference to reusable graph
-source. A graph does not replace object identity, configuration schemas or reusable defaults.
-The graph can itself be represented in YAML; code remains in the plugin implementations.
+**Accepted authoring boundary:** template YAML remains the complete reusable, typed entry point.
+It contains configuration and an inline plugin graph by default, with an optional explicit
+graph-source reference for reuse. Both forms have the same execution semantics: the graph runs
+on each instance start. A graph does not replace object identity, configuration schemas or
+reusable defaults. Exact graph fields, source-reference syntax and plugin contracts remain open;
+the sketches below do not settle them. Code remains in the plugin implementations.
 
 ### What to preserve and what to change
 
@@ -108,9 +110,9 @@ The graph can itself be represented in YAML; code remains in the plugin implemen
 | Runtime observations | Keep generated identity, readiness and execution outcomes in managed instance state; authored YAML cannot assert successful login or creation. |
 
 A complete template consists of its authored contract plus explicit, resolvable dependencies.
-It need not be one enormous file. Recommend an inline graph for a small template and an optional
-source reference for shared/larger graphs, with identical semantics and mutually exclusive
-inline/reference forms. This packaging choice is proposed, not yet a required protocol field.
+It need not be one enormous file. Small templates can keep their graph inline; shared/larger
+graphs can use the accepted source-reference option. The two forms describe the same graph
+contract. Exact packaging, source resolution and validation fields still need definition.
 Referenced source needs an explicit resolution base and the existing checked-update semantics;
 editing a referenced file must not silently change registered configuration or a running instance.
 
@@ -251,8 +253,7 @@ presented as the current model.
 The execution baseline is settled: run the plugin graph on each instance start, with plugins
 able to verify and reuse already-satisfied state. Implementation optimizations remain deferred.
 
-First settle the authoring boundary proposed in
-[Template YAML and Compose-inspired composition](#template-yaml-and-compose-inspired-composition):
+The [authoring boundary](#template-yaml-and-compose-inspired-composition) is also settled:
 retain the typed YAML envelope and configuration, with an inline or explicitly referenced graph.
 Exact graph/binding syntax remains open; multi-object composition can follow later.
 

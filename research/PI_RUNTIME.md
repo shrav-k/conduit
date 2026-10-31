@@ -340,7 +340,7 @@ foreground boundary. [Compaction source][compaction-source] · [Specification][d
 
 Record source references/revisions and transformations with a request-context manifest,
 without requiring another full text copy of every prompt. Pin source bounds; apply
-current Conduit access and Session template limits when assembling and dispatching; report omitted/incompatible content.
+current Conduit access and Session limits when assembling and dispatching; report omitted/incompatible content.
 Start compaction at a safe turn boundary if needed for long sessions. Keep background
 compaction, arbitrary history editing, and sophisticated branch operations later.
 
@@ -425,7 +425,7 @@ plugin framework. Keep the first implementation local and small.
 ```mermaid
 flowchart TB
     UI[Terminal and other frontends] --> API[Session control and state API]
-    Template[Resolved Session-template settings and activation instructions] --> Runtime
+    Spec[Complete Session spec and activation instructions] --> Runtime
     API --> Runtime[Rust Session supervisor and turn loop]
     Runtime --> Context[Private context builder]
     Runtime --> Providers[Provider and account adapters]
@@ -441,7 +441,7 @@ flowchart TB
     Adapters --> Memory[Memory and search backends]
 ```
 
-An execution resolves its Session template and Conduit bindings, applies activation instructions
+An execution reads its Session's complete spec and resolves explicit Conduit bindings, applies activation instructions
 to permitted Pool resources, admits input, builds authorized
 context, streams a provider response, validates/dispatches tool calls, persists outcomes,
 and advances until it settles or needs input. Provider-specific messages stay inside

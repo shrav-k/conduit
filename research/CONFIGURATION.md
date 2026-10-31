@@ -5,9 +5,9 @@ The accepted model has four families, each with template and instance forms. Res
 instances are created only through, and owned exclusively by, a Pool instance. Conduit
 instances are connections. [DESIGN.md](../DESIGN.md#configuration-language) retains the
 envelope, family kinds with top-level forms, explicit kind/form/name references, identity and
-checked-edit contracts. All four instance families retain resolved settings until explicit
-reconfiguration. Mandatory source/input provenance is reopened in favor of a proposed complete
-instance spec produced from a creation-only template. Exact source snapshots remain unselected.
+checked-edit contracts. Templates and creation choices produce complete instance specs across
+all four families. Instances are edited directly; no template/input history is required, and
+continuing Resource and authority dependencies are explicit.
 
 This report retains Kubernetes/Docker investigations, configuration-language comparisons,
 seven papers and source-specific probes. Its proposals express the current model without
@@ -45,7 +45,7 @@ interaction, without confusing ownership, authority and activation.
 
 | Quality | Concrete requirement to consider for Conduit |
 | --- | --- |
-| Domain fidelity | The four families have template and instance forms. A Pool instance owns/provisions Resources; connections implement interactions; Session-template instructions determine activation. |
+| Domain fidelity | The four families have template and instance forms. A Pool instance owns/provisions Resources; connections implement interactions; Session-spec instructions determine activation. |
 | Predictable evaluation | Given the same declared inputs and versions, static resolution produces the same result. Live discovery and authorization observations are recorded separately. |
 | Explicit dependencies | References resolve to identifiable objects and versions. Relative paths have a known base; credentials and environment inputs are deliberate. |
 | Controlled expressiveness | Reusable objects and selectors cover common cases. Arbitrary conditionals, scripts and inheritance chains need demonstrated use cases before becoming core syntax. |
@@ -306,14 +306,12 @@ remain illustrative; status shape, command names, operation payloads and instanc
 Reusable template registration, instance creation, native provisioning and starting
 execution must remain distinguishable even if a frontend offers a combined operation.
 
-All four instance families retain resolved behavioral/provisioning configuration until explicit
-reconfiguration. Later template edits affect new instances. Access limits still apply live;
-retaining settings does not freeze Resource data or matching within established access rules.
-An edited Pool resource plan does not automatically provision Resources in existing Pools.
-Mandatory template/input history is under renewed review. The proposed simpler model uses
-creation-time inputs only to materialize complete instance configuration, then operates and
-edits that instance independently. It does not require historical source snapshots; continuing
-access dependencies must still be explicit and current.
+Templates and creation choices materialize complete instance specs across all four families.
+Instances operate from and edit their own configuration; changes or deletion of the creation
+template do not alter it. No historical source snapshots or input/override ledger are required.
+Resource and authority dependencies are explicit; configuration does not freeze current access
+or backing data. A Pool's explicit Resource-template references for future provisioning remain
+ordinary dependencies, distinct from its own creation template.
 
 Keep authoring interpretation, template configuration version, resolved instance configuration,
 retained-record revision, source digest, plugin release and native protocol version separate.
@@ -334,8 +332,8 @@ the operation-outcome contract. Exact idempotency/identity fields are open.
 ### Sessions
 
 Session templates contain runtime/model/account defaults, required limits, connection choices
-and activation instructions. Instantiate one template with explicit overrides, preserving the
-resolved behavioral snapshot until explicit reconfiguration. Required limits remain live.
+and activation instructions. Materialize the template and creation choices into the Session
+spec; later changes edit that instance. Required limits and live dependencies are explicit.
 Resource-service authentication is separate from model-account selection. A native agent's
 login profile is not a Session template or Session history store.
 
@@ -390,7 +388,7 @@ status and partial effects need explicit semantics.
 
 | Relationship | Proposed composition | Case to test |
 | --- | --- | --- |
-| Template defaults and explicit inputs | Field-specific replacement/addition; record origins. | A Session's selected model replaces a default without overriding mandatory limits. |
+| Template defaults and creation choices | Field-specific replacement/addition materialized in the instance spec. | A Session's selected model replaces a default without overriding required constraints; no historical delta is required. |
 | Pool provisioning selections | Select templates and explicit creation intents; instance identity matters. | Two intentional instances of one template must not be deduplicated as one. |
 | Selection within owned instances | Set/filter semantics within the correct ownership boundary. | A Resource matching twice remains one candidate; a foreign Pool's instance is not adopted. |
 | Filters and required limits | Intersection/narrowing. | Repeating a constraint never widens access. |
@@ -402,14 +400,14 @@ Omission, null, empty collections, reset, ordering and duplicate identity need p
 A possible v0 approach is explicit whole-list replacement plus an explicit add operation;
 this is not a universal default. Retained instance settings and current access rules must both
 survive configuration composition. A Pool's default access selection applies only when no
-explicit replacement is supplied; combination with Session-template choices remains open.
+explicit replacement is supplied; combination with Session-spec choices remains open.
 
 ## Validation and effects are separate contracts
 
 | Layer | Establishes | Does not establish alone |
 | --- | --- | --- |
 | Syntax/schema | Valid family/form payload, units, required/disallowed fields. | A referenced instance exists or is authorized. |
-| Object graph | Form-correct references, ownership, template binding and dependency structure. | Native compatibility or service readiness. |
+| Object graph | Form-correct references, ownership, creation inputs and explicit dependencies. | Native compatibility or service readiness. |
 | Behavioral contract | Valid transitions, operation effects, retry/cancel and outcome meanings. | Enforcement by an unsupported adapter. |
 | Environment/authority | Current identity, access, native compatibility and coverage. | Continued availability or frozen permission. |
 | Operation evidence | Accepted, completed, failed or unknown effects with attribution. | Effects outside the integration's observation boundary. |
@@ -449,13 +447,10 @@ duplicate keys/unknown core fields, define finite numeric/unit types and bound a
 Do not silently expand shell/environment strings or interpret unsupported null/empty values.
 Plugin configuration needs a named/versioned schema. These parser details remain proposals.
 
-Mandatory source/input history is reopened. A complete instance spec may preserve everything
-needed to operate without retaining the creation delta or source template. The representation
-must still distinguish Pool ownership, native backing target, requested effects and observations.
-Whether to adopt this model, keep optional lineage, and replace implicit template-limit
-inheritance with explicit live dependencies remains open.
-Template behavioral edits do not automatically change existing instances; current access
-limits still apply.
+The complete instance spec is authoritative for configuration. Template-origin information
+is optional; it is not required to operate or edit an instance. The representation must still
+distinguish Pool ownership, native backing target, explicit live dependencies, requested effects
+and observations. Source-template changes do not alter instances; current access still applies.
 
 Keep the accepted checked-write/baseline/export rules in DESIGN.md rather than duplicating
 them here. Decide how exporting a template differs from exporting an instance specification,
@@ -482,7 +477,7 @@ Choose the actual API group and version progression separately from the illustra
 | Pool provisioning partly succeeds | Retain known effects and operation identity; do not assume external rollback. |
 | A create response is lost | Reconcile/retry using the original operation identity, distinct from deliberate new creation. |
 | Template and instance have similar names | Form-qualified resolution must choose the intended object or fail clearly. |
-| Session template instructions change | Existing behavior remains until reconfiguration; live required limits still apply. |
+| Creation template changes or disappears | Existing instance configuration remains usable independently; explicit dependencies and current authority still apply. |
 | Pool retirement encounters active Resources | Apply the lifecycle chosen in review; never infer orphan purge permission. |
 | Model/account refresh fails | Report failure; no alternate-account or API-billing fallback. |
 | Communication peer is offline | Report contract-specific pending/unavailable state without an implicit model turn. |

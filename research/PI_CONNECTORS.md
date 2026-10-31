@@ -283,7 +283,7 @@ generated fields. Unmatched tool results are not comprehensively validated by th
 ```mermaid
 flowchart LR
     H[Retained Session history] --> C[Context construction]
-    P[Session template activation results] --> C
+    P[Session activation results] --> C
     R[Permitted Resource revisions] --> C
     K[Applicable checkpoint] --> C
     C --> A[Target protocol projection]
@@ -326,7 +326,7 @@ truncating serialized JSON. A smaller target may require compaction; failed comp
 not erase history or automatically repeat unsafe tool effects. Compaction is a model operation
 whose provider/account/usage needs attribution. Exact thresholds remain an experiment choice.
 
-## Session template activation and Pool resources
+## Session activation and Pool resources
 
 Pi advertises skill metadata before loading full instructions. Packages can bundle skills,
 prompts, themes and executable extensions; package selections narrow what the package
@@ -336,11 +336,11 @@ selected precedence rules. [Skills][skills] · [Packages][packages]
 
 The proposed preparation sequence is:
 
-1. Resolve the Session template snapshot and explicit Session overrides.
+1. Read the Session's complete instance spec, materialized at creation, and resolve its explicit dependencies.
 2. Open/join selected connections explicitly; resolve owner-Pool Resource access and current authority.
    Any required new Resource is provisioned through its Pool before use.
 3. Build the permitted Resource inventory, including source versions and compatibility.
-4. Apply **Session template activation rules** to that inventory: advertise skills, register permitted
+4. Apply **activation rules in the Session spec** to that inventory: advertise skills, register permitted
    tools, mount an authorized workspace, or load selected instruction content within a budget.
 5. Record results, skipped resources, conflicts, unsupported capabilities and content provenance.
 6. Let the Session start its model turn using that resolved preparation result.

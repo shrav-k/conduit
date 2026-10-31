@@ -28,32 +28,31 @@ Resource identity/ownership, backing identity, authentication and process lifeti
 The shared distinction does not impose one lifecycle or mandatory process on every family.
 A template registration, instance creation, external provisioning, model execution and later
 reconciliation are separate effects. No automatic reconciler or cascading purge is implied.
-Complete instance configuration, its relationship to templates, reference extensions and
-lifecycle operations remain in [REVIEW.md](REVIEW.md).
+Instance creation/materialization details, reference extensions and lifecycle operations
+remain in [REVIEW.md](REVIEW.md).
 
 ### Template changes and resolved configuration
 
-Across Session, Resource, Pool and Conduit, an instance retains the resolved behavioral and
-provisioning configuration used at creation until it is explicitly reconfigured. Template
-edits affect new instances; existing instances adopt changed settings through explicit
-reconfiguration. For example, adding a Resource to a Pool template does not automatically
-provision it in existing Pools, and editing a Conduit template's behavior does not change
-connections already opened from it.
+Across Session, Resource, Pool and Conduit, templates are creation helpers. A template and
+creation choices materialize a complete instance `spec`, authoritative for that instance's
+configuration. Later changes edit the instance directly through checked updates. Editing or
+deleting the creation template does not change an existing instance or create a requirement
+to recover the template before operating it. Adding a Resource to a Pool template therefore
+does not provision it in existing Pools.
 
-Current access limits continue to apply live. Retaining configuration does not freeze
-Resource data, current resource matching within established rules, or authority. It does
-not by itself pin the contents loaded from a referenced Resource; content-version and
-activation-refresh rules remain separate choices. Family-specific operations for adopting
-settings, handling active work and applying external effects remain in review.
+Template-origin information may be retained optionally. No source-template snapshots,
+input/override history or persistent template-version binding is required to operate the
+instance. This does not remove stable IDs, configuration-version checks, actual execution
+settings or operation-outcome evidence.
 
-**Under renewed review:** mandatory retention of template ID/version, creation inputs/overrides
-and their derivation history. The proposed simplification uses a template and creation-time
-choices to produce a complete instance `spec`; the instance then owns that configuration and
-is edited directly. Historical template content and input deltas would not be required to
-operate it. Exact source-template content retention has not been selected. This proposal must
-also resolve explicit live-access dependencies and deletion/reconfiguration behavior before
-replacing the existing template relationship. Operation outcomes and actual execution settings
-remain separate evidence requirements.
+Complete configuration can contain explicit references: continuing Resource and authority
+dependencies must be represented on the instance, with no implicit live inheritance from
+its creation template. Explicit references to templates for future creation, such as a Pool's
+Resource plan, remain subject to normal reference checks. Creation choices must satisfy
+required constraints; copying configuration never grants authority. Current access checks,
+Resource data and matching remain independent of the retained spec. Runtime observations
+belong in `status`. Content-version rules, materialization details and family-specific
+reconfiguration effects remain in review.
 
 ## Configuration language
 
@@ -244,8 +243,8 @@ top-level concepts:
 
 | Representation | Responsibility |
 | --- | --- |
-| Authored intent | Explicit settings, references, requested relationships and constraints. Durable retention of creation-time source/input history is under review. |
-| Resolved configuration | Effective behavioral values and selected references. Resolution may explain defaults/overrides without requiring a persistent derivation history; complete instance-spec representation is under review. Instances retain resolved behavior under the rules above. |
+| Authored intent | Explicit settings, references, requested relationships and constraints. Creation choices can customize a template without becoming a retained override layer. |
+| Instance configuration and resolution | A complete instance spec contains its settings and explicit dependencies. Resolving those dependencies establishes current bindings and availability; template history is unnecessary. |
 | Observed state | Current binding, compatibility, authentication, preparation and execution information, including unknown or unsupported coverage. |
 | Operation evidence | Actual attempts, effects, results and unresolved outcomes attributed to the Session/execution and integration. |
 
@@ -271,10 +270,10 @@ defaults and updates. Collection order and duplicate identity must have defined 
 
 | Relationship | Established constraint; details still to settle |
 | --- | --- |
-| Session template → Session | Explicit overrides operate within required limits. Behavioral defaults are resolved, while access limits remain live. Per-field replacement/addition syntax and default-Conduit precedence are open. |
+| Session template → Session | Materialize creation choices within required constraints into the instance spec. Continuing authority is explicit. Per-field replacement/addition syntax and default-Conduit precedence are open. |
 | Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Template reuse across Pools creates distinct instances. Selectors cannot assign a foreign instance to another owner; target domains and live behavior remain open. |
 | Session → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
-| Session template activation | Preparation and context-loading instructions operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
+| Session activation | Instructions materialized in the Session spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
 | Intent → observation | Runtime observations report whether requests are realized; they do not silently become authored defaults or fresh authority. |
 
 Permission, membership and activation semantics remain independent even when they use
@@ -315,21 +314,21 @@ runtime/model/account defaults, execution preferences and requirements, optional
 limits, default connection choices, and activation instructions. A Session starts from
 one Session template; v0 defers inheritance and composition between Session templates.
 
-Session behavioral defaults follow the shared resolved-configuration rule above. Retain actual
-execution settings; mandatory template/input history is reopened with the shared instance
-configuration model. Permission limits remain live; behavioral snapshots never allow overrides
-to weaken required limits. Whether referenced resource content follows source updates is a
-separate open choice.
+The template and permitted creation choices produce the Session's complete spec. The Session
+operates from that spec and explicit live dependencies; retain actual execution settings.
+Permission limits remain current. Whether referenced resource content follows source updates
+is a separate open choice.
 
 ### Activation instructions
 
-Activation instructions live in the Session template. They tell a Session how to prepare
-and use Resources made available through its Conduits. Resource-access Conduits select
+Activation instructions are supplied by the Session template and materialized in the Session
+spec. They tell it how to prepare and use Resources made available through its Conduits.
+Resource-access Conduits select
 and filter; they do not own import or context-loading instructions. The Session performs
 activation through compatible integrations, within current permissions.
 
 Activation behavior is distinct from the Resource content it consumes. Skills, documents,
-prompts, tools and configuration bundles are supplied through Pools; the Session template describes
+prompts, tools and configuration bundles are supplied through Pools; the Session spec describes
 how to use the permitted selection. Discovering a skill, importing it, exposing a tool
 and placing instructions in model context can require different behavior.
 
@@ -340,7 +339,7 @@ Model preference alone does not establish native plugin or hook compatibility.
 
 ### Account selection
 
-Session template account references select identities without embedding credentials. Model-provider
+Session account references select identities without embedding credentials. Model-provider
 and resource-service credentials remain distinct. Conduit verifies the account actually
 selected; no silent account or API-billing fallback is permitted. Concurrent subscription
 accounts must not overwrite one another's login, refresh, logout or private state.
@@ -358,8 +357,9 @@ layout is an adapter validation task, not a prescribed filesystem schema.
 ### Execution policy
 
 Native execution is the v0 default: the runtime runs on the host without Conduit's full
-OS sandbox. Isolated execution is selectable, and a Session template may require it. Required
-isolation cannot be weakened by launch overrides; unavailable required isolation causes
+OS sandbox. Isolated execution is selectable; a template requirement is materialized in the
+Session spec, alongside explicit authority dependencies. Required isolation cannot be weakened
+by launch overrides; unavailable required isolation causes
 a visible launch failure. Show the configured mode and record actual enforcement coverage.
 
 Native mode preserves host integrations and suits users granting broad local access.
@@ -370,7 +370,7 @@ services may require explicit bridges or remain unavailable. This is why both mo
 
 Isolated execution defaults to declared network destinations: required model/login
 services, selected connections, and extra destinations authorized through Conduits.
-Session-template limits and exclusions still apply; local/private services require explicit
+Session limits and exclusions still apply; local/private services require explicit
 access. Network reachability does not authorize every operation at a provider. Exact
 sandbox technology and matching rules remain open. Native host access, network policy,
 provider authorization and Conduit-managed access have different coverage.
@@ -472,7 +472,7 @@ still apply. Selecting a package does not grant extra MCP or resource access.
 Use ecosystem tooling for compatible skill/plugin installation and updates. Adapters may
 invoke it on request and record source/version information and outcomes. Conduit does
 not require a new skill format or package manager. Executable native extensions need a
-compatible runtime adapter or port; report unsupported hooks. Session template activation instructions
+compatible runtime adapter or port; report unsupported hooks. Session activation instructions
 control preparation of the selected resources.
 
 Resource providers retain source content and operations. Linear is the first tracker
@@ -584,8 +584,8 @@ open. A template registration alone does not execute a provisioning plan.
 
 When launching against a Pool, its access defaults apply only if no explicit selection
 is supplied. Explicit selection replaces those defaults; extending them requires an
-explicit add action. Session-template limits and exclusions always constrain the result.
-Combination with Session-template default connection choices remains open.
+explicit add action. Session limits and exclusions always constrain the result.
+Combination with connection choices materialized in the Session spec remains open.
 
 Pool retirement, possible ownership transfer, active-use handling and incomplete provisioning
 need explicit contracts. Deleting a grouping cannot silently orphan deployed Resources under
@@ -631,10 +631,10 @@ the existing Conduit concept, rather than requiring another top-level kind.
 ### Resource selection and activation
 
 For resource access, the Conduit selects and filters available Resources and operations.
-Activation instructions belong to the Session template and are applied by the Session. Filters
+Activation instructions belong to the Session spec and are applied by the Session. Filters
 are narrowing-only: removing a constraint can reveal an existing grant, but a filter
 cannot create one. Exact type names, endpoint forms, lifecycle and composition remain open.
-Session-template activation prepares the participant. Pool operations create/attach supporting
+Session activation prepares the participant. Pool operations create/attach supporting
 Resources; connection supervision runs any shared interaction service. Their ordering and
 failure behavior are unresolved, but a connection cannot provision an unowned Resource or
 assume the Session's loading instructions merely because it requested storage.
@@ -642,18 +642,17 @@ assume the Session's loading instructions merely because it requested storage.
 ### Authority and current access
 
 Permissions name operations per Resource contract, with convenience bundles expanding
-into visible grants. Session-template limits and explicit exclusions constrain effective access;
+into visible grants. Session limits and explicit exclusions constrain effective access;
 missing limits add no authority. Permitted operations require no extra confirmation merely
 because permission rules exist. Resource and communication permissions do not imply each other.
 
 Selection supports IDs, owning contexts, metadata predicates and path patterns where the
 integration supports them. Matches within established access rules are live. Authorized
-connection, filter and Session-template limit changes apply to subsequent managed requests and are shown
-and recorded; they do not silently change model/account defaults or inject context.
-If templates become creation-only, the instance must explicitly represent any continuing
-access-limit dependency; replacing implicit template-limit inheritance is part of the open review.
-Template behavioral/provisioning edits require explicit instance reconfiguration. How that
-operation applies Pool provisioning/selection and activation changes remains open.
+connection, filter and Session-limit changes apply to subsequent managed requests and are
+shown and recorded; they do not silently change model/account defaults or inject context.
+Continuing authority dependencies are explicit on the instance. Creation-template edits do
+not update those limits. Applying edits to instance provisioning/selection and activation
+settings during active work remains a family-specific lifecycle question.
 
 If an isolated execution cannot revoke removed access live, stop it and require explicit
 restart under current rules, preserving Session identity. Managed requests use new rules

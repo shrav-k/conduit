@@ -36,7 +36,7 @@ remain open. Room-based behavior is one candidate, not the universal Conduit pri
 ### 1. Expose Euphony repositories as local paths
 
 The Pool creates or attaches repository/workspace Resource instances from reusable templates.
-An access connection selects permitted Resources and operations. Session-template activation
+An access connection selects permitted Resources and operations. Session activation
 can prepare a participant's local path projection, subject to adapter and execution-mode
 capabilities.
 
@@ -51,7 +51,7 @@ Proposed state separation:
 | State | Natural responsibility to test |
 | --- | --- |
 | Repository and checkout identity | Resource/native workspace contract. |
-| Selected paths and permitted operations | Effective Conduit access constrained by Session-template limits. |
+| Selected paths and permitted operations | Effective Conduit access constrained by Session limits and explicit authority dependencies. |
 | Session-local symlink/mount location | Participant preparation and attachment state. |
 | Task-associated worktree | Pool owns the Resource instance; task association and native workspace management guide its use/cleanup. |
 | Concurrent modification | Actual target plus operation; separate writers by default, shared editing explicitly selected. |
@@ -214,7 +214,7 @@ possible ownership transfer and partial provisioning need explicit rules. Missin
 is not proof that purging the backing data is safe; existing retention and external-data
 protection remain applicable.
 
-Session-template activation prepares a participant. Pool provisioning creates or attaches
+Session activation prepares a participant. Pool provisioning creates or attaches
 Resource instances. Connection supervision operates a shared interaction service when needed.
 Ordering, service identity, dependency failure and cleanup among these operations remain open.
 A common template/instance pattern does not imply one universal startup procedure.
@@ -250,8 +250,8 @@ Existing narrowing-only filters and capability-tuple composition remain applicab
 
 ## Review sequence and tests
 
-With the four families, Pool ownership and explicit open/join intents settled, define
-form-qualified identity, template binding and state responsibilities/lifetimes together.
+With the four families, complete instance specs, Pool ownership and explicit open/join intents
+settled, define materialization and state responsibilities/lifetimes together.
 Follow with endpoint/authentication contracts,
 operation coordination and composition before choosing concrete YAML fields. The existing
 scenario fixture illustrates templates, explicit Pool provisioning and connection open/join
@@ -271,7 +271,7 @@ Use these change cases alongside the five happy paths:
 8. A template or backing Resource registration is deleted; inspect retained data,
    surviving participants and the exact cleanup action still required.
 
-This changes the review order, not the accepted envelope, identity/update rules, private Session context, Session-template
+This changes the review order, not the accepted envelope, identity/update rules, private Session context, Session
 activation, Pool ownership/access route or backing-data preservation.
 Participant/connection state placement, topology, communication semantics and composition
 remain proposals; exclusive Pool ownership of Resource instances is settled.

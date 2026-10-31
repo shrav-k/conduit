@@ -62,9 +62,9 @@ No automatic purge follows from a missing Pool reference.
 
 ## How instances work together
 
-1. **Instantiate a Session from its template.** Resolve one template and explicit overrides.
-   Existing Sessions retain behavioral defaults until reconfigured; required access limits
-   remain live. V0 defers Session-template inheritance.
+1. **Instantiate a Session from its template.** Materialize one template and creation choices
+   into a complete instance spec. Later edits target the instance; current access limits are
+   represented explicitly. V0 defers Session-template inheritance.
 2. **Establish Pools and their Resources.** Pool templates describe intended provisioning;
    explicit operations create Pool instances and create/attach their Resource instances.
    Existing instances retain resolved settings until explicit reconfiguration. The operation
@@ -73,7 +73,7 @@ No automatic purge follows from a missing Pool reference.
    new instance; joining targets an existing one. Reusing a template name does not choose
    between these operations or imply shared clients, credentials or private context.
 4. **Apply access and activation.** Connection filters narrow authorized resources and
-   operations. The Session applies its template's activation instructions to the permitted
+   operations. The Session applies activation instructions in its own spec to the permitted
    inventory. Availability alone does not load instructions or content into the model.
 5. **Keep lifetimes distinct.** A participant can detach while shared conversation storage
    remains. A remote operation can continue after its initiating client exits. The connection,
@@ -104,14 +104,13 @@ Retain the accepted registry and editing contracts in [DESIGN.md](DESIGN.md#conf
   names allowed. Exact suffix format and name constraints remain open.
 - YAML registration/export is explicit. Editing a file does not update active configuration;
   changing a template is distinct from instantiation, provisioning, execution or reconciliation.
-- Across all four families, instances retain resolved behavioral/provisioning configuration
-  from creation until explicit reconfiguration. Template edits affect new instances; existing
-  instances adopt changes explicitly. Current access limits remain live, and Resource data is
-  not frozen by retaining configuration.
-- Instance configuration and its relationship to templates are under renewed review. The
-  proposed simplification materializes complete instance configuration at creation and makes
-  template/input history optional. Mandatory source/input provenance is reopened; retaining
-  exact source-template content has not been selected. See [REVIEW.md](REVIEW.md).
+- Across all four families, templates and creation choices produce a complete instance spec.
+  Later changes edit that instance directly. Editing or deleting its creation template does
+  not change the instance or require historical template content to operate it.
+- Template-origin information is optional; no source snapshots or input/override history are
+  required. Continuing Resource and authority dependencies must be explicit on the instance.
+  Current-access checks, Resource data, runtime status and actual execution evidence remain
+  separate from configuration.
 - Create/update intent is explicit. Updates replace complete authored configuration and use
   separate expected-ID/configuration-version checks. Status-only changes do not invalidate edits.
 - Unchanged authored values preserve the configuration version after checks. Omission remains
@@ -137,7 +136,7 @@ workflows. Resource-service authentication is separate from model subscriptions.
 and plugins are brought through compatible ecosystems, without a new Conduit package manager.
 Linear owns its tracking workflow; memory/search/graph providers remain replaceable plugins.
 
-Native execution is the v0 default, with selectable or template-required isolation. Four
+Native execution is the v0 default, with selectable or Session-required isolation. Four
 independent accounts remain an early acceptance target: two Claude and two Codex/OpenAI
 subscription identities. Actual identity, subscription compatibility and refresh/logout isolation
 must be verified. No silent account or billing fallback is permitted.
@@ -154,12 +153,12 @@ defines the remaining selections and staged evidence.
 
 | Interaction | Observable outcome |
 | --- | --- |
-| Template versus instance | References identify the intended form; registering a template does not start work. Instance identity and resolved inputs are inspectable. |
+| Template versus instance | References identify the intended form; registering a template does not start work. The complete instance spec remains usable after its creation template changes or disappears, subject to explicit dependencies and current authority. |
 | One template, several Pools | Pools create distinct Resource instances; each has exactly one owner. A foreign Resource cannot become a local member through a label or reference. |
 | Shared versus independent backing | Both explicit attachment to shared backing and provisioning independent backing are expressible; target identity and actual enforcement are reported. |
 | Connection support | Opening a connection requiring storage provisions it through an identified Pool. Joining reuses the intended connection without creating a duplicate conversation. |
 | Concurrent accounts | Four Sessions retain independent private state and verified account selection while accessing authorized common Resources. |
-| Session activation | Instructions from the Session template prepare only permitted Resources; connection filters do not become loading instructions. |
+| Session activation | Instructions materialized in the Session spec prepare only permitted Resources; connection filters do not become loading instructions. |
 | Context and communication | Sessions exchange permitted context through the selected contract while retaining private histories; memory retrieval reports omissions and coverage. |
 | Change and failure | Stale edits conflict, unknown effects remain unknown, and retries do not mistake a repeated create request for a deliberate second instance. |
 | Lifecycle | Detach, close, stop, unregister and purge have distinct outcomes; removing configuration does not silently destroy files or retained evidence. |

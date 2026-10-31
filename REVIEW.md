@@ -14,20 +14,18 @@ outcomes rather than a long sequence of individual field rulings.
   may supply explicit unique names; exact suffix format and name constraints remain open.
 - Readable object references explicitly include kind, form and name. Kind/name locates the
   target and form validates its intended use; wrong-form targets are rejected.
-- All four instance families retain resolved behavioral/provisioning settings until explicit
-  reconfiguration. Template edits affect new instances; access limits still apply live, and
-  retained settings do not freeze Resource data.
-- Mandatory template/input provenance is reopened. The proposed direction uses templates to
-  produce complete instance configuration, with historical lineage optional. Exact source
-  snapshots have not been selected; actual execution evidence and current-access rules remain.
+- Templates and creation choices produce a complete instance spec across all four families.
+  Later edits target that instance; its creation template can change or disappear independently.
+  No template history or input/override ledger is required. Continuing Resource and authority
+  dependencies are explicit; current-access checks and actual execution evidence remain.
 - Every Resource instance has one owning Pool instance and is created/attached only through
   that Pool. Reusable templates are not deployed Resources and need no owning Pool merely to exist.
 - Different Pools may create independent backing data or attach distinct instances to shared
   backing data where the contract supports it. One Resource instance never has multiple owners.
 - A connection requests supporting Resources through a Pool. Its shared operational state,
   participant attachments and backing Resource lifetimes are distinct.
-- Open-new and join-existing connection intents are explicit. Filters narrow; Session-template
-  activation prepares permitted Resources. Pool provisioning is a different operation.
+- Open-new and join-existing connection intents are explicit. Filters narrow; activation in
+  the Session spec prepares permitted Resources. Pool provisioning is a different operation.
 - Existing account, context, memory, access, retention and checked-edit rules remain. Instance
   form does not imply a process, automatic reconciliation or automatic cascading deletion.
 
@@ -43,34 +41,32 @@ not an accepted authoring/API format. It contains no real credentials or executa
 
 ## Next discussion
 
-Continue with **templates as creation helpers and complete instance configuration**. Decide
-whether inputs/overrides are temporary creation choices rather than required retained history.
-Walk through direct instance edits, template deletion and explicit live-access dependencies
-before adding provenance fields or source snapshots. Then establish Pool creation/ownership
+Continue with **instance creation and materialization**. The instance spec is authoritative;
+decide whether callers may supply it directly without a template, then define how defaults
+and creation choices become complete configuration. Establish Pool provisioning/ownership
 and instance lifecycle together.
 
 | Group | Outcome to settle |
 | --- | --- |
-| 1. Forms, identity and template binding | One clear authoring/inspection/reference model for all four families. |
+| 1. Forms, identity and instance creation | One clear authoring/inspection/reference model for all four families. |
 | 2. Pool provisioning and Resource ownership | How instances are created, shared backing is represented, and ownership changes safely. |
 | 3. Instance lifecycle and change | Which state survives edits, detach, restart and deletion; which operations cause effects. |
 | 4. Connections, authority and communication | Initial extensible interaction contracts and their observable guarantees. |
 | 5. Resolution, activation and integrations | How selected capabilities become usable in each runtime without hiding native behavior. |
 | 6. Validation, evolution and experiment | Language conformance and the smallest convincing end-to-end evidence. |
 
-## 1. Forms, identity and template binding
+## 1. Forms, identity and instance creation
 
 | Question | Example and considerations |
 | --- | --- |
-| Is the instance configuration self-contained after creation? | Proposed: materialize template values and creation choices into the instance's complete spec, then edit the instance directly. No required template history, input deltas or source snapshots. References to live Resources remain explicit; configuration completeness does not serialize runtime status or Resource contents. Decide whether any optional source hint is useful. |
-| What remains live if templates are creation-only? | Existing access limits must continue to apply. Represent ongoing authority explicitly in instance settings/references rather than implicit inheritance from a historical template. Determine template-deletion effects and avoid treating a saved spec as frozen permission. |
-| Which fields belong to each form? | Family and form jointly select the contract. Distinguish authored template configuration, instance inputs and system-owned observations; the common envelope does not require identical payloads. |
-| Must templates be independently registered? | Compare named reusable templates with inline definitions for one-off creation. Define identity, export, source attribution and allowed inputs without introducing arbitrary string interpolation or an inheritance language. |
+| Must creation use a registered template? | Compare template-backed creation with direct creation from complete instance configuration. Consider whether inline templates add value. Resource creation must still go through a Pool; generic registry writes cannot bypass ownership. Decide naming when there is no template prefix. |
+| How is complete instance configuration materialized? | Define each form's fields, creation inputs, defaults and validation. Reconcile materialization with authored omission/default distinctions and checked full replacement. References may stay live; external contents and system-owned status are not copied into spec. No retained override layer or general inheritance language is implied. |
 | How are instances addressed and rebound? | Open-new targets a template; join-existing targets a connection instance. Define optional direct-ID references and Pool-local display names without changing registry uniqueness. Settle repeat-request identity, suffix format/name constraints, generated-collision handling, explicit rebind operations and unavailable-target/export-refresh diagnostics. Reusing one template must not deduplicate two intentional instances. |
 
-**Walkthrough:** create two instances from one template, rename the template, edit it, then
-replace its old name with a different template. Show existing bindings, new creation, exported
-configuration and any required explicit migration. Repeat with a template/instance name collision.
+**Walkthrough:** create two instances from one template, edit one instance, then rename, edit
+and delete the template. Show independent instance specs and explicit dependencies, including
+a Pool's Resource-template references for future provisioning. Repeat with a name collision
+and, if selected, direct creation from exported configuration.
 
 ## 2. Pool provisioning and Resource ownership
 
@@ -93,7 +89,7 @@ retry, then retire a Pool with active users and retained conversation history. S
 | --- | --- |
 | What identity/state belongs to each instance? | Identify authoritative connection state, participant attachments, native clients, execution state and backing Resources; reverse views should not become competing editable authorities. Not every instance needs a running process. |
 | Which operations and transitions exist per family? | Distinguish instantiate, provision, attach, open, join, detach, suspend, close, stop, retire, unregister and purge as applicable. Select initial supported operations instead of applying every verb to every family. |
-| How does explicit reconfiguration take effect? | Template behavioral/provisioning edits require explicit adoption across all four families; access limits remain live. Define validation, overrides, active-work boundaries, partial failure and restart requirements. Distinguish changes to instance settings from live Resource content and matching. |
+| How do instance configuration edits take effect? | Checked updates edit the complete instance spec; templates do not propagate changes. Define validation, active-work boundaries, partial failure and restart requirements. Distinguish changes to instance settings from live authority, Resource content and matching. |
 | What persists after the last participant leaves? | Contrast a durable exchange, an ephemeral request, a service client and its retained outcome. Define runtime restart/recovery and whether a connection can exist with no attached Sessions. Session reconnect/resume rules remain unchanged. |
 | What does deletion mean for templates and instances? | Preserve checked deletion and external-data protection. Distinguish ordinary incoming references from ownership dependencies and live runtime constraints. Session deletion already requires confirmed execution end. Define other families without silent cascades or implicit shutdown. |
 
@@ -123,8 +119,8 @@ completion, omission and unknown outcomes without inventing a model turn or wide
 | Question | Example and considerations |
 | --- | --- |
 | What is the constrained YAML data surface? | Define string keys, duplicate/unknown-field rejection, scalars/units, null/empty/omitted values, aliases and normalization. Choose explicit configuration roots, path bases and environment inputs. Credentials are references, not ordinary interpolated values. |
-| How do defaults and selections compose? | Combine Session-template connection choices, selected Pool defaults and explicit overrides. Explicit selection already replaces Pool defaults unless add is requested. Define other precedence, list ordering and duplicate identity without a universal deep merge. |
-| What is the activation contract? | Session templates own instructions and structured preparation; distinguish these from Pool provisioning and connection startup. Define required/optional actions, ordering, compatibility, duplicate skills/commands, refresh and cleanup of projections. |
+| How do defaults and selections compose? | Materialize Session-template connection choices, selected Pool defaults and creation choices in the instance spec. Explicit selection already replaces Pool defaults unless add is requested. Define other precedence, list ordering and duplicate identity without a universal deep merge. |
+| What is the activation contract? | Session specs contain instructions and structured preparation, initially supplied by templates. Distinguish these from Pool provisioning and connection startup. Define required/optional actions, ordering, compatibility, duplicate skills/commands, refresh and cleanup of projections. |
 | What are the first adapter contracts? | Separate own-runtime model providers from native-agent adapters. Define reported support for credentials, context conversion, hooks, reconnect/cancel, subagents and telemetry; do not infer support from model branding. |
 | How are accounts and native packages prepared? | Validate four independent subscriptions, actual identity, refresh/logout concurrency, native config selection and private state. Use native skill/plugin tooling; unsupported extensions stay explicit. |
 | How are MCP and resource-service clients realized? | Separate definition reuse, per-participant auth, native registration and live client/helper lifetime. Preserve provider-native contracts and negotiated versions; report restrictions that cannot be enforced. |

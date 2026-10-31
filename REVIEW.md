@@ -45,20 +45,28 @@ MCP tools without a separate Conduit contract for every tool or a generic model-
 Discovery adds no authority; fixed operation contracts remain valid for other capabilities. Detailed
 refresh, caching and schema-change behavior remain open.
 
-**Next ruling — access delegation at connection:** when an authorized user or Agent establishes a
-Conduit attachment for another consumer, should that action be able to delegate an explicit subset
-of its permitted service access to that consumer? Recommend recording the delegation with the
-attachment, so the user can connect a review Agent to shared Linear with read-only access in one
-operation. The alternative requires a separate Agent-access grant before establishing the connection.
+**Settled delegation:** an actor authorized to delegate access can establish another consumer's
+Conduit attachment with an explicit subset of that access in one action. Record the delegation
+with the attachment; no separate prior Agent-permission setup is required. Requested YAML is not
+self-issued permission, filters remain narrowing-only, and onward delegation is not implied.
+Detailed issuance, lifetime and revocation semantics remain open.
 
-This would make delegation an explicit, authorized part of connection establishment; merely naming
-a Resource, joining a Pool or editing a filter would still grant nothing. Only an actor permitted
-to delegate that access could issue it, within target policy and the recipient's limits. Filters
-would remain narrowing-only over granted access. The proposal adds no separate user-maintained
-permission registry or object family, and does not imply permission to delegate further. Exact
-binding fields, issuer authority, lifetime and revocation behavior would follow separately.
-After this boundary is settled, render one small connected Pool/authentication/service/Agent
-example before expanding individual permission policies or adding more bookkeeping.
+**Current walkthrough:** the [connected YAML draft](research/CONSTRUCTION.md#connected-pool-and-agent-yaml-draft)
+shows a reusable service's authentication requirement, a Pool composing authentication/service
+Resources, and an Agent attachment requesting read access. It is a review sketch, not executable
+configuration or an approved schema. Referenced type/plugin/graph and permission-bundle names
+are illustrative; the Interface authorizes actual instantiation and delegation.
+
+**Next ruling — names within Pool composition:** should a Pool template name local Resource entries,
+such as `auth` and `linear`, and let dependency bindings refer to those entries? Recommend these
+local composition names, resolved to actual Resource identities when the Pool is instantiated.
+Two instances of the same Pool template would create separate owned Resources without requiring
+users to rewrite generated registry names. These names would be template-local references, not
+registry aliases, a new namespace or a second runtime binding ledger.
+
+The alternative assigns explicit registry instance names in the Pool template and requires suitable
+names at each instantiation. Exact YAML keys and how Pool-owned Resource outputs are inspected
+remain separate; the example tests the local-reference mechanism before fixing that syntax.
 
 Then review these connected contracts, one bundle at a time:
 
@@ -127,7 +135,7 @@ and reconcile a lost response. Keep identities, state and operation outcomes dis
 | Area | Remaining decisions and examples |
 | --- | --- |
 | Endpoint contract | Generalize Interface/Agent control, Resource access, Resource-to-Resource dependencies and platform management. Define endpoint roles, filtered capabilities and request/result/observation paths without assuming one network topology. |
-| Authority and filtering | Settle how an authorized creator delegates access when establishing an attachment versus requiring a separate prior grant. Authenticate the actor/consumer; filters narrow granted authority. Define complete resource/operation/constraint combinations and current checks. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
+| Authority and filtering | Define the detailed issuance/lifetime contract for accepted delegation during attachment establishment. Authenticate the actor/consumer; filters narrow granted authority. Define complete resource/operation/constraint combinations and current checks. Keep user authority distinct from frontend identity, and broad management scope distinct from every Interface having unrestricted access. |
 | Communication Resources | Explore direct exchange, conversations and shared context as agent-oriented capabilities, potentially backed by storage Resources. Separate retained content from routing and runtime bookkeeping. No rooms-only topology or communication schema is selected. |
 | Composition and supporting Resources | An access template can compose repository, credentials, AWS and Linear connections with distinct identities and lifetimes. Resolve owners/provisioning rights for durable supporting Resources; avoid duplicated setup or implied external rollback. |
 | Delivery and attention | Define ordering, durable acceptance, acknowledgement, replay, offline delivery and backpressure for selected communication types. Distinguish available data, notices, queued input and starting model work; current access is checked at delivery. Wake behavior belongs to an explicit supported contract. |

@@ -102,6 +102,12 @@ agree. The proposed constraint composition is intersection of implementation sup
 limits, current authority and Conduit restrictions; exact schema and expression language are open.
 A filter does not silently rewrite the requested value or grant access.
 
+An authorized user or Agent can delegate an explicit subset of service access while establishing
+another consumer's Conduit attachment. Record that delegation with the attachment; a separate
+Agent-permission setup is not required first. The creator must be permitted to delegate it, and
+target/recipient limits still apply. Merely declaring requested access, naming a Resource or
+editing a filter grants nothing. Delegation does not inherently authorize onward delegation.
+
 Conduits cover Agent-to-Agent and Resource-to-Resource interaction as well as user control and
 Pool access. Reusing a template does not choose between opening a new flow and joining an existing
 one. The enclosing consumer supplies its endpoint identity for declared connections. Explicit

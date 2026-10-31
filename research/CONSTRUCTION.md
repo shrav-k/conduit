@@ -343,6 +343,148 @@ per-request metadata differs from older initialization-based sessions. An ongoin
 not necessarily an always-open socket. Keep version handling in integrations, not one mandatory
 handshake in every graph.
 
+### Connected Pool and Agent YAML draft
+
+**Review sketch, not accepted schema or runnable configuration.** This combines the accepted
+ownership, shared authentication, dependency binding, capability matching, dynamic provider catalogs
+and delegation rules. Field layout beyond the settled envelope and Resource type/config/conduits
+fields is proposed. All type, capability, plugin, graph and bundle identifiers below are illustrative;
+no referenced implementation is installed or validated by this example. The source paths are
+placeholders, not files to execute. Full graph/runtime definitions are omitted to focus on composition.
+
+The management Interface acts for the authorized user. Assume a reusable template catalog:
+
+| Template | Contract in the example |
+| --- | --- |
+| Resource `linear-authentication` | Selects the intended Linear account; establishes a reusable provider binding and manages its refresh. Exposes a service-authentication capability. |
+| Resource `linear-service` | Exposes native MCP discovery/invocation using a required authentication connection. Its declaration is sketched below. |
+| Conduit `capability-access` | Establishes an authorized logical attachment, carries supported interactions and applies its restrictions. No login is duplicated merely by using this template. |
+| Agent `native-worker` | Supplies the worker runtime, its separate model-account selection, private state and activation behavior; the earlier Agent fragment illustrates setup. |
+
+The catalog is a dependency of the example, not more object families. Complete templates must
+resolve their actual plugin/graph/runtime contracts before use. Sharing a provider account across
+MCP and a later CLI integration would not imply that the same credential works for both.
+
+**The service template declares its requirement, without choosing an account.**
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Resource
+form: template
+metadata:
+  name: linear-service
+spec:
+  type: {group: integration, name: remote-mcp, version: v1alpha1}
+  config:
+    endpoint: https://mcp.linear.app/mcp
+  graph:
+    source: example-graphs/establish-mcp.yaml
+  runtime:
+    implementation: {group: integration, name: mcp-client, version: v1alpha1}
+  conduits:
+    authentication:
+      templateRef: {kind: Conduit, form: template, name: capability-access}
+      requires: {group: identity, name: service-authentication, version: v1alpha1}
+      required: true
+      requestedAccess:
+        bundle: example-use-service-authentication
+```
+
+The type's capability declaration would describe supported MCP discovery/invocation. The provider
+supplies its native tool catalog; the template does not enumerate every Linear operation. The
+authentication requirement names a contract, not a secret or a specific account. Proposed `requires`
+syntax is separate from the already-selected kind/form/name syntax for registered object references.
+The requested bundle names the service's desired use of authentication; its compatibility requirement
+does not itself grant that use. Pool establishment must be authorized to delegate the actual access.
+
+**The Pool composes instances and supplies the dependency target.**
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Pool
+form: template
+metadata:
+  name: euphony-pool
+spec:
+  graph:
+    source: example-graphs/compose-pool.yaml
+  resources:
+    auth:
+      templateRef: {kind: Resource, form: template, name: linear-authentication}
+      config:
+        account: euphony-linear
+    linear:
+      templateRef: {kind: Resource, form: template, name: linear-service}
+      bindings:
+        authentication: {localResource: auth}
+```
+
+`auth` and `linear` are proposed local composition names. They are neither registry aliases nor
+preassigned instance names. `localResource: auth` means the Resource created from that entry in
+this particular Pool instantiation. Another Pool created from the same template gets different
+owned instances. Proposed `bindings` supplies the target for the service's declared `authentication`
+connection; it does not create a second connection or an independent runtime binding ledger.
+
+The `config` block supplies ordinary creation configuration. Assignment replaces that field rather
+than introducing an implicit deep merge; this example assumes the authentication template's
+config is entirely its account selection. Runtime/type settings remain separate. More complicated
+child edits and creation overrides need their own explicit syntax rather than guessed merge rules.
+
+The Pool's setup graph performs the composition. Mapping order alone is not execution order.
+Registration can establish identities before required preparation succeeds; the service cannot
+complete required preparation until its authentication dependency is usable. An illustrative
+resolution could be:
+
+| Local composition entry | Resulting registered Resource | Owner |
+| --- | --- | --- |
+| `auth` | `linear-authentication-4d1b` | `euphony-pool-3a7c` |
+| `linear` | `linear-service-92ab` | `euphony-pool-3a7c` |
+
+The service instance retains its resolved Conduit target ID under the existing identity-binding
+rules. Exact output/inspection representation and retry mechanics are not chosen by this table.
+No editable copy of the child's live binding is implied on the parent Pool.
+
+**The Interface creates the Agent with a requested attachment.**
+
+The following is an excerpt from a creation draft expanded from `native-worker`. Its runtime,
+graph and other instance configuration are omitted here; a complete saved instance retains them.
+This is not a whole-spec patch to a running Agent or a separate setup-operation document.
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Agent
+form: instance
+metadata:
+  name: native-worker-58fa
+spec:
+  conduits:
+    issues:
+      intent: open
+      templateRef: {kind: Conduit, form: template, name: capability-access}
+      requires: {group: integration, name: mcp-access, version: v1alpha1}
+      target: {kind: Resource, form: instance, name: linear-service-92ab}
+      requestedAccess:
+        bundle: example-linear-issue-read
+```
+
+The Interface chooses the actual target from the instantiated Pool. Its authorized creation/
+connection action can delegate the allowed subset to the Agent; the attachment records the issued
+delegation separately from this request. Neither `requestedAccess` nor authoring the YAML grants
+permission. `example-linear-issue-read` is an illustrative convenience bundle requiring a verified
+expansion into native operations/constraints, not an assertion that MCP metadata can prove arbitrary
+read-only behavior. Additional Conduit filters may narrow the delegation; a duplicate allowlist is
+not required merely to restate the same requested access.
+
+At runtime the Agent sees the permitted native Linear tools on a supported mediated path. The MCP
+Resource uses its authorized connection to the authentication Resource, which manages the reusable
+login. The Agent's model subscription stays independent. Detaching the Agent preserves both
+Pool-owned Resources and the login for other permitted consumers.
+
+**Review now:** whether named local Resource entries are the right Pool composition primitive.
+The names of `resources`, `bindings`, `localResource`, `requires` and `requestedAccess`, exact
+capability/bundle identifiers and the graph-source syntax are still proposals. This example does
+not choose an API version, provider implementation, complete permission language or plugin ABI.
+
 ### What the research contributes
 
 The following primary sources were checked in the earlier investigation. Conduit implications

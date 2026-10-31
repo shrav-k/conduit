@@ -1052,6 +1052,18 @@ into visible grants. Agent limits and explicit exclusions constrain effective ac
 missing limits add no authority. Permitted operations require no extra confirmation merely
 because permission rules exist. Resource and communication permissions do not imply each other.
 
+**Accepted delegation boundary:** an authorized user or Agent may delegate an explicit subset of
+service access when establishing another consumer's Conduit attachment. The attachment records
+the delegation; no separate prior Agent-permission setup is required. The creator must have
+authority to delegate that access, subject to target policy and recipient limits. For example,
+a user can connect a reviewer to shared Linear access with read-only authority in one action.
+
+Keep requested access, the authorized delegation and any additional filters distinguishable.
+Authored configuration requests access; it does not issue its own grant. Filters only narrow
+granted authority. This adds no permission-registry object family and does not implicitly grant
+onward-delegation rights. Exact issuance fields, issuer checks, grant lifetime and revocation
+semantics remain open within the existing current-access and safe-outcome rules.
+
 Selection supports IDs, owning contexts, metadata predicates and path patterns where the
 integration supports them. Matches within established access rules are live. Authorized
 connection, filter and Agent-limit changes apply to subsequent managed requests and are

@@ -207,6 +207,11 @@ restricted access Conduits without separately logging into Linear. The Interface
 management Conduit to the Resource. Opening access does not grant configuration control or give
 the Agent the upstream credential. Per-attachment identities remain an explicit supported exception.
 
+When authorized to delegate, the user can establish each Agent's attachment with its explicit
+permitted subset in the same action. For example, the review Agent requests issue-read access;
+the attachment records the actual authorized delegation. No separate Agent permission record is
+required first, but a requested bundle or filter in YAML is not self-issued authority.
+
 | Element | Responsibility in this example |
 | --- | --- |
 | Resource template | Service target, constraints, establishment recipe, supported runtime and exposed operations/controls. |

@@ -5,8 +5,10 @@ Reserve **Conduit** for ongoing connections and filters. Use a shared constructi
 across templates to establish all kinds of instances. **Agent** is the proposed replacement
 for Session. Templates are reusable, image-like definitions supporting repeated instantiation;
 focused plugin nodes compose their Dockerfile-like graphs. The graph runs on each instance start;
-a plugin may verify that its work is already satisfied and finish sooner. Caching and build
-optimizations remain implementation concerns. Implementation has not started.
+a plugin may verify that its work is already satisfied and finish sooner. Instances retain their
+resolved setup graph and runtime configuration in their own spec, independent of later source
+template changes. Caching and build optimizations remain implementation concerns. Implementation
+has not started.
 
 Plugins declare their typed inputs and outputs; graph nodes select plugins and bind values to
 those contracts. Output bindings establish dependencies; explicit prerequisites cover ordering

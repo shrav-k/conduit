@@ -249,25 +249,24 @@ An instance's YAML view describes the concrete object: its resolved settings, Re
 Conduit bindings and system-owned observations. Configuration-only export omits status, as
 already agreed. It is not another hand-authored copy of the graph with success fields filled in.
 
-To restart consistently, an instance needs an executable recipe that cannot silently change
-when the source template is edited. **Next proposal:** retain the resolved setup graph and
-runtime configuration in the instance's own spec. An inline or referenced template graph would
-both produce that current instance definition. Ordinary checked instance updates can change it;
-how an update affects incomplete setup or a running execution remains a separate transition rule.
+**Accepted:** each instance retains its resolved setup graph and runtime configuration in its
+own spec. Inline and referenced template graphs both produce that current instance definition;
+future starts and retries do not depend on the source template remaining registered or unchanged.
+Ordinary checked instance updates can change its definition within the type's transition rules;
+their effect on incomplete setup or a running execution remains under review below.
 
 For example, creating Agent A from a template with an authentication-then-preparation graph
 gives A that graph as its active configuration. Adding another setup step to the template later
 affects newly created instances, not A's next start. Deleting the source template does not remove
-A's recipe. The alternative is an immutable versioned graph reference on A that must remain
-resolvable independently of the original template registration.
+A's recipe.
 
 Retaining the current graph is not a source-template snapshot archive or input/override history.
 It does not copy plugin implementations, Resource contents, credentials or live handles. Dynamic
 input/output bindings remain typed references; observed results and execution progress remain
 managed state. Plugins and other referenced dependencies must still be available and compatible,
 and current access rules still apply. The exact resolved representation and schema remain open.
-Configuration export must report its dependencies; neither option silently follows editable
-source files or introduces a cache mechanism. This chooses the instance's logical content and
+Configuration export must report its dependencies. Instances do not silently follow editable
+source files; this introduces no cache mechanism. It chooses the instance's logical content and
 inspection contract, not a requirement for physically duplicated storage of identical graphs.
 
 Compose also suggests a future convenience view: select several Agent, Pool, Resource and Conduit
@@ -280,6 +279,26 @@ Defer that multi-object syntax until one reusable template and its instance repr
 clear. For now, the template YAML remains sufficient with its explicit dependencies. CLI/editor
 choices can supply per-instance values through the same typed fields. Registration, starting an
 instance and observing its results remain different operations.
+
+### Editing instance configuration
+
+**Next proposal:** saving an allowed, checked update to an instance's setup graph or behavioral/
+runtime configuration leaves current setup/execution on its active configuration until explicit
+reconfiguration or a future start. Inspection distinguishes the saved configuration version from
+the version actually in use and reports pending changes. Current authority restrictions still
+apply live; this proposal does not freeze permissions, Resource data or external service state.
+
+For example, changing an Agent instance's configured model does not silently switch its active
+execution. Adding a node to an incomplete setup graph does not splice it into a pending retry.
+Applying the edited definition is explicit and must use a supported transition; the caller may
+request save and application together without authoring a second configuration recipe. Whether
+changed setup can reuse any prior progress remains a separate compatibility rule.
+
+The alternative applies supported changes on save and reports those requiring a restart or
+other explicit transition. Both approaches obey the type's permitted updates and retain actual
+execution settings. The proposal concerns application timing, not automatic restart, a new
+approval requirement or a mandatory archive of every earlier configuration. Exact status fields
+and reconfiguration mechanics remain open.
 
 ## MCP setup and instance runtime walkthrough
 
@@ -554,10 +573,11 @@ failure after successful setup defaults to bounded automatic reconnection where 
 a manual option. Consumers continue independent work while missing dependencies are reported;
 initial required-dependency checks and existing mandatory stop rules remain applicable.
 
-Next settle [instance executable configuration](#instance-yaml-and-an-optional-composition-view):
-retain the resolved graph in the instance spec or an immutable independently resolvable reference.
-Then review how explicit configuration changes interact with incomplete setup and running state.
-Neither choice requires preserving source-template history or freezing authority/Resource data.
+Instances retain their resolved graph and runtime configuration in their own spec, independently
+of the source template. Next review [editing instance configuration](#editing-instance-configuration):
+explicit application of saved changes, or applying supported changes on save? Then define
+compatible reuse of progress when an edited graph/configuration is explicitly adopted. Current
+authority and Resource data remain live; no template-history archive is required.
 
 Apply the same contract to two Agent instances using different accounts and to a local directory.
 Preserve repeated template use, instance-private state, Pool ownership and current authority.

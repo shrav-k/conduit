@@ -20,14 +20,15 @@ progress. Temporary MCP transport failure after successful setup defaults to bou
 reconnection where supported; templates can select manual recovery. Consumers normally continue
 independent work while the unavailable dependency is reported; initial preparation still requires
 required connections, and existing mandatory stop rules remain applicable.
+Each instance retains its resolved setup graph and runtime configuration in its own spec;
+source-template edits or deletion do not change it.
 
-Next review [instance executable configuration](research/CONSTRUCTION.md#instance-yaml-and-an-optional-composition-view):
-retain the resolved setup graph and runtime configuration in the instance's own spec, or retain
-an immutable versioned graph reference that must remain resolvable? This is current executable
-configuration, not mandatory template history. Exact fields, status representation and retry
-limits remain open. Caching/build optimizations remain implementation concerns. The checkpoint
-and detailed agenda below preserve the pre-inquiry discussion for comparison; no additional
-runtime family is selected.
+Next review [editing instance configuration](research/CONSTRUCTION.md#editing-instance-configuration):
+should checked graph/behavioral/runtime edits remain pending until explicit reconfiguration or
+a future start, or should supported changes apply when saved? Current authority rules remain
+live. Exact fields, status representation and retry limits remain open. Caching/build
+optimizations remain implementation concerns. The checkpoint and detailed agenda below preserve
+the pre-inquiry discussion for comparison; no additional runtime family is selected.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive

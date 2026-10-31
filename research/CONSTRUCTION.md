@@ -370,8 +370,8 @@ prepare database files → request instance-managed service start
 ```
 
 The instance manages the service while migrations run. A failed migration does not erase that
-ownership or imply that setup succeeded. Retrying, retaining or stopping the service follows
-separately selected recovery/cleanup rules. Creating or attaching the Resource still goes
+ownership or imply that setup succeeded. By default the managed service remains running for
+inspection, explicit retry or explicit shutdown, as defined below. Creating or attaching the Resource still goes
 through its Pool; this adds no new runtime object family. Allowing managed startup during setup
 does not authorize implicit restarts or repeated creation effects.
 
@@ -391,7 +391,7 @@ Successful graph completion records establishment, not a guarantee of future ava
 
 ### Failure after runtime startup
 
-**Next proposal:** if a required setup step fails after the declared runtime starts, normally
+**Accepted default:** if a required setup step fails after the declared runtime starts, normally
 keep that runtime under instance management and running for inspection or an explicit setup
 retry. Report setup as incomplete/failed independently of whether its process is running.
 Explicit stop/cancellation can request runtime shutdown without deleting backing data. Exact
@@ -399,22 +399,43 @@ status labels and cancellation mechanics remain open.
 
 For the database example, a failed migration leaves an inspectable managed service; it does not
 trigger another migration attempt or create another database automatically. The existing rule
-retaining successful Conduit attachments during partial preparation remains applicable. Extending
-retention to a running service is the choice under review, not a re-ruling of attachment retention.
+retaining successful Conduit attachments during partial preparation remains applicable.
 
-The alternative normally stops the runtime started for setup when a required step fails,
-preserving its files, registry identity and recorded results. This avoids keeping an unused
-service running but requires a service restart before an in-service inspection or retry.
-Both approaches preserve current authority, avoid presumed rollback of external effects and
-require reconciliation before repeating an operation whose outcome is unknown. Neither selects
-automatic retry or a universal response to a later failure after successful setup.
+This preserves current authority and does not restart a runtime that independently stops or
+override a required shutdown. Failure does not imply rollback of external effects. Reconcile
+uncertain outcomes before repetition; even a reported failure can leave partial effects. This
+default selects neither automatic retry nor a universal response to failure after successful setup.
+
+### Explicit setup retry
+
+**Next proposal:** an explicit retry of the same incomplete setup, with unchanged graph and
+configuration, continues from recorded progress. Reuse completed steps only when their results
+and prerequisites remain valid under the plugin/output contracts and current authority. A failed
+or uncertain step needs its supported recovery or safe-repetition path; a failure label alone
+does not make rerunning it safe.
+
+For the failed database migration, retain the database instance and managed service, verify
+the required access/readiness, and retry or recover the migration only as its contract permits.
+Expired authentication or an unavailable service prevents treating dependent work as usable.
+If valid continuation cannot be established, report the unresolved condition rather than
+silently replaying earlier creation effects. Exact invalidation/repair mechanics remain open.
+
+The alternative reevaluates the graph from its entry, with each plugin checking whether its
+work remains satisfied before performing effects. Both approaches preserve the existing runtime
+and safe-retry rules; the distinction is whether graph-level progress selects reusable completed
+steps or every step is reevaluated through its implementation.
+
+This concerns continuation of retained incomplete setup, not a new instance start, cross-start
+output caching or automatic retry. The graph-on-each-start rule remains. Changed configuration,
+graph/plugin compatibility and the exact retained progress representation need separate review;
+no full template-history archive or additional runtime family is introduced.
 
 ### Changes and failures to test
 
 | Event | Proposed interpretation and retained constraints |
 | --- | --- |
 | Sign-in needs a person | Setup remains waiting with explicit progress; no assertion that authentication succeeded. |
-| A later required setup step fails | The instance remains not fully prepared. Existing partial-success rules preserve useful successful work for retry; management of a started helper is not lost. Cancellation/cleanup remains explicit. |
+| A later required setup step fails | The instance remains not fully prepared. Its already-started runtime normally remains managed and running; inspection, retry or shutdown is explicit. Successful Conduit attachments remain retained. |
 | Conduit crashes after starting a helper but before recording success | Reconcile using supported runtime/native evidence. Unknown state does not justify blindly starting a duplicate; no arbitrary spawn-and-report convention can guarantee recovery. The implementation contract is still required. |
 | A prepared connection later fails | The instance reports the observed gap. Reconnect or reauthentication follows its supported, selected policy; neither follows automatically from declaring the instance owner. |
 | A tool write loses its response | Restoring transport is separate from replaying the write. Preserve the existing uncertain-outcome/reconciliation rules. |
@@ -486,9 +507,10 @@ Templates declare typed ongoing runtime behavior with type-provided defaults; gr
 prepared inputs. Graphs may request startup of that runtime before setup finishes; instances
 manage it from startup. Exact fields and start/wait bindings remain open.
 
-Next use the [failed-migration example](#failure-after-runtime-startup) to choose whether an
-already-started runtime normally remains running or is stopped after required setup failure.
-Then examine the [MCP connection](#mcp-setup-and-instance-runtime-walkthrough) losing access after
+Required setup failure normally retains the managed running runtime while setup remains incomplete.
+Next use [explicit setup retry](#explicit-setup-retry) to decide whether unchanged setup continues
+from valid recorded progress or reevaluates every step. Then examine the
+[MCP connection](#mcp-setup-and-instance-runtime-walkthrough) losing access after
 setup. Select supported recovery behavior without conflating transport recovery, credential
 refresh, replacement model execution and uncertain-write replay.
 

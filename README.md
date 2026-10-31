@@ -16,8 +16,9 @@ instances manage ongoing processes, connections and availability.** Setup plugin
 while the established instance continues. Templates declare typed ongoing runtime behavior,
 using type-provided defaults; graphs supply prepared inputs. A graph may request startup of
 the declared runtime before setup finishes, with the instance managing it from startup.
-Exact runtime fields, start/wait bindings and recovery details remain under review. Plugin
-implementations can still be local scripts or processes.
+Required setup failure normally leaves that runtime managed and running, with setup incomplete;
+inspection, retry or shutdown is explicit. Exact fields, start/wait bindings and further recovery
+details remain under review. Plugin implementations can still be local scripts or processes.
 
 | Family | Instance represents |
 | --- | --- |

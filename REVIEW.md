@@ -14,15 +14,16 @@ instances; instances manage ongoing processes, connections and availability. Set
 remain live to supervise the capabilities they establish. Templates declare typed ongoing
 runtime behavior, using type-provided defaults; setup graphs supply prepared inputs. Graphs may
 request startup of the declared runtime during setup, under immediate instance management.
+Required setup failure normally leaves that runtime managed and running, with setup incomplete;
+inspection, retry or shutdown is explicit.
 
-Next review [failure after runtime startup](research/CONSTRUCTION.md#failure-after-runtime-startup):
-if a required migration fails, should the managed database normally keep running for inspection
-and retry, or should setup failure stop it while preserving its data? Retaining successful
-Conduit attachments remains the baseline; the runtime's failure default is not yet selected.
-Exact start/wait bindings, status fields and recovery policies remain open. The MCP walkthrough
-remains the connection example. Caching/build optimizations remain implementation concerns. The checkpoint and detailed
-agenda below preserve the pre-inquiry discussion for comparison; no additional runtime family
-is selected.
+Next review [explicit setup retry](research/CONSTRUCTION.md#explicit-setup-retry): should unchanged
+setup continue from recorded progress, reusing still-valid completed work, or be reevaluated from
+the graph's entry with plugins deciding what remains satisfied? Both preserve the retained runtime
+and the existing safe-repetition/current-access rules. Exact start/wait bindings, status fields
+and further recovery policies remain open. Caching/build optimizations remain implementation
+concerns. The checkpoint and detailed agenda below preserve the pre-inquiry discussion for
+comparison; no additional runtime family is selected.
 
 **Review Resources before Pools.** Prefer simple, unitary Resources and minimal duplicated bookkeeping.
 Use concrete Resource types to establish templates, instances and consumer access, then derive

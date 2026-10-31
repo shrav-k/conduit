@@ -204,6 +204,10 @@ instead of using one ambiguous “dry run” for parsing, account probes and pac
 
 ## Docker: several languages for different effects
 
+The active [template YAML comparison](CONSTRUCTION.md#template-yaml-and-compose-inspired-composition)
+revisits Compose for reusable configuration, graph-source organization and resolved instance views.
+It preserves the agreed graph-on-each-start behavior; it does not add Docker's build phase.
+
 Docker is not one configuration language. A [Dockerfile](https://docs.docker.com/build/concepts/dockerfile/)
 describes an image build, including instructions that execute commands. Compose describes
 an application model. [Bake](https://docs.docker.com/build/bake/) supplies build targets and

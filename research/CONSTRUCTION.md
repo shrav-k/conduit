@@ -89,27 +89,112 @@ Matching YAML alone cannot establish that credentials remain valid or external d
 These boundaries allow future caching or reuse where supported without making those mechanisms
 part of the basic template-to-instance model.
 
-## YAML and graphs are compatible
+## Template YAML and Compose-inspired composition
 
-Recommend retaining YAML as the initial serialized form for both templates and instances:
+**Recommendation for discussion:** preserve template YAML as the reusable, typed authoring
+contract. Add a plugin graph inside that contract, with an optional reference to reusable graph
+source. A graph does not replace object identity, configuration schemas or reusable defaults.
+The graph can itself be represented in YAML; code remains in the plugin implementations.
 
-| Form | YAML can express | What it does not establish by itself |
-| --- | --- | --- |
-| Template | Typed settings, references, construction nodes, dependencies and result bindings. | That creation effects have run or that the selected account/service is ready. |
-| Instance | Identity, resolved ongoing spec, references to other instances and reported status. | A living process, credential bytes, an open socket or proof of current external readiness. |
+### What to preserve and what to change
 
-The graph can be embedded in template YAML or referenced as a reusable definition. A future
-editor or code-based authoring frontend can produce the same typed construction representation.
-That is independent of whether the resulting instance can be inspected/exported as YAML.
-Do not select another language before examples show what the typed graph cannot express.
+| Part | Proposed treatment |
+| --- | --- |
+| Common envelope | Keep apiVersion, kind, form, metadata and spec. Agent is the proposed replacement for Session; exact API identifiers remain open. |
+| Typed configuration and defaults | Keep ordinary domain fields for model/runtime, account references, paths and connection selections. Avoid duplicating their values in graph nodes. |
+| Resource types and ownership | Keep separate group/name/version and typed config. Resource instantiation still goes through its one owning Pool. |
+| Execution recipe | Express the steps as a graph of focused plugin nodes. Nodes reference configuration fields and preceding outputs where needed. |
+| Reuse | One template creates many instances. Permit graph-source reuse without inventing a setup Conduit or another runtime family. |
+| Runtime observations | Keep generated identity, readiness and execution outcomes in managed instance state; authored YAML cannot assert successful login or creation. |
 
-Instance inspection may include system-owned status; normal configuration writes still cannot
-claim success by submitting status. Registry updates, external establishment and agent execution
-remain distinct effects. Template completeness does not imply that loading a file starts work.
+A complete template consists of its authored contract plus explicit, resolvable dependencies.
+It need not be one enormous file. Recommend an inline graph for a small template and an optional
+source reference for shared/larger graphs, with identical semantics and mutually exclusive
+inline/reference forms. This packaging choice is proposed, not yet a required protocol field.
+Referenced source needs an explicit resolution base and the existing checked-update semantics;
+editing a referenced file must not silently change registered configuration or a running instance.
 
-A complete ongoing instance spec is not necessarily a reproducible construction recipe. Instance
-export/recreation must still account for creation-only choices and required secrets/references.
-Changing or deleting a completed instance's source template does not silently change the instance.
+### What Compose actually contributes
+
+Primary documentation rechecked on 2026-10-31. The Conduit column is our inference, not a claim
+that Compose implements Conduit's graph-on-start model.
+
+| Docker evidence | Conduit implication |
+| --- | --- |
+| [Compose services](https://docs.docker.com/reference/compose-file/services/) combine an image with runtime arguments; service definitions configure their containers. | Separate the reusable template from the actual settings selected for each instance. Keep those settings inspectable. |
+| [Compose build configuration](https://docs.docker.com/reference/compose-file/build/) can refer to a Dockerfile or use dockerfile_inline. Build support is an optional part of the specification. | Inline and referenced recipes can share a contract. Conduit still executes its graph on each instance start; no mandatory image-build phase is being added. |
+| [compose config](https://docs.docker.com/reference/cli/docker/compose/config/) resolves input files and variables and renders a canonical application model. | Provide a resolved configuration/graph view before effects. Distinguish resolved configuration from observed runtime success. Exact CLI commands remain open. |
+| [Compose include](https://docs.docker.com/reference/compose-file/include/) supports reusable sub-configurations with their own project-directory path bases. | Support modular sources with explicit path resolution and predictable identities. Prior local Compose-version caveats remain in CONFIGURATION.md. |
+| [Compose merging](https://docs.docker.com/reference/compose-file/merge/) has mapping, sequence and field-specific exception rules. | Retain Conduit's previously selected explicit field replacement/child edits; do not import a generic append/deep-merge rule for graphs or permission lists. |
+
+The useful analogy is structural: recipe, reusable definition, chosen runtime configuration and
+actual instance are distinct. Conduit is not adopting Docker's build/run timing or treating a
+Compose service declaration as a running container. Secret values and live handles remain outside
+reusable YAML; account/service references identify what an integration must resolve.
+
+### Minimal template sketch
+
+This is a partial Agent-template example showing configuration-to-node bindings. Plugin names,
+versions, graph fields and reference notation are illustrative; they are not installed contracts
+or an accepted schema. It omits the full account/private-state, connection and readiness contract.
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Agent
+form: template
+metadata:
+  name: native-worker
+spec:
+  config:
+    runtime: claude-code
+    account: claude-work
+  graph:
+    nodes:
+      authenticate:
+        plugin: {group: auth, name: native-login, version: v1alpha1}
+        inputs:
+          runtime: {from: config, field: runtime}
+          account: {from: config, field: account}
+      prepare:
+        plugin: {group: agent, name: prepare, version: v1alpha1}
+        inputs:
+          runtime: {from: config, field: runtime}
+          identity: {from: node, name: authenticate, output: identity}
+```
+
+The account value is declared once. The authenticate node consumes it; the prepare node consumes
+the verified identity. The output reference supplies the dependency, so the graph does not also
+need an independent ordering list for those nodes. Actual operations receive the authorized
+instance context; a YAML account label is not permission or evidence that sign-in succeeded.
+
+Instantiate the same template with account `claude-work-1` and again with `claude-work-2` by
+selecting different values for the ordinary account field. Each gets its own resolved settings
+and runtime state. The graph is reusable; plugins still establish the selected identity for
+each start. The proposed graph input/output references extend the language, while instance
+customization continues through ordinary typed fields rather than a second generic parameter DSL.
+
+### Instance YAML and an optional composition view
+
+An instance's YAML view describes the concrete object: its resolved settings, Resource/Pool/
+Conduit bindings and system-owned observations. Configuration-only export omits status, as
+already agreed. It is not another hand-authored copy of the graph with success fields filled in.
+
+To restart consistently, an instance needs an identifiable executable recipe or binding that
+cannot silently change when the source template is edited. Whether it retains a resolved graph
+or a versioned graph reference needs a separate contract. This is distinct from retaining every
+original YAML file, comment or historical template revision. No blanket template-history archive
+or cache mechanism is being selected here. Export must report any dependencies needed for reuse.
+
+Compose also suggests a future convenience view: select several Agent, Pool, Resource and Conduit
+templates, supply settings and express their relationships together. This can be an authoring
+bundle over the existing model, not a new running object family or a mandatory second setup
+recipe. A Pool continues to own only its Resource instances; it does not become an application
+owner for Agents and Conduits merely because their declarations share a file.
+
+Defer that multi-object syntax until one reusable template and its instance representation are
+clear. For now, the template YAML remains sufficient with its explicit dependencies. CLI/editor
+choices can supply per-instance values through the same typed fields. Registration, starting an
+instance and observing its results remain different operations.
 
 ## Repeated instantiation is fundamental
 
@@ -166,7 +251,12 @@ presented as the current model.
 The execution baseline is settled: run the plugin graph on each instance start, with plugins
 able to verify and reuse already-satisfied state. Implementation optimizations remain deferred.
 
-Work through the same reusable Agent template started twice, using an illustrative sequence:
+First settle the authoring boundary proposed in
+[Template YAML and Compose-inspired composition](#template-yaml-and-compose-inspired-composition):
+retain the typed YAML envelope and configuration, with an inline or explicitly referenced graph.
+Exact graph/binding syntax remains open; multi-object composition can follow later.
+
+Then work through the same reusable Agent template started twice, using an illustrative sequence:
 
 ```text
 prepare instance-private state

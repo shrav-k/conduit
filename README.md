@@ -21,8 +21,11 @@ configuration and observed state. Construction graphs are part of the
 common template mechanism. A Conduit template uses that mechanism to establish a connection;
 a directory constructor or login procedure is not thereby a Conduit.
 
-YAML can represent both template configuration/graphs and instance spec/status. The format
-is separate from execution: an instance can be running, idle or persistent without a process.
+The [current YAML proposal](research/CONSTRUCTION.md#template-yaml-and-compose-inspired-composition)
+keeps a typed template with configuration and an inline or referenced graph, plus resolved instance
+views. Compose inspires modularity and inspection; multi-object composition remains optional
+future work. The format is separate from execution: an instance can be running, idle or persistent
+without a process.
 Resource ownership, account separation, current-access checks and recovery requirements remain
 constraints on the new proposal.
 

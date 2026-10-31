@@ -55,7 +55,10 @@ target-specific control requirements or require an always-running process.
 Direct user-control of an Agent belongs to its controlling Interface. All authorized frontend
 attachments of that Interface can issue input, cancellation and settings commands through the
 permitted Conduit paths. Requests retain caller/attachment attribution and target checks; switching
-between those frontends needs no controller handoff. Agent-originated control remains under review.
+between those frontends needs no controller handoff. Delegated Agents can invoke a target Agent's
+permitted controls through their own Conduits alongside Interface control, without taking it over.
+The target applies current permissions, relevant state checks and coordination rules; neither
+actor has automatic priority. Ordinary message delivery and wake behavior remain separate.
 
 1. **Author templates.** Create/edit Resource and Agent templates, including their establishment
    instructions, configuration and permitted changes.
@@ -71,8 +74,8 @@ between those frontends needs no controller handoff. Agent-originated control re
 
 Visibility does not grant a direct instance-edit path. Agents use the same Conduit-mediated
 interaction principle. Broad Interface access does not manufacture unsupported provider controls.
-Owner/client binding, bootstrap recovery/protection, frontend transport and target-control mapping
-remain open.
+Owner/client binding, bootstrap recovery/protection, frontend transport and control across
+distinct Interfaces remain open.
 
 ## Templates are complete construction and change contracts
 

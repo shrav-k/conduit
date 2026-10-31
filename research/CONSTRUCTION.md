@@ -114,6 +114,27 @@ This representation does not grant arbitrary callers administrative access or si
 services. The initial authority rule is below; built-in definitions, recovery/protection, exact
 management operations, process layout and transports remain open. No new object family is introduced.
 
+### Reusing and repairing the system bootstrap
+
+**Proposal for the next ruling:** later startup reuses the registered system Pool, management
+Resource and default Interface, retaining their identities, saved settings and recorded authority
+while applying current access checks. It does not repeat initial seeding or silently substitute
+bundled defaults. If an expected component is missing or inconsistent, preserve available
+records/data and report the condition for explicit repair.
+
+For example, reopening the terminal finds the existing Interface and management Resource. A
+temporarily disconnected transport can reconnect to the same permitted target under its supported
+contract. A deleted management Resource is different: its prior ID is missing, so startup reports
+the gap instead of substituting a new Resource with the same name. An unreadable registry is not
+evidence of a fresh installation.
+
+The alternative recreates confirmed-missing system components automatically from defaults.
+Recommend explicit repair to keep ordinary startup from changing established identities or grants.
+Repair means a deliberately requested operation by an authorized actor, not mandatory human
+confirmation on each launch. Exact repair authority/steps, partial initial setup recovery and
+Conduit reopening remain open. A retained object does not imply a live process or socket; this
+proposal neither keeps ended flows alive nor starts replacement Agent work or application setup.
+
 ### Initial management authority
 
 **Accepted:** establish one local registry owner using the initializing OS-user
@@ -166,7 +187,7 @@ distinct Interfaces and disconnect/recovery details remain open.
 
 ### Agent-originated control alongside Interfaces
 
-**Proposal for the next ruling:** delegated Agent control can coexist with direct user-control
+**Accepted:** delegated Agent control can coexist with direct user-control
 through an Interface. The commanding Agent uses its own authorized Conduit and identity without
 first taking over the user Interface's control. A coordinator permitted to pause a worker could
 invoke that control while the user's terminal and CLI remain able to direct the worker through
@@ -177,10 +198,9 @@ neither gives an Agent the owner's access nor establishes implicit precedence be
 Agent requests. Which commands can wait, interrupt, conflict or run independently remains part
 of the target's supported behavior. This also does not decide ordinary message delivery or wakeup.
 
-The alternative uses an exclusive controller handoff between Interface and Agent. Recommend
-coexistence through explicit permissions so routine automation does not require transferring the
-user's control. Management rights must still be delegated; access to a conversation alone does
-not imply permission to pause, reconfigure or otherwise control its Agent.
+Routine automation does not require transferring the user's control. Management rights must
+still be delegated; access to a conversation alone does not imply permission to pause, reconfigure
+or otherwise control its Agent.
 
 ## A common interaction contract
 
@@ -604,8 +624,9 @@ is settled for v0, alongside typed filters and access-path composition.
 [Bootstrap management access](#bootstrap-management-access) and
 [initial management authority](#initial-management-authority) are accepted, as are
 [reusable frontend attachments](#interfaces-and-frontend-attachments) and
-[shared Interface control](#direct-agent-control-from-shared-interfaces). The next ruling concerns
-[Agent-originated control alongside Interfaces](#agent-originated-control-alongside-interfaces).
+[shared Interface control](#direct-agent-control-from-shared-interfaces) and
+[delegated Agent control](#agent-originated-control-alongside-interfaces). The next ruling concerns
+[later startup and system repair](#reusing-and-repairing-the-system-bootstrap).
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

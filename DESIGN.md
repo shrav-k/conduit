@@ -644,10 +644,16 @@ its caller/attachment identity and passes through its permitted Conduit path and
 Sharing the Interface grants no additional permission and does not bypass configuration revision
 checks or per-target coordination. Simultaneous submission does not promise simultaneous execution.
 
-The relationship to Agent-originated commands, control across distinct Interfaces and loss/recovery
-details remain open. Disconnecting a frontend detaches and preserves supported ongoing Agent
-execution. Keep persisted history, current model context, frontend state and shared Resource
-content distinct.
+**Accepted delegated Agent control:** an authorized Agent may invoke another Agent's permitted
+controls through its own Conduit and identity while user-control through the Interface remains
+available. No exclusive controller handoff is required. Each request remains subject to current
+authority, relevant state checks and target coordination. Neither actor has automatic priority;
+coexistence does not imply simultaneous execution. Ordinary communication delivery and wake
+behavior remain separate from permission to invoke a control.
+
+Control across distinct Interfaces, precise input scheduling and loss/recovery details remain open.
+Disconnecting a frontend detaches and preserves supported ongoing Agent execution. Keep persisted
+history, current model context, frontend state and shared Resource content distinct.
 
 ### Lifecycle and continuity
 

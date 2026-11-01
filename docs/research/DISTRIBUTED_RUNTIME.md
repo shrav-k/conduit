@@ -13,6 +13,11 @@ verified. Recommendations below are our inferences from that evidence, not capab
 implemented by Conduit. Earlier language research remains in [CONFIGURATION](CONFIGURATION.md);
 Pi/Xerj and plugin mechanisms remain in [RUST_RUNTIME](RUST_RUNTIME.md).
 
+The follow-up [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) compares AWS, Google Cloud and Azure through
+configuration-change and recovery examples. It separates configuration ownership from policy
+ownership and adds a shared-policy/instance-state alternative. Neither that recommendation nor
+this report's authority and outage recommendations are accepted rulings.
+
 **Current design boundary:** code-optional MCP bindings and independently accessible component
 capabilities are now accepted. Execution services now own Conduit-managed activity separately from
 management; existing MCP services retain their external supervision. Those decisions do not settle
@@ -170,13 +175,15 @@ execution under one registry.
 | B. Shared management/discovery with independent execution services | Instances can run on different machines; Pool ownership stays stable; local and remote calls share contracts; management can reconnect. | Needs authenticated execution identity, local recovery evidence, clear authority ownership and explicit partition behavior. Central management may still be unavailable for new control changes. |
 | C. Independently authoritative object services, with Interface aggregation | Maximum decentralization of lifecycle and availability. | Discovery, names, trust, revision authority, cross-object operations and repair become distributed from the outset. Per-object deployment costs may be disproportionate for inert Resources. |
 
-**Recommendation for discussion:** use B as the next concrete model to examine, while keeping C
-as an explicit alternative. Do not make a shared registry imply a shared process parent or a
+**Subsequent ruling:** the management/execution separation illustrated by B is accepted; its
+configuration and permission authority are not. The [cloud comparison](CLOUD_AUTHORITY.md)
+examines those authority alternatives within separate services; its A–C labels concern authority,
+not the deployment arrangements in this table. Do not make a shared registry imply a shared process parent or a
 mandatory central data hop. Several execution services can initially run on one laptop. That is a
 testable step toward distributed placement, not a promise of federation, transparent migration,
 automatic failover or production remote support.
 
-This recommendation changes the previous proposal. Merely adding Rust traits inside a single
+This separation changes the previous combined-host proposal. Merely adding Rust traits inside a single
 process would not test the independent lifetimes the user is asking for. Conversely, requiring a
 daemon per Pool would couple logical organization to deployment unnecessarily.
 
@@ -200,12 +207,13 @@ Resource type remains open; this report does not invent YAML fields for it.
 
 ### Authority is more important than process count
 
-Each mutable fact needs one authoritative owner. A runner's process observation and a registry's
-last confirmed configuration are different facts, not competing writable copies of one spec.
-For distributed controls, a target's durable application receipt and the registry's eventual
+Each mutable fact needs one authoritative owner. A runner's process observation and the last
+confirmed configuration are different facts, not competing writable copies of one spec.
+If management owns configuration, a target's durable application receipt and the registry's eventual
 commit cannot be assumed atomic. Reserve/reconcile the operation rather than allow another writer
-to treat the old configuration as definitely current. Store placement and the exact reservation
-protocol remain I1/I4 work.
+to treat the old configuration as definitely current. The cloud follow-up also considers keeping
+confirmed configuration and operation records together at an instance authority, with management
+aggregating observations. Store placement and cross-authority coordination remain I1/I4 work.
 
 A coordinator generation helps reject stale requests only if the execution endpoint checks it.
 It does not fence a side effect already admitted by a third-party service. Do not assign the same

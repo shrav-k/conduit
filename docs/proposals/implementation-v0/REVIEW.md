@@ -82,7 +82,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I1 | Authority and outage behavior after execution separation | Separate management/execution services accepted; decide authority ownership next, then permitted work during outages. |
+| I1 | Authority and outage behavior after execution separation | Compare three authority arrangements using cloud examples; shared policy with instance-owned state is recommended, not accepted. Decide outage admission separately. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
 | I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open after I1. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
@@ -104,9 +104,11 @@ host many instances, and several can initially run on one machine. External MCP 
 their own supervision. Pool ownership is logical and does not determine placement. These services
 are implementation roles, not new object families or a daemon per object/Pool.
 
-The [research comparison](../../research/DISTRIBUTED_RUNTIME.md) grounds this separation in Tilt,
-Docker/containerd, Kubernetes, Rust systems and papers. It does not settle the remaining
-authority, availability, storage or deployment guarantees.
+The [distributed-runtime comparison](../../research/DISTRIBUTED_RUNTIME.md) grounds this separation
+in Tilt, Docker/containerd, Kubernetes, Rust systems and papers. The
+[cloud follow-up](../../research/CLOUD_AUTHORITY.md) adds AWS, Google Cloud and Azure, including
+configuration-change and recovery walkthroughs. These do not settle authority, availability,
+storage or deployment guarantees. The user requested comparison before making the authority ruling.
 
 **Example:** one Euphony Pool owns a laptop worktree, a Linear/authentication integration on a
 service machine and search on another machine. Two Agents connect to those Resources through
@@ -114,25 +116,39 @@ Conduits. Losing management visibility does not itself mean all those processes 
 Losing Linear affects Linear access; it does not end the Pool or unrelated work. The Interface
 must show unavailable/stale observations and reconcile them when connectivity returns.
 
-**Authority recommendation, not yet accepted:** management is authoritative for registered
-definitions, configuration revisions and access rules/grants; each executor is authoritative for
-the execution progress and operation evidence it records for its supervised activity. Resource
-backends remain authoritative for their domain data. The Interface aggregates these sources with
-freshness/coverage rather than maintaining another writable authority. A confirmed execution
-receipt and the corresponding registry configuration update remain separate commits requiring
-coordination; executor observations cannot silently overwrite checked configuration or grant access.
+**Compare authority choices:**
 
-For example, management determines the permitted database configuration and who may request a
-change; the responsible executor records whether startup or migration completed, failed or remains
-uncertain. Provider data remains at the database. This does not require a global payload relay or
-select a database technology. The alternative gives independently authoritative object services
-their configuration/permission state as well as execution evidence, with registry coordination.
+| Option | Configuration and execution | Access policy | Concrete consequence |
+| --- | --- | --- | --- |
+| A — Management-owned configuration | Management owns registered configuration/revisions; executors retain progress and effect receipts. | Shared authority. | An executor can confirm a change while management still needs to reconcile and commit the configuration. |
+| B — Object-owned configuration and policy | Object services own configuration/revisions and execution evidence. | Object services own policies under an agreed governance model. | Independent operation is possible, but cross-object restrictions and withdrawal need additional authority rules. |
+| C — Shared policy, instance-owned state | Management owns templates/registration; one designated service owns each instance's resolved definition, confirmed configuration/revision and operation records. | Shared authority, enforced on authorized paths. | Confirmed settings and outcomes commit together at the instance owner; aggregate views can lag. |
+
+**Current recommendation for discussion: C.** This refines the earlier binary question by
+separating configuration ownership from permission ownership. One service can own many instances;
+management can own passive objects and executors active ones. The Interface aggregates views but
+does not create another writable authority. Resource backends remain authoritative for domain
+data. For an external MCP service, Conduit records only the state and results it can establish.
+
+**Change/recovery example:** a search Resource starts at limit 10/R7. A control applies 15, then
+the response is lost. In A, the executor retains the result while management holds 10/R7 plus an
+unresolved operation until reconciliation. In B or C, the responsible service can commit 15/R8
+with the result, and the Interface later recovers it there. An aggregate view still showing 10
+must identify its age. If the provider effect happened before any confirming result was retained,
+all three need effect inspection or supported deduplication; none may blindly repeat the write.
+
+C preserves one authoritative `spec.config`, not desired/applied copies. It changes where a current
+instance read comes from. Naming, registration and retirement still cross authority boundaries and
+need checked coordination; the choice does not automatically solve every lifecycle transaction.
+It also does not permit disconnected requests to rely on stale grants. These are costs to weigh
+before accepting it. Detailed flow comparisons and authoring implications are in the cloud report.
 
 **Resolve together:**
 
-1. Adopt that authority split or give object services independent configuration/permission authority.
-   The accepted single local registry/naming model is retained; this question concerns authority
-   behind it, not adding user-facing registries or namespaces.
+1. Choose A, B or C after the concrete comparison. The accepted single logical registry/naming
+   surface is retained; this concerns authority behind it, not new user-facing registries or
+   namespaces. One local registry remains the v0 scope; the owner protocol should permit later
+   remote placement. No storage engine, automatic migration or failover is selected here.
 2. What can continue during a partition, and what must wait for current authority? Keeping a
    process alive is distinct from admitting a new protected effect. Offline grants would need an
    explicit freshness/withdrawal contract; they cannot silently weaken current-access rules.

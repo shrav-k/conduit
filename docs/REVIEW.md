@@ -34,6 +34,9 @@ management coordinates configuration/control and the Interface presents them. Ex
 services retain their own supervision. Authority ownership and outage behavior remain open;
 [research](research/DISTRIBUTED_RUNTIME.md) informs those distinctions. Remote production support
 remains future work; logical ownership does not require co-location or a process per object.
+The [cloud authority comparison](research/CLOUD_AUTHORITY.md) adds AWS, Google Cloud and Azure
+evidence plus concrete change/recovery examples. Configuration ownership and policy ownership
+are now compared separately; no authority or outage ruling has been made.
 
 ## Design-fit audit: code-optional plugins and independent MCP access
 

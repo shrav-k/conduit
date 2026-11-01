@@ -12,6 +12,9 @@ The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) 
 layout below. **I1 accepts separate management and execution services.** Authority and outage
 behavior remain open. The two-executor fixture is proposed evidence for those boundaries, not
 a completed topology or crash-survival guarantee.
+The [cloud authority comparison](../../docs/research/CLOUD_AUTHORITY.md) adds proposed failure
+cases below. It does not select where canonical instance configuration lives; decide that in I1
+before implementing the fixture. The experiment need not implement every authority alternative.
 
 ## Question
 
@@ -120,6 +123,9 @@ proves a production standalone deployment.
 | Shared access | Both Agents use one fake service identity with different operation permissions | Caller and service identity remain distinct. Each complete route enforces its own restrictions. |
 | Revocation/reconnect | Remove access while a request waits, then restore the transport | Dispatch/retry rechecks current authority. No alternate account/path is selected silently. |
 | Concurrent control | Two callers submit a change from the same configuration revision | Apply one at a time; stale request conflicts. Store confirmed settings separately from unresolved requests. |
+| Confirmed change, lost receipt | Apply a control and commit its responsible service's result, then cut the reply to management/caller | Recover the same operation. In management-owned configuration, reconcile before committing its canonical revision; in instance-owned configuration, recover the owner's committed revision. Never repeat the effect solely to refresh a view. |
+| Stale aggregate inventory | Delay observations while the authoritative instance state advances | Interface identifies source/freshness; older observations cannot overwrite current state. A checked mutation reaches the authority rather than trusting a stale inventory snapshot. |
+| Policy reachability versus process survival | Break authorization reachability while an executor still supervises activity | Distinguish retained supervision, already-admitted effects and new effects requiring admission. Assert the chosen outage policy; do not infer offline permission from a live process. |
 | Interface reconnect | Close all frontend attachments, then reopen | Instance-owned work follows lifecycle policy; committed outcomes remain inspectable. Closing a frontend does not itself terminate it. |
 | Export failure | Disconnect or stall diagnostics export | Local outcomes remain committed and inspectable; export coverage/gaps are visible. |
 | Management loss | Stop management while both executors own live activity | Under the proposed independent arrangement, processes remain supervised; block effects needing unavailable authority, retain evidence and reconnect without duplicate work. |

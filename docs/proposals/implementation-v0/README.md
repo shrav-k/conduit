@@ -28,6 +28,10 @@ executor can host multiple instances; external MCP services retain their own sup
 supports eventual distributed placement without deciding configuration/permission authority or
 outage guarantees. The [research](../../research/DISTRIBUTED_RUNTIME.md) supplies the comparison;
 its authority and failure-policy recommendations remain proposals.
+The [cloud follow-up](../../research/CLOUD_AUTHORITY.md) compares central configuration authority,
+object-owned configuration/policy, and shared policy with instance-owned state. The last is the
+current recommendation for discussion, not an accepted change. The examples show exactly where
+a confirmed effect, configuration commit and aggregate observation can diverge.
 
 Rust services implement registry authority, instance supervision, authorized capability traffic
 and durable evidence through explicit boundaries. Detailed placement, authority and outage

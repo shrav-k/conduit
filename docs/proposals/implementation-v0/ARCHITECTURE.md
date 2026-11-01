@@ -57,7 +57,8 @@ the Interface; it can retain supported work independently of an open CLI/TUI.
 Management and execution services retain their accepted authority. The Interface directs work;
 current authority permits it; target contracts and responsible services determine the actual
 operation and confirmed outcome. Explicit owner-authorized initialization establishes the first
-normal management grants; interrupted setup and unavailable-path repair remain under review.
+normal management grants. Explicit resume/repair uses the root Interface's declared recovery
+operations, with runtime owner verification even when normal management access is broken.
 A directive does not itself confer access.
 
 | Question | Responsibility | Concrete example |
@@ -140,8 +141,8 @@ recipient participation/Conduit end also ends access. Bounded issuance operation
 mandatory use restrictions and compose caller-added restrictions, returning the complete issued
 grant. They preserve intent and refuse explicit broadening; issuance-only checks do not become
 live issuer dependencies. Exact schemas/type-specific validation remain authoring work. First
-establishment uses the accepted owner-authorized initialization contract below. Next settle
-interrupted setup/repair and foundational persistence/engine selection.
+establishment and explicit recovery use the accepted contracts below. Foundational persistence
+and engine selection remain open.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops
@@ -189,32 +190,29 @@ Agents gain neither implicit OS-user authority nor offline grants. This resolves
 dependency without making templates self-authorizing.
 
 Exact owner recognition, first-grant records and persistence remain authoring/implementation work.
-Interrupted establishment and explicit unavailable-path repair still need their contract below;
-partial or inaccessible state must not be treated as a fresh installation.
+Interrupted establishment and explicit unavailable-path repair use the contract below; partial or
+inaccessible state must not be treated as a fresh installation.
 
-#### Interrupted setup and repair — proposed
+#### Interrupted setup and repair
 
-Recommend that explicitly requested setup resume and foundational repair use the locally loadable
+**Accepted:** explicitly requested setup resume and foundational repair use the locally loadable
 root Interface and its declared recovery operations, with the runtime verifying the local owner
-even when ordinary management access cannot be reached. Runtime support would load the retained
-definition/progress and provide that recovery entry, while operation contracts determine what can
-actually be recovered. This extends the accepted Interface role and explicit owner repair; it is
-not permission to restart initialization automatically after an outage.
+even when ordinary management access cannot be reached. Runtime support loads the retained
+definition/progress and provides that recovery entry, while operation contracts determine what can
+actually be recovered. This is explicit owner recovery; an outage does not automatically restart
+initialization or grant ordinary application requests offline permission.
 
-| Situation | Proposed behavior |
+| Situation | Required behavior |
 | --- | --- |
 | Initial setup stops after creating the system Pool, before access management is ready | Explicit resume loads the same root definition and retained identities/progress, checks which effects are confirmed, and continues valid unfinished setup. It does not create a second Pool or blindly repeat uncertain effects. |
 | Established access management cannot start | The owner explicitly requests repair through the locally loadable root Interface. Available state is inspected and supported repair/reconnect operations run without requiring the broken management path to authorize its own repair. Ordinary application requests still need verifiable permission. |
 | A required definition, implementation or authoritative record is missing or inconsistent | Report the unresolved condition and preserve available state. Explicit repair must restore or reconcile what its contracts support; it cannot fabricate previous outcomes, silently replace identities or treat a same-named new object as the old one. |
 
-The alternative puts these recovery actions in dedicated local runtime commands outside the
-Interface's declared operations. That reduces the recovery path's dependence on Interface execution,
-but establishes a second place to author and maintain system-management behavior. Both approaches
-retain broad owner repair, checked operations, fixed-definition replacement rules and backing-data
-preservation. No automatic default reset, application restart or second writable authority follows.
-
-This recovery route is proposed, not yet accepted. It chooses where explicit recovery runs; exact
-operations, retained-record layout, missing-code recovery and storage engine remain separate work.
+The recovery route retains broad owner repair, checked operations, fixed-definition replacement
+rules and backing-data preservation. No automatic default reset, application restart or second
+writable authority follows. Runtime support supplies loading and owner verification; recovery
+behavior is authored through the Interface's declared operations. Exact operations, retained-record
+layout, missing-code recovery and storage engine remain authoring/implementation work.
 
 **Establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then
@@ -224,8 +222,8 @@ opens the management connections, and makes observation/control available to att
 On subsequent starts, its recovery operations reuse retained object identities, settings and grants;
 missing or inconsistent state is reported for explicit repair. Resource creation still proceeds
 through its Pool. Normal running-instance changes use Conduits and supported controls, and fixed
-definition changes still require replacement. This describes the accepted orchestration and first
-authorization boundaries; it is not final YAML, a complete recovery contract or a storage selection.
+definition changes still require replacement. This describes the accepted orchestration,
+authorization and recovery route; it is not final YAML, detailed recovery algorithms or a storage selection.
 
 The first load and earliest durable progress still need an implementation home. A root Interface
 cannot load the only copy of its definition from a store reachable only after that same definition
@@ -236,15 +234,15 @@ workflow. Where this material is authoritative, how partial establishment is rec
 agrees with later registry state remain explicit design questions. No second writable copy of live
 configuration, implicit fresh initialization or offline Agent grant should be inferred.
 
-The same Interface role would handle repair during ordinary use: if a storage connection fails,
+The same Interface role handles repair during ordinary use: if a storage connection fails,
 it can expose available diagnostics, request supported reconnection or run an explicit repair
 operation. It must show when authoritative state cannot be inspected or changed. Broad administrative
 permission does not fabricate missing state or prove that an external action succeeded. Stopping
 its frontend differs from stopping its runtime or a management service; the existing outage rules
 still govern new admissions and independent executors' already-dispatched work.
 
-**Review direction:** settle the explicit recovery route, then how foundational persistence is
-represented and loaded. Administrative scope, ownership of domain data and durable state authority
+**Review direction:** settle how foundational persistence is represented and loaded. Administrative
+scope, ownership of domain data and durable state authority
 stay distinguishable. The remaining [I4](REVIEW.md#i4--local-transactional-authority) proposals do not
 select a storage engine or change every Interface's configuration.
 
@@ -573,9 +571,9 @@ current. Report and reconcile missing evidence; do not silently rebuild identity
 
 ### Storage boundary under review
 
-The current exploration places initial establishment and continuing system administration in the
-[Interface role](#interface-as-system-director). The storage arrangements below
-can implement that role; they need not introduce a separate user-facing bootstrap component.
+Initial establishment, explicit recovery and continuing system administration now belong to the
+accepted [Interface role](#interface-as-system-director). The storage arrangements below can
+implement that role; they need not introduce a separate user-facing bootstrap component.
 
 I4 has not selected an engine or extension boundary. The earlier SQLite-versus-storage-plugin
 question combined independent choices. SQLite can back an internal adapter, a published plugin
@@ -653,10 +651,24 @@ recovery when a commit reply is lost. A backend contract must define how to reco
 write; it cannot infer failure from a missing reply. Choosing an engine does not make external
 provider effects atomic or supply replication, automatic failover or a backup policy.
 
-**Review recommendation:** settle the intended extension/lifecycle boundary before selecting its
-first engine. An explicit persistence contract could fit Conduit's extension goals even if the
-first implementation uses SQLite; whether that contract is private or published, and whether it
-is an ordinary Resource dependency, remains open. See [I4](REVIEW.md#i4--local-transactional-authority).
+**Next ruling — published or internal contract:** recommend a published typed persistence contract
+implemented through the existing plugin machinery, with the implementation needed for initial
+loading available before registry access. This follows the project's emphasis on authorable,
+replaceable contracts. The simpler alternative keeps authority-storage interfaces internal in v0
+and defers a public extension contract. Neither option changes who owns authoritative state or
+requires Resource domain data to use the same backend. A published contract costs additional
+schema, failure-semantics and conformance work; MCP invocation alone is insufficient.
+
+For example, after restarting a service, its selected implementation must recover confirmed object
+revisions and recorded operation progress. The service still decides whether an operation is
+authorized and whether its result can be confirmed. Replacing the persistence implementation would
+need an explicit migration/replacement procedure, not a hot swap or a second concurrent authority.
+The root's locally loadable definition and implementation locator cannot depend solely on records
+inside the store they are needed to open.
+
+This recommendation is not accepted. Whether the implementation is represented as a Pool-owned
+storage Resource, its startup/lifecycle treatment and its first engine follow the extension-boundary
+choice. SQLite remains a candidate, not a selected engine. See [I4](REVIEW.md#i4--local-transactional-authority).
 
 ## 5. Graph and runtime execution
 

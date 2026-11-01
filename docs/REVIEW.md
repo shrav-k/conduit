@@ -18,7 +18,7 @@ contracts, persistence, ownership, crate organization and delivery milestones. I
 are conceptually settled; I4 is partly complete, and I5–I7 remain for review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** I4 initial authority, startup/repair and storage, followed by I5 credentials,
+**Current focus:** I4 storage, followed by I5 credentials,
 I6 capture defaults and I7 syntax. Governing-target and grant-issuance choices are settled. Concrete plugin and
 template author journeys continue to guide these decisions. The
 [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
@@ -73,7 +73,10 @@ minimum loading/persistence support. Frontends attach to the Interface; manageme
 services retain authority, and Pools retain Resource ownership. Explicit first initialization uses
 verified local-owner authority, then establishes ordinary management grants once access management
 is ready. This initial authority cannot remain an application bypass or silently reopen after an
-outage. Interrupted setup, repair and storage remain under review. Directives do not self-authorize. The
+outage. Explicit resume/repair now uses the locally loadable root Interface's declared recovery
+operations, with runtime owner verification even when ordinary management access is broken. Retained
+identities, data and uncertain outcomes are preserved. Storage remains under review; exact recovery
+methods follow the accepted route. Directives do not self-authorize. The
 [cloud IAM follow-up](research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
 supports the now-accepted independence of policy from Interface lifecycle, administered by multiple
 authorized Interfaces with broad default root administration. This does not narrow broad v0
@@ -94,7 +97,8 @@ have distinct scope, with no automatic Pool inheritance. Explicit ownership-base
 selections now match live, without provisioning Resources or granting access; explicit ID references
 stay fixed. Bounded issuance operations may now supply mandatory use restrictions, compose
 additional restrictions and return the complete grant, without creating issuer dependencies or
-treating omitted restrictions as a request for maximum access. I4 next reviews startup/repair and storage.
+treating omitted restrictions as a request for maximum access. I4 now reviews the storage extension
+boundary, lifecycle and initial engine.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

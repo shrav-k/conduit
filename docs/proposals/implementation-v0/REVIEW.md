@@ -120,10 +120,10 @@ one review queue rather than another decision ledger.
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
 explicit governing targets with live ownership-based matching, and bounded issuance operations.
-Root-directed first launch from a local definition and owner-authorized initialization are also
-accepted. Remaining I4 work is grouped into two bundles: partial-setup/repair and storage
-placement/backend. I5 credential custody/enrollment and I6 capture defaults add two bundles.
-That is four planned conceptual bundles, beginning with startup/repair, followed
+Root-directed first launch, owner-authorized initialization and explicit recovery through the root
+Interface are also accepted. Remaining I4 work is storage placement/backend. I5 credential
+custody/enrollment and I6 capture defaults add two bundles.
+That is three planned conceptual bundles, beginning with storage, followed
 by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
 future questions: startup, storage or enrollment may reveal a concrete choice that needs splitting.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
@@ -133,7 +133,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Startup recovery/repair and foundational storage | Root-directed first launch and owner-authorized initialization accepted, alongside the settled authorization model. Next explicit recovery route, then storage. |
+| I4 | Foundational storage | Startup, first authority and explicit root Interface recovery accepted. Next published versus internal persistence contract, then representation/lifecycle and engine. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -416,7 +416,7 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: root-directed first launch and first authority accepted; recovery and storage remain open.**
+**Status: root-directed first launch, first authority and recovery route accepted; storage remains open.**
 The runtime can start the root Interface from a locally available definition before registry
 services exist. Its declared graph establishes the system Pool, system management and dedicated
 access-management Resources, and their management connections. Runtime support supplies initial
@@ -431,12 +431,19 @@ recorded management grants once access management is ready, then uses normal man
 dependency without leaving an application bypass or silently reactivating after an outage. The
 definition cannot authorize itself, and ordinary Agents receive no offline grants.
 
-**Next discussion — explicit recovery route:** recommend that partial-setup resume and repair of
-broken management access use the locally loadable root Interface's declared recovery operations,
-with runtime owner verification available independently of that broken path. Compare dedicated
-runtime recovery commands outside the Interface. The [recovery examples](ARCHITECTURE.md#interrupted-setup-and-repair--proposed)
-retain valid progress, identities and outcomes; they do not authorize automatic reinitialization.
-This choice is still open.
+**Explicit recovery route is accepted:** partial-setup resume and repair of broken management access
+use the locally loadable root Interface's declared recovery operations, with runtime owner
+verification available independently of that broken path. The [recovery examples](ARCHITECTURE.md#interrupted-setup-and-repair)
+retain valid progress, identities, data and outcomes and reconcile uncertain effects. This does not
+authorize automatic reinitialization. Exact methods and retained-record layout remain implementation/
+authoring work.
+
+**Next discussion — persistence extension boundary:** recommend a published typed contract implemented
+through the existing plugin machinery, with the implementation needed for initial loading available
+before registry access. This follows the emphasis on authorable contracts; it adds storage-semantics
+and conformance work compared with keeping authority-storage interfaces internal initially. The
+service still owns state transitions and authority. Representation as a Pool-owned Resource,
+dependency lifecycle and the engine remain separate choices. This recommendation is not accepted.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.
@@ -496,23 +503,22 @@ are I7/conformance work.
 
 **Next conceptual choices, in order:**
 
-1. Should explicit interrupted-setup resume and unavailable-management repair use the root
-   Interface's declared recovery operations, with local owner verification, or dedicated runtime
-   recovery commands? Existing preservation, uncertainty and fixed-definition rules apply to both.
-2. Then review storage extension and the initial engine. Exact loader/record fields and recovery
-   methods remain in I7 or implementation work; they need not become individual conceptual rulings.
+1. Should authority-state persistence have a published typed plugin contract in v0, or remain
+   internal initially? Ordinary Resource backends remain independently selectable either way.
+2. Settle storage representation/lifecycle and the initial engine. Exact loader/record fields and
+   recovery methods remain in I7 or implementation work; they need not become individual rulings.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,
 token format, public policy DSL or storage engine. Local root-definition loading and graph-directed
-establishment and owner-authorized initialization are accepted; the recovery route and earliest
-durable progress mechanism remain open.
+establishment, owner-authorized initialization and the explicit recovery route are accepted; the
+earliest durable progress mechanism and storage selection remain open.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant
 failure cases; the [storage comparison](ARCHITECTURE.md#storage-boundary-under-review) separates
 contract, representation and engine. SQLite and pluggability are not mutually exclusive. No storage
-ruling or complete recovery contract has been accepted. The accepted
+ruling or detailed recovery algorithm has been accepted. The accepted
 management/instance-state authority split is unchanged; storage supplies persistence without
 becoming a second owner of policy or instance transitions. Compare three arrangements, which can
 also be combined rather than treated as a closed set of exclusive choices:
@@ -543,7 +549,7 @@ an internal adapter still needs migrations and conformance tests. No cross-servi
 automatic failover or offline permission grant follows. Services exchange information through their
 contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-Finish I4 by settling the recovery route, storage extension/lifecycle boundary and initial implementation. Detailed SQL,
+Finish I4 by settling the storage extension/lifecycle boundary and initial implementation. Detailed SQL,
 method names and helper organization need not become separate conceptual rulings.
 
 ## I5 — Credential custody and account compatibility

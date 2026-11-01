@@ -33,8 +33,11 @@ The accepted first-launch boundary starts the root Interface from a locally avai
 before registry services exist. Its declared graph directs foundational setup, supported by runtime
 owner recognition and minimum loading/persistence. Explicit initialization uses verified local-owner
 authority, then establishes ordinary management grants once access management is ready; this initial
-authority cannot silently reopen after an outage. Partial-setup recovery and the repair route remain
-under review. These are design rulings, not implemented fixture behavior or additional test scope.
+authority cannot silently reopen after an outage. Explicit setup resume and foundational repair
+use the locally loadable root Interface's declared recovery operations, with runtime owner
+verification even when ordinary management access is broken. Valid progress and existing state are
+preserved; uncertain effects require reconciliation. Storage and exact recovery methods remain open.
+These are design rulings, not implemented fixture behavior or additional test scope.
 
 ## Question
 

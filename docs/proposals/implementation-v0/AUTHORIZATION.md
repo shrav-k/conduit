@@ -324,8 +324,10 @@ startup wiring remain open.
 The initial trusted authority must be selected by the system's establishment contract. An arbitrary
 Resource advertising policy evaluation cannot approve its own use or confer root authority.
 Explicit first initialization uses verified local-owner authority until ordinary management grants
-are established. Recognition details, first-record schemas and management-path recovery remain I4/I7
-or implementation work; initialization does not become an ordinary grantless access path.
+are established. Explicit resume/repair uses the root Interface's declared recovery operations,
+with runtime owner verification even when ordinary management access is broken. Recognition details
+and first-record/recovery schemas remain I7 or implementation work; initialization does not become
+an ordinary grantless access path.
 Policy records are not ordinary knowledge notes: copying, searching or sharing a note cannot confer
 administrative authority or bypass the policy-management contract.
 
@@ -417,12 +419,15 @@ grants and subsequent administration uses normal managed paths. This first-autho
 is accepted; initialization authority must not remain an application bypass or revive automatically
 after an outage.
 
-**Next area — explicit recovery:** recommend resuming partial setup or repairing a broken management
+**Accepted explicit recovery:** resuming partial setup or repairing a broken management
 path through the locally loadable root Interface's declared recovery operations, authorized by
-verified local-owner context when normal access management is unavailable. The alternative uses
-dedicated runtime recovery commands outside the Interface. This route remains proposed; both must
-preserve known identities/outcomes and reconcile uncertain effects. Storage extension and engine
-follow this boundary.
+verified local-owner context when normal access management is unavailable, is the selected route.
+Recovery preserves known identities, data and outcomes and reconciles uncertain effects. This does
+not reopen initialization automatically or authorize ordinary application requests offline.
+
+**Next area — persistence:** choose whether authority storage has a published plugin contract in
+v0 or remains behind internal service interfaces initially, then settle its representation/lifecycle
+and first engine. These choices must preserve the accepted ownership and recovery contracts.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

@@ -344,8 +344,10 @@ owner recognition and minimum loading/persistence support. During explicit first
 the runtime authorizes foundational setup from the verified local-owner context. Once access
 management is ready, setup establishes ordinary recorded management grants for subsequent use.
 Initialization authority does not remain an application bypass or silently reopen after an outage.
-Both Resources can share a service and storage implementation. Interrupted-setup/repair mechanisms
-and storage remain under review. Resource creation still goes
+Both Resources can share a service and storage implementation. Explicit setup resume and foundational
+repair use the locally loadable root Interface's declared recovery operations, with runtime owner
+verification available even when ordinary management access is broken. Storage remains under review.
+Resource creation still goes
 through its owning Pool. No application Pool, Agent or external service login is required first.
 Built-in definitions, exact operations and frontend transport/lifecycle remain open.
 
@@ -356,10 +358,11 @@ ordinary startup does not recreate them from defaults or silently retarget estab
 Preserve available records and backing data. An unavailable registry or service is not evidence
 of deletion or a fresh installation. Supported reconnection to the same targets is distinct from
 replacing registered objects. Repair is a deliberately requested operation, not an additional
-confirmation on every launch. Repair is part of unrestricted Interface administration. Its route
-when the normal management path is unavailable, exact steps and partial initial-setup recovery
-remain open. Differentiated recovery authority and Interface restrictions are deferred; this
-rule does not preserve ended flows or automatically restart Agent work.
+confirmation on every launch. Repair is part of unrestricted Interface administration and uses the
+root's declared recovery operations when the normal management path is unavailable. Explicit resume
+checks retained progress and continues valid unfinished setup; uncertain effects require reconciliation.
+Exact recovery methods and persistence remain open. Differentiated recovery authority and Interface
+restrictions are deferred; this rule does not preserve ended flows or automatically restart Agent work.
 Later access after a management Conduit fully ends opens a new Conduit instance to
 the retained system objects. Transport recovery while logical participation remains intact
 continues the existing instance; reopening a terminal alone is not evidence that a flow ended.

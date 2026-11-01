@@ -96,8 +96,9 @@ For composable requirements, the proposed allocation is definition/parameter int
 config, generic contract/support descriptors in core, and binding/runtime coordination in runtime.
 Endpoint implementations provide requirement-specific support. These are responsibilities within
 the existing candidate crates, not a requirement for a new crate or hard-coded core variant for
-every extension. Exact publication, satisfaction interfaces and the first vocabulary await I3;
-no new expression-language dependency follows from the accepted design direction.
+every extension. Definition reuse across implementations is accepted; publication mechanics,
+support/satisfaction interfaces and the first vocabulary await I3. No new expression-language
+dependency follows from the accepted design direction.
 
 The terminal initially lives as a client module in the app crate, not a second authoritative
 runtime. Extract a reusable client crate if multiple real frontends need it. Native provider

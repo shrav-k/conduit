@@ -1530,6 +1530,13 @@ instance per condition. A Conduit may compose known requirements without new cod
 meaning needs suitable implementation support. Publication of a requirement does not install code
 at endpoints or change their fixed definitions.
 
+Each requirement has a reusable, versioned definition of its meaning, typed parameters and
+applicability, independent of any single implementation. Multiple endpoint plugins can implement
+that same definition. For example, two deployment integrations can support one allowed-regions
+contract, while a Conduit supplies the permitted regions. Definitions and implementations may ship
+together; independence does not require separate packages or duplicated schemas. Declared support
+is distinct from evidence of fulfillment in a running connection.
+
 Requirements express obligations and restrictions. Existing graphs coordinate declared procedures
 to establish prerequisites, while instances own ongoing behavior. Resource configuration and plugin
 input/output contracts remain; a relationship requirement does not redefine a target operation.
@@ -1538,9 +1545,9 @@ Requirements cannot create permission grants or override baseline identity, owne
 rules. Registration still performs no provider effects; observed readiness remains distinct from
 valid configuration. Detailed satisfaction/evidence and failure rules require implementation review.
 
-The concrete core catalog, definition/implementation publication arrangement, composition operators,
-version identifiers, satisfaction checks, runtime enforcement bindings and syntax remain open. The
-[implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
+The concrete core catalog, publication mechanics, implementation-support declarations, composition
+operators, version identifiers, satisfaction checks, runtime enforcement bindings and syntax remain
+open. The [implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
 tracks those choices; accepting the compositional model does not select an expression language,
 a universal solver, a worker topology or an expanded experiment scope.
 

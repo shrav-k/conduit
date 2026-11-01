@@ -84,8 +84,8 @@ native Claude/Codex adapters first, then build Conduit's own Rust model/tool loo
 **Accepted initial platform:** macOS-first native integration and subscription-account validation,
 with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
 
-**Next ruling:** I3's reusable requirement definition versus implementation boundary, followed by
-composition/runtime satisfaction and a minimal proof. Composable typed requirements and
+**Next ruling:** I3's plugin support declarations, followed by composition/runtime satisfaction
+and a minimal proof. Reusable, independently versioned requirement definitions and
 endpoint-selected/managed implementations are accepted.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
@@ -237,7 +237,7 @@ count, programming language or OS sandbox.
 typed requirements, with a small base vocabulary and author-defined extensions. Endpoint-selected
 plugins satisfy the applicable meanings; instances bind concrete endpoints and preserve relationship
 state/evidence. [DESIGN](../../DESIGN.md#composable-relationship-requirements) records this model.
-The specific definition/publication, interpretation and runtime contracts below remain proposals.
+Publication mechanics, support matching, interpretation and runtime contracts remain under review.
 Compatibility concerns reusable typed meanings and supported versions, rather than an implementation
 enumerating every user-named Conduit template it can serve.
 
@@ -248,23 +248,30 @@ composition without code from adding a genuinely new requirement meaning. The
 [research follow-up](../../research/CONFIGURATION.md#composable-requirements-research-follow-up)
 compares CUE, JSON Schema, CEL and Cedar without selecting one as the engine.
 
-**Next ruling — reusable definition versus implementation:** recommend publishing a requirement's
-versioned meaning, typed parameters and applicability independently of any single implementation,
-with endpoint plugins declaring support for it. Definition and implementation can ship together;
-this does not require separate packages or duplicate schemas. For example, one allowed-regions
-requirement could be supported by two deployment integrations, and a Conduit can reference that
-meaning with its permitted values without naming either integration's code. Published support is
-not proof of runtime fulfillment. Exact version/schema fields and support-checking rules remain open.
-The alternative binds the requirement's identity/meaning to one implementation, requiring new
-requirement references or explicit mappings when another implementation supplies similar behavior.
-This first ruling settles the extension boundary, not an SDK, package layout or evaluator API.
+**Accepted — reusable definitions, multiple implementations:** a requirement's versioned meaning,
+typed parameters and applicability are independent of any single implementation. Multiple endpoint
+plugins can implement the same definition; definition and implementation may ship together without
+separate packages or duplicate schemas. An allowed-regions contract can therefore be reused by two
+deployment integrations. This settles the extension boundary, not support matching or proof of
+runtime fulfillment. Exact version/schema fields and publication mechanics remain open.
+
+**Next ruling — declared implementation support:** recommend that endpoint plugins publish which
+requirement versions and endpoint roles they support, with known applicability or parameter limits,
+so Conduit can check the selected combination before establishment. For example, a plugin may enforce
+allowed regions for deployments but lack support for a different operation that chooses its region
+indirectly. Declaring the requirement name alone would not imply support for every use. This reuses
+the definition's schema rather than copying it or requiring a general schema-subtyping solver.
+Current authentication, service readiness and actual enforcement still require their applicable
+runtime checks; otherwise valid configuration can remain registered but unready. The alternative
+leaves support discovery entirely to runtime negotiation. Exact declarations and negotiation/evidence
+formats remain separate syntax work.
 
 Review the remaining consequences in three groups, before returning to process placement:
 
-1. **Extension contract and authoring:** how a requirement publishes its meaning, typed parameters,
-   applicability and compatible implementation support; composition of existing definitions versus
-   new semantics. Reuse the existing contract-bundle path without introducing another object family.
-   Exact field names/version spelling remain I7; no broad helper SDK is required.
+1. **Extension contract and authoring:** how plugins declare compatible support for reusable
+   requirement definitions and how publication carries that information; composition of existing
+   definitions versus new semantics. Reuse the existing contract-bundle path without introducing
+   another object family. Exact field names/version spelling remain I7; no broad helper SDK is required.
 2. **Composition and execution:** which static conflicts can be diagnosed; who checks/enforces a
    requirement at binding, invocation, delivery or cleanup; how changing facts, uncertain evidence
    and unavailable implementations affect dependent operations. Preserve whole-path narrowing,

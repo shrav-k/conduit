@@ -35,8 +35,10 @@ coordinate establishment, policy and participation. They do not install new endp
 The [family-by-family walkthrough](proposals/implementation-v0/AUTHORING.md#5-where-the-example-implementations-execute)
 records this boundary. **Accepted design direction:** Conduit templates compose reusable typed
 requirements, with a small base vocabulary and author extensions, as defined in
-[DESIGN](DESIGN.md#composable-relationship-requirements). I3 next settles the requirement definition/
-implementation boundary, then composition and runtime satisfaction before physical placement.
+[DESIGN](DESIGN.md#composable-relationship-requirements). Requirement definitions are reusable and
+versioned independently of a particular implementation; multiple plugins may implement the same
+definition, and both may ship together. I3 next settles how plugins declare support, then
+composition and runtime satisfaction before physical placement.
 The detailed mechanisms, experiment additions and syntax remain proposals for review.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

@@ -242,10 +242,15 @@ infer semantics from a tool name, HTTP method or an advisory MCP annotation alon
 
 The [accepted design](../../DESIGN.md#composable-relationship-requirements) uses Conduit templates
 composed from reusable typed requirements, with a small base vocabulary and author-defined additions.
-The detailed contract below remains proposed: definition/publication boundaries, exact syntax, core
-types, evaluation protocol and enforcement policies still require review. Requirements
-are contract definitions published/referenced through existing extension machinery, not a sixth
-object family, a separate deployment or a new runtime instance per condition.
+**Accepted extension boundary:** each requirement defines reusable, versioned meaning, typed
+parameters and applicability independently of a particular implementation. Multiple endpoint plugins
+can implement it; definitions and implementations may ship together without separate packages or
+repeated schemas. Requirements are contract material within existing extension machinery, not a
+sixth object family, separate deployment or runtime instance per condition.
+
+The detailed support declarations, publication syntax, core catalog, composition rules, evaluation
+protocol and enforcement policies below remain proposed. Accepting an independent definition does
+not certify any plugin's implementation or a running connection's fulfillment.
 
 A Conduit template composes requirements for roles and their relationship. Endpoint-selected
 plugins describe which requirements they can satisfy, for which parameters and under which
@@ -254,10 +259,10 @@ requirements as part of its retained definition. Plugins do not need to enumerat
 Conduit template name. Semantic compatibility still needs shared typed meanings and explicit
 version support; matching a name, JSON shape or similarly named field is not enough.
 
-| Requirement definition concern | Proposed meaning |
+| Requirement definition concern | Accepted boundary or proposed detail |
 | --- | --- |
-| Identity and meaning | A versioned, unambiguous behavioral contract independent of an implementation release. Identifier syntax stays open. |
-| Typed parameters and subjects | Validate supplied values and identify the endpoint role, relationship, invocation or result to which they apply. |
+| Identity and meaning | Accepted: a reusable, versioned behavioral contract independent of any single implementation. Identifier syntax stays open. |
+| Typed parameters and subjects | Accepted: the definition owns typed parameters and applicability. Proposed detail: distinguish endpoint-role, relationship, invocation and result subjects. |
 | Satisfaction | State the supported evidence/checks, preconditions and guarantees; distinguish static declarations from runtime facts. |
 | Runtime responsibility | Where needed, identify supported checking/enforcement behavior from the selected implementations and the facts it requires. A schema alone does not enforce behavior. |
 | Composition | Explain applicable conjunction, repeated constraints and conflicts; preserve source requirements in diagnostics. |

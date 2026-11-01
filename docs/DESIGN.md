@@ -1468,9 +1468,18 @@ that connection or grant access. This models logical relationships, without crea
 Conduit for every query or underlying socket. Exact endpoint declarations, connection creation
 and runtime state placement remain open.
 
+Conduits express executable connection behavior: their plugins can establish and maintain the
+connection at either or both endpoints, including local preparation, transport and filtering.
+They are not merely passive route records between independently implemented endpoints. A Conduit
+template declares this behavior; the instance realizes it for concrete participants. An endpoint
+may use an existing compatible service rather than receiving newly deployed code. The exact
+division between connection-owned activity and endpoint-owned capability behavior is being
+refined in the [implementation authoring review](proposals/implementation-v0/AUTHORING.md#5-where-the-example-implementations-execute).
+
 The Conduit engine and plugins perform transfers, maintain clients and run synchronization.
 An individual Conduit has instance-managed behavior implemented by the common runtime/plugins;
-it need not have a dedicated process or independent execution engine. One-time transfer, persistent
+its endpoint behavior need not share a process or require an independent execution engine.
+One-time transfer, persistent
 access and ongoing sync are supported directions with different interaction semantics, not
 a closed taxonomy. Logical connection state is distinct from transport clients and backing data.
 Every supporting Resource is created/attached through, and exclusively owned by, a Pool.

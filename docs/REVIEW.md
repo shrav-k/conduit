@@ -29,6 +29,13 @@ with a small Conduit profile. Code-optional contributions and independently acce
 components are also accepted; the design-fit audit below states their boundaries. Detailed syntax
 across contracts and templates stays at the end, after conceptual rulings.
 
+The current clarification is that Conduits establish and maintain connections through plugin
+behavior at either or both endpoints. I3 now examines plugin responsibilities across templates
+and instances of all five families before choosing physical workers. The
+[family-by-family walkthrough](proposals/implementation-v0/AUTHORING.md#5-where-the-example-implementations-execute)
+separates connection activity, endpoint capability ownership and execution placement. Detailed
+hosting/lifetime contracts remain proposed; the existing authority and access rules still apply.
+
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP
 services retain their own supervision. Shared registration/template and access-policy authority

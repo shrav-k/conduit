@@ -46,7 +46,7 @@ It is not itself a sixth family, a mandatory process/container or an OS sandbox.
 | Boundary | Meaning under this proposal |
 | --- | --- |
 | Definition and state | The instance's fixed setup/control definitions and confirmed settings govern its behavior; its designated service retains authoritative state. |
-| Execution | Plugin handlers and managed processes serve that instance. An execution service supplies hosting and supervision and can host multiple instances. |
+| Execution | Plugin handlers and managed processes serve that instance. Connection-owned behavior may execute at either endpoint. An execution service supplies hosting and supervision and can host multiple instances. |
 | Authority | An instance context is not an automatic grant. The caller, target, selected Conduit path and current restrictions govern each admitted operation. |
 | Physical placement | An implementation may use trusted in-process handlers, an instance-specific runner hosting several plugins, separate helpers or an external service. Supported placement and isolation guarantees need their own contracts and evidence. |
 
@@ -57,10 +57,25 @@ dependency remains another Resource accessed through its own authorized connecti
 operation does not transfer its implementation or credentials into the caller's boundary.
 
 A Pool composition step can coordinate child Resource creation while each child's setup belongs
-to that child. A Conduit owns its connection/filter activity without absorbing either endpoint's
-execution context. The implementation must establish an identifiable, supervised instance context
-before dispatching its setup; a record with incomplete setup need not have an ongoing process.
-Exact registration/start sequencing and physical placement remain open.
+to that child. Conduits actively establish connections using plugins at either or both endpoints.
+The proposed division is connection-owned establishment/filter/transport activity, hosted through
+the endpoints' supported attachment contracts, versus endpoint-owned capabilities and configuration.
+For example, an Agent-side MCP bridge may serve one Conduit participation while the shared service
+client remains a Resource runtime. A target configuration change still goes through its control
+contract and designated state authority; hosting a connection helper does not transfer that authority.
+
+Keep the initiating actor, owning instance/activity, Conduit participation and physical execution
+location distinguishable. These are attribution relationships, not new object families or
+additional author-created manifests. A Conduit can coordinate work at several execution services
+while retaining one designated authority for its own state. Endpoint services own their local
+effects/results; the Conduit records correlated progress, not a second writable endpoint config.
+Partial establishment must remain visible; no atomic transaction across endpoints is assumed.
+
+The implementation must establish an identifiable, supervised instance context before dispatching
+its setup; a record with incomplete setup need not have an ongoing process. Exact registration/start
+sequencing, local-helper custody, cancellation and physical placement remain open. The
+[family-by-family walkthrough](AUTHORING.md#5-where-the-example-implementations-execute) supplies
+the proposed template/instance mapping and lifecycle examples.
 
 This reframes the pending worker discussion around instance execution first. Sharing implementation
 code need not share private state or credentials. Neither a separate helper nor an instance-specific

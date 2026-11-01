@@ -84,7 +84,8 @@ native Claude/Codex adapters first, then build Conduit's own Rust model/tool loo
 **Accepted initial platform:** macOS-first native integration and subscription-account validation,
 with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
 
-**Next discussion:** I3's execution boundary for authored plugin code, then distribution scope.
+**Next discussion:** I3's template/instance plugin responsibilities across all five families,
+including Conduit behavior at either or both endpoints; then physical execution and distribution.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
@@ -101,7 +102,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open within the accepted I1 boundaries. |
+| I3 | Instance/plugin responsibilities, execution and distribution | Clarify Conduit endpoint behavior and all five families before placement. MCP, code-optional bindings and independent exposure remain accepted. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
@@ -223,11 +224,31 @@ instance's implementation, rather than requiring a plugin-centric fleet of worke
 yet require a dedicated process or sandbox per instance. See the
 [instance boundary proposal](ARCHITECTURE.md#instance-execution-boundary--proposed-for-i3-review).
 
-The caller and execution target can differ: an Agent invokes shared Linear access through a
-Conduit, while the provider operation runs for the Pool-owned MCP Resource under the caller's
-permitted path. Pool composition and Conduit operations likewise do not absorb their child or
-endpoint instances. The logical boundary proposal remains open; it preserves I1's accepted
-designated state authorities and separate execution services.
+**User clarification:** a Conduit represents executable plugin behavior on either or both sides
+that establishes and maintains the connection. It is not only a routing/policy record. Templates
+must describe that behavior and instances must account for its execution, even when it is hosted
+alongside endpoint instances. The [family-by-family walkthrough](AUTHORING.md#5-where-the-example-implementations-execute)
+proposes the complete mapping before selecting a worker arrangement.
+
+The caller, connection activity and capability target can differ. An Agent-side bridge and
+Resource-side filtered binding may serve a Conduit; the Pool-owned MCP Resource keeps its shared
+service capability and authentication dependency. The proposed division preserves I1's designated
+state authorities without requiring all Conduit behavior to execute in one process.
+
+Review these related boundaries together before physical placement:
+
+1. **Behavior ownership:** distinguish connection-specific setup/runtime/cleanup from the
+   endpoint's shared capability, configuration and private state. One implementation can serve
+   several contracts without merging their authority or ownership.
+2. **Endpoint hosting:** define how an endpoint accepts compatible connection behavior and
+   returns its attachment/result, within current permissions and supported behavior. Opening a
+   Conduit must not implicitly permit arbitrary code installation at a target.
+3. **Lifetime and recovery:** identify what detachment releases, what survives as shared endpoint
+   runtime, and how partial setup/unknown remote outcomes are reconciled. Apply the existing
+   per-participant and last-consumer rules without assuming atomic cross-endpoint setup.
+
+The detailed ownership/hosting protocol remains proposed. This is one cohesive refinement of
+the instance boundary, not a new enum, object family or separate decision ledger.
 
 **Subsequent placement choice — authored code:** the earlier recommendation was separately supervised MCP
 worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust

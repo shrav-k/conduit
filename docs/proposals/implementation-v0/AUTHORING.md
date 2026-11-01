@@ -484,67 +484,119 @@ implementation choices within I1's accepted boundaries and the pending I3 packag
 
 ## 5. Where the example implementations execute
 
-**I3 remains open:** after reviewing these examples, the user asked to define the instance's
-execution boundary before choosing plugin workers. The
-[instance boundary proposal](ARCHITECTURE.md#instance-execution-boundary--proposed-for-i3-review)
-places setup/change handlers and ongoing behavior in their owning instance's context, while
-leaving physical hosting separate. An instance-specific runner may host several plugin handlers;
-the protocol does not require one worker per plugin. The arrangements below are implementation
-comparisons that preserve the same public MCP contract, templates and instance ownership.
+**Current discussion:** define plugin responsibilities across the five families before choosing
+process boundaries. The user clarified that Conduits represent executable connection behavior
+at either or both endpoints. The mapping below is a proposal for the detailed ownership/hosting
+contract; it preserves accepted templates, instance authority, fixed definitions and Pool ownership.
+It does not settle a worker arrangement, SDK API or YAML syntax.
+
+### Plugin, template, graph and instance
+
+A plugin publishes typed behavior with an implementation binding: authored code, existing MCP
+services or both. It can contribute setup operations, capability implementations, runtime behavior
+or supported control handlers. These are roles a contribution can fulfill, not a required export
+list for every plugin or a new set of object families. The same package can contribute to several
+families without combining their instances or authority.
+
+A template selects and configures these contributions, binds dependencies, orders finite setup
+steps, declares ongoing runtime behavior and exposes supported controls. An instance realizes that
+recipe with its own identity, resolved definition, concrete bindings, confirmed settings and
+runtime/operation evidence. A graph orders plugin operations for setup or a supported change;
+it is not the ongoing process supervisor. Registration alone executes nothing.
+
+An instance's logical boundary does not dictate its process count. Its responsible service can
+host trusted handlers, run an instance-specific helper containing several plugins, supervise child
+processes or attach external implementations. Code reuse does not implicitly share private state,
+authentication or grants. Supported external-service association does not imply owning that service.
+
+### The five families
+
+| Family | Template selects and declares | Plugin behavior serving an instance | Boundary to preserve |
+| --- | --- | --- | --- |
+| Interface | Frontend integration, inspection/interaction behavior and management connections. | Present observations, collect input and invoke supported operations through Conduits. | A view of an Agent or Resource is not a second authority over its state. Management effects execute at the relevant management/target capability. |
+| Agent | Native or owned runtime, account/provider boundary, activation, initial settings, connection declarations and controls. | Prepare private state, establish the declared runtime, handle interaction and supported setting changes. | A remote tool call remains attributed to this Agent but uses the target Resource's capability through a Conduit. |
+| Resource | One capability responsibility, creation/attachment intent, dependencies, runtime and controls. | Establish a directory, maintain service access, authenticate, search, store or expose other declared behavior as appropriate to its type. | Every Resource instance has one Pool owner. A plugin package is not itself a Resource, and these examples need not be bundled into one Resource. |
+| Pool | Explicit named Resource-template entries, composition bindings and supported management actions. | Coordinate explicit provisioning/reuse and child dependency binding; inspect owned Resources. | Child setup and ongoing capability state belong to the child Resource. Pool ownership does not require co-location. |
+| Conduit | Endpoint roles/contracts, connection establishment, filters, transport/interaction behavior, supported changes and cleanup. | Prepare a client-facing binding, establish a peer-side exposure, filter/route traffic, reconnect and release connection-specific participation. | Behavior may execute at either or both endpoints. Shared endpoint capability state, credentials and backing data remain with their owning instances. |
+
+An instance context must exist before its setup effects are dispatched, so incomplete setup has
+an identity and owner for inspection/recovery. The detailed creation sequence remains open. Starting
+from a template retains the resolved recipe; supported controls can update confirmed settings.
+Adding a compatible Conduit uses a declared attachment mechanism, rather than silently rewriting
+the endpoint's fixed graph or controls. The Conduit retains its own selected implementation bindings;
+its endpoint-side helper is not an implicit upgrade of the Agent or Resource implementation.
+
+### A Conduit with behavior at both ends
+
+Consider Agent A using the Pool-owned Linear MCP Resource L. The Pool also owns authentication
+Resource H; L already has authorized access to H through a separate Conduit. Opening C between
+A and L could establish:
 
 ```text
-Separate worker: executor → MCP → plugin executable/runner → domain behavior
-In-process:     executor → loaded implementation          → domain behavior
+Agent A's supported attachment surface
+    ↕ client-facing MCP binding serving C's participation
+    ↕ transport / filters defined by C
+    ↕ resource-facing binding serving C's participation
+Resource L's shared MCP capability
+    ├── authorized authentication Conduit → Resource H
+    └── provider calls → existing provider MCP service
 ```
 
-In the second arrangement, an adapter still supplies the accepted public MCP surface. An internal
-function call is an implementation detail, not a replacement public plugin protocol. In either
-arrangement the responsible instance service retains authoritative configuration and operation
-results. A worker is an implementation process, not a sixth object family or a Resource created
-for every call. Choosing separation would not yet choose worker counts, sharing or idle lifetime.
+The layers are logical responsibilities, not a required process per line or two implementations
+of every filter. Existing compatible endpoint behavior can satisfy one side without deploying code.
+The target side must enforce restrictions it is responsible for; client-side tool hiding alone
+cannot establish server-side authorization. Exact enforcement placement is contract-specific.
 
-| Example | Separately supervised implementation | Implementation loaded into executor |
+The proposed ownership split is:
+
+| Activity/state | Governing instance or contract |
+| --- | --- |
+| Client-facing exposure, route and per-consumer connection/filter state | C and the relevant participation, hosted through the endpoints' supported attachment contracts. |
+| Shared provider client and MCP capability | Resource L, usable by other authorized Conduits. |
+| Provider identity/credential lifecycle | Resource H under its own capability and access rules. |
+| Agent private context and runtime settings | Agent A; supported changes use its controls and revision rules. |
+| A provider operation | L executes the capability with caller A and path C recorded; current permission and effect/recovery rules apply. |
+
+Thus a request can have an initiating Agent, a Conduit carrying it and a target Resource executing
+it. The Conduit is active implementation, not a passive link, but it does not become the authority
+for every effect it transports. Each endpoint service reports its own effects; C records correlated
+connection progress. No second writable copy of endpoint configuration or atomic distributed setup
+is implied. The Interface assembles the observations with their known freshness and gaps.
+
+A Conduit targeting a Pool can select or compose access to its permitted Resource capabilities.
+That grouping does not require a Pool process to relay every call or move Resource execution into
+the Pool. Explicit provisioning remains distinct from selecting an already deployed Resource.
+
+On detachment, release that participation's connection-specific binding and helpers. Other
+participants and independently shared Resource clients remain. The last logical consumer/peer
+ends C under the accepted lifecycle rule. A lost transport is not detachment; an uncertain cleanup
+or in-flight provider write must be reconciled rather than declared undone. Exact helper custody
+and cleanup acknowledgement remain review choices.
+
+### Other connections test the same distinction
+
+| Example | Connection-specific behavior | Independently retained behavior/data |
 | --- | --- | --- |
-| Pure checksum | Author publishes the contract and handler; a small executable or runner receives MCP calls and returns digests. It needs no managed Resource merely to run a setup node. | The same domain function runs in the executor through a supported loading/extension interface. This avoids the worker launch and interprocess exchange. |
-| Directory establishment | A filesystem worker validates create/attach intent, performs the filesystem operation and returns its evidence. The Pool still owns the directory Resource; the executor records setup progress. | The implementation performs the same operation inside the executor. Resource identity, permissions and recovery requirements do not change. |
-| Shared Linear access | Existing provider MCP needs no newly authored worker. A declaration can reuse a standard adapter; custom adapter code, when needed, follows the selected authored-code boundary. | Existing provider MCP remains external. A custom adapter instead runs inside the executor. Neither arrangement duplicates the provider service for each Agent. |
-| Managed database | A worker implements setup/migration/driver behavior. The executor starts and supervises the declared database runtime on behalf of its Resource instance. | The same driver code runs inside the executor, which still manages the database runtime separately from a finite setup call. |
+| Directory exposure to an Agent | Prepare the permitted local view/symlink and release that attachment on detach. | The directory Resource and backing files. A symlink itself does not enforce filesystem permissions in native mode. |
+| Agent-to-Agent retained messages | Establish each participant's post/read binding and supported next-turn notice integration. | Pool-owned message history and independent reader state; posting does not wake a model automatically. |
+| Interface changes an Agent's model | Carry the authorized typed control request and its response/progress. | The Agent's handler applies the change within its fixed provider/account boundary and records confirmed configuration. |
+| Search Resource reads storage | Establish the search-to-storage capability path and restrictions. | Separate Resource responsibilities, backing data and supported search/index lifecycle. |
 
-For the directory example, an Agent-local symlink remains attachment preparation, not a second
-directory Resource. A worker exiting does not delete the directory or imply that its creation
-failed. If it created the directory but lost its response, the operation needs reconciliation;
-process separation supplies no exactly-once guarantee.
+### What remains to decide
 
-For the database example, the intended arrangement is:
+The proposal is that connection activity belongs to a Conduit/participation while compatible
+endpoint services host its local effects; endpoint capabilities retain their own authority and
+lifetime. Review the endpoint hosting contract, permitted local preparation and cleanup/recovery
+before selecting process placement. Opening a connection is not a blanket right to install code
+or alter an endpoint's fixed definition.
 
-```text
-executor ── supervises ── database process (Resource runtime)
-    └────── MCP ──────── setup/driver worker
-```
-
-The setup worker can finish while the database continues. If a migration attempt crashes, keep
-the database under supervision and inspect/reconcile the operation before retrying, following
-the already accepted partial-setup policy. Restarting a worker is not automatically permission
-to replay a migration. The worker cannot be the only custodian of a database process handle or
-of evidence needed to recover its effects.
-
-For Linear, sharing concerns the Pool-owned service capability and authorized account binding.
-Each Agent retains its own attributable Conduit participation and restrictions. Native tool names
-and schemas can remain visible regardless of adapter placement. An existing service supplies its
-own supervision; an adapter process is additional only when the chosen implementation needs one.
-
-The tradeoff is **process plumbing versus a shared failure boundary**. Separate workers add
-startup, serialization and supervision, but let authors implement the wire contract without a
-host-language loading ABI and help contain an ordinary implementation crash. Loading code into
-the executor can be simpler for tightly integrated trusted code, but an abort or unsafe failure
-can affect other instances hosted by that executor. Neither arrangement inherently limits host
-filesystem/network authority, CPU or memory; permission isolation is a separate policy and
-implementation concern. MCP is compatible with either arrangement.
-
-First settle the instance boundary, then choose how to host its authored code. Separate helpers
-and in-process trusted core functionality remain candidates alongside an instance-specific runner.
-Use only the minimum author support needed for real plugins; a broad SDK is not a prerequisite.
-These are proposals for review, not accepted deployment rules or tested isolation guarantees.
+Separate helpers can contain ordinary plugin crashes and support language-neutral implementations;
+an instance-specific runner can host multiple handlers; trusted in-process code can reduce
+plumbing. Existing MCP services keep their own supervision. None of these choices automatically
+supplies an OS sandbox, process-per-instance rule or exactly-once effects. A worker crash after
+creating a directory can leave an uncertain result; a database setup helper ending must not orphan
+the database's instance-managed supervision. These placement choices remain open after the
+conceptual boundary review, with lightweight author support and MCP as the public contract.
 
 ## 6. Accepted direction and remaining boundaries
 

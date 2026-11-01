@@ -255,6 +255,13 @@ requiring a tiny script plugin to implement unused lifecycle interfaces.
 
 ### Worker boundary
 
+Physical placement remains pending. First define the
+[instance and endpoint behavior boundary](AUTHORING.md#5-where-the-example-implementations-execute):
+a Conduit can establish plugin behavior on either or both sides, with connection-specific
+participation distinct from endpoint-owned capability/configuration. The caller, owning activity,
+target and execution location must remain attributable. The worker mechanisms below are candidates
+for hosting that behavior, not a requirement that each plugin or Conduit have a separate process.
+
 MCP is accepted as the public plugin invocation base; `rmcp` remains the proposed Rust library
 for discovery, calls, resources and supported optional exchanges. A small Conduit profile describes
 instance/operation context and lifecycle/recovery semantics that vanilla provider MCP servers do

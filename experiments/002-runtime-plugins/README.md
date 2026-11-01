@@ -1,7 +1,8 @@
 # 002 — Rust supervision, independent execution and plugins
 
-Status: first-proof layout and core authority/outage rules accepted; implementation details remain
-proposed. Not implemented or executed. Written 2026-11-01 from the
+Status: first-proof layout, core authority/outage rules and combined composition-authoring proof
+scope accepted; implementation details remain proposed. Not implemented or executed. Written
+2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
 choices within the [specification](../../docs/SPEC.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
@@ -148,11 +149,12 @@ the fake effect ledger separate from the host's operation store so a lost respon
 tests the external-effect boundary. A request ID or received protocol reply alone is not proof
 of durable storage or exactly-once execution.
 
-## Proposed requirement-authoring proof
+## Combined composition-authoring proof
 
-Candidate addition covering both requirement and executable composition; not yet an accepted
-milestone expansion or executed test. Reuse the existing fake service, two consumers and separate
-authorities. This is a focused authoring exercise, not a new deployment topology:
+Accepted experiment scope; not implemented or executed. Demonstrate requirement and executable
+composition together using the existing fake service, two synthetic consumers and separate
+authorities. The accepted process layout is unchanged. Exact syntax, permanent core vocabulary
+and physical plugin placement remain separate choices:
 
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
@@ -176,9 +178,9 @@ authorities. This is a focused authoring exercise, not a new deployment topology
   cached setup result does not bypass required runtime checking. Preserve unrelated usable work.
 
 The purpose is to prove the public extension/composition boundaries without a hard-coded requirement
-or provider switch in Rust, a large vocabulary, expression engine or general solver. This recommendation
-adds no live cloud dependencies and does not approve implementation start. Review its scope in I3;
-package syntax, physical plugin placement and detailed evidence capture remain separate.
+or provider switch in Rust, a large vocabulary, expression engine or general solver. This accepted
+scope adds no live cloud dependencies and does not authorize implementation start. Package syntax,
+physical plugin placement and detailed evidence capture remain separate review items.
 
 ## Measurements and decision gates
 

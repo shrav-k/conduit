@@ -53,9 +53,11 @@ on explicit retry and delegating uncertain effects to child contracts. The
 now records requirement fulfillment duties as accepted: contracts declare when guarantees must
 hold and relevant endpoint roles; established Conduits identify responsible implementations for
 Interface inspection. Composed requirements remain individually enforced, with optional known-conflict
-or combined-effect checks and no mandatory general solver. The next review item is a focused
-composition-authoring proof within Experiment 002. Detailed coordination, evidence mechanisms,
-custom recovery hooks, syntax and the proposed proof scope remain open.
+or combined-effect checks and no mandatory general solver. Experiment 002's combined authoring
+proof is accepted: graph-backed operations, derived/explicit results and recovery, composed/custom
+requirements and Interface inspection within the existing synthetic fixture. Physical plugin
+execution and distribution are next. Detailed coordination, evidence mechanisms, custom recovery
+hooks and syntax remain open; no implementation has started.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

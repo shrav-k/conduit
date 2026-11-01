@@ -768,13 +768,17 @@ recovery. Plugin tests and runtime evidence remain necessary where the requireme
 
 Requirement composition keeps individual enforcement, with optional known-conflict or combined-effect
 checks. No general solver or merge algorithm is required from custom authors. Default graph recovery
-and declared fulfillment duties are also accepted. The next review item is a small proof of composed
-operations and requirements using the existing synthetic fixture; it does not select a permanent core
-catalog. Detailed evidence, evaluation interfaces, custom recovery hooks and syntax remain open.
+and declared fulfillment duties are also accepted. The combined proof of composed operations and
+requirements in the existing synthetic fixture is accepted; it does not select a permanent core
+catalog or authorize implementation start. Physical placement is the next review choice. Detailed
+evidence, evaluation interfaces, custom recovery hooks and syntax remain open.
 
-Separate helpers can contain ordinary plugin crashes and support language-neutral implementations;
-an instance-specific runner can host multiple handlers; trusted in-process code can reduce
-plumbing. Existing MCP services keep their own supervision. None of these choices automatically
+The pending placement recommendation runs locally authored code in supervised helper processes
+associated with the served instance, retaining supervision/state in its responsible service.
+Helpers can contain ordinary plugin crashes and support language-neutral implementations; an
+instance-specific runner can host multiple compatible handlers. Trusted built-in code can remain
+in-process; loading authored code there instead would reduce plumbing but share the failure boundary.
+Existing MCP services keep their own supervision. None of these choices automatically
 supplies an OS sandbox, process-per-instance rule or exactly-once effects. A worker crash after
 creating a directory can leave an uncertain result; a database setup helper ending must not orphan
 the database's instance-managed supervision. These placement choices remain open after the

@@ -96,8 +96,9 @@ public bindings and constituent contracts, with explicit construction available.
 is the default for composed operations, resuming valid child progress on explicit retry and
 preserving child recovery boundaries. Requirement contracts declare fulfillment timing/role duties;
 established Conduits record the responsible implementations. Individual requirement enforcement
-with optional composition checks is accepted. Next settle the focused authoring proof scope.
-Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
+with optional composition checks is accepted. Experiment 002's combined composition-authoring proof
+is accepted within the existing synthetic fixture. Next settle physical execution of authored
+plugin code, then distribution scope; endpoint ownership remains unchanged.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
@@ -319,23 +320,21 @@ general solver or merge algorithm. Known conflicts are reported and unproved glo
 remains explicit; an unverifiable required check still blocks affected behavior. Exact diagnostics
 and optimization rules remain open.
 
-**Next ruling — focused authoring proof:** recommend demonstrating both forms of composition in
-Experiment 002's existing synthetic service and two-consumer fixture. Author one small plugin, publish
-a graph-backed operation that reuses it, and exercise derived/explicit results and valid-progress
-recovery after a controlled failure. Compose a small pair of starting requirements (operation
-allowlist and result-count bound are candidates) and add one custom requirement outside core code,
-such as allowed regions on a fake deployment operation. Inspect selected implementations, fulfillment
-duties, child progress and allowed/rejected requests through the Interface. This tests the authoring
-contract without introducing live cloud dependencies or a broad SDK. The alternative proves primitive
-plugins/templates first and adds composition in a later experiment. Approving this scope would not
-approve exact syntax, a permanent core catalog, worker placement or implementation start; those
-remain separate review items. The [candidate proof](../../../experiments/002-runtime-plugins/README.md#proposed-requirement-authoring-proof)
-describes the proposed extension to the fixture.
+**Accepted — combined composition-authoring proof:** Experiment 002 will exercise executable and
+requirement composition together using its existing fake service and two synthetic consumers.
+Author a small plugin, export a graph-backed operation reusing it, and test derived/explicit results
+plus valid-progress recovery. Compose starting requirements and add a custom requirement outside
+core dispatch. Operation allowlisting, result limits and allowed regions on a fake deployment remain
+candidate examples. Inspect implementation selection, fulfillment duties, child progress and
+allowed/rejected outcomes through the Interface. The
+[accepted proof scope](../../../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
+adds no live cloud dependency or broad SDK prerequisite. It does not approve exact syntax, permanent
+core vocabulary, physical plugin placement or implementation start.
 
 Final package/schema spelling remains I7 work. Graph representation, publication and runtime
 supervision retain their distinct responsibilities.
 
-Review the remaining consequences in three groups, before returning to process placement:
+The conceptual composition review is recorded in these groups; detailed mechanisms remain open:
 
 1. **Composition and authoring:** distinguish the accepted composition of obligations from the
    procedural composition of plugin operations. Graph-backed callable operations are accepted;
@@ -346,10 +345,9 @@ Review the remaining consequences in three groups, before returning to process p
    fulfillment duties and responsible-implementation records are accepted. Detailed evidence,
    changing-fact handling and evaluation interfaces remain open. Preserve whole-path narrowing,
    current access and effect/recovery rules rather than inventing new authority through requirements.
-3. **First vocabulary and proof:** choose a small fixture set and demonstrate composed plugin
-   operations and requirements, including an externally authored extension without core changes.
-   The experiment's [proposed addition](../../../experiments/002-runtime-plugins/README.md#proposed-requirement-authoring-proof)
-   is a candidate for review, not a silently expanded accepted milestone.
+3. **First vocabulary and proof:** the combined synthetic proof is accepted, including an external
+   custom requirement without core changes. The candidate fixture examples do not constitute a
+   permanent core vocabulary; detailed artifact/schema choices remain for I7.
 
 Typed plugin input/output schemas and Resource configuration contracts remain. The Conduit owns
 relationship requirements and composition; it cannot redefine target operation semantics or claim
@@ -358,31 +356,27 @@ universal endpoint API, Boolean expression language, constraint solver, worker a
 sandbox. Establishment/cleanup and I4–I7's persistence, credential, observation and syntax choices
 remain in the queue.
 
-**Subsequent placement choice — authored code:** the earlier recommendation was separately supervised MCP
-worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust
-functionality can remain in-process. For example, a checksum handler can run through a lightweight
-runner outside the executor, so the author need not implement a full server. A database driver
-worker requests instance-managed runtime actions and reports supported effects; it does not become
-the owner of instance configuration or long-lived services.
+**Next ruling — physical execution of authored code:** recommend supervised child/helper processes
+for locally authored plugin code, operating in the context of the instance whose activity they
+serve. For example, a directory Resource's handler runs in a helper associated with that Resource;
+its execution service retains supervision, authoritative progress and confirmed configuration.
+An ordinary helper crash can be handled without that helper sharing the executor's memory space.
+This is physical placement, not a new owner or independently managed object family: endpoint
+instances still select/manage their connection implementations, and Conduits coordinate the relationship.
 
-The user requested concrete examples, then questioned choosing workers before instance boundaries. The
-[execution comparison](AUTHORING.md#5-where-the-example-implementations-execute) walks through
-checksum, directory, existing Linear MCP and managed database implementations under both
-arrangements. An instance-specific runner could also host several plugin handlers; a separate
-worker per plugin is not required by the protocol. Placement remains open and follows the instance
-discussion; it must not change the authoring contract or transfer ongoing instance supervision to
-a finite setup handler.
+Trusted built-in Rust code may remain in the executor process. Graph-backed operations reuse graph
+execution without a separate helper merely for composition; authored child operations use the selected
+execution path. Existing MCP services retain their own supervision, and declarative service bindings
+need no new worker. This selects neither one process per invocation/plugin/instance nor an OS sandbox.
+An instance-associated runner could host several compatible handlers; exact sharing/granularity must
+preserve identity, credentials, cancellation and retained implementations and remains separate.
 
-Existing local/remote MCP services retain their own supervision; declarative bindings do not
-require a new worker. This does not select one process per graph node, invocation or instance.
-Sharing/granularity must preserve identity, credentials, cancellation and retained implementation
-bindings. Process separation helps contain plugin crashes but is not an OS permission sandbox.
-Supported languages, runner packaging and worker transport details remain separate.
-
-**Alternative:** initially load authored plugin code into the executor process through an extension
-API. That reduces process plumbing but shares its failure boundary and needs a compatible loading
-and retention mechanism. A Wasm lane can be evaluated later; it is not required to prove the public
-protocol. MCP remains the accepted public invocation protocol under either arrangement.
+**Alternative:** load locally authored plugin code into the executor process through an extension
+API initially. This reduces process/protocol plumbing but shares that executor's memory/failure
+boundary and requires compatible loading/retention. Both arrangements preserve the same public MCP
+contract and logical instance ownership. Languages, helper packaging, transport and any future Wasm
+lane remain separate. The [execution examples](AUTHORING.md#5-where-the-example-implementations-execute)
+remain illustrations, not completed implementation evidence.
 
 **Subsequent ruling — distribution scope:** recommend first-party bundled artifacts and explicit
 local package installation, deferring a marketplace and arbitrary-language dependency resolver.

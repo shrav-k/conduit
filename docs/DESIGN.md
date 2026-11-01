@@ -147,6 +147,12 @@ Validate across two machines before claiming remote support. This selects the fi
 layout, not a production placement limit or proof that failure guarantees have already been met.
 Storage, worker packaging and exact transports remain implementation review choices.
 
+The same fixture will prove executable and requirement composition together: an authored plugin,
+a graph-backed operation with derived/explicit results and recovery, composed requirements and a
+custom requirement outside core dispatch, all inspectable through the Interface. The
+[accepted proof scope](../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
+does not select final syntax, a permanent vocabulary, physical plugin placement or implementation start.
+
 ### Shared policy and instance-owned state
 
 Management is authoritative for templates, registration/naming and shared access policy. One
@@ -1644,7 +1650,7 @@ The concrete core catalog, publication syntax, support-matching details, paramet
 version identifiers, satisfaction evidence and enforcement-binding representation remain open. The
 [implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
 tracks those choices; accepting the compositional model does not select an expression language,
-a universal solver, a worker topology or an expanded experiment scope.
+a universal solver or a worker topology. Experiment 002 separately records the accepted authoring proof.
 
 ### Composite Conduits
 

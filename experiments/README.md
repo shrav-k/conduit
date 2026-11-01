@@ -7,7 +7,7 @@ expected outcomes and validation record together. The [specification](../docs/SP
 | Experiment | Purpose | Current evidence |
 | --- | --- | --- |
 | [001 — shared access](001-shared-access/README.md) | Exercise all five families, Pool composition, shared authentication, communication, controls and Interface observability. | Documentation and static configuration checks only. Fixture plugins do not exist yet. |
-| [002 — runtime and plugins](002-runtime-plugins/README.md) | Test authored and code-optional plugins, independent MCP access, execution custody, retained bindings and effect recovery before live integrations. | Proposed offline spike against accepted extension boundaries; no code or runtime measurements yet. |
+| [002 — runtime and plugins](002-runtime-plugins/README.md) | Test authored/code-optional plugins, graph-backed operations, composed/custom requirements, independent MCP access and effect recovery. | One-machine/two-executor layout and combined authoring proof scope accepted; implementation details remain proposed. No code or runtime measurements yet. |
 
 Distinguish draft syntax, parser/static checks, synthetic runtime tests and live provider tests.
 Do not promote expected outcomes into completed evidence. Changes to accepted behavior discovered

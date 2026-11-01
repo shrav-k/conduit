@@ -86,6 +86,11 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 
 ## Scope
 
+Experiment 002's [combined composition-authoring proof](../../../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
+is accepted within its existing synthetic fixture: graph-backed operations, derived/explicit results
+and recovery, composed/custom requirements and Interface evidence. It does not approve implementation
+start, final syntax, permanent core vocabulary or physical plugin placement.
+
 The proposed sequence begins with synthetic, fault-injectable execution and an Interface, then real
 Resources and Agent adapters, then the required two-Claude/two-Codex account exercise. Native
 agent supervision and a Conduit-owned model/tool loop have distinct implementation paths. The

@@ -138,12 +138,20 @@ uncertain and still requires effect inspection or supported deduplication, never
 results of already-dispatched work, and admitting new effects. A live Agent process or graph is
 not blanket permission for every later tool call or node. A management/observation outage also
 need not imply that every authorization source or instance endpoint is unavailable.
+The user requested [concrete outage examples](../../research/CLOUD_AUTHORITY.md#concrete-outage-comparison-before-ruling)
+before deciding. Those examples distinguish frontend, registration, policy, provider and executor
+failure; the permission-outage ruling remains open. If registration and authorization share one
+process initially, that process's outage can block new capability calls even while executors
+remain alive and retain results. A separate logical responsibility is not a deployment guarantee.
 
 Recommended v0 baseline, **not yet accepted**: retain supervision and recoverable results; allow
 already-dispatched operations to finish within their admitted contract; hold new affected effects
 when current authority cannot be established. A still-reachable authority can admit permitted
 work. Existing explicit stop/revocation rules remain applicable. This proposes no offline grants
 and does not silently cancel a database migration or invent a replacement Agent.
+Outcome retention does not itself authorize delivery to a caller; managed reads/delivery still
+check current access. Holding dispatch need not mean indefinite queuing: pending versus temporary
+unavailability follows the capability contract. No automatic replay policy is chosen here.
 
 The alternative allows explicitly bounded offline grants, with validity, expiry and delayed
 withdrawal semantics. That can improve availability but requires a further permission contract.

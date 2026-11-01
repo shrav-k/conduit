@@ -215,6 +215,65 @@ It must show which effects are waiting and why. No option is selected by this re
 Revocation also cannot undo an already completed call or erase context already delivered to a
 native Agent. This preserves the existing managed-access versus actual isolation distinction.
 
+### Concrete outage comparison before ruling
+
+The user requested examples before choosing an outage policy. The following is a design
+walkthrough, not a new ruling or evidence of tested behavior.
+
+Assume an Euphony Pool owns a worktree, shared authentication/Linear access and message-history
+Resources. Two Agents use independently filtered Conduits. Management supplies registration and
+shared policy; execution services supervise the instances and retain their authoritative state.
+The Interface presents their observations. These are logical responsibilities: registration and
+authorization might share a process initially, so some failures below could occur together.
+
+| Failure | Concrete situation | Consequence and remaining policy choice |
+| --- | --- | --- |
+| Frontend disconnect | The user closes the terminal while an Agent works. | Accepted detach semantics preserve instance-owned work where supported. No loss of authorization is implied. A reopened frontend retrieves retained observations; it does not start replacement work. |
+| Registration/aggregate view unavailable; authorization still reachable | Template editing and the global inventory fail, but an existing Agent can reach its Resource and current policy. | Existing permitted capability use need not wait for the aggregate view. Creation/naming operations needing unavailable registration wait. This conditional example does not promise independently deployed policy in v0. |
+| Authorization unreachable; instances and services alive | Linear would accept its shared credential, but Conduit cannot establish this Agent's current permission. | Without offline grants, hold or reject the new managed request as temporarily unavailable. With a still-valid offline grant, admit only its expressly covered effects. A live Conduit or credential alone is insufficient. |
+| Linear unavailable; Conduit authorization healthy | A provider connection breaks while worktree and history remain available. | Independent permitted work can continue. Supported reconnection retains the same route/account; an uncertain Linear write requires reconciliation, not replay. This is dependency recovery rather than permission caching. |
+| One executor lost | Executor A becomes unreachable while B still owns other usable Resources. | Preserve B's independent work. A's processes may be ended or unverified; do not substitute new execution from silence. Recovery follows verified reattachment/explicit resume, not an assumed permission to fail over. |
+
+For the authorization-outage case, use one specific timeline:
+
+1. An Agent requests a permitted Linear update and it is dispatched.
+2. The policy service becomes unreachable while Linear processes that update.
+3. Linear returns success. Under the proposed baseline, the instance service retains the outcome;
+   a policy outage does not turn success into failure or trigger another write.
+4. The Agent requests a **second** update. Without a new verifiable admission or an explicit valid
+   offline grant, this request cannot be dispatched. The same reasoning applies to protected
+   reads and message-history access; “read-only” does not mean permission-free.
+5. On reconnection, current policy governs subsequent dispatch and result delivery. If access was
+   withdrawn, the queued or retried request is denied. A previously stored result can remain
+   retained even when the caller is no longer permitted to retrieve it.
+
+“Hold” describes a dispatch restriction, not a requirement to queue indefinitely. A capability
+may report temporary unavailability for caller retry or support pending work under its contract.
+This discussion does not select automatic queue replay, indefinite retention of pending requests
+or a new mandatory status enumeration. Previously uncertain effects retain their original
+operation/recovery identity rather than being retried as new work.
+
+The alternative can be illustrated by a grant with a hypothetical five-minute validity period.
+It permits a specified Agent/path/operation set while policy contact is lost. If permission is
+withdrawn after one minute but that withdrawal cannot reach the enforcer, permitted calls may
+continue until expiry or until withdrawal is received. The duration is illustrative, not a
+proposed default. A grant also needs a defined target and restrictions; it cannot allow arbitrary
+new connections or widening privileges. This trades a known revocation delay for availability.
+
+The admission unit matters too. An already-dispatched migration may contain several implementation
+steps within its permitted operation. It need not stop between every SQL statement solely because
+management is unavailable. Starting an Agent, however, does not by itself authorize every future
+tool call or graph node. A broader permission to continue a run would need its own explicit bounds.
+Retaining a native Agent process is also not proof that Conduit mediates or can block every action
+that process can take. Enforcement coverage remains visible under either policy.
+
+The proposed v0 baseline therefore preserves supervision and outcome recording while admitting
+new managed effects only with verifiable permission. Its availability cost is real: if shared
+authorization runs in management and that process fails, affected new capability calls wait.
+The accepted state-ownership split removes management from canonical instance outcome commits;
+it does not automatically remove management from the authorization path. Bounded offline grants
+remain the explicit alternative, not a hidden consequence of keeping an instance alive.
+
 ## 6. What authors should have to supply
 
 Cloud extension patterns reinforce our accepted direction: publish typed contracts alongside an

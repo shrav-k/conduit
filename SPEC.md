@@ -243,6 +243,19 @@ Current access applies at execution and delivery, including retries and queued c
 unavailable or unsupported operations. A response acknowledging a request is distinct from its
 application; uncertain effects remain unknown until reconciliation or a supported safe retry.
 
+Communication uses shared mechanics with explicit, composable capability guarantees. Invocation,
+retention and observation can overlap: posting information invokes a capability, and a work
+request can retain its inputs/results while exposing progress. They are not exclusive message
+types or separate protocols. Contracts distinguish transport receipt, retention, delivery and
+execution outcomes without imposing an exhaustive domain-state enum. Report observable evidence
+and unknowns rather than inferring model understanding. Durable shared content remains Pool-owned.
+
+The first communication experiment covers retained Agent messages and state inspection.
+Agents can ask each other to review through ordinary messages; structured work submission with
+job acceptance, progress, results and cancellation is deferred as a later capability. Existing
+tools and supported instance controls remain available. Message addressing/recovery, attention
+and final experiment boundaries remain in review; no room or automatic wake policy is implied.
+
 ## Shared Pool access and authentication
 
 Reusable authentication is a Pool-owned Resource. Service Resources access it through Conduits
@@ -451,6 +464,7 @@ deletion and new instances after Conduit flow end. R4 settles explicit Pool comp
 connection selection/delegation/routing and removal of generic labels/selectors. R5 settles declared
 activation and explicit refresh, with automatic refresh policies deferred. R6 settles stored
 configuration/export, strict YAML interpretation and retained implementation selection with replacement
-for upgrades. [Communication is the remaining review bundle](REVIEW.md#next-discussion).
+for upgrades. R7 accepts composable communication guarantees and a messages-plus-inspection first
+slice; [delivery, attention and experiment boundaries remain](REVIEW.md#next-discussion).
 Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

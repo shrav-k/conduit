@@ -4,8 +4,9 @@ Updated: 2026-10-31. Audited all 11 repository Markdown documents for current co
 unresolved decisions, conflicting recommendations and obsolete questions. Source research remains
 dated evidence; this audit did not rerun provider investigations or validate a runtime.
 
-**The review is not complete yet.** R1–R6 are accepted; R7 communication remains below.
-Its recommendations are not newly accepted requirements. Field names, implementation choices
+**The review is not complete yet.** R1–R6 are accepted. R7 now accepts composable communication
+guarantees and a messages-plus-inspection first slice; its remaining recommendations are not
+accepted requirements. Field names, implementation choices
 and future catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
 remain the accepted design; research supplies evidence rather than a second decision queue.
 Implementation has not started. Work remains on research/conduits-as-graphs; the earlier baseline
@@ -17,53 +18,32 @@ is preserved on main at c013f0a.
 Conduit-selected implementations, with replacement instances for implementation upgrades in v0.
 Concrete schema fields and tooling remain drafting work within those accepted rules.
 
-Next is **R7: communication behavior and the first usable scenario**. The user requested concrete
-examples and messaging/networking research before ruling. The
-[investigation](research/CONDUITS.md#messaging-and-networking-investigation) compares TCP/QUIC,
-Signal, WebSocket, MQTT/AMQP, JetStream, Zenoh/Matrix, current MCP/A2A and local Agentwatch evidence.
-It changes the framing below; it does not accept a communication contract or select a dependency.
+**Accepted R7 direction:** shared mechanics with explicit, composable capability guarantees.
+Invocation, retention and observation overlap; they are not exclusive message types, new families
+or separate wire protocols. Contracts distinguish what receipt, retention, delivery and execution
+evidence establish without an exhaustive domain-state enum or extra manual bookkeeping. Durable
+content remains Pool-owned. MCP is the preferred supported surface, not a guarantee of retention
+or Agent scheduling. The [protocol investigation](research/CONDUITS.md#messaging-and-networking-investigation)
+supplies the examples and evidence.
 
-**Refined recommendation:** shared mechanics with explicit, composable capability guarantees.
-Invocation, retention and observation overlap; they are not three exclusive message types.
-Even posting a message invokes an operation. A retained review request can also expose progress
-and a later result, over the same MCP connection. A generic envelope and meaningful typed
-operations are compatible. The choice is whether guarantees are inspectable in contracts or
-left to application conventions, not whether there is one wire format or three.
+**Accepted first slice:** retained Agent messages and state inspection. Structured work submission
+with job acceptance, progress, results and cancellation is deferred. An Agent can ask another to
+review through a message; this does not itself create a structured job. Ordinary tools and existing
+supported instance controls remain available. No previous room policy is automatically restored.
 
-For example, A has prepared a change and B is currently unavailable:
+Three closeout choices remain, grouped by user-visible behavior:
 
-| Illustrative operation | Success means | Does not establish |
+| Choice | Proposed v0 direction, not yet accepted | Example that resolves it |
 | --- | --- | --- |
-| `post(B, "Please review", artifactRevision)` | The selected communication capability retained the contribution under its contract. | B accepted a review job, read the content or started a model turn. |
-| `review(B, artifactRevision, criteria)` | B's explicitly exposed operation returns findings or admits work under its declared asynchronous contract; otherwise it reports inability to accept. | That every Agent exposes review, every request can queue offline or acceptance guarantees successful completion. |
-| `inspect(review)` / follow progress | Current state or updates with declared coverage/freshness. | That inspecting starts work or every missed transition can be replayed. |
+| Message addressing, history and recovery | Explicit Agent recipients, individually or as an explicit group; append-only retained exchanges with independent consumption progress and bounded catch-up. Apply existing safe-retry/current-access rules. | A posts for B and C; B is offline, C reads, a response is lost and B's access changes. Define what each participant can later retrieve and what an acknowledgment proves. |
+| Attention | Unread availability on the next normal turn, with explicit reads; no automatic model turn from posting or replay. Preserve an optional future wake hook. | B is idle when A posts. Separate receipt from whether B runs, and avoid feedback loops from acknowledgments/status. |
+| Experiment boundary | Local two-Agent exchange plus an Interface observer; tracker connection optional for testing, remote transport/federation later. Keep the separate two-Claude/two-Codex compatibility gate. | Exercise offline catch-up, a duplicate retry, permission narrowing and observer reconnection before live provider tests. State any longer-term tracker requirement explicitly. |
 
-Names above are examples, not schema or MCP tool-name rulings. TCP acknowledges transport receipt;
-Signal separates service/device/read receipts; a Conduit capability must additionally say what
-work/result it attests. Adapters should report observable facts, not infer model understanding.
-MCP offers a familiar expression, but transport/subscription semantics and task support depend
-on the negotiated version/extensions. It does not automatically provide Conduit's retained history.
-
-Durable content remains Pool-owned. Conduits carry authorized interactions; Agents own private
-execution/context; Interfaces inspect and invoke. One Resource can expose related capabilities,
-and an Agent can expose work directly without a new family. Neither a room nor automatic context
-merging is required. Storage, delivery, model attention and completion remain distinct facts
-without requiring an exhaustive state enum or extra manual bookkeeping.
-
-Work through three connected bundles rather than voting on individual message fields:
-
-1. **Meaning and retention:** confirm composable capability contracts, then choose whether the
-   first slice includes retained posts only or also an explicit asynchronous work operation.
-2. **Recipients, recovery and attention:** resolve offline B, response loss, independent recipient
-   progress, permission changes, bounded catch-up and what can trigger model work. Keep duplicate
-   delivery separate from duplicate execution and waiting timeouts separate from cancellation.
-3. **Observation and experiment:** identify current-state versus history guarantees, slow-observer
-   recovery and the minimum local two-Agent plus Interface scenario. Decide or explicitly defer
-   tracker coupling and richer communication modes.
-
-No former room policy is silently reinstated. Passive next-turn attention is still a recommendation;
-automatic wake, addressing/retention details and initial scope remain open. Existing Pool ownership,
-current-access checks, safe retries and new-Conduit-after-end rules continue to constrain the design.
+The choices should close with a small end-to-end example, not a vote on every message field.
+Exact IDs, cursors, wire framing, status field names, numeric limits, broker/storage choices and
+plugin implementation remain drafting/engineering work unless they expose new protocol behavior.
+Current Pool ownership, retention-until-purge, access checks, safe retries and new-Conduit-after-end
+rules already apply; no extra ruling is needed to restate them.
 
 ## Settled foundation
 
@@ -81,6 +61,7 @@ current-access checks, safe retries and new-Conduit-after-end rules continue to 
 | Composition/access | Explicit provision-from-entry or use-existing-instance intent; availability alone does not deploy. Agent templates declare starting Conduits; no Pool connection defaults. Local entries, reusable composition, capability matching and partial readiness remain. Filters preserve complete paths; routing is unambiguous/explicit. Grants follow recipient participation. |
 | Activation | Declared compatible preparation; required/optional failures and explicit collision resolution. Refresh of loaded content/extensions and exposed tool definitions is explicit in v0; automatic policies are deferred. Known stale/incompatible calls are withheld, with detection limits reported. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
+| Communication foundation | Composable capability guarantees; retained messages and state inspection first. Structured work submission deferred. No required room abstraction or automatic context merging. |
 | Continuity/evidence | Stable identity, explicit rebind, current-access delivery, safe retries, explicit restart of stopped Agents, portable checkpoints, retained evidence and honest telemetry gaps. |
 | Startup | Seed management objects once, reuse them and explicitly repair inconsistencies. No silent reseeding/purge. Repair mechanics remain implementation work. |
 
@@ -97,7 +78,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R4 — accepted | How are connections selected, delegated and routed? | Explicit Pool entries and provision-or-use-existing intent; no generic labels/selectors, automatic deployment or Pool connection defaults. Unambiguous/explicit routing and recipient-bound grants. | No implicit reuse/provision selection; richer reuse policies deferred. |
 | R5 — accepted | When do accessible skills, content and catalogs become active? | Declared compatible preparation, deliberate collision resolution and explicit refresh. Withhold affected known stale/incompatible calls; report detection limits. | Automatic reload/first-use refresh deferred; no implicit precedence or context replacement. |
 | R6 — accepted | What portable configuration/extension profile is shared? | One `spec.config` map/export, strict YAML, exact retained implementation selection and replacement for upgrades. | In-place code upgrades, implicit substitution and YAML convenience features deferred. |
-| R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
+| R7 — partial | How do retained messages address participants, recover and attract attention; what bounds the experiment? | Composable guarantees and messages-plus-inspection are accepted. Recommend independent recipient progress, passive attention and local testing without a required tracker. | Structured work submission is deferred; wake policy, exchange details and tracker/remote boundaries still need closeout. |
 
 ### R2 — graph execution and recovery
 
@@ -243,24 +224,18 @@ database or schema library. [Configuration evidence](research/CONFIGURATION.md).
 
 ### R7 — communication and the usable slice
 
-Communication is central and still needs a selected contract. The
-[worked protocol investigation](research/CONDUITS.md#messaging-and-networking-investigation)
-refines the first proposal into composable capability semantics: an invocation can retain work
-and support observation. Neither a closed behavior enum nor separate transports/processes/Resources
-is required. The next-discussion bundles above are the ruling sequence.
+The composable-capability direction and retained-messages-plus-inspection first slice are accepted.
+The three choices under [Next discussion](#next-discussion) are the remaining queue. Structured work
+submission is a later capability, so this experiment need not implement a job scheduler or task
+lifecycle protocol. Existing named controls and operation outcomes remain in scope.
 
-Recommend Pool-owned retained content, Conduit-mediated exchange, independent participant progress,
-acceptance distinct from processing/completion, bounded catch-up and current-access delivery.
-Start with passive attention; automatic model work is a later explicit hook. Two peers and groups
-should exercise an extensible mechanism without making rooms the universal primitive or assuming
-an editable scratchpad. Addressing, ordering, receipts and offline behavior need one worked scenario.
-Tracker coupling is still an open product choice; the latest model establishes no mandatory policy.
-
-Closure example: A asks B for a review; B disconnects before reading; access changes; B returns;
-an Interface observer falls behind. Identify stored, delivered, supplied-to-model and executed work,
-unknown outcomes and what survives the final connection. Keep the
-[Pi/Chord comparison](research/PI_CONNECTORS.md#three-proposed-interaction-families) as implementation
-inspiration, not a separate ruling queue. Broker/wire selection follows the required semantics.
+Closure example: A posts a review request in prose; B disconnects before reading; access changes;
+B returns; an Interface observer falls behind. Identify stored/delivered content, per-recipient
+progress, evidence gaps and what survives the final connection. An Agent can independently choose
+to review and post findings; a message receipt is not job acceptance. The
+[protocol investigation](research/CONDUITS.md#messaging-and-networking-investigation) and
+[Pi/Chord comparison](research/PI_CONNECTORS.md#three-proposed-interaction-families) supply evidence,
+not separate ruling queues. Broker/wire selection follows the required semantics.
 
 ## Implementation decisions and deferred work
 

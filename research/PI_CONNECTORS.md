@@ -442,7 +442,8 @@ The later [messaging/networking investigation](CONDUITS.md#messaging-and-network
 refines these into **composable behaviors**, not exclusive protocol families: a retained post is
 also an invocation, and a review can retain its request/result while exposing observations. Keep
 the examples below as requirements to distinguish, not a three-way wire or Resource taxonomy.
-R7 is still awaiting a ruling.
+R7 accepts that composable direction and retained messages plus inspection for the first slice.
+Structured work submission is deferred; detailed delivery and attention policies remain open.
 
 | Family | Example | Success means | Recovery needs |
 | --- | --- | --- | --- |

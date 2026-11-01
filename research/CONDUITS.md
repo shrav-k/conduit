@@ -13,8 +13,9 @@ state and lifecycle proposals below remain for review; no schema or implementati
 No live login, deployment or provider mutation was performed for this research.
 
 The [messaging and networking investigation](#messaging-and-networking-investigation)
-develops the pending R7 communication proposal with a concrete review exchange, primary protocol
-sources and failure cases. It refines the proposal; it does not record an accepted ruling.
+develops R7 with a concrete review exchange, primary protocol sources and failure cases. Composable
+capability guarantees and a retained-messages-plus-inspection first slice are now accepted;
+the detailed delivery/attention proposals and broader work-submission examples remain distinct.
 
 ## Common model across the scenarios
 
@@ -571,8 +572,10 @@ evaluation implementation remain open. This rule does not prescribe a new policy
 
 ## Messaging and networking investigation
 
-Research date: 2026-10-31. **R7 remains unresolved.** Sources below describe specific standards,
-versions or inspected implementations. The recommendations are Conduit design inferences, not
+Research date: 2026-10-31. **R7 is partially settled:** composable capability guarantees and
+retained messages plus inspection first; structured work submission is deferred. Delivery,
+attention and final experiment boundaries remain open. Sources describe specific standards,
+versions or inspected implementations. Research recommendations are Conduit design inferences, not
 claims that adopting one library supplies these guarantees. No broker, transport, cryptographic
 scheme, Agent wake policy or new Resource type is selected here.
 
@@ -583,7 +586,9 @@ Resource capable of retaining exchanges. Agent A implements a change; Agent B re
 An Interface observes both. Their permitted Conduits already exist. This is a proposed example,
 not a requirement for a communication Resource in every Pool or a Resource per message.
 
-The following are illustrative capability names, not YAML fields or standardized MCP tool names:
+The following are illustrative capability names, not YAML fields or standardized MCP tool names.
+The accepted first slice covers posting and inspection; structured `review` work submission is
+a later capability, included here to explain the extension boundary:
 
 | Interaction | Example | What its successful response establishes |
 | --- | --- | --- |
@@ -786,9 +791,9 @@ A request/result pair should identify what was actually reviewed: for this examp
 revision or immutable commit plus declared inputs, not “whatever is currently in A's folder.”
 The result's existence does not prove its correctness; validation evidence is still separate.
 
-### Refinement to the proposed Conduit contract
+### Accepted communication direction
 
-Recommend **shared mechanics with explicit, composable capability semantics**. A generic message
+**Accepted: shared mechanics with explicit, composable capability semantics.** A generic message
 envelope is compatible with this direction; the false choice is between one wire format and
 meaningful operations. We can use common correlation, references and authorization while allowing
 plugins to define `post`, `review`, `read-history`, `inspect`, or richer operations. Clients learn
@@ -807,7 +812,7 @@ For the examples, contracts need to answer a few independent questions:
 
 Plugin-defined outcomes can remain extensible. The shared contract should identify the fact,
 its subject and the component reporting it; a sender must not promote a transport receipt into
-an Agent's completion claim. Exact fields and supported presets come after the behavior ruling.
+an Agent's completion claim. Exact fields and supported presets follow the remaining message-contract ruling.
 Prefer a small set of useful capability contracts over exposing every combination as a user-facing
 matrix of flags.
 
@@ -825,18 +830,13 @@ can be linked without determining transport or message semantics.
 
 ### Recommended next review
 
-Do not choose TCP versus Signal: one is a transport and the other is a secure messaging system.
-Do not select a broker or enumerate final message types yet. Review these three connected bundles:
-
-1. **Capability meaning and retention:** agree that posting information, requesting work and
-   inspecting state have distinguishable, composable contracts. Choose whether the first local
-   slice includes retained posts only or also a deliberately exposed asynchronous work operation.
-2. **Recipients, recovery and attention:** walk the offline/retry example through named recipients,
-   independent progress, current-access checks, bounded catch-up and the trigger for model work.
-   Passive next-turn notice remains a recommendation; automatic-wake hooks are not accepted here.
-3. **Observation and acceptance scenario:** choose the minimum inspectable evidence and gap
-   handling, then test the two-Agent exchange plus an Interface observer. Tracker coupling,
-   remote federation and richer modes can be explicitly deferred with consequences recorded.
+The first slice is now retained messages and state inspection; structured work submission is
+deferred. Do not choose TCP versus Signal: one is a transport and the other is a secure messaging
+system. The remaining review covers message addressing/history/recovery, Agent attention, and
+the final experiment boundaries. Walk offline delivery, response loss, a permission change and
+a slow observer through that smaller slice. Passive next-turn notice remains a recommendation;
+automatic wake and tracker coupling are not accepted here. The
+[review agenda](../REVIEW.md#next-discussion) is the single queue for these choices.
 
 Existing MCP capability exposure is the leading adapter surface, with a local implementation free
 to use in-process calls or local IPC. Keep transport and storage replaceable, and negotiate/version

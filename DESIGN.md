@@ -1523,10 +1523,30 @@ control remain outside this contract. A purged/unavailable operation result does
 the operation never ran. These rules support future communication contracts without
 selecting a delivery guarantee, broker, ordering scheme or automatic-wake policy.
 
-### Communication research boundary
+### Communication contract and remaining review
 
-Communication is an interaction between Agents through Conduits, with Resources and
-Pools supplying authorized shared material. The type-specific contracts still need to
-settle addressing, acceptance, results, retention/replay, attention, cancellation and
-tracker associations. Keep receipt, execution and completion distinct. Research should
-produce concrete flows and failure cases before protocol or implementation selection.
+Communication uses common mechanics and explicit, composable capability guarantees carried by
+Conduits. Invocation, retention and observation overlap: a retained post is itself an invocation,
+and an exposed work operation can retain its request/result and support progress inspection.
+They are not an exclusive taxonomy, separate wire protocols or new object families. MCP remains
+the preferred external expression where supported; its transport/extension support does not
+automatically provide application retention, safe replay or Agent scheduling.
+
+The capability defines what its responses establish. Distinguish transport receipt, storage,
+delivery and execution/completion evidence; do not infer that a model read or understood content
+from an integration receiving it. Report gaps where native runtimes cannot supply evidence.
+This requires no exhaustive domain-state enum, mandatory receipt at every stage or separate
+user-maintained ledger. Reuse operation/runtime evidence. Pools own supporting durable Resources;
+Agents own private execution/context; Interfaces inspect and invoke through authorized Conduits.
+
+The first communication experiment includes retained Agent messages and state inspection.
+Structured asynchronous work submission is deferred, including a generalized contract for job
+acceptance, progress, results and cancellation. An Agent can still ask another to review in a
+message, and ordinary tools, existing named controls and their operation outcomes remain available.
+A request in message prose is not itself a grant or a structured job-acceptance receipt.
+
+R7 still needs the message addressing/history/recovery contract, the attention policy and final
+experiment boundaries such as tracker coupling. No previous room rule is automatically restored.
+The [protocol investigation](research/CONDUITS.md#messaging-and-networking-investigation) supplies
+source evidence and failure examples; broader work-submission examples are future capabilities,
+not requirements for the first slice. Concrete fields and transport selection follow those choices.

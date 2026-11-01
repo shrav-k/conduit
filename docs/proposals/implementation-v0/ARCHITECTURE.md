@@ -39,6 +39,72 @@ They retain required authority, ownership and evidence services; standard client
 expose every internal setup/driver export. Standalone implementation use outside the managed model
 has its own declared dependencies/guarantees. This adds no process or registry per object.
 
+### Interface as system director — proposed refinement
+
+Under discussion: make directing, administering and observing the system a core Interface role
+throughout its lifetime. Initial establishment, supported reconfiguration, recovery and repair
+would be part of that role. A root Interface is a working name for the initial owner-operated
+Interface configuration within the existing family, not a sixth kind or a separate bootstrap-only
+object. This expands the implementation packet's presentation-focused wording; the accepted
+management/execution separation and instance-state authority do not need to collapse with it.
+
+An Interface template would declare its management responsibilities, dependencies, setup graph,
+runtime behavior and supported controls. Existing typed plugin operations and graphs can implement
+these responsibilities. A directive describes what this Interface is responsible for; it does not
+by itself introduce another language, autonomous model loop, implicit retries or continuous desired-
+state reconciliation. Actions still occur through explicit requests or declared runtime behavior.
+The root Interface can operate without an attached CLI/TUI; frontends remain its user-facing clients.
+
+Distinguish administrative authority from authority over the truth of a recorded outcome:
+
+| Responsibility | Proposed placement consistent with the accepted boundaries |
+| --- | --- |
+| Direct startup and system management | The root Interface's declared runtime and operations coordinate initial establishment, supported lifecycle changes and repair. |
+| Exercise owner administration | The root Interface acts for the verified local owner under the existing v0 administrative authority. Merely naming another Interface root does not grant those rights. |
+| Retain shared registry and access policy | Management services, exposed through the system Pool's management Resource, remain authoritative for those facts. They implement the management capabilities used by the Interface. |
+| Retain instance configuration and outcomes | Each designated instance service keeps its confirmed configuration/revisions, executions and operation results. The Interface cannot confirm another instance's effect without evidence. |
+| Own storage and other capabilities | Pools continue to own Resources. A storage Resource can back runtime state if the eventual storage contract permits it; the Interface directs establishment and access. |
+| Establish access and communication | Conduits retain endpoint relationships and requirements. Endpoint instances continue managing their implementations and local bindings. |
+| Present and issue user actions | CLI, terminal and test frontends attach to the Interface. Closing a frontend does not mean stopping the Interface, its services or its managed instances. |
+
+Management and execution services remain physical implementation roles that may each serve many
+objects. Assigning a management directive to an Interface does not require one process per object,
+copying all state into that Interface or sending every provider request through it. Its own
+configuration and management-workflow progress still have a designated authority. Ordinary Interfaces
+could use the same family contracts with different declared responsibilities; differentiated
+permissions among Interfaces remain deferred as agreed for v0.
+
+**Possible establishment walkthrough:** the local runtime loads the explicitly selected root
+Interface definition and verifies its owner context. The Interface's establishment graph then
+establishes the system Pool and its required storage/management Resources in the supported order,
+opens the management connections, and makes observation/control available to attached frontends.
+On subsequent starts, its recovery operations reuse retained object identities, settings and grants;
+missing or inconsistent state is reported for explicit repair. Resource creation still proceeds
+through its Pool. Normal running-instance changes use Conduits and supported controls, and fixed
+definition changes still require replacement. This sequence is illustrative, not final YAML or
+approval of any particular storage plugin.
+
+The first load and earliest durable progress still need an implementation home. A root Interface
+cannot load the only copy of its definition from a store reachable only after that same definition
+runs. Its initial definition and sufficient identity/recovery material must therefore be available
+before those dependencies. That can be part of the Interface runtime's declared local persistence
+and loader contract rather than another public object family or separate user-authored bootstrap
+workflow. Where this material is authoritative, how partial establishment is recorded, and how it
+agrees with later registry state remain explicit design questions. No second writable copy of live
+configuration, implicit fresh initialization or offline Agent grant should be inferred.
+
+The same Interface role would handle repair during ordinary use: if a storage connection fails,
+it can expose available diagnostics, request supported reconnection or run an explicit repair
+operation. It must show when authoritative state cannot be inspected or changed. Broad administrative
+permission does not fabricate missing state or prove that an external action succeeded. Stopping
+its frontend differs from stopping its runtime or a management service; the existing outage rules
+still govern new admissions and independent executors' already-dispatched work.
+
+**Review direction:** assess this active Interface role first, then settle how its foundational
+persistence is represented and loaded. Administrative scope, ownership of domain data and durable
+state authority stay distinguishable. This is a proposal under [I4](REVIEW.md#i4--local-transactional-authority),
+not an accepted storage-engine choice or change to every Interface's configuration.
+
 ### Instance execution boundary
 
 Endpoint implementation selection and management are accepted. Locally authored plugin code
@@ -363,6 +429,10 @@ backup cannot establish that later provider effects never occurred or that old p
 current. Report and reconcile missing evidence; do not silently rebuild identity from search results.
 
 ### Storage boundary under review
+
+The current exploration places initial establishment and continuing system administration in the
+[Interface role](#interface-as-system-director--proposed-refinement). The storage arrangements below
+can implement that role; they need not introduce a separate user-facing bootstrap component.
 
 I4 has not selected an engine or extension boundary. The earlier SQLite-versus-storage-plugin
 question combined independent choices. SQLite can back an internal adapter, a published plugin

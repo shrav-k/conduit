@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Authority-storage extension and lifecycle boundary, then engine | Compare internal adapter, bootstrap-loaded plugin and Pool-owned Resource; SQLite remains an unaccepted first-engine candidate. |
+| I4 | Active Interface role and foundational storage, then engine | Explore a root Interface directing startup, administration and repair; preserve state/Pool ownership. Storage extension/representation and SQLite remain open. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -404,13 +404,26 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: open; storage boundary exploration precedes engine selection.** The
-[recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) show the guarantees needed
-regardless of engine. The [boundary comparison](ARCHITECTURE.md#storage-boundary-under-review)
-separates fact ownership, persistence contract, engine/deployment and bootstrap lifecycle. SQLite
-and pluggability are not mutually exclusive. No storage ruling has been accepted.
+**Status: open; Interface role and storage boundary precede engine selection.** The current proposal
+makes startup and continuing system direction part of the Interface's own role. A root Interface
+would exercise local-owner administration, establish the system's foundational dependencies and
+provide ongoing observation, lifecycle control and repair through its declared runtime/plugins.
+This is a reusable Interface configuration within the five-family model, not a separate bootstrap
+object. Frontends attach to it; its responsibilities can continue without an open frontend.
+See the [Interface walkthrough](ARCHITECTURE.md#interface-as-system-director--proposed-refinement).
 
-**Next discussion:** decide how authority storage fits the extension and object model. The accepted
+**Next discussion:** assess that active Interface role while distinguishing administrative authority
+from state authority. The Interface can direct a change; the responsible instance service confirms
+and records the outcome. Management still owns shared registry/policy facts, Pools own Resources,
+and Conduits carry normal control/access. The minimal first-definition load and earliest durable
+Interface progress still need a concrete home; folding them into the Interface runtime does not
+make that dependency disappear. Exact persistence and initial authority verification remain open.
+
+Then decide how authority storage fits that role. The
+[recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant
+failure cases; the [storage comparison](ARCHITECTURE.md#storage-boundary-under-review) separates
+contract, representation and engine. SQLite and pluggability are not mutually exclusive. No storage
+ruling or precise root-Interface lifecycle has been accepted. The accepted
 management/instance-state authority split is unchanged; storage supplies persistence without
 becoming a second owner of policy or instance transitions. Compare three arrangements, which can
 also be combined rather than treated as a closed set of exclusive choices:
@@ -441,7 +454,7 @@ an internal adapter still needs migrations and conformance tests. No cross-servi
 automatic failover or offline permission grant follows. Services exchange information through their
 contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-Finish I4 by choosing the extension/lifecycle boundary and initial implementation. Detailed SQL,
+Finish I4 by settling the Interface responsibility, storage extension/lifecycle boundary and initial implementation. Detailed SQL,
 method names and helper organization need not become separate conceptual rulings.
 
 ## I5 — Credential custody and account compatibility

@@ -20,9 +20,11 @@ transport, attachment or database table does not add a family.
 | Conduit | Live logical participation, routes and applicable restrictions | Fixed definition, supported settings, attachments and lifecycle evidence | Ownership of durable conversation content or provider credentials |
 
 The system Pool owns the management Resource through which the Interface exposes registry and
-runtime management. The physical implementation of the control database is not another user-facing
-Resource automatically created for every table. A plugin's private checkpoint is implementation
-state; a separately exposed storage/search/authentication capability is a Pool-owned Resource.
+runtime management. A table does not automatically become a Resource. Whether authority storage
+itself stays internal, uses a bootstrap-loaded plugin or becomes an explicitly Pool-owned Resource
+is under I4 review. A plugin's private checkpoint is implementation state; a separately exposed
+storage/search/authentication capability is a Pool-owned Resource. Logical ownership, storage
+implementation and physical deployment are distinct choices.
 
 Plugins publish contracts with bindings to authored code, existing MCP implementations, graphs
 of selected operations, or a combination. Graph-backed exports reuse operation invocation and graph
@@ -360,19 +362,88 @@ retention and external-state reconciliation are separate mechanisms. Restoring a
 backup cannot establish that later provider effects never occurred or that old permissions are still
 current. Report and reconcile missing evidence; do not silently rebuild identity from search results.
 
-**What a pluggable authority store would change.** The same examples would apply if another
-implementation stored these records. That backend must preserve checked revisions, atomic updates
-of related local facts, durable operation identity/outcomes and explicit unavailable/unknown states.
-It must also support the bootstrap/repair and migration paths promised by the runtime. Search or
-append-only logs alone do not supply those semantics. An in-process storage adapter and an external
-storage-service plugin are different deployment choices; a plugin need not be remote. External
-storage adds service reachability and authentication to recovery. Internal interfaces can keep the
-engine replaceable later without requiring a published storage-plugin contract in v0.
+### Storage boundary under review
 
-The recommendation remains SQLite behind each local authority for the first implementation, with
-independent Resource backends. This supplies a concrete testable persistence engine while keeping
-plugin/template semantics independent of SQL. It does not settle a future distributed database or
-make local transactions atomic with external effects. See [I4](REVIEW.md#i4--local-transactional-authority).
+I4 has not selected an engine or extension boundary. The earlier SQLite-versus-storage-plugin
+question combined independent choices. SQLite can back an internal adapter, a published plugin
+or a Pool-owned storage Resource. Conversely, a service could use another engine internally
+without exposing a general storage plugin API. The accepted authority split stays unchanged:
+management owns shared registration/policy; one designated service owns each instance's state.
+A backend implements persistence guarantees without becoming a second writer of object semantics.
+
+Separate four questions:
+
+- **Meaning:** which instance/service owns a fact and may confirm its transition? Already defined
+  for core configuration, policy and operation outcomes; domain data follows its Resource contract.
+- **Storage contract:** which reads, conditional writes, atomic groups and recovery guarantees must
+  the persistence implementation supply? This can be internal or a published extension contract.
+- **Engine and deployment:** SQLite, another local engine or a service; one service can store many
+  instances, and physical sharing need not merge logical authority or Pool ownership.
+- **Lifecycle:** what starts the storage dependency, how it is inspected, and how it is repaired
+  when its own registry/connection records cannot be read? This is the bootstrap question.
+
+For a shared history Resource, the messages and reader positions are domain data governed by its
+capability. The executor's record that the Resource exists, its confirmed settings and its setup
+progress are runtime state. A plugin can also have private recovery information, such as a remote
+subscription cursor: where that is stored must be declared by its lifecycle/recovery contract,
+not assumed to survive in helper memory. A cursor used as recovery evidence is different from a
+rebuildable cache. No second canonical copy of message content or provider data is required merely
+for runtime tracking; references and sufficient recovery evidence can connect the two. Captured
+payloads and retention still follow their accepted contracts and pending I6 policy.
+
+Consider a directory Resource. Its backing files remain on disk. Conduit retains its stable ID,
+Pool owner, fixed definition, configured path and lifecycle evidence. The filesystem plugin supplies
+operation outcomes and any supported reconciliation. Moving Conduit's metadata to another backend
+does not copy the directory or change who may expose it through a Conduit. Likewise, a state-store
+plugin should not decide whether an Agent may issue a new provider request; the responsible runtime
+still checks the access path and current policy.
+
+Three arrangements help expose the tradeoffs; none is accepted. They can also be combined: a
+published plugin can implement a Pool-owned Resource whose initial loading uses bootstrap:
+
+| Boundary | Example | Main tradeoff |
+| --- | --- | --- |
+| Internal authority-storage adapter | The executor calls a private storage interface implemented with SQLite. The management Resource exposes supported inspection/controls, not raw SQL. | Smallest initial dependency surface; outside authors cannot replace it through the public plugin contract yet. |
+| Published storage contract with bootstrap loading | A retained plugin implements the required persistence operations; startup can load/connect it from an explicit configuration independent of the store being opened. | Extensible without ordinary instance setup recursion, but requires precise storage semantics and a special startup/repair contract. It can be local or remote; MCP alone supplies none of those persistence guarantees. |
+| Pool-owned storage Resource used by authority services | A system Pool owns a state-store Resource, and services use selected Conduit paths to it. It is visible in the same object model as application storage. | Greatest model uniformity; requires an acyclic bootstrap path plus explicit rules for stopping, disconnecting, upgrading or deleting a dependency holding live system state. |
+
+The third boundary is possible, but the naive sequence is circular: read the registry to find the
+storage Resource; read its Conduit/grants to connect; use that connection to read the registry.
+A possible bootstrap sequence is to load a small explicit descriptor identifying the existing
+store and required implementation before ordinary registry operations, open and verify that store,
+then recover its system-Pool/Resource/Conduit representations. A descriptor might identify endpoint,
+artifact and credential references; exact contents and authority verification remain undecided.
+It must not become a second writable copy of all configuration or a cache granting offline access.
+A failed store open cannot silently create an empty registry, replace identities or restore defaults.
+This builds on the accepted minimal bootstrap, but its storage dependency contract is a new choice.
+
+A storage capability being visible through the Interface does not by itself settle its startup
+mechanism. The second boundary could later expose a Pool-owned management/inspection representation;
+the third still needs some startup mechanism outside the dependency cycle. Representation, runtime
+ownership and initial loading should be reviewed separately rather than treating visibility as proof
+that every ordinary lifecycle operation is safe or available.
+
+Kubernetes provides two relevant reference points: the API server and etcd have separate roles,
+and kubelet-managed static Pods can start from local manifests independently of API-managed Pod
+creation. Those are examples of separating persistence and bootstrap, not a proposal to import
+Kubernetes scheduling or restart rules. [Components](https://kubernetes.io/docs/concepts/overview/components/) ·
+[Static Pod configuration](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/)
+The etcd transaction API also demonstrates that conditional multi-record commits need not be an
+SQL-shaped public interface. Its semantics would still need checking against Conduit's requirements;
+this is not selection of etcd. [etcd transactions](https://etcd.io/docs/v3.6/learning/api/#transaction)
+
+Any backend must preserve checked revisions, atomic updates of related local facts, durable
+operation identity/outcomes and explicit unavailable/unknown states. The responsible service
+retains transition logic, caller attribution and authority checks; plugins do not write arbitrary
+rows in another service's store. An external store adds reachability/authentication concerns and
+recovery when a commit reply is lost. A backend contract must define how to reconcile a possibly committed
+write; it cannot infer failure from a missing reply. Choosing an engine does not make external
+provider effects atomic or supply replication, automatic failover or a backup policy.
+
+**Review recommendation:** settle the intended extension/lifecycle boundary before selecting its
+first engine. An explicit persistence contract could fit Conduit's extension goals even if the
+first implementation uses SQLite; whether that contract is private or published, and whether it
+is an ordinary Resource dependency, remains open. See [I4](REVIEW.md#i4--local-transactional-authority).
 
 ## 5. Graph and runtime execution
 

@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
+| I4 | Authority-storage extension and lifecycle boundary, then engine | Compare internal adapter, bootstrap-loaded plugin and Pool-owned Resource; SQLite remains an unaccepted first-engine candidate. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -404,41 +404,45 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: open.** Review the [storage and recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples)
-before choosing the backend. They cover a committed control with a lost reply, an external migration
-with an uncertain result, management loss, Resource-backend failure and disk loss. Storage-engine
-selection remains distinct from ownership, safe retries and already accepted outage rules.
+**Status: open; storage boundary exploration precedes engine selection.** The
+[recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) show the guarantees needed
+regardless of engine. The [boundary comparison](ARCHITECTURE.md#storage-boundary-under-review)
+separates fact ownership, persistence contract, engine/deployment and bootstrap lifecycle. SQLite
+and pluggability are not mutually exclusive. No storage ruling has been accepted.
 
-**Next ruling — persistence backend:** use SQLite behind each local management or instance-state
-authority in v0, while deferring an externally pluggable authority-store backend. In Experiment 002,
-management and the two executors would each retain their own database: management stores shared
-templates/registration/policy; each executor stores its assigned instances' definitions, confirmed
-configuration/revisions and operation progress/results. One service can retain many instances.
-The Interface combines source-attributed views; it does not become another configuration authority.
+**Next discussion:** decide how authority storage fits the extension and object model. The accepted
+management/instance-state authority split is unchanged; storage supplies persistence without
+becoming a second owner of policy or instance transitions. Compare three arrangements, which can
+also be combined rather than treated as a closed set of exclusive choices:
 
-Resource backends remain independent: a search Resource can use Xerj, a database Resource can use
-PostgreSQL, and files can stay on disk. Services communicate through their contracts, not shared
-database files; no cross-service atomic transaction is assumed. The engine is an implementation
-choice behind those boundaries, not part of the public plugin/template protocol.
+1. An internal storage adapter, with public backend plugins deferred.
+2. A published storage contract implemented by a plugin that startup can load independently of
+   the normal object registry and instance setup it supports.
+3. A Pool-owned storage Resource reached through Conduits, with an explicit acyclic bootstrap
+   mechanism and lifecycle rules for this foundational dependency.
 
-The architecture proposes a bounded store thread and WAL/FULL commits; exact SQL, threading and
-commit/recovery tests remain implementation details. SQLite documents application-local storage
-and service-local databases as suitable uses, while WAL requires same-host access to a database.
-[SQLite usage guidance](https://sqlite.org/whentouse.html) · [WAL constraints](https://sqlite.org/wal.html)
+The third is possible; it must explain how to reach the records describing the storage Resource
+and its own connection. The second can also be visible through the Interface without requiring
+ordinary instance setup to establish the first store. None requires another object family, a
+process/database per object or moving all Resource data into the authority store. Exact bootstrap
+configuration, storage API and lifecycle restrictions are not settled by the comparison.
 
-**Example:** Xerj is offline but the Interface can still show that a search Resource is unavailable,
-what setup completed and which control is uncertain. Rebuilding its search index does not change
-an Agent's ID or erase a delegation. A stopped exporter does not lose local operation outcomes.
+**Engine candidate, after that boundary:** SQLite behind each local authority is still a reasonable
+first implementation. In Experiment 002, management could retain templates/registration/policy,
+while the two executors each retain their assigned instances' definitions, confirmed revisions and
+operation progress/results. The Interface aggregates source-attributed views. A search Resource
+can still use Xerj, a database Resource PostgreSQL, and a directory Resource the filesystem.
+[SQLite usage guidance](https://sqlite.org/whentouse.html)
 
-**Alternative:** make the control store itself replaceable through an external plugin from day one.
-That requires a stronger transactional/concurrency/bootstrap contract and could make repair depend
-on the failed plugin. JSONL-only storage is simpler to inspect but moves transaction/index/compaction
-responsibilities into our code.
+The architecture's bounded store thread and WAL/FULL commits remain proposals. Any persistence
+implementation must support the promised checked revisions, atomic groups, durable outcome records
+and recovery from uncertain commits. An external plugin adds reachability/bootstrap obligations;
+an internal adapter still needs migrations and conformance tests. No cross-service transaction,
+automatic failover or offline permission grant follows. Services exchange information through their
+contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-**Ruling needed:** adopt SQLite for those local authoritative stores, or require a pluggable
-authority-store contract from the first milestone. Implementation must specify which facts commit
-together locally and which use recoverable inter-service exchanges. Neither choice changes the
-no-offline-grants rule, makes SQLite mandatory for Resource data or settles federation.
+Finish I4 by choosing the extension/lifecycle boundary and initial implementation. Detailed SQL,
+method names and helper organization need not become separate conceptual rulings.
 
 ## I5 — Credential custody and account compatibility
 

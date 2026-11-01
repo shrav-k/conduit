@@ -483,7 +483,8 @@ declared stop/recovery behavior; execution infrastructure supplies the agreed pr
 facilities. When setup finishes, the database remains under the instance's management. A helper
 server ending does not itself establish that the database ended, nor does using a protocol
 service make it the authority for the Resource's entire lifecycle. Those hosting choices remain
-implementation choices within I1's accepted boundaries and the pending I3 packaging review.
+implementation choices within I1's authority boundaries and I3's helper execution default.
+Distribution supports bundled plugins and explicit local installation; package syntax remains I7 work.
 
 ## 5. Where the example implementations execute
 
@@ -772,8 +773,9 @@ Requirement composition keeps individual enforcement, with optional known-confli
 checks. No general solver or merge algorithm is required from custom authors. Default graph recovery
 and declared fulfillment duties are also accepted. The combined proof of composed operations and
 requirements in the existing synthetic fixture is accepted; it does not select a permanent core
-catalog or authorize implementation start. Distribution scope is the next review choice. Detailed
-evidence, evaluation interfaces, custom recovery hooks and syntax remain open.
+catalog or authorize implementation start. I3's conceptual review is complete; persistence,
+credential custody and evidence capture are next. Detailed evaluation interfaces, custom recovery
+hooks and syntax remain open.
 
 The accepted execution default runs locally authored code in supervised helper processes
 associated with the served instance, retaining supervision/state in its responsible service.
@@ -805,8 +807,11 @@ the first proof uses separate management and two executor processes on one machi
 native Claude/Codex adapters before the owned Rust model/tool loop, with macOS-first native
 integration/account validation and a portable core. I3 now accepts endpoint-selected plugins;
 supervised instance-associated helpers are the default for locally authored code. Detailed
-fulfillment evidence, connection cleanup, helper grouping and distribution remain open. Package,
-contract and template syntax is deferred to the end; the accepted boundaries impose no new server framework.
+fulfillment evidence, connection cleanup and helper grouping remain open. Distribution starts with
+bundled first-party plugins and explicitly installed local packages; declarations binding an
+existing MCP service need no new executable. A marketplace and automatic dependency resolution
+across languages are deferred. Installation does not instantiate, authenticate or grant access.
+Package, contract and template syntax is deferred to I7; these boundaries impose no new server framework.
 
 The first experiment should prove both a new plugin contribution and a template-only composition
 without modifying core dispatch. Record the author-written files, generated artifacts and actual

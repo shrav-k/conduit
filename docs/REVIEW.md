@@ -57,8 +57,11 @@ or combined-effect checks and no mandatory general solver. Experiment 002's comb
 proof is accepted: graph-backed operations, derived/explicit results and recovery, composed/custom
 requirements and Interface inspection within the existing synthetic fixture. Authored plugin code
 normally runs in supervised instance-associated helpers; trusted built-in Rust code may remain
-in-process. Distribution scope is next; exact helper grouping remains open. Detailed coordination,
-evidence mechanisms, custom recovery hooks and syntax remain open; no implementation has started.
+in-process. Bundled first-party plugins plus explicit local package installation are accepted; a
+marketplace and automatic dependency resolution across languages are deferred. I3's conceptual
+review is complete. Persistence, credential custody and observation capture are next; exact helper
+grouping, evidence mechanisms, recovery details and authoring syntax remain open. No implementation
+has started.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP
@@ -88,9 +91,10 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
 separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-the remaining I3–I6 choices, beginning with I3's code execution and packaging boundaries. I2 is
-complete: native Claude/Codex adapters after the synthetic proof, then Conduit's Rust model/tool
-loop; macOS-first native integration/account validation with a portable core and OS adapters. Final contract/template syntax remains I7 work.
+the remaining I4–I6 choices; I3's conceptual execution, extension and distribution boundaries are
+settled. I2 is complete: native Claude/Codex adapters after the synthetic proof, then Conduit's
+Rust model/tool loop; macOS-first native integration/account validation with a portable core and
+OS adapters. Final contract/template syntax remains I7 work.
 
 ## Configuration walkthrough
 

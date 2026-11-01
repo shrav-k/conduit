@@ -147,6 +147,10 @@ Plugin configuration can be represented internally as validated JSON with a know
 it is not an unvalidated catch-all. A changed description does not authorize changing semantics
 under an existing contract version. Migration between versions is explicit and tested.
 
+**Accepted distribution scope:** bundle first-party plugins and support explicit installation of
+locally supplied plugin packages. Defer a marketplace and automatic dependency resolution across
+programming languages. The layouts below are proposed mechanics within that scope.
+
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.
@@ -203,7 +207,7 @@ Plugin/template authoring is a first-class acceptance path throughout these mile
 first-party integrations must exercise the public extension boundary, and a small separately
 authored plugin must load without a core-code change. Record the files and code the author actually
 needs, including any generated manifest/schema artifacts; do not hide essential setup in the
-developer's environment. SDK/runner details remain pending I3/I7.
+developer's environment. SDK/runner details remain implementation work; authoring syntax is deferred to I7.
 
 Reuse existing infrastructure where its behavior can be adapted and tested against Conduit's
 contracts. Extra process hops or conservative serialization are acceptable initially. Contract

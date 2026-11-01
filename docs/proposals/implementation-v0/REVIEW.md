@@ -4,7 +4,9 @@ Status: lightweight authoring support, contract publication, MCP, code-optional 
 bindings, independent component access, management/execution separation and shared policy with
 instance-owned state, no offline grants and the one-machine first proof are **accepted** below.
 I1 and I2 are settled, including native adapters before the Rust loop and macOS-first native
-integration/account validation. I3–I7 retain the choices identified in this review. Other recommendations remain proposed.
+integration/account validation. I3's conceptual extension, execution and distribution choices are
+settled; detailed mechanisms and syntax remain open. I4–I7 retain the pending choices below.
+Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
 reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
@@ -16,8 +18,9 @@ into defaults or close the queue autonomously. Easy, expressive plugin and templ
 the primary acceptance concern; deployment and efficiency decisions support that goal. Existing
 infrastructure may implement the contracts without becoming part of the public authoring model.
 
-Use these three concrete author journeys to review **I3's conceptual extension boundary first**;
-defer I7's detailed contract/template syntax until all conceptual questions are settled:
+These three author journeys ground **I3's accepted conceptual extension boundary** and its
+implementation tests. Defer I7's detailed contract/template syntax until the remaining conceptual
+questions are settled:
 
 1. **Compose without new code:** use existing filesystem, authentication and MCP capabilities in
    a reusable Pool/Agent template, with explicit bindings, setup and permitted controls.
@@ -99,7 +102,9 @@ established Conduits record the responsible implementations. Individual requirem
 with optional composition checks is accepted. Experiment 002's combined composition-authoring proof
 is accepted within the existing synthetic fixture. Locally authored code normally runs in supervised
 instance-associated helpers; trusted built-in Rust code may remain in-process. Endpoint ownership
-remains unchanged. Next settle distribution scope; exact process grouping remains implementation work.
+remains unchanged. Bundled first-party plugins and explicit local package installation are accepted;
+a marketplace and automatic dependency resolution across languages are deferred. I3's conceptual
+review is complete; exact process grouping and package syntax remain implementation/authoring work.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
@@ -108,15 +113,14 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1 and I2 are settled. Finish I3's distribution scope, then I4–I6's
-persistence/custody/evidence support. Preserve the existing IDs; this is a
-change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
+I1–I3 are settled at the conceptual level. Next review I4–I6's persistence, credential custody and
+evidence support, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
+one review queue rather than another decision ledger.
 
 ## Pending choices
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I3 | Plugin distribution scope | First-party bundled artifacts plus explicit local installation. Requirement composition, combined proof scope and supervised instance-associated helpers are accepted; exact process grouping remains open. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
@@ -194,7 +198,7 @@ machine-loss tolerance, production remote enrollment or credential placement. Co
 worker packaging and storage remain review work; no fixture or failure guarantee is demonstrated
 by documenting it. **I1's conceptual rulings and first-proof scope are complete.**
 
-I3 worker details and I4 persistence choices follow these accepted authority boundaries. Frontend
+Accepted I3 helper execution and pending I4 persistence follow these authority boundaries. Frontend
 detachment, explicit resume of stopped Agent work, current authority checks and no duplicate
 unknown work remain accepted. This review does not reopen those behaviors.
 
@@ -379,10 +383,10 @@ Languages, helper packaging, transport and any future Wasm lane remain separate.
 [execution examples](AUTHORING.md#5-where-the-example-implementations-execute) remain illustrations,
 not completed implementation evidence.
 
-**Next ruling — distribution scope:** recommend first-party bundled artifacts and explicit
-installation of locally supplied plugin packages, deferring a marketplace and arbitrary-language
-dependency resolver. For example, an author supplies a checksum package with contracts and a
-prepared executable; a Linear package can instead contain declarations binding an existing MCP
+**Accepted — distribution scope:** v0 supports bundled first-party plugins and explicit
+installation of locally supplied plugin packages. A marketplace and automatic dependency resolution
+across programming languages are deferred. For example, an author supplies a checksum package
+with contracts and a prepared executable; a Linear package can instead contain declarations binding an existing MCP
 service through an available adapter. Neither needs a hosted Conduit package registry. Installing
 a package does not instantiate Resources, authenticate providers or grant access. Authors can
 use existing language tooling to prepare their implementations; package syntax and prerequisites
@@ -393,17 +397,29 @@ and replacement on upgrade are already accepted, not new choices in this review.
 
 The experiment must test whether the Conduit MCP profile stays small before treating its method
 set as stable. Protocol support alone does not establish provider lifecycle or effect recovery.
-Distribution scope remains unaccepted. Lightweight author support, code-optional integrations and
-existing-service reuse remain required; the helper default does not require every package to ship code.
+This closes I3's conceptual review. Lightweight author support, code-optional integrations and
+existing-service reuse remain required; the helper default does not require every package to ship
+code. Detailed package syntax, transport, fulfillment evidence and recovery mechanisms still need
+implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Recommendation within the accepted I1 boundaries:** SQLite for each chosen local durable authority, accessed
-through a bounded store thread with WAL/FULL commits. Registry revisions, target execution
-outcomes and aggregated observations need explicit ownership; an independent execution service
-cannot rely exclusively on a vanished management process's in-memory state. Resource backends
-remain separate. This is not a proposal to share one SQLite file across machines or to permit
-multiple writable copies of an instance spec.
+**Next ruling — persistence backend:** use SQLite behind each local management or instance-state
+authority in v0, while deferring an externally pluggable authority-store backend. In Experiment 002,
+management and the two executors would each retain their own database: management stores shared
+templates/registration/policy; each executor stores its assigned instances' definitions, confirmed
+configuration/revisions and operation progress/results. One service can retain many instances.
+The Interface combines source-attributed views; it does not become another configuration authority.
+
+Resource backends remain independent: a search Resource can use Xerj, a database Resource can use
+PostgreSQL, and files can stay on disk. Services communicate through their contracts, not shared
+database files; no cross-service atomic transaction is assumed. The engine is an implementation
+choice behind those boundaries, not part of the public plugin/template protocol.
+
+The architecture proposes a bounded store thread and WAL/FULL commits; exact SQL, threading and
+commit/recovery tests remain implementation details. SQLite documents application-local storage
+and service-local databases as suitable uses, while WAL requires same-host access to a database.
+[SQLite usage guidance](https://sqlite.org/whentouse.html) · [WAL constraints](https://sqlite.org/wal.html)
 
 **Example:** Xerj is offline but the Interface can still show that a search Resource is unavailable,
 what setup completed and which control is uncertain. Rebuilding its search index does not change
@@ -414,9 +430,10 @@ That requires a stronger transactional/concurrency/bootstrap contract and could 
 on the failed plugin. JSONL-only storage is simpler to inspect but moves transaction/index/compaction
 responsibilities into our code.
 
-**Ruling needed:** choose local persistence for the accepted authorities and outage/recovery requirements.
-Which facts commit together locally, and which use recoverable inter-service exchanges, must be
-explicit. This does not make SQLite a required backend for every Resource or settle federation.
+**Ruling needed:** adopt SQLite for those local authoritative stores, or require a pluggable
+authority-store contract from the first milestone. Implementation must specify which facts commit
+together locally and which use recoverable inter-service exchanges. Neither choice changes the
+no-offline-grants rule, makes SQLite mandatory for Resource data or settles federation.
 
 ## I5 — Credential custody and account compatibility
 

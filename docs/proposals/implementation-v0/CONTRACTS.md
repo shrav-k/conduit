@@ -282,9 +282,14 @@ Conduit can validate against them without executing plugin code. Bindings can us
 an existing local/remote MCP service, a graph of selected operations, or a combination. A reusable
 graph may implement an exported typed operation, including for invocation from another graph.
 Registering schemas is not permission to run the package. The proposed manifest/schema bundle
-below illustrates that boundary; detailed syntax and package layout are deferred until conceptual review is complete.
-Local packages, distribution machinery and authored/generated metadata remain implementation
-proposals rather than consequences of accepting publication.
+below illustrates that boundary; detailed syntax and package layout are deferred until conceptual
+review is complete.
+
+**Accepted distribution scope:** bundled first-party plugins and explicit installation of locally
+supplied packages, including code-optional contributions. A marketplace and automatic dependency
+resolution across languages are deferred. Installation does not instantiate objects, authenticate
+providers or grant access. Package syntax, installation mechanics and authored/generated metadata
+remain proposals; exact implementation retention and replacement rules still apply.
 
 | Manifest concern | Required information when applicable |
 | --- | --- |

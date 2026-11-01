@@ -18,9 +18,11 @@ separation, shared policy with instance-owned state, no offline grants, and a on
 first proof with management and two independent executor processes. I2 accepts native adapters
 before the owned Rust model/tool loop and macOS-first native integration/account validation;
 I3 accepts endpoint-selected/managed plugins and Conduit contracts composed from reusable typed
-requirements, with a small base vocabulary and author extensions. Requirement publication,
-composition and runtime satisfaction precede the remaining execution/packaging choices;
-detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
+requirements, with a small base vocabulary and author extensions. Its conceptual review is complete,
+including graph-backed operations, requirement composition, supervised instance-associated helpers
+and bundled first-party plugins plus explicit local installation. Detailed mechanisms remain open;
+persistence, credentials and evidence precede the final contract/template syntax review. Existing
+infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
 is replaceable.
@@ -81,7 +83,8 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 - **Proposed** means an implementation choice recommended here, including crate names, storage
   layouts, wire profiles and numeric limits.
 - **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on; I1 and I2 are settled, while I3–I7 retain the choices shown in REVIEW. Routine engineering choices can be adopted with the implementation
+  pending until ruled on; I1–I3 are conceptually settled, while I4–I7 retain the choices in REVIEW.
+  Routine engineering choices can be adopted with the implementation
   and evidence, without asking a separate question for every field.
 - A new counterexample can revise this proposal. It cannot silently override the current design.
   After approval, fold enduring contract changes into DESIGN and keep implementation details here;

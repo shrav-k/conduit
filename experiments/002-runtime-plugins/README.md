@@ -107,8 +107,12 @@ public protocol; a helper library is not an acceptance prerequisite. Concrete pa
 formats remain under review, with detailed syntax deferred until conceptual rulings finish.
 Plugins publish contracts with their implementations: demonstrate template validation against
 those contracts without starting plugin code, then test runtime conformance separately.
-Record author effort, repeated plumbing and hidden/manual
-prerequisites as evidence alongside correctness, so later helpers address demonstrated needs.
+Exercise explicit local installation of the authored package and the code-optional package under
+the accepted distribution scope. Verify that installation alone does not instantiate objects,
+authenticate services or grant access; existing implementation-retention tests cover later package
+versions. No marketplace or automatic cross-language dependency resolver is required.
+Record author effort, repeated plumbing and hidden/manual prerequisites as evidence alongside
+correctness, so later helpers address demonstrated needs.
 Built-in-only demonstrations or faster execution cannot substitute for proving this extension path.
 
 Code-optional contributions and independently accessible components are accepted. Compare the

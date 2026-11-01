@@ -231,6 +231,13 @@ or providing an OS sandbox. It does not require a process per plugin, invocation
 Graph composition alone needs no extra helper, and existing MCP services retain their own
 supervision. Exact helper grouping, packaging and transport remain implementation choices.
 
+**Initial distribution scope:** Conduit bundles first-party plugins and supports explicit
+installation of locally supplied plugin packages. Packages may contain code, contracts binding
+existing MCP services, graph-backed operations or templates. A marketplace and automatic dependency
+resolution across programming languages are deferred. Installation makes contributions available;
+it does not instantiate objects, authenticate providers or grant access. Exact package syntax
+remains open; selected implementations still follow the existing retention/replacement rules.
+
 Published contracts remain inspectable without executing code. A standard adapter can supply
 discovery, invocation and Conduit-managed context/evidence while provider-native catalogs stay
 dynamic. A declaration cannot manufacture unsupported effects, lifecycle, recovery or filtering

@@ -300,6 +300,80 @@ instance generation and selected implementation. A delayed result is retained as
 cannot overwrite a newer confirmed configuration. Do not serialize a live handle and treat it
 as usable after reboot; reacquire or verify its instance-owned backing and authority.
 
+### Worked storage and recovery examples
+
+I4 remains open. These examples illustrate the proposed SQLite implementation of already accepted
+ownership and recovery rules; they do not select new automatic retry, failover or backup policies.
+
+| Storage | Authoritative facts in the proposed first experiment | What it does not establish |
+| --- | --- | --- |
+| Management database | Templates, registration/naming, shared access policy and routing to instance authorities. | An executor's latest configuration or whether a remote effect succeeded. Aggregated observations remain projections. |
+| Executor A / executor B databases | Each service's assigned instance definitions, confirmed configuration/revisions, implementation bindings, graph progress and operation outcomes. | Another executor's current state or permission to admit new work while the governing authority is unreachable. |
+| Resource backend | Its domain data: files, message history, database rows or search index, according to the Resource contract. | Conduit's instance identity, access policy or setup progress merely because it stores searchable content. |
+
+One authority service can store many instances; this is not one database per object. The Interface
+queries the responsible sources and marks stale or missing observations. Plugin contracts supply
+behavior and recovery evidence; they do not require authors to read or write the internal SQL tables.
+
+**1. A control succeeds, but its reply is lost.** A search Resource has confirmed query limit 10
+at revision R7. An authorized caller requests 15 through a Conduit. Its executor records operation
+O and the expected revision before dispatch; the handler then applies the change. Once application
+is confirmed, the proposed local transaction records limit 15, revision R8 and O's outcome together,
+with committed observation evidence. If the response to the Interface is lost afterward, reconnect
+can retrieve O and R8 under current access without applying the control again. A stale management
+view of R7 cannot overwrite R8. SQLite supplies an atomic local transaction, subject to the tested
+durability configuration; Conduit still implements operation identity, validation and reconciliation.
+[SQLite atomic commit](https://sqlite.org/atomiccommit.html)
+
+**2. Setup changes a database, then the executor crashes before recording success.** A Pool owns
+a database Resource. Its setup graph starts the instance-managed database, then runs migration M.
+The database commits M, but the executor loses the result before committing completion locally.
+After restart, retained intent identifies an operation whose effect may have happened; intent
+alone proves neither dispatch nor failure. Current process identity/readiness must be verified;
+a stored runtime handle is not proof the service is alive. On explicit recovery/retry, the selected plugin checks the database's migration history and
+identity under its recovery contract. Sufficient evidence can confirm the outcome; insufficient
+evidence leaves it uncertain. Reuse valid setup progress and do not blindly start a second database
+or repeat M. The executor's SQLite transaction cannot include an arbitrary external database write.
+
+A provider-native creation call has the same ambiguity. Where the actual provider operation offers
+an idempotency token, reuse of the same token can support recovery within that provider's scope and
+retention guarantees. A Conduit operation ID alone does not make an upstream operation idempotent;
+MCP transport support alone does not establish that guarantee either. AWS's retry discussion shows
+why a missing reply and an existing resource are insufficient to infer the original request's outcome.
+[AWS idempotent API guidance](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/)
+
+**3. Management goes offline while executors remain alive.** Executor A can retain the result of
+an already-dispatched migration in its own store. Executor B retains its independently supervised
+activity and outcomes. New protected requests whose current permission cannot be verified wait or
+report unavailable, even if old policy remains cached. When management returns, it refreshes its
+projections from the authorities; delivering results still checks current access. Local persistence
+makes retained progress possible without changing the no-offline-grants rule. If executor A also
+crashes, its retained records help reconciliation but do not prove that its child processes survived.
+Neither management nor executor B silently takes over A's instances or launches duplicates.
+
+**4. The knowledge backend is unavailable, or a disk is lost.** If Xerj is offline while the
+responsible executor is reachable, the Interface can inspect that Resource's retained configuration,
+setup progress and known availability; a query still reports the backend gap. Conduit cannot recover
+lost source documents merely from operation records. Likewise, SQLite surviving a process restart
+is different from surviving loss of the disk containing it. Backups/replication, Resource-data
+retention and external-state reconciliation are separate mechanisms. Restoring an older authority
+backup cannot establish that later provider effects never occurred or that old permissions are still
+current. Report and reconcile missing evidence; do not silently rebuild identity from search results.
+
+**What a pluggable authority store would change.** The same examples would apply if another
+implementation stored these records. That backend must preserve checked revisions, atomic updates
+of related local facts, durable operation identity/outcomes and explicit unavailable/unknown states.
+It must also support the bootstrap/repair and migration paths promised by the runtime. Search or
+append-only logs alone do not supply those semantics. An in-process storage adapter and an external
+storage-service plugin are different deployment choices; a plugin need not be remote. External
+storage adds service reachability and authentication to recovery. Internal interfaces can keep the
+engine replaceable later without requiring a published storage-plugin contract in v0.
+
+The recommendation remains SQLite behind each local authority for the first implementation, with
+independent Resource backends. This supplies a concrete testable persistence engine while keeping
+plugin/template semantics independent of SQL. It does not settle a future distributed database or
+make local transactions atomic with external effects. See [I4](REVIEW.md#i4--local-transactional-authority).
+
 ## 5. Graph and runtime execution
 
 Compilation produces a finite DAG of typed operation bindings. Validate cycles, missing ports,

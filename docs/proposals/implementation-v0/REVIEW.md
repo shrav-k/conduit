@@ -404,6 +404,11 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
+**Status: open.** Review the [storage and recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples)
+before choosing the backend. They cover a committed control with a lost reply, an external migration
+with an uncertain result, management loss, Resource-backend failure and disk loss. Storage-engine
+selection remains distinct from ownership, safe retries and already accepted outage rules.
+
 **Next ruling — persistence backend:** use SQLite behind each local management or instance-state
 authority in v0, while deferring an externally pluggable authority-store backend. In Experiment 002,
 management and the two executors would each retain their own database: management stores shared

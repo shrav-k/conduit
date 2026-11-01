@@ -7,6 +7,7 @@ expected outcomes and validation record together. The [specification](../docs/SP
 | Experiment | Purpose | Current evidence |
 | --- | --- | --- |
 | [001 — shared access](001-shared-access/README.md) | Exercise all five families, Pool composition, shared authentication, communication, controls and Interface observability. | Documentation and static configuration checks only. Fixture plugins do not exist yet. |
+| [002 — runtime and plugins](002-runtime-plugins/README.md) | Test Rust supervision, process/MCP contracts, exact implementation retention and effect recovery before live integrations. | Proposed offline spike; no code or runtime measurements yet. |
 
 Distinguish draft syntax, parser/static checks, synthetic runtime tests and live provider tests.
 Do not promote expected outcomes into completed evidence. Changes to accepted behavior discovered

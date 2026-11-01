@@ -14,12 +14,14 @@ kept together. Completed ruling queues and duplicate configuration walkthroughs 
 | [CONDUITS](CONDUITS.md) | Access scenarios, shared authentication, filtering and messaging/network protocol comparisons. |
 | [PI_CONNECTORS](PI_CONNECTORS.md) | Provider inventory, account/context boundaries, activation, MCP, Chord and telemetry. |
 | [PI_RUNTIME](PI_RUNTIME.md) | Durable execution, replay, storage, frontend coupling and Rust-runtime implications. |
+| [RUST_RUNTIME](RUST_RUNTIME.md) | Xerj/Pi source comparison, Rust executors, process/MCP/Wasm plugin boundaries, implementation pinning and a proposed runtime spike. |
 
 ## Evidence boundaries
 
-Pi source evidence is pinned to `0441483926f283e42ca44eb7b4a46552e9469d6f`; source links preserve
-that identity. Reported offline tests are historical evidence, not new tests performed by the
-current documentation cleanup. Source-system terminology remains where it describes the source.
+The original Pi reports are pinned to `0441483926f283e42ca44eb7b4a46552e9469d6f`; source links
+preserve that identity. RUST_RUNTIME records a separately pinned Pi follow-up and Xerj inspection.
+Reported offline tests are historical evidence, not new tests performed by later research or
+documentation cleanup. Source-system terminology remains where it describes the source.
 Conduit owns its runtime; investigating Pi does not commit to running its runtime.
 
 Protocol/source dates and primary links stay beside their claims. These reports were not all

@@ -430,6 +430,11 @@ must use the owner/API or a proven safe concurrency mechanism.
 
 ## Proposed Rust runtime
 
+The [Rust runtime follow-up](RUST_RUNTIME.md) compares these implications with Xerj source,
+Tokio, process/MCP workers and Wasm options. It also addresses exact plugin implementation
+retention and proposes a focused offline experiment. The recommendations here remain research,
+not a selected crate stack.
+
 The following are responsibility boundaries, not selected crates or a new universal
 plugin framework. Keep the first implementation local and small.
 

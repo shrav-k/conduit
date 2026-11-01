@@ -103,7 +103,7 @@ to the required separate two-Claude/two-Codex compatibility checks, without an i
 | Work | How to resolve it |
 | --- | --- |
 | YAML field names, API/type/capability versions, exact ID/cursor/receipt formats and validation diagnostics | Review the proposed packet, then define schemas against the agreed contracts. |
-| Rust crates, plugin ABI/processes, persistence, transport, client pooling and exporter implementations | Engineering choices; surface any material behavior or trust change. |
+| Rust crates, plugin ABI/processes, persistence, transport, client pooling and exporter implementations | [Rust runtime research](research/RUST_RUNTIME.md) and [experiment 002](../experiments/002-runtime-plugins/README.md) propose a first test. Engineering choices remain unratified; surface material behavior or trust changes. |
 | Limits, timeouts, provider-specific queues/recovery and UI layout | Type/adapter defaults tested against failure examples, not universal micro-rulings. |
 | Multi-user/remote administration, broader interception and sandbox tiers | Later extensions; retain current native/isolated boundaries and honest coverage. |
 | Advanced sharing/publication, automatic extraction/expiry, inheritance and public registries | Keep deferred until a concrete need warrants the added contracts. |

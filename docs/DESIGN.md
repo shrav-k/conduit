@@ -59,8 +59,9 @@ Backing data, credentials and process lifetime are distinct from registry identi
 
 The five families describe the objects Conduit manages. The authoring and extension concepts below
 describe how those objects are defined, connected and operated. They are not competing object
-families or additional independently provisioned things. These are working terms for the existing
-responsibilities; final naming and schema spelling remain a coordinated review task.
+families or additional independently provisioned things. These divisions and temporary names are
+accepted as our working vocabulary. Names may change after conceptual review; the final naming
+and schema pass should preserve these responsibilities rather than silently change their meaning.
 
 | Working term | Responsibility | How it composes |
 | --- | --- | --- |
@@ -68,8 +69,8 @@ responsibilities; final naming and schema spelling remain a coordinated review t
 | Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
 | Requirement | What must hold for a particular relationship or its use, with typed parameters and applicability. This can include compatibility or lifecycle obligations as well as restrictions. | A reusable definition can compose existing requirements. Every constituent retains its meaning and limits; support is checked against the constituents. |
 | Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
-| Graph | A finite dependency structure describing a procedure for setup or a supported change. | Nodes call plugin operations; output bindings and explicit dependencies order the work. A plugin's whole package is not the unit of execution. |
-| Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services or both. | Authors select contributions in templates and compose their exported operations in graphs. A plugin need not be one function, process, Resource or installable package. |
+| Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
+| Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
@@ -89,8 +90,21 @@ A Conduit uses both forms: its contract composes relationship requirements and i
 coordinate establishment through selected endpoint capabilities. Its instance represents the live
 relationship. It is neither the universal name for any graph nor the package that supplies endpoint
 code. The [Linear walkthrough](proposals/implementation-v0/AUTHORING.md#one-linear-connection-through-the-authoring-concepts)
-illustrates these boundaries. Whether reusable graphs also expose callable operation contracts is
-still a review choice; this framing does not silently add a graph-call or packaging protocol.
+illustrates these boundaries.
+
+**Reusable executable composition:** a graph may implement a typed operation contract and be
+published through a plugin. Another graph or permitted caller invokes that exported operation
+through the normal operation contract. From the author's perspective this is a composite plugin;
+the graph describes its implementation, while the plugin publishes its contract and binding. A
+plugin can export several operations, and a template-local graph need not become a published plugin.
+No special composite-plugin family or mandatory packaging unit is introduced.
+
+The exported contract describes inputs, outputs and applicable behavior; internal nodes bind those
+values and call selected operations. Composition preserves existing authority, endpoint selection,
+implementation retention and instance-owned runtime rules. It does not automatically make several
+external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;
+nesting does not introduce authored recursion or loops. Exact graph-call/binding syntax, publication
+layout and composite outcome/recovery details remain open.
 
 ### Distribution and execution
 
@@ -173,9 +187,10 @@ retain their actual enforcement limits; preserving a process is not a sandbox gu
 ### Plugins and independently accessible MCP components
 
 A plugin publishes reusable contracts and explains how they are fulfilled. Its implementation
-binding can select authored code, an existing local/remote MCP service, or a combination. No
-new plugin-specific executable is required when declared bindings and a compatible shared adapter
-can supply the behavior. Plugins, packages and adapters are not additional object families.
+binding can select authored code, an existing local/remote MCP service, a graph composing selected
+operations, or a combination. No new plugin-specific executable is required when existing bindings,
+adapters or graph composition can supply the behavior. Plugins, packages and adapters are not
+additional object families.
 Templates configure and compose contributions; instances realize them. Ordinary endpoint/account
 configuration for an existing MCP-access type does not itself require a new plugin or Resource type.
 

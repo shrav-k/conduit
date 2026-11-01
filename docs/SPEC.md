@@ -13,8 +13,9 @@ authoring and behavioral compatibility must be explicit.
 V0 supplies only lightweight authoring support: real plugins and templates exercise the public
 protocol and structure first. A broad SDK/helper library can grow from demonstrated needs later.
 Plugins publish inspectable contracts and implementation bindings. A binding can use authored
-code, an existing local/remote MCP service, or both; no new plugin-specific executable is required
-when existing behavior fulfills the contract. Templates configure and compose these contributions.
+code, an existing local/remote MCP service, a graph of operations, or a combination; no new
+plugin-specific executable is required when existing behavior or composition fulfills the contract.
+Templates configure and compose these contributions.
 Contracts can be validated without executing the implementation. Detailed syntax follows the
 remaining conceptual rulings.
 MCP is the accepted base for public plugin invocation, with a small versioned Conduit profile
@@ -45,10 +46,12 @@ nothing. An instance retains its resolved definition and current stored settings
 a dedicated process. Plugins supply or bind typed operations and runtime behavior; graphs wire them
 together. Capabilities describe what endpoints offer; requirements state what a relationship needs.
 Requirements compose obligations, while graphs compose callable operations and their dependencies.
-Plugins publish contracts and implementation bindings for these behaviors. These are authoring and
-extension concepts beneath the five families, not additional object families. The
-[concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) defines the working terms;
-final naming remains open.
+A graph can itself implement a typed operation published by a plugin, allowing callers and other
+graphs to reuse the composite behavior through its contract. Plugins publish contracts and
+implementation bindings for these behaviors. These are authoring and extension concepts beneath
+the five families, not additional object families. The
+[concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) records the accepted temporary
+names and divisions; final terminology may change after conceptual review.
 
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate

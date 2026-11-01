@@ -24,8 +24,10 @@ runtime management. The physical implementation of the control database is not a
 Resource automatically created for every table. A plugin's private checkpoint is implementation
 state; a separately exposed storage/search/authentication capability is a Pool-owned Resource.
 
-Plugins publish contracts with bindings to authored code, existing MCP implementations or both.
-A declarative integration may reuse a shared adapter without a package-specific worker. Package
+Plugins publish contracts with bindings to authored code, existing MCP implementations, graphs
+of selected operations, or a combination. Graph-backed exports reuse operation invocation and graph
+execution; they do not require a new object family or a worker merely for composition. Exact nested
+execution/recovery interfaces remain open. A declarative integration may reuse a shared adapter. Package
 installation, Resource instantiation, provider deployment and client connection are distinct
 actions. A configured external service remains externally operated unless explicit management
 capabilities and authority establish otherwise.

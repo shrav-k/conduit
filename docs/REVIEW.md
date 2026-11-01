@@ -40,12 +40,12 @@ versioned independently of a particular implementation; multiple plugins may imp
 definition, and both may ship together. Plugins publish supported versions/roles and known limits;
 Conduit checks compatibility before establishment and verifies applicable runtime facts separately.
 Requirement definitions may also compose existing requirements without new code when every part
-is supported. We are taking a framing checkpoint using the
-[authoring concept map](DESIGN.md#authoring-concepts-beneath-the-object-families): contracts and
-requirements describe behavior/obligations, graphs compose callable actions, plugins contribute
-implementations, and templates assemble these into the five families. Final terminology remains
-open; continue conceptual review before a coordinated naming/syntax pass. Detailed mechanisms and
-experiment additions remain proposals.
+is supported. The [authoring concept map](DESIGN.md#authoring-concepts-beneath-the-object-families)
+records accepted temporary names and divisions: contracts/requirements describe behavior and
+obligations, graphs compose callable operations, plugins publish contributions, and templates
+assemble these into the five families. Graphs may themselves implement typed operations published
+through plugins for reuse by callers or other graphs. Final names may change after conceptual
+review. Detailed execution/recovery mechanisms, syntax and experiment additions remain proposals.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

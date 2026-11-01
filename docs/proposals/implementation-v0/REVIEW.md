@@ -52,8 +52,9 @@ settle execution custody, exact profile bindings or transport, and does not requ
 provider MCP servers to implement the profile.
 
 **Accepted implementation bindings and component access:** plugins publish contracts fulfilled
-by authored code, existing local/remote MCP services, or both. No new plugin-specific executable
-is required where compatible bindings and a shared adapter supply the behavior. Supported MCP
+by authored code, existing local/remote MCP services, graphs of selected operations, or a combination.
+No new plugin-specific executable is required when bindings, adapters or graph composition supply
+the behavior. Supported MCP
 capabilities can be used independently while the Interface aggregates control/observations.
 The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 retains Pool ownership, current access, explicit lifecycle and required evidence. No process per
@@ -84,12 +85,14 @@ native Claude/Codex adapters first, then build Conduit's own Rust model/tool loo
 **Accepted initial platform:** macOS-first native integration and subscription-account validation,
 with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
 
-**Current framing checkpoint:** clarify the authoring concepts beneath the five object families
-before continuing I3. Requirement composition, independent definitions, published plugin support
-with runtime verification, and endpoint-selected/managed implementations are accepted. Use the
-[concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families) and
-[Linear walkthrough](AUTHORING.md#one-linear-connection-through-the-authoring-concepts); final names
-remain open. Reusable procedure contracts and runtime satisfaction are the next conceptual topics.
+**Accepted framing:** retain the temporary names and divisions in the
+[concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families), with final naming open.
+Requirements compose obligations; graphs compose operations and can themselves implement typed
+operations published through plugins. See the
+[composite operation example](AUTHORING.md#publishing-a-graph-as-a-reusable-operation). Independent
+requirement definitions, published support with runtime verification and endpoint-selected/managed
+implementations remain accepted. Composite outcomes/recovery and requirement fulfillment duties
+are the next conceptual topics.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -215,7 +218,8 @@ Pi-inspired terminal remains a goal. **I2's delivery order and initial platform 
 
 **Accepted:** public plugin invocation uses MCP with a small versioned Conduit profile for
 instance/operation context and lifecycle/recovery semantics. Published contracts may bind authored
-code, existing local/remote MCP services through compatible adapters, or both. No new executable
+code, existing local/remote MCP services through compatible adapters, graphs of operations, or a
+combination. No new executable
 is required for a declarative contribution. Independently usable MCP surfaces preserve managed
 ownership/access/evidence without forcing every internal export or object to become a standalone
 server. Hosted implementations cannot inherit a binary-pinning guarantee; retain exact
@@ -272,24 +276,27 @@ without new plugin code when endpoint implementations support every constituent.
 for reuse across Conduit templates. Constituents retain their meanings and limits; a bundle name
 supplies no permission or implementation behavior. Nesting/parameter-binding syntax remains open.
 
-**Framing checkpoint:** the user identified unclear vocabulary beneath the five families. Clarify
-responsibilities now without inventing more object classes or prematurely renaming protocol fields.
-Requirements compose obligations; graphs compose operations supplied by plugins. Contracts describe
-meaning and behavior; plugins publish reusable contributions; templates assemble them into object
-definitions and instances realize those definitions. The concept map and Linear example explain
-these relationships. A final naming pass can follow the conceptual review alongside I7.
+**Accepted — provisional vocabulary and executable composition:** keep the current concept names
+and divisions as temporary working terms; final names may change after conceptual review. A graph
+can implement a typed operation contract and be published through a plugin for reuse by callers or
+other graphs. This creates a composite plugin from an author's perspective: the graph implements
+behavior and the plugin publishes its contract/binding. It adds no object family or process per
+composition; exact declaration syntax remains open. A plugin may export several operations; template-local
+graphs need not become published plugins. Existing finite-graph, authority, implementation-retention
+and instance-supervision rules continue to apply.
 
-**Next conceptual topics:** whether a reusable graph should expose a typed operation contract so
-another graph can invoke the procedure, and how requirement definitions assign fulfillment duties
-while endpoint implementations supply the mechanism. Both remain open. Graph representation,
-implementation packaging and runtime supervision must not become synonyms. This checkpoint does
-not reopen accepted Pool ownership, endpoint implementation selection or instance lifecycle rules.
+**Next conceptual topics:** how composite operations communicate outcomes and recover partial work,
+and how requirement definitions assign fulfillment duties while endpoint implementations supply
+the mechanism. Exact semantics remain open; composition alone promises neither atomic effects nor
+safe replay. Final package/schema spelling remains I7 work. Graph representation, publication and
+runtime supervision retain their distinct responsibilities.
 
 Review the remaining consequences in three groups, before returning to process placement:
 
 1. **Composition and authoring:** distinguish the accepted composition of obligations from the
-   procedural composition of plugin operations. Review reusable graphs and their callable boundaries;
-   consolidate naming after the concepts stabilize. Detailed representations remain I7 work, using
+   procedural composition of plugin operations. Graph-backed callable operations are accepted;
+   review composite outcome/recovery responsibilities and consolidate final names after the concepts
+   stabilize. Detailed representations remain I7 work, using
    existing contract publication without another object family or broad helper SDK prerequisite.
 2. **Composition and execution:** which static conflicts can be diagnosed; who checks/enforces a
    requirement at binding, invocation, delivery or cleanup; how changing facts, uncertain evidence

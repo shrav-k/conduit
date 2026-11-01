@@ -20,7 +20,7 @@ needs become clear; the initial implementation does not depend on building that 
 
 | Piece | Concrete meaning in these examples |
 | --- | --- |
-| Plugin package | Published contracts with bindings to authored code, existing MCP implementations or both. A package can contribute operations or type implementations; it is not automatically a Resource instance. |
+| Plugin package | Published contracts with bindings to authored code, existing MCP implementations, graphs of operations or a combination. A package can contribute operations or type implementations; it is not automatically a Resource instance. |
 | Operation export | A callable contribution, such as computing a digest or establishing a directory. Being available to a setup graph does not automatically expose it to Agents. |
 | Resource type | The contract for a configured responsibility, such as a local directory: configuration, capabilities and applicable lifecycle/controls. Its implementation can reuse operation exports. |
 | Template | Selects implementations, supplies configuration and composes setup behavior. It can reuse existing plugins without adding code. |
@@ -360,6 +360,7 @@ with the managed/standalone boundaries below. No new YAML is proposed here; synt
 | --- | --- | --- |
 | Authored implementation | Contracts and implementation code. | The selected plugin execution environment. |
 | Existing MCP backing | Contracts, an implementation/service reference and bindings compatible with a standard adapter. | An existing local or remote MCP service, with Conduit integration supplied by the adapter. |
+| Graph composition | A typed operation contract with a graph binding its inputs/outputs to selected operations, including other graph-backed operations. | The existing graph execution machinery invokes implementations under the applicable instance and access boundaries. No separate executable merely to compose them. |
 | Hybrid | Contracts, MCP bindings and code for behavior the standard adapter cannot supply. | The existing service plus the selected additional implementation. |
 
 These are ways to fulfill contracts, not new object families or a closed taxonomy.
@@ -449,7 +450,8 @@ when it adds no behavior. This does not rename every existing MCP Resource templ
 
 The conceptual distinction is: templates configure known contributions; plugins
 publish reusable contributions and explain how their contracts are fulfilled. Whether the
-implementation is code, an existing compatible MCP service, or both need not change that role.
+implementation is code, an existing compatible MCP service, a graph of operations, or a combination
+need not change that role.
 Do not settle package/template distribution syntax or add a second object registry from this
 example. Separate execution services own managed activity; concrete deployment, persistence and
 production deployment details remain under review; the first one-machine process proof and v0 no-offline-grants policy are accepted.
@@ -496,8 +498,8 @@ separates working vocabulary from the five object families; final naming stays o
 ### Plugin, template, graph and instance
 
 A plugin publishes typed behavior with an implementation binding: authored code, existing MCP
-services or both. It can contribute setup operations, capability implementations, runtime behavior
-or supported control handlers. These are roles a contribution can fulfill, not a required export
+services, a graph composing operations, or a combination. It can contribute setup operations,
+capability implementations, runtime behavior or supported control handlers. These are roles a contribution can fulfill, not a required export
 list for every plugin or a new set of object families. The same package can contribute to several
 families without combining their instances or authority.
 
@@ -511,6 +513,33 @@ An instance's logical boundary does not dictate its process count. Its responsib
 host trusted handlers, run an instance-specific helper containing several plugins, supervise child
 processes or attach external implementations. Code reuse does not implicitly share private state,
 authentication or grants. Supported external-service association does not imply owning that service.
+
+### Publishing a graph as a reusable operation
+
+**Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
+final names may change. A graph can implement a typed operation contract, and a plugin can publish
+that composite operation just as it publishes an operation backed by code or an MCP service. The
+caller uses the declared contract; the implementation composes selected operations from other
+plugins. This is a composite plugin from the author's perspective, using the existing contribution
+model; exact declaration syntax remains open.
+
+For example, an illustrative `prepare-linear-access` operation accepts an authorized authentication
+binding and workspace selection, then uses a graph to validate the binding, prepare the MCP client
+and inspect compatible provider capabilities. Its declared result describes the prepared access;
+it need not expose every internal output or credential. A Resource setup graph can invoke this
+operation as one step, while another template reuses it with different permitted inputs. Required
+instance-managed services remain supervised after finite preparation completes.
+
+The author publishes the external operation contract and graph binding instead of writing glue
+code for the same sequence. Individual operations can be reused separately where exposed and
+permitted. A plugin may export multiple operations, and a private setup graph need not be packaged
+as a plugin. Graph composition is not necessarily one package or process per node.
+
+The composed operation must describe its actual effects and recovery behavior. A successful login
+followed by a failed connection is partial work, not an automatically rolled-back transaction.
+Internal progress and external outcomes follow the existing evidence/recovery obligations; exact
+parent/child outcome and retry coordination remain review questions. Nested composition retains
+v0's finite graph limit and selected implementation/access boundaries.
 
 ### One Linear connection through the authoring concepts
 
@@ -701,7 +730,7 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, use the concept map to review reusable procedure contracts, satisfaction
+Before specifying syntax, review composed-operation outcomes/recovery, requirement satisfaction
 responsibility, conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
 and first authoring proof follow those choices. Do not make every custom requirement a Boolean
 expression or assume a general constraint solver can establish arbitrary provider guarantees.
@@ -726,8 +755,8 @@ Both examples may already look like small handlers when built with good librarie
 adapter is useful where it removes incidental work, but effects, recovery and lifecycle behavior
 remain explicit plugin obligations when applicable. Publication of inspectable contracts with
 implementation bindings and MCP as the public invocation base are accepted. Existing-MCP
-bindings and independent component use now join those accepted boundaries. Management/execution
-separation, shared policy with instance-owned state and no offline grants are also accepted;
+bindings, graph-backed operation composition and independent component use join those boundaries.
+Management/execution separation, shared policy with instance-owned state and no offline grants are also accepted;
 the first proof uses separate management and two executor processes on one machine. I2 accepts
 native Claude/Codex adapters before the owned Rust model/tool loop, with macOS-first native
 integration/account validation and a portable core. I3 now accepts endpoint-selected plugins;

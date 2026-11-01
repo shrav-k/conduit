@@ -218,9 +218,10 @@ contracts; a comprehensive SDK is not required before the first plugins can be a
 
 **Accepted publication boundary:** plugins publish inspectable contracts and implementation bindings;
 Conduit can validate against them without executing plugin code. Bindings can use authored code,
-an existing local/remote MCP service or both. Registering schemas is not
-permission to run the package. The proposed manifest/schema bundle below illustrates that
-boundary; detailed syntax and package layout are deferred until conceptual review is complete.
+an existing local/remote MCP service, a graph of selected operations, or a combination. A reusable
+graph may implement an exported typed operation, including for invocation from another graph.
+Registering schemas is not permission to run the package. The proposed manifest/schema bundle
+below illustrates that boundary; detailed syntax and package layout are deferred until conceptual review is complete.
 Local packages, distribution machinery and authored/generated metadata remain implementation
 proposals rather than consequences of accepting publication.
 
@@ -228,7 +229,7 @@ proposals rather than consequences of accepting publication.
 | --- | --- |
 | Package/bindings | Package/contract identity, implementation or service dependencies and compatible profile; executable entry, platform and code digests where code is supplied. Code-free declarations/adapters still have retained identities. |
 | Contracts | Provided type/capability/filter versions and exact schema bundle identity. Conflicting definitions of the same contract cannot overwrite one another. |
-| Operations | Export name, input/output schemas, effect/recovery information, cancellation/interaction support and output validity. |
+| Operations | Export name, input/output schemas, effect/recovery information, cancellation/interaction support and output validity. Graph-backed exports use the same operation contract; graph-call/value-binding and recovery details remain open. |
 | Drivers | Managed runtime exports, prepared inputs, inspect/start/stop/reconnect support and enforcement coverage. |
 | Controls | Input schema, supported handler/graph, affected config paths, constraints, coordination/revision requirements and confirmation semantics. |
 | Host needs | Explicit storage, credential, process, network and other broker facilities used by the implementation. Declaring a need does not grant it. |

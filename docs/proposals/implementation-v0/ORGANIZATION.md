@@ -148,8 +148,8 @@ it is not an unvalidated catch-all. A changed description does not authorize cha
 under an existing contract version. Migration between versions is explicit and tested.
 
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
-bindings to existing MCP implementations, or both. Retain exact declarations and selected adapter/code
-artifacts; report external service compatibility separately. A manifest is not another Conduit object.
+bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
+declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.
 Templates can ship with packages, but installing a package does not instantiate those templates,
 grant access or authenticate an account. The first-party package may supply several Resource
 groups. No mandatory public marketplace, namespace service or build DSL is needed in v0.

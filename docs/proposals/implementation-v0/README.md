@@ -42,9 +42,10 @@ Rust services implement registry authority, instance supervision, authorized cap
 and durable evidence through explicit boundaries. The first proof uses separate management and
 two executor processes on one machine, faulting their connections. Two-machine validation follows
 before remote support is claimed. Persistence and production deployment details remain under review. Replaceable frontends attach to an Interface; authored workers and existing
-MCP services fulfill published plugin contracts through retained implementation bindings. Code-optional
-contributions use shared adapters without inventing a worker per package. Local transactional
-storage remains an I4 candidate, not a requirement that all distributed state live in one file.
+MCP services fulfill published plugin contracts through retained implementation bindings. Graphs
+can also implement exported typed operations, composing selected operations without new glue code.
+Code-optional contributions use shared adapters or graph composition without a worker per package.
+Local transactional storage remains an I4 candidate, not a requirement that all distributed state live in one file.
 Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 
 Templates remain the complete authoring entry point: typed YAML, finite setup graphs, declared

@@ -482,7 +482,66 @@ server ending does not itself establish that the database ended, nor does using 
 service make it the authority for the Resource's entire lifecycle. Those hosting choices remain
 implementation choices within I1's accepted boundaries and the pending I3 packaging review.
 
-## 5. Accepted direction and remaining boundaries
+## 5. Where the example implementations execute
+
+**I3 remains open:** the user requested concrete examples before selecting the authored-code
+execution boundary. The two arrangements below preserve the same public MCP contract, templates
+and instance ownership. They differ in where Conduit runs an implementation it hosts.
+
+```text
+Separate worker: executor → MCP → plugin executable/runner → domain behavior
+In-process:     executor → loaded implementation          → domain behavior
+```
+
+In the second arrangement, an adapter still supplies the accepted public MCP surface. An internal
+function call is an implementation detail, not a replacement public plugin protocol. In either
+arrangement the responsible instance service retains authoritative configuration and operation
+results. A worker is an implementation process, not a sixth object family or a Resource created
+for every call. Choosing separation would not yet choose worker counts, sharing or idle lifetime.
+
+| Example | Separately supervised implementation | Implementation loaded into executor |
+| --- | --- | --- |
+| Pure checksum | Author publishes the contract and handler; a small executable or runner receives MCP calls and returns digests. It needs no managed Resource merely to run a setup node. | The same domain function runs in the executor through a supported loading/extension interface. This avoids the worker launch and interprocess exchange. |
+| Directory establishment | A filesystem worker validates create/attach intent, performs the filesystem operation and returns its evidence. The Pool still owns the directory Resource; the executor records setup progress. | The implementation performs the same operation inside the executor. Resource identity, permissions and recovery requirements do not change. |
+| Shared Linear access | Existing provider MCP needs no newly authored worker. A declaration can reuse a standard adapter; custom adapter code, when needed, follows the selected authored-code boundary. | Existing provider MCP remains external. A custom adapter instead runs inside the executor. Neither arrangement duplicates the provider service for each Agent. |
+| Managed database | A worker implements setup/migration/driver behavior. The executor starts and supervises the declared database runtime on behalf of its Resource instance. | The same driver code runs inside the executor, which still manages the database runtime separately from a finite setup call. |
+
+For the directory example, an Agent-local symlink remains attachment preparation, not a second
+directory Resource. A worker exiting does not delete the directory or imply that its creation
+failed. If it created the directory but lost its response, the operation needs reconciliation;
+process separation supplies no exactly-once guarantee.
+
+For the database example, the intended arrangement is:
+
+```text
+executor ── supervises ── database process (Resource runtime)
+    └────── MCP ──────── setup/driver worker
+```
+
+The setup worker can finish while the database continues. If a migration attempt crashes, keep
+the database under supervision and inspect/reconcile the operation before retrying, following
+the already accepted partial-setup policy. Restarting a worker is not automatically permission
+to replay a migration. The worker cannot be the only custodian of a database process handle or
+of evidence needed to recover its effects.
+
+For Linear, sharing concerns the Pool-owned service capability and authorized account binding.
+Each Agent retains its own attributable Conduit participation and restrictions. Native tool names
+and schemas can remain visible regardless of adapter placement. An existing service supplies its
+own supervision; an adapter process is additional only when the chosen implementation needs one.
+
+The tradeoff is **process plumbing versus a shared failure boundary**. Separate workers add
+startup, serialization and supervision, but let authors implement the wire contract without a
+host-language loading ABI and help contain an ordinary implementation crash. Loading code into
+the executor can be simpler for tightly integrated trusted code, but an abort or unsafe failure
+can affect other instances hosted by that executor. Neither arrangement inherently limits host
+filesystem/network authority, CPU or memory; permission isolation is a separate policy and
+implementation concern. MCP is compatible with either arrangement.
+
+The recommendation remains workers for authored code and in-process trusted core functionality.
+Start with the minimum runner needed for real plugins; do not make a broad SDK a prerequisite.
+This is a proposal for review, not an accepted deployment rule or tested isolation guarantee.
+
+## 6. Accepted direction and remaining boundaries
 
 Our existing design already distinguishes code, typed contracts, templates, graphs and instances.
 The accepted implementation priority is the public protocol and extension structure, with

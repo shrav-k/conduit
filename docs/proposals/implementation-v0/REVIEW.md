@@ -222,6 +222,12 @@ runner outside the executor, so the author need not implement a full server. A d
 worker requests instance-managed runtime actions and reports supported effects; it does not become
 the owner of instance configuration or long-lived services.
 
+The user requested concrete examples before choosing. The
+[execution comparison](AUTHORING.md#5-where-the-example-implementations-execute) walks through
+checksum, directory, existing Linear MCP and managed database implementations under both
+arrangements. This ruling remains open; process placement must not change the authoring contract
+or transfer ongoing instance supervision to a finite setup worker.
+
 Existing local/remote MCP services retain their own supervision; declarative bindings do not
 require a new worker. This does not select one process per graph node, invocation or instance.
 Sharing/granularity must preserve identity, credentials, cancellation and retained implementation

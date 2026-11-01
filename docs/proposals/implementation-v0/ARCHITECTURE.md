@@ -35,6 +35,37 @@ They retain required authority, ownership and evidence services; standard client
 expose every internal setup/driver export. Standalone implementation use outside the managed model
 has its own declared dependencies/guarantees. This adds no process or registry per object.
 
+### Instance execution boundary — proposed for I3 review
+
+Before choosing worker placement, define what execution belongs to. The proposed rule is that
+setup, supported changes and ongoing managed behavior run in the context of the instance whose
+contract owns that activity. This context carries identity, retained implementation/definition,
+private state references, applicable authority, lifecycle supervision and attributable outcomes.
+It is not itself a sixth family, a mandatory process/container or an OS sandbox.
+
+| Boundary | Meaning under this proposal |
+| --- | --- |
+| Definition and state | The instance's fixed setup/control definitions and confirmed settings govern its behavior; its designated service retains authoritative state. |
+| Execution | Plugin handlers and managed processes serve that instance. An execution service supplies hosting and supervision and can host multiple instances. |
+| Authority | An instance context is not an automatic grant. The caller, target, selected Conduit path and current restrictions govern each admitted operation. |
+| Physical placement | An implementation may use trusted in-process handlers, an instance-specific runner hosting several plugins, separate helpers or an external service. Supported placement and isolation guarantees need their own contracts and evidence. |
+
+For example, a directory Resource's setup handler runs for that Resource; an Agent's runtime
+setup runs for the Agent. When the Agent invokes a shared MCP Resource, the Resource handles the
+provider call with caller attribution and Conduit restrictions. Its separately owned authentication
+dependency remains another Resource accessed through its own authorized connection. Calling an
+operation does not transfer its implementation or credentials into the caller's boundary.
+
+A Pool composition step can coordinate child Resource creation while each child's setup belongs
+to that child. A Conduit owns its connection/filter activity without absorbing either endpoint's
+execution context. The implementation must establish an identifiable, supervised instance context
+before dispatching its setup; a record with incomplete setup need not have an ongoing process.
+Exact registration/start sequencing and physical placement remain open.
+
+This reframes the pending worker discussion around instance execution first. Sharing implementation
+code need not share private state or credentials. Neither a separate helper nor an instance-specific
+runner becomes the sole authority for instance state simply because it executes plugin code.
+
 ## 2. Management and execution placement
 
 **Accepted execution custody:** separate execution services supervise Conduit-managed Agents

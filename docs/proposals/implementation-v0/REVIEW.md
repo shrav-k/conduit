@@ -215,18 +215,34 @@ ownership/access/evidence without forcing every internal export or object to bec
 server. Hosted implementations cannot inherit a binary-pinning guarantee; retain exact
 declarations/adapters and report actual compatibility evidence. Profile details remain open.
 
-**Next ruling — execution boundary for authored code:** recommend separately supervised MCP
+**Next ruling — instance execution boundary:** following the user's feedback, first define the
+instance as the logical execution context for its setup, supported changes and ongoing behavior.
+The proposed context carries identity, definition/state, authority and lifecycle attribution;
+the designated service supplies hosting and supervision. Plugins run within or alongside that
+instance's implementation, rather than requiring a plugin-centric fleet of workers. This does not
+yet require a dedicated process or sandbox per instance. See the
+[instance boundary proposal](ARCHITECTURE.md#instance-execution-boundary--proposed-for-i3-review).
+
+The caller and execution target can differ: an Agent invokes shared Linear access through a
+Conduit, while the provider operation runs for the Pool-owned MCP Resource under the caller's
+permitted path. Pool composition and Conduit operations likewise do not absorb their child or
+endpoint instances. The logical boundary proposal remains open; it preserves I1's accepted
+designated state authorities and separate execution services.
+
+**Subsequent placement choice — authored code:** the earlier recommendation was separately supervised MCP
 worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust
 functionality can remain in-process. For example, a checksum handler can run through a lightweight
 runner outside the executor, so the author need not implement a full server. A database driver
 worker requests instance-managed runtime actions and reports supported effects; it does not become
 the owner of instance configuration or long-lived services.
 
-The user requested concrete examples before choosing. The
+The user requested concrete examples, then questioned choosing workers before instance boundaries. The
 [execution comparison](AUTHORING.md#5-where-the-example-implementations-execute) walks through
 checksum, directory, existing Linear MCP and managed database implementations under both
-arrangements. This ruling remains open; process placement must not change the authoring contract
-or transfer ongoing instance supervision to a finite setup worker.
+arrangements. An instance-specific runner could also host several plugin handlers; a separate
+worker per plugin is not required by the protocol. Placement remains open and follows the instance
+discussion; it must not change the authoring contract or transfer ongoing instance supervision to
+a finite setup handler.
 
 Existing local/remote MCP services retain their own supervision; declarative bindings do not
 require a new worker. This does not select one process per graph node, invocation or instance.

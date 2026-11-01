@@ -484,9 +484,13 @@ implementation choices within I1's accepted boundaries and the pending I3 packag
 
 ## 5. Where the example implementations execute
 
-**I3 remains open:** the user requested concrete examples before selecting the authored-code
-execution boundary. The two arrangements below preserve the same public MCP contract, templates
-and instance ownership. They differ in where Conduit runs an implementation it hosts.
+**I3 remains open:** after reviewing these examples, the user asked to define the instance's
+execution boundary before choosing plugin workers. The
+[instance boundary proposal](ARCHITECTURE.md#instance-execution-boundary--proposed-for-i3-review)
+places setup/change handlers and ongoing behavior in their owning instance's context, while
+leaving physical hosting separate. An instance-specific runner may host several plugin handlers;
+the protocol does not require one worker per plugin. The arrangements below are implementation
+comparisons that preserve the same public MCP contract, templates and instance ownership.
 
 ```text
 Separate worker: executor → MCP → plugin executable/runner → domain behavior
@@ -537,9 +541,10 @@ can affect other instances hosted by that executor. Neither arrangement inherent
 filesystem/network authority, CPU or memory; permission isolation is a separate policy and
 implementation concern. MCP is compatible with either arrangement.
 
-The recommendation remains workers for authored code and in-process trusted core functionality.
-Start with the minimum runner needed for real plugins; do not make a broad SDK a prerequisite.
-This is a proposal for review, not an accepted deployment rule or tested isolation guarantee.
+First settle the instance boundary, then choose how to host its authored code. Separate helpers
+and in-process trusted core functionality remain candidates alongside an instance-specific runner.
+Use only the minimum author support needed for real plugins; a broad SDK is not a prerequisite.
+These are proposals for review, not accepted deployment rules or tested isolation guarantees.
 
 ## 6. Accepted direction and remaining boundaries
 

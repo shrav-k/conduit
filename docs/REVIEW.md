@@ -50,8 +50,10 @@ constituent contracts, with explicit construction available and underlying effec
 preserved. Graph-backed operations reuse graph recovery by default, resuming valid child progress
 on explicit retry and delegating uncertain effects to child contracts. The
 [implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
-next addresses requirement fulfillment duties. Detailed coordination, custom recovery hooks, syntax
-and experiment additions remain proposals.
+now records requirement fulfillment duties as accepted: contracts declare when guarantees must
+hold and relevant endpoint roles; established Conduits identify responsible implementations for
+Interface inspection. Composition checking is next. Detailed coordination, evidence mechanisms,
+custom recovery hooks, syntax and experiment additions remain proposals.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

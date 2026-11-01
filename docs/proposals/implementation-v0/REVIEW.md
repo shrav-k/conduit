@@ -94,7 +94,8 @@ requirement definitions, published support with runtime verification and endpoin
 implementations remain accepted. Composite public results are derived by default from declared
 public bindings and constituent contracts, with explicit construction available. Graph recovery
 is the default for composed operations, resuming valid child progress on explicit retry and
-preserving child recovery boundaries. Next settle requirement fulfillment duties.
+preserving child recovery boundaries. Requirement contracts declare fulfillment timing/role duties;
+established Conduits record the responsible implementations. Next settle composition checking.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -302,17 +303,24 @@ implementation merely for composition. A parent resumes the existing composite r
 blindly reissuing its graph. This does not enable automatic retries or promise rollback or recovery
 unsupported by a child. Detailed coordination and custom recovery hooks remain open.
 
-**Next ruling — fulfillment responsibilities:** recommend that a requirement contract state when
-its guarantee must hold and any applicable endpoint-role obligations, while an established Conduit
-records the selected implementation(s) responsible for fulfilling them. For example, a workspace
-restriction must hold before each managed provider dispatch; the selected Resource-side MCP plugin
-can enforce it, while the Agent-side plugin presents the permitted native tools. Setup compatibility
-alone does not establish request-level enforcement. Another requirement may apply to results before
-delivery or to connection establishment instead. These duties should be inspectable through the
-Interface, using existing binding/evidence state rather than another authored manifest. The
-alternative leaves timing and responsibility within plugin implementation details, relying on their
-broad support declarations. Exact obligation syntax, evidence and evaluation mechanisms remain open;
-this does not choose a universal fixed phase enum or an always-running check process.
+**Accepted — declared fulfillment duties:** each requirement contract states when its guarantee
+must hold and applicable endpoint-role obligations. An established Conduit records the responsible
+selected implementations, inspectable through the Interface using existing connection/evidence
+state. A workspace restriction can require enforcement before each managed provider request by the
+Resource-side MCP plugin, while the Agent-side plugin presents permitted tools. Other requirements
+can apply before result delivery or at establishment. This imposes no universal fixed phase list,
+extra authored manifest or always-running checker. Exact evidence and evaluation mechanisms remain open.
+
+**Next ruling — composition checking:** recommend retaining and enforcing every constituent
+requirement, with optional contract-specific checks for known conflicts or simplifications. For
+example, limits of 20 and 10 can both be enforced without requiring a new merged requirement; a
+supported bound comparison can report the effective limit of 10. Authors of new requirement types
+need not implement a general solver or merge algorithm merely to participate. Report known conflicts
+and leave unproved global compatibility explicit; this does not weaken the requirement that all
+applicable guarantees hold at their declared points. If a necessary runtime check cannot establish
+fulfillment, the affected behavior remains unavailable under existing rules. The alternative
+requires each composable type to supply a composition/compatibility algorithm before use. Exact
+validation/diagnostic syntax and any optimization equivalence rules remain open.
 
 Final package/schema spelling remains I7 work. Graph representation, publication and runtime
 supervision retain their distinct responsibilities.
@@ -324,9 +332,9 @@ Review the remaining consequences in three groups, before returning to process p
    default result derivation and graph recovery are accepted. Exact coordination/custom hooks
    remain open; consolidate final names after the concepts stabilize. Detailed representations
    remain I7 work, using existing publication without another object family or broad SDK prerequisite.
-2. **Composition and execution:** which static conflicts can be diagnosed; who checks/enforces a
-   requirement at binding, invocation, delivery or cleanup; how changing facts, uncertain evidence
-   and unavailable implementations affect dependent operations. Preserve whole-path narrowing,
+2. **Composition and execution:** settle the scope of static compatibility/conflict checking.
+   Fulfillment duties and responsible-implementation records are accepted; detailed evidence,
+   changing-fact handling and evaluation interfaces remain open. Preserve whole-path narrowing,
    current access and effect/recovery rules rather than inventing new authority through requirements.
 3. **First vocabulary and proof:** choose a minimal meaningful set and demonstrate an externally
    authored requirement without changing core dispatch. The experiment's

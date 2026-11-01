@@ -316,6 +316,12 @@ establishment; current authentication, readiness and enforcement still require a
 verification. Shared definitions supply schemas without copying them into each implementation.
 This does not certify the implementation or prove a running connection fulfills the requirement.
 
+**Accepted fulfillment boundary:** requirement contracts declare when guarantees must hold and
+applicable endpoint-role duties. Established Conduits record which selected implementations fulfill
+them, inspectable through the Interface within existing connection/evidence state. This does not
+impose a fixed universal phase list or another authored manifest. Exact obligation syntax, evidence
+and evaluation mechanisms remain open.
+
 **Accepted composition:** requirement definitions may compose existing requirements without new
 plugin code when endpoints support every constituent. Preserve the original meanings and limits;
 check constituent support rather than treating a bundle's name as proof or a new grant.
@@ -332,7 +338,7 @@ names. Matching a name, JSON shape or similarly named field is not sufficient ev
 | Typed parameters and subjects | Accepted: the definition owns typed parameters and applicability. Proposed detail: distinguish endpoint-role, relationship, invocation and result subjects. |
 | Implementation support | Accepted: publish supported requirement versions, endpoint roles and known limitations; check before establishment, then verify applicable runtime facts. Exact declaration/matching syntax remains open. |
 | Satisfaction | Proposed detail: describe evidence/checks, preconditions and guarantees sufficient for a particular requirement. |
-| Runtime responsibility | Where needed, identify supported checking/enforcement behavior from the selected implementations and the facts it requires. A schema alone does not enforce behavior. |
+| Runtime responsibility | Accepted: definitions declare when guarantees must hold and applicable endpoint-role duties; established Conduits record responsible selected implementations. Detailed evidence/evaluation interfaces remain open. |
 | Composition | Accepted: definitions can compose existing requirements with constituent meanings/support preserved. Detailed repetition, conflict and parameter-binding rules remain proposed. |
 | Lifecycle | Describe when evidence must be refreshed and what unavailable support means for the affected behavior. No universal closed domain-state enum is selected. |
 
@@ -348,13 +354,18 @@ result-size/count bounds; and applicable identity/binding lifecycle requirements
 identity, outcome retention and participation rules are not optional knobs that authors can omit.
 Domain-specific examples belong in extension packages, not an ever-growing hard-coded core enum.
 
-**Composition recommendation:** all applicable mandatory requirements on the selected path must
-hold. Combine restrictions by conjunction, not YAML order or last-write-wins. Preserve operation
-and target conditions together; separate authorized routes remain complete alternatives. Familiar
-numeric bounds or set restrictions can have explicit combination rules; arbitrary user-defined
-requirements need not support a general static solver. Detect known contradictions, report an
-empty permitted set honestly and leave unknown compatibility unresolved rather than claiming it
-has passed. Alternative/advisory requirement syntax is not selected by this proposal.
+**Composition boundary and next recommendation:** the accepted whole-path rule requires every
+applicable restriction to hold, preserving operation/target constraints together. Separate authorized
+routes remain complete alternatives. Recommend retaining constituent requirements and checking each
+at its declared point, without requiring a general solver or merge algorithm for every extension.
+Contract-specific static conflict checks or simplifications may be supplied; for example, limits of
+20 and 10 can remain separate obligations, with a supported comparison explaining an effective limit
+of 10. Known contradictions and empty permitted sets must be reported; absent proof of global
+compatibility must not be presented as a proof. It is distinct from inability to establish a
+required guarantee at its point of use, which still blocks the affected behavior. This recommendation
+remains pending; the alternative requires a composition/compatibility algorithm for every composable
+type. No last-write-wins or automatic dropping of requirements is proposed. Exact diagnostic and
+optimization-equivalence contracts remain open; no alternative/advisory expression syntax is selected.
 
 **Validation and operation:**
 

@@ -391,10 +391,11 @@ detailed matching contract remains under review. Custom meanings must not requir
 enum variant or provider-name branch to core dispatch. Exact internal interfaces remain open.
 
 Separate static definition/parameter checks, endpoint binding establishment and runtime checks.
-The resulting resolved association between requirements and supporting implementations can be
-reported in Conduit inspection; it is system-owned evidence, not a new authored plan. Endpoint
-instances remain responsible for their local enforcement/effects, while the Conduit's authority
-retains relationship state and the Interface correlates observations. A cached match is not an
+Accepted requirement contracts specify fulfillment timing and applicable endpoint-role duties.
+The established Conduit records the responsible selected implementations for Interface inspection;
+this is system-owned connection/evidence state, not a new authored plan. Exact binding/evidence
+representation remains under review. Endpoint instances remain responsible for their local
+enforcement/effects, while the Conduit's authority retains relationship state and the Interface correlates observations. A cached match is not an
 offline grant. Readiness losses affect the dependent capability under existing failure rules.
 
 Observability should explain which requirement/version applies, which endpoint supports it and

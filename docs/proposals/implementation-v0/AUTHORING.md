@@ -717,7 +717,9 @@ and cleanup acknowledgement remain review choices.
 extensions. Each versioned definition owns its meaning, parameters and applicability independently
 of any implementation; multiple endpoint plugins can support it. Plugins publish supported versions,
 endpoint roles and known limitations for pre-establishment matching, followed by applicable runtime
-verification. Detailed declaration syntax, matching and evaluation remain proposed in
+verification. Requirement contracts declare when guarantees must hold and relevant endpoint-role
+duties; established Conduits record responsible selected implementations for Interface inspection.
+Detailed declaration syntax, matching and evaluation remain proposed in
 [CONTRACTS](CONTRACTS.md#composable-relationship-requirements--proposed-contract). A Conduit template
 states relationship requirements; endpoint-selected plugins supply capabilities that satisfy them;
 a Conduit instance binds concrete endpoints and retains current state/evidence. Requirements are
@@ -764,8 +766,9 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, review composed-operation recovery, requirement satisfaction
-responsibility, conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
+Before specifying syntax, review composition checking, detailed fulfillment evidence and runtime
+revalidation/failure behavior. Default graph recovery and declared fulfillment duties are accepted;
+custom recovery hooks and exact coordination remain open. The small core vocabulary
 and first authoring proof follow those choices. Do not make every custom requirement a Boolean
 expression or assume a general constraint solver can establish arbitrary provider guarantees.
 

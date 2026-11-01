@@ -1617,6 +1617,14 @@ for an operation that selects a region indirectly. A declaration does not prove 
 current authentication, readiness and enforcement still need the applicable runtime verification.
 This does not change the rule that valid configuration may be registered while its runtime is unready.
 
+Each requirement contract states when its guarantee must hold and any applicable endpoint-role
+obligations. An established Conduit records the selected implementations responsible for fulfillment;
+the Interface exposes these duties through existing connection/evidence state, without another
+authored manifest. For example, a workspace restriction applies before each managed provider request,
+while a result constraint may apply before delivery. The selected Resource-side MCP plugin can enforce
+the former while the Agent-side plugin presents the permitted tools. These obligations do not impose
+a fixed universal phase list. Exact representation, evidence and evaluation mechanisms remain open.
+
 Requirements express obligations and restrictions. Existing graphs coordinate declared procedures
 to establish prerequisites, while instances own ongoing behavior. Resource configuration and plugin
 input/output contracts remain; a relationship requirement does not redefine a target operation.
@@ -1626,7 +1634,7 @@ rules. Registration still performs no provider effects; observed readiness remai
 valid configuration. Detailed satisfaction/evidence and failure rules require implementation review.
 
 The concrete core catalog, publication syntax, support-matching details, composition operators,
-version identifiers, satisfaction checks and runtime enforcement bindings remain open. The
+version identifiers, satisfaction evidence and enforcement-binding representation remain open. The
 [implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
 tracks those choices; accepting the compositional model does not select an expression language,
 a universal solver, a worker topology or an expanded experiment scope.

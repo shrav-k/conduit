@@ -180,9 +180,11 @@ relationship state/evidence. Each requirement's versioned meaning, typed paramet
 are defined independently of a particular implementation; multiple plugins can implement it, and
 both may ship together. Plugins publish supported requirement versions, endpoint roles and known
 limitations for compatibility checks before establishment; current authentication, readiness and
-enforcement still require runtime verification. Requirements are contract material, not another
-object family. Detailed matching/evaluation, publication syntax and the first catalog remain
-under review.
+enforcement still require runtime verification. Each requirement declares when its guarantee must
+hold and applicable endpoint-role duties; each established Conduit records responsible selected
+implementations for Interface inspection. This uses existing connection state, without a universal
+phase list. Requirements are contract material, not another object family. Detailed evaluation,
+publication syntax and the first catalog remain under review.
 
 Conduits support explicit opening/joining, reusable composition and per-consumer participation.
 Typed filters narrow operations, targets and parameters. Every restriction along the selected

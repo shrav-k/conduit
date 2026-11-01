@@ -347,6 +347,13 @@ and checking proposed grant bounds need their own declared support; shared defin
 imply a universal subset checker. Governing bindings remain independent managed state with checked
 changes, without a separate policy-rule language or executable definition category.
 
+**Accepted bounded issuance:** a typed issuance operation may supply mandatory use restrictions
+and compose additional requested restrictions, returning the complete actual grant. Caller intent
+remains explicit; omissions do not expand to maximum administrable access, and explicit broadening
+is refused. Strict complete-proposal operations may coexist. Issuance-only checks do not become
+ongoing grant dependencies; current governing requirements still apply. Exact schemas and custom
+validation support remain authoring/conformance work, without a universal subset-proof requirement.
+
 **Accepted governing scope:** bindings explicitly distinguish an object's own operations from
 operations on owned Resources selected by the binding. Pool ownership and declaration placement
 do not automatically propagate requirements. The selected capability/context must be supported;

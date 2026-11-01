@@ -137,8 +137,11 @@ the root's broad management access. Policy governs issuance/current use without 
 alternative; authorized connection setup can establish one grant for many requests. Grant
 administration now checks current administrator authority, while issued grants remain independent
 of issuer provenance, permissions and grant ancestry. Any authorized administrator can revoke them;
-recipient participation/Conduit end also ends access. Next settle remaining binding/custom-bound
-contracts and foundational persistence/engine selection. The trusted authority and first
+recipient participation/Conduit end also ends access. Bounded issuance operations may supply
+mandatory use restrictions and compose caller-added restrictions, returning the complete issued
+grant. They preserve intent and refuse explicit broadening; issuance-only checks do not become
+live issuer dependencies. Exact schemas/type-specific validation remain authoring work. Next settle
+initial establishment/repair and foundational persistence/engine selection. The trusted authority and first
 owner grant still need an explicit startup/repair contract; a Resource wrapper alone does not
 resolve that dependency.
 
@@ -160,6 +163,28 @@ Management and execution services remain implementation roles that may each serv
 The root Interface can direct those services without all of them sharing a process or all provider
 traffic passing through the root. A service losing contact with it must still distinguish missing
 observations, unavailable current policy and confirmed process termination.
+
+#### First-launch contract — under review
+
+The next ruling chooses where foundational orchestration lives, without selecting a database or
+creating another object family. Both options retain verified local-owner authority and a root
+Interface that supports ongoing management/observability; neither makes templates self-authorizing.
+
+| Approach | First-launch example | Tradeoff |
+| --- | --- | --- |
+| Locally loaded root Interface directs establishment | The runtime loads the explicitly selected root definition and enough local identity/progress state to start it. Its declared graph establishes the system Pool, system management and access-management Resources, then their management connections. | Uses the same template/plugin machinery for initial setup and later administration. Requires a clear first-load, initial-authority and partial-progress contract before normal registry services exist. |
+| Runtime establishes foundations before starting the Interface | Runtime initialization establishes the system Pool, management Resources and initial authority, then starts the root Interface against them. | A simpler initial dependency boundary, but foundational orchestration lives outside the Interface's own template/graph. The Interface still administers the established system. |
+
+Recommend the first option to support the intended active Interface role and authorable system
+setup. The runtime still supplies trusted owner recognition, selected-definition loading and the
+minimum persistence needed before normal services are available. The first grants must be
+established under that explicit initial trust contract, not by any plugin claiming root authority.
+No application Agent receives an offline grant or implicit OS-user authority from this arrangement.
+
+This is still a proposal. Precise initial-grant issuance, interrupted-establishment recovery and
+transfer to normal authoritative state need to follow the selected arrangement. Do not create two
+independently writable copies of system authority or treat an unavailable existing store as a fresh
+installation. Storage extension/engine and detailed loader syntax remain separate choices.
 
 **Possible establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then

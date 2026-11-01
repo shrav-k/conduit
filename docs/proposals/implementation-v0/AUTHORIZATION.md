@@ -138,14 +138,16 @@ cannot establish root authority.
 **Context support matters:** checking a provider request and checking a proposed grant's permitted
 extent are different tasks. Shared requirement definitions do not make a per-request checker a
 general subset prover. Implementations must support the relevant use; unverifiable bounds cannot
-be assumed satisfied. Exact custom-bound validation contracts remain open.
+be assumed satisfied. Detailed type-specific validation contracts belong to the authoring/conformance
+pass rather than requiring a new universal comparison language.
 
-### Carrying use bounds into issued grants — proposal
+### Carrying use bounds into issued grants
 
-The remaining grant-validation choice is how an issuance operation establishes the permitted
-extent of its output. Recommend that a bounded issuance contract include its mandatory use
-restrictions in the resulting grant, while any caller-supplied additional restrictions compose
-conjunctively. It would return the actual issued extent for inspection. This uses the accepted
+**Accepted:** bounded grant-issuance operations may supply their mandatory use restrictions in the
+grant they create, with additional caller-supplied restrictions composing conjunctively. They return
+the complete actual issued extent for inspection. The caller still selects the intended recipient,
+Resource/participation and requested access under the operation's typed contract; omitted restrictions
+do not mean granting everything the administrator could issue. This uses the accepted
 requirement-composition machinery and does not require a generic proof that an arbitrary proposed
 condition is equivalent to, or narrower than, another condition.
 
@@ -168,11 +170,11 @@ B's retained bounds are its own authorization data, not a link to A's grant or a
 chain. A later losing permission does not change B's grant. Current governing requirements still
 apply, and an authorized administrator can change or revoke B's grant through the existing model.
 
-The alternative requires the caller to supply the complete proposed grant and validates that its
-extent is within every administration boundary before accepting it. That keeps the proposal fully
-explicit but requires repeated bounds or supported semantic comparison. Neither approach grants
-permission from requirement satisfaction alone or replaces current authority checks. Exact
-operation input/output schemas stay for I7; this proposal is not an accepted issuance default.
+A strict operation accepting a complete caller-supplied grant may also be offered, with the same
+authority and boundary checks. It is not mandatory for every caller to repeat each restriction.
+Neither operation style grants permission from requirement satisfaction alone or replaces current
+authority checks. Exact operation input/output schemas and specific validation support stay for I7
+and conformance work.
 
 ### Concrete examples
 
@@ -399,14 +401,18 @@ For example, a binding targeting Euphony's deployment Resources also applies to 
 matching `worker-deploy`, while an unrelated directory Resource does not match. Exact selectors
 and membership-resolution mechanisms remain I7/implementation work.
 
-1. **Grant bounds:** choose how a bounded issuance operation constructs/verifies the final grant.
-   Recommend including mandatory use restrictions itself and composing caller-added restrictions
-   conjunctively, rather than requiring every caller to restate and prove the complete boundary.
-   The [worked proposal](#carrying-use-bounds-into-issued-grants--proposal) separates retained use bounds
-   from administration-only checks. This remains a ruling; no universal solver is assumed.
-2. **Startup and persistence:** settle first authority, establishment/repair, then the storage
-   interface/engine. The root-owner initial grant is a concrete initialization problem, not
-   permission for runtime self-granting.
+**Accepted grant bounds:** [bounded issuance operations supply mandatory use restrictions](#carrying-use-bounds-into-issued-grants)
+and compose additional restrictions, returning the complete grant. They preserve requested intent,
+refuse explicit broadening and do not create a live issuer dependency. Strict complete-proposal
+operations remain possible. Detailed schemas and type-specific checks stay for I7/conformance.
+
+**Next area — initial authority, startup and repair:** decide how the root Interface first loads
+its definition and directs foundational establishment before normal registry/access services exist.
+Recommend a locally available root definition and retained initial progress, with its graph
+coordinating the system Pool and management Resources; the runtime supplies the initial owner/trust
+and minimum persistence boundary. Compare this with runtime-seeded foundations before Interface
+startup. This startup arrangement is proposed, not yet ruled. First grants and partial-recovery
+mechanisms must respect the accepted authority model; storage extension and engine follow.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

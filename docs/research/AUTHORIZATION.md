@@ -196,11 +196,15 @@ Resolve these within I4 before the final I7 syntax pass:
 - Settled: governing bindings distinguish an object's own operations from operations on explicitly
   selected owned Resources; there is no automatic Pool inheritance. Explicit ownership-based target
   selection now matches live without provisioning or grants; explicit ID references stay fixed.
-  Exact selectors and custom grant-bound checks remain open. Existing
+  Exact selectors and type-specific validation remain authoring/conformance work. Existing
   complete-path, all-applicable-requirements and mandatory-check rules already apply.
 - Settled: a dedicated access-management Resource in the system Pool exposes these records,
   alongside registry/template management. How is its first trusted authority established and
   repaired? The Resource boundary does not resolve its own startup dependency.
+- Settled: bounded issuance operations may include mandatory use restrictions, compose additional
+  restrictions and return the complete grant, preserving requested intent and refusing explicit
+  broadening. Strict complete-proposal operations may coexist. Issuance-only checks do not become
+  live dependencies on the issuer; no universal subset solver is required.
 
 Detailed schemas, package exports, provider-operation matching and implementation bindings remain
 for I7 after these conceptual choices. A proposed extension to Experiment 002 should exercise

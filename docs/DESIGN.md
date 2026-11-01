@@ -84,7 +84,7 @@ capability operations: the caller needs a grant permitting the operation, with r
 constraining its proposed effect. This avoids a separate grant-administration rule language.
 Other managed callers, including Resource-to-Resource access, retain their existing attribution
 obligations. The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop
-the accepted model and remaining binding, custom-bound-check and startup/storage details.
+the accepted model and remaining authoring, startup and storage details.
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
@@ -189,7 +189,7 @@ them. A dedicated access-management Resource owned by the system Pool exposes gr
 binding administration/inspection. The existing system management Resource retains registry,
 template and instance-creation responsibilities. Both may share a management process and storage
 implementation; endpoint enforcement remains with its responsible implementations. Exact binding
-representation, custom validation, startup and storage details remain under review.
+representation, type-specific validation, startup and storage details remain for the corresponding reviews.
 
 Keep one authoritative instance configuration. When a supported control confirms application,
 its responsible service records the confirmed settings, revision and outcome. Pending or uncertain
@@ -1817,6 +1817,16 @@ and parameters. Checking concrete use and checking proposed grant bounds need th
 contracts; no universal subset solver is assumed. This does not introduce automatic Pool inheritance
 or another permit/deny language. Existing all-applicable-requirements, complete-path and mandatory
 check rules govern evaluation and enforcement.
+
+**Bounded issuance:** a grant-issuance operation may supply its mandatory use restrictions, combining
+them with caller-added restrictions and returning the complete issued grant. The caller still
+chooses intended recipient, Resource/participation and access under the typed operation; omissions
+do not grant the administrator's maximum available authority. Explicit broader requests are refused,
+and unsupported required checks cannot be assumed satisfied. A strict complete-proposal operation
+may coexist, without requiring every caller to restate all bounds. Retained use restrictions belong
+to the recipient's grant; issuance-only checks, such as the issuer's current administrative rights,
+do not become live dependencies. Current governing requirements still apply. Exact schemas and
+type-specific validation are authoring/conformance work; no universal subset solver is required.
 
 Permissions name operations per capability/control contract, with convenience bundles expanding
 into visible grants. Agent limits and explicit exclusions constrain effective access;

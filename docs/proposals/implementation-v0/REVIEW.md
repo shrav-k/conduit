@@ -119,10 +119,10 @@ one review queue rather than another decision ledger.
 
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
-explicit governing targets with live ownership-based matching. Its remaining conceptual work is
-grouped into three bundles: grant bounds/validation, initial authority/startup/repair, and storage
+explicit governing targets with live ownership-based matching, and bounded issuance operations.
+Its remaining conceptual work is grouped into two bundles: initial authority/startup/repair and storage
 placement/backend. I5 credential custody/enrollment and I6 capture defaults add two bundles.
-That is five planned conceptual bundles, including the current grant-bounds question, followed
+That is four planned conceptual bundles, beginning with startup/repair, followed
 by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
 future questions: startup, storage or enrollment may reveal a concrete choice that needs splitting.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
@@ -132,7 +132,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Requirement application, grant management and foundational storage | Policy consolidation, grants, dedicated access-management Resource and explicit targets with live matching accepted. Next grant bounds and startup/storage. |
+| I4 | Initial authority, startup/repair and foundational storage | Authorization structure, live governing targets and bounded issuance accepted. Next root establishment/repair, then storage extension and backend. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -423,13 +423,14 @@ This is a reusable Interface configuration within the five-family model, not a s
 object. Frontends attach to it; its responsibilities can continue without an open frontend.
 See the [Interface walkthrough](ARCHITECTURE.md#interface-as-system-director--proposed-refinement).
 
-**Next discussion — responsibility and authority, before accepting the expanded role:** distinguish
-what an Interface coordinates, what operations its implementations expose, who may invoke them and
-who confirms their outcomes. The proposed rule is that directives do not themselves grant access:
-the root acts for the verified local owner with broad v0 administration, Agents use explicit grants,
-and targets retain capability, revision, lifecycle and outcome checks. Management services retain
-shared registry/policy facts; Pools own Resources; the Interface records its own workflow and links
-to authoritative target outcomes. Other authorized actors can still invoke management capabilities.
+**Next discussion — initial load and establishment:** authority is now independent of the Interface,
+with broad owner administration and explicit grants. The remaining startup choice is how its
+definition/progress are available before registry and access-management services can be used.
+Recommend [locally loaded root-directed establishment](ARCHITECTURE.md#first-launch-contract--under-review):
+the runtime supplies initial owner/trust checks and minimum persistence, while the selected root
+Interface's graph coordinates foundational setup. Compare runtime-seeded foundations before the
+Interface starts. Neither permits directives to self-authorize or changes Pool ownership, target
+revision/lifecycle checks or service ownership of outcomes. This arrangement is still proposed.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.
@@ -480,16 +481,21 @@ governing selections now match live at applicable checks as Resource instances e
 selected set, without provisioning or grants. Explicit references retain their resolved stable IDs.
 Exact selectors remain open; this does not restore generic object labels/selectors.
 
+**Bounded issuance is accepted:** [issuance operations may supply mandatory use bounds](AUTHORIZATION.md#carrying-use-bounds-into-issued-grants),
+compose additional restrictions and return the complete grant. Requested intent stays explicit;
+omissions do not mean maximum administrable access and explicit broader requests are refused.
+Strict complete-proposal operations may coexist. Retained restrictions belong to the new grant;
+issuance-only checks do not become live issuer dependencies. Detailed schemas/type-specific checks
+are I7/conformance work.
+
 **Next conceptual choices, in order:**
 
-1. Should bounded grant issuance [carry mandatory use bounds into the issued grant](AUTHORIZATION.md#carrying-use-bounds-into-issued-grants--proposal),
-   composing additional requested restrictions, or require the caller to submit the complete grant
-   and verify that it stays within the boundary? Recommend carrying required bounds; actual extent
-   remains inspectable and explicit broader requests are refused. Issuance-only checks do not become
-   live dependencies, and bound-check/enforcement support must still be established. This is proposed,
-   not an accepted default; exact schemas remain I7.
-2. Establish first trusted authority and startup/repair, then choose the internal storage boundary
-   and engine. The active Interface's directives do not establish their own authority.
+1. Choose the first-launch arrangement: locally available root Interface definition and initial
+   progress, with its graph directing foundational establishment, versus runtime-seeded foundations
+   before Interface startup. Initial trust, first-grant issuance and explicit repair must fit the
+   existing authority model. Exact loader/persistence fields are not being selected here.
+2. Settle startup/recovery gaps exposed by that choice, then the storage extension boundary and
+   initial engine. The active Interface's directives do not establish their own authority.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,

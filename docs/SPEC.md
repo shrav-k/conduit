@@ -73,7 +73,7 @@ forms without changing their meaning. Explicit ownership-based governing selecti
 applicable checks as Resource instances enter/leave the selected set. This neither provisions nor
 grants access; explicit ID references stay fixed. Selector syntax remains open.
 The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop the accepted
-model and remaining schemas, grant-bound checks and startup/storage decisions.
+model and remaining authoring schemas, type-specific validation and startup/storage decisions.
 
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate
@@ -135,6 +135,11 @@ or revocation. Issued grants do not depend on issuer provenance, continued permi
 grants. Any currently authorized administrator can revoke them; ending the recipient participation
 or related Conduit ends its access. Normal operation attribution is evidence, not a live permission
 dependency. Current governing policy and requirement checks remain applicable.
+
+Bounded issuance operations may supply mandatory use restrictions and compose caller-added
+restrictions, returning the complete grant. Requested intent remains explicit; omission does not
+grant maximum administrative reach, and explicit broadening is refused. These bounds belong to the
+issued grant without ongoing issuer dependencies. Strict complete-proposal operations may coexist.
 
 Shared access policy is independent of any particular Interface's lifecycle. Multiple authorized
 Interfaces can administer it, with broad default administration for the owner-operated root.

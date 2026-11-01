@@ -18,8 +18,8 @@ contracts, persistence, ownership, crate organization and delivery milestones. I
 are conceptually settled; I4 is partly complete, and I5–I7 remain for review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** the remaining I4 governing-target, grant-validation, initial-authority and
-storage choices, followed by I5 credentials, I6 capture defaults and I7 syntax. Concrete plugin and
+**Current focus:** I4 initial authority, startup/repair and storage, followed by I5 credentials,
+I6 capture defaults and I7 syntax. Governing-target and grant-issuance choices are settled. Concrete plugin and
 template author journeys continue to guide these decisions. The
 [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
 retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
@@ -90,7 +90,9 @@ grants and governing requirement bindings alongside the registry/template manage
 Explicit governing targets are now accepted: Pool operations and operations on owned Resources
 have distinct scope, with no automatic Pool inheritance. Explicit ownership-based governing
 selections now match live, without provisioning Resources or granting access; explicit ID references
-stay fixed. I4 next reviews grant bounds, then startup/repair and storage.
+stay fixed. Bounded issuance operations may now supply mandatory use restrictions, compose
+additional restrictions and return the complete grant, without creating issuer dependencies or
+treating omitted restrictions as a request for maximum access. I4 next reviews startup/repair and storage.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

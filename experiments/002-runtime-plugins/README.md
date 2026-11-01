@@ -10,7 +10,8 @@ worker, schema and persistence boundaries this spike would exercise. Its review 
 pending; this experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
 layout below. **I1 accepts separate management/execution services and shared policy with
-instance-owned state.** Outage behavior remains open. The two-executor fixture is proposed evidence for those boundaries, not
+instance-owned state, plus no offline grants in v0.** First-proof scope remains open.
+The two-executor fixture is proposed evidence for those boundaries, not
 a completed topology or crash-survival guarantee.
 The [cloud authority comparison](../../docs/research/CLOUD_AUTHORITY.md) adds proposed failure
 cases below. Canonical instance configuration and results belong to the designated instance
@@ -42,9 +43,10 @@ comparison does not require a scheduler, replicated registry, federation or publ
 Production remote peer enrollment, secret custody and trust need separate validation. Fixed
 placement is sufficient; unknown ownership never triggers automatic reassignment.
 
-Candidate outage test: retain an already-running synthetic process while management is unavailable,
-with new effects held whenever current authority cannot be verified. This is a proposed baseline,
-not an implicit offline-grant policy. Record actual reconnect, evidence and output-draining behavior.
+Test the accepted outage rule: retain supervision and already-dispatched outcomes while
+management is unavailable, holding new managed requests whenever current permission cannot be
+verified. There are no offline grants. Record actual reconnect, evidence and output-draining
+behavior; the policy is accepted, but these guarantees have not yet been demonstrated.
 A later two-machine run should retain the same identities/ownership contracts; I1 determines when
 that run becomes mandatory.
 
@@ -103,7 +105,7 @@ declaration-only integration's validation, access and observations with the auth
 both paths must be demonstrated. Exercise the standard MCP client with no Conduit graph SDK while
 retaining the managed component's authority/evidence dependencies. Also show that using a standalone
 implementation outside Conduit supplies only that implementation's own guarantees. Exact placement,
-enrollment and outage requirements depend on I1; neither public accessibility nor a fake endpoint
+enrollment and first-proof scope remain under review; neither public accessibility nor a fake endpoint
 proves a production standalone deployment.
 
 ### Runtime and contract acceptance
@@ -127,11 +129,11 @@ proves a production standalone deployment.
 | Concurrent control | Two callers submit a change from the same configuration revision | Apply one at a time; stale request conflicts. Store confirmed settings separately from unresolved requests. |
 | Confirmed change, lost receipt | Apply a control and commit its responsible service's result, then cut the reply to management/caller | Recover the same operation and the instance authority's committed revision. Management updates its projection without a second canonical configuration commit. Never repeat the effect solely to refresh a view. |
 | Stale aggregate inventory | Delay observations while the authoritative instance state advances | Interface identifies source/freshness; older observations cannot overwrite current state. A checked mutation reaches the authority rather than trusting a stale inventory snapshot. |
-| Policy reachability versus process survival | Break authorization reachability while an executor still supervises activity | Distinguish retained supervision, already-admitted effects and new effects requiring admission. Assert the chosen outage policy; do not infer offline permission from a live process. |
-| Retention versus delivery during policy loss | Dispatch a permitted effect, lose policy contact, retain its confirmed outcome, then withdraw the caller's access before reconnect | Preserve the outcome at its instance authority; later retrieval/delivery checks current access. The next distinct protected request follows the still-pending outage ruling. A retained result is not a new read grant. |
+| Policy reachability versus process survival | Break authorization reachability while an executor still supervises activity | Distinguish retained supervision, already-admitted effects and new effects requiring admission. Hold new managed requests without verifiable permission; retain supervision and dispatched outcomes within admitted contracts. No offline grants or process-derived permission. |
+| Retention versus delivery during policy loss | Dispatch a permitted effect, lose policy contact, retain its confirmed outcome, then withdraw the caller's access before reconnect | Preserve the outcome at its instance authority; later retrieval/delivery checks current access. The next distinct protected request waits or reports unavailable if current permission cannot be established. A retained result is not a new read grant. |
 | Interface reconnect | Close all frontend attachments, then reopen | Instance-owned work follows lifecycle policy; committed outcomes remain inspectable. Closing a frontend does not itself terminate it. |
 | Export failure | Disconnect or stall diagnostics export | Local outcomes remain committed and inspectable; export coverage/gaps are visible. |
-| Management loss | Stop management while both executors own live activity | Under the proposed independent arrangement, processes remain supervised; block effects needing unavailable authority, retain evidence and reconnect without duplicate work. |
+| Management loss | Stop management while both executors own live activity | Verify retained supervision and dispatched outcomes; hold new managed requests without verifiable permission. Reconnect without duplicate work and preserve existing stop/revocation rules. |
 | One executor fails | Stop executor A while B remains available | B's independent work and the Pool's other usable Resources remain available; A's status is ended or unknown according to evidence. |
 | Cross-executor route | Interrupt the Resource-to-Resource Conduit transport | Report affected availability without detaching logical participation, changing account/path or inventing a replacement Resource. |
 | Stale coordinator | Deliver a delayed control from an obsolete management generation | The target verifies current authority/ownership and rejects obsolete admission; generation labels alone are not a fencing guarantee. |
@@ -169,7 +171,7 @@ account/private-state verification; this fixture cannot establish those properti
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Management/execution separation and shared-policy/instance-state authority accepted; I1 outage rules remain open. Proposed two-executor proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
+| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Separate execution, shared-policy/instance-state authority and no offline grants accepted; I1 first-proof scope remains open. Proposed two-executor proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
 
 Record actual results here when executed, including failures and unresolved behavior. Expected
 outcomes above are acceptance criteria, not completed tests.

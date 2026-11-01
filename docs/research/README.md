@@ -11,13 +11,14 @@ findings and from the accepted protocol.
 The current design accepts code-optional MCP-backed plugins and independently accessible
 capabilities. Executable-worker examples in earlier research are implementation options for
 authored code, not a requirement for every contribution. I1 now accepts separate management and
-execution services and shared policy with instance-owned state; outage behavior remains open. Consult the
+execution services, shared policy with instance-owned state and no offline grants in v0.
+First-proof scope remains open. Consult the
 [design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
 
 | Report | Read it for |
 | --- | --- |
 | [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; concrete change/recovery comparisons and rationale for accepted shared policy with instance-owned state. |
-| [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | I1 evidence from Tilt, Docker/containerd, Kubernetes, Rust systems and papers: execution and authority splits accepted; partition tradeoffs still open. |
+| [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | I1 evidence from Tilt, Docker/containerd, Kubernetes, Rust systems and papers: execution/authority splits and no offline grants accepted; first-proof scope remains open. |
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |
 | [CONSTRUCTION](CONSTRUCTION.md) | The concise rationale for template/plugin/graph/runtime boundaries and their source evidence. |
 | [ESTABLISHMENT](ESTABLISHMENT.md) | Detailed account, database, credential and filesystem setup/recovery cases. |

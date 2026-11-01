@@ -35,8 +35,9 @@ services retain their own supervision. Shared registration/template and access-p
 plus instance-owned state are also accepted: one designated service owns each instance's resolved
 definition, confirmed configuration/revision and operation results; Interface views identify
 freshness and gaps. The [cloud authority comparison](research/CLOUD_AUTHORITY.md) records the
-rationale and alternatives. Outage behavior remains open. Remote production support remains
-future work; logical ownership does not require co-location or a process per object.
+rationale and alternatives. V0 uses no offline grants: retain supervision and dispatched
+outcomes, but hold new managed requests without verifiable permission. Remote production support
+and the first independence proof remain review work; logical ownership does not require co-location or a process per object.
 
 ## Design-fit audit: code-optional plugins and independent MCP access
 
@@ -53,8 +54,8 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 | Partial adoption | Standalone implementations supply their own dependencies/guarantees. Managed components retain required ownership, authority and evidence. A standard MCP client does not need a Conduit graph SDK to use a public capability. |
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
-separation and shared-policy/instance-state authority are accepted. Resolve permitted work during outages next
-and the remaining I2–I6 choices; return to
+separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
+I1's first validation scope, then the remaining I2–I6 choices; return to
 I3's packaging details where needed. Final contract/template syntax remains I7 work.
 
 ## Configuration walkthrough

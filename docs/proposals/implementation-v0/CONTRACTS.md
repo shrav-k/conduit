@@ -1,7 +1,8 @@
 # Proposed implementation contracts
 
 **Placement review:** separate management/execution services and shared policy with instance-owned
-state are accepted. Outage choices remain open. References to a host below mean the responsible management
+state are accepted. V0 has no offline grants; failure-validation scope remains open.
+References to a host below mean the responsible management
 or execution service, not one combined process. Independent execution and network Conduits
 require authenticated endpoint identity, retained target outcomes and authority-freshness rules.
 These remain [review work](REVIEW.md#i1--independent-execution-and-management); serialization alone
@@ -293,7 +294,8 @@ external executable. Trusted dispatch/ownership rules remain in responsible Cond
 they are not restricted to one global process. Worker loss, executor loss and management-channel
 loss have separate meanings. The designated instance service owns confirmed configuration and
 operation records; executors supervise managed activity, and management owns shared registration
-and policy. Outage admission and crash-survival guarantees still need rulings and tests before
+and policy. Retain supervision/dispatched outcomes and block new managed requests without
+verifiable permission; no offline grants apply. Crash-survival guarantees still need tests before
 this lifecycle profile is complete. A current inventory view is not guaranteed by serialization.
 
 For first-party releases, retain the exact worker executable/bundle used by each instance.

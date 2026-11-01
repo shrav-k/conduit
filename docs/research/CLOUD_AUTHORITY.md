@@ -1,12 +1,14 @@
 # Cloud management patterns and Conduit's authority boundary
 
 Research date: 2026-11-01. **Subsequent I1 ruling: shared policy with instance-owned state is
-accepted, alongside separate management and execution services.** Outage behavior remains open.
+accepted, alongside separate management and execution services.** V0 subsequently adopted no
+offline grants: retain supervision/dispatched outcomes, but block new managed requests without
+verifiable permission. First-proof scope remains open.
 This report preserves the authority comparison and its rationale
 using AWS, Google Cloud and Azure, with concrete control and recovery examples. It extends
 [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md), rather than replacing its process-supervision and
 distributed-systems evidence. The [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management)
-records the accepted authority split and the remaining outage ruling.
+records the accepted authority/outage rulings and remaining first-proof choice.
 
 Method: read primary public architecture, extension and API documentation. No cloud accounts,
 credentials or deployments were used, and no failure behavior was tested. Public API contracts
@@ -207,18 +209,18 @@ the policy authority.
 - A disconnected enforcer cannot discover a withdrawal by consulting its old cached permission.
 - B's independent access and unrelated Resources are separate from A's path.
 
-We therefore still need a separate outage ruling: require fresh authoritative admission; permit
-a defined bounded validity period; or use another explicit policy with testable withdrawal
-semantics. A v0 implementation can avoid offline grants without requiring every workload to stop.
-It must show which effects are waiting and why. No option is selected by this research.
+The user selected no offline grants for v0 after the comparison below. Preserve supervision and
+already-dispatched outcomes, but require verifiable current permission for new managed requests.
+Show affected requests as pending or unavailable under their contracts. Bounded offline delegation
+is deferred rather than inferred from live connections or shared credentials.
 
 Revocation also cannot undo an already completed call or erase context already delivered to a
 native Agent. This preserves the existing managed-access versus actual isolation distinction.
 
 ### Concrete outage comparison before ruling
 
-The user requested examples before choosing an outage policy. The following is a design
-walkthrough, not a new ruling or evidence of tested behavior.
+These examples were used to review outage policy; the user subsequently chose no offline grants
+for v0. The walkthrough explains that ruling and the deferred alternative, not tested behavior.
 
 Assume an Euphony Pool owns a worktree, shared authentication/Linear access and message-history
 Resources. Two Agents use independently filtered Conduits. Management supplies registration and
@@ -230,7 +232,7 @@ authorization might share a process initially, so some failures below could occu
 | --- | --- | --- |
 | Frontend disconnect | The user closes the terminal while an Agent works. | Accepted detach semantics preserve instance-owned work where supported. No loss of authorization is implied. A reopened frontend retrieves retained observations; it does not start replacement work. |
 | Registration/aggregate view unavailable; authorization still reachable | Template editing and the global inventory fail, but an existing Agent can reach its Resource and current policy. | Existing permitted capability use need not wait for the aggregate view. Creation/naming operations needing unavailable registration wait. This conditional example does not promise independently deployed policy in v0. |
-| Authorization unreachable; instances and services alive | Linear would accept its shared credential, but Conduit cannot establish this Agent's current permission. | Without offline grants, hold or reject the new managed request as temporarily unavailable. With a still-valid offline grant, admit only its expressly covered effects. A live Conduit or credential alone is insufficient. |
+| Authorization unreachable; instances and services alive | Linear would accept its shared credential, but Conduit cannot establish this Agent's current permission. | In v0, hold or reject the new managed request as temporarily unavailable. A future explicit offline grant could admit only its expressly covered effects. A live Conduit or credential alone is insufficient. |
 | Linear unavailable; Conduit authorization healthy | A provider connection breaks while worktree and history remain available. | Independent permitted work can continue. Supported reconnection retains the same route/account; an uncertain Linear write requires reconciliation, not replay. This is dependency recovery rather than permission caching. |
 | One executor lost | Executor A becomes unreachable while B still owns other usable Resources. | Preserve B's independent work. A's processes may be ended or unverified; do not substitute new execution from silence. Recovery follows verified reattachment/explicit resume, not an assumed permission to fail over. |
 
@@ -238,10 +240,10 @@ For the authorization-outage case, use one specific timeline:
 
 1. An Agent requests a permitted Linear update and it is dispatched.
 2. The policy service becomes unreachable while Linear processes that update.
-3. Linear returns success. Under the proposed baseline, the instance service retains the outcome;
+3. Linear returns success. Under the accepted baseline, the instance service retains the outcome;
    a policy outage does not turn success into failure or trigger another write.
-4. The Agent requests a **second** update. Without a new verifiable admission or an explicit valid
-   offline grant, this request cannot be dispatched. The same reasoning applies to protected
+4. The Agent requests a **second** update. Without verifiable current permission, this request
+   cannot be dispatched in v0. The same reasoning applies to protected
    reads and message-history access; “read-only” does not mean permission-free.
 5. On reconnection, current policy governs subsequent dispatch and result delivery. If access was
    withdrawn, the queued or retried request is denied. A previously stored result can remain
@@ -253,7 +255,7 @@ This discussion does not select automatic queue replay, indefinite retention of 
 or a new mandatory status enumeration. Previously uncertain effects retain their original
 operation/recovery identity rather than being retried as new work.
 
-The alternative can be illustrated by a grant with a hypothetical five-minute validity period.
+The deferred alternative can be illustrated by a grant with a hypothetical five-minute validity period.
 It permits a specified Agent/path/operation set while policy contact is lost. If permission is
 withdrawn after one minute but that withdrawal cannot reach the enforcer, permitted calls may
 continue until expiry or until withdrawal is received. The duration is illustrative, not a
@@ -267,12 +269,12 @@ tool call or graph node. A broader permission to continue a run would need its o
 Retaining a native Agent process is also not proof that Conduit mediates or can block every action
 that process can take. Enforcement coverage remains visible under either policy.
 
-The proposed v0 baseline therefore preserves supervision and outcome recording while admitting
+The accepted v0 baseline therefore preserves supervision and outcome recording while admitting
 new managed effects only with verifiable permission. Its availability cost is real: if shared
 authorization runs in management and that process fails, affected new capability calls wait.
 The accepted state-ownership split removes management from canonical instance outcome commits;
 it does not automatically remove management from the authorization path. Bounded offline grants
-remain the explicit alternative, not a hidden consequence of keeping an instance alive.
+are deferred, not a hidden consequence of keeping an instance alive.
 
 ## 6. What authors should have to supply
 
@@ -337,7 +339,7 @@ proof. Test the selected instance-state authority at these fault boundaries:
 - Keep the aggregate inventory stale, then reconnect; older observations cannot overwrite a newer
   authoritative revision or be passed off as a globally current snapshot.
 - Keep execution alive while breaking policy reachability. Record separately what is supervised,
-  what was already admitted and what new work is held under the chosen outage policy.
+  what was already admitted and what new work is held by the accepted no-offline-grants policy.
 - Ensure the recovered result remains available through an authorized standard MCP client without
   requiring an aggregate frontend or a new plugin-specific recovery server.
 

@@ -1,7 +1,8 @@
 # Independent runtimes, management and network Conduits
 
 Research date: 2026-11-01. **Subsequent I1 ruling:** separate management and execution services
-and shared policy with instance-owned state are accepted; outage behavior remains open. The user wants independently
+and shared policy with instance-owned state are accepted. V0 uses no offline grants; first-proof
+scope remains open. The user wants independently
 operating objects, eventual placement across systems, Resources from one Pool on different systems
 and network Conduits. The earlier combined-host design is a comparison baseline. This report informs the
 [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
@@ -16,13 +17,14 @@ Pi/Xerj and plugin mechanisms remain in [RUST_RUNTIME](RUST_RUNTIME.md).
 The follow-up [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) compares AWS, Google Cloud and Azure through
 configuration-change and recovery examples. It separates configuration ownership from policy
 ownership and compares a shared-policy/instance-state alternative that the user subsequently
-accepted. Outage recommendations remain proposals.
+accepted. The user also selected no offline grants in v0; first-proof scope remains proposed.
 
 **Current design boundary:** code-optional MCP bindings and independently accessible component
 capabilities are now accepted. Execution services now own Conduit-managed activity separately from
 management; existing MCP services retain their external supervision. Shared registration/policy
-and instance-owned definitions, confirmed configuration and results are accepted. Permitted work
-during outages remains unresolved. The
+and instance-owned definitions, confirmed configuration and results are accepted. V0 retains
+supervision/dispatched outcomes while blocking new managed requests without verifiable permission.
+Offline grants are deferred. The
 [design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 records these consequences without treating this report's topology candidates as rulings.
 
@@ -228,17 +230,19 @@ new effects. A model stream already in flight may continue while the next privil
 waits. A database can remain running while a configuration mutation is unavailable. Provider or
 executor loss affects its dependents, not every object in its Pool.
 
-The central unresolved tradeoff is permission freshness across a partition:
+The user selected no offline grants in v0. The following comparison preserves the rationale
+for requiring verifiable current permission for new managed requests:
 
 | Policy candidate | What it permits | What it cannot promise |
 | --- | --- | --- |
 | Require reachable current authority for affected operations | Keeps strict current-access checking; unrelated execution can continue. | New protected operations may wait during an authority outage. |
-| Explicit bounded offline delegation | An endpoint can admit specified effects while its grant remains valid under an agreed lease/epoch contract. | Immediate withdrawal across a disconnected network. This would refine accepted current-access semantics and needs a ruling. |
+| Explicit bounded offline delegation | An endpoint can admit specified effects while its grant remains valid under an agreed lease/epoch contract. | Immediate withdrawal across a disconnected network. Deferred beyond v0; introducing it would require a future ruling. |
 | Independent local authority for an object | That authority can govern its own operations while another registry is unavailable. | A single global order or instant cross-authority revocation without additional coordination. |
 
-The conservative experiment baseline should retain live processes but block new effects whose
-current authorization or exclusive ownership cannot be established. Do not silently introduce
-cached-grant authority in order to claim availability. Offline policy is not settled by this report.
+The accepted v0 baseline retains supervision and outcomes of already-dispatched work while
+blocking new managed requests whose current permission cannot be established. Existing exclusive
+ownership, stop/revocation and delivery checks remain applicable. Do not silently introduce cached
+grants to claim availability. Concrete crash survival still requires experimental evidence.
 
 Other required distinctions:
 
@@ -282,12 +286,15 @@ I1 is partially settled; preserve the distinction among these connected choices:
 2. **Authority — accepted:** shared registration/template and access-policy authority; one
    designated service owns each instance's definition, confirmed configuration/revision and results.
    A unified Interface aggregates the sources without becoming another writable authority.
-3. **Partition contract and first proof:** which activity continues without management, what must
-   wait, and must the initial spike demonstrate it across two processes or two machines?
+3. **Outage admission — accepted:** no offline grants; retain supervision and dispatched outcomes,
+   while new managed requests require verifiable current permission.
+4. **First proof:** demonstrate the accepted behavior across separate processes on one machine
+   first, or require two machines in the initial spike?
 
 I3's worker contract and I4's store ownership depend on these answers. Tokio, exact artifacts,
 finite graphs, MCP-first capability access and Interface observability remain useful under all
-three arrangements. The authority ruling does not imply outage admission or choose storage technology.
+three arrangements. Accepted outage policy still needs implementation evidence and does not
+choose storage technology.
 
 ## Source scope and reproducibility
 

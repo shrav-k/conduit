@@ -58,8 +58,9 @@ Backing data, credentials and process lifetime are distinct from registry identi
 **Distribution direction:** objects should operate independently and eventually be deployable
 across systems. One Pool can own Resources deployed on different systems; Conduits can span a
 network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
-not require one execution host. The authority split below is accepted; outage behavior and remote
-deployment guarantees remain open in [implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
+not require one execution host. The authority split and v0 outage rule below are accepted;
+the first independence proof and remote deployment guarantees remain in
+[implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
 This direction does not claim remote execution is implemented or approve automatic migration,
 federation or offline authorization.
 
@@ -68,7 +69,7 @@ services supervise Conduit-managed Agents and Resources; management coordinates 
 and control; the Interface presents the system. Each executor can host multiple instances,
 including on the same machine initially. External MCP services retain their own supervision.
 This settles execution custody without introducing an object family or requiring one process
-per object. Concrete deployment/storage and outage admission remain separate review choices.
+per object. Concrete deployment, storage and failure-validation scope remain review choices.
 
 ### Shared policy and instance-owned state
 
@@ -97,9 +98,30 @@ For example, if a control changes a search limit from 10 to 15, the instance ser
 instead of reapplying the change. If the external effect occurred before confirmation was
 recorded, its outcome remains uncertain under the existing recovery contract.
 
-This ruling does not grant offline access. Shared policy ownership, enforcement on a Conduit
-path and permission to admit work during an outage remain distinct concerns. Exact process
-placement, persistence technology and outage guarantees are still under review.
+### V0 outage admission
+
+V0 provides no offline grants. Keep surviving instances supervised and retain outcomes of
+already-dispatched operations, which may finish within their admitted contracts. Hold new
+managed requests when current permission cannot be established. Work with verifiable permission
+can continue; existing explicit stop, withdrawal and isolation rules still apply. Starting an
+Agent or graph does not authorize every later tool call or node.
+
+Retaining a result does not authorize its delivery: managed retrieval and delivery recheck current
+access. A blocked request may remain pending or report temporary unavailability according to its
+contract; this ruling does not require indefinite queues or automatic replay. Reconnection does
+not revive withdrawn access or make uncertain effects safe to repeat.
+
+An unavailable frontend, registration service, policy service, provider and executor are distinct
+failures. If management and policy share a process, its failure can block new managed capability
+calls even while execution and outcome recording continue. A live connection, shared service
+credential or cached grant cannot replace current authorization. Permission checks can be local
+where the relevant authority is available; no external-network check is inherently required.
+Delegated participation still survives its issuing frontend or coordinator stopping, as agreed;
+that is different from admitting work without verifiable governing authority.
+
+Bounded offline grants are deferred. Exact process placement, persistence and demonstrated
+crash-survival guarantees remain implementation work. Native actions outside Conduit's mediation
+retain their actual enforcement limits; preserving a process is not a sandbox guarantee.
 
 ### Plugins and independently accessible MCP components
 

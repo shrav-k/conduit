@@ -8,7 +8,9 @@ I1 accepts separate management and execution services; crate boundaries must pre
 arrangement and the accepted shared-policy/instance-state authority split. The
 [research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
 concrete placement, persistence and failure guarantees remain under review; a single workspace
-and lockfile do not combine execution and management custody.
+and lockfile do not combine execution and management custody. V0 has no offline grants: retain
+supervision/results while holding new managed requests without verifiable permission; test this
+behavior rather than treating separate processes as proof of it.
 
 ## 1. Repository layout
 

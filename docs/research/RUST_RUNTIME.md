@@ -13,8 +13,8 @@ review. It builds on this report without treating recommendations as accepted ch
 **Deployment follow-up:** [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) revisits the process,
 authority and lifetime arrangement after the initial I1 proposal was kept open. A subsequent
 ruling accepts separate management/execution services and shared policy with instance-owned state.
-The supervisor/store mechanisms below must preserve those authorities and do not settle outage
-behavior. Pool Resources can eventually occupy different systems and Conduits can cross a network;
+V0 also accepts no offline grants: retain supervision/results, but hold new managed requests
+without verifiable permission. Supervisor/store mechanisms must preserve these boundaries. Pool Resources can eventually occupy different systems and Conduits can cross a network;
 concrete topology and remote guarantees remain open.
 
 **Accepted extension follow-up:** the design now permits published contracts backed by authored

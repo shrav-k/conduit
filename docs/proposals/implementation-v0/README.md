@@ -14,7 +14,7 @@ inspectable contracts with their implementations; MCP is the public plugin proto
 a small Conduit profile. Code-optional bindings to existing MCP services and independent component
 exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 preserves the existing families, ownership and access rules. I1 accepts management/execution
-separation and shared policy with instance-owned state; outage behavior is next;
+separation, shared policy with instance-owned state and no offline grants in v0; first-proof scope is next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -29,11 +29,13 @@ supports eventual distributed placement. Management owns templates, registration
 access policy; one designated service owns each instance's resolved definition, confirmed
 configuration/revision and operation results. The Interface aggregates these sources with
 freshness and gaps. The [cloud follow-up](../../research/CLOUD_AUTHORITY.md) supplies the accepted
-authority model's rationale and alternative examples; outage behavior remains unruled.
+authority model's rationale and alternative examples. V0 retains supervision and dispatched
+outcomes, while holding new managed requests whose current permission cannot be established.
+Offline grants are deferred; existing stop/revocation and result-delivery rules remain applicable.
 
 Rust services implement registry authority, instance supervision, authorized capability traffic
-and durable evidence through explicit boundaries. Detailed placement, persistence and outage
-guarantees are still under review. Replaceable frontends attach to an Interface; authored workers and existing
+and durable evidence through explicit boundaries. Detailed placement, persistence and failure-validation
+scope are still under review. Replaceable frontends attach to an Interface; authored workers and existing
 MCP services fulfill published plugin contracts through retained implementation bindings. Code-optional
 contributions use shared adapters without inventing a worker per package. Local transactional
 storage remains an I4 candidate, not a requirement that all distributed state live in one file.
@@ -97,7 +99,8 @@ The relevant sources are cited beside the resulting recommendations in this pack
 The [distributed-runtime follow-up](../../research/DISTRIBUTED_RUNTIME.md) adds Tilt,
 Docker/containerd, Kubernetes, Rust control/execution systems and primary distributed-systems
 papers. Together with the cloud follow-up, it informed the accepted execution and authority
-splits. Failure-policy recommendations and proposed tests remain unvalidated.
+splits and the accepted no-offline-grants v0 rule. Proposed tests and failure guarantees remain
+unvalidated until the implementation demonstrates them.
 
 Documentation and source inspection are not executable validation. The
 [runtime experiment](../../../experiments/002-runtime-plugins/README.md) defines the first

@@ -1,7 +1,7 @@
 # Proposed runtime architecture
 
 Status: implementation proposal, 2026-11-01. I1's management/execution separation and shared
-policy with instance-owned state are accepted; outage behavior remains open. See [review](REVIEW.md)
+policy with instance-owned state are accepted; v0 has no offline grants. See [review](REVIEW.md)
 for pending choices and [contracts](CONTRACTS.md) for proposed representations. Accepted semantics remain in
 [DESIGN](../../DESIGN.md).
 
@@ -71,7 +71,7 @@ Management owns templates, registration/naming and shared access policy. One des
 owns each instance's resolved definition, confirmed configuration/revision and operation records.
 The Interface/registry can aggregate observations, but cached copies are not independently writable
 configuration. Short-lived workers implement behavior without becoming the state authority.
-Resource backends retain their domain data. This split does not establish offline admission rights.
+Resource backends retain their domain data. V0 grants no offline admission rights.
 
 If the first registry authority uses a local store, it needs an OS-held lock, registry ID and
 authority generation. A second writer must not race it. Executors need separate verified identities
@@ -99,7 +99,7 @@ missing objects or incompatible management code require explicit repair, not def
 Local owner recovery can inspect/repair a broken management path without depending on that path.
 It uses checked operations, preserves backing data and cannot bypass fixed instance definitions.
 Independent executor enrollment and reconnect must reuse assigned identities rather than repeating
-registry bootstrap. Their detailed enrollment, outage and storage contracts remain I1/I4 work.
+registry bootstrap. Their detailed enrollment, failure-validation and storage contracts remain implementation work.
 
 ### Management, execution and worker loss
 
@@ -108,10 +108,11 @@ route are separate events. A disconnected channel makes its handles unusable thr
 it does not prove that the backing process ended. Preserve unresolved operations and distinguish
 local evidence from what another service has confirmed.
 
-The earlier proposed kill-on-management-disconnect policy is withdrawn as a default. A surviving
-executor could retain owned processes and evidence while management is down; admitting new effects
-depends on current authority, exclusive ownership and operation contracts. Offline grants are not
-settled. Immediate global withdrawal cannot be promised across a disconnected network.
+The accepted v0 rule retains supervision and outcomes of already-dispatched work while management
+is unavailable, within admitted contracts and existing stop/revocation rules. New managed requests
+wait or report unavailable when current permission cannot be established. Work with verifiable
+permission can continue. There are no offline grants; process survival is not authority for new
+effects. An executor failure still requires separate recovery evidence.
 
 An adapter that verifies an existing execution may reconnect. Otherwise report ended or unknown;
 do not launch a duplicate or a new model turn. Temporary unreachability is not logical detachment,
@@ -310,9 +311,11 @@ change has a defined ordering against a new request. Once a request has been sen
 cannot promise to undo it; use supported cancellation, record its actual outcome and recheck
 permissions before delivering retained content or starting another effect.
 
-Across independently operating endpoints, current-authority verification and revocation need
-an explicit freshness contract. Until I1 resolves partition behavior, do not assume a cached grant
-permits disconnected dispatch. Loss of a management connection is distinct from verified withdrawal.
+Across independently operating endpoints, enforce the accepted no-offline-grants rule: cached
+permission cannot substitute for current authorization. Block new managed dispatch when permission
+cannot be established; result delivery also rechecks access. Loss of a management connection is
+distinct from verified withdrawal and does not itself erase retained outcomes. Exact verification
+mechanics remain implementation work; bounded offline delegation is deferred.
 
 Filters are typed contracts with inspectable parameters. Provider adapters implement semantic
 checks where the meaning of native arguments matters. If the implementation can enforce only

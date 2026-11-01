@@ -2,7 +2,7 @@
 
 Status: lightweight authoring support, contract publication, MCP, code-optional implementation
 bindings, independent component access, management/execution separation and shared policy with
-instance-owned state are **accepted** below; the seven grouped
+instance-owned state, and no offline grants in v0 are **accepted** below; the seven grouped
 items still contain unresolved implementation choices. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -69,8 +69,12 @@ services retain their own supervision. This adds no object family or process-per
 service owns each instance's resolved definition, confirmed configuration/revision and operation
 results. The Interface aggregates sources with freshness and gaps. A service can host many instances.
 
-**Next discussion:** I1's outage behavior. Authority ownership is settled; it does not determine
-which new effects are allowed when the relevant authorization service cannot be reached.
+**Accepted outage rule:** no offline grants in v0. Retain supervision and already-dispatched
+outcomes; hold new managed requests when current permission cannot be established. Work with
+verifiable permission can continue, subject to existing stop/revocation and delivery rules.
+
+**Next discussion:** I1's first independence proof: separate processes on one machine first,
+or require two machines immediately. The policy is settled; its implementation needs evidence.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -86,7 +90,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I1 | Outage admission and first independence proof | Separate execution and shared policy/instance-owned state accepted. Recommend retaining supervision/results while holding new effects whose current authority cannot be established; outage ruling remains open. |
+| I1 | First independence proof | Separate execution, shared policy/instance-owned state and no offline grants accepted. Recommend management plus two executors on one machine first; require separate validation before claiming remote support. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
 | I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open after I1. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
@@ -110,8 +114,8 @@ are implementation roles, not new object families or a daemon per object/Pool.
 
 The [distributed-runtime comparison](../../research/DISTRIBUTED_RUNTIME.md) and
 [cloud follow-up](../../research/CLOUD_AUTHORITY.md) supply the rationale and alternative examples.
-Their shared-policy/instance-state arrangement is now accepted; outage, storage and remote
-availability guarantees are not implied by that ruling.
+Their shared-policy/instance-state arrangement and the no-offline-grants v0 outage rule are
+accepted. Storage choices and demonstrated remote availability guarantees remain separate.
 
 **Accepted authority split:**
 
@@ -134,41 +138,38 @@ The Interface recovers the result from that service; an aggregate view still sho
 its age. If the provider effect happened before any confirmation was retained, the outcome is
 uncertain and still requires effect inspection or supported deduplication, never blind replay.
 
-**Remaining ruling — outage admission:** distinguish keeping supervised processes alive, retaining
-results of already-dispatched work, and admitting new effects. A live Agent process or graph is
-not blanket permission for every later tool call or node. A management/observation outage also
-need not imply that every authorization source or instance endpoint is unavailable.
-The user requested [concrete outage examples](../../research/CLOUD_AUTHORITY.md#concrete-outage-comparison-before-ruling)
-before deciding. Those examples distinguish frontend, registration, policy, provider and executor
-failure; the permission-outage ruling remains open. If registration and authorization share one
-process initially, that process's outage can block new capability calls even while executors
-remain alive and retain results. A separate logical responsibility is not a deployment guarantee.
+**Accepted outage admission:** no offline grants in v0. Retain supervision and recoverable
+results; allow already-dispatched operations to finish within their admitted contracts. Hold new
+managed requests when current permission cannot be established. Work with verifiable permission
+can continue; existing explicit stop/revocation and isolation rules still apply. A live Agent or
+graph is not blanket permission for its future tool calls or nodes.
 
-Recommended v0 baseline, **not yet accepted**: retain supervision and recoverable results; allow
-already-dispatched operations to finish within their admitted contract; hold new affected effects
-when current authority cannot be established. A still-reachable authority can admit permitted
-work. Existing explicit stop/revocation rules remain applicable. This proposes no offline grants
-and does not silently cancel a database migration or invent a replacement Agent.
-Outcome retention does not itself authorize delivery to a caller; managed reads/delivery still
-check current access. Holding dispatch need not mean indefinite queuing: pending versus temporary
-unavailability follows the capability contract. No automatic replay policy is chosen here.
+The [concrete examples](../../research/CLOUD_AUTHORITY.md#concrete-outage-comparison-before-ruling)
+explain the accepted tradeoff. If registration and authorization share a process, its outage can
+block new capability calls even while executors remain alive and retain results. Other failures
+may leave the relevant authority reachable. A separate logical responsibility is not a deployment
+guarantee, and local authority does not inherently require external-network access.
 
-The alternative allows explicitly bounded offline grants, with validity, expiry and delayed
-withdrawal semantics. That can improve availability but requires a further permission contract.
-Current native-versus-isolated enforcement limits remain visible under either choice; Conduit
-cannot claim to stop unmediated native tool use merely by blocking a managed request.
+Outcome retention does not itself authorize delivery; managed retrieval/delivery rechecks current
+access. Holding dispatch need not mean indefinite queuing: pending versus temporary unavailability
+follows the capability contract. No automatic replay policy is chosen. Bounded offline grants are
+deferred. Native actions outside Conduit's mediation retain their actual enforcement limits.
 
-**Example:** if management disconnects after a migration was dispatched, its executor can retain
-completion evidence. A subsequent protected migration or tool request waits if it cannot establish
-current authority. Unrelated admitted work remains separately supervised. Whether that baseline
-is sufficient or offline grants belong in v0 is the next collaborative ruling.
+**Example:** a dispatched migration may finish and retain its outcome while management is down.
+The next protected operation waits if it cannot verify permission. On reconnection, current access
+and effect-recovery rules apply; neither revoked access nor uncertain writes are replayed blindly.
 
-**Proposed evidence:** experiment 002 uses two execution processes on one machine, separately
-faulting management, worker, capability, policy and observation links. Confirmed configuration
-and outcomes commit at the instance authority; aggregate views recover without overwriting newer
-state. Test retained supervision, held unauthorized/uncertain effects and verified reattachment.
-Production remote support, specific crash-survival guarantees and when a two-machine proof is
-required remain open. The protocol does not promise those results before testing.
+**Remaining I1 choice — first proof:** recommend experiment 002 run management and two independently
+supervised executors on one machine, separately faulting management, worker, capability, policy
+and observation links. Use serialized service boundaries and independently retained state so
+shared memory or one process lifetime cannot hide the protocol requirements. Test retained
+supervision, held unverifiable requests, target-owned results, stale views and verified reattachment.
+
+The alternative requires the first experiment to span two machines, exposing host/network,
+credential placement and enrollment issues earlier at higher setup cost. One-machine testing does
+not prove machine-loss tolerance or production remote support. Two-machine validation is required
+before claiming those capabilities; whether it belongs in the initial experiment is the remaining
+ruling. No fixture or failure guarantee is considered demonstrated by documenting it.
 
 I3 worker details and I4 persistence choices follow these accepted authority boundaries. Frontend
 detachment, explicit resume of stopped Agent work, current authority checks and no duplicate
@@ -221,7 +222,7 @@ exact implementation retention and failure containment; Wasm-first adds a host-c
 packaging system before proving the required native integrations.
 
 **Rulings still needed:** execution/distribution boundaries within the accepted custody and
-authority split, with outage requirements still pending. MCP and implementation-binding modes are settled; exact artifact pinning and replacement
+authority split and accepted no-offline-grants rule. MCP and implementation-binding modes are settled; exact artifact pinning and replacement
 on upgrade are already accepted for Conduit-controlled code. The experiment must test whether
 the profile stays small before treating its method set as stable. Standard protocol support alone
 does not establish provider lifecycle, effect recovery or partition behavior.
@@ -244,7 +245,7 @@ That requires a stronger transactional/concurrency/bootstrap contract and could 
 on the failed plugin. JSONL-only storage is simpler to inspect but moves transaction/index/compaction
 responsibilities into our code.
 
-**Ruling needed:** choose local persistence for the accepted authorities, accounting for the remaining outage requirements.
+**Ruling needed:** choose local persistence for the accepted authorities and outage/recovery requirements.
 Which facts commit together locally, and which use recoverable inter-service exchanges, must be
 explicit. This does not make SQLite a required backend for every Resource or settle federation.
 

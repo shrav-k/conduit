@@ -54,7 +54,10 @@ external MCP services retain their own supervision. Management owns templates, r
 shared access policy. One designated service owns each instance's resolved definition, confirmed
 configuration/revision and operation results. The Interface aggregates those sources and identifies
 stale observations; it is not another configuration authority. Resource backends own their domain
-data. Outage behavior, concrete storage/placement and remote availability guarantees remain open.
+data. V0 has no offline grants: retain supervision and outcomes of already-dispatched work,
+but hold new managed requests whose current permission cannot be established. Work with verifiable
+permission can continue; existing stop/revocation rules and delivery checks still apply. Concrete
+storage/placement, failure-validation scope and remote availability guarantees remain open.
 
 ## The user workflow
 

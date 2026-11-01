@@ -14,6 +14,8 @@ under review; a single workspace and lockfile do not constrain deployment topolo
 Use one Cargo workspace and one lockfile for the application, workers and first-party plugins.
 Keep reusable public schemas independent of Rust source paths. Experiments stay outside docs,
 and private registry data never belongs in the repository.
+This organizes the authored Rust code; a code-optional integration package needs neither a Cargo
+crate nor a private worker. It can publish contracts/bindings and reuse an existing MCP adapter.
 
 ```text
 conduit/
@@ -76,8 +78,8 @@ not infer a minimum Rust version from whichever compiler happens to be installed
 | `conduit-runtime` | Supervisors, graph scheduling, invocation coordination, recovery, route/participation and Interface services | Core, config, Tokio; ports for store/plugins/environment | SQLite implementation, provider-specific HTTP, terminal rendering |
 | `conduit-store` | SQLite implementation, migrations, bounded store thread, transactions, backup and evidence queries | Core and storage libraries | Provider effects or policy bypass through direct SQL |
 | `conduit-transport` | MCP client/server adapters, local bridge, worker wire mappings and negotiated feature handling | Core, Tokio, rmcp; dispatch ports | Independent business rules, a second registry or hidden retry policy |
-| `conduit-plugin-sdk` | Helpers for descriptors, typed operation/driver exports, host broker access and conformance harness | Core and transport helpers | Application runtime or unrestricted access to its database |
-| `conduit-builtin` | First-party filesystem/history/auth/MCP/native-agent implementations and fixture exports | SDK and integration libraries | Reimplementing host authorization or defining global caller identity |
+| `conduit-plugin-sdk` (optional extraction) | Minimal recurring descriptor/operation/driver helpers and conformance support, only as actual authoring needs justify them | Core and transport helpers | Application runtime, a prerequisite framework or unrestricted access to its database |
+| `conduit-builtin` | First-party filesystem/history/auth/MCP/native-agent implementations, shared adapters and fixture exports | Transport/integration libraries; minimal helpers where useful | Reimplementing host authorization or defining global caller identity |
 | `conduit-app` | Dependency wiring, `conduit`, management/executor entry points, workers and terminal attachment (layout pending I1) | Implementations above | A second source of domain semantics in CLI handlers |
 
 Keep core ports narrow and use them where there are real implementations: SQLite versus a test
@@ -132,12 +134,16 @@ Plugin configuration can be represented internally as validated JSON with a know
 it is not an unvalidated catch-all. A changed description does not authorize changing semantics
 under an existing contract version. Migration between versions is explicit and tested.
 
-Package manifests describe executable exports and exact artifacts, not another Conduit object.
+Package manifests describe contracts and how contributions are fulfilled: authored exports,
+bindings to existing MCP implementations, or both. Retain exact declarations and selected adapter/code
+artifacts; report external service compatibility separately. A manifest is not another Conduit object.
 Templates can ship with packages, but installing a package does not instantiate those templates,
 grant access or authenticate an account. The first-party package may supply several Resource
 groups. No mandatory public marketplace, namespace service or build DSL is needed in v0.
 
 The application release bundles a schema set, first-party manifests and platform worker artifacts.
+Some packages contain only declarations/templates; they must not be forced through a native build
+or executable-install step. Installation alone does not contact or authenticate their providers.
 Installing a new release adds artifacts rather than replacing a bound executable in place. A
 retained instance still selects its recorded implementation. Host protocol/storage changes need
 compatibility checks even where plugin code is unchanged. Host bug fixes do not pin old bugs;
@@ -198,8 +204,8 @@ order after the worker slice is subject to **I2**. No calendar estimates are imp
 | --- | --- | --- |
 | M0 — executable language contract | Core types, strict parser/default pass, versioned schemas, fixture validation and template-to-instance draft expansion | Existing YAML packet differences explained; duplicate/alias/unknown/null/default cases covered; no effects during validation. |
 | M1 — durable management | Registry authority/bootstrap, checked writes, owner Interface CLI, observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
-| M2 — worker and lifecycle slice | Typed finite DAG, fake worker, managed runtime ownership, control coordination and recovery | Experiment 002 failure matrix and proposed two-executor comparison; exact artifacts, unknown effects and no duplicate Agent execution. I1 sets the required independence guarantee. |
-| M3 — shared Resource slice | Local directory, retained history, synthetic auth/MCP service, composite participation and terminal inspection | Two synthetic Agents share service access with different rights; independent readers, detach/reconnect and no automatic wake. |
+| M2 — plugin and lifecycle slice | Typed finite DAG, authored worker plus code-optional MCP binding, managed runtime ownership, control coordination and recovery | Experiment 002 contract/effect tests for both paths and proposed two-executor comparison; exact controlled artifacts, external compatibility, unknown effects and no duplicate Agent execution. I1 sets the required independence guarantee. |
+| M3 — shared Resource slice | Local directory, retained history, synthetic auth/MCP service, independently usable managed MCP endpoint, composite participation and terminal inspection | Two synthetic Agents and a standard MCP test client exercise permitted access; Interface evidence survives frontend detachment; independent readers, reconnect and no automatic wake. |
 | M4 — first real Agent path | Native adapters first if I2 approved, with CLI/native interaction and a minimal Pi-inspired Interface terminal | Separate account and private-state verification, actual managed MCP exposure and explicit coverage gaps. |
 | M5 — owned model loop | Rust context builder, one supported provider adapter, streaming and authorized tool execution | Deterministic fake-provider recovery first; real identity/access verified; transcript/usage distinctions preserved. |
 | M6 — expanded integration | Required two-Claude/two-Codex experiment; optional Xerj backend and additional provider adapters | Recorded account/refresh/isolation evidence; backend outage/coverage tests; no secret or private-context crossover. |
@@ -223,9 +229,11 @@ the initial spike; testing them locally is not proof of production remote suppor
 | Parser/schema | Marked errors, duplicate keys, scalar edge cases, anchors/tags, defaults, graph cycles and schema references. |
 | Store | Transactions, uniqueness, stale CAS, retained uncertainty, interrupted migration/backup and payload-reference consistency. |
 | Worker protocol | Malformed/truncated frames, oversized outputs, missing features, wrong artifact, worker exit and cancellation/end distinction. |
+| Code-optional integration | Offline contract validation, compatible provider binding, unsupported behavior, catalog drift and unavailable upstream; no new package-specific executable required. |
 | Graph recovery | Every boundary before/after intent, external effect, result commit and observer publication; valid reuse versus invalidation. |
 | Managed access | Separate routes cannot combine rights; revocation at dispatch/read/delivery; unsupported provider filters do not run. |
 | Interface | Reconnect from cursor, snapshot/subscription race, slow observers, pending/uncertain controls and frontend detach. |
+| Independent MCP use | Ordinary client invokes a managed component through its authorized path without the aggregate frontend; same identity, access checks and retained evidence; external client detachment preserves the provider. |
 | Provider compatibility | Exact versions, actual identity, independent account refresh/logout, catalog changes and missing telemetry. |
 
 Use injectable clocks and deterministic fault points. Kill real worker processes in integration

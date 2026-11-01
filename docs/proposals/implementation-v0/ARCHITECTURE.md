@@ -23,6 +23,17 @@ runtime management. The physical implementation of the control database is not a
 Resource automatically created for every table. A plugin's private checkpoint is implementation
 state; a separately exposed storage/search/authentication capability is a Pool-owned Resource.
 
+Plugins publish contracts with bindings to authored code, existing MCP implementations or both.
+A declarative integration may reuse a shared adapter without a package-specific worker. Package
+installation, Resource instantiation, provider deployment and client connection are distinct
+actions. A configured external service remains externally operated unless explicit management
+capabilities and authority establish otherwise.
+
+Supported component capabilities can be exposed over MCP independently of the aggregate Interface.
+They retain required authority, ownership and evidence services; standard client access does not
+expose every internal setup/driver export. Standalone implementation use outside the managed model
+has its own declared dependencies/guarantees. This adds no process or registry per object.
+
 ## 2. Management and execution placement
 
 **I1 is explicitly unaccepted.** The user wants independently operating objects, eventual
@@ -123,7 +134,7 @@ management or execution service, with transaction boundaries limited to its own 
 | Graph executor | Validate finite dependency graphs, schedule ready steps, retain progress and decide whether recorded results remain usable. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
 | Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
-| Plugin host | Resolve exact implementations, start/stop workers, validate protocol/schema compatibility and translate worker failures. |
+| Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and report worker/service failures distinctly. |
 | Evidence service | Retain outcomes at their authoritative source; expose snapshots/catch-up and aggregate for the Interface with freshness/gaps. |
 | Artifact/credential services | Supply verified implementation artifacts and protected credential references through narrowly defined host facilities. |
 
@@ -220,6 +231,9 @@ Compilation produces a finite DAG of typed operation bindings. Validate cycles, 
 unbound required dependencies and implementation availability before dispatch. Separate
 schema-valid registration from runtime readiness: known schemas may register while code or an
 external service is missing. Schema acquisition itself is explicit and does not run plugins.
+For an MCP-backed node, dispatch still uses the selected contract and authorized dependency path.
+The common adapter can invoke a compatible existing operation; metadata alone cannot substitute
+for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
 is already satisfied; it must not blindly repeat a create operation. An explicit retry of an
@@ -316,6 +330,17 @@ Catalogs are captured for preparation and explicit refresh. Known incompatible d
 affected calls; no network catalog fetch is required for every invocation. Route identity and
 catalog evidence stay attributable. Standard MCP compatibility is negotiated per peer; an upstream
 server echoing a version string does not prove support for every feature.
+
+The same managed capability can be used by another ordinary MCP client through an authorized
+attachment. Client setup must establish its acting identity and selected path; request parameters
+cannot self-assign authority. An Interface frontend need not relay the call. The responsible
+component records attributable outcomes for later Interface inspection. Exact enrollment and
+authority placement remain I1/I5 work, not a new permission model.
+
+Stopping a managed client binding to an external server releases that binding; it does not kill
+the server or erase its data. A server started under Conduit's custody follows its declared
+managed lifecycle. Tests must distinguish an unavailable remote service, a dead owned worker and
+a disconnected client without inferring ownership or safe replay from the transport failure.
 
 ## 8. Agent execution and context
 

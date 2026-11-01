@@ -11,8 +11,10 @@ choices must be ruled on together, not converted into implementation defaults au
 The initial authoring direction is accepted: keep Conduit support lightweight and prove the
 protocol/structure by authoring plugins; grow helpers from demonstrated needs. Plugins publish
 inspectable contracts with their implementations; MCP is the public plugin protocol base, with
-a small Conduit profile. Contract-only integrations backed by existing MCP services and
-independent component exposure are now proposals for review. Remaining conceptual choices come next;
+a small Conduit profile. Code-optional bindings to existing MCP services and independent component
+exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
+preserves the existing families, ownership and access rules. Execution custody/authority in I1
+is the next unresolved conceptual boundary;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -28,8 +30,9 @@ authoritative object services. The middle arrangement is a proposal to examine, 
 
 Rust services implement registry authority, instance supervision, authorized capability traffic
 and durable evidence through explicit boundaries. Their process placement and outage guarantees
-are still under review. Replaceable frontends attach to an Interface; versioned workers implement
-provider and other plugin behavior. MCP carries compatible external contracts. Local transactional
+are still under review. Replaceable frontends attach to an Interface; authored workers and existing
+MCP services fulfill published plugin contracts through retained implementation bindings. Code-optional
+contributions use shared adapters without inventing a worker per package. Local transactional
 storage remains an I4 candidate, not a requirement that all distributed state live in one file.
 Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 

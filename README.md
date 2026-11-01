@@ -6,6 +6,8 @@ Interfaces provide unified control and observability.
 
 The project is in protocol design. There is no runnable Conduit implementation yet.
 The implementation direction is Rust, with replaceable frontends and provider integrations.
+Plugins publish contracts backed by authored code, existing MCP services or both. Components
+can expose supported MCP capabilities independently, with an Interface providing the overall view.
 
 - [Documentation map](docs/README.md)
 - [Specification](docs/SPEC.md) — the five-family model and core behavior

@@ -18,10 +18,10 @@ Can Rust services coordinate independently owned activity, finite plugin graphs 
 recoverable effects while preserving exact plugin implementations and making every managed
 outcome inspectable through the Interface?
 
-Test Tokio, a local transactional store and a versioned executable worker first. Use MCP for
-the worker's compatible capability surface and identify lifecycle semantics that need an
-explicit Conduit profile. Do not add a workflow server, package manager or Wasm engine merely
-to run this experiment.
+Test Tokio, a local transactional store, an authored worker and a code-optional binding to an
+existing fake MCP service. MCP is the public invocation base; identify the lifecycle semantics
+that need an explicit Conduit profile. Do not add a workflow server, package manager, broad helper
+SDK or Wasm engine merely to run this experiment.
 
 ## Proposed placement comparison
 
@@ -55,6 +55,10 @@ that run becomes mandatory.
   initialization step that can fail. The service has one revision-checked configuration control.
 - A versioned worker with two distinguishable implementations, A and B, and a temporary local
   effect ledger that permits inspection after a deliberately lost response.
+- A code-optional contribution bound to the fake MCP service through a common adapter, with
+  no new executable for that contribution; the fake service need not implement the Conduit profile.
+- A standard MCP test client using an independently exposed managed capability through a
+  pre-established authorized attachment, without the aggregate frontend in the request path.
 - A minimal registry/management store plus executor-local recovery evidence, with each fact's
   authority explicitly assigned. Do not assume a transaction can span both stores. An optional
   diagnostic exporter can be disconnected independently.
@@ -88,12 +92,13 @@ Record author effort, repeated plumbing and hidden/manual
 prerequisites as evidence alongside correctness, so later helpers address demonstrated needs.
 Built-in-only demonstrations or faster execution cannot substitute for proving this extension path.
 
-MCP is now the accepted public plugin invocation base. A proposed additional authoring case is
-an integration containing only published contracts/bindings to the existing fake MCP service,
-using a common adapter without new plugin-specific code. If that boundary is approved, compare
-its validation, access and observations with an authored implementation. It supplements the
-small-code-plugin case rather than replacing it. Independent component exposure and its minimum
-runtime/authority dependencies also remain under review; no standalone-use guarantee is assumed.
+Code-optional contributions and independently accessible components are accepted. Compare the
+declaration-only integration's validation, access and observations with the authored implementation;
+both paths must be demonstrated. Exercise the standard MCP client with no Conduit graph SDK while
+retaining the managed component's authority/evidence dependencies. Also show that using a standalone
+implementation outside Conduit supplies only that implementation's own guarantees. Exact placement,
+enrollment and outage requirements depend on I1; neither public accessibility nor a fake endpoint
+proves a production standalone deployment.
 
 ### Runtime and contract acceptance
 
@@ -101,6 +106,10 @@ runtime/authority dependencies also remain under review; no standalone-use guara
 | --- | --- | --- |
 | Contract checking | Missing schema, wrong input type, unsupported restriction or missing implementation | Reject invalid configuration or report unready execution as appropriate. Never drop a filter or substitute code. |
 | Exact implementation | Start with A, make B available, then restart the original instance | Original remains bound to A or reports A unavailable. A replacement explicitly uses B. |
+| Code-optional binding | Validate published contracts with the provider stopped, then connect the fake service through the retained adapter | Registration/validation does not execute the provider. Ready calls use the declared capability; missing/incompatible behavior is reported, not supplied by an invented guarantee. |
+| External service drift | Change the fake provider's supported operation/schema after preparation | Apply existing known-drift/explicit-refresh rules; retain declaration/adapter identity and report provider compatibility separately from code pinning. |
+| Independent MCP access | Invoke through the managed endpoint using the ordinary MCP client with no aggregate frontend attached | Current caller/path restrictions and operation evidence still apply; later Interface inspection finds the attributable result. Raw caller arguments cannot grant management authority. |
+| External lifecycle | Disconnect/retire the client Resource attached to an independently running fake server | Release owned connections; preserve provider process/data unless an explicitly authorized management operation owns that effect. |
 | Partial setup | Fail initialization after managed service startup | Service remains owned and inspectable; setup is incomplete. Retry uses valid recorded progress. |
 | Interactive wait | Fake authentication asks for a fixture response; restart host before supplying it | Wait and operation identity remain inspectable; recovery follows the plugin contract, without a fabricated login result. |
 | Uncertain effect | Worker performs a write and exits before returning its result | No blind replay. Inspect the effect ledger, reconcile and preserve one logical result. |
@@ -150,7 +159,7 @@ account/private-state verification; this fixture cannot establish those properti
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks; I1 remains open. Added proposed independent-executor comparison. No fixture code, runtime tests, benchmarks or provider connections yet. |
+| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks; I1 remains open. Added proposed independent-executor comparison, accepted code-optional integration and independent MCP client acceptance cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
 
 Record actual results here when executed, including failures and unresolved behavior. Expected
 outcomes above are acceptance criteria, not completed tests.

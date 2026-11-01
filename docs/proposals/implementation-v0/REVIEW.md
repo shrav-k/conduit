@@ -1,7 +1,7 @@
 # Implementation review: decisions needed
 
-Status: lightweight authoring support, contract publication and MCP as the plugin protocol base
-are **accepted** below; the seven grouped
+Status: lightweight authoring support, contract publication, MCP, code-optional implementation
+bindings and independent component access are **accepted** below; the seven grouped
 items still contain unresolved implementation choices. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -49,17 +49,20 @@ Conduit profile for instance/operation context and lifecycle/recovery semantics.
 settle execution custody, exact profile bindings or transport, and does not require existing
 provider MCP servers to implement the profile.
 
-**Current discussion:** the user proposes plugins that publish contracts and use existing MCP
-implementations without new plugin-specific code, while retaining authored-code plugins. The
-related goal is independently accessible MCP components with an aggregated Interface view.
-Review the [MCP-backed integration example](AUTHORING.md#proposed-extension-contract-only-mcp-integrations):
-implementation bindings, common adapter obligations, remote-version limits and independent use
-must be explicit. Do not infer a new process per component, a grant from discovery, or provider
-recovery guarantees from a declaration. This is a proposal to refine together, not a closed ruling.
-The user requested a [worked search comparison](AUTHORING.md#worked-comparison-configuring-search-versus-publishing-a-search-capability)
-before choosing. It distinguishes configuring the existing MCP-access type from publishing a
-new reusable capability fulfilled by a compatible MCP binding; code-free integration should not
-make every endpoint/account configuration require a new plugin.
+**Accepted implementation bindings and component access:** plugins publish contracts fulfilled
+by authored code, existing local/remote MCP services, or both. No new plugin-specific executable
+is required where compatible bindings and a shared adapter supply the behavior. Supported MCP
+capabilities can be used independently while the Interface aggregates control/observations.
+The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
+retains Pool ownership, current access, explicit lifecycle and required evidence. No process per
+component, implicit discovery grant or invented provider guarantee follows. Ordinary endpoint
+configuration can remain a Resource template; the [search example](AUTHORING.md#worked-comparison-configuring-search-versus-publishing-a-search-capability)
+shows when a reusable contribution is useful. Syntax remains deferred.
+
+**Next discussion:** I1's execution custody, followed by authority and outage behavior. Independent
+MCP accessibility does not specify where the component runs, who supervises it or which facts it
+can commit independently. The audit found no additional five-family design ruling needed before
+this implementation discussion.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -77,7 +80,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 | --- | --- | --- |
 | I1 | Independent execution, authority and outage behavior | Examine shared management with independent execution services alongside independently authoritative object services; no host arrangement accepted. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
-| I3 | Plugin implementation bindings, execution and distribution | MCP base accepted; review code-backed and existing-MCP bindings, independent exposure and execution packaging. |
+| I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open after I1. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
@@ -152,15 +155,12 @@ includes Conduit's own runtime and a replaceable Pi-inspired terminal. No propos
 ## I3 — Plugin execution and distribution
 
 **Accepted:** public plugin invocation uses MCP with a small versioned Conduit profile for
-instance/operation context and lifecycle/recovery semantics. Existing provider MCP servers
-remain usable through adapters. Profile details remain open.
-
-**New proposal:** a plugin's published contracts may bind authored implementation code, an existing
-local/remote MCP service through a standard adapter, or both. An MCP-backed declaration need not
-ship new plugin-specific code when the adapter can supply all required behavior. Independently
-usable MCP capability surfaces should also be examined without forcing every internal export
-or object to become a standalone server. Hosted implementations cannot inherit a binary-pinning
-guarantee; retain exact declarations/adapters and report actual compatibility evidence.
+instance/operation context and lifecycle/recovery semantics. Published contracts may bind authored
+code, existing local/remote MCP services through compatible adapters, or both. No new executable
+is required for a declarative contribution. Independently usable MCP surfaces preserve managed
+ownership/access/evidence without forcing every internal export or object to become a standalone
+server. Hosted implementations cannot inherit a binary-pinning guarantee; retain exact
+declarations/adapters and report actual compatibility evidence. Profile details remain open.
 
 **Recommendation for code-backed plugins:** use exact-version executable workers for externally
 supplied implementation code. Standard MCP tools/resources and optional features carry compatible
@@ -178,8 +178,8 @@ another public protocol; in-process-only plugins reduce initial process plumbing
 exact implementation retention and failure containment; Wasm-first adds a host-capability and
 packaging system before proving the required native integrations.
 
-**Rulings still needed:** implementation bindings and independent MCP exposure, followed by
-execution/distribution boundaries. MCP itself is settled; exact artifact pinning and replacement
+**Rulings still needed:** execution/distribution boundaries after I1 establishes custody and
+authority. MCP and implementation-binding modes are settled; exact artifact pinning and replacement
 on upgrade are already accepted for Conduit-controlled code. The experiment must test whether
 the profile stays small before treating its method set as stable. Standard protocol support alone
 does not establish provider lifecycle, effect recovery or partition behavior.

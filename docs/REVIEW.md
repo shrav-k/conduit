@@ -6,8 +6,9 @@ and specialized tracking are Resource capabilities within the existing five-fami
 [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) define the current contract; research supplies evidence,
 examples and future possibilities rather than a separate decision queue.
 
-This closes direction review, not implementation or provider validation. The reviewed design
-is on `main`; the earlier baseline remains available in Git history at `c013f0a`.
+This closes the original direction review, not implementation or provider validation. The reviewed
+baseline is on `main`; subsequent accepted extension rulings are recorded on the implementation
+branch until merged. The earlier baseline remains available in Git history at `c013f0a`.
 
 ## Next discussion
 
@@ -24,16 +25,37 @@ priority over its efficiency or specific runtime arrangement. The initial author
 is now accepted: lightweight Conduit support, with real plugins validating the public protocol
 and structure; a broad helper library is not a v0 prerequisite. Plugins publish inspectable
 contracts with their implementations, and MCP is accepted as the public plugin protocol base
-with a small Conduit profile. The next proposal allows published contracts to bind existing MCP
-services without new plugin-specific code, alongside authored implementations; independent MCP
-use of components is part of that discussion. Detailed syntax across contracts and templates
-moves to the end of review, after conceptual rulings.
+with a small Conduit profile. Code-optional contributions and independently accessible MCP
+components are also accepted; the design-fit audit below states their boundaries. Detailed syntax
+across contracts and templates stays at the end, after conceptual rulings.
 
 I1 is explicitly unaccepted. The user clarified independent operation,
 eventual distributed placement, Resources from one Pool on different systems and network
 Conduits. [New research](research/DISTRIBUTED_RUNTIME.md) compares execution and authority
 arrangements. Remote production support remains future work; a single execution host is not an
 accepted protocol limitation.
+
+## Design-fit audit: code-optional plugins and independent MCP access
+
+These extensions fit the existing five families without reopening R1–R7. The authoritative detail
+is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessible-mcp-components).
+
+| Existing boundary | Consequence of the accepted extension |
+| --- | --- |
+| Plugins versus templates/instances | Plugins publish reusable contracts and implementation bindings; templates configure them; instances realize them. A normal MCP endpoint configuration need not become a new plugin. |
+| Pool ownership and unitary Resources | Code-optional Resources still have one owner. Search and MCP-access responsibilities can remain distinct, connected by Conduits. External infrastructure is not implicitly owned by its client Resource. |
+| Fixed definitions and implementations | Retain declaration/mapping and adapter identities. Changes to those fixed definitions require replacement; hosted provider code is observed for compatibility, not falsely claimed as pinned. |
+| Authentication, filters and supported behavior | Reuse Pool authentication and current access paths. A declared mapping cannot invent permissions, provider semantics or safe retry guarantees. |
+| Interface and independent capabilities | Components may expose supported MCP surfaces without the aggregate UI in the call path. Managed evidence remains inspectable through the Interface; no process-per-object or public setup-export requirement follows. |
+| Partial adoption | Standalone implementations supply their own dependencies/guarantees. Managed components retain required ownership, authority and evidence. A standard MCP client does not need a Conduit graph SDK to use a public capability. |
+
+No additional product-level ruling is needed to adopt these consequences. The remaining question
+is implementation I1: which services own execution and authority, and what continues when a
+connection is lost? Independent MCP accessibility does not decide that arrangement. Resolve its
+execution-custody choice next, then authority/outages and the remaining I2–I6 choices; return to
+I3's packaging details where needed. Final contract/template syntax remains I7 work.
+
+## Configuration walkthrough
 
 Review the [concrete YAML packet](../experiments/001-shared-access/README.md) as one connected
 example. It now includes templates for all five families, resolved instance examples, fixture

@@ -8,6 +8,10 @@ kept together. Completed ruling queues and duplicate configuration walkthroughs 
 The [v0 implementation proposal](../proposals/implementation-v0/README.md) applies this evidence
 to concrete runtime and repository boundaries. Its pending decisions are separate from research
 findings and from the accepted protocol.
+The current design accepts code-optional MCP-backed plugins and independently accessible
+capabilities. Executable-worker examples in earlier research are implementation options for
+authored code, not a requirement for every contribution. I1's execution/authority placement
+remains open; consult the [design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
 
 | Report | Read it for |
 | --- | --- |

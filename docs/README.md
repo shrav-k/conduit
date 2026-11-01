@@ -6,8 +6,8 @@ Read the [specification](SPEC.md) first, then the
 between settled decisions, schema proposals and future work.
 
 For implementation planning, read the [v0 proposal](proposals/implementation-v0/README.md) and its
-[seven-item review](proposals/implementation-v0/REVIEW.md). It is separate from accepted protocol;
-crate, deployment and extension choices remain proposals until reviewed or validated.
+[grouped review](proposals/implementation-v0/REVIEW.md). Accepted extension boundaries are folded
+into DESIGN; unresolved crate, deployment and syntax choices remain explicitly proposed.
 
 | Location | Purpose | Authority |
 | --- | --- | --- |
@@ -22,6 +22,7 @@ Keep each detailed rule in DESIGN. Experiments link to those rules rather than i
 contract. Record actual validation separately from expected outcomes. Research can describe
 broader possibilities or another system's behavior without changing Conduit's design.
 
-The accepted design is on `main`; implementation planning is still documentation only. No live
+The reviewed baseline is on `main`; later accepted rulings remain on the implementation branch
+until merged. Implementation planning is still documentation only. No live
 provider experiments or runtime implementation have been completed by drafting the YAML examples
 or implementation proposal.

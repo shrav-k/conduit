@@ -24,7 +24,7 @@ libraries and small adapters may supply plumbing; richer SDKs can grow from repe
 Plugins still supply their applicable behavior, effects and recovery semantics. This settles
 implementation priority, not package syntax, supported languages, transports or process topology.
 
-**Plugin publication:** publish inspectable contracts with the implementation. Conduit can
+**Plugin publication:** publish inspectable contracts with their implementation bindings. Conduit can
 inspect exports and validate typed configuration/graph bindings without starting plugin code;
 actual availability, authority and behavioral conformance still require their respective checks.
 Provider-native catalogs can remain dynamic behind an integration's published contract. Detailed
@@ -62,6 +62,45 @@ not require one execution host. Initial authority topology, failure independence
 deployment guarantees remain open in [implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
 This direction does not claim remote execution is implemented or approve automatic migration,
 federation or offline authorization.
+
+### Plugins and independently accessible MCP components
+
+A plugin publishes reusable contracts and explains how they are fulfilled. Its implementation
+binding can select authored code, an existing local/remote MCP service, or a combination. No
+new plugin-specific executable is required when declared bindings and a compatible shared adapter
+can supply the behavior. Plugins, packages and adapters are not additional object families.
+Templates configure and compose contributions; instances realize them. Ordinary endpoint/account
+configuration for an existing MCP-access type does not itself require a new plugin or Resource type.
+
+Published contracts remain inspectable without executing code. A standard adapter can supply
+discovery, invocation and Conduit-managed context/evidence while provider-native catalogs stay
+dynamic. A declaration cannot manufacture unsupported effects, lifecycle, recovery or filtering
+guarantees. Where declared semantics require additional behavior, supply an implementation or
+expose the supported contract instead. Exact binding syntax and any supported transformations
+are deferred; this does not introduce a second graph or programming language.
+
+Configured capabilities remain Resources with one owning Pool. A search Resource can use a
+separate MCP-access Resource through a Conduit; code-optional binding does not bypass that
+dependency. Reusable service authentication stays Pool-owned. Code/package discovery neither
+creates instances nor grants service access. Attaching an external service gives the Resource
+its configured association and client lifecycle, not ownership of the provider's infrastructure;
+shutdown or deletion of backing services still requires supported explicit lifecycle operations.
+
+Components can expose their supported capabilities, inspection and controls independently over
+MCP; the Interface supplies the aggregate view rather than the exclusive invocation gateway.
+An independently addressable surface need not own a process or expose internal setup/driver
+operations. Public capabilities remain distinguishable from management exports. Ordinary MCP
+clients can use supported public surfaces through the applicable authentication/access binding;
+they need not implement Conduit's graph engine merely to invoke a tool.
+
+Independent use has two boundaries. An implementation can serve ordinary MCP outside Conduit
+with the dependencies and guarantees it supplies. A Conduit-managed component retains its Pool
+ownership where applicable, current Conduit access, supported controls and operation evidence,
+even without an attached Interface frontend. Its minimal authority/runtime dependencies remain
+necessary. This permits using parts of the system without requiring every frontend, Agent driver
+or integration, but does not promise that every component can run without its declared dependencies.
+Execution custody, authority placement, outage behavior and client enrollment remain implementation
+review questions; protocol accessibility alone does not settle them.
 
 ### Interfaces and the user workflow
 
@@ -442,8 +481,10 @@ retain it for the instance's subsequent starts, operations and recovery. Install
 changing a default or package discovery order must not silently change that binding. Record an
 unresolved requested dependency as unresolved, not as located or verified code.
 
-Contract identity/version defines promised configuration and behavior; implementation package/release
-identifies code supplying it. Multiple implementations can deliberately support the same contract.
+Contract identity/version defines promised configuration and behavior; implementation bindings
+identify the declarations, adapters and any authored code supplying it. Multiple implementations
+can deliberately support the same contract. Code-optional contributions retain their resolved
+binding definitions and exact Conduit-controlled adapters even when no new executable is included.
 Conflicting definitions of one contract identity/version cannot silently overwrite each other;
 unresolved selection ambiguity blocks affected execution rather than choosing the newest package.
 Required schemas must be available for registry writes. With known schemas, otherwise valid
@@ -456,11 +497,14 @@ This avoids in-place code migration rules for active work and retained setup pro
 keeping an older implementation available or replacing dependent instances when adopting fixes.
 The retained binding is current executable configuration, not mandatory template-history storage.
 
-This rule applies to Conduit-selected plugin code. It does not freeze remote providers/native tool
-catalogs or promise control of external native-agent binaries. Adapters declare and report those
+This rule applies to Conduit-selected declarations, mappings and plugin/adapter code. It does not
+freeze externally operated services/native tool catalogs or promise control of external native-agent
+binaries. A recorded service reference is not proof of exact provider code. Adapters declare and report those
 separate compatibility/version boundaries. Dynamic Conduit attachments and supported catalog refresh
 retain their accepted behavior. Artifact verification, package storage/delivery, plugin ABI and exact
 binding fields remain engineering design within this contract; public naming governance is deferred.
+Service-target and authentication selections continue to follow the existing instance configuration,
+control and stable-reference rules; an implementation binding supplies no implicit access or fallback.
 
 ### Object identity
 

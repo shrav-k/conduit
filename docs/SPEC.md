@@ -12,11 +12,17 @@ over efficiency, provided they preserve and enforce these contracts. Runtime cho
 authoring and behavioral compatibility must be explicit.
 V0 supplies only lightweight authoring support: real plugins and templates exercise the public
 protocol and structure first. A broad SDK/helper library can grow from demonstrated needs later.
-Plugins publish their inspectable contracts with their implementations, allowing template
-validation without starting plugin code. Detailed contract and template syntax follows the
+Plugins publish inspectable contracts and implementation bindings. A binding can use authored
+code, an existing local/remote MCP service, or both; no new plugin-specific executable is required
+when existing behavior fulfills the contract. Templates configure and compose these contributions.
+Contracts can be validated without executing the implementation. Detailed syntax follows the
 remaining conceptual rulings.
 MCP is the accepted base for public plugin invocation, with a small versioned Conduit profile
 for instance/operation context and lifecycle/recovery semantics. Exact bindings remain under review.
+Components expose supported MCP capabilities independently where their declared dependencies
+permit, while the Interface provides the aggregate control/observation view. This does not require
+a separate process per object or route every call through the Interface. Managed access still
+uses Conduits and current authority; standalone implementation use carries its own guarantees.
 
 This is a design, not an implementation claim. [DESIGN.md](DESIGN.md) holds the detailed contracts.
 The [walkthrough](../experiments/001-shared-access/README.md) proposes concrete YAML within them.
@@ -36,7 +42,7 @@ Five families each have template and instance forms:
 Templates contain typed configuration, a finite setup graph, ongoing runtime declarations and
 supported controls. One template establishes many independent instances; registration alone runs
 nothing. An instance retains its resolved definition and current stored settings and need not have
-a dedicated process. Plugins implement typed operations and runtime behavior; graphs wire them
+a dedicated process. Plugins supply or bind typed operations and runtime behavior; graphs wire them
 together. Capabilities describe compatibility. These are not additional object families.
 
 Objects should support independent operation and eventual placement across systems. Resources
@@ -93,7 +99,9 @@ ID/version checks. Strict typed YAML excludes aliases, anchors, merge keys, cust
 expansion and silent scalar conversion.
 
 Instances materialize defaults and retain resolved setup/runtime/control definitions and selected
-plugin implementations. Definition or implementation changes require replacement instances. Later
+implementation bindings, including Conduit-controlled declarations, mappings and adapter/code artifacts.
+Changes to those fixed definitions require replacement instances; external services retain their
+separate compatibility/version boundaries. Later
 template edits do not alter existing instances; mandatory template-history and override ledgers
 are unnecessary.
 

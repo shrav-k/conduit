@@ -23,7 +23,7 @@ Keep the following values distinct in Rust types and wire records:
 | Execution/start/attempt IDs | Independent opaque IDs linked to owner and operation | Distinguish retries, starts and actual worker execution. |
 | API version | Proposed `conduit/v0alpha1` | Interpretation of the common object envelope. This is a protocol group, not a DNS or ownership claim. |
 | Type/capability version | Exact group/name/version tuple | Configuration or capability semantics, separate from implementation release. |
-| Implementation identity | Package, release, platform artifact and content digest | Executable code selection; release names alone are insufficient proof of bytes. |
+| Implementation identity | Published contract/binding identity, retained adapter/artifact identities and external service binding where applicable | Conduit-controlled definitions/code are pinned; endpoint identity and observed provider versions do not prove exact hosted code. |
 | Storage schema version | Host-internal migration number | Interpretation of persisted tables; never substituted for protocol versions. |
 | Observation cursor | Opaque scoped cursor | Where a client resumes reading; not permission or proof it understood earlier content. |
 
@@ -105,8 +105,11 @@ language. Assigning a field replaces that value; editing a child leaves siblings
 graph-source reference resolves to concrete graph content before execution and is retained in
 the instance definition. No mandatory template snapshot or input/override history is introduced.
 
-Capture exact implementation bindings from explicit selection or one unambiguous configured
-default. Schema-only registration may know the required artifact without having executable bytes.
+Capture implementation bindings from explicit selection or one unambiguous configured default.
+Pin published declarations and Conduit-controlled adapter/code artifacts. Code-optional packages
+can bind existing MCP implementations with no new executable; external targets follow existing
+reference/configuration rules, with observed compatibility distinct from code pinning.
+Schema-only registration may know the required binding without having its code or service available.
 If selection itself remains unresolved, preserve the request as unresolved and block execution;
 the first successful resolution is recorded once and is not recomputed from later defaults.
 Instances normally export explicit resolved selections. An export with unresolved dependencies
@@ -210,8 +213,9 @@ formats remain open. Persistent drivers need lifecycle behavior; a finite operat
 implement unused hooks. Small adapters or existing libraries must preserve the same observable
 contracts; a comprehensive SDK is not required before the first plugins can be authored.
 
-**Accepted publication boundary:** plugins publish inspectable contracts with their implementations;
-Conduit can validate against them without executing plugin code. Registering schemas is not
+**Accepted publication boundary:** plugins publish inspectable contracts and implementation bindings;
+Conduit can validate against them without executing plugin code. Bindings can use authored code,
+an existing local/remote MCP service or both. Registering schemas is not
 permission to run the package. The proposed manifest/schema bundle below illustrates that
 boundary; detailed syntax and package layout are deferred until conceptual review is complete.
 Local packages, distribution machinery and authored/generated metadata remain implementation
@@ -219,7 +223,7 @@ proposals rather than consequences of accepting publication.
 
 | Manifest concern | Required information when applicable |
 | --- | --- |
-| Package/artifacts | Package ID, release, target platform, executable entry, verified digest and compatible host/worker protocol. |
+| Package/bindings | Package/contract identity, implementation or service dependencies and compatible profile; executable entry, platform and code digests where code is supplied. Code-free declarations/adapters still have retained identities. |
 | Contracts | Provided type/capability/filter versions and exact schema bundle identity. Conflicting definitions of the same contract cannot overwrite one another. |
 | Operations | Export name, input/output schemas, effect/recovery information, cancellation/interaction support and output validity. |
 | Drivers | Managed runtime exports, prepared inputs, inspect/start/stop/reconnect support and enforcement coverage. |
@@ -241,7 +245,8 @@ Define a few capability-oriented ports rather than a giant required plugin trait
 - A capability handler supplies native discovery/invocation where supported.
 - A recovery handler establishes what happened to a prior attempt.
 
-The built-in implementation and a process-backed implementation satisfy the same semantic tests.
+Built-in, process-backed and existing-MCP-backed implementations satisfy applicable tests for
+the contracts they claim; externally observable provider limits remain explicit.
 Rust trait types remain private implementation APIs, not a stable cross-binary Rust ABI. Avoid
 requiring a tiny script plugin to implement unused lifecycle interfaces.
 
@@ -254,13 +259,14 @@ not promise. Its exact binding of the above ports remains under review; it adds 
 The SDK provides transport machinery; it does not supply our durable operation identity.
 [Rust MCP SDK][rmcp]
 
-**Proposal under review:** permit published plugin contracts to bind an existing MCP service
+**Accepted:** published plugin contracts can bind an existing MCP service
 through a standard adapter, without a new plugin-specific executable. The adapter still supplies
 Conduit's context, current access checks, observation and supported lifecycle/recovery boundary.
 Provider-native operations/schemas remain discoverable. Unsupported semantics require additional
 implementation or an explicitly narrower contract, not a declaration claiming guarantees the
 provider cannot establish. Separate contract/adapter pinning from observed hosted-service versions.
-Independent component exposure is being reviewed alongside this implementation-binding extension.
+Supported component surfaces can be exposed independently over MCP while retaining their required
+management/authority dependencies and Interface-visible evidence.
 
 Separate two surfaces: internal setup/driver exports reachable by the host, and capability/control
 exports visible to authorized consumers. An upstream MCP tool never becomes an instance setup
@@ -268,13 +274,17 @@ operation simply because it appears in `tools/list`. Workers should expose contr
 through a documented resource/manifest surface; ordinary operations can use tools. Avoid custom
 JSON-RPC methods until a concrete missing standard facility justifies them.
 
-Proposed handshake verifies package/artifact identity, profile version and descriptors against
-the retained binding before admitting work. The host uses a bounded authenticated channel and
+For a Conduit-aware worker, the proposed handshake verifies package/artifact identity, profile
+version and descriptors against the retained binding before admitting work. An ordinary upstream
+MCP server is negotiated through its adapter; it is not required to attest to a Conduit artifact
+or implement the management profile. Record the compatibility evidence actually available.
+The responsible service uses a bounded authenticated channel and
 assigns owner/actor context; the worker cannot self-assign administrator authority. Worker results
 are validated before they alter stored state.
 
-Simple v0 deployment uses one worker per active plugin-driver owner or explicit isolation boundary.
-That is an engineering default, not a protocol requirement. It already allows many Agents to
+For code that needs an owned worker, one candidate v0 deployment uses one per active driver owner
+or explicit isolation boundary. This is a proposal pending I1/I3, not a worker requirement for
+declarative packages or attached external services. It allows many Agents to
 share one Pool-owned service Resource and its worker. Cross-instance worker multiplexing can
 follow measurements; it must partition state, credentials and cancellation correctly. Do not
 allocate workers for registered templates, idle declarations or objects whose behavior needs no
@@ -423,7 +433,9 @@ inspection alone cannot satisfy those tests.
 ## 10. Interface operations and frontend behavior
 
 Use one application service API behind MCP tools and CLI/TUI actions. The CLI must not edit SQLite
-directly or implement a second permission/effect pipeline. Proposed operation groups are:
+directly or implement a second permission/effect pipeline. This is one semantic contract, not a
+requirement for one process or gateway. Independently exposed component capabilities use the
+same applicable access, operation and evidence rules. Proposed operation groups are:
 
 | Group | Actions | Observable result |
 | --- | --- | --- |
@@ -456,6 +468,9 @@ rewrite experiment 001 to make a new parser pass; document any proposed language
 
 Before declaring the worker profile usable, run the same invocation/recovery tests against the
 in-process fake and real subprocess transport, then across independently supervised executors.
+Also exercise a code-optional binding to an existing fake MCP service and a standard MCP client
+using a managed component without the aggregate frontend. Test only supported contract guarantees;
+the client must not gain management authority from being protocol-compatible.
 Before accepting a provider adapter, test actual identity, parallel-account behavior, refresh ownership, permitted native operations, interruption
 and telemetry gaps. A manifest plus passing JSON Schema is not evidence that those effects work.
 

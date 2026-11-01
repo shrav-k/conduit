@@ -26,6 +26,8 @@ credentials, grants or live handles appear in the authoring documents.
 
 This is neither a package manifest nor a second operation-request language. Creating an instance
 copies/resolves its template, makes ordinary field edits, then validates the complete result.
+The fixture models an authored implementation; published declarations backed by existing MCP
+services are also accepted by the design. Their exact binding fields await the final syntax review.
 A template may leave a connection target for composition to bind; the instance cannot leave a
 required target unspecified. No named template parameters, string interpolation or implicit merges
 are introduced. Capability declarations are requirements, never grants.

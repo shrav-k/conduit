@@ -13,6 +13,13 @@ verified. Recommendations below are our inferences from that evidence, not capab
 implemented by Conduit. Earlier language research remains in [CONFIGURATION](CONFIGURATION.md);
 Pi/Xerj and plugin mechanisms remain in [RUST_RUNTIME](RUST_RUNTIME.md).
 
+**Current design boundary:** code-optional MCP bindings and independently accessible component
+capabilities are now accepted. They strengthen the separation between implementation, ownership
+and placement but do not choose I1's custody/authority arrangement. Existing services can remain
+externally supervised; Conduit-managed activity still needs an explicit owner. The
+[design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
+records these consequences without treating this report's topology candidates as rulings.
+
 ## 1. The boundary to establish
 
 The earlier recommendation combined too many choices: a shared registry, a single process owning

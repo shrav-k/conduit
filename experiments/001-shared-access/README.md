@@ -16,6 +16,10 @@ Files:
 are draft notation. The imaginary `fixture.core` package and `example.invalid` endpoint ensure this
 packet makes no claims about real-provider behavior. Paths and account names are placeholders.
 A root YAML stream is a convenient document collection, not an atomic multi-object apply operation.
+The fixture's imaginary executable-backed package is one supported implementation form, not a
+requirement that every plugin contain code. Code-optional MCP bindings and independent component
+access are covered by [experiment 002](../002-runtime-plugins/README.md). This syntax is preserved
+until the final joint contract/template review rather than silently rewritten to settle it here.
 
 ```mermaid
 flowchart LR

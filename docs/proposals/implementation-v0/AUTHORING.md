@@ -4,7 +4,8 @@ Status: authoring examples, 2026-11-01. Lightweight Conduit support with the pub
 extension structure prioritized over a helper library is accepted. Publishing inspectable
 contracts with implementations is also accepted. Detailed contract and template syntax is
 deferred until conceptual review is complete. MCP is accepted as the public invocation base with
-a small Conduit profile; its details, SDK, package format and execution arrangement remain open.
+a small Conduit profile. Code-optional implementation bindings and independent component access
+are accepted; profile details, SDK, package syntax and execution arrangement remain open.
 Code is illustrative and has not been executed.
 The [review](REVIEW.md#review-priority-plugin-and-template-authors) records the ruling and remaining
 choices; [DESIGN](../../DESIGN.md) supplies the settled semantics.
@@ -19,7 +20,7 @@ needs become clear; the initial implementation does not depend on building that 
 
 | Piece | Concrete meaning in these examples |
 | --- | --- |
-| Plugin package | Reusable implementation code and published contracts. A package can contribute operations or type implementations; it is not automatically a Resource instance. |
+| Plugin package | Published contracts with bindings to authored code, existing MCP implementations or both. A package can contribute operations or type implementations; it is not automatically a Resource instance. |
 | Operation export | A callable contribution, such as computing a digest or establishing a directory. Being available to a setup graph does not automatically expose it to Agents. |
 | Resource type | The contract for a configured responsibility, such as a local directory: configuration, capabilities and applicable lifecycle/controls. Its implementation can reuse operation exports. |
 | Template | Selects implementations, supplies configuration and composes setup behavior. It can reuse existing plugins without adding code. |
@@ -346,16 +347,14 @@ integration behavior. Standard discovery, connection handling and common observa
 should be reusable where compatible. If a native server cannot enforce a requested restriction,
 the adapter must enforce it or leave that binding unavailable; it cannot quietly omit the rule.
 
-This example shows why existing protocol servers remain useful even if small-handler authoring
-is selected for new Conduit operations. Those are compatible extension paths, not competing
-requirements to rewrite every integration.
+Existing protocol servers and authored operations are compatible extension paths. A compatible
+MCP implementation can fulfill a published contribution without new plugin-specific code.
 
-### Proposed extension: contract-only MCP integrations
+### Code-optional MCP integrations
 
-The user proposes treating an existing MCP implementation as a plugin backing, so a contributor
-can publish contracts and bindings without writing new integration code. This is compatible with
-the accepted MCP base, but implementation-binding and standalone-use semantics remain for review.
-No new YAML is proposed here; syntax is deliberately deferred.
+An existing MCP implementation can back a plugin, so a contributor can publish contracts and
+bindings without writing new integration code. Independent MCP capability exposure is also accepted
+with the managed/standalone boundaries below. No new YAML is proposed here; syntax is deferred.
 
 | Contribution | What the author supplies | Where behavior runs |
 | --- | --- | --- |
@@ -363,8 +362,8 @@ No new YAML is proposed here; syntax is deliberately deferred.
 | Existing MCP backing | Contracts, an implementation/service reference and bindings compatible with a standard adapter. | An existing local or remote MCP service, with Conduit integration supplied by the adapter. |
 | Hybrid | Contracts, MCP bindings and code for behavior the standard adapter cannot supply. | The existing service plus the selected additional implementation. |
 
-These are possible ways to fulfill contracts, not new object families or a closed taxonomy.
-The published unit would become **contracts plus an implementation binding**, rather than
+These are ways to fulfill contracts, not new object families or a closed taxonomy.
+The published unit is **contracts plus an implementation binding**, rather than
 necessarily a bundle containing a new executable. A service endpoint is not a credential, and
 the package need not embed a concrete deployment or account. Templates/Pool composition can
 supply those instance-specific selections as they already do for reusable dependencies.
@@ -402,15 +401,14 @@ to every client, or use of MCP inside every Rust module. The contract surface ca
 addressable while an implementation shares an execution service. Pool-owned managed Resources
 still have one owner. Full independence and outage behavior remain I1 decisions.
 
-This proposal follows MCP's independently operating local/remote servers and composable
+This direction follows MCP's independently operating local/remote servers and composable
 capabilities. MCP supplies discovery/invocation; the additional Conduit semantics remain ours
 to define and test. [MCP architecture](https://modelcontextprotocol.io/specification/2026-07-28/architecture)
 and [tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools).
 
 ### Worked comparison: configuring search versus publishing a search capability
 
-The user requested another example before ruling on code-optional plugins. Consider a hypothetical
-existing MCP server that exposes document search. Keep its data storage outside this example;
+Consider a hypothetical existing MCP server that exposes document search. Keep its data storage outside this example;
 we are discussing integration and search responsibilities, not combining all memory operations.
 
 **Just use the service:** configure a template for the existing MCP-access type with the selected
@@ -420,7 +418,7 @@ needed if this is the whole requirement. Endpoint/account choices are instance c
 not automatically a new extension contract.
 
 **Publish a reusable search capability:** an author wants to supply a versioned search contract
-that templates can depend on independently of one provider's native tool names. The proposed
+that templates can depend on independently of one provider's native tool names. The
 plugin publishes that contract, declares its MCP-access dependency and binds the required search
 operation to a compatible provider tool. Pool composition supplies the concrete MCP Resource
 through a Conduit. If ordinary bindings and the shared adapter express all needed behavior, this
@@ -445,17 +443,15 @@ and consuming templates can stay the same where semantics are preserved. An ordi
 already implementing the required contract may be used directly through the shared adapter;
 MCP compatibility alone is not proof of that semantic match.
 
-Under a code-required plugin definition, the reusable search extension would have to supply a
-handler even when it merely delegates a compatible call. Under the proposed code-optional
-definition, the declared binding can supply that delegation. Both retain explicit typed contracts,
-current access and honest outcome handling. The material extension is allowing such bindings to
-fulfill a published contribution, not renaming every existing MCP Resource template as a plugin.
+The declared binding can supply delegation to a compatible operation while retaining typed
+contracts, current access and honest outcome handling. A forwarding handler is not mandatory
+when it adds no behavior. This does not rename every existing MCP Resource template as a plugin.
 
-This is the proposed conceptual distinction: templates configure known contributions; plugins
+The conceptual distinction is: templates configure known contributions; plugins
 publish reusable contributions and explain how their contracts are fulfilled. Whether the
 implementation is code, an existing compatible MCP service, or both need not change that role.
 Do not settle package/template distribution syntax or add a second object registry from this
-example. Independent MCP exposure remains a related, separate review question.
+example. Implementation custody, deployment and authority boundaries remain under review.
 
 ## 4. A Resource with a persistent process
 
@@ -496,8 +492,9 @@ the prerequisite; additions can follow demonstrated repetition and difficulty.
 Both examples may already look like small handlers when built with good libraries. A minimal
 adapter is useful where it removes incidental work, but effects, recovery and lifecycle behavior
 remain explicit plugin obligations when applicable. Publication of inspectable contracts with
-the implementation and MCP as the public invocation base are accepted. Existing-MCP implementation
-bindings, independent component use and other conceptual boundaries come next; detailed
+implementation bindings and MCP as the public invocation base are accepted. Existing-MCP
+bindings and independent component use now join those accepted boundaries. Execution/authority
+choices come next; detailed
 package/contract/template syntax is deferred to the end. These rulings do not choose the
 host/worker arrangement or impose a new server framework.
 

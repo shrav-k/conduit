@@ -80,6 +80,20 @@ authority must retain current bindings and coordinate checked changes. An author
 Agent administers that state through its permitted capabilities; it does not own the state merely
 because it requested the change. Replacing an Interface does not reset it.
 
+**Accepted explicit targeting:** bindings distinguish the target object's own operations from
+operations on other objects selected through ownership. A Pool provisioning restriction does not
+implicitly restrict existing Resources' deployment operations. An explicit owned-Resource scope
+can select those supported capabilities without separately authoring every Resource's rule.
+Pool templates may bundle both declarations; authoring location does not determine applicability.
+V0 does not automatically propagate Pool requirements. The access-management Resource's role as
+record manager likewise does not make it the target of every binding it stores.
+
+For example, approved-template requirements can constrain Euphony Pool's provisioning capability;
+allowed-region requirements can separately target deployment capabilities of its owned Resources.
+A repository-wide read-only requirement applies across relevant Conduits to that repository, while
+a read-only restriction on one review Conduit stays local to that path. In each case the declared
+requirement contract must support the target/context, and the caller still needs its grant.
+
 All applicable requirements must hold at their declared enforcement points. Actor-wide and
 target-wide restrictions apply wherever their declared applicability requires; Conduit-local
 restrictions remain local to that path. Separate authorized paths stay complete alternatives, and
@@ -332,12 +346,16 @@ and complete-path rules apply without a second policy language or grant-administ
 and governing requirement bindings, alongside the existing registry/template management Resource.
 Logical separation does not require separate processes, stores or centralized endpoint enforcement.
 
-1. **Binding applicability:** explicitly distinguish requirements on an object's own capabilities
-   from requirements governing other objects selected through ownership. For example, constraining
-   a Pool's provisioning operations does not itself constrain deployment calls on its Resource
-   instances. Recommend explicit target scope, with an owned-Resource selection available where
-   supported, rather than implicit propagation. Exact selector syntax and membership-change behavior
-   remain open; no generic labels or automatic Pool inheritance have been introduced.
+**Accepted target scope:** explicit bindings distinguish an object's own operations from selected
+owned Resources. Pool templates may bundle those rules, but ownership/authoring location alone
+does not propagate requirements. No automatic Pool inheritance is introduced.
+
+1. **Ownership-based target membership:** should explicit governing selections match live as
+   Resources enter/leave the selected ownership/capability set, extending the existing live
+   access-filter behavior? Recommend live matching at subsequent applicable checks. This would
+   neither provision Resources nor grant access; an explicit reference still retains its resolved
+   stable ID. The alternative fixes the selected targets until an explicit refresh. This extension
+   is not yet ruled; exact selector syntax stays for I7.
 2. **Grant-bound validation:** define supported checks on proposed grant bounds. Current mandatory
    checks and path composition are already settled; custom validation does not assume a universal solver.
 3. **Startup and persistence:** settle first authority, establishment/repair, then the storage

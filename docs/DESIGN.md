@@ -1797,6 +1797,16 @@ that context. Plugins implement the checks and behavior, without a separate poli
 Governing bindings are independent managed state with authorized checked changes. Template
 declarations, installed plugins and satisfied requirements do not themselves issue authority.
 
+**Explicit target scope:** a governing binding distinguishes an object's own capabilities/operations
+from operations on other objects selected through ownership. A requirement on Pool provisioning
+does not automatically govern deployment calls through its Resource instances. An explicit
+owned-Resource target scope can select relevant capabilities where supported; it need not require
+one binding per Resource. A Pool template may declare both kinds of rules together, but their
+placement in that template does not determine their reach. V0 has no automatic Pool inheritance.
+The access-management Resource stores/administers the bindings; that storage location is not
+their target. Requirement applicability/support still matters, and grants still supply permission.
+Exact selector syntax and changes to ownership-based target membership remain separate choices.
+
 Grant administration is an ordinary protected capability. For example, a coordinator's management
 grant permits issuance, while requirements limit the proposed recipient grant's targets, operations
 and parameters. Checking concrete use and checking proposed grant bounds need their own supported

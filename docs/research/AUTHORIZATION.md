@@ -193,8 +193,10 @@ Resolve these within I4 before the final I7 syntax pass:
 - Settled after consolidation: Policy is authoritative application of reusable requirements, with
   grant administration expressed through ordinary protected capabilities. Independent governed
   state remains; no separate policy-rule language or mandatory policy-plugin process is required.
-- Which exact binding targets and custom grant-bound checks should the initial contracts support?
-  Existing complete-path, all-applicable-requirements and mandatory-check rules already apply.
+- Settled: governing bindings distinguish an object's own operations from operations on explicitly
+  selected owned Resources; there is no automatic Pool inheritance. Should ownership-based target
+  membership match live? Exact selectors and custom grant-bound checks remain open. Existing
+  complete-path, all-applicable-requirements and mandatory-check rules already apply.
 - Settled: a dedicated access-management Resource in the system Pool exposes these records,
   alongside registry/template management. How is its first trusted authority established and
   repaired? The Resource boundary does not resolve its own startup dependency.

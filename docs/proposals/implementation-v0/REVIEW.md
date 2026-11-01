@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Requirement application, grant management and foundational storage | Policy consolidation, participation grants, issuer-independent lifetime and dedicated access-management Resource accepted. Next binding/custom-bound details and startup/storage. |
+| I4 | Requirement application, grant management and foundational storage | Policy consolidation, grants, dedicated access-management Resource and explicit governing targets accepted. Next target-membership behavior, custom-bound checks and startup/storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -461,12 +461,19 @@ implementation; this requires no separate process/database or centralized endpoi
 Interfaces and authorized Agents administer access through Conduits. Exact type/capability names
 and first-establishment/repair wiring remain open.
 
+**Explicit governing targets are accepted:** bindings distinguish an object's own operations from
+operations on explicitly selected owned Resources. Pool ownership and the location of a declaration
+do not propagate requirements automatically. A Pool template can bundle both kinds of rules, and
+an explicit supported ownership scope can cover multiple Resources. Exact selectors and membership
+changes remain open; this does not restore generic object labels/selectors.
+
 **Next conceptual choices, in order:**
 
-1. For governing bindings, explicitly distinguish an object's own operations from other objects
-   selected through ownership. Recommend explicit target scope: a rule on Pool provisioning does not
-   implicitly govern deployments through its Resources; an owned-Resource selection can express that
-   broader reach where supported. Exact selectors and live membership behavior remain separate.
+1. Should explicit ownership-based governing selections match live, extending the existing live
+   access-filter rule? Recommend new matching Resources become subject to the requirement at subsequent
+   applicable checks, while nonmatching ones leave that binding's reach. This neither provisions nor
+   grants access. The alternative fixes targets until an explicit refresh; stable-ID reference
+   behavior remains unchanged. This extension is still a ruling, with syntax deferred to I7.
 2. Define supported checks on proposed grant bounds without reopening the accepted composition
    rules or assuming a general subset solver. Exact schema is I7.
 3. Establish first trusted authority and startup/repair, then choose the internal storage boundary

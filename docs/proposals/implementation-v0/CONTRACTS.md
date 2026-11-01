@@ -347,6 +347,12 @@ and checking proposed grant bounds need their own declared support; shared defin
 imply a universal subset checker. Governing bindings remain independent managed state with checked
 changes, without a separate policy-rule language or executable definition category.
 
+**Accepted governing scope:** bindings explicitly distinguish an object's own operations from
+operations on owned Resources selected by the binding. Pool ownership and declaration placement
+do not automatically propagate requirements. The selected capability/context must be supported;
+one binding may explicitly cover multiple owned Resources without becoming a permission grant.
+Exact selectors and ownership-based membership changes remain under review.
+
 Detailed declaration syntax and matching, the core catalog, composition mechanics, evaluation
 protocol and enforcement policies below remain proposed. A Conduit template composes requirements
 for roles and their relationship. Concrete instantiation binds existing endpoint capabilities and records resolved

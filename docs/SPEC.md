@@ -66,8 +66,12 @@ grants permitting them and requirements constraining their effects. No separate 
 executable rule category or policy-plugin process is required. Both Agents and Interfaces use this
 structure through their Conduits and selected endpoint implementations. Governing bindings remain
 independent managed state; declaring or satisfying requirements does not itself grant access.
+Governing requirements have explicit target scope: an object's own operations are distinct from
+operations on Resources it owns. Pool ownership causes no automatic inheritance. An explicitly
+declared owned-Resource scope may target supported capabilities; a Pool template can bundle both
+forms without changing their meaning. Selector syntax and membership-change behavior remain open.
 The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop the accepted
-model and remaining schemas, applicability details, custom-bound checks and hosting decisions.
+model and remaining schemas, target membership, custom-bound checks and startup/storage decisions.
 
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate

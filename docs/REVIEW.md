@@ -84,7 +84,9 @@ accepted: Policy is authoritative requirement application, and grant administrat
 protected capabilities. Existing requirement composition and current-grant checks apply without
 a separate policy language. A dedicated access-management Resource in the system Pool now manages
 grants and governing requirement bindings alongside the registry/template management Resource.
-I4 next reviews binding applicability and grant-bound checks, then startup/repair and storage.
+Explicit governing targets are now accepted: Pool operations and operations on owned Resources
+have distinct scope, with no automatic Pool inheritance. I4 next reviews target-membership changes
+and grant-bound checks, then startup/repair and storage.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

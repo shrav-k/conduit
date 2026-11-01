@@ -68,9 +68,21 @@ and schema pass should preserve these responsibilities rather than silently chan
 | Contract | An inspectable agreement about meaning, typed values and behavior. Operation, capability, type and requirement contracts describe different aspects of an extension. | Definitions reference other definitions rather than duplicating their meaning. A schema describes valid data; the behavioral contract also explains what it means. |
 | Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
 | Requirement | What must hold for a particular relationship or its use, with typed parameters and applicability. This can include compatibility or lifecycle obligations as well as restrictions. | A reusable definition can compose existing requirements. Every constituent retains its meaning and limits; support is checked against the constituents. |
+| Policy | Authoritative rules governing access, administration and delegation for applicable actors and targets. | May reuse applicable typed requirements for restrictions. Detailed rule composition and representation are under review; authoring a declaration does not activate authority. |
+| Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with provenance and lifetime/dependencies. | Delegation preserves applicable bounds; exact parent/dependency semantics remain under review. A grant is not a token or a new object family. |
 | Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
 | Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
 | Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
+
+Policy and Grant are essential protocol concepts for Agents and Interfaces, alongside the other
+concepts here. Their authorization contracts must apply consistently to managed capability use,
+controls and delegation, rather than only to Interface administration. Conduit paths and their
+selected endpoint implementations enforce the applicable authority and requirements. The root's
+broad default authority and Agents' explicit delegation remain different permissions within that
+structure. Other managed callers, including Resource-to-Resource access, retain their existing
+attribution/access obligations. Detailed structures, evaluation and delegation choices are proposed
+in [the authorization contracts](proposals/implementation-v0/AUTHORIZATION.md); adding these working
+terms does not settle every field, policy engine or Resource-hosting decision.
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
@@ -168,9 +180,9 @@ broad default administration. Replacing an Interface requires valid access to th
 not a transfer of policy ownership or recreation of grants. A new Interface cannot acquire the old
 one's authority merely by reusing its name. Existing recipient-participation, withdrawal and target
 lifecycle rules remain intact. Narrower per-Interface authority stays deferred for v0.
-The [policy representation discussion](proposals/implementation-v0/ARCHITECTURE.md#policy-representation--proposed)
-distinguishes authorization data, its management capability and reusable requirement definitions;
-the representation has not yet been selected.
+The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md) formalizes Policy and
+Grant alongside requirements/plugins for all managed actors. Exact representation, management
+capability placement and evaluation semantics remain under review.
 
 Keep one authoritative instance configuration. When a supported control confirms application,
 its responsible service records the confirmed settings, revision and outcome. Pending or uncertain

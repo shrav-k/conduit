@@ -14,6 +14,14 @@ profiles here are proposed. [DESIGN](../../DESIGN.md) supplies accepted semantic
 [review I3 and I7](REVIEW.md) cover the main extension and authoring choices. Examples are
 explanatory, not files accepted by an existing Conduit executable.
 
+The companion [Policy and Grant contracts](AUTHORIZATION.md) specify the proposed authorization
+structure for Agents, Interfaces and other managed callers. Policy and Grant now belong in the
+protocol vocabulary beneath the five families; their detailed semantics are being ruled on in I4
+before I7 chooses exact schemas. Requirements describe guarantees, plugins implement operations and
+checks, and Conduit paths enforce current authority. Neither package installation, graph setup nor
+MCP connectivity grants permission by itself. Use that document as the single detailed proposal
+for authorization inputs, issued records, decisions, delegation and evidence.
+
 ## 1. Identity and version domains
 
 Keep the following values distinct in Rust types and wire records:

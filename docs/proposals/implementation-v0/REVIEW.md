@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Policy representation and foundational storage, then engine | Independent policy accepted. Next distinguish authorization data, its management Resource and requirements/plugins; expanded Interface direction, storage extension and SQLite remain open. |
+| I4 | Policy/Grant contracts and foundational storage, then engine | Formalize common Agent/Interface authorization. Review positive authority, delegation dependencies, composition and hosting before startup/storage; independent policy is accepted. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -428,18 +428,30 @@ an old instance's authority. This does not narrow today's broad v0 Interface adm
 See the [cloud research](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
 and [lifecycle example](ARCHITECTURE.md#root-authority-lifecycle-comparison).
 
-**Next discussion — policy representation:** the user asks whether this is a Resource or a named
-concept alongside requirements/plugins. The [proposed distinction](ARCHITECTURE.md#policy-representation--proposed)
-treats Policy as typed authorization rules/grants beneath the five families, managed through a
-Resource capability. Requirements supply reusable guarantees/restrictions; plugins implement the
-relevant operations and checks. The existing system management Resource could expose the capability
-without a Resource per policy or a new mandatory template/instance stack. A policy declaration
-requires authorized acceptance; neither a file nor a requirement can self-grant access.
+**Current direction:** the user explicitly requires formal Policy and Grant structures alongside
+requirements, plugins, graphs and operations. They cover Agents as well as Interfaces and remain
+beneath the five families. Independence and that formalization direction are accepted; the details
+below require joint rulings. The [research](../../research/AUTHORIZATION.md) compares Cedar,
+Kubernetes RBAC, OPA, Zanzibar, Macaroons/Biscuit and MCP/OAuth. The
+[authorization proposal](AUTHORIZATION.md) is the canonical semantic structure; I7 still owns syntax.
 
-Only independence is accepted. Naming Policy as a protocol construct, its Resource representation,
-schemas, initial persistence and precise management API remain open. The expanded active Interface
-role still needs its startup/repair contract; the new ruling does not choose the first-definition
-load or earliest durable progress mechanism.
+**Next conceptual choices, in order:**
+
+1. Should ordinary managed use require a recorded grant on its selected participation, including
+   broad root management, or can a direct policy permit provide positive authority too? Recommend
+   grants in v0, without a new grant per request; policy governs issuance and current use.
+2. What delegation bounds and live parent/policy dependencies must a grant retain? Distinguish
+   withdrawal, changed issuer permissions and issuer process termination.
+3. How do applicable policy rules, current grants and typed restrictions combine, including errors
+   and unknown custom narrowing relationships? Preserve complete-path alternatives and required checks.
+4. Which Pool-owned management capability exposes policy/grant operations, and how is its trusted
+   initial authority established, persisted and repaired?
+
+The proposal's field inventories, identity mapping, decision/evidence contract and candidate
+Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,
+token format, public policy DSL or storage engine. The expanded active Interface role still needs
+its startup/repair contract; the new direction does not choose the first-definition load or earliest
+durable progress mechanism.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant

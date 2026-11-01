@@ -587,6 +587,8 @@ This is a conceptual walkthrough, not final package names or graph syntax:
 | Plugin contributions | Authentication and MCP integration contracts with code or service bindings that implement them. They may be packaged together or separately. |
 | Offered capability | The MCP-access Resource supports discovery and invocation of provider-native tools through its declared integration. |
 | Relationship requirements | A reusable `review-access` definition combines permitted read operations, the selected workspace and a response-size bound. Every part must have endpoint support. |
+| Policy | Governs who may use or delegate access to this capability, including Agents and administering Interfaces. Detailed composition is under review. |
+| Grant | Records the particular access actually issued to this Agent/participation; declaring `review-access` or sharing provider credentials does not issue it. |
 | Callable operations | Resolve the selected authentication binding, prepare a connection and inspect its supported catalog. Each is an operation export, not necessarily a whole plugin. |
 | Setup graph | Orders those operations using their typed outputs and dependencies. Runtime startup, where needed during setup, remains instance-managed. |
 | Templates | A Pool template assembles the auth and MCP Resource entries; Resource/Agent templates select their implementations; a Conduit template declares the relationship and restrictions. |
@@ -597,6 +599,12 @@ implementations enforce applicable requirements and invoke the shared Resource's
 The setup graph does not run anew for every call, and its successful completion is not permanent
 authorization. Per-call work, ongoing services and connection participation retain their existing
 operation and instance lifetimes. The Interface exposes their correlated state and outcomes.
+
+The [Policy and Grant proposal](AUTHORIZATION.md) develops issuance, current authority and
+delegation through the same managed operations. A small plugin author does not need a separate IAM
+server: its contract declares operations/requirement duties, while common runtime integration
+supplies trusted invocation context and the selected authority checks. Endpoint enforcement and
+attribution still need to be implemented wherever that plugin accepts responsibility.
 
 This is why a plugin is not a Resource: the same implementation can serve separate Resources with
 different Pool owners, workspaces and authentication. A requirement is not a setup node: its condition

@@ -17,6 +17,10 @@ The user subsequently **accepted independent policy**, administered by authorize
 broad default root administration. Policy representation remains open; the follow-up's Resource
 and storage suggestions are not additional rulings. I1's service/state authority boundary remains.
 
+The subsequent [authorization research](AUTHORIZATION.md) develops Policy and Grant as essential
+protocol concepts for Agents and Interfaces, following the user's explicit direction. It extends
+this administrative-lifecycle comparison into issuance, delegation and Conduit enforcement.
+
 Method: read primary public architecture, extension and API documentation. No cloud accounts,
 credentials or deployments were used, and no failure behavior was tested. Public API contracts
 do not reveal every internal storage or consensus mechanism. Provider facts below are sourced;

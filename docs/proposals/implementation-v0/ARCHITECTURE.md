@@ -104,55 +104,30 @@ it does not narrow today's broad owner-operated v0 administration.
 
 #### Policy representation — proposed
 
-The user accepted independence and asked whether policy is a Resource or another authoring concept
-alongside requirements and plugins. These are different layers. The proposed distinction is:
+Policy and Grant are now explicitly part of the protocol concepts beneath the five families,
+covering Agents and Interfaces. They are not optional Interface-administration helpers. Policies
+govern access/administration/delegation; grants record particular issued authority. Requirements
+supply reusable guarantees and restrictions; endpoint-selected plugins implement operations and
+enforcement, while Conduits retain the selected relationships and participation.
 
-| Layer | Meaning | Example |
-| --- | --- | --- |
-| Policy | Typed authorization rules and authoritative grants governing actors, targets and participation. This is a proposed named concept beneath the five families. | Agent A may read Euphony Linear through its attachment; it has no onward-delegation authority. |
-| Management Resource | An instantiated capability exposing inspection, authorized policy changes, delegation and withdrawal. | The existing system Pool's management Resource could expose this capability for many policy records. |
-| Requirement | A reusable contract stating a guarantee and when/where it must hold; it can include restrictions but cannot issue a grant. | Restrict provider operations to reads and results/requests to the permitted workspace. |
-| Plugin | Published contracts and implementation bindings supporting the management/evaluation/enforcement behavior. | A policy-management implementation validates a grant; a Resource-side MCP implementation enforces a supported workspace restriction. |
-| Graph | A procedure composing operations, including policy-management operations if authorized. | Establish a Resource, then request a permitted delegation. Merely declaring that graph grants nothing. |
-| Conduit | The live relationship whose selected path and participation are governed by current authority and applicable requirements. | A's connection to shared Linear, distinct from the Interface's connection used to administer policy. |
+The [authorization proposal](AUTHORIZATION.md) is the detailed structure for review, backed by
+[primary-source research](../../research/AUTHORIZATION.md). It distinguishes policy/grant data,
+actor/principal/provider identities, decision inputs/results, delegation dependencies, and evidence
+of actual endpoint enforcement. It also applies to Resource-to-Resource calls and capabilities
+on all five families; a protected target need not be a Resource.
 
-Recommendation: name Policy as authorization data, without a sixth family, a process for every
-policy, or another mandatory template/instance stack. A grant is a specific recorded authorization
-under that policy, not another provisioned object. Policies can use existing typed requirement
-definitions for applicable restrictions instead of defining a second filtering language. This does
-not make arbitrary requirements permission-granting: compatibility/readiness guarantees still
-have their own meanings and only applicable restrictions participate in access decisions.
+A Pool-owned management Resource remains the proposed way to expose policy/grant administration
+and evaluation, potentially using the existing system management Resource. One capability may
+manage many records. The exact hosting boundary, schemas and evaluator are not selected by naming
+these concepts. Authorization records do not inherit ordinary knowledge-sharing semantics.
+Publishing a policy or installing a plugin cannot confer authority.
 
-**Concrete flow, illustrative rather than final syntax:**
-
-1. An authorized Interface requests read access for Agent A to a specific shared Linear Resource,
-   limited to Euphony, without permission to delegate further.
-2. The management capability checks its authority to issue that access, target/recipient limits
-   and the supported enforcement path; it records the resulting grant against A's participation.
-3. A's later native Linear invocation follows its Conduit. Current grant/governing policy and
-   all applicable relationship restrictions must pass, using the selected enforcement implementations.
-4. Withdrawing the grant changes authoritative access data. It does not edit A's setup graph,
-   replace the Linear plugin or delete the shared provider authentication.
-5. Replacing the administering Interface leaves the policy and A's participation governed by the
-   same records. Changing the enforcing implementation still follows replacement/pinning rules.
-
-Policy as a named construct would warrant explicit protocol semantics for inspect/change/evaluate
-and scope/provenance, but does not settle a standalone package/export format or require arbitrary
-policy code. Authoring or installing a policy declaration cannot authorize it; acceptance requires
-current management/delegation authority. Policy administration and service use are separate rights.
-
-The management Resource would expose a capability, while a service/store retains its authoritative
-facts; a YAML document is only a representation of those facts. One Resource may manage many policy
-records. A separate policy-administration Resource could be introduced if its configuration or
-lifecycle warrants that boundary, but it is not required merely to name Policy. Individual
-authorization records also need not be ordinary searchable knowledge records or receive knowledge
-sharing semantics. Their authority/lifecycle contract must govern access.
-
-This remains a proposal. The accepted five families, independent policy, existing grants and
-requirement contracts stand; the name and representation are the next ruling. It does not select a
-policy engine, public storage backend contract, process layout or credentials model. Initial access
-to foundational management state still needs an acyclic startup/repair contract; adding a Resource
-wrapper alone does not solve that dependency.
+The next conceptual ruling is whether ordinary managed participation must have a recorded grant,
+or direct policy permits may also authorize it. Root administration, delegated Agent work and
+Interface access must be represented consistently. Delegation lineage/current dependencies and
+policy composition follow, before foundational persistence/engine selection. The trusted authority
+and first owner access still need an explicit startup/repair contract; a Resource wrapper alone
+does not resolve that dependency.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops

@@ -20,6 +20,10 @@ cases below. Canonical instance configuration and results belong to the designat
 service; management owns templates, registration and shared policy. The experiment tests that
 accepted split rather than implementing every authority alternative.
 
+The [Policy/Grant proposal](../../docs/proposals/implementation-v0/AUTHORIZATION.md#8-review-sequence-and-conformance-evidence)
+adds candidate common Agent/Interface authorization cases for review. These clarify the intended
+protocol proof; additional scope and detailed grant/policy semantics remain unruled and unimplemented.
+
 ## Question
 
 Can Rust services coordinate independently owned activity, finite plugin graphs and

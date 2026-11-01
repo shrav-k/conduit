@@ -59,6 +59,13 @@ extension concepts beneath the five families, not additional object families. Th
 [concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) records the accepted temporary
 names and divisions; final terminology may change after conceptual review.
 
+Policy and Grant are also essential concepts beneath the five families. Policies govern access,
+administration and delegation; grants record particular issued authority. Both Agents and
+Interfaces use this authorization structure, with enforcement through their Conduit paths and
+selected endpoint implementations. Applicable requirement definitions supply reusable guarantees
+and restrictions without granting authority themselves. The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md)
+develops the contracts for review; their exact schemas, combining rules and engine remain open.
+
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate
 establishment, restrictions and participation; they do not install new endpoint plugin code.

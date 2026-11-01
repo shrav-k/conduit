@@ -72,9 +72,12 @@ and confirmed target outcomes must remain distinct. The
 [cloud IAM follow-up](research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
 supports the now-accepted independence of policy from Interface lifecycle, administered by multiple
 authorized Interfaces with broad default root administration. This does not narrow broad v0
-Interface access. Next clarify [policy representation](proposals/implementation-v0/ARCHITECTURE.md#policy-representation--proposed):
-authorization data, the Resource capability that manages it, and its relationship to requirements
-and plugins. The expanded role, foundational storage and first storage engine remain under discussion.
+Interface access. Policy and Grant must now be formalized for Agents and Interfaces alongside
+requirements/plugins; this is an explicit protocol direction, not an optional administration helper.
+The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md) and
+[research](research/AUTHORIZATION.md) develop the structure. I4 next reviews the positive authority
+basis, delegation dependencies, policy composition and management capability placement. Detailed
+schemas, expanded Interface lifecycle, foundational storage and engine remain under discussion.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

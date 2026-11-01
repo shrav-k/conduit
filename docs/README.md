@@ -8,8 +8,9 @@ between settled decisions, schema proposals and future work.
 For implementation planning, read the [v0 proposal](proposals/implementation-v0/README.md) and its
 [grouped review](proposals/implementation-v0/REVIEW.md). Accepted extension boundaries are folded
 into DESIGN; unresolved crate, deployment and syntax choices remain explicitly proposed.
-The current authoring review focuses on [composable relationship requirements](DESIGN.md#composable-relationship-requirements).
-The existing YAML walkthrough does not yet specify their unresolved field syntax.
+The current authoring review formalizes [Policy and Grant](proposals/implementation-v0/AUTHORIZATION.md)
+alongside [composable relationship requirements](DESIGN.md#composable-relationship-requirements),
+plugins and operations. The existing YAML walkthrough does not yet specify their unresolved syntax.
 
 | Location | Purpose | Authority |
 | --- | --- | --- |

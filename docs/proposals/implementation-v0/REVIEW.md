@@ -247,8 +247,27 @@ Review these related boundaries together before physical placement:
    runtime, and how partial setup/unknown remote outcomes are reconciled. Apply the existing
    per-participant and last-consumer rules without assuming atomic cross-endpoint setup.
 
-The detailed ownership/hosting protocol remains proposed. This is one cohesive refinement of
-the instance boundary, not a new enum, object family or separate decision ledger.
+**First ruling to take — ownership of plugin activity:** recommend attributing behavior to the
+instance whose definition declares it, independently of where its code executes. Connection-specific
+plugin setup, ongoing behavior and cleanup belong to the Conduit and relevant participation;
+shared capability behavior and supported configuration changes belong to their target instance.
+The enclosing graph/handler/attachment supplies this context; authors need not repeat an owner
+field on every node. This rule concerns declared activity, not ownership of reusable plugin packages.
+
+For example, Agents A and B use one Pool-owned Linear capability through a Conduit. A's local
+MCP binding and filtered participation are connection-specific. The shared provider client and
+authentication remain Resource-owned. Detaching A releases A's connection-specific work, keeps
+B's participation and preserves the shared Resources. If an authorized Interface also changes
+the Resource's supported query limit, that confirmed setting remains Resource configuration after
+the management Conduit ends; detachment is not rollback of completed target operations.
+
+This extends the accepted participation/Resource lifetime rules to plugin activity; it does not
+reopen whether leaving deletes backing data. The alternative places endpoint-local connection
+behavior under the endpoint's own runtime definition and makes the Conduit request its lifecycle
+operations. The exact sharing of code/processes is separate under either arrangement. This first
+ruling remains open, followed by endpoint hosting/compatibility, partial failure and cleanup, then
+physical placement/distribution. Keep later persistence, credential, observability and syntax
+questions in I4–I7; do not turn this into another decision ledger.
 
 **Subsequent placement choice — authored code:** the earlier recommendation was separately supervised MCP
 worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust

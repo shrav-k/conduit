@@ -106,6 +106,13 @@ external effects atomic or safe to retry. V0's finite dependency-graph boundary 
 nesting does not introduce authored recursion or loops. Exact graph-call/binding syntax, publication
 layout and composite outcome/recovery details remain open.
 
+Composite output contracts must account for their composed success and failure modes. They may
+be derived from the constituent contracts and graph bindings or explicitly constructed by an
+author. That authoring direction does not require returning every internal payload: public results
+and retained execution evidence serve different purposes. The default derivation workflow, result
+mapping and recovery coordination are under review in the
+[composite output proposal](proposals/implementation-v0/CONTRACTS.md#composite-outputs-and-outcomes--proposal).
+
 ### Distribution and execution
 
 **Distribution direction:** objects should operate independently and eventually be deployable

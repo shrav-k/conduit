@@ -91,8 +91,9 @@ Requirements compose obligations; graphs compose operations and can themselves i
 operations published through plugins. See the
 [composite operation example](AUTHORING.md#publishing-a-graph-as-a-reusable-operation). Independent
 requirement definitions, published support with runtime verification and endpoint-selected/managed
-implementations remain accepted. Composite outcomes/recovery and requirement fulfillment duties
-are the next conceptual topics.
+implementations remain accepted. Composite results may be derived or explicitly constructed.
+Next settle the default result-authoring workflow, then composite recovery and requirement
+fulfillment duties.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -285,11 +286,22 @@ composition; exact declaration syntax remains open. A plugin may export several 
 graphs need not become published plugins. Existing finite-graph, authority, implementation-retention
 and instance-supervision rules continue to apply.
 
-**Next conceptual topics:** how composite operations communicate outcomes and recover partial work,
-and how requirement definitions assign fulfillment duties while endpoint implementations supply
-the mechanism. Exact semantics remain open; composition alone promises neither atomic effects nor
-safe replay. Final package/schema spelling remains I7 work. Graph representation, publication and
-runtime supervision retain their distinct responsibilities.
+**Accepted result-authoring direction:** composite output contracts account for composed success
+and failure modes and may be derived from the constituent pieces or explicitly constructed.
+Detailed derivation, mapping and recovery semantics remain open. See the
+[proposal](CONTRACTS.md#composite-outputs-and-outcomes--proposal) and
+[database example](AUTHORING.md#derived-and-authored-composite-results).
+
+**Next ruling — default result authoring:** recommend deriving an initial public contract from the
+graph's declared public output bindings and constituent contracts, with authors able to construct
+an explicit domain result instead. Public results preserve relevant effects/uncertainty and links
+to scoped underlying evidence, without exposing every intermediate payload. The alternative
+requires an explicit public contract for every published composite, with derivation only assisting
+the author. This chooses authoring workflow, not exact fields, error enums or mapping syntax.
+
+Composite recovery and requirement fulfillment duties follow. Composition alone promises neither
+atomic effects nor safe replay. Final package/schema spelling remains I7 work. Graph representation,
+publication and runtime supervision retain their distinct responsibilities.
 
 Review the remaining consequences in three groups, before returning to process placement:
 

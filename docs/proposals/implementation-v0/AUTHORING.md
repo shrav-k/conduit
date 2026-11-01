@@ -541,6 +541,32 @@ Internal progress and external outcomes follow the existing evidence/recovery ob
 parent/child outcome and retry coordination remain review questions. Nested composition retains
 v0's finite graph limit and selected implementation/access boundaries.
 
+### Derived and authored composite results
+
+Use an illustrative database graph: establish the database and its managed runtime, apply a
+migration, then prepare consumer access. Each operation publishes its own typed outputs and
+failure/effect semantics. The same graph can support a derived public result or an explicitly
+constructed domain result; the following names are explanatory, not approved schema identifiers.
+
+| Observed execution | Constituent information available for derivation | Possible authored public result |
+| --- | --- | --- |
+| All required steps complete | Database reference, migration evidence and usable access output. | `database-ready`, with selected references and schema information. |
+| Migration reports failure after startup | Database/runtime still exists; migration reports its known effects; later access preparation has not run. | `setup-incomplete`, identifying the retained database and migration failure without presenting it as ready. |
+| Migration response is lost | Startup is confirmed; migration's effects are unconfirmed; ready access has not been established. | `setup-unconfirmed`, with the known database reference and unresolved migration outcome. |
+| Start fails after backing creation | Backing data is retained; no successful runtime start or later steps are claimed. | `startup-failed`, with permitted retained-resource and failure references. |
+
+Derivation can compose declared types and failure sources. It cannot infer that a failed migration
+left the old schema intact or that a timed-out operation had no effect. The Interface retains
+inspectable child progress under normal evidence/access rules, even when the public result groups
+several child failures into one domain result. The caller need not receive all intermediate payloads.
+The existing default keeps a started runtime managed after setup failure; this table does not add
+automatic retries or rollback.
+
+The [contract proposal](CONTRACTS.md#composite-outputs-and-outcomes--proposal) recommends deriving
+from declared public bindings by default and permitting explicit result construction. Whether this
+is the default or only assistance for an explicitly authored contract is the next ruling. Exact
+field names, mapping syntax and parent/child recovery coordination remain open.
+
 ### One Linear connection through the authoring concepts
 
 This is a conceptual walkthrough, not final package names or graph syntax:
@@ -730,7 +756,8 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, review composed-operation outcomes/recovery, requirement satisfaction
+Before specifying syntax, review the proposed derived/authored result workflow and composed-operation
+recovery, requirement satisfaction
 responsibility, conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
 and first authoring proof follow those choices. Do not make every custom requirement a Boolean
 expression or assume a general constraint solver can establish arbitrary provider guarantees.

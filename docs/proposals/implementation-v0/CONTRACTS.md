@@ -205,6 +205,61 @@ can nevertheless deadlock on cyclic readiness requirements; report the wait chai
 a supported deferred dependency or changed composition. Do not “solve” it by dropping a required
 connection. Bound nested composition depth and total prepared work.
 
+### Composite outputs and outcomes — proposal
+
+**Accepted direction:** a composed operation accounts for its constituent success/failure modes;
+its output contract can be derived from the pieces or explicitly constructed. The default workflow
+and the mechanisms below remain proposed. Keep the existing open-ended domain results rather than
+introducing a universal enumeration of business failures.
+
+Distinguish three concerns within the existing operation contract and evidence system:
+
+| Concern | Meaning in a composed operation |
+| --- | --- |
+| Public values | The selected typed outputs a caller may use, with their publication and validity conditions. A database identity can exist before its ready-access output is valid. |
+| Reported outcome | What the operation can confirm about completion, failures, retained effects and uncertainty. A useful partial output does not mean the whole requested setup completed. |
+| Execution evidence | The attributable child attempts, results and causal links needed for inspection/recovery. Access-scoped references can expose detail without returning every internal payload or credential. |
+
+**Recommended derivation:** use declared public output bindings to derive their data types; use
+child operation contracts and graph dependencies to describe declared failure origins and blocked
+work. Preserve the node/operation source so identical failure names from different children are
+unambiguous. The runtime reports the actual completed, failed, blocked or unresolved portions of
+an attempt. These are coordination facts, not a proposed closed wire enum. Independent parallel
+outcomes can be reported together without statically enumerating every possible combination.
+Derivation uses declared semantics, not guesses about provider behavior or automatic export of
+all intermediate values. Missing behavioral information remains an explicit limitation.
+
+**Explicit construction:** an author can select, combine and rename public outputs, or map child
+failures into domain-specific results. For example, several connection failures might become
+`access-unavailable`, retaining links to permitted causes. Public schemas stay type-checked against
+the declared bindings. Such mapping cannot falsely claim no effects, successful readiness or safe
+replay when evidence does not establish it. Preserving these facts does not require leaking hidden
+source details or secrets. Deliberate partial-success contracts can return usable outputs while
+clearly distinguishing unmet requested work. Exact mapping syntax remains I7 work; no general
+embedded scripting language or new graph branching feature is selected here.
+
+A derived result is still an inspectable, versioned contract tied to the selected definitions.
+Changing a child contract can affect its public shape; deriving a schema does not make that change
+automatically compatible. Explicit domain results can provide a more stable public boundary, but
+still need validation against the selected implementation and actual outcomes.
+
+**Limits of completeness:** child contracts can enumerate expected domain failures, but a lost
+response, unrecognized provider error or violated output contract must still be representable.
+Do not interpret an unlisted failure or unavailable observation as proof that nothing happened.
+If migration effects cannot be confirmed, report that uncertainty; an error message alone cannot
+establish the database schema. Keep known retained outputs subject to their validity rules.
+
+Mapping a failure is not handling its effects: translating `migration-failed` into a public result
+does not retry, compensate or roll back. Explicit recovery continues from valid recorded progress
+under existing contracts; composed results cannot invent atomicity or strengthen a child's retry
+guarantee. Parent/child retry coordination remains a separate ruling.
+
+**Next ruling:** derive an initial public contract by default from selected output bindings and
+constituent contracts, with optional explicit construction; or require every published composite
+to have an explicit public contract, using derivation only as authoring assistance. Both preserve
+underlying evidence and uncertainty. The [database example](AUTHORING.md#derived-and-authored-composite-results)
+illustrates the difference without choosing wire fields.
+
 ## 5. Plugin package and runtime contracts
 
 **Authoring before hosting:** the manifest/port inventory below is a proposed runtime-facing

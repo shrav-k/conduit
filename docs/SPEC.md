@@ -47,7 +47,9 @@ a dedicated process. Plugins supply or bind typed operations and runtime behavio
 together. Capabilities describe what endpoints offer; requirements state what a relationship needs.
 Requirements compose obligations, while graphs compose callable operations and their dependencies.
 A graph can itself implement a typed operation published by a plugin, allowing callers and other
-graphs to reuse the composite behavior through its contract. Plugins publish contracts and
+graphs to reuse the composite behavior through its contract. Composite output contracts account
+for composed success/failure modes and may be derived or explicitly authored; the detailed mapping
+and recovery rules remain under review. Plugins publish contracts and
 implementation bindings for these behaviors. These are authoring and extension concepts beneath
 the five families, not additional object families. The
 [concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) records the accepted temporary

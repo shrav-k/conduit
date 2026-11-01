@@ -45,7 +45,10 @@ records accepted temporary names and divisions: contracts/requirements describe 
 obligations, graphs compose callable operations, plugins publish contributions, and templates
 assemble these into the five families. Graphs may themselves implement typed operations published
 through plugins for reuse by callers or other graphs. Final names may change after conceptual
-review. Detailed execution/recovery mechanisms, syntax and experiment additions remain proposals.
+review. Composite outputs can be derived from their constituents or explicitly authored; the
+[implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
+next settles that authoring workflow. Detailed execution/recovery mechanisms, syntax and experiment
+additions remain proposals.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

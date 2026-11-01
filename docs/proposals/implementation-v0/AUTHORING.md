@@ -514,21 +514,70 @@ authentication or grants. Supported external-service association does not imply 
 | Family | Template selects and declares | Plugin behavior serving an instance | Boundary to preserve |
 | --- | --- | --- | --- |
 | Interface | Frontend integration, inspection/interaction behavior and management connections. | Present observations, collect input and invoke supported operations through Conduits. | A view of an Agent or Resource is not a second authority over its state. Management effects execute at the relevant management/target capability. |
-| Agent | Native or owned runtime, account/provider boundary, activation, initial settings, connection declarations and controls. | Prepare private state, establish the declared runtime, handle interaction and supported setting changes. | A remote tool call remains attributed to this Agent but uses the target Resource's capability through a Conduit. |
+| Agent | Native or owned runtime, account/provider boundary, activation, initial settings, supported endpoint roles, connection declarations and controls. | Prepare private state, establish the declared runtime, manage local connection bindings, handle interaction and supported setting changes. | A remote tool call remains attributed to this Agent but uses the target Resource's capability through a Conduit. |
 | Resource | One capability responsibility, creation/attachment intent, dependencies, runtime and controls. | Establish a directory, maintain service access, authenticate, search, store or expose other declared behavior as appropriate to its type. | Every Resource instance has one Pool owner. A plugin package is not itself a Resource, and these examples need not be bundled into one Resource. |
 | Pool | Explicit named Resource-template entries, composition bindings and supported management actions. | Coordinate explicit provisioning/reuse and child dependency binding; inspect owned Resources. | Child setup and ongoing capability state belong to the child Resource. Pool ownership does not require co-location. |
-| Conduit | Endpoint roles/contracts, connection establishment, filters, transport/interaction behavior, supported changes and cleanup. | Prepare a client-facing binding, establish a peer-side exposure, filter/route traffic, reconnect and release connection-specific participation. | Behavior may execute at either or both endpoints. Shared endpoint capability state, credentials and backing data remain with their owning instances. |
+| Conduit | Endpoint roles/contracts, connection establishment, filters, transport/interaction behavior, supported changes and cleanup. | Coordinate endpoint preparation, compatible bindings and restrictions; correlate connection progress, reconnect and release participation. | Executable ownership is under review. The endpoint-managed option keeps local plugins and bindings with endpoints while the Conduit coordinates their relationship. |
 
 An instance context must exist before its setup effects are dispatched, so incomplete setup has
 an identity and owner for inspection/recovery. The detailed creation sequence remains open. Starting
 from a template retains the resolved recipe; supported controls can update confirmed settings.
 Adding a compatible Conduit uses a declared attachment mechanism, rather than silently rewriting
-the endpoint's fixed graph or controls. The Conduit retains its own selected implementation bindings;
-its endpoint-side helper is not an implicit upgrade of the Agent or Resource implementation.
+the endpoint's fixed graph or controls. Under endpoint-managed pairing, the endpoints retain their
+plugin implementations and the Conduit retains any orchestration implementation it uses. A new
+binding is not an implicit implementation upgrade. Genuine new endpoint code requires replacement
+under the fixed-definition rule; new parameters or native tool catalogs can use existing contracts.
+
+### Endpoint-managed pairing versus Conduit-managed helpers
+
+The user leans toward endpoint-managed paired plugins; no ownership ruling has been accepted.
+The distinction is executable ownership, not whether an attachment is released on detachment.
+An endpoint can own an MCP plugin and its shared client while separately managing bindings for
+each Conduit participation. Those bindings do not become permanent merely because the endpoint
+manages them.
+
+| Concern | Endpoint-managed pairing | Conduit-managed helpers |
+| --- | --- | --- |
+| Retained executable definition | In the predeclared-role formulation, each endpoint selects its local implementation and the Conduit matches roles/parameters. Explicitly admitted Conduit-selected pairs are another authoring option below. | The Conduit selects and governs connection-specific implementation fragments hosted at the endpoints, subject to their hosting contracts. |
+| Reusable Conduit authoring | Compose endpoint capabilities without packaging every endpoint's local implementation. Compatibility must exist on each side. | Bundle more of the connection implementation with the Conduit. Endpoints still need a compatible way to host those fragments. |
+| Shared state and supervision | The endpoint can manage its bindings and shared clients together, distinguishing each participation. | A connection helper needs an explicit relationship with the endpoint's independently shared services and supervision. |
+| New behavior | Adding a genuinely unsupported transport or adapter requires a revised endpoint definition/new instance, unless an existing capability already supplies it. | A Conduit can bring new helpers through an already-supported hosting contract; this does not permit arbitrary rewriting of endpoint definitions. |
+| Cleanup and failure | The Conduit requests release; endpoints perform and report local cleanup. Unreachable endpoints leave explicit uncertainty. | The Conduit governs helper cleanup, but still needs its hosting executor/endpoints to perform it; remote failure remains uncertain. |
+
+The endpoint-managed option fits fixed instance definitions and local supervision more directly.
+Its main cost is requiring the appropriate capability at each endpoint. Avoid turning “paired”
+into a hard-coded package-to-package compatibility matrix: prefer two compatible roles in a
+versioned contract, potentially implemented by different packages. The existing capability-matching
+decision supports this direction, but the endpoint-specific contract still needs a ruling.
+Two roles do not require two executables, two copies of a package or custom code inside an
+externally operated service. A managed Resource may adapt an existing MCP service.
+
+**Separate authoring question:** endpoint management does not force endpoint-only plugin selection.
+One template arrangement declares an MCP-consumer plugin on the Agent and an MCP-provider plugin
+on the Resource, with the Conduit matching their roles. Another declares the required pair in
+the Conduit template and asks each endpoint's supported hosting capability to activate/manage its
+side. Both keep execution management at the endpoints. The latter can make a Conduit more
+self-contained but needs explicit admission, retained implementation and per-binding state rules.
+Using an already-declared hosting capability is different from silently changing fixed endpoint
+definitions. Whether v0 offers either or both authoring paths remains open.
+
+The Conduit remains active: its graph or orchestration implementation requests preparation,
+coordinates binding, applies declared connection policy through supporting endpoints, aggregates
+readiness and requests release. It owns the relationship and its observations, not a second copy
+of endpoint configuration or credentials. This does not imply every data call passes through a
+separate coordinator process.
+
+Filesystem exposure is a useful minimal pair. A directory Resource's plugin validates/provides
+the authorized directory capability; the Agent's filesystem-integration plugin prepares the local
+view/symlink. The Conduit binds them and their constraints. On detach, the Agent-side plugin removes
+that participation's view and the Resource-side plugin releases any associated binding. The folder
+remains. Either side can finish setup without a continuously running process; a remote filesystem
+would need an appropriate different capability, not reinterpret a remote path as local.
 
 ### A Conduit with behavior at both ends
 
-Consider Agent A using the Pool-owned Linear MCP Resource L. The Pool also owns authentication
+This example illustrates the endpoint-managed option under review. Consider Agent A using the
+Pool-owned Linear MCP Resource L. The Pool also owns authentication
 Resource H; L already has authorized access to H through a separate Conduit. Opening C between
 A and L could establish:
 
@@ -547,11 +596,13 @@ of every filter. Existing compatible endpoint behavior can satisfy one side with
 The target side must enforce restrictions it is responsible for; client-side tool hiding alone
 cannot establish server-side authorization. Exact enforcement placement is contract-specific.
 
-The proposed ownership split is:
+The proposed endpoint-managed ownership split is:
 
 | Activity/state | Governing instance or contract |
 | --- | --- |
-| Client-facing exposure, route and per-consumer connection/filter state | C and the relevant participation, hosted through the endpoints' supported attachment contracts. |
+| Agent-facing exposure and local binding implementation/state | Agent A's endpoint plugin; its binding records the C participation it serves. |
+| Resource-facing exposure and local enforcement/binding implementation/state | Resource L's endpoint plugin; each binding retains caller and participation attribution. |
+| Selected endpoints, connection policy and logical participation | C; local bindings must satisfy this relationship's current restrictions and endpoint limits. |
 | Shared provider client and MCP capability | Resource L, usable by other authorized Conduits. |
 | Provider identity/credential lifecycle | Resource H under its own capability and access rules. |
 | Agent private context and runtime settings | Agent A; supported changes use its controls and revision rules. |
@@ -567,7 +618,8 @@ A Conduit targeting a Pool can select or compose access to its permitted Resourc
 That grouping does not require a Pool process to relay every call or move Resource execution into
 the Pool. Explicit provisioning remains distinct from selecting an already deployed Resource.
 
-On detachment, release that participation's connection-specific binding and helpers. Other
+On detachment, C requests that the endpoints release the participation's local bindings and any
+helpers exclusive to them; endpoints retain responsibility for execution and reporting. Other
 participants and independently shared Resource clients remain. The last logical consumer/peer
 ends C under the accepted lifecycle rule. A lost transport is not detachment; an uncertain cleanup
 or in-flight provider write must be reconciled rather than declared undone. Exact helper custody
@@ -584,11 +636,11 @@ and cleanup acknowledgement remain review choices.
 
 ### What remains to decide
 
-The proposal is that connection activity belongs to a Conduit/participation while compatible
-endpoint services host its local effects; endpoint capabilities retain their own authority and
-lifetime. Review the endpoint hosting contract, permitted local preparation and cleanup/recovery
-before selecting process placement. Opening a connection is not a blanket right to install code
-or alter an endpoint's fixed definition.
+The current preference under review is that endpoints manage their plugins and local connection
+bindings, while Conduits coordinate compatible endpoint roles and govern logical participation.
+Shared client lifetime and per-participation binding lifetime remain distinct. Confirm that split,
+then review endpoint compatibility/admission and cleanup/recovery before process placement.
+Opening a connection is not a blanket right to install code or alter an endpoint's fixed definition.
 
 Separate helpers can contain ordinary plugin crashes and support language-neutral implementations;
 an instance-specific runner can host multiple handlers; trusted in-process code can reduce

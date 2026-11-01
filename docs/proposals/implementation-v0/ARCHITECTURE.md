@@ -46,7 +46,7 @@ It is not itself a sixth family, a mandatory process/container or an OS sandbox.
 | Boundary | Meaning under this proposal |
 | --- | --- |
 | Definition and state | The instance's fixed setup/control definitions and confirmed settings govern its behavior; its designated service retains authoritative state. |
-| Execution | Plugin handlers and managed processes serve that instance. Connection-owned behavior may execute at either endpoint. An execution service supplies hosting and supervision and can host multiple instances. |
+| Execution | Plugin handlers and managed processes serve that instance. Connection behavior executes at the endpoints; executable ownership is under review. An execution service supplies hosting and supervision and can host multiple instances. |
 | Authority | An instance context is not an automatic grant. The caller, target, selected Conduit path and current restrictions govern each admitted operation. |
 | Physical placement | An implementation may use trusted in-process handlers, an instance-specific runner hosting several plugins, separate helpers or an external service. Supported placement and isolation guarantees need their own contracts and evidence. |
 
@@ -58,11 +58,18 @@ operation does not transfer its implementation or credentials into the caller's 
 
 A Pool composition step can coordinate child Resource creation while each child's setup belongs
 to that child. Conduits actively establish connections using plugins at either or both endpoints.
-The proposed division is connection-owned establishment/filter/transport activity, hosted through
-the endpoints' supported attachment contracts, versus endpoint-owned capabilities and configuration.
-For example, an Agent-side MCP bridge may serve one Conduit participation while the shared service
-client remains a Resource runtime. A target configuration change still goes through its control
-contract and designated state authority; hosting a connection helper does not transfer that authority.
+The user now favors endpoint-managed paired plugins, with the Conduit coordinating their compatible
+roles, restrictions and participation. Under that proposed division, each endpoint owns its plugin
+implementation and local binding state; the Conduit retains relationship state and correlated
+establishment/cleanup outcomes. Endpoint ownership does not make a detached binding permanent.
+Connection-owned helpers remain an alternative pending the ruling. See the
+[ownership comparison](AUTHORING.md#endpoint-managed-pairing-versus-conduit-managed-helpers).
+
+For example, the Agent's MCP integration manages its local bridge/binding; a Resource's endpoint
+plugin manages the provider-facing binding and shared client. A target configuration change still
+goes through its control contract and designated state authority. Conduit orchestration does not
+become the owner of endpoint code, credentials or confirmed configuration. Compatible roles need
+not use identical plugin packages or require separate processes. Exact pairing/admission remains open.
 
 Keep the initiating actor, owning instance/activity, Conduit participation and physical execution
 location distinguishable. These are attribution relationships, not new object families or

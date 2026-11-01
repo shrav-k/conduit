@@ -247,27 +247,41 @@ Review these related boundaries together before physical placement:
    runtime, and how partial setup/unknown remote outcomes are reconciled. Apply the existing
    per-participant and last-consumer rules without assuming atomic cross-endpoint setup.
 
-**First ruling to take — ownership of plugin activity:** recommend attributing behavior to the
-instance whose definition declares it, independently of where its code executes. Connection-specific
-plugin setup, ongoing behavior and cleanup belong to the Conduit and relevant participation;
-shared capability behavior and supported configuration changes belong to their target instance.
-The enclosing graph/handler/attachment supplies this context; authors need not repeat an owner
-field on every node. This rule concerns declared activity, not ownership of reusable plugin packages.
+**First ruling under discussion — endpoint-managed paired plugins:** the user leans toward
+endpoints owning and managing the plugins used to establish a Conduit. This is not yet accepted.
+Distinguish executable ownership from participation lifetime: an endpoint can own its plugin
+while releasing a particular connection binding when that participation ends. The earlier choice
+bundled those concerns; either executable-ownership arrangement must respect the accepted
+per-participant, last-consumer and backing-data rules.
 
-For example, Agents A and B use one Pool-owned Linear capability through a Conduit. A's local
-MCP binding and filtered participation are connection-specific. The shared provider client and
-authentication remain Resource-owned. Detaching A releases A's connection-specific work, keeps
-B's participation and preserves the shared Resources. If an authorized Interface also changes
-the Resource's supported query limit, that confirmed setting remains Resource configuration after
-the management Conduit ends; detachment is not rollback of completed target operations.
+One endpoint-managed formulation has endpoint templates declare supported connection roles
+through plugin/capability contracts; endpoint instances retain the implementations and manage local
+bindings. A Conduit template declares the compatible roles it needs, filters and establishment
+procedure. Its instance coordinates the selected endpoints and records relationship/participation
+state. It may use orchestration plugins without owning the endpoint-local implementations.
 
-This extends the accepted participation/Resource lifetime rules to plugin activity; it does not
-reopen whether leaving deletes backing data. The alternative places endpoint-local connection
-behavior under the endpoint's own runtime definition and makes the Conduit request its lifecycle
-operations. The exact sharing of code/processes is separate under either arrangement. This first
-ruling remains open, followed by endpoint hosting/compatibility, partial failure and cleanup, then
-physical placement/distribution. Keep later persistence, credential, observability and syntax
-questions in I4–I7; do not turn this into another decision ledger.
+Endpoint management does not alone select the authoring location. Another formulation lets a
+Conduit name a required plugin pair that the endpoints accept and manage through a declared
+hosting capability. Who selects implementations is separate from who supervises their execution.
+Review that choice explicitly; it must preserve retained implementations, authority and fixed
+definitions rather than silently adding arbitrary code to an endpoint.
+
+“Paired” should be examined as compatible capability roles, not necessarily identical packages,
+two executables or a hard-coded plugin A-to-plugin B combination. A standard MCP consumer could
+connect to many conforming provider bindings. An existing external service need not receive new
+code; a managed Resource supplies the applicable endpoint contract around it. Exact capability
+matching, publication and activation remain to be ruled on.
+
+The [comparison and examples](AUTHORING.md#endpoint-managed-pairing-versus-conduit-managed-helpers)
+cover shared Linear access, local filesystem exposure and template/instance consequences. Benefits
+include clear local supervision, fixed implementation ownership and shared-client reuse. Costs
+include requiring compatible endpoint support in advance, endpoint-acknowledged cleanup and
+replacement when genuinely new implementation behavior is needed under the existing fixed-definition
+rule. Connection-owned helpers remain the alternative; physical process placement is separate.
+
+Confirm the ownership/coordination split after this discussion, then settle endpoint compatibility
+and admission, partial establishment/cleanup and physical placement. I4–I7 retain persistence,
+credential, observation and final syntax choices. No new decision ledger or object family is needed.
 
 **Subsequent placement choice — authored code:** the earlier recommendation was separately supervised MCP
 worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust

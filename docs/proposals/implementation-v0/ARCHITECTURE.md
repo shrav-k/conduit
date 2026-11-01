@@ -382,10 +382,11 @@ that binding unavailable. Full interception of unmediated native actions remains
 To implement the accepted composable-requirements model, this proposal adds interpretation work
 to the existing contract catalog, binding coordinator and endpoint dispatch paths. It introduces
 no sixth service/object family; the specific runtime interfaces and algorithms remain proposed.
-Definitions are accepted as reusable across implementations. A Rust implementation can keep their
-generic versioned descriptors and typed parameter validation separate from selected endpoint
-support declarations; the detailed matching contract remains under review. Custom meanings must
-not require adding a Rust enum variant or provider-name branch to core dispatch. Exact internal interfaces remain open.
+Definitions are reusable across implementations; plugins publish support declarations for checking
+before establishment, followed by applicable runtime verification. A Rust implementation can keep
+versioned definitions and typed parameter validation separate from selected endpoint support. The
+detailed matching contract remains under review. Custom meanings must not require adding a Rust
+enum variant or provider-name branch to core dispatch. Exact internal interfaces remain open.
 
 Separate static definition/parameter checks, endpoint binding establishment and runtime checks.
 The resulting resolved association between requirements and supporting implementations can be

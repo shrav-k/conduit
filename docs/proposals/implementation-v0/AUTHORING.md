@@ -625,8 +625,9 @@ and cleanup acknowledgement remain review choices.
 
 **Accepted direction:** compose reusable typed requirements, with a small base set and author-defined
 extensions. Each versioned definition owns its meaning, parameters and applicability independently
-of any implementation; multiple endpoint plugins can support it. Detailed support declarations,
-publication mechanics and evaluation remain proposed in
+of any implementation; multiple endpoint plugins can support it. Plugins publish supported versions,
+endpoint roles and known limitations for pre-establishment matching, followed by applicable runtime
+verification. Detailed declaration syntax, matching and evaluation remain proposed in
 [CONTRACTS](CONTRACTS.md#composable-relationship-requirements--proposed-contract). A Conduit template
 states relationship requirements; endpoint-selected plugins supply capabilities that satisfy them;
 a Conduit instance binds concrete endpoints and retains current state/evidence. Requirements are
@@ -655,8 +656,11 @@ This is a proposed synthetic example, not a claim about AWS CLI interception or 
 The example separates authorship into three jobs: the requirement author defines what must hold;
 the endpoint implementation author supplies support; the Conduit author composes that requirement
 with others. One person/package can do all three, or a second endpoint author can implement the
-same allowed-region contract without redefining it. Definitions and implementations can be published
-together while static validation remains possible without executing code. Requirements do not
+same allowed-region contract without redefining it. Each implementation publishes its supported
+versions/roles and known limits; for example, direct deployments may be supported while a separate
+operation that indirectly chooses a region is not. This declaration is inspectable before setup;
+current login and enforcement still need runtime verification. Definitions and implementations can
+ship together while static validation remains possible without executing code. Requirements do not
 instruct the runtime to download code, provision a missing capability or widen authority.
 
 Filesystem access illustrates a different composition: a directory capability, consumer-local-view
@@ -670,8 +674,8 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, review implementation-support declarations and satisfaction responsibility,
-composition/conflict semantics, and runtime revalidation/failure behavior. The small core vocabulary
+Before specifying syntax, review reusable requirement composition, satisfaction responsibility,
+conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
 and first authoring proof follow those choices. Do not make every custom requirement a Boolean
 expression or assume a general constraint solver can establish arbitrary provider guarantees.
 

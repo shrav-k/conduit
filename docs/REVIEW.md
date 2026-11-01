@@ -37,9 +37,10 @@ records this boundary. **Accepted design direction:** Conduit templates compose 
 requirements, with a small base vocabulary and author extensions, as defined in
 [DESIGN](DESIGN.md#composable-relationship-requirements). Requirement definitions are reusable and
 versioned independently of a particular implementation; multiple plugins may implement the same
-definition, and both may ship together. I3 next settles how plugins declare support, then
-composition and runtime satisfaction before physical placement.
-The detailed mechanisms, experiment additions and syntax remain proposals for review.
+definition, and both may ship together. Plugins publish supported versions/roles and known limits;
+Conduit checks compatibility before establishment and verifies applicable runtime facts separately.
+I3 next addresses composition reuse and runtime satisfaction before physical placement. Detailed
+mechanisms, experiment additions and syntax remain proposals for review.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

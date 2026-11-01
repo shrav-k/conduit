@@ -248,22 +248,24 @@ can implement it; definitions and implementations may ship together without sepa
 repeated schemas. Requirements are contract material within existing extension machinery, not a
 sixth object family, separate deployment or runtime instance per condition.
 
-The detailed support declarations, publication syntax, core catalog, composition rules, evaluation
-protocol and enforcement policies below remain proposed. Accepting an independent definition does
-not certify any plugin's implementation or a running connection's fulfillment.
+**Accepted support boundary:** endpoint plugins publish supported requirement versions, endpoint
+roles and known limitations in their contract bundles. Conduit checks declared compatibility before
+establishment; current authentication, readiness and enforcement still require applicable runtime
+verification. Shared definitions supply schemas without copying them into each implementation.
+This does not certify the implementation or prove a running connection fulfills the requirement.
 
-A Conduit template composes requirements for roles and their relationship. Endpoint-selected
-plugins describe which requirements they can satisfy, for which parameters and under which
-conditions. Concrete instantiation binds existing endpoint capabilities and records the resolved
-requirements as part of its retained definition. Plugins do not need to enumerate every user's
-Conduit template name. Semantic compatibility still needs shared typed meanings and explicit
-version support; matching a name, JSON shape or similarly named field is not enough.
+Detailed declaration syntax and matching, the core catalog, composition, evaluation protocol and
+enforcement policies below remain proposed. A Conduit template composes requirements for roles and
+their relationship. Concrete instantiation binds existing endpoint capabilities and records resolved
+requirements in its retained definition. Plugins do not enumerate user-created Conduit template
+names. Matching a name, JSON shape or similarly named field is not sufficient evidence of support.
 
 | Requirement definition concern | Accepted boundary or proposed detail |
 | --- | --- |
 | Identity and meaning | Accepted: a reusable, versioned behavioral contract independent of any single implementation. Identifier syntax stays open. |
 | Typed parameters and subjects | Accepted: the definition owns typed parameters and applicability. Proposed detail: distinguish endpoint-role, relationship, invocation and result subjects. |
-| Satisfaction | State the supported evidence/checks, preconditions and guarantees; distinguish static declarations from runtime facts. |
+| Implementation support | Accepted: publish supported requirement versions, endpoint roles and known limitations; check before establishment, then verify applicable runtime facts. Exact declaration/matching syntax remains open. |
+| Satisfaction | Proposed detail: describe evidence/checks, preconditions and guarantees sufficient for a particular requirement. |
 | Runtime responsibility | Where needed, identify supported checking/enforcement behavior from the selected implementations and the facts it requires. A schema alone does not enforce behavior. |
 | Composition | Explain applicable conjunction, repeated constraints and conflicts; preserve source requirements in diagnostics. |
 | Lifecycle | Describe when evidence must be refreshed and what unavailable support means for the affected behavior. No universal closed domain-state enum is selected. |

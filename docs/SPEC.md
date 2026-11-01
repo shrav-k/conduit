@@ -161,8 +161,11 @@ A small base vocabulary is extensible with author-defined requirement types. End
 plugins satisfy the applicable meanings; Conduit instances bind concrete participants and retain
 relationship state/evidence. Each requirement's versioned meaning, typed parameters and applicability
 are defined independently of a particular implementation; multiple plugins can implement it, and
-both may ship together. Requirements are contract material, not another object family. Support
-matching, runtime evaluation, publication syntax and the first catalog remain under review.
+both may ship together. Plugins publish supported requirement versions, endpoint roles and known
+limitations for compatibility checks before establishment; current authentication, readiness and
+enforcement still require runtime verification. Requirements are contract material, not another
+object family. Detailed matching/evaluation, publication syntax and the first catalog remain
+under review.
 
 Conduits support explicit opening/joining, reusable composition and per-consumer participation.
 Typed filters narrow operations, targets and parameters. Every restriction along the selected

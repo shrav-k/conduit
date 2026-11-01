@@ -174,6 +174,17 @@ fixtures in the repository; keep real provider test evidence scrubbed and outsid
 
 ## 6. Delivery milestones
 
+Plugin/template authoring is a first-class acceptance path throughout these milestones. The
+first-party integrations must exercise the public extension boundary, and a small separately
+authored plugin must load without a core-code change. Record the files and code the author actually
+needs, including any generated manifest/schema artifacts; do not hide essential setup in the
+developer's environment. SDK/runner details remain pending I3/I7.
+
+Reuse existing infrastructure where its behavior can be adapted and tested against Conduit's
+contracts. Extra process hops or conservative serialization are acceptable initially. Contract
+validation, ownership, access and honest effect outcomes are not optional efficiency tradeoffs.
+Measure costs after the authoring-to-instance path works; optimization is not its entry gate.
+
 Each milestone produces an inspectable vertical slice, not just more abstractions. Milestone
 order after the worker slice is subject to **I2**. No calendar estimates are implied.
 

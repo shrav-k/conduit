@@ -9,6 +9,14 @@ Prefer minimal bookkeeping: retain authoritative configuration, identity, author
 operation evidence; derive views rather than maintain parallel editable descriptions. Shared
 contracts need not impose the same lifecycle, process model or implementation on every type.
 
+**Implementation priority:** plugin and template authoring are central to the protocol and the
+first implementation's success. Evaluate runtime choices by whether an author can define a small
+extension, compose it into templates, establish instances and inspect their behavior without
+modifying the core. Existing infrastructure can implement these boundaries; early efficiency is
+secondary to correct, enforced contracts and a usable authoring path. This direction does not
+approve particular SDKs, plugin packaging, deployment topology or schema spellings. Those rulings
+remain collaborative in the implementation review.
+
 **Primary access model:** establish capabilities and service authentication through a Pool once,
 then let authorized Agents use them through individually restricted Conduits. V0 Interfaces
 provide unrestricted local administration; differentiated Interface permissions are deferred.

@@ -5,7 +5,40 @@ rulings. Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
 reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
 
-## Suggested review order
+## Review priority: plugin and template authors
+
+The user has clarified that these rulings remain collaborative. Do not turn the recommendations
+into defaults or close the queue autonomously. Easy, expressive plugin and template authoring is
+the primary acceptance concern; deployment and efficiency decisions support that goal. Existing
+infrastructure may implement the contracts without becoming part of the public authoring model.
+
+Use these three concrete author journeys to review **I3 and I7 first**:
+
+1. **Compose without new code:** use existing filesystem, authentication and MCP capabilities in
+   a reusable Pool/Agent template, with explicit bindings, setup and permitted controls.
+2. **Add a small operation:** supply a typed handler, such as a checksum operation, and reference
+   it from a graph without writing unrelated service lifecycle machinery.
+3. **Add a managed capability:** supply a new Resource type with setup, ongoing behavior,
+   observation and supported changes, then instantiate and connect it using the same framework.
+
+For each journey, identify what the author writes, what reusable tooling supplies, what the
+protocol guarantees, and how it is tested. Keep the accepted typed contracts, finite graphs,
+instance-owned lifetimes and fixed implementation bindings; their precise authoring surface is
+still to be settled. Template-only composition should not require inventing a new plugin.
+
+**First discussion, no ruling yet:** the user requested concrete examples before choosing. The
+[authoring walkthrough](AUTHORING.md) compares a directory operation, shared MCP access and a
+managed database. Should ordinary operation plugins use small handlers plus
+typed metadata with an SDK/helper runner supplying protocol plumbing, while advanced authors can
+implement the same wire contract directly? The alternative makes a protocol server the standard
+authoring unit. A helper can handle serialization/correlation but cannot invent safe retry or
+effect semantics. This does not select a language, process layout or transport.
+
+Then review I1's execution/authority boundary against those authoring examples, I2's demonstration
+sequence, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a
+change of review order, not another decision ledger.
+
+## Pending choices
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
@@ -17,10 +50,9 @@ reopen the five families, Pool ownership, fixed definitions, shared authenticati
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles. |
 
-Several items can be approved together, but I1 and I2 determine delivery expectations. I3/I7
-determine what an extension author writes. I4/I5/I6 determine what the first real installation
-retains. Numbers for queue sizes, spelling of internal helpers and crate splits are engineering
-defaults to test, not separate ruling queues.
+I3/I7 establish what an extension author writes and can rely on. I1/I2 determine how to execute
+and demonstrate those contracts; I4–I6 determine their retained state and evidence. Numbers for
+queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
 ## I1 — Independent execution and management
 

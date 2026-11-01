@@ -5,6 +5,12 @@ an extensible protocol with a Rust runtime: reusable templates establish instanc
 capabilities connect through Conduits; an Interface makes the system controllable and observable.
 Providers, frontends, storage and skill ecosystems remain replaceable.
 
+Plugin and template authoring are the primary product surface. The protocol must let authors
+extend capabilities and compose reusable instance recipes without changing Conduit's core.
+Early implementations may reuse existing infrastructure and prioritize clear, correct behavior
+over efficiency, provided they preserve and enforce these contracts. Runtime choices can change;
+authoring and behavioral compatibility must be explicit.
+
 This is a design, not an implementation claim. [DESIGN.md](DESIGN.md) holds the detailed contracts.
 The [walkthrough](../experiments/001-shared-access/README.md) proposes concrete YAML within them.
 

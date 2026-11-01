@@ -6,6 +6,13 @@ This packet explains how to implement them, identifies consequences that need a 
 proposes a development sequence. It does not silently promote research or fixture syntax into
 accepted protocol.
 
+**Review priority:** plugin and template authoring come first. The user clarified that open
+choices must be ruled on together, not converted into implementation defaults autonomously.
+All pending choices remain pending. Existing infrastructure is welcome behind enforced contracts;
+the first implementation should establish the authoring and execution patterns before optimizing
+their efficiency. The protocol is the durable product; a particular host or storage arrangement
+is replaceable.
+
 ## Proposed architecture
 
 **I1 remains open.** The user has not accepted a single host owning all execution. Objects must
@@ -29,12 +36,13 @@ CLI/API calls produce internal operation records so the system can recover and e
 
 | Document | Purpose |
 | --- | --- |
+| [AUTHORING](AUTHORING.md) | Concrete template/plugin author journeys and the pending handler-versus-service boundary. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Processes, ownership, persistence, scheduling, access, recovery, observability and concrete execution paths. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, plugin/worker contracts, graph interpretation, controls and MCP mappings. |
 | [ORGANIZATION](ORGANIZATION.md) | Repository/crate boundaries, dependencies, implementation milestones, validation and maintenance. |
 | [REVIEW](REVIEW.md) | Seven grouped decisions with recommendations, alternatives and specific consequences. |
 
-Read the architecture and then the review before examining individual field spellings. The
+Start with the review's authoring walkthrough, then consult the contracts and architecture. The
 contract document is deliberately more concrete than the accepted design, but every spelling
 introduced there is a proposal. The existing [YAML experiment](../../../experiments/001-shared-access/README.md)
 remains unchanged so reviewers can compare it with the proposed implementation language.
@@ -83,6 +91,10 @@ Documentation and source inspection are not executable validation. The
 [runtime experiment](../../../experiments/002-runtime-plugins/README.md) defines the first
 failure tests. This proposal adds detailed implementation obligations but claims no benchmark,
 provider compatibility, credential isolation or recovery test has already passed.
+
+Its success must also include an independently authored plugin and a reusable template, loaded
+without changing core dispatch code. A demonstration consisting only of hard-coded built-in
+integrations would not establish Conduit's central extension model.
 
 Authoring checks completed for this packet: repository Markdown links/anchors/fences, referenced
 local pinned source paths, fenced YAML syntax and whitespace checks. The YAML check is a syntax

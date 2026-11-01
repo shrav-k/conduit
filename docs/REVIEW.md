@@ -16,7 +16,13 @@ contracts, persistence, ownership, crate organization and delivery milestones. I
 [review queue](proposals/implementation-v0/REVIEW.md) groups seven pending implementation choices.
 Start there for architecture review; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** I1 is explicitly unaccepted. The user clarified independent operation,
+**Current focus:** plugin and template authoring, beginning with I3/I7 and concrete author
+journeys. The [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
+retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
+may support the first implementation, but the public authoring and behavioral contracts take
+priority over its efficiency or specific runtime arrangement.
+
+I1 is explicitly unaccepted. The user clarified independent operation,
 eventual distributed placement, Resources from one Pool on different systems and network
 Conduits. [New research](research/DISTRIBUTED_RUNTIME.md) compares execution and authority
 arrangements. Remote production support remains future work; a single execution host is not an

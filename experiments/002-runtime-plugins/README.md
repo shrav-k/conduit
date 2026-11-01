@@ -65,6 +65,26 @@ Keep generated databases, logs and binaries in an explicitly selected temporary 
 
 ## Acceptance cases
 
+### Authoring acceptance
+
+Before treating the fixture as a successful implementation pattern, demonstrate:
+
+- A small plugin authored outside the host's source modules, with its own declared contract,
+  loaded without changing core dispatch or adding its type name to a hard-coded switch.
+- A template using that plugin alongside existing operations, then producing two independent
+  instances from the same recipe. Show typed binding errors and useful author-facing diagnostics.
+- A template-only variation that reuses existing capabilities and connections without new code.
+- A managed Resource extension exposing its supported lifecycle/control/observation contract
+  through the same system. A tiny finite-operation plugin need not implement those unused hooks.
+- Inspection through the Interface of resolved contracts, selected code, setup progress, allowed
+  controls and attributable outcomes. Existing permission, identity and recovery tests still apply.
+
+The review will select the actual plugin authoring format and helper tooling. Record author effort
+and hidden/manual prerequisites as evidence alongside correctness. Built-in-only demonstrations
+or faster execution cannot substitute for proving this extension path.
+
+### Runtime and contract acceptance
+
 | Case | Fault or action | Required observation |
 | --- | --- | --- |
 | Contract checking | Missing schema, wrong input type, unsupported restriction or missing implementation | Reject invalid configuration or report unready execution as appropriate. Never drop a filter or substitute code. |

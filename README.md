@@ -3,6 +3,8 @@
 Conduit connects independent agents to shared capabilities, knowledge and one another.
 Pools own Resources and shared service authentication; Conduits expose permitted access;
 Interfaces provide unified control and observability.
+Conduit templates compose reusable typed requirements, with a small base vocabulary and author
+extensions; endpoint-selected plugins provide compatible behavior and manage their local bindings.
 
 The project is in protocol design. There is no runnable Conduit implementation yet.
 The implementation direction is Rust, with replaceable frontends and provider integrations.

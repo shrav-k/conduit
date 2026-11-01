@@ -49,7 +49,7 @@ supporting concepts, not additional families.
 | Agent | Runtime/account/model configuration, activation, connections and supported controls. | An autonomous participant with private context, concrete configuration and executions. |
 | Resource | Typed creation/attachment, ongoing capability and supported controls. | One unitary capability with exactly one owning Pool. |
 | Pool | Resource composition, shared service-access setup and supported management controls. | Owns its Resource instances and organizes their authentication/access lifecycle. |
-| Conduit | Endpoints, interaction/filtering behavior, setup and supported controls. | A connection with concrete participants, filtering and connection state. |
+| Conduit | A relationship contract composed from typed requirements, endpoints, setup and supported controls. | A connection with concrete participants, filtering and connection state. |
 
 Resource creation/attachment always goes through its owning Pool, including supporting Resources
 for Conduits. Templates are reusable across Pools; each resulting Resource instance has one owner.
@@ -1515,6 +1515,34 @@ authentication and connection support can have a different authority and lifetim
 or joining alone does not merge private Agent context, credentials or access. Connection identity
 is separate from process, transport and backing-Resource identity. Further authoritative-state,
 recovery and composition details remain in [REVIEW.md](REVIEW.md).
+
+### Composable relationship requirements
+
+A Conduit template defines its relationship contract by composing reusable typed requirements.
+Endpoint templates select the plugins that supply compatible behavior; endpoint instances manage
+those implementations and local bindings. A Conduit instance realizes the configured relationship
+between concrete participants. Plugins satisfy reusable requirement meanings rather than needing
+to recognize every user-created Conduit template by name.
+
+Provide a small base vocabulary and allow authors to define additional requirement types. These
+are contract/authoring definitions, not a sixth object family, a separate deployment or a runtime
+instance per condition. A Conduit may compose known requirements without new code; a new behavioral
+meaning needs suitable implementation support. Publication of a requirement does not install code
+at endpoints or change their fixed definitions.
+
+Requirements express obligations and restrictions. Existing graphs coordinate declared procedures
+to establish prerequisites, while instances own ongoing behavior. Resource configuration and plugin
+input/output contracts remain; a relationship requirement does not redefine a target operation.
+Typed filters are related narrowing requirements, with their existing whole-path access semantics.
+Requirements cannot create permission grants or override baseline identity, ownership and lifecycle
+rules. Registration still performs no provider effects; observed readiness remains distinct from
+valid configuration. Detailed satisfaction/evidence and failure rules require implementation review.
+
+The concrete core catalog, definition/implementation publication arrangement, composition operators,
+version identifiers, satisfaction checks, runtime enforcement bindings and syntax remain open. The
+[implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
+tracks those choices; accepting the compositional model does not select an expression language,
+a universal solver, a worker topology or an expanded experiment scope.
 
 ### Composite Conduits
 

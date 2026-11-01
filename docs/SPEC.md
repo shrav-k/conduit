@@ -37,7 +37,7 @@ Five families each have template and instance forms:
 | **Agent** | An actor with private execution/context, a fixed account/runtime/provider boundary, activation rules and supported controls. |
 | **Resource** | One capability responsibility with its related operations, owned by exactly one Pool. |
 | **Pool** | Offers named Resource-template entries, binds dependencies and owns deployed Resources and shared service access. |
-| **Conduit** | An instantiated authorized connection carrying interactions and narrowing access. |
+| **Conduit** | A relationship contract composed from typed requirements, instantiated as an authorized connection between compatible endpoints. |
 
 Templates contain typed configuration, a finite setup graph, ongoing runtime declarations and
 supported controls. One template establishes many independent instances; registration alone runs
@@ -155,6 +155,12 @@ MCP tool names and schemas stay native where supported. Dynamic discovery grants
 Caller identity and shared provider identity are recorded separately.
 
 ## Connections, filtering and communication
+
+Conduit templates define relationship contracts by composing reusable typed requirements.
+A small base vocabulary is extensible with author-defined requirement types. Endpoint-selected
+plugins satisfy the applicable meanings; Conduit instances bind concrete participants and retain
+relationship state/evidence. Requirements are contract material, not another object family.
+Concrete definitions, evaluation rules and the first catalog remain under review.
 
 Conduits support explicit opening/joining, reusable composition and per-consumer participation.
 Typed filters narrow operations, targets and parameters. Every restriction along the selected

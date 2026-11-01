@@ -92,6 +92,13 @@ store, process worker versus a fake, clock/process control versus deterministic 
 Do not abstract every standard library call. Unvalidated YAML/JSON cannot construct a trusted
 dispatch context; validation and authentication produce distinct internal types.
 
+For composable requirements, the proposed allocation is definition/parameter interpretation in
+config, generic contract/support descriptors in core, and binding/runtime coordination in runtime.
+Endpoint implementations provide requirement-specific support. These are responsibilities within
+the existing candidate crates, not a requirement for a new crate or hard-coded core variant for
+every extension. Exact publication, satisfaction interfaces and the first vocabulary await I3;
+no new expression-language dependency follows from the accepted design direction.
+
 The terminal initially lives as a client module in the app crate, not a second authoritative
 runtime. Extract a reusable client crate if multiple real frontends need it. Native provider
 adapters begin as modules in the built-in package; separate distributable packages when independent

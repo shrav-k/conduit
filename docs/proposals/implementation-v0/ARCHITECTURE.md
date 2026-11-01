@@ -379,8 +379,9 @@ that binding unavailable. Full interception of unmediated native actions remains
 
 ### Requirement resolution and enforcement — proposed
 
-The composable-requirements direction would add interpretation work to the existing contract
-catalog, binding coordinator and endpoint dispatch paths rather than a sixth service/object family.
+To implement the accepted composable-requirements model, this proposal adds interpretation work
+to the existing contract catalog, binding coordinator and endpoint dispatch paths. It introduces
+no sixth service/object family; the specific runtime interfaces and algorithms remain proposed.
 A Rust implementation can keep a generic versioned definition registry and typed parameter
 validation, then resolve selected endpoint support. Custom meanings must not require adding a
 Rust enum variant or provider-name branch to core dispatch. Exact internal interfaces remain open.

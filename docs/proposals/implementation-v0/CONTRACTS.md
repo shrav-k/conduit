@@ -240,9 +240,10 @@ infer semantics from a tool name, HTTP method or an advisory MCP annotation alon
 
 ### Composable relationship requirements — proposed contract
 
-The user endorses exploring Conduits composed from reusable typed requirements, with a small
-base vocabulary and author-defined additions. The concrete model below remains proposed; exact
-syntax, core types, evaluation protocol and enforcement policies still require review. Requirements
+The [accepted design](../../DESIGN.md#composable-relationship-requirements) uses Conduit templates
+composed from reusable typed requirements, with a small base vocabulary and author-defined additions.
+The detailed contract below remains proposed: definition/publication boundaries, exact syntax, core
+types, evaluation protocol and enforcement policies still require review. Requirements
 are contract definitions published/referenced through existing extension machinery, not a sixth
 object family, a separate deployment or a new runtime instance per condition.
 
@@ -306,10 +307,10 @@ already covers the action. Current governing access rules and facts still change
 resolved requirement meanings as part of the existing retained instance definition, without a new
 mandatory template-history archive. Requirement satisfaction never creates a permission grant.
 
-The [authoring example](AUTHORING.md#conduit-as-relationship-contract--proposal) and
+The [authoring example](AUTHORING.md#composable-conduit-contracts) and
 [configuration research](../../research/CONFIGURATION.md#composable-requirements-research-follow-up)
-explain the proposed extension path and the limits of schema/expression/policy engines. Adopting
-this model would not select CUE, CEL, Cedar, a universal endpoint API or a worker arrangement.
+explain the proposed extension path and the limits of schema/expression/policy engines. The accepted
+model does not select CUE, CEL, Cedar, a universal endpoint API or a worker arrangement.
 
 ### Host-facing Rust interfaces
 

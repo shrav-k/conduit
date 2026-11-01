@@ -486,9 +486,10 @@ implementation choices within I1's accepted boundaries and the pending I3 packag
 
 **Accepted:** endpoint templates select their plugins; endpoint instances manage implementations
 and local bindings; Conduits match compatible capabilities and coordinate the relationship.
-The next proposal is to make the Conduit template itself the relationship contract that plugins
-satisfy. That contract model, its representation and satisfaction checks remain under discussion.
-Process placement, SDK API and YAML syntax remain open.
+Conduit templates define relationship contracts by composing reusable typed requirements, with
+a small base vocabulary and author extensions. That direction is accepted; definition/publication,
+composition and satisfaction mechanics remain under review. Process placement, SDK API and YAML
+syntax remain open.
 
 ### Plugin, template, graph and instance
 
@@ -620,10 +621,10 @@ and cleanup acknowledgement remain review choices.
 | Interface changes an Agent's model | Carry the authorized typed control request and its response/progress. | The Agent's handler applies the change within its fixed provider/account boundary and records confirmed configuration. |
 | Search Resource reads storage | Establish the search-to-storage capability path and restrictions. | Separate Resource responsibilities, backing data and supported search/index lifecycle. |
 
-### Conduit as relationship contract — proposal
+### Composable Conduit contracts
 
-**Endorsed exploration direction:** compose reusable typed requirements, with a small base set and
-extensions authored outside the core. The detailed contract/evaluation design remains proposed in
+**Accepted direction:** compose reusable typed requirements, with a small base set and author-defined
+extensions. The detailed definition/publication and evaluation design remains proposed in
 [CONTRACTS](CONTRACTS.md#composable-relationship-requirements--proposed-contract). A Conduit template
 states relationship requirements; endpoint-selected plugins supply capabilities that satisfy them;
 a Conduit instance binds concrete endpoints and retains current state/evidence. Requirements are

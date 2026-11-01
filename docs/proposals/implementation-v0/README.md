@@ -17,7 +17,9 @@ preserves the existing families, ownership and access rules. I1 accepts manageme
 separation, shared policy with instance-owned state, no offline grants, and a one-machine
 first proof with management and two independent executor processes. I2 accepts native adapters
 before the owned Rust model/tool loop and macOS-first native integration/account validation;
-I3's remaining execution and packaging choices are next;
+I3 accepts endpoint-selected/managed plugins and Conduit contracts composed from reusable typed
+requirements, with a small base vocabulary and author extensions. Requirement publication,
+composition and runtime satisfaction precede the remaining execution/packaging choices;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -48,6 +50,10 @@ Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime d
 Templates remain the complete authoring entry point: typed YAML, finite setup graphs, declared
 runtime behavior and supported controls. Users do not author separate operation-request manifests.
 CLI/API calls produce internal operation records so the system can recover and explain effects.
+Conduit templates compose typed relationship requirements; selected endpoint plugins supply support.
+The proposed runtime resolves definitions, checks bindings and coordinates relevant runtime
+validation/enforcement with attributable Interface evidence. The model is accepted; specific
+extension contracts, algorithms, libraries and the minimal requirement catalog remain under review.
 
 ## Reading order
 

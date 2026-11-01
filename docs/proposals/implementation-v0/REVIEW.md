@@ -84,8 +84,9 @@ native Claude/Codex adapters first, then build Conduit's own Rust model/tool loo
 **Accepted initial platform:** macOS-first native integration and subscription-account validation,
 with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
 
-**Next discussion:** I3's composable typed requirements: extension authoring, composition/runtime
-satisfaction and a minimal proof. Endpoint-selected/managed implementations remain accepted.
+**Next ruling:** I3's reusable requirement definition versus implementation boundary, followed by
+composition/runtime satisfaction and a minimal proof. Composable typed requirements and
+endpoint-selected/managed implementations are accepted.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -95,7 +96,7 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1 and I2 are settled. Review the remaining I3 execution/distribution choices, then I4–I6's
+I1 and I2 are settled. Review I3's requirement contracts and execution/distribution choices, then I4–I6's
 persistence/custody/evidence support. Preserve the existing IDs; this is a
 change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
 
@@ -103,7 +104,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I3 | Composable requirements, execution and distribution | Endpoint-selected/managed plugins accepted; define reusable requirement extensions, satisfaction and a minimal proof before placement. |
+| I3 | Requirement extension contracts, execution and distribution | Composable requirements and endpoint-selected/managed plugins accepted; settle publication, satisfaction and a minimal proof before placement. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
@@ -232,22 +233,33 @@ preserves other participation and independently shared Resources. Detachment doe
 confirmed target configuration or provider effects. Logical ownership does not choose a process
 count, programming language or OS sandbox.
 
-**Current direction for detailed review — composed typed requirements:** the user favors Conduit
-templates composing reusable typed requirements, with a small base vocabulary and author-defined
-extensions. Endpoint-selected plugins satisfy the applicable requirements; instances bind concrete
-endpoints and preserve relationship state/evidence. The overall direction is endorsed for deeper
-design work; the specific definition, interpretation and runtime contracts below are proposals.
-Do not continue treating a plugin's explicit support for every user-named Conduit template as the
-preferred matching model. Shared typed meanings/version compatibility still matter.
+**Accepted design direction — composed typed requirements:** Conduit templates compose reusable
+typed requirements, with a small base vocabulary and author-defined extensions. Endpoint-selected
+plugins satisfy the applicable meanings; instances bind concrete endpoints and preserve relationship
+state/evidence. [DESIGN](../../DESIGN.md#composable-relationship-requirements) records this model.
+The specific definition/publication, interpretation and runtime contracts below remain proposals.
+Compatibility concerns reusable typed meanings and supported versions, rather than an implementation
+enumerating every user-named Conduit template it can serve.
 
 The [proposed requirement contract](CONTRACTS.md#composable-relationship-requirements--proposed-contract)
 covers extension publication, support/evidence, composition, runtime responsibility and changes.
-The [authoring walkthrough](AUTHORING.md#conduit-as-relationship-contract--proposal) separates
+The [authoring walkthrough](AUTHORING.md#composable-conduit-contracts) separates
 composition without code from adding a genuinely new requirement meaning. The
 [research follow-up](../../research/CONFIGURATION.md#composable-requirements-research-follow-up)
 compares CUE, JSON Schema, CEL and Cedar without selecting one as the engine.
 
-Review the consequences in three groups, before returning to process placement:
+**Next ruling — reusable definition versus implementation:** recommend publishing a requirement's
+versioned meaning, typed parameters and applicability independently of any single implementation,
+with endpoint plugins declaring support for it. Definition and implementation can ship together;
+this does not require separate packages or duplicate schemas. For example, one allowed-regions
+requirement could be supported by two deployment integrations, and a Conduit can reference that
+meaning with its permitted values without naming either integration's code. Published support is
+not proof of runtime fulfillment. Exact version/schema fields and support-checking rules remain open.
+The alternative binds the requirement's identity/meaning to one implementation, requiring new
+requirement references or explicit mappings when another implementation supplies similar behavior.
+This first ruling settles the extension boundary, not an SDK, package layout or evaluator API.
+
+Review the remaining consequences in three groups, before returning to process placement:
 
 1. **Extension contract and authoring:** how a requirement publishes its meaning, typed parameters,
    applicability and compatible implementation support; composition of existing definitions versus

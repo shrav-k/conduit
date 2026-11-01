@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Interface authority and foundational storage, then engine | Recommend independent policy administered by authorized Interfaces, with broad default root administration; user leaning, ruling pending. Active direction, storage extension/representation and SQLite remain open. |
+| I4 | Policy representation and foundational storage, then engine | Independent policy accepted. Next distinguish authorization data, its management Resource and requirements/plugins; expanded Interface direction, storage extension and SQLite remain open. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -420,31 +420,26 @@ and targets retain capability, revision, lifecycle and outcome checks. Managemen
 shared registry/policy facts; Pools own Resources; the Interface records its own workflow and links
 to authoritative target outcomes. Other authorized actors can still invoke management capabilities.
 
-**Authority recommendation after cloud IAM research, not yet accepted:** keep policy independent
-of particular Interfaces. Multiple Interfaces can administer policy within their verified authority;
-the owner-operated root has broad administration by default. The user leans toward this model.
-The [AWS/GCP/Azure follow-up](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
-separates governed policy, administrative principals and clients, with provider-specific caveats
-about root privileges and identity replacement. It supports the recommendation without deciding
-Conduit's storage representation or detailed delegation syntax.
+**Accepted authority ruling:** policy is independent of any particular Interface. Multiple
+authorized Interfaces can administer it; the owner-operated root has broad default administration.
+Replacement establishes valid administrative access without transferring policy ownership or
+recreating grants. Existing recipient/target/withdrawal rules remain; reusing a name cannot preserve
+an old instance's authority. This does not narrow today's broad v0 Interface administration.
+See the [cloud research](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
+and [lifecycle example](ARCHITECTURE.md#root-authority-lifecycle-comparison).
 
-**Lifecycle comparison before a ruling:** the
-[Euphony walkthrough](ARCHITECTURE.md#root-authority-lifecycle-comparison) compares establishment,
-delegation, frontend detachment, root-runtime loss, policy-service loss, restart and replacement.
-Most running behavior is the same. Existing grants do not expire merely because the issuer stops;
-the distinction is whether replacement changes logical policy ownership and requires explicit
-succession. Prefer independently retained policy through the existing system management capability:
-a replacement Interface establishes valid administrative access without transferring policy
-ownership or resetting grants. This replaces the earlier exclusive-stewardship synthesis as the
-recommendation. Reusing a name does not preserve an old instance's identity or authority; current
-grant/recipient/target lifecycle rules still apply.
+**Next discussion — policy representation:** the user asks whether this is a Resource or a named
+concept alongside requirements/plugins. The [proposed distinction](ARCHITECTURE.md#policy-representation--proposed)
+treats Policy as typed authorization rules/grants beneath the five families, managed through a
+Resource capability. Requirements supply reusable guarantees/restrictions; plugins implement the
+relevant operations and checks. The existing system management Resource could expose the capability
+without a Resource per policy or a new mandatory template/instance stack. A policy declaration
+requires authorized acceptance; neither a file nor a requirement can self-grant access.
 
-The comparison does not narrow v0 Interface access, add implicit restart loops or assign automatic
-priority over Agent commands. The proposed later Euphony-only Interface illustrates differentiated
-administration rather than introducing it into v0. Policy-management and service-use authority
-must remain distinct. The active-role and policy-ownership rulings remain open. Initial
-Interface persistence, authority verification and storage selection follow; the first-definition
-load and earliest durable progress still need a concrete home within its runtime contract.
+Only independence is accepted. Naming Policy as a protocol construct, its Resource representation,
+schemas, initial persistence and precise management API remain open. The expanded active Interface
+role still needs its startup/repair contract; the new ruling does not choose the first-definition
+load or earliest durable progress mechanism.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant

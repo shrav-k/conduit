@@ -106,6 +106,12 @@ V0 Interfaces have unrestricted local administration. Agents receive explicit gr
 an OS account does not grant managed access. Unrestricted administration still follows supported
 lifecycle/control contracts and cannot rewrite fixed definitions in place.
 
+Shared access policy is independent of any particular Interface's lifecycle. Multiple authorized
+Interfaces can administer it, with broad default administration for the owner-operated root.
+Replacing an Interface establishes valid administrative access without transferring policy
+ownership or recreating existing grants. Grant, recipient and target lifecycle rules still apply.
+Policy representation and its management/storage contracts remain under implementation review.
+
 ## Construction and runtime
 
 Templates use YAML with an inline or referenced finite dependency graph. Nodes select typed plugin

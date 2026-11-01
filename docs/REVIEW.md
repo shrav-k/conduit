@@ -70,10 +70,11 @@ accepted state authority, and Pools retain Resource ownership. Responsibility an
 being refined before accepting that role: directives, implemented capabilities, permission to act
 and confirmed target outcomes must remain distinct. The
 [cloud IAM follow-up](research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
-now recommends policy independent of Interface lifecycle, administered by multiple authorized
-Interfaces with broad default root administration. The user leans toward this; it is not yet a
-ruling and does not narrow broad v0 Interface access. The expanded role, foundational storage
-and first storage engine remain under discussion.
+supports the now-accepted independence of policy from Interface lifecycle, administered by multiple
+authorized Interfaces with broad default root administration. This does not narrow broad v0
+Interface access. Next clarify [policy representation](proposals/implementation-v0/ARCHITECTURE.md#policy-representation--proposed):
+authorization data, the Resource capability that manages it, and its relationship to requirements
+and plugins. The expanded role, foundational storage and first storage engine remain under discussion.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

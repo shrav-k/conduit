@@ -162,6 +162,16 @@ configuration/revision and operation results. The responsible service can host m
 management can host passive instance authorities and executors active ones. This state authority
 is distinct from a Resource's logical Pool ownership and from a plugin implementing a handler.
 
+**Interface-independent policy:** shared policy is independent of the Interface that administers
+it. Multiple authorized Interfaces can administer the same policy; the owner-operated root has
+broad default administration. Replacing an Interface requires valid access to the retained policy,
+not a transfer of policy ownership or recreation of grants. A new Interface cannot acquire the old
+one's authority merely by reusing its name. Existing recipient-participation, withdrawal and target
+lifecycle rules remain intact. Narrower per-Interface authority stays deferred for v0.
+The [policy representation discussion](proposals/implementation-v0/ARCHITECTURE.md#policy-representation--proposed)
+distinguishes authorization data, its management capability and reusable requirement definitions;
+the representation has not yet been selected.
+
 Keep one authoritative instance configuration. When a supported control confirms application,
 its responsible service records the confirmed settings, revision and outcome. Pending or uncertain
 changes remain separate. Other services can retain observations, but cannot independently edit

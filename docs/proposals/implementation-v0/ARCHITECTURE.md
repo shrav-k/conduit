@@ -76,85 +76,83 @@ confirmed configuration and operation results. The Interface retains its own con
 management-workflow progress. Administrative permission does not bypass fixed definitions,
 revision checks or the requirement to establish an actual outcome.
 
-There are two meanings of root authority to distinguish before adopting the role:
-
-| Interpretation | Logical policy ownership | Consequence to review |
-| --- | --- | --- |
-| Root as administrator | Registry-wide policy is an independent management capability that the root Interface is authorized to administer. | That policy's identity/lifecycle is independent of any particular Interface; root is a powerful client and coordinator. |
-| Root as system-policy owner | The root Interface's contract owns responsibility for registry-wide administrative policy and delegation; management services store/enforce it on that role's behalf. | Makes authority part of an existing object, but replacing/stopping that root and introducing another administrator require explicit policy-continuity rules. |
-
-Both preserve one authoritative service per fact and independent instance outcomes. Selecting the
-second does not put all grants in template YAML, move Resources out of Pools, require every request
-to visit the root process or give the root a second writable copy of target configuration. Its
-policy can be represented by runtime records and backed by Resources. The first separates that
-policy domain from Interface lifecycle. Shared policy with instance-owned state does not alone
-settle which of these logical ownership interpretations applies. The user now leans toward the
-first. The [cloud IAM follow-up](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
-supports independent policy as the current recommendation; neither interpretation is accepted yet.
+**Accepted: independent policy.** Shared policy is independent of any particular Interface,
+with multiple authorized Interfaces able to administer it and broad default root administration.
+The [cloud IAM comparison](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
+provides the rationale. The root's active management responsibilities do not require ownership of
+the policy it administers. This settles logical authority, not policy representation, storage or
+the earliest startup sequence.
 
 #### Root authority lifecycle comparison
 
-Both authority interpretations remain open. Compare them with the same objects: root Interface R1,
-a system Pool with management/policy capability P, an Euphony Pool with shared authentication and
-Linear Resources, and Agents A and B on independent executors. These labels are illustrative, not
-proposed YAML or new object types. Assume P and the executors can remain available when R1's
-coordination runtime stops; co-locating their processes would change outage effects in either model.
+Consider root Interface R1, an Euphony Interface E, Agents A/B, and shared policy P. P is a logical
+label for the existing shared authority, not a newly accepted object type.
 
-| Event | Root administers independent policy | Root logically owns system policy |
+| Event | Accepted consequence |
+| --- | --- |
+| R1 establishes a Pool and delegates access to A | Pools retain Resource ownership; the recorded grant follows A's participation and current restrictions. |
+| R1's frontend closes or its runtime stops | This alone does not revoke A's grant or prevent E from using another authorized path. |
+| R1 is replaced by R2 after changing its fixed definition | R2 establishes verified administrative access. Policy ownership and existing grants do not transfer or reset. Old workflow effects still need ordinary recovery. |
+| R1 and E update the same policy | The authoritative service coordinates checked changes; Interface observations are not separate writable policy authorities. |
+| Current permission cannot be verified | Hold new affected managed requests under the no-offline-grants rule; retain supervision and already-dispatched outcomes. |
+| A detaches, its grant is withdrawn or a governed target is deleted | The corresponding participation/grant/target lifecycle contract applies. Independence from an administrator does not preserve every grant through every deletion. |
+
+Replacing an Interface is different from replacing the principal or recipient named in a grant.
+A reused readable name does not restore an old identity or authority. Historical attribution stays
+intact. The Euphony-only administrator example illustrates later differentiated Interface access;
+it does not narrow today's broad owner-operated v0 administration.
+
+#### Policy representation — proposed
+
+The user accepted independence and asked whether policy is a Resource or another authoring concept
+alongside requirements and plugins. These are different layers. The proposed distinction is:
+
+| Layer | Meaning | Example |
 | --- | --- | --- |
-| Establish Euphony | R1 acts for the local owner to establish the Pool/Resources and invoke P's management operations. P's policy domain is independent of Interface identity. | R1 establishes the same objects. Its contract is responsible for the policy domain; P's service stores and enforces that policy on its behalf. |
-| Delegate Linear access | R1 issues a grant through P for A's read-only Conduit participation; B can receive different access. P retains the policy and attribution. | The same grant is issued under R1's system-policy responsibility and retained by P. Pool ownership, service login and recipient restrictions are unchanged. |
-| Close the terminal | The frontend detaches from R1. Policy, grants, Resources and independent work persist. | The same. The frontend's lifetime is separate from Interface and policy lifetimes. |
-| Stop R1's coordination runtime; P remains authoritative and reachable | A can make a permitted request using current checks against P. Already-dispatched work and other executors retain their established semantics. | The same can hold: a stopped logical owner need not invalidate persisted policy whose service remains authoritative. Owner liveness is not an extra grant condition. No issuer-liveness revocation is introduced. |
-| Lose P or its current authority, even if R1 is alive | Hold affected new managed requests whose permissions cannot be verified; preserve admitted outcomes under the accepted outage rules. | The same. R1's administrative role does not turn an unavailable policy record into a verified grant. |
-| Restart R1 with the same identity | Reconnect to P, inspect current instance authorities and reconcile R1's retained management progress. | The same, including verification of its existing policy responsibility. Do not recreate policy or replay setup blindly. |
-| Replace R1 with R2 after revising its fixed graph/control definition | R2 must have valid owner access and connect to P. P's logical policy ownership does not change; independent policy/grant IDs can stay intact. Active management work still needs an explicit recovery/coordination path. | The policy role must distinguish R2 from R1. A possible design explicitly transfers responsibility while preserving P's policy/grant IDs and historical attribution; alternatively policy bound to R1's private lifecycle needs migration or retention. The succession contract is unchosen. |
-| Retire/delete R1 | Removing the Interface does not itself remove independently owned policy or Pool data. Normal checks and explicit effects still apply. | The lifecycle must specify what happens to its policy responsibility before retirement. Do not infer that deleting R1 purges shared policy, ends unrelated grants or transfers ownership automatically. |
+| Policy | Typed authorization rules and authoritative grants governing actors, targets and participation. This is a proposed named concept beneath the five families. | Agent A may read Euphony Linear through its attachment; it has no onward-delegation authority. |
+| Management Resource | An instantiated capability exposing inspection, authorized policy changes, delegation and withdrawal. | The existing system Pool's management Resource could expose this capability for many policy records. |
+| Requirement | A reusable contract stating a guarantee and when/where it must hold; it can include restrictions but cannot issue a grant. | Restrict provider operations to reads and results/requests to the permitted workspace. |
+| Plugin | Published contracts and implementation bindings supporting the management/evaluation/enforcement behavior. | A policy-management implementation validates a grant; a Resource-side MCP implementation enforces a supported workspace restriction. |
+| Graph | A procedure composing operations, including policy-management operations if authorized. | Establish a Resource, then request a permitted delegation. Merely declaring that graph grants nothing. |
+| Conduit | The live relationship whose selected path and participation are governed by current authority and applicable requirements. | A's connection to shared Linear, distinct from the Interface's connection used to administer policy. |
 
-The accepted delegation rule already says a grant follows recipient participation and current
-restrictions rather than the issuing frontend or coordinator remaining active. Therefore owner
-liveness must not be added silently as a condition in the second model. If a concrete implementation
-stops P together with R1, checks may become unavailable; that is an actual service dependency, not
-proof that every persisted grant was withdrawn. Restart/replacement cannot resurrect a revoked grant.
+Recommendation: name Policy as authorization data, without a sixth family, a process for every
+policy, or another mandatory template/instance stack. A grant is a specific recorded authorization
+under that policy, not another provisioned object. Policies can use existing typed requirement
+definitions for applicable restrictions instead of defining a second filtering language. This does
+not make arbitrary requirements permission-granting: compatibility/readiness guarantees still
+have their own meanings and only applicable restrictions participate in access decisions.
 
-**Concrete replacement example:** A has read-only access to Euphony through grant G at policy
-revision 12. R1's management workflow has a bug, so the owner wants a new template and R2 instance.
-In the first model, R2 administers the existing P with verified owner authority. In a continuity-
-preserving version of the second, an authorized checked operation changes the recorded system-policy
-responsibility from R1 to R2; G's recipient, restrictions, lifetime and original issuer remain intact.
-R2 does not recreate G from its template or copy old policy over the latest state. Each instance
-retains its own history, fixed definitions and outcomes. Pending management work is reconciled
-separately; replacing the root is not permission to repeat uncertain external effects.
+**Concrete flow, illustrative rather than final syntax:**
 
-The second transfer is a proposed mechanism, not an accepted operation or automatic failover.
-Interruption during it must leave the responsible service able to identify the confirmed assignment
-or report uncertainty; a name or an unconfirmed local edit cannot promote a second root. No rule
-currently requires every administrative request to have a unique root issuer: broad v0 Interface
-access and explicitly delegated Agent controls remain as agreed. Coordination of the foundational
-policy role is distinct from permitting another actor to issue a management command.
+1. An authorized Interface requests read access for Agent A to a specific shared Linear Resource,
+   limited to Euphony, without permission to delegate further.
+2. The management capability checks its authority to issue that access, target/recipient limits
+   and the supported enforcement path; it records the resulting grant against A's participation.
+3. A's later native Linear invocation follows its Conduit. Current grant/governing policy and
+   all applicable relationship restrictions must pass, using the selected enforcement implementations.
+4. Withdrawing the grant changes authoritative access data. It does not edit A's setup graph,
+   replace the Linear plugin or delete the shared provider authentication.
+5. Replacing the administering Interface leaves the policy and A's participation governed by the
+   same records. Changing the enforcing implementation still follows replacement/pinning rules.
 
-**Current recommendation, ruling pending:** independent policy with multiple authorized
-administrative Interfaces. The root remains an active system director with broad default owner
-administration. The existing system Pool's management Resource exposes policy operations; its
-responsible service retains shared policy facts independently of any one Interface. No new family,
-dedicated policy Resource type or storage engine follows. Replace the earlier proposed exclusive
-stewardship/succession synthesis with ordinary verified administrative access for a replacement
-Interface. R2 still needs its own valid connection/authority and reconciliation of any old work;
-it cannot acquire access merely by using R1's name.
+Policy as a named construct would warrant explicit protocol semantics for inspect/change/evaluate
+and scope/provenance, but does not settle a standalone package/export format or require arbitrary
+policy code. Authoring or installing a policy declaration cannot authorize it; acceptance requires
+current management/delegation authority. Policy administration and service use are separate rights.
 
-The cloud comparison supports separating the acting principal, administrative Interface and policy
-records. An Interface is an active Conduit instance rather than merely a cloud-console analogy,
-but directing startup/repair does not require owning the policy it administers. Multiple Interfaces
-use current shared policy and checked changes; their local observations are not independent writable
-copies. Later Euphony-only and personal Interfaces can have different administrative reach. This
-does not silently narrow today's broad owner-operated v0 Interface access or choose the later grant
-syntax. Permission to manage policy and permission to use a service remain distinct contracts;
-root's broad local administration cannot supply missing external provider authority.
+The management Resource would expose a capability, while a service/store retains its authoritative
+facts; a YAML document is only a representation of those facts. One Resource may manage many policy
+records. A separate policy-administration Resource could be introduced if its configuration or
+lifecycle warrants that boundary, but it is not required merely to name Policy. Individual
+authorization records also need not be ordinary searchable knowledge records or receive knowledge
+sharing semantics. Their authority/lifecycle contract must govern access.
 
-Independent policy does not make every grant immortal. A recipient/target deletion, explicit
-withdrawal or participation ending still has its defined effect. Policy identity is independent of
-the administrative Interface, not of every governed object. Policy-service unavailability still
-blocks new requests whose permission cannot be verified even if the root Interface itself is up.
+This remains a proposal. The accepted five families, independent policy, existing grants and
+requirement contracts stand; the name and representation are the next ruling. It does not select a
+policy engine, public storage backend contract, process layout or credentials model. Initial access
+to foundational management state still needs an acyclic startup/repair contract; adding a Resource
+wrapper alone does not solve that dependency.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops

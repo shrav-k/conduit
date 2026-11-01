@@ -13,8 +13,9 @@ records the accepted authority, outage and first-proof rulings.
 
 The [Interface/policy follow-up](#9-interface-administration-and-independent-policy) examines the
 separate I4 question of whether the root Interface owns policy or administers independent policy.
-The user currently leans toward independent policy; that choice is **not yet accepted**. This
-follow-up does not reopen I1's accepted service/state authority boundary.
+The user subsequently **accepted independent policy**, administered by authorized Interfaces with
+broad default root administration. Policy representation remains open; the follow-up's Resource
+and storage suggestions are not additional rulings. I1's service/state authority boundary remains.
 
 Method: read primary public architecture, extension and API documentation. No cloud accounts,
 credentials or deployments were used, and no failure behavior was tested. Public API contracts
@@ -359,9 +360,10 @@ and MCP profile fields remain I7.
 
 Follow-up researched 2026-11-01. The question is logical policy responsibility, not the storage
 engine: can several Interfaces administer the same durable policy under their own authority,
-while the root has broad default administration? The current recommendation is **yes, with policy
-independent of any particular Interface**. This is our inference from the primary sources below,
-not a claim that Conduit must reproduce cloud IAM or that the user has accepted this ruling.
+while the root has broad default administration? The subsequently accepted direction is **yes,
+with policy independent of any particular Interface**. The comparison below explains the research
+behind that ruling, rather than requiring Conduit to reproduce cloud IAM. Representation and
+initial persistence remain under review.
 
 ### Where cloud policy lives
 
@@ -453,12 +455,12 @@ reusing R1's readable name. Historical attribution remains unchanged.
 
 ### What to adopt, and what remains open
 
-Proposed ruling: keep policy independent of Interface lifecycle; permit multiple authorized
-Interfaces to administer it; give the owner-operated root broad default administration. Keep the
-Interface's active direction/observation role and target services' authoritative outcomes. The
-root does not need exclusive policy stewardship or a policy-succession operation merely because
-its own template changes. This replaces the earlier stewardship synthesis as the recommendation,
-not as an accepted decision.
+Accepted ruling: keep policy independent of Interface lifecycle; permit multiple authorized
+Interfaces to administer it; give the owner-operated root broad default administration. Target
+services retain their authoritative outcomes. The root does not need exclusive policy stewardship
+or a policy-succession operation merely because its own template changes. This replaces the earlier
+stewardship synthesis. It is compatible with the proposed active Interface direction role, whose
+startup/repair details remain open. How policy is represented and managed is the next discussion.
 
 Policy administration must distinguish authority to manage a grant from authority to use its
 target. Future limited administrators need a defined delegation boundary; simple record-update

@@ -12,6 +12,7 @@ between settled decisions, schema proposals and future work.
 | [REVIEW.md](REVIEW.md) | Consolidated review outcomes and questions to test with examples. | Review boundary; no parallel decision ledger. |
 | [experiments/](../experiments/README.md) | Concrete configuration, walkthroughs and acceptance evidence. | Proposed syntax and tests until adopted/validated. |
 | [research/](research/README.md) | Primary sources, comparisons and recorded probes. | Evidence, not additional requirements. |
+| [Proposal/](Proposal/README.md) | Roadmap proposal: protocol focus, Sealmesh messaging, local root agent, per-environment VMs. | Proposal for discussion; not accepted design. |
 
 Keep each detailed rule in DESIGN. Experiments link to those rules rather than inventing another
 contract. Record actual validation separately from expected outcomes. Research can describe

@@ -377,6 +377,27 @@ checks where the meaning of native arguments matters. If the implementation can 
 tool names, it cannot claim workspace-level filtering. Unsupported requested restrictions leave
 that binding unavailable. Full interception of unmediated native actions remains outside v0.
 
+### Requirement resolution and enforcement — proposed
+
+The composable-requirements direction would add interpretation work to the existing contract
+catalog, binding coordinator and endpoint dispatch paths rather than a sixth service/object family.
+A Rust implementation can keep a generic versioned definition registry and typed parameter
+validation, then resolve selected endpoint support. Custom meanings must not require adding a
+Rust enum variant or provider-name branch to core dispatch. Exact internal interfaces remain open.
+
+Separate static definition/parameter checks, endpoint binding establishment and runtime checks.
+The resulting resolved association between requirements and supporting implementations can be
+reported in Conduit inspection; it is system-owned evidence, not a new authored plan. Endpoint
+instances remain responsible for their local enforcement/effects, while the Conduit's authority
+retains relationship state and the Interface correlates observations. A cached match is not an
+offline grant. Readiness losses affect the dependent capability under existing failure rules.
+
+Observability should explain which requirement/version applies, which endpoint supports it and
+why an action is unavailable, without claiming validation proved all runtime behavior. Detailed
+payload capture remains I6; no new full-input logging default is introduced. The proposal does
+not select an expression engine, extra worker processes or an OS sandbox. See the
+[contract proposal](CONTRACTS.md#composable-relationship-requirements--proposed-contract).
+
 ### Shared authentication
 
 An authentication Resource owns refresh and selected service identity. A service Resource obtains

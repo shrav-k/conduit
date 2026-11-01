@@ -33,9 +33,10 @@ across contracts and templates stays at the end, after conceptual rulings.
 and manage those implementations and local bindings. Conduits match compatible capabilities and
 coordinate establishment, policy and participation. They do not install new endpoint plugin code.
 The [family-by-family walkthrough](proposals/implementation-v0/AUTHORING.md#5-where-the-example-implementations-execute)
-records this boundary. I3 now explores the proposal that Conduit templates define relationship
-contracts whose conditions endpoint plugins satisfy, before establishment/cleanup and physical
-placement. That proposal and detailed binding syntax remain open.
+records this boundary. The user favors exploring Conduit templates composed from reusable typed
+requirements, with a small base vocabulary and author extensions. I3 examines the extension contract,
+composition and runtime satisfaction before physical placement. These detailed semantics, experiment
+additions and binding syntax remain proposals for review.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

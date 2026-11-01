@@ -148,6 +148,26 @@ the fake effect ledger separate from the host's operation store so a lost respon
 tests the external-effect boundary. A request ID or received protocol reply alone is not proof
 of durable storage or exactly-once execution.
 
+## Proposed requirement-authoring proof
+
+Candidate addition for the composable-requirements discussion; not yet an accepted milestone
+expansion or executed test. Reuse the existing fake service, two consumers and separate authorities:
+
+- Compose known operation restrictions in two Conduit templates without modifying endpoint code.
+- Publish one custom requirement outside core modules, with typed parameters and runtime support
+  selected in the fixture endpoint template. A fake deployment operation with an allowed-region
+  condition is a candidate; this makes no claim about real cloud/CLI interception.
+- Show valid/invalid parameter diagnostics without running the service; show that known schemas
+  with missing runtime support leave the affected connection unready rather than dropping the rule.
+- Demonstrate one allowed and one rejected invocation, inspect actual fake-service dispatches and
+  retain the selected requirement/implementation identities and explanation in Interface evidence.
+- Change a relevant authorized fact or governing restriction after establishment and show that a
+  cached setup result does not bypass required runtime checking. Preserve unrelated usable work.
+
+The purpose is to prove extension without a hard-coded requirement/provider switch in Rust, not to
+build a large vocabulary, expression engine or generic solver. Review this scope alongside I3 before
+implementation; package syntax, process placement and detailed evidence capture remain separate.
+
 ## Measurements and decision gates
 
 Record arrangement, per-service/worker startup time and idle memory, local/cross-executor invocation

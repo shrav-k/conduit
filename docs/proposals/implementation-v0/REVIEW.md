@@ -84,9 +84,9 @@ native Claude/Codex adapters first, then build Conduit's own Rust model/tool loo
 **Accepted initial platform:** macOS-first native integration and subscription-account validation,
 with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
 
-**Next discussion:** I3's proposal that Conduits define relationship contracts satisfied by
-endpoint plugins; endpoint-selected/managed implementations remain accepted. Connection lifecycle,
-physical execution and distribution follow after this conceptual discussion.
+**Next discussion:** I3's composable typed requirements: extension authoring, composition/runtime
+satisfaction and a minimal proof. Endpoint-selected/managed implementations remain accepted.
+Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
@@ -103,7 +103,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I3 | Conduit contract satisfaction, execution and distribution | Endpoint-selected/managed plugins accepted; discuss Conduits as relationship contracts before lifecycle and placement. |
+| I3 | Composable requirements, execution and distribution | Endpoint-selected/managed plugins accepted; define reusable requirement extensions, satisfaction and a minimal proof before placement. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
@@ -232,29 +232,42 @@ preserves other participation and independently shared Resources. Detachment doe
 confirmed target configuration or provider effects. Logical ownership does not choose a process
 count, programming language or OS sandbox.
 
-**Current discussion — Conduits as the contracts:** the user proposes that a Conduit define the
-conditions its endpoint plugins must satisfy. Explore this before adopting a separate common
-endpoint-connection API. The accepted choice of endpoint-selected/managed plugins remains intact.
-A possible formulation is: Conduit template = relationship contract; endpoint plugins = compatible
-implementations of its requirements; Conduit instance = concrete binding with current authority,
-state and evidence. This is a proposal, not an accepted protocol revision.
+**Current direction for detailed review — composed typed requirements:** the user favors Conduit
+templates composing reusable typed requirements, with a small base vocabulary and author-defined
+extensions. Endpoint-selected plugins satisfy the applicable requirements; instances bind concrete
+endpoints and preserve relationship state/evidence. The overall direction is endorsed for deeper
+design work; the specific definition, interpretation and runtime contracts below are proposals.
+Do not continue treating a plugin's explicit support for every user-named Conduit template as the
+preferred matching model. Shared typed meanings/version compatibility still matter.
 
-Use the [MCP and filesystem examples](AUTHORING.md#conduit-as-relationship-contract--proposal)
-to distinguish reusable relationship requirements from provider-specific code and per-connection
-configuration. Typed plugin inputs/outputs and Resource configuration still need contracts;
-the proposal centralizes relationship semantics rather than making implementation schemas disappear.
-MCP remains the public invocation base, and contract requirements cannot create access rights.
+The [proposed requirement contract](CONTRACTS.md#composable-relationship-requirements--proposed-contract)
+covers extension publication, support/evidence, composition, runtime responsibility and changes.
+The [authoring walkthrough](AUTHORING.md#conduit-as-relationship-contract--proposal) separates
+composition without code from adding a genuinely new requirement meaning. The
+[research follow-up](../../research/CONFIGURATION.md#composable-requirements-research-follow-up)
+compares CUE, JSON Schema, CEL and Cedar without selecting one as the engine.
 
-The key questions are which conditions are reusable and interpretable, whether satisfaction is
-based on declared capability/role requirements or explicit implementation of an identified Conduit
-contract, and what requires runtime evidence beyond static schema checks. Connection setup,
-inspection, release and failure semantics can be defined by the relationship without forcing every
-kind through one closed enum. Avoid exact fields or a universal endpoint method set until this
-model is understood. No worker/placement decision follows from it.
+Review the consequences in three groups, before returning to process placement:
 
-Once that discussion is resolved, examine establishment/readiness and partial-failure/cleanup
-behavior, then physical placement/distribution. I4–I7 retain persistence, credential, observation
-and final syntax choices. The proposal does not yet change experiment acceptance criteria.
+1. **Extension contract and authoring:** how a requirement publishes its meaning, typed parameters,
+   applicability and compatible implementation support; composition of existing definitions versus
+   new semantics. Reuse the existing contract-bundle path without introducing another object family.
+   Exact field names/version spelling remain I7; no broad helper SDK is required.
+2. **Composition and execution:** which static conflicts can be diagnosed; who checks/enforces a
+   requirement at binding, invocation, delivery or cleanup; how changing facts, uncertain evidence
+   and unavailable implementations affect dependent operations. Preserve whole-path narrowing,
+   current access and effect/recovery rules rather than inventing new authority through requirements.
+3. **First vocabulary and proof:** choose a minimal meaningful set and demonstrate an externally
+   authored requirement without changing core dispatch. The experiment's
+   [proposed addition](../../../experiments/002-runtime-plugins/README.md#proposed-requirement-authoring-proof)
+   is a candidate for review, not a silently expanded accepted milestone.
+
+Typed plugin input/output schemas and Resource configuration contracts remain. The Conduit owns
+relationship requirements and composition; it cannot redefine target operation semantics or claim
+unsupported enforcement. MCP remains the public invocation base. The proposal does not select a
+universal endpoint API, Boolean expression language, constraint solver, worker arrangement or
+sandbox. Establishment/cleanup and I4–I7's persistence, credential, observation and syntax choices
+remain in the queue.
 
 **Subsequent placement choice — authored code:** the earlier recommendation was separately supervised MCP
 worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust

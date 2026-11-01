@@ -1,6 +1,6 @@
 # Configuration languages, templates and instances
 
-Updated 2026-10-31. **Research evidence and proposed schema, not an executable specification.**
+Updated 2026-11-01. **Research evidence and proposed schema, not an executable specification.**
 Current contracts live in [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md). The five families
 are Interface, Agent, Resource, Pool and Conduit. Templates specify both complete establishment
 and permitted instance-configuration changes. Pools own Resources and normally establish shared
@@ -29,6 +29,33 @@ complete control protocol or proves current provider support.
 Our [configuration papers](#research-papers-and-their-limits) also argue for meaningful constraints,
 diagnostics and avoiding excessive options. The inference is a small discoverable control contract,
 not every plugin implementation detail exposed as a configurable field.
+
+## Composable requirements: research follow-up
+
+Primary sources rechecked 2026-11-01 for the proposal that Conduit templates compose typed
+relationship requirements satisfied by endpoint-selected plugins. The user supports exploring a
+small base vocabulary plus author extensions. The following implementation implications are
+inferences for review, not adoption of these languages or proof of Conduit behavior.
+
+| Primary evidence | Conduit implication and limit |
+| --- | --- |
+| [CUE constraints](https://cuelang.org/docs/tour/basics/constraints/) combine values/types and restrictions through unification; the example succeeds when constraints and supplied values agree. | Compose restrictions rather than letting later declarations overwrite earlier ones. This does not provide a generic proof of provider behavior or require adopting CUE. |
+| [JSON Schema vocabularies](https://json-schema.org/draft/2020-12/json-schema-core#section-8.1.2) can mark a vocabulary required; unsupported required vocabularies must stop processing. Its [extension rules](https://json-schema.org/draft/2020-12/json-schema-core#section-6.5) otherwise treat unsupported keywords as annotations. | A custom requirement needs recognized meaning, not an arbitrary schema keyword silently accepted as documentation. Use schemas for parameter data; do not assume JSON Schema performs runtime enforcement. |
+| [CEL's evaluation model](https://cel.dev/overview/cel-overview) separates parsing/checking from evaluation against an application-defined environment of variables/functions. | Resolve stable expression structure separately from changing facts, if an expression facility is eventually justified. A predicate result still needs a defined point of use, supplied facts and an enforcing implementation. No CEL dependency or expression surface is selected. |
+| [Cedar authorization](https://docs.cedarpolicy.com/auth/authorization.html) evaluates principal/action/resource/context against policies and returns a decision with diagnostics; its combination rules include deny precedence and skip-on-error. | Preserve complete actor/operation/target context and explain decisions. Do not import its error rule as a generic requirement rule: an unverified mandatory requirement cannot be treated as fulfilled merely because another requirement succeeds. Authorization and fulfilling non-security obligations remain distinct. |
+
+These sources support separating data shape, constraint meaning, evaluation and effects. A
+relationship might require a compatible protocol, a valid identity and bounded results; no single
+schema, policy evaluator or expression engine supplies all those behaviors. Reusing a mature
+library later can implement part of the design without becoming the public requirement contract.
+
+The recommended first design is a small, explicit interpretation layer with published typed
+requirement meanings, endpoint support declarations, useful diagnostics and specific runtime
+checking/enforcement where required. Keep code execution under the selected instance implementations.
+No automatic plugin loading, speculative Resource provisioning or broad new constraint DSL follows
+from a Conduit listing a requirement. Preserve fixed definitions, narrowing-only access and honest
+unknown/unavailable outcomes. Detailed proposed boundaries are in
+[implementation contracts](../proposals/implementation-v0/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
 
 ## Concrete configuration
 

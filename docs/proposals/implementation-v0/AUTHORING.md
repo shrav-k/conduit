@@ -622,30 +622,54 @@ and cleanup acknowledgement remain review choices.
 
 ### Conduit as relationship contract — proposal
 
-A Conduit template could define the roles, interaction requirements, restrictions and establishment/
-release obligations for a relationship. Endpoint-selected plugins publish the capabilities and
-behavior they can supply. Instantiation binds concrete endpoints and verifies their satisfaction
-of the configured requirements. A Conduit instance is the live, inspectable realization of that
-contract, not the definition itself or a new object family. This direction remains proposed.
+**Endorsed exploration direction:** compose reusable typed requirements, with a small base set and
+extensions authored outside the core. The detailed contract/evaluation design remains proposed in
+[CONTRACTS](CONTRACTS.md#composable-relationship-requirements--proposed-contract). A Conduit template
+states relationship requirements; endpoint-selected plugins supply capabilities that satisfy them;
+a Conduit instance binds concrete endpoints and retains current state/evidence. Requirements are
+reusable contract material, not another family or an executable instance per rule.
 
-For shared MCP access, the Conduit might require a consumer that can present native tools and a
-provider that can invoke them under the selected operation/target restrictions, with attributable
-results and binding release. Existing MCP operations remain the protocol vocabulary; a Conduit
-need not re-specify every Linear tool. For local directory access, provider and consumer agree on
-an authorized descriptor/local view and its placement/cleanup requirements; these are different
-relationship semantics and do not require a persistent network process.
+For example, a read-only MCP relationship can combine compatible consumer/provider behavior,
+permitted native operations, a provider-aware target restriction and bounded returned content.
+The same endpoint plugins can support another Conduit with different allowed targets or limits.
+They implement the reusable requirement meanings, not a list of user-authored template names.
+Native MCP discovery remains dynamic; this does not require copying every provider tool schema
+into the Conduit definition or replacing familiar tool names with a generic wrapper.
 
-The proposal changes where relationship requirements are defined; it does not remove plugin
-input/output schemas, Resource-type configuration contracts, current authority or instance-owned
-execution. Reusable typed requirements could be checked against plugin declarations and runtime
-evidence. Mere schema compatibility or a claimed capability cannot prove authentication, effect
-semantics, enforcement or recovery. Missing code cannot be supplied by a declarative contract.
+| Author task | What is authored | What need not change |
+| --- | --- | --- |
+| Restrict an existing relationship | Compose known requirements with values and selected endpoints in a Conduit template. | Plugin code and core dispatch, where selected endpoints already support the constraints. |
+| Package a reusable specialization | Compose existing typed requirements with deliberate defaults/limits, using explicit definition references. | No new executable merely to restate supported conditions. Exact packaging/composition syntax remains open. |
+| Introduce new behavior | Publish its requirement meaning, parameter schema and implementation support/checking/enforcement where needed. Select supporting plugins in endpoint templates. | The five families and generic core dispatch; publication alone does not add code to existing instances. |
 
-Open questions include whether plugins satisfy reusable requirement/role definitions across many
-Conduit templates or explicitly implement identified Conduit contracts; where requirements can be
-reused without duplicating protocols; and how setup/readiness/cleanup obligations map to endpoint
-operations. Avoid presuming a new universal endpoint API, arbitrary constraint solver or second
-programming language. Keep exact syntax until these conceptual choices are settled.
+**Concrete extension example:** a fake deployment service accepts a typed region argument. An
+external author adds an allowed-region requirement, including the region-list schema, its precise
+meaning and endpoint implementation support. The Conduit permits a chosen region; the endpoint
+checks the actual dispatch parameters before the fake provider effect. Unsupported endpoints
+cannot claim fulfillment, and another request cannot bypass the rule by reusing setup-time proof.
+This is a proposed synthetic example, not a claim about AWS CLI interception or real cloud support.
+
+The example separates authorship into three jobs: the requirement author defines what must hold;
+the endpoint implementation author supplies support; the Conduit author composes that requirement
+with others. One person/package can do all three. Definitions and implementations can be published
+together while static validation remains possible without executing code. Requirements do not
+instruct the runtime to download code, provision a missing capability or widen authority.
+
+Filesystem access illustrates a different composition: a directory capability, consumer-local-view
+support and applicable placement/cleanup requirements. Authentication is a runtime fact; a path or
+symlink is not proof of enforced read-only access. Requirement declarations must describe the
+actual guarantee rather than infer it from a label. Retained messaging can add delivery/history
+obligations backed by a Pool-owned Resource; these are not implied by a transport connection.
+
+The proposal complements existing graphs: requirements describe obligations and restrictions;
+graphs call declared endpoint operations to establish prerequisites; instances manage ongoing
+behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
+recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
+
+Before specifying syntax, review extension definition/publication and satisfaction responsibility,
+composition/conflict semantics, and runtime revalidation/failure behavior. The small core vocabulary
+and first authoring proof follow those choices. Do not make every custom requirement a Boolean
+expression or assume a general constraint solver can establish arbitrary provider guarantees.
 
 Separate helpers can contain ordinary plugin crashes and support language-neutral implementations;
 an instance-specific runner can host multiple handlers; trusted in-process code can reduce

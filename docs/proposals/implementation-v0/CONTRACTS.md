@@ -238,6 +238,79 @@ Some recovery behavior is declarative, some is implemented by a handler. An oper
 non-repeatable, provider-idempotent or inspectable without being generally replay-safe. Do not
 infer semantics from a tool name, HTTP method or an advisory MCP annotation alone.
 
+### Composable relationship requirements — proposed contract
+
+The user endorses exploring Conduits composed from reusable typed requirements, with a small
+base vocabulary and author-defined additions. The concrete model below remains proposed; exact
+syntax, core types, evaluation protocol and enforcement policies still require review. Requirements
+are contract definitions published/referenced through existing extension machinery, not a sixth
+object family, a separate deployment or a new runtime instance per condition.
+
+A Conduit template composes requirements for roles and their relationship. Endpoint-selected
+plugins describe which requirements they can satisfy, for which parameters and under which
+conditions. Concrete instantiation binds existing endpoint capabilities and records the resolved
+requirements as part of its retained definition. Plugins do not need to enumerate every user's
+Conduit template name. Semantic compatibility still needs shared typed meanings and explicit
+version support; matching a name, JSON shape or similarly named field is not enough.
+
+| Requirement definition concern | Proposed meaning |
+| --- | --- |
+| Identity and meaning | A versioned, unambiguous behavioral contract independent of an implementation release. Identifier syntax stays open. |
+| Typed parameters and subjects | Validate supplied values and identify the endpoint role, relationship, invocation or result to which they apply. |
+| Satisfaction | State the supported evidence/checks, preconditions and guarantees; distinguish static declarations from runtime facts. |
+| Runtime responsibility | Where needed, identify supported checking/enforcement behavior from the selected implementations and the facts it requires. A schema alone does not enforce behavior. |
+| Composition | Explain applicable conjunction, repeated constraints and conflicts; preserve source requirements in diagnostics. |
+| Lifecycle | Describe when evidence must be refreshed and what unavailable support means for the affected behavior. No universal closed domain-state enum is selected. |
+
+These are conceptual responsibilities, not mandatory fields for every tiny extension. A derived
+requirement can compose existing ones without new code. A genuinely new semantic requirement needs
+a definition plus an implementation that can satisfy/check/enforce it where needed. Pure validation
+must remain distinct from effects: registration does not run a login, create a database or install
+an endpoint plugin. Existing authorized setup graphs may establish prerequisites explicitly.
+
+**Starter candidates, not an approved catalog:** compatible endpoint capabilities/protocol features;
+permitted operations; provider-aware target constraints; placement compatibility for local views;
+result-size/count bounds; and applicable identity/binding lifecycle requirements. Baseline authority,
+identity, outcome retention and participation rules are not optional knobs that authors can omit.
+Domain-specific examples belong in extension packages, not an ever-growing hard-coded core enum.
+
+**Composition recommendation:** all applicable mandatory requirements on the selected path must
+hold. Combine restrictions by conjunction, not YAML order or last-write-wins. Preserve operation
+and target conditions together; separate authorized routes remain complete alternatives. Familiar
+numeric bounds or set restrictions can have explicit combination rules; arbitrary user-defined
+requirements need not support a general static solver. Detect known contradictions, report an
+empty permitted set honestly and leave unknown compatibility unresolved rather than claiming it
+has passed. Alternative/advisory requirement syntax is not selected by this proposal.
+
+**Validation and operation:**
+
+- Parse typed parameters and resolve known requirement definitions without executing endpoint code.
+  A missing required schema still prevents the registry write under the existing rule.
+- Match selected endpoint declarations and configured parameters. This yields support or useful
+  diagnostics, not evidence of a live authenticated connection. Missing runtime support can leave
+  otherwise valid registered configuration unready; do not install/substitute code automatically.
+- Establish authorized bindings through the existing graphs/endpoint implementations. Record which
+  configured requirements have support and which need runtime evidence; no new user-authored plan
+  manifest or object is needed.
+- Recheck changing facts at their defined point of use and enforce relevant request/result
+  restrictions. A startup check cannot replace current authorization. A check result must not be
+  treated as permanently valid merely because it was cached.
+- Preserve plugin-specific evidence and partial outcomes under existing instance authorities.
+  Unknown, unsupported, contradicted and currently unavailable are distinguishable facts, not
+  interchangeable successful validation. Exact wire representation remains open.
+
+**Change boundary:** supported controls may change declared requirement parameters within their
+fixed contracts. Adding/replacing requirement semantics or selected implementation definitions is
+not a generic live mutation; follow v0 replacement rules unless an existing supported control
+already covers the action. Current governing access rules and facts still change live. Pin the
+resolved requirement meanings as part of the existing retained instance definition, without a new
+mandatory template-history archive. Requirement satisfaction never creates a permission grant.
+
+The [authoring example](AUTHORING.md#conduit-as-relationship-contract--proposal) and
+[configuration research](../../research/CONFIGURATION.md#composable-requirements-research-follow-up)
+explain the proposed extension path and the limits of schema/expression/policy engines. Adopting
+this model would not select CUE, CEL, Cedar, a universal endpoint API or a worker arrangement.
+
 ### Host-facing Rust interfaces
 
 Define a few capability-oriented ports rather than a giant required plugin trait:

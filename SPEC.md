@@ -258,6 +258,14 @@ mandatory registry service. Pool inclusion uses explicit named entries referenci
 templates. Generic object labels and label-based selectors are excluded from v0; discovery uses
 defined fields and relationships. Exact entry/binding fields and graph syntax remain open.
 
+Templates/graphs explicitly distinguish provisioning from a named Pool entry from using a selected
+existing Resource instance. Both yield a concrete instance binding; a matching template/name does
+not silently select reuse or provisioning. Several consumers can use one existing authentication
+or Linear Resource, while separate tasks can provision workspaces from the same entry. Provisioning
+with attach behavior creates a new registration around existing backing; using an existing Resource
+retains its identity and owner. The intent belongs in composition, without a separate operation
+manifest or a manual question on every start. Existing authority, capability and safe-retry rules apply.
+
 During partial Pool setup, ready Resources remain usable through authorized Conduits while other
 components wait or fail. Each Resource's prerequisites and declared gates still apply; report the
 Pool's incomplete setup without withholding unrelated ready capabilities. This preserves partial
@@ -401,8 +409,9 @@ complete construction templates, typed handlers and template-declared change bou
 settled direction, including Pool-owned reusable authentication Resources. R1 confirms replacement
 for fixed-definition changes, including Interface administration. R2 selects finite dependency
 graphs with branching/loops inside plugins. R3 requires explicit Resource retirement before Pool
-deletion and new instances after Conduit flow end. The [four remaining review
-bundles](REVIEW.md#remaining-decision-bundles) cover connection selection/delegation/routing,
-activation, configuration/extension resolution, and communication scope.
+deletion and new instances after Conduit flow end. R4 settles explicit Pool composition intent,
+connection selection/delegation/routing and removal of generic labels/selectors. The [three remaining
+review bundles](REVIEW.md#remaining-decision-bundles) cover activation, configuration/extension
+resolution, and communication scope.
 Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

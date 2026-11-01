@@ -26,8 +26,8 @@ developed. Normal interaction uses Conduits and runtime-supported operations; Re
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
 Changing an instance's fixed setup graph or control definitions requires a replacement in v0,
 including through the Interface. Supported settings, connections and lifecycle remain manageable.
-R1–R3 are settled; [four review bundles remain](REVIEW.md#remaining-decision-bundles), beginning
-with [connection selection, delegation and routing](REVIEW.md#next-discussion). Implementation details and future
+R1–R4 are settled; [three review bundles remain](REVIEW.md#remaining-decision-bundles), beginning
+with [Agent activation and source changes](REVIEW.md#next-discussion). Implementation details and future
 extensions are tracked separately.
 
 Templates contain complete establishment instructions and declare what instance configuration
@@ -36,6 +36,8 @@ plugin dependencies make this inspectable. V0 graphs compose finite dependencies
 steps; branching and loops stay inside plugins. Instances manage ongoing behavior; Interfaces and
 Agents request permitted changes through Conduits. Agent templates declare starting connections;
 Pools do not supply default Agent connections in v0. Later connections are explicit.
+Pool composition explicitly chooses provisioning from an entry or using an existing Resource;
+both resolve to a concrete instance for the connection.
 Type/plugin implementations supply the actual operations, while templates expose and constrain them.
 V0 uses explicit Pool entries and defined object fields; generic object labels and label-based
 selectors are excluded. Knowledge-record classification and typed Conduit filters remain separate.

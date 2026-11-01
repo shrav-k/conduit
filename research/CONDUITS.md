@@ -567,8 +567,8 @@ The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single deci
 Authentication reuse, composite participation, typed filters and access-path composition are
 accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
 now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4 excludes
-generic object labels/selectors; its remaining Pool provisioning/binding question and R7's
-communication contract remain open. Detailed
+generic object labels/selectors and requires explicit provisioning versus existing-Resource binding.
+R7's communication contract remains open. Detailed
 syntax belongs to R6; examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:

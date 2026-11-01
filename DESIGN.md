@@ -1001,10 +1001,27 @@ target ID. Catalog entries alone have no deployed Resource identity. Other Pool 
 own deployed Resources; template reuse alone does not share instance identity. Local entry names
 are not global registry aliases or an alternative instance identity; referencing one grants no access.
 
-**Accepted composition mechanism:** a reusable graph step consumes selected Resource entries and
-dependency bindings, establishes the Resources through their own setup contracts and exposes the
-results. The selection is a provisioning instruction, separate from merely listing available
-templates. A declared setup graph may provision a chosen composition; catalog membership alone
+**Accepted provisioning intent (R4):** templates/graphs explicitly distinguish provisioning from a
+named Pool entry from using a selected existing Resource instance. The former creates a Resource
+through its owning Pool; the latter binds an already-registered instance without changing its owner.
+Both resolve to a concrete Resource binding. An entry is a reusable provisioning choice, not a
+singleton instance or an implicit reuse-or-create instruction. A matching template/name alone must
+not decide between those actions. Pool composition or explicit creation inputs can supply an existing
+target without embedding a particular deployment's identity in every reusable template.
+
+For example, two tasks can provision separate worktrees from one entry, while several Agents share
+the Pool's existing authenticated Linear Resource through their own Conduits. A new service can bind
+the same authentication Resource rather than provision another login. Provisioning with attach
+behavior is different: it creates a new registration around existing backing, such as a local folder.
+Composition carries the choice without a separate operation manifest or a manual question on every
+start. Authority, compatibility and explicit binding rules still apply; retry reuses valid recorded
+progress rather than treating a provision instruction as permission to create duplicates.
+
+**Accepted composition mechanism:** a reusable graph step consumes the composition's explicit
+provisioning/existing-instance choices and dependency bindings. It establishes newly requested
+Resources through their own setup contracts and resolves existing targets without treating their
+selection as a new provisioning request. It exposes concrete results for subsequent bindings.
+A declared setup graph may establish a chosen composition; catalog membership alone
 must not cause all entries to deploy. Custom graphs can reference the same entries for extra
 ordering or checks; authors need not restate Resource configuration or hand-wire every component's
 setup. Required dependencies govern preparation, not YAML mapping order. This preserves each
@@ -1028,8 +1045,8 @@ No background reconciler is implied.
 
 Use the accepted local composition declarations, resolved instance bindings and ordinary operation
 evidence without requiring a second provisioning-plan ledger. Pools group unitary Resources and
-derive useful views from their contracts. Remaining provisioning/binding and representation choices
-are consolidated in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
+derive useful views from their contracts. Exact composition fields and result wiring belong to the
+configuration profile in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
 **Accepted label removal (R4):** Pool inclusion uses explicit named Resource-template entries.

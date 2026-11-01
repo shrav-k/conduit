@@ -4,7 +4,7 @@ Updated: 2026-10-31. Audited all 11 repository Markdown documents for current co
 unresolved decisions, conflicting recommendations and obsolete questions. Source research remains
 dated evidence; this audit did not rerun provider investigations or validate a runtime.
 
-**The review is not complete yet.** R1–R3 are accepted; four connected decision bundles remain below.
+**The review is not complete yet.** R1–R4 are accepted; three connected decision bundles remain below.
 Their recommendations are not newly accepted requirements. Field names, implementation choices
 and future catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
 remain the accepted design; research supplies evidence rather than a second decision queue.
@@ -13,33 +13,36 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-**Generic object labels and label-based selectors are removed from v0.** Pool inclusion uses
-explicit named entries; discovery uses defined fields and relationships. This closes the label
-inheritance/matching/refresh questions. Knowledge-record classification, provider-native schemas
-and typed Conduit filters retain their separate contracts. There is no replacement grouping family.
+**R4 is settled.** Pool composition explicitly distinguishes provisioning from a named entry from
+using a selected existing Resource. Both resolve to a concrete instance binding. Generic object
+labels/selectors and Pool-provided default Agent connections are excluded from v0. Exact fields
+belong in the configuration packet, not another Pool ruling.
 
-One Pool ambiguity remains in **R4**: an available template entry is not the concrete Resource
-instance a dependency ultimately needs. The local-binding examples provisioned one authentication
-Resource and one Linear Resource together; they did not settle reuse of an already-running instance
-or make every Pool entry a singleton. Repeated template instantiation is already supported.
+Next is **R5: activation and source changes**. Agent configuration already owns activation; Conduits
+provide permitted access. The remaining policy concerns preparation, collisions and updating what
+has been loaded. A template can declare these choices once; explicit behavior does not require a
+human prompt for each activation.
 
-| Intended use | Recommended template/graph meaning |
+| Available capability | Example Agent-declared activation |
 | --- | --- |
-| Give two independent coding tasks their own workspaces. | Explicitly provision from the Pool's worktree entry for each task; bind each consumer to its resulting Resource instance. |
-| Give another Agent access to the Pool's existing Linear capability. | Use the selected existing Resource through an authorized Conduit; do not provision another service/authentication Resource merely because the template matches. |
-| A new service needs the Pool's existing authentication Resource. | Bind that dependency to the selected instance. The entry describing how to provision authentication is a different reference. |
-| Create a Resource registration around an existing local folder. | Provision using a template's explicit attach behavior. This creates a new registered Resource around existing backing, unlike using an already-registered Resource. |
+| Skill collection | Advertise compatible skill descriptions; retrieve full instructions when selected. |
+| Instruction document | Load selected content during preparation within the declared context budget. |
+| Linear MCP access | Expose permitted provider-native tools through the supported integration. |
+| Native executable extension | Load only when the actual runtime supports its hooks; model compatibility alone is insufficient. |
 
-**Recommendation, not yet a ruling:** connection/dependency declarations distinguish using an
-existing Resource instance from provisioning through a named Pool entry. Both yield a concrete
-instance binding under the existing identity, compatibility and authority rules. The template/graph
-encodes the intent; this needs no separate operation manifest or manual question on every start.
-Do not silently switch between reuse and provisioning based only on a matching template/name.
+**Recommendation, not yet a ruling:** apply declared compatible activation during preparation;
+required failures block readiness and optional failures are reported. Resolve conflicting exposed
+names explicitly rather than choosing by discovery order. Equivalent repeated preparation should
+avoid duplicate loading without merging different configurations, routes or authority.
 
-This would preserve reusable entries without introducing a per-entry singleton convention or a
-second ownership model. The alternative delegates that reuse-versus-provision choice implicitly to
-the integration; a future explicit reuse-or-create policy would need its own declared semantics.
-Exact field names and result wiring belong in the schema packet after the behavior is settled.
+Changed source content becomes available for reads, but does not silently replace already-loaded
+instructions or extensions. Refresh uses a supported explicit operation at a safe runtime boundary;
+unsupported replacement requires a new execution/instance as its fixed contract dictates. This does
+not freeze live access restrictions or the separately agreed dynamic provider tool catalogs.
+
+The alternative adds automatic reload and precedence rules, including when changed content enters
+model context and what happens to active tools/extensions. Exact action fields, compatibility
+diagnostics and refresh mechanisms belong in the schema/adapter design after this policy is chosen.
 
 ## Settled foundation
 
@@ -52,14 +55,14 @@ Exact field names and result wiring belong in the schema packet after the behavi
 | Organization | No generic registry-object labels or label-based selectors in v0. Pools use explicit named entries; discovery uses defined fields and relationships. Knowledge-record classification and typed access filters remain separate. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
-| Composition/access | Pool template availability does not provision Resources. Agent templates declare starting Conduits; no Pool-provided default Agent connections in v0. Local entries, reusable composition, capability matching and partial readiness remain. Filters preserve complete paths; routing is unambiguous or explicitly selected. Grants follow recipient participation under current restrictions. |
+| Composition/access | Explicit provision-from-entry or use-existing-instance intent; availability alone does not deploy. Agent templates declare starting Conduits; no Pool connection defaults. Local entries, reusable composition, capability matching and partial readiness remain. Filters preserve complete paths; routing is unambiguous/explicit. Grants follow recipient participation. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
 | Continuity/evidence | Stable identity, explicit rebind, current-access delivery, safe retries, explicit restart of stopped Agents, portable checkpoints, retained evidence and honest telemetry gaps. |
 | Startup | Seed management objects once, reuse them and explicitly repair inconsistencies. No silent reseeding/purge. Repair mechanics remain implementation work. |
 
 ## Remaining decision bundles
 
-R1–R3 are settled; agree or explicitly defer R4–R7. Recommendations become normative only after a
+R1–R4 are settled; agree or explicitly defer R5–R7. Recommendations become normative only after a
 ruling. Draft related schemas/examples together instead of voting on every field separately.
 
 | ID | Contract needing a ruling | Recommended v0 direction | Alternative adds |
@@ -67,7 +70,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
-| R4 — partly settled | How are connections selected, delegated and routed? | Accepted: explicit Pool entries, no generic labels/selectors, no automatic provisioning or Pool connection defaults; unambiguous/explicit routing; recipient-bound grants. Remaining: distinguish provisioning from an entry versus binding an existing Resource. | Implicit reuse/provision selection or an explicit reuse-or-create policy. |
+| R4 — accepted | How are connections selected, delegated and routed? | Explicit Pool entries and provision-or-use-existing intent; no generic labels/selectors, automatic deployment or Pool connection defaults. Unambiguous/explicit routing and recipient-bound grants. | No implicit reuse/provision selection; richer reuse policies deferred. |
 | R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
@@ -142,10 +145,13 @@ Knowledge-record classification remains; existing typed access matching and stab
 rules still apply. Unsupported restrictions leave affected access unavailable, with native bypass
 limitations honestly reported.
 
-**Remaining Pool discussion:** an explicit provision-from-entry versus use-existing-instance
-distinction in connection/dependency declarations, as illustrated above. A template entry alone
-does not identify which deployed instance to use. This is not a reopening of reusable templates
-or the accepted create/attach distinction for backing data.
+**Accepted provisioning intent:** templates/graphs explicitly distinguish provisioning from a named
+Pool entry from using a selected existing Resource. Both resolve to a concrete instance binding;
+matching a template/name alone does not choose reuse or creation. Two tasks can provision separate
+worktrees while several Agents use the existing Linear/authentication Resources. Provisioning with
+attach behavior creates a new registration around existing backing; using an existing Resource
+preserves its identity and owner. No separate operation manifest or per-start question is required.
+Capability checks, authority and safe recovery still apply. Exact fields/result wiring remain R6 work.
 
 Closure example: two Pools, shared authentication, two worktrees and one revoked consumer;
 identify the creation intent, bound instance, route, rights and survivors.
@@ -154,7 +160,8 @@ identify the creation intent, bound instance, route, rights and survivors.
 ### R5 — activation and changing sources
 
 Activation belongs to Agent configuration; access does not imply loading. Recommend compatible
-preparation actions, deduplication by Resource/revision/action, and explicit collision resolution.
+preparation actions, avoiding duplicate equivalent loading, and explicit collision resolution.
+Resource/revision/action identity is useful but does not erase differing parameters, routes or rights.
 Required activation blocks readiness; optional failure is visible. Changed sources become available,
 but replacing loaded instructions/extensions needs a supported explicit refresh. Dynamic native
 tool catalogs remain supported; incompatible schemas cannot be dispatched as the old contract.

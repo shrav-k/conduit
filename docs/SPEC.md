@@ -12,6 +12,9 @@ over efficiency, provided they preserve and enforce these contracts. Runtime cho
 authoring and behavioral compatibility must be explicit.
 V0 supplies only lightweight authoring support: real plugins and templates exercise the public
 protocol and structure first. A broad SDK/helper library can grow from demonstrated needs later.
+Plugins publish their inspectable contracts with their implementations, allowing template
+validation without starting plugin code. Detailed contract and template syntax follows the
+remaining conceptual rulings.
 
 This is a design, not an implementation claim. [DESIGN.md](DESIGN.md) holds the detailed contracts.
 The [walkthrough](../experiments/001-shared-access/README.md) proposes concrete YAML within them.

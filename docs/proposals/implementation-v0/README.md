@@ -9,8 +9,9 @@ accepted protocol.
 **Review priority:** plugin and template authoring come first. The user clarified that open
 choices must be ruled on together, not converted into implementation defaults autonomously.
 The initial authoring direction is accepted: keep Conduit support lightweight and prove the
-protocol/structure by authoring plugins; grow helpers from demonstrated needs. The remaining
-choices stay open. Existing infrastructure is welcome behind enforced contracts;
+protocol/structure by authoring plugins; grow helpers from demonstrated needs. Plugins publish
+inspectable contracts with their implementations. Remaining conceptual choices come next;
+detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
 is replaceable.

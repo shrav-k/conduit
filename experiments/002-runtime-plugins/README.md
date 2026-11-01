@@ -81,7 +81,10 @@ Before treating the fixture as a successful implementation pattern, demonstrate:
 
 The accepted authoring direction is lightweight Conduit support with real plugins testing the
 public protocol; a helper library is not an acceptance prerequisite. Concrete package/wire
-formats remain under review. Record author effort, repeated plumbing and hidden/manual
+formats remain under review, with detailed syntax deferred until conceptual rulings finish.
+Plugins publish contracts with their implementations: demonstrate template validation against
+those contracts without starting plugin code, then test runtime conformance separately.
+Record author effort, repeated plumbing and hidden/manual
 prerequisites as evidence alongside correctness, so later helpers address demonstrated needs.
 Built-in-only demonstrations or faster execution cannot substitute for proving this extension path.
 

@@ -1,8 +1,10 @@
 # Plugin and template authoring walkthrough
 
 Status: authoring examples, 2026-11-01. Lightweight Conduit support with the public protocol and
-extension structure prioritized over a helper library is accepted. No concrete SDK, package
-format or worker contract is selected here. Code is illustrative and has not been executed.
+extension structure prioritized over a helper library is accepted. Publishing inspectable
+contracts with implementations is also accepted. Detailed contract and template syntax is
+deferred until conceptual review is complete. No concrete SDK, package format or worker contract
+is selected here. Code is illustrative and has not been executed.
 The [review](REVIEW.md#review-priority-plugin-and-template-authors) records the ruling and remaining
 choices; [DESIGN](../../DESIGN.md) supplies the settled semantics.
 
@@ -132,8 +134,8 @@ contract must remain usable without depending on one comprehensive helper framew
 
 ### A concrete package to review
 
-**Package publication is still a proposal.** This layout makes the next ruling concrete; it is
-not a created package or an executable implementation. A minimal filesystem contribution could
+**Publication is accepted; this layout remains illustrative.** This is not a created package
+or an executable implementation. A minimal filesystem contribution could
 ship these files, whether assembled by hand or by a later build helper:
 
 ```text
@@ -209,17 +211,15 @@ safe recovery or future service availability. Runtime responses are checked agai
 conformance tests are needed for behavioral guarantees. A disagreement is reported, not treated
 as permission to silently replace the bound contract.
 
-Under the alternative, the executable supplies these descriptors when queried, and Conduit
-caches them. Until discovery has run somewhere successfully, offline validation cannot know
-the exports. Existing validated objects can still use retained schemas; missing schemas remain
-an error under the accepted rules. A third-party MCP provider's changing tool catalog is a
-different boundary: the MCP adapter's own contract can be static while its upstream catalog
-remains dynamic.
+Publishing the contracts makes validation independent of executable discovery, including before
+the implementation can run on a target platform. A third-party MCP provider's changing tool
+catalog is a different boundary: the MCP adapter's own contract can be published while its
+upstream catalog remains dynamic.
 
-The recommendation is to publish the contract bundle with the implementation. This requires a
-loader, validator and execution adapter, not a general SDK or generator. Contract/code drift is
-the tradeoff to test, regardless of whether authors write or generate the descriptors. No ruling
-on the bundle, exact file formats or source of truth is recorded yet.
+The accepted boundary requires contract loading, validation and execution integration, not a
+general SDK or generator. Contract/code drift must be tested regardless of whether authors write
+or generate the descriptors. Exact file formats, field syntax, package layout and source of
+truth remain for the final syntax review.
 
 ### What the template author supplies
 
@@ -387,9 +387,10 @@ the prerequisite; additions can follow demonstrated repetition and difficulty.
 
 Both examples may already look like small handlers when built with good libraries. A minimal
 adapter is useful where it removes incidental work, but effects, recovery and lifecycle behavior
-remain explicit plugin obligations when applicable. Package contents, schema publication, wire
-contracts, supported languages and exact authoring syntax remain collaborative review choices.
-This ruling does not choose the host/worker arrangement or impose a new server framework.
+remain explicit plugin obligations when applicable. Publication of inspectable contracts with
+the implementation is accepted. Runtime protocol and other conceptual boundaries come next;
+detailed package/contract/template syntax is deferred to the end. These rulings do not choose
+the host/worker arrangement or impose a new server framework.
 
 The first experiment should prove both a new plugin contribution and a template-only composition
 without modifying core dispatch. Record the author-written files, generated artifacts and actual

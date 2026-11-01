@@ -16,13 +16,15 @@ contracts, persistence, ownership, crate organization and delivery milestones. I
 [review queue](proposals/implementation-v0/REVIEW.md) groups seven pending implementation choices.
 Start there for architecture review; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** plugin and template authoring, beginning with I3/I7 and concrete author
+**Current focus:** conceptual plugin and template boundaries, beginning with I3 and concrete author
 journeys. The [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
 retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
 may support the first implementation, but the public authoring and behavioral contracts take
 priority over its efficiency or specific runtime arrangement. The initial authoring direction
 is now accepted: lightweight Conduit support, with real plugins validating the public protocol
-and structure; a broad helper library is not a v0 prerequisite. Package and wire details remain open.
+and structure; a broad helper library is not a v0 prerequisite. Plugins publish inspectable
+contracts with their implementations. Runtime protocol questions remain open; detailed syntax
+across contracts and templates moves to the end of review, after conceptual rulings.
 
 I1 is explicitly unaccepted. The user clarified independent operation,
 eventual distributed placement, Resources from one Pool on different systems and network

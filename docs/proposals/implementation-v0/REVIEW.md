@@ -1,6 +1,6 @@
 # Implementation review: decisions needed
 
-Status: the initial lightweight authoring direction is **accepted** below; the seven grouped
+Status: lightweight authoring support and contract publication are **accepted** below; the seven grouped
 items still contain unresolved implementation choices. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -13,7 +13,8 @@ into defaults or close the queue autonomously. Easy, expressive plugin and templ
 the primary acceptance concern; deployment and efficiency decisions support that goal. Existing
 infrastructure may implement the contracts without becoming part of the public authoring model.
 
-Use these three concrete author journeys to review **I3 and I7 first**:
+Use these three concrete author journeys to review **I3's conceptual extension boundary first**;
+defer I7's detailed contract/template syntax until all conceptual questions are settled:
 
 1. **Compose without new code:** use existing filesystem, authentication and MCP capabilities in
    a reusable Pool/Agent template, with explicit bindings, setup and permitted controls.
@@ -36,22 +37,26 @@ This does not mandate a comprehensive helper runner or require every author to h
 protocol server. The [walkthrough](AUTHORING.md) illustrates compatible authoring paths and the
 extra responsibilities of effectful operations and managed capabilities.
 
-**Still open within I3/I7:** the package/contract deliverables, wire profile, implementation
-selection and concrete template/schema conventions. File layouts, fragments and code remain
-illustrations, not accepted APIs. No language, process layout or transport is selected by the
-authoring-direction ruling. Review these concrete boundaries next rather than reopening the
-priority between framework helpers and real plugin implementations.
+**Accepted publication boundary:** publish inspectable contracts with the implementation, so
+Conduit can validate templates without starting plugin code. The
+[filesystem example](AUTHORING.md#a-concrete-package-to-review) illustrates this boundary;
+its filenames, fields and layout are not approved syntax. Published contracts do not certify
+runtime readiness or implementation conformance. Provider-native dynamic catalogs remain separate.
 
-**Current discussion:** publish an inspectable contract bundle with each plugin implementation,
-or discover descriptors by running the plugin and retain them afterward. The user requested a
-[concrete filesystem package](AUTHORING.md#a-concrete-package-to-review) before ruling. The
-example distinguishes package metadata, schemas, behavioral contracts and executable code;
-provider-native dynamic catalogs remain separate. Bundle structure and schema source of truth
-are not approved by the accepted lightweight-support direction.
+**Current discussion:** the public invocation boundary between Conduit and plugin implementations.
+I3 proposes MCP-compatible exchanges plus a small Conduit profile for instance/operation context,
+lifecycle and recovery semantics. This is not yet accepted and does not settle execution custody
+or require every upstream provider to implement that profile.
+
+**Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
+persistence, credential and observation questions before detailed syntax. I7's identifiers,
+field names, template bindings, package layout and schema-authoring conventions are deferred to
+the final pass. File fragments and code remain illustrations. No language, process layout or
+transport is selected by the authoring/publication rulings.
 
 Then review I1's execution/authority boundary against those authoring examples, I2's demonstration
 sequence, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a
-change of review order, not another decision ledger.
+change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
 
 ## Pending choices
 
@@ -63,10 +68,11 @@ change of review order, not another decision ledger.
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
-| I7 | Concrete authoring/schema conventions | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles. |
+| I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
-I3/I7 establish what an extension author writes and can rely on. I1/I2 determine how to execute
-and demonstrate those contracts; I4–I6 determine their retained state and evidence. Numbers for
+I3 establishes the conceptual extension boundary. I1/I2 determine how to execute and demonstrate
+those contracts; I4–I6 determine retained state and evidence. I7 finalizes their authoring syntax
+after those conceptual rulings. Numbers for
 queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
 ## I1 — Independent execution and management
@@ -215,6 +221,10 @@ accepted; this decides what is captured, not a new automatic-expiry rule. Interf
 remains a first-class delivery requirement under either option.
 
 ## I7 — Authoring conventions and multi-plugin graphs
+
+**Deferred to the end of review:** discuss syntax across all contracts and templates together
+after the conceptual questions are settled. Publication with implementations is already accepted;
+the field layouts, identifiers and schema-authoring choices below remain proposals.
 
 **Recommendation:** retain the accepted envelope and propose `conduit/v0alpha1` as its initial
 identifier. Apply group/name/version type references uniformly to the five families. Keep

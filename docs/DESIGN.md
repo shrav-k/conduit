@@ -24,6 +24,13 @@ libraries and small adapters may supply plumbing; richer SDKs can grow from repe
 Plugins still supply their applicable behavior, effects and recovery semantics. This settles
 implementation priority, not package syntax, supported languages, transports or process topology.
 
+**Plugin publication:** publish inspectable contracts with the implementation. Conduit can
+inspect exports and validate typed configuration/graph bindings without starting plugin code;
+actual availability, authority and behavioral conformance still require their respective checks.
+Provider-native catalogs can remain dynamic behind an integration's published contract. Detailed
+contract/template syntax, package layout and authored-versus-generated descriptors are deferred
+until the remaining conceptual questions are settled.
+
 **Primary access model:** establish capabilities and service authentication through a Pool once,
 then let authorized Agents use them through individually restricted Conduits. V0 Interfaces
 provide unrestricted local administration; differentiated Interface permissions are deferred.

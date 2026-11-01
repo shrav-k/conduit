@@ -210,10 +210,12 @@ formats remain open. Persistent drivers need lifecycle behavior; a finite operat
 implement unused hooks. Small adapters or existing libraries must preserve the same observable
 contracts; a comprehensive SDK is not required before the first plugins can be authored.
 
-**Recommendation, I3:** a plugin package is an implementation artifact plus a declarative manifest
-and schema bundle. Installation/discovery may read manifests without executing code. Registering
-schemas is not permission to run the package. A v0 package can be local; a public package registry
-or install-time scripts are unnecessary.
+**Accepted publication boundary:** plugins publish inspectable contracts with their implementations;
+Conduit can validate against them without executing plugin code. Registering schemas is not
+permission to run the package. The proposed manifest/schema bundle below illustrates that
+boundary; detailed syntax and package layout are deferred until conceptual review is complete.
+Local packages, distribution machinery and authored/generated metadata remain implementation
+proposals rather than consequences of accepting publication.
 
 | Manifest concern | Required information when applicable |
 | --- | --- |

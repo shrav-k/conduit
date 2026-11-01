@@ -15,7 +15,8 @@ authority and lifetime arrangement after the initial I1 proposal was kept open. 
 ruling accepts separate management/execution services and shared policy with instance-owned state.
 V0 also accepts no offline grants: retain supervision/results, but hold new managed requests
 without verifiable permission. Supervisor/store mechanisms must preserve these boundaries. Pool Resources can eventually occupy different systems and Conduits can cross a network;
-concrete topology and remote guarantees remain open.
+the first proof now uses management and two executor processes on one machine, with controlled
+connection failures. Production topology remains open; remote support needs two-machine validation.
 
 **Accepted extension follow-up:** the design now permits published contracts backed by authored
 code, existing MCP services or both, plus independently accessible component capabilities. The

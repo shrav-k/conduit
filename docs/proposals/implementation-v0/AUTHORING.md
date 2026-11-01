@@ -399,7 +399,7 @@ Independent use has two distinct meanings:
 Neither meaning requires a dedicated process per object, exposure of internal setup operations
 to every client, or use of MCP inside every Rust module. The contract surface can be independently
 addressable while an implementation shares an execution service. Pool-owned managed Resources
-still have one owner. Concrete deployment and failure-validation remain I1 work; shared policy, instance-owned state and no offline grants are accepted.
+still have one owner. The first proof uses separate management and two executor processes on one machine; production deployment remains open. Shared policy, instance-owned state and no offline grants are accepted.
 
 This direction follows MCP's independently operating local/remote servers and composable
 capabilities. MCP supplies discovery/invocation; the additional Conduit semantics remain ours
@@ -452,7 +452,7 @@ publish reusable contributions and explain how their contracts are fulfilled. Wh
 implementation is code, an existing compatible MCP service, or both need not change that role.
 Do not settle package/template distribution syntax or add a second object registry from this
 example. Separate execution services own managed activity; concrete deployment, persistence and
-failure-validation boundaries remain under review; the v0 no-offline-grants policy is accepted.
+production deployment details remain under review; the first one-machine process proof and v0 no-offline-grants policy are accepted.
 
 ## 4. A Resource with a persistent process
 
@@ -480,7 +480,7 @@ declared stop/recovery behavior; execution infrastructure supplies the agreed pr
 facilities. When setup finishes, the database remains under the instance's management. A helper
 server ending does not itself establish that the database ended, nor does using a protocol
 service make it the authority for the Resource's entire lifecycle. Those hosting choices remain
-part of I1/I3.
+implementation choices within I1's accepted boundaries and the pending I3 packaging review.
 
 ## 5. Accepted direction and remaining boundaries
 
@@ -496,7 +496,7 @@ remain explicit plugin obligations when applicable. Publication of inspectable c
 implementation bindings and MCP as the public invocation base are accepted. Existing-MCP
 bindings and independent component use now join those accepted boundaries. Management/execution
 separation, shared policy with instance-owned state and no offline grants are also accepted;
-first-proof scope comes next. Detailed
+the first proof uses separate management and two executor processes on one machine. I2 comes next. Detailed
 package/contract/template syntax is deferred to the end. These rulings do not choose the
 host/worker arrangement or impose a new server framework.
 

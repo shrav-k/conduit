@@ -59,8 +59,9 @@ Backing data, credentials and process lifetime are distinct from registry identi
 across systems. One Pool can own Resources deployed on different systems; Conduits can span a
 network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
 not require one execution host. The authority split and v0 outage rule below are accepted;
-the first independence proof and remote deployment guarantees remain in
+the first proof uses separate processes on one machine, as recorded in
 [implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
+Remote deployment guarantees still require separate validation.
 This direction does not claim remote execution is implemented or approve automatic migration,
 federation or offline authorization.
 
@@ -69,7 +70,14 @@ services supervise Conduit-managed Agents and Resources; management coordinates 
 and control; the Interface presents the system. Each executor can host multiple instances,
 including on the same machine initially. External MCP services retain their own supervision.
 This settles execution custody without introducing an object family or requiring one process
-per object. Concrete deployment, storage and failure-validation scope remain review choices.
+per object.
+
+**First independence proof:** run management and two independent executors as separate processes
+on one machine, with controlled failures of their connections. Exercise plugin/template authoring,
+instance-owned state, recovery and the no-offline-grants rule through serialized service boundaries.
+Validate across two machines before claiming remote support. This selects the first experiment's
+layout, not a production placement limit or proof that failure guarantees have already been met.
+Storage, worker packaging and exact transports remain implementation review choices.
 
 ### Shared policy and instance-owned state
 

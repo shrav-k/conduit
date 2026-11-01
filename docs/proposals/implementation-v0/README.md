@@ -14,7 +14,8 @@ inspectable contracts with their implementations; MCP is the public plugin proto
 a small Conduit profile. Code-optional bindings to existing MCP services and independent component
 exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 preserves the existing families, ownership and access rules. I1 accepts management/execution
-separation, shared policy with instance-owned state and no offline grants in v0; first-proof scope is next;
+separation, shared policy with instance-owned state, no offline grants, and a one-machine
+first proof with management and two independent executor processes; I2 is next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -22,7 +23,7 @@ is replaceable.
 
 ## Proposed architecture
 
-**I1 is partially settled.** Separate execution services supervise Conduit-managed Agents and
+**I1 is accepted for the first implementation.** Separate execution services supervise Conduit-managed Agents and
 Resources, management coordinates configuration/control, and the Interface presents them. Each
 executor can host multiple instances; external MCP services retain their own supervision. This
 supports eventual distributed placement. Management owns templates, registration and shared
@@ -34,8 +35,9 @@ outcomes, while holding new managed requests whose current permission cannot be 
 Offline grants are deferred; existing stop/revocation and result-delivery rules remain applicable.
 
 Rust services implement registry authority, instance supervision, authorized capability traffic
-and durable evidence through explicit boundaries. Detailed placement, persistence and failure-validation
-scope are still under review. Replaceable frontends attach to an Interface; authored workers and existing
+and durable evidence through explicit boundaries. The first proof uses separate management and
+two executor processes on one machine, faulting their connections. Two-machine validation follows
+before remote support is claimed. Persistence and production deployment details remain under review. Replaceable frontends attach to an Interface; authored workers and existing
 MCP services fulfill published plugin contracts through retained implementation bindings. Code-optional
 contributions use shared adapters without inventing a worker per package. Local transactional
 storage remains an I4 candidate, not a requirement that all distributed state live in one file.
@@ -67,7 +69,7 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 - **Proposed** means an implementation choice recommended here, including crate names, storage
   layouts, wire profiles and numeric limits.
 - **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on. Routine engineering choices can be adopted with the implementation
+  pending until ruled on; I1 is now settled, while I2–I7 retain the choices shown in REVIEW. Routine engineering choices can be adopted with the implementation
   and evidence, without asking a separate question for every field.
 - A new counterexample can revise this proposal. It cannot silently override the current design.
   After approval, fold enduring contract changes into DESIGN and keep implementation details here;

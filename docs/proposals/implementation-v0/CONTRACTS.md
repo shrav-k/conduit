@@ -1,7 +1,8 @@
 # Proposed implementation contracts
 
 **Placement review:** separate management/execution services and shared policy with instance-owned
-state are accepted. V0 has no offline grants; failure-validation scope remains open.
+state are accepted. V0 has no offline grants. The first proof uses separate management and two
+executor processes on one machine; remote support requires later two-machine validation.
 References to a host below mean the responsible management
 or execution service, not one combined process. Independent execution and network Conduits
 require authenticated endpoint identity, retained target outcomes and authority-freshness rules.
@@ -285,7 +286,7 @@ assigns owner/actor context; the worker cannot self-assign administrator authori
 are validated before they alter stored state.
 
 For code that needs an owned worker, one candidate v0 deployment uses one per active driver owner
-or explicit isolation boundary. This is a proposal pending I1/I3, not a worker requirement for
+or explicit isolation boundary. This remains an I3 proposal, not a worker requirement for
 declarative packages or attached external services. It allows many Agents to
 share one Pool-owned service Resource and its worker. Cross-instance worker multiplexing can
 follow measurements; it must partition state, credentials and cancellation correctly. Do not

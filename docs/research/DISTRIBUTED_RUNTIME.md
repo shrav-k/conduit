@@ -1,8 +1,9 @@
 # Independent runtimes, management and network Conduits
 
 Research date: 2026-11-01. **Subsequent I1 ruling:** separate management and execution services
-and shared policy with instance-owned state are accepted. V0 uses no offline grants; first-proof
-scope remains open. The user wants independently
+and shared policy with instance-owned state are accepted. V0 uses no offline grants. The first
+proof uses management and two independent executor processes on one machine, with controlled
+connection failures; two-machine validation precedes remote-support claims. The user wants independently
 operating objects, eventual placement across systems, Resources from one Pool on different systems
 and network Conduits. The earlier combined-host design is a comparison baseline. This report informs the
 [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
@@ -17,7 +18,8 @@ Pi/Xerj and plugin mechanisms remain in [RUST_RUNTIME](RUST_RUNTIME.md).
 The follow-up [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) compares AWS, Google Cloud and Azure through
 configuration-change and recovery examples. It separates configuration ownership from policy
 ownership and compares a shared-policy/instance-state alternative that the user subsequently
-accepted. The user also selected no offline grants in v0; first-proof scope remains proposed.
+accepted. The user also selected no offline grants in v0 and the one-machine, separate-process
+first proof. These rulings do not constitute successful runtime validation.
 
 **Current design boundary:** code-optional MCP bindings and independently accessible component
 capabilities are now accepted. Execution services now own Conduit-managed activity separately from
@@ -26,7 +28,7 @@ and instance-owned definitions, confirmed configuration and results are accepted
 supervision/dispatched outcomes while blocking new managed requests without verifiable permission.
 Offline grants are deferred. The
 [design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
-records these consequences without treating this report's topology candidates as rulings.
+records these consequences; other topology candidates remain research comparisons.
 
 ## 1. The boundary to establish
 
@@ -258,7 +260,7 @@ Other required distinctions:
 - Creation on another machine is not migration of live handles. Exact code, backing identity and
   private state must be compatible before supported replacement/reuse is attempted.
 
-## 7. Proposed change to experiment 002
+## 7. Accepted scope for experiment 002
 
 Keep its existing synthetic graphs, controls, permissions and exact-worker tests. Add **two
 independently supervised execution services on one machine**, one management service and an
@@ -272,13 +274,14 @@ well as Agent access. Verify that management outage does not itself kill survivi
 report which new operations are blocked for lack of authority. Reconnect without new instance
 identities or duplicate work, and reject delayed requests from an obsolete coordinator generation.
 
-This tests a candidate architecture; it is not yet an approved acceptance expansion. The previous
-single-host layout can be measured as a baseline if useful. Test records should state the deployed
+This layout is now accepted for the first proof; its behavior remains untested. Two-machine
+validation follows before claiming remote support. The previous combined-host layout can still
+be measured as a baseline if useful. Test records should state the deployed
 arrangement and actual guarantees, rather than summarizing every failure as “host restart.”
 
 ## 8. What to review next
 
-I1 is partially settled; preserve the distinction among these connected choices:
+I1 is settled for the first implementation; preserve the distinction among its accepted choices:
 
 1. **Execution custody — accepted:** separate execution services supervise Conduit-managed Agents
    and Resources; management coordinates configuration/control and the Interface presents them.
@@ -288,10 +291,11 @@ I1 is partially settled; preserve the distinction among these connected choices:
    A unified Interface aggregates the sources without becoming another writable authority.
 3. **Outage admission — accepted:** no offline grants; retain supervision and dispatched outcomes,
    while new managed requests require verifiable current permission.
-4. **First proof:** demonstrate the accepted behavior across separate processes on one machine
-   first, or require two machines in the initial spike?
+4. **First proof — accepted:** management and two independent executors as separate processes
+   on one machine, with controlled connection failures. Validate across two machines before
+   claiming remote support.
 
-I3's worker contract and I4's store ownership depend on these answers. Tokio, exact artifacts,
+I3's worker packaging and I4's persistence choices must preserve these accepted boundaries. Tokio, exact artifacts,
 finite graphs, MCP-first capability access and Interface observability remain useful under all
 three arrangements. Accepted outage policy still needs implementation evidence and does not
 choose storage technology.

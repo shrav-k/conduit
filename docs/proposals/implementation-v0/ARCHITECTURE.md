@@ -39,7 +39,8 @@ has its own declared dependencies/guarantees. This adds no process or registry p
 
 **Accepted execution custody:** separate execution services supervise Conduit-managed Agents
 and Resources. Management coordinates configuration/control; the Interface presents the system.
-Each executor can host many instances, and several can first run on one machine. External MCP
+Each executor can host many instances. The first experiment runs management and two independent
+executor processes on one machine, with controlled failures of their connections. External MCP
 services retain their own supervision. Pool ownership does not determine placement, and no
 process-per-object rule follows. Conduit endpoints carry authorized capability traffic; neither
 the Interface nor management must be a global relay. The [distributed-runtime research](../../research/DISTRIBUTED_RUNTIME.md)
@@ -65,7 +66,8 @@ Management/execution separation and the shared-policy/instance-state authority s
 accepted. The diagram illustrates executors hosting active instance authorities; management can
 host passive ones. These services are implementation roles, not a sixth family, a service per
 object or a placement rule tied to Pool ownership. Concrete process/storage placement, replication,
-federation and transport remain open. External providers retain their own infrastructure.
+federation and transport remain open beyond that first proof. Two-machine validation precedes
+claims of remote support. External providers retain their own infrastructure.
 
 Management owns templates, registration/naming and shared access policy. One designated service
 owns each instance's resolved definition, confirmed configuration/revision and operation records.
@@ -159,7 +161,7 @@ domain lifecycle enum on every plugin or the external protocol.
 
 ## 4. Persistence and transactions
 
-**Candidate, I4 after I1:** SQLite can implement a local authority store, accessed through
+**Candidate, I4:** SQLite can implement a local authority store, accessed through
 `rusqlite` on a dedicated store thread with a bounded queue. The async host never blocks a Tokio
 worker on a database operation. Permit bounded read connections only if consistent snapshots
 and connection configuration are tested; start with one owner rather than a generic ORM.
@@ -353,7 +355,7 @@ The same managed capability can be used by another ordinary MCP client through a
 attachment. Client setup must establish its acting identity and selected path; request parameters
 cannot self-assign authority. An Interface frontend need not relay the call. The responsible
 component records attributable outcomes for later Interface inspection. Exact enrollment and
-concrete authority deployment remain I1/I5 work, not a new permission model.
+production authority deployment remain implementation work alongside I5, not a new permission model.
 
 Stopping a managed client binding to an external server releases that binding; it does not kill
 the server or erase its data. A server started under Conduit's custody follows its declared

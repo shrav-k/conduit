@@ -1,6 +1,7 @@
 # 002 — Rust supervision, independent execution and plugins
 
-Status: proposed, not implemented or executed. Written 2026-11-01 from the
+Status: first-proof layout and core authority/outage rules accepted; implementation details remain
+proposed. Not implemented or executed. Written 2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
 choices within the [specification](../../docs/SPEC.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
@@ -10,9 +11,9 @@ worker, schema and persistence boundaries this spike would exercise. Its review 
 pending; this experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
 layout below. **I1 accepts separate management/execution services and shared policy with
-instance-owned state, plus no offline grants in v0.** First-proof scope remains open.
-The two-executor fixture is proposed evidence for those boundaries, not
-a completed topology or crash-survival guarantee.
+instance-owned state, plus no offline grants in v0.** The first proof uses management and two
+independent executors as separate processes on one machine, with controlled connection failures.
+That layout is accepted; no runtime or crash-survival guarantee has been demonstrated.
 The [cloud authority comparison](../../docs/research/CLOUD_AUTHORITY.md) adds proposed failure
 cases below. Canonical instance configuration and results belong to the designated instance
 service; management owns templates, registration and shared policy. The experiment tests that
@@ -29,11 +30,12 @@ existing fake MCP service. MCP is the public invocation base; identify the lifec
 that need an explicit Conduit profile. Do not add a workflow server, package manager, broad helper
 SDK or Wasm engine merely to run this experiment.
 
-## Proposed placement comparison
+## Accepted first-proof layout
 
-The accepted implementation separates management from execution. The proposed first proof runs
+The accepted implementation separates management from execution. The accepted first proof runs
 one management service, two independently supervised execution services and an Interface frontend
-on one machine; a combined-host benchmark is optional, not a prerequisite. One fixture Pool owns Resources across both executors; Pool
+on one machine, as separate processes with controlled connection failures. A combined-host
+benchmark is optional, not a prerequisite. One fixture Pool owns Resources across both executors; Pool
 membership must not imply process co-location. Place one synthetic Agent on each executor and
 include a Resource-to-Resource Conduit across them.
 
@@ -47,8 +49,9 @@ Test the accepted outage rule: retain supervision and already-dispatched outcome
 management is unavailable, holding new managed requests whenever current permission cannot be
 verified. There are no offline grants. Record actual reconnect, evidence and output-draining
 behavior; the policy is accepted, but these guarantees have not yet been demonstrated.
-A later two-machine run should retain the same identities/ownership contracts; I1 determines when
-that run becomes mandatory.
+Validate across two machines before claiming remote support, retaining the same identity/ownership
+contracts. The local proof alone does not establish machine-loss tolerance or production remote
+enrollment and credential placement.
 
 ## Smallest useful fixture
 
@@ -104,8 +107,8 @@ Code-optional contributions and independently accessible components are accepted
 declaration-only integration's validation, access and observations with the authored implementation;
 both paths must be demonstrated. Exercise the standard MCP client with no Conduit graph SDK while
 retaining the managed component's authority/evidence dependencies. Also show that using a standalone
-implementation outside Conduit supplies only that implementation's own guarantees. Exact placement,
-enrollment and first-proof scope remain under review; neither public accessibility nor a fake endpoint
+implementation outside Conduit supplies only that implementation's own guarantees. Production placement,
+production enrollment and remote deployment details remain under review; neither public accessibility nor a fake endpoint
 proves a production standalone deployment.
 
 ### Runtime and contract acceptance
@@ -171,7 +174,7 @@ account/private-state verification; this fixture cannot establish those properti
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Separate execution, shared-policy/instance-state authority and no offline grants accepted; I1 first-proof scope remains open. Proposed two-executor proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
+| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Separate execution, shared-policy/instance-state authority and no offline grants accepted; I1 first-proof scope accepted: separate management and two executors on one machine. Planned proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
 
 Record actual results here when executed, including failures and unresolved behavior. Expected
 outcomes above are acceptance criteria, not completed tests.

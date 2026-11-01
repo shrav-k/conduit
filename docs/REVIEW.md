@@ -29,7 +29,7 @@ with a small Conduit profile. Code-optional contributions and independently acce
 components are also accepted; the design-fit audit below states their boundaries. Detailed syntax
 across contracts and templates stays at the end, after conceptual rulings.
 
-I1 is partially settled: separate execution services supervise managed Agents/Resources while
+I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP
 services retain their own supervision. Shared registration/template and access-policy authority
 plus instance-owned state are also accepted: one designated service owns each instance's resolved
@@ -37,7 +37,9 @@ definition, confirmed configuration/revision and operation results; Interface vi
 freshness and gaps. The [cloud authority comparison](research/CLOUD_AUTHORITY.md) records the
 rationale and alternatives. V0 uses no offline grants: retain supervision and dispatched
 outcomes, but hold new managed requests without verifiable permission. Remote production support
-and the first independence proof remain review work; logical ownership does not require co-location or a process per object.
+still requires validation. The first proof uses management and two independent executors as
+separate processes on one machine, with controlled connection failures; two-machine validation
+follows before remote support is claimed. Logical ownership is not a process-per-object rule.
 
 ## Design-fit audit: code-optional plugins and independent MCP access
 
@@ -55,7 +57,7 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
 separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-I1's first validation scope, then the remaining I2–I6 choices; return to
+the remaining I2–I6 choices, beginning with I2's real-Agent delivery order; return to
 I3's packaging details where needed. Final contract/template syntax remains I7 work.
 
 ## Configuration walkthrough

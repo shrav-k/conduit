@@ -3,12 +3,13 @@
 Research date: 2026-11-01. **Subsequent I1 ruling: shared policy with instance-owned state is
 accepted, alongside separate management and execution services.** V0 subsequently adopted no
 offline grants: retain supervision/dispatched outcomes, but block new managed requests without
-verifiable permission. First-proof scope remains open.
+verifiable permission. The first proof now uses management and two independent executor processes
+on one machine, with controlled connection failures; two-machine validation precedes remote-support claims.
 This report preserves the authority comparison and its rationale
 using AWS, Google Cloud and Azure, with concrete control and recovery examples. It extends
 [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md), rather than replacing its process-supervision and
 distributed-systems evidence. The [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management)
-records the accepted authority/outage rulings and remaining first-proof choice.
+records the accepted authority, outage and first-proof rulings.
 
 Method: read primary public architecture, extension and API documentation. No cloud accounts,
 credentials or deployments were used, and no failure behavior was tested. Public API contracts
@@ -326,7 +327,7 @@ A remains a useful comparison for the cost of central configuration commits. B i
 additional complexity of decentralizing policy. The user selected C for Conduit; that selection
 is a design ruling, not a claim that a cloud reference makes one arrangement mandatory.
 
-## 8. Changes proposed for experiment 002
+## 8. Evidence for experiment 002
 
 Keep the accepted separate management/execution layout and synthetic plugin/template authoring
 proof. Test the selected instance-state authority at these fault boundaries:
@@ -343,7 +344,8 @@ proof. Test the selected instance-state authority at these fault boundaries:
 - Ensure the recovered result remains available through an authorized standard MCP client without
   requiring an aggregate frontend or a new plugin-specific recovery server.
 
-These are proposed tests, not observed results. The first experiment need not implement all three
-authority models or deploy on AWS/GCP/Azure. Make the selected authority split falsifiable with
-local service boundaries. Storage technology remains I4; schema spellings
+These are planned tests, not observed results. The accepted first experiment runs management
+and two independent executors as separate processes on one machine, with controlled connection
+failures. It need not implement all three authority models or deploy on AWS/GCP/Azure. Two-machine
+validation follows before remote support is claimed. Storage technology remains I4; schema spellings
 and MCP profile fields remain I7.

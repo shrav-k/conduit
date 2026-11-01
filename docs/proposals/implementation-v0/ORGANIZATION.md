@@ -10,7 +10,9 @@ arrangement and the accepted shared-policy/instance-state authority split. The
 concrete placement, persistence and failure guarantees remain under review; a single workspace
 and lockfile do not combine execution and management custody. V0 has no offline grants: retain
 supervision/results while holding new managed requests without verifiable permission; test this
-behavior rather than treating separate processes as proof of it.
+behavior rather than treating separate processes as proof of it. The first proof runs management
+and two independent executors as separate processes on one machine, with controlled connection
+failures; two-machine validation follows before remote support is claimed.
 
 ## 1. Repository layout
 
@@ -83,7 +85,7 @@ not infer a minimum Rust version from whichever compiler happens to be installed
 | `conduit-transport` | MCP client/server adapters, local bridge, worker wire mappings and negotiated feature handling | Core, Tokio, rmcp; dispatch ports | Independent business rules, a second registry or hidden retry policy |
 | `conduit-plugin-sdk` (optional extraction) | Minimal recurring descriptor/operation/driver helpers and conformance support, only as actual authoring needs justify them | Core and transport helpers | Application runtime, a prerequisite framework or unrestricted access to its database |
 | `conduit-builtin` | First-party filesystem/history/auth/MCP/native-agent implementations, shared adapters and fixture exports | Transport/integration libraries; minimal helpers where useful | Reimplementing host authorization or defining global caller identity |
-| `conduit-app` | Dependency wiring, `conduit`, management/executor entry points, workers and terminal attachment (layout pending I1) | Implementations above | A second source of domain semantics in CLI handlers |
+| `conduit-app` | Dependency wiring, `conduit`, management/executor entry points, workers and terminal attachment (binary/command layout proposed) | Implementations above | A second source of domain semantics in CLI handlers |
 
 Keep core ports narrow and use them where there are real implementations: SQLite versus a test
 store, process worker versus a fake, clock/process control versus deterministic fault fixtures.
@@ -207,7 +209,7 @@ order after the worker slice is subject to **I2**. No calendar estimates are imp
 | --- | --- | --- |
 | M0 — executable language contract | Core types, strict parser/default pass, versioned schemas, fixture validation and template-to-instance draft expansion | Existing YAML packet differences explained; duplicate/alias/unknown/null/default cases covered; no effects during validation. |
 | M1 — durable management | Shared registration/policy bootstrap, checked template writes, owner Interface CLI, source-aware observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
-| M2 — plugin and lifecycle slice | Typed finite DAG, authored worker plus code-optional MCP binding, managed runtime ownership, instance-owned configuration/results, control coordination and recovery | Experiment 002 contract/effect tests for both paths and proposed two-executor comparison; exact controlled artifacts, external compatibility, unknown effects and no duplicate Agent execution. I1 sets the required independence guarantee. |
+| M2 — plugin and lifecycle slice | Typed finite DAG, authored worker plus code-optional MCP binding, managed runtime ownership, instance-owned configuration/results, control coordination and recovery | Experiment 002 contract/effect tests for both paths and the accepted one-machine/two-executor proof; exact controlled artifacts, external compatibility, unknown effects and no duplicate Agent execution. I1 defines the behavior and first-proof scope; passing tests must supply the evidence. |
 | M3 — shared Resource slice | Local directory, retained history, synthetic auth/MCP service, independently usable managed MCP endpoint, composite participation and terminal inspection | Two synthetic Agents and a standard MCP test client exercise permitted access; Interface evidence survives frontend detachment; independent readers, reconnect and no automatic wake. |
 | M4 — first real Agent path | Native adapters first if I2 approved, with CLI/native interaction and a minimal Pi-inspired Interface terminal | Separate account and private-state verification, actual managed MCP exposure and explicit coverage gaps. |
 | M5 — owned model loop | Rust context builder, one supported provider adapter, streaming and authorized tool execution | Deterministic fake-provider recovery first; real identity/access verified; transcript/usage distinctions preserved. |

@@ -2,8 +2,8 @@
 
 Status: lightweight authoring support, contract publication, MCP, code-optional implementation
 bindings, independent component access, management/execution separation and shared policy with
-instance-owned state, and no offline grants in v0 are **accepted** below; the seven grouped
-items still contain unresolved implementation choices. Other recommendations remain proposed.
+instance-owned state, no offline grants and the one-machine first proof are **accepted** below.
+I1 is settled; I2–I7 retain the choices identified in this review. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
 reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
@@ -73,8 +73,12 @@ results. The Interface aggregates sources with freshness and gaps. A service can
 outcomes; hold new managed requests when current permission cannot be established. Work with
 verifiable permission can continue, subject to existing stop/revocation and delivery rules.
 
-**Next discussion:** I1's first independence proof: separate processes on one machine first,
-or require two machines immediately. The policy is settled; its implementation needs evidence.
+**Accepted first proof:** management and two independent executors run as separate processes
+on one machine, with controlled connection failures. Validate across two machines before claiming
+remote support. The experiment remains unimplemented.
+
+**Next discussion:** I2's first real Agent path after the synthetic runtime proof. Initial
+platform scope is a separate remaining I2 choice; detailed syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -82,24 +86,23 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-Then review I1's execution/authority boundary against those authoring examples, I2's demonstration
-sequence, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a
+I1's execution/authority boundary is settled. Review I2's demonstration sequence, the remaining
+I3 execution/distribution choices, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a
 change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
 
 ## Pending choices
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I1 | First independence proof | Separate execution, shared policy/instance-owned state and no offline grants accepted. Recommend management plus two executors on one machine first; require separate validation before claiming remote support. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
-| I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open after I1. |
+| I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open within the accepted I1 boundaries. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
-I3 establishes the conceptual extension boundary. I1/I2 determine how to execute and demonstrate
-those contracts; I4–I6 determine retained state and evidence. I7 finalizes their authoring syntax
+I3 establishes the conceptual extension boundary. Accepted I1 and pending I2 determine how to
+execute and demonstrate those contracts; I4–I6 determine retained state and evidence. I7 finalizes their authoring syntax
 after those conceptual rulings. Numbers for
 queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
@@ -159,17 +162,16 @@ deferred. Native actions outside Conduit's mediation retain their actual enforce
 The next protected operation waits if it cannot verify permission. On reconnection, current access
 and effect-recovery rules apply; neither revoked access nor uncertain writes are replayed blindly.
 
-**Remaining I1 choice — first proof:** recommend experiment 002 run management and two independently
-supervised executors on one machine, separately faulting management, worker, capability, policy
-and observation links. Use serialized service boundaries and independently retained state so
-shared memory or one process lifetime cannot hide the protocol requirements. Test retained
+**Accepted first proof:** experiment 002 runs management and two independently supervised
+executors as separate processes on one machine, with controlled failures of their connections.
+Use serialized service boundaries and independently retained state so shared memory or a common
+process lifetime cannot hide protocol requirements. Test plugin/template authoring, retained
 supervision, held unverifiable requests, target-owned results, stale views and verified reattachment.
 
-The alternative requires the first experiment to span two machines, exposing host/network,
-credential placement and enrollment issues earlier at higher setup cost. One-machine testing does
-not prove machine-loss tolerance or production remote support. Two-machine validation is required
-before claiming those capabilities; whether it belongs in the initial experiment is the remaining
-ruling. No fixture or failure guarantee is considered demonstrated by documenting it.
+Two-machine validation follows before claiming remote support. The initial proof does not establish
+machine-loss tolerance, production remote enrollment or credential placement. Concrete transports,
+worker packaging and storage remain review work; no fixture or failure guarantee is demonstrated
+by documenting it. **I1's conceptual rulings and first-proof scope are complete.**
 
 I3 worker details and I4 persistence choices follow these accepted authority boundaries. Frontend
 detachment, explicit resume of stopped Agent work, current authority checks and no duplicate
@@ -229,7 +231,7 @@ does not establish provider lifecycle, effect recovery or partition behavior.
 
 ## I4 — Local transactional authority
 
-**Recommendation to evaluate after I1:** SQLite for each chosen local durable authority, accessed
+**Recommendation within the accepted I1 boundaries:** SQLite for each chosen local durable authority, accessed
 through a bounded store thread with WAL/FULL commits. Registry revisions, target execution
 outcomes and aggregated observations need explicit ownership; an independent execution service
 cannot rely exclusively on a vanished management process's in-memory state. Resource backends

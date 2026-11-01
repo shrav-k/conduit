@@ -17,6 +17,13 @@ secondary to correct, enforced contracts and a usable authoring path. This direc
 approve particular SDKs, plugin packaging, deployment topology or schema spellings. Those rulings
 remain collaborative in the implementation review.
 
+**Accepted authoring direction:** start with extremely lightweight Conduit support and author
+real plugins against the public contracts to validate the approach and speed development.
+Prioritize the protocol and extension structure over a library of helpers. Existing protocol
+libraries and small adapters may supply plumbing; richer SDKs can grow from repeated needs.
+Plugins still supply their applicable behavior, effects and recovery semantics. This settles
+implementation priority, not package syntax, supported languages, transports or process topology.
+
 **Primary access model:** establish capabilities and service authentication through a Pool once,
 then let authorized Agents use them through individually restricted Conduits. V0 Interfaces
 provide unrestricted local administration; differentiated Interface permissions are deferred.

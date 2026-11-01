@@ -10,6 +10,8 @@ extend capabilities and compose reusable instance recipes without changing Condu
 Early implementations may reuse existing infrastructure and prioritize clear, correct behavior
 over efficiency, provided they preserve and enforce these contracts. Runtime choices can change;
 authoring and behavioral compatibility must be explicit.
+V0 supplies only lightweight authoring support: real plugins and templates exercise the public
+protocol and structure first. A broad SDK/helper library can grow from demonstrated needs later.
 
 This is a design, not an implementation claim. [DESIGN.md](DESIGN.md) holds the detailed contracts.
 The [walkthrough](../experiments/001-shared-access/README.md) proposes concrete YAML within them.

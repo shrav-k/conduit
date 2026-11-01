@@ -1,14 +1,16 @@
 # Plugin and template authoring walkthrough
 
-Status: examples for collaborative review, 2026-11-01. The user requested concrete examples
-before choosing an authoring approach. No SDK, package format or worker contract is selected
-here. Code is illustrative and has not been executed. The [review](REVIEW.md#review-priority-plugin-and-template-authors)
-holds the pending choice; [DESIGN](../../DESIGN.md) supplies the settled semantics.
+Status: authoring examples, 2026-11-01. Lightweight Conduit support with the public protocol and
+extension structure prioritized over a helper library is accepted. No concrete SDK, package
+format or worker contract is selected here. Code is illustrative and has not been executed.
+The [review](REVIEW.md#review-priority-plugin-and-template-authors) records the ruling and remaining
+choices; [DESIGN](../../DESIGN.md) supplies the settled semantics.
 
 The objective is an extension an ordinary author can understand and test. A template author
 should be able to compose existing behavior without becoming a plugin author. A plugin author
 should implement the behavior their extension adds, without rebuilding the entire Conduit host.
-The user requested a second refinement of these examples; the authoring-path ruling remains open.
+Real plugins should test these contracts early. Conduit can add reusable helpers as recurring
+needs become clear; the initial implementation does not depend on building that library first.
 
 ## The pieces, before choosing an authoring API
 
@@ -121,11 +123,103 @@ implementation and contract, orders the nodes, invokes the adapter and records t
 No extra Resource is necessary solely to host this pure setup function. If digesting is to be
 offered as a callable Resource capability, that exposure must be declared separately.
 
-The proposed shared authoring experience is therefore: implement the behavior once, publish its
-contract, and let templates bind its inputs. The remaining choice is whether Conduit provides
-a standard adapter as the normal starting point or expects authors to assemble that adapter.
+The shared authoring direction is therefore: implement the behavior, publish its contract, and
+let templates bind its inputs. Initially, use only lightweight Conduit support and existing
+libraries as needed. The amount of reusable adapter code can grow with experience; the public
+contract must remain usable without depending on one comprehensive helper framework.
 
 ## 2. A directory Resource
+
+### A concrete package to review
+
+**Package publication is still a proposal.** This layout makes the next ruling concrete; it is
+not a created package or an executable implementation. A minimal filesystem contribution could
+ship these files, whether assembled by hand or by a later build helper:
+
+```text
+filesystem-plugin/
+  plugin.yaml                           package identity and export index
+  contracts/
+    local-directory.type.yaml            type/capability/runtime declarations
+    directory-config.schema.json         configuration data rules
+    directory-establish.operation.yaml   inputs, outputs and behavioral contract
+  bin/
+    filesystem-plugin                    implementation for the selected platform
+```
+
+Its source project would also contain implementation code and tests. Shipping source, building
+locally or distributing platform artifacts are separate packaging choices. This diagram shows
+the boundary between inspectable contracts and runnable code, not a required directory layout.
+The package/export index is supporting metadata, not a sixth registered object family.
+
+An illustrative `plugin.yaml` could index the contents like this:
+
+```yaml
+package:
+  name: example.filesystem
+  release: 0.1.0
+implementation:
+  entry: bin/filesystem-plugin
+exports:
+  types:
+    - group: filesystem
+      name: local-directory
+      version: v1alpha1
+      definition: contracts/local-directory.type.yaml
+  operations:
+    directory.establish:
+      definition: contracts/directory-establish.operation.yaml
+```
+
+These are explanatory fields, not approved syntax. Exact artifact identity/digests, compatible
+protocol versions and platform selection still need representation; a release label alone is
+not the accepted implementation pin. One package can illustrate multiple exports without making
+the package name the Resource type's logical group.
+
+The configuration schema could contain this ordinary JSON Schema fragment:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {"type": "string", "minLength": 1},
+    "establish": {"type": "string", "enum": ["create", "attach"]}
+  },
+  "required": ["path", "establish"],
+  "additionalProperties": false
+}
+```
+
+This checks shape, not the complete type contract. Instance paths must also satisfy the agreed
+absolute-path rules, and access/ownership require registry and execution-context checks. The
+operation contract references the configuration input, declares its directory-descriptor output
+and describes create/attach, effects and recovery behavior. The type declaration connects those
+contributions to its directory capability and applicable runtime/lifecycle behavior. Those files
+are intentionally not expanded into a speculative full contract language here.
+
+**Before launching plugin code**, Conduit could inspect this bundle and reject `establish: erase`,
+an unknown setup export or a binding to an undeclared output port. It could validate and register
+configuration even if the implementation cannot yet run on this machine. Required schemas must
+be available, and registration still performs no filesystem setup.
+
+**At execution**, Conduit still needs the exact compatible implementation, current authority and
+the resolved target environment. The implementation checks the real path and performs the
+declared operation. A valid schema cannot prove filesystem readiness, honest implementation,
+safe recovery or future service availability. Runtime responses are checked against contracts;
+conformance tests are needed for behavioral guarantees. A disagreement is reported, not treated
+as permission to silently replace the bound contract.
+
+Under the alternative, the executable supplies these descriptors when queried, and Conduit
+caches them. Until discovery has run somewhere successfully, offline validation cannot know
+the exports. Existing validated objects can still use retained schemas; missing schemas remain
+an error under the accepted rules. A third-party MCP provider's changing tool catalog is a
+different boundary: the MCP adapter's own contract can be static while its upstream catalog
+remains dynamic.
+
+The recommendation is to publish the contract bundle with the implementation. This requires a
+loader, validator and execution adapter, not a general SDK or generator. Contract/code drift is
+the tradeoff to test, regardless of whether authors write or generate the descriptors. No ruling
+on the bundle, exact file formats or source of truth is recorded yet.
 
 ### What the template author supplies
 
@@ -283,18 +377,19 @@ server ending does not itself establish that the database ended, nor does using 
 service make it the authority for the Resource's entire lifecycle. Those hosting choices remain
 part of I1/I3.
 
-## 5. The decision these examples expose
+## 5. Accepted direction and remaining boundaries
 
 Our existing design already distinguishes code, typed contracts, templates, graphs and instances.
-The open question is the **normal unit of plugin authoring**: a handler with metadata, a protocol
-service, or supported authoring profiles for both under one published contract.
+The accepted implementation priority is the public protocol and extension structure, with
+extremely lightweight support from Conduit. Most integration behavior should be authored as
+plugins early so it tests that structure and speeds development. A broad helper library is not
+the prerequisite; additions can follow demonstrated repetition and difficulty.
 
-My recommendation remains a standard Conduit adapter for ordinary handlers, plus a direct
-protocol path for advanced implementations and adapters for existing services. That is a
-recommendation, not a ruling. Both paths may already look like small handlers when built with
-good libraries. The useful distinction is the reusable adapter's responsibilities and the public
-contract both paths must satisfy. Language support, packaging, declaration/code generation and
-template reuse will be examined against these same examples after that boundary is understood.
+Both examples may already look like small handlers when built with good libraries. A minimal
+adapter is useful where it removes incidental work, but effects, recovery and lifecycle behavior
+remain explicit plugin obligations when applicable. Package contents, schema publication, wire
+contracts, supported languages and exact authoring syntax remain collaborative review choices.
+This ruling does not choose the host/worker arrangement or impose a new server framework.
 
 The first experiment should prove both a new plugin contribution and a template-only composition
 without modifying core dispatch. Record the author-written files, generated artifacts and actual

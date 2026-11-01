@@ -1,7 +1,8 @@
 # Implementation review: decisions needed
 
-Status: all seven items below are **pending**. Recommendations are proposed, not recorded user
-rulings. Read the [architecture](ARCHITECTURE.md) for the connected system and
+Status: the initial lightweight authoring direction is **accepted** below; the seven grouped
+items still contain unresolved implementation choices. Other recommendations remain proposed.
+Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
 reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
 
@@ -26,15 +27,27 @@ protocol guarantees, and how it is tested. Keep the accepted typed contracts, fi
 instance-owned lifetimes and fixed implementation bindings; their precise authoring surface is
 still to be settled. Template-only composition should not require inventing a new plugin.
 
-**First discussion, no ruling yet:** the user requested further refinement before choosing. The
-[authoring walkthrough](AUTHORING.md) now shows the same pure operation and template binding with
-either a standard Conduit adapter or an author-owned protocol service, then adds directory effects,
-shared MCP access and a managed database. Both paths can use small handlers and existing protocol
-libraries. The distinction to settle is whether Conduit's SDK/helper runner supplies the normal
-adapter or authors assemble it themselves, with direct protocol implementations still possible.
-A helper can handle serialization/correlation but cannot invent safe retry or effect semantics.
-File layouts, contract fragments and code are illustrations, not accepted APIs. This does not
-select a language, process layout or transport.
+**Accepted authoring direction:** begin with extremely lightweight support from Conduit, with
+most integration behavior authored as plugins to test the approach and speed development. The
+priority is the public protocol and extension structure, not building a library of helpers.
+Use existing libraries and minimal adapters where useful; richer support can grow from actual
+plugin-authoring needs. Plugins remain responsible for applicable effects/recovery behavior.
+This does not mandate a comprehensive helper runner or require every author to hand-write a
+protocol server. The [walkthrough](AUTHORING.md) illustrates compatible authoring paths and the
+extra responsibilities of effectful operations and managed capabilities.
+
+**Still open within I3/I7:** the package/contract deliverables, wire profile, implementation
+selection and concrete template/schema conventions. File layouts, fragments and code remain
+illustrations, not accepted APIs. No language, process layout or transport is selected by the
+authoring-direction ruling. Review these concrete boundaries next rather than reopening the
+priority between framework helpers and real plugin implementations.
+
+**Current discussion:** publish an inspectable contract bundle with each plugin implementation,
+or discover descriptors by running the plugin and retain them afterward. The user requested a
+[concrete filesystem package](AUTHORING.md#a-concrete-package-to-review) before ruling. The
+example distinguishes package metadata, schemas, behavioral contracts and executable code;
+provider-native dynamic catalogs remain separate. Bundle structure and schema source of truth
+are not approved by the accepted lightweight-support direction.
 
 Then review I1's execution/authority boundary against those authoring examples, I2's demonstration
 sequence, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a

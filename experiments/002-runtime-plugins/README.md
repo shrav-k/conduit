@@ -79,9 +79,11 @@ Before treating the fixture as a successful implementation pattern, demonstrate:
 - Inspection through the Interface of resolved contracts, selected code, setup progress, allowed
   controls and attributable outcomes. Existing permission, identity and recovery tests still apply.
 
-The review will select the actual plugin authoring format and helper tooling. Record author effort
-and hidden/manual prerequisites as evidence alongside correctness. Built-in-only demonstrations
-or faster execution cannot substitute for proving this extension path.
+The accepted authoring direction is lightweight Conduit support with real plugins testing the
+public protocol; a helper library is not an acceptance prerequisite. Concrete package/wire
+formats remain under review. Record author effort, repeated plumbing and hidden/manual
+prerequisites as evidence alongside correctness, so later helpers address demonstrated needs.
+Built-in-only demonstrations or faster execution cannot substitute for proving this extension path.
 
 ### Runtime and contract acceptance
 

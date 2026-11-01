@@ -8,7 +8,9 @@ accepted protocol.
 
 **Review priority:** plugin and template authoring come first. The user clarified that open
 choices must be ruled on together, not converted into implementation defaults autonomously.
-All pending choices remain pending. Existing infrastructure is welcome behind enforced contracts;
+The initial authoring direction is accepted: keep Conduit support lightweight and prove the
+protocol/structure by authoring plugins; grow helpers from demonstrated needs. The remaining
+choices stay open. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
 is replaceable.
@@ -36,7 +38,7 @@ CLI/API calls produce internal operation records so the system can recover and e
 
 | Document | Purpose |
 | --- | --- |
-| [AUTHORING](AUTHORING.md) | Concrete template/plugin author journeys and the pending handler-versus-service boundary. |
+| [AUTHORING](AUTHORING.md) | Concrete author journeys, the accepted lightweight support direction and illustrative APIs. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Processes, ownership, persistence, scheduling, access, recovery, observability and concrete execution paths. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, plugin/worker contracts, graph interpretation, controls and MCP mappings. |
 | [ORGANIZATION](ORGANIZATION.md) | Repository/crate boundaries, dependencies, implementation milestones, validation and maintenance. |

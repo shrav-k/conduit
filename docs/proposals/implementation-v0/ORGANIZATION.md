@@ -174,6 +174,12 @@ fixtures in the repository; keep real provider test evidence scrubbed and outsid
 
 ## 6. Delivery milestones
 
+Keep initial authoring support deliberately lightweight. Implement real plugins against the
+public protocol before extracting a broad SDK/helper library; reuse existing libraries or small
+adapters where they remove incidental work. Contract conformance remains required regardless
+of helper maturity. Extend tooling from repeated authoring needs rather than delaying the first
+working extension path to design a general framework.
+
 Plugin/template authoring is a first-class acceptance path throughout these milestones. The
 first-party integrations must exercise the public extension boundary, and a small separately
 authored plugin must load without a core-code change. Record the files and code the author actually

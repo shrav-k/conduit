@@ -203,10 +203,12 @@ connection. Bound nested composition depth and total prepared work.
 
 **Authoring before hosting:** the manifest/port inventory below is a proposed runtime-facing
 contract, not a requirement that every author manually implement every field or interface.
-The [review](REVIEW.md#review-priority-plugin-and-template-authors) will settle the small-handler
-versus protocol-server authoring path and the division between authored and generated metadata.
-Persistent drivers need lifecycle behavior; a finite operation need not implement unused hooks.
-Any SDK or existing infrastructure must preserve the same observable contracts.
+The [accepted direction](REVIEW.md#review-priority-plugin-and-template-authors) is lightweight
+Conduit support, with real plugins proving the public protocol before investing in a helper
+library. The division between authored and generated metadata and the concrete package/wire
+formats remain open. Persistent drivers need lifecycle behavior; a finite operation need not
+implement unused hooks. Small adapters or existing libraries must preserve the same observable
+contracts; a comprehensive SDK is not required before the first plugins can be authored.
 
 **Recommendation, I3:** a plugin package is an implementation artifact plus a declarative manifest
 and schema bundle. Installation/discovery may read manifests without executing code. Registering

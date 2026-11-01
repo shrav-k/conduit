@@ -663,7 +663,8 @@ Typed filters and access-path composition remain accepted for delegated access.
 the [v0 Interface has unrestricted administration](#v0-interface-administration). R1 confirms
 replacement for fixed-definition changes. R2 selects finite dependency graphs, with branching
 and loops inside plugins. R3 requires explicit Resource retirement before Pool deletion and a
-new Conduit instance after flow end. R4 next addresses connection selection, delegation and routing.
+new Conduit instance after flow end. R4 now also settles explicit/unambiguous routing and
+recipient-bound delegation lifetime; the purpose of labels in Pool selection remains under review.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

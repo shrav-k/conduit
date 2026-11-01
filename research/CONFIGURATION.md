@@ -313,7 +313,7 @@ configuration, not just line count.
 | --- | --- | --- |
 | [Kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) | Versioned kinds, metadata, desired `spec`, observed `status`. | One envelope across Interface, Agent, Resource, Pool and Conduit templates/instances. YAML authoring and API/CLI inspection represent the same objects. |
 | [API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) | Stable UID, opaque concurrency version, desired-state generation and status conditions. | Separate durable identity, configuration changes and observed preparation/execution. Never treat a file path as identity. |
-| [Labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) | Optional metadata and composable set selection; empty-selector behavior is defined by its use. | References/selectors may select templates or owned Resource instances. They never adopt foreign instances or grant access; connection filters narrow authorized candidates. |
+| [Labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) | Optional metadata and composable set selection; empty-selector behavior is defined by its use. | Inspiration, not a requirement to use labels for Pool inclusion. R4 reopens that purpose before selecting live/snapshot semantics. Labels never replace identity, capability contracts, ownership or grants. |
 | [CRD versioning](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/) | API versions can differ from storage versions, with explicit conversion/migration. | Version public schemas separately from storage, plugin releases and provider protocols. Start with one supported authoring version. |
 | [CRD validation](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) | Structural schemas and extension subtrees. | Validate core fields strictly; give plugin configuration a named, versioned schema. Prefer a visible typo error to silently pruning unknown configuration. |
 | [Gateway API ReferenceGrant](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/) | A reference alone does not establish cross-boundary authority; owner approval and runtime reevaluation are separate. | Conduit declarations request relationships; authorized establishment supplies grants. Filters never manufacture permission. No extra top-level Grant concept is necessary to learn this distinction. |
@@ -640,9 +640,10 @@ make every operation or parameter another registry object.
 Default materialization and draft field replacement are settled. Preserving, adding or removing
 entries requires deliberate edits; this does not introduce a partial-update registry protocol.
 Remaining omission, null, empty-collection, reset, ordering and duplicate-identity details need
-per-field rules. A Pool's default access selection applies only when no explicit replacement is
-supplied; combination with Agent-spec choices remains open. Access-path composition is settled
-as above; filter-expression syntax and runtime routing remain separate decisions.
+per-field rules. V0 has no Pool-provided default Agent connections: Agent templates declare
+starting Conduits and later connections are explicit. Access-path composition and R4 routing are
+settled; filter-expression syntax remains a separate decision. No generic configuration merge
+combines grants from independent paths.
 
 ## Validation and effects are separate contracts
 

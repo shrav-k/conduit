@@ -971,9 +971,10 @@ with an explanation. Exact creation/base/branch/path settings remain open.
 Users compose a Pool through an Interface, referencing reusable Resource templates and their
 establishment settings. These entries describe what the Pool can provision; listing or adding a
 template does not create/attach a Resource instance, authenticate a service or connect an Agent.
-The available-template catalog and the Pool's owned Resource instances are distinct views, not
-new object families. A Pool template describes that availability, provisioning settings, policies
-and permitted management/configuration changes. A Pool instance creates/attaches selected
+Available templates and the Pool's owned Resource instances are distinct views, not new object
+families. "Catalog" is only shorthand for that available-template view; it does not require a
+separate object, package registry or service. A Pool template describes availability, provisioning
+settings, policies and permitted management/configuration changes. A Pool instance creates/attaches selected
 Resources through explicit provisioning or declared setup-graph steps and exclusively owns the
 resulting Resource instances. Pools remain the resource-supply and shared service-access boundary
 for Agents and connections, including skills,
@@ -1031,11 +1032,14 @@ derive useful views from their contracts. Remaining selector and representation 
 are consolidated in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
-Resource templates can be selected by explicit references and labels where supported.
-Selection among an existing Pool's owned instances is another operation. Exact selector
-syntax, target domains and refresh rules remain open; neither labels nor references can
-silently adopt an instance from another Pool. Reusing templates creates new owned instances,
-not overlapping ownership. Pool schemas remain open to new Resource contracts.
+Named local Resource entries can explicitly reference reusable templates. Label-based Pool
+inclusion was considered earlier, but its purpose, target objects and behavior are reopened under
+R4; live catalog matching has not been accepted. Distinguish optional organization/search metadata
+from a selector that changes available templates. Neither is object identity, capability/type
+validation, ownership or an access grant. Template labels and labels on instances/local entries
+must not be assumed interchangeable or automatically inherited. Exact label and selector contracts
+remain open. Existing access-filter contracts are a separate concern. Reusing templates creates
+new owned instances, not overlapping ownership; Pool schemas remain open to new Resource contracts.
 
 Connection participants can access Resources in several Pools through authorized paths to
 the owners. Sharing backing data between separate instances does not transfer ownership or
@@ -1270,9 +1274,17 @@ a component cannot widen an enclosing restriction. Independent authorized paths 
 alternatives. Preserve target, operation and parameter constraints together: read access to
 Euphony on one path plus update access to Demo on another does not authorize updating Euphony.
 Actor-wide and target-wide restrictions still apply wherever relevant. This does not intersect
-unrelated connections or grant access through a Resource's internal dependencies. Routing/fallback,
+unrelated connections or grant access through a Resource's internal dependencies.
 Boolean alternatives within a filter, conflict diagnostics and evaluation implementation remain
 open; a policy engine may represent the rule without separate physical hops for each restriction.
+
+**Accepted routing (R4):** if a request has no route already selected, automatically resolve it
+only when one eligible route remains. Several eligible routes require an explicit choice at
+attachment or invocation; that choice can be configured once and reused. Record the chosen path
+and service identity, retaining complete path constraints. Do not select by discovery order or
+silently fail over to another route/account after failure. Ordinary reconnection on the same path
+is supported. An authorized caller may deliberately choose another route, subject to current
+checks and safe-outcome handling; this does not authorize replaying an uncertain write.
 
 ### Authority and current access
 
@@ -1290,8 +1302,13 @@ a user can connect a reviewer to shared Linear access with read-only authority i
 Keep requested access, the authorized delegation and any additional filters distinguishable.
 Authored configuration requests access; it does not issue its own grant. Filters only narrow
 granted authority. This adds no permission-registry object family and does not implicitly grant
-onward-delegation rights. Exact issuance fields, issuer checks, grant lifetime and revocation
-semantics remain open within the existing current-access and safe-outcome rules.
+onward-delegation rights. **Accepted lifetime (R4):** the grant belongs to recipient logical
+participation and survives the issuing frontend closing or coordinator execution stopping.
+Recipient detachment ends that attachment's access; temporary socket loss alone does not.
+Withdrawal and current governing restrictions continue to apply at dispatch and delivery.
+Stopping the issuer is distinct from withdrawing its grant or changing an applicable governing
+restriction. This keeps recipient work independent of the UI/process that established its access.
+Exact issuance, attribution and revocation representations remain to be drafted.
 
 Selection supports IDs, owning contexts, metadata predicates and path patterns where the
 integration supports them. Matches within established access rules are live. Authorized

@@ -13,31 +13,41 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-Continue **R4: connection selection, delegation and routing**. Accepted: a Pool offers templates
-it can provision and owns the resulting Resource instances; listing templates deploys nothing.
-V0 omits Pool-provided default Agent connections. Agent templates declare starting Conduits,
-including reusable composites, and explicit operations change connections later. Resource-field
-defaults remain separate. Three related choices remain:
+Finish **R4** by defining the purpose of labels and Pool selection before selecting refresh
+behavior. The user has accepted unambiguous/explicit routing and recipient-bound delegation;
+live label-driven Pool inclusion was not accepted. The earlier reference-plus-selector direction
+is reopened because the Pool model now distinguishes available templates from owned instances.
 
-| Choice | Example | Recommendation, not yet accepted |
+"Catalog" has been shorthand for a Pool's available-template view, not an additional object,
+registry service or package manager. Prefer concrete terms: available Resource templates, owned
+Resource instances and named local entries. The local registry, installed type-contract registry
+and provider-native tool listings have different responsibilities; calling all of them catalogs
+does not make them one mechanism.
+
+| Concept | Purpose | Example |
 | --- | --- | --- |
-| Available-template selector refresh | A Pool's catalog selects templates labeled `domain=euphony`; a new search template receives that label. | Update catalog matches live within its declared rules. Search becomes available to provision, without creating a search instance or changing existing Resources/bindings. |
-| Route and service identity | Two authorized Linear paths could fulfill the same invocation through different accounts. | Resolve automatically only when unambiguous; otherwise require an explicit choice at attachment/invocation. Record the selected path/identity and do not silently substitute another route/account after failure. |
-| Delegation lifetime | A coordinator connects a worker to Linear, then its frontend closes or its execution stops. | Bind the delegated grant to the worker's logical participation, not the issuer's frontend/execution lifetime. Withdrawal, recipient detachment and current governing restrictions still apply. |
+| Object identity/reference | Identify the definition or instance actually selected. | A named Resource template reference resolves to a stable object ID. |
+| Pool-local entry | Make a template available with configuration and dependency bindings for this Pool. | Euphony's `issues` entry references a reusable Linear template and binds Euphony authentication. |
+| Type/capability contract | Define validated behavior and compatibility. | MCP discovery/invocation support comes from the contract, not a `tool=mcp` label. |
+| Optional label | Describe an object for organization or discovery. | `team=platform` can help list relevant templates/instances; its target and meaning must be explicit. |
+| Label selector | Evaluate metadata to choose a set. Its consequences depend on where it is used. | A search filter lists matches; a Pool-inclusion selector would change what that Pool offers. |
 
-Live catalog matching concerns availability only. Provisioning still selects concrete templates
-and follows the chosen setup contracts. Established explicit identity bindings do not retarget
-when names or labels change, and catalog changes do not silently propagate into existing instance
-definitions. The alternative captures a catalog selection until explicit refresh.
+One reusable Linear template can be used by Euphony and personal Pools with different settings.
+Putting `domain=euphony` on that template conflates the reusable definition with one use of it.
+Pool-local entries already express the relationship. Labels on templates, local entries and
+instances must not be silently treated as the same metadata or inherited between them.
 
-Explicit routing can be configured once and reused; it need not prompt a human on every call.
-Normal same-path transport reconnection remains supported, and separate authorized paths remain
-complete alternatives that an authorized caller can deliberately select. The alternative adds
-automatic route/account choice or failover, requiring its own policy and outcome handling.
+**Recommendation, not a ruling:** use explicit named Resource-template entries for Pool inclusion
+in v0. Optional labels can assist discovery without adding matching templates to a Pool. Defer
+label-driven Pool inclusion until a concrete case needs it. This would revise the earlier
+reference-plus-selector direction for Pool composition; established Conduit access-filter
+contracts and record classification remain separate and are not silently removed.
 
-Logical participation can survive temporary transport loss. Grant lifetime should therefore be
-distinct from sockets and the UI that issued the grant. Time-limited leases or issuer-bound grants
-would be alternative policies; current access checks at dispatch/delivery remain required.
+The alternative is to retain label-driven Pool inclusion and define it now: which objects are
+queried, where labels live, who maintains them, matching/empty-set behavior, refresh and dependency
+binding, and effects when labels change. Labels alone still confer no identity, capability,
+ownership, permission, provisioning instruction or activation. If metadata drives a behavioral
+selector, edits can change its matches; they are more than cosmetic annotations in that use.
 
 ## Settled foundation
 
@@ -49,7 +59,7 @@ would be alternative policies; current access checks at dispatch/delivery remain
 | Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. R1 requires replacement for fixed-definition changes, including Interface administration. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
-| Composition/access | Pool catalog membership does not provision Resources. Agent templates declare starting Conduits; no Pool-provided default Agent connections in v0. Local entries, reusable composition, capability matching and partial readiness remain. Composite Conduits retain per-consumer participation; filters narrow complete authorized paths. |
+| Composition/access | Pool template availability does not provision Resources. Agent templates declare starting Conduits; no Pool-provided default Agent connections in v0. Local entries, reusable composition, capability matching and partial readiness remain. Filters preserve complete paths; routing is unambiguous or explicitly selected. Grants follow recipient participation under current restrictions. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
 | Continuity/evidence | Stable identity, explicit rebind, current-access delivery, safe retries, explicit restart of stopped Agents, portable checkpoints, retained evidence and honest telemetry gaps. |
 | Startup | Seed management objects once, reuse them and explicitly repair inconsistencies. No silent reseeding/purge. Repair mechanics remain implementation work. |
@@ -64,7 +74,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
-| R4 — partly settled | How are connections selected, delegated and routed? | Accepted: catalog availability does not deploy; no Pool-provided default Agent connections. Proposed: live catalog matches; unambiguous or explicit route/identity selection; grants tied to recipient participation under current limits. | Snapshot catalog refresh, automatic routing or different grant-lifetime policies. |
+| R4 — partly settled | How are connections selected, delegated and routed? | Accepted: availability does not deploy; no Pool connection defaults; unambiguous/explicit routing with no silent fallback; grants follow recipient participation. Labels and Pool inclusion are reopened; recommend explicit named entries in v0. | Defining label-driven Pool inclusion and its metadata/matching/refresh semantics now. |
 | R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
@@ -122,12 +132,21 @@ Conduits, including reusable bundles; explicit operations add/remove connections
 Pool-provided default Agent connection sets, avoiding an extra merge/precedence layer. Resource
 configuration defaults are unaffected. Selection confers no authority.
 
-**Remaining proposals:** live available-template selector matching without automatic provisioning;
-unambiguous resolution or explicit choice of route/service identity with no silent fallback;
-delegation attached to recipient logical participation rather than issuer frontend/execution
-lifetime. See the worked cases above. Existing live access matching and stable-ID rebinding rules
-remain accepted. Revocation/limits apply at dispatch and delivery; unsupported restrictions leave
-affected access unavailable, with native bypass limitations honestly reported.
+**Accepted routing:** without an already-selected route, automatically resolve only a single
+eligible route. Several alternatives require explicit choice at attachment/invocation. Record the
+path/service identity; do not silently substitute another route/account after failure. Configured
+choices can be reused without per-call human confirmation. Same-path reconnection is supported;
+deliberate alternate-path use still follows safe outcome/retry rules.
+
+**Accepted delegation lifetime:** access follows recipient logical participation, surviving the
+issuing frontend closing or coordinator execution stopping. Withdrawal and current governing
+restrictions still apply; recipient detachment ends that attachment's access. Temporary socket
+loss is not detachment. Issuer shutdown is not itself grant withdrawal.
+
+**Remaining discussion:** labels, the meaning of available-template views and whether Pool inclusion
+needs selectors in v0. No live/snapshot label-selection behavior has been chosen. Existing live
+access matching and stable-ID rebinding rules remain; unsupported restrictions leave affected
+access unavailable, with native bypass limitations honestly reported.
 
 Closure example: two Pools, overlapping selectors/routes and one revoked consumer; identify the
 chosen target, identity, rights and survivors. [Conduit contracts](DESIGN.md#conduits).

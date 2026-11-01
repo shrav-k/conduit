@@ -185,7 +185,14 @@ support/limits, current authority and composite/component restrictions. Independ
 remain complete alternatives: target, operation and parameter constraints stay associated within
 each path. Reading Euphony through one path and updating Demo through another does not permit
 updating Euphony. Actor-wide and target-wide limits still apply wherever relevant. Exact filter
-syntax and routing remain open. A filter does not silently rewrite a request or grant access.
+syntax remains open. A filter does not silently rewrite a request or grant access.
+
+When no route is already selected, resolve automatically only if exactly one eligible route
+remains. Report unavailable if none is eligible; several require an explicit choice. Record the chosen path and
+service identity. A choice can be configured once and reused without human confirmation per call.
+Do not silently substitute another route/account after failure; ordinary reconnection along the
+same path remains supported. Deliberately selecting another authorized path uses normal outcome
+and safe-retry checks rather than assuming the previous operation had no effect.
 
 Filters normally use typed declarations with defined semantics, backed by supporting plugins for
 validation and enforcement. Custom code can implement new filter contracts, including through
@@ -197,6 +204,9 @@ another consumer's Conduit attachment. Record that delegation with the attachmen
 Agent-permission setup is not required first. The creator must be permitted to delegate it, and
 target/recipient limits still apply. Merely declaring requested access, naming a Resource or
 editing a filter grants nothing. Delegation does not inherently authorize onward delegation.
+The grant follows the recipient's logical participation, surviving the issuing frontend closing
+or coordinator execution stopping. Withdrawal and current governing restrictions still apply;
+recipient detachment ends that attachment's access. Temporary transport loss alone does not.
 
 Conduits cover Agent-to-Agent and Resource-to-Resource interaction as well as user control and
 Pool access. Reusing a template does not choose between opening a new flow and joining an existing
@@ -243,7 +253,9 @@ composition references, not registry aliases. Reusing a Pool template does not i
 Resource identity or credentials. A reusable graph step can establish a selected composition
 through the Resources' own setup contracts. It must not interpret every available catalog entry
 as a deployment request. Custom graphs can reference entries for extra ordering or checks.
-Exact catalog/selection fields, plugin contracts and graph syntax remain open.
+Here, the available-template list is a view of Pool declarations, not another object family or
+mandatory registry service. The role of labels/selectors in Pool inclusion is under review;
+no live label-driven inclusion policy has been selected. Exact fields and graph syntax remain open.
 
 During partial Pool setup, ready Resources remain usable through authorized Conduits while other
 components wait or fail. Each Resource's prerequisites and declared gates still apply; report the

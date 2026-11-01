@@ -213,7 +213,10 @@ the Agent the upstream credential. Per-attachment identities remain an explicit 
 When authorized to delegate, the user can establish each Agent's attachment with its explicit
 permitted subset in the same action. For example, the review Agent requests issue-read access;
 the attachment records the actual authorized delegation. No separate Agent permission record is
-required first, but a requested bundle or filter in YAML is not self-issued authority.
+required first, but a requested bundle or filter in YAML is not self-issued authority. Under R4,
+the grant follows the recipient's logical participation, not the issuer's frontend/execution
+lifetime. Withdrawal/current restrictions still apply; detachment ends the attachment's access,
+while temporary transport failure alone does not.
 
 | Element | Responsibility in this example |
 | --- | --- |
@@ -547,8 +550,11 @@ Do not combine field-wise allowlists into permissions that no complete path auth
 
 Reading Euphony can use A; updating Demo can use B. Updating Euphony cannot borrow the operation
 from B and the target from A. An unrelated read-only path also does not make every other path
-read-only. The actual path used must authorize the complete request; whether/how a runtime chooses
-another path is a separate routing decision, not settled here.
+read-only. The actual path used must authorize the complete request. R4 selects automatic resolution
+only for an unambiguous eligible route when none is already chosen. Several eligible alternatives
+require explicit selection; record the path/service identity and do not silently switch routes
+or accounts on failure. Normal same-path reconnection remains supported. Deliberate alternate-path
+use still follows current authority and safe-retry/outcome rules.
 
 Within one path, an Euphony-only composite and a Demo-only component have no common permitted
 workspace. Report the unusable access rather than treating either declaration as an override.
@@ -560,7 +566,8 @@ evaluation implementation remain open. This rule does not prescribe a new policy
 The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
 Authentication reuse, composite participation, typed filters and access-path composition are
 accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
-support the remaining R4 selection/delegation/routing and R7 communication contracts. Detailed
+now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4's label/Pool
+selection discussion and R7's communication contract remain open. Detailed
 syntax belongs to R6; examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:

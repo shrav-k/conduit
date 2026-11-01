@@ -438,6 +438,12 @@ Conduit's retain-until-purge policy. [agentwatch README][agentwatch]
 
 ### Three proposed interaction families
 
+The later [messaging/networking investigation](CONDUITS.md#messaging-and-networking-investigation)
+refines these into **composable behaviors**, not exclusive protocol families: a retained post is
+also an invocation, and a review can retain its request/result while exposing observations. Keep
+the examples below as requirements to distinguish, not a three-way wire or Resource taxonomy.
+R7 is still awaiting a ruling.
+
 | Family | Example | Success means | Recovery needs |
 | --- | --- | --- | --- |
 | Capability request | Read memory; call a permitted MCP tool; ask another Agent for a review. | A defined result or explicit pending work handle, with effect outcome separately tracked. | Correlation, authority, idempotency/reconciliation, deadlines and cancellation semantics. |

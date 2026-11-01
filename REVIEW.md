@@ -17,38 +17,53 @@ is preserved on main at c013f0a.
 Conduit-selected implementations, with replacement instances for implementation upgrades in v0.
 Concrete schema fields and tooling remain drafting work within those accepted rules.
 
-Next is **R7: communication behavior and the first usable scenario**. Start with the meaning of
-interactions, before selecting a topology, broker, room abstraction or wire format. The existing
-five families, Pool ownership, delegated access and Conduit lifecycle continue to apply.
+Next is **R7: communication behavior and the first usable scenario**. The user requested concrete
+examples and messaging/networking research before ruling. The
+[investigation](research/CONDUITS.md#messaging-and-networking-investigation) compares TCP/QUIC,
+Signal, WebSocket, MQTT/AMQP, JetStream, Zenoh/Matrix, current MCP/A2A and local Agentwatch evidence.
+It changes the framing below; it does not accept a communication contract or select a dependency.
 
-| Proposed initial capability behavior | Example | What success would mean |
+**Refined recommendation:** shared mechanics with explicit, composable capability guarantees.
+Invocation, retention and observation overlap; they are not three exclusive message types.
+Even posting a message invokes an operation. A retained review request can also expose progress
+and a later result, over the same MCP connection. A generic envelope and meaningful typed
+operations are compatible. The choice is whether guarantees are inspectable in contracts or
+left to application conventions, not whether there is one wire format or three.
+
+For example, A has prepared a change and B is currently unavailable:
+
+| Illustrative operation | Success means | Does not establish |
 | --- | --- | --- |
-| Invocation | Interface pauses B through a supported control; A invokes a review capability B deliberately exposes. | The operation's declared response: result, pending work or another supported outcome. Request acceptance alone is not completion. |
-| Retained exchange | A posts a finding or review request that B can read later. | The content is retained according to its contract. Storage does not prove B received it, read it or performed the requested work. |
-| Observation | Interface watches B's current execution state. | A view of state with coverage/freshness evidence. A current snapshot need not represent every intermediate transition. |
+| `post(B, "Please review", artifactRevision)` | The selected communication capability retained the contribution under its contract. | B accepted a review job, read the content or started a model turn. |
+| `review(B, artifactRevision, criteria)` | B's explicitly exposed operation returns findings or admits work under its declared asynchronous contract; otherwise it reports inability to accept. | That every Agent exposes review, every request can queue offline or acceptance guarantees successful completion. |
+| `inspect(review)` / follow progress | Current state or updates with declared coverage/freshness. | That inspecting starts work or every missed transition can be replayed. |
 
-**First R7 recommendation, not yet a ruling:** distinguish these behaviors through extensible
-capability contracts carried by Conduits. They are not new object families, a closed enum or a
-requirement for separate transports, processes or Resource instances. One Resource can expose
-several compatible capabilities; a composite Conduit can present them together. MCP can express
-the operations without making all three behaviors identical.
+Names above are examples, not schema or MCP tool-name rulings. TCP acknowledges transport receipt;
+Signal separates service/device/read receipts; a Conduit capability must additionally say what
+work/result it attests. Adapters should report observable facts, not infer model understanding.
+MCP offers a familiar expression, but transport/subscription semantics and task support depend
+on the negotiated version/extensions. It does not automatically provide Conduit's retained history.
 
-Durable content remains in Pool-owned Resources. An Agent/Interface is the actor; the Conduit is
-its authorized connection; the capability defines the interaction's guarantees. A direct exchange
-or group conversation can be assembled from these parts without requiring every operation to occur
-inside a room. Shared context remains explicit Resource access, not automatic merging of histories.
+Durable content remains Pool-owned. Conduits carry authorized interactions; Agents own private
+execution/context; Interfaces inspect and invoke. One Resource can expose related capabilities,
+and an Agent can expose work directly without a new family. Neither a room nor automatic context
+merging is required. Storage, delivery, model attention and completion remain distinct facts
+without requiring an exhaustive state enum or extra manual bookkeeping.
 
-The alternative starts with a generic message protocol and defines calls/state observation as
-conventions over it. That can share transport, but its conventions would still need to distinguish
-storage, delivery, reading, execution and results. Recommend making those guarantees inspectable
-in capability contracts from the beginning.
+Work through three connected bundles rather than voting on individual message fields:
 
-After this boundary, work through A asking B to review a pinned artifact: B is unavailable, access
-changes, B returns, and an observer reconnects. Settle addressing/retention, delivery/progress,
-attention/wake behavior and the local v0 slice together. No former room policy is silently reinstated;
-tracker coupling, automatic wake and exact exchange shape remain open. The
-[Pi/Chord/agentwatch synthesis](research/PI_CONNECTORS.md#three-proposed-interaction-families)
-supplies cases, not mandatory implementations.
+1. **Meaning and retention:** confirm composable capability contracts, then choose whether the
+   first slice includes retained posts only or also an explicit asynchronous work operation.
+2. **Recipients, recovery and attention:** resolve offline B, response loss, independent recipient
+   progress, permission changes, bounded catch-up and what can trigger model work. Keep duplicate
+   delivery separate from duplicate execution and waiting timeouts separate from cancellation.
+3. **Observation and experiment:** identify current-state versus history guarantees, slow-observer
+   recovery and the minimum local two-Agent plus Interface scenario. Decide or explicitly defer
+   tracker coupling and richer communication modes.
+
+No former room policy is silently reinstated. Passive next-turn attention is still a recommendation;
+automatic wake, addressing/retention details and initial scope remain open. Existing Pool ownership,
+current-access checks, safe retries and new-Conduit-after-end rules continue to constrain the design.
 
 ## Settled foundation
 
@@ -228,11 +243,11 @@ database or schema library. [Configuration evidence](research/CONFIGURATION.md).
 
 ### R7 — communication and the usable slice
 
-Communication is central and still needs a selected contract. The first proposed ruling distinguishes
-invocation, retained exchange and observation as extensible capability contracts, illustrated above.
-These are behavior classes, not additional object families or a requirement for separate transports,
-processes or Resources. The five-family model carries the relationships; capability contracts state
-the guarantees rather than making room membership universal.
+Communication is central and still needs a selected contract. The
+[worked protocol investigation](research/CONDUITS.md#messaging-and-networking-investigation)
+refines the first proposal into composable capability semantics: an invocation can retain work
+and support observation. Neither a closed behavior enum nor separate transports/processes/Resources
+is required. The next-discussion bundles above are the ruling sequence.
 
 Recommend Pool-owned retained content, Conduit-mediated exchange, independent participant progress,
 acceptance distinct from processing/completion, bounded catch-up and current-access delivery.
@@ -242,8 +257,10 @@ an editable scratchpad. Addressing, ordering, receipts and offline behavior need
 Tracker coupling is still an open product choice; the latest model establishes no mandatory policy.
 
 Closure example: A asks B for a review; B disconnects before reading; access changes; B returns;
-a third observer falls behind. Identify stored, delivered, read and executed work, and what survives
-the final connection. [Communication comparison](research/PI_CONNECTORS.md#three-proposed-interaction-families).
+an Interface observer falls behind. Identify stored, delivered, supplied-to-model and executed work,
+unknown outcomes and what survives the final connection. Keep the
+[Pi/Chord comparison](research/PI_CONNECTORS.md#three-proposed-interaction-families) as implementation
+inspiration, not a separate ruling queue. Broker/wire selection follows the required semantics.
 
 ## Implementation decisions and deferred work
 

@@ -74,7 +74,7 @@ saved on `main` at `c013f0a`; this branch has not been merged into it.
 | --- | --- |
 | [Establishment and recovery](research/ESTABLISHMENT.md) | Ordering, outputs, authentication waits and failure cases. |
 | [Resource typing and groups](research/RESOURCES.md) | Core groups, candidate types, capabilities and plugin boundaries. |
-| [Conduit connections and state](research/CONDUITS.md) | Shared Pool access through repository, communication, credential, AWS and Linear scenarios. |
+| [Conduit connections and state](research/CONDUITS.md) | Shared Pool access scenarios; messaging/networking evidence and a worked Agent review exchange. |
 | [Configuration languages](research/CONFIGURATION.md) | Kubernetes/Docker evidence, language papers and schema proposals. |
 | [Pi connectors and context](research/PI_CONNECTORS.md) | Provider/authentication boundaries, context portability, activation, MCP and Chord. |
 | [Pi runtime and Durable](research/PI_RUNTIME.md) | Execution, recovery, frontend, storage and ecosystem evidence. |

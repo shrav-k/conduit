@@ -12,6 +12,10 @@ state and lifecycle proposals below remain for review; no schema or implementati
 [DESIGN.md](../DESIGN.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) groups questions.
 No live login, deployment or provider mutation was performed for this research.
 
+The [messaging and networking investigation](#messaging-and-networking-investigation)
+develops the pending R7 communication proposal with a concrete review exchange, primary protocol
+sources and failure cases. It refines the proposal; it does not record an accepted ruling.
+
 ## Common model across the scenarios
 
 | Family | Reusable template | Concrete instance |
@@ -564,6 +568,279 @@ Within one path, an Euphony-only composite and a Demo-only component have no com
 workspace. Report the unusable access rather than treating either declaration as an override.
 Exact conflict diagnostics, filter expression syntax, Boolean alternatives within a layer and
 evaluation implementation remain open. This rule does not prescribe a new policy engine.
+
+## Messaging and networking investigation
+
+Research date: 2026-10-31. **R7 remains unresolved.** Sources below describe specific standards,
+versions or inspected implementations. The recommendations are Conduit design inferences, not
+claims that adopting one library supplies these guarantees. No broker, transport, cryptographic
+scheme, Agent wake policy or new Resource type is selected here.
+
+### Concrete example: ask another Agent to review a change
+
+Suppose the Euphony Pool owns an existing worktree Resource and a provisioned communication
+Resource capable of retaining exchanges. Agent A implements a change; Agent B reviews it.
+An Interface observes both. Their permitted Conduits already exist. This is a proposed example,
+not a requirement for a communication Resource in every Pool or a Resource per message.
+
+The following are illustrative capability names, not YAML fields or standardized MCP tool names:
+
+| Interaction | Example | What its successful response establishes |
+| --- | --- | --- |
+| Post information | A calls `post` with recipient B, “Please review this change,” and a pinned artifact reference. | The communication Resource stored the contribution according to its declared retention contract. It does not establish that B accepted a review job. |
+| Request work | A invokes a `review` operation deliberately exposed by B, with the same artifact and review criteria. | The operation returns findings or identifies accepted/pending work under its declared contract. If B cannot accept work, it reports that; offline queuing is not automatic. |
+| Inspect or follow | The Interface reads B's current state or follows review progress. | A state report or updates with stated coverage. Looking at B does not itself ask B to perform a review. |
+
+The first operation is itself an invocation of `post`. Therefore **invocation, retained exchange
+and observation are composable behaviors, not mutually exclusive message types**. A `review`
+operation may retain its request, expose progress and retain its final result. A current-state
+observer may use a retained event log, but need not receive every event to show current state.
+One MCP connection can expose all these operations. Direct messages and group conversations are
+different addressing arrangements, not different answers to what success means.
+
+Posting natural-language text and invoking an exposed operation also differ in authority.
+“Please deploy” in a conversation is content; it does not itself acquire a deployment grant.
+An Agent may decide to act on it using its own authorized capabilities. A supported `deploy`
+operation instead has an explicit admission, execution and result contract. Neither requires a
+human confirmation for every permitted action, and neither bypasses current permissions.
+
+For an illustrative retained review request, the evidence develops as follows. These are facts
+that different components can attest, **not a mandatory seven-state enum or universal sequence**:
+
+| Fact | Evidence that could support it | What remains unproven |
+| --- | --- | --- |
+| Transport received bytes | Acknowledgment from the receiving transport endpoint. | Application parsing, persistence or B's participation. |
+| Request/contribution retained | Storage acceptance with an identified record and declared durability boundary. | B receiving it or agreeing to work. |
+| Offered to B's integration | Delivery receipt from the particular attachment/integration. | Inclusion in a model request. |
+| Supplied to a model turn | Runtime evidence identifying the turn and content supplied, where observable. | Understanding, agreement or later retention after compaction. |
+| Review accepted/started | The review handler's work identity and execution evidence. | Successful completion. |
+| Review result recorded | A result linked to the request and exact artifact reviewed. | Correctness of the findings or A receiving them. |
+| Result retrieved by A | A's independent receipt/read progress. | That A acted on the result. |
+
+A native adapter may not expose model-input evidence; report that gap instead of calling delivery
+“read.” A result can be stored while its final response is lost. Equally, a current progress
+snapshot can be useful without reconstructing every intermediate transition. These distinctions
+are the practical reason for explicit capability guarantees. They do not require every adapter
+to emit every receipt or users to maintain another ledger: record only what the selected contract
+requires and the implementation can substantiate, reusing existing operation/runtime evidence.
+
+### What the reference protocols actually provide
+
+The layers below are responsibilities to distinguish, not five new services or object families.
+Local implementations can combine them in one process; remote implementations can distribute them.
+
+| Layer | Relevant question | Evidence and implication |
+| --- | --- | --- |
+| Byte transport | Did bytes arrive, in what order, with what flow control? | TCP/QUIC; does not establish storage or Agent execution. |
+| Framing and calls | Which message/request is this, and how is a response correlated? | WebSocket framing, MCP operations; request identity is not automatically durable deduplication. |
+| Retention and delivery | Can a recipient retrieve it later, and what survives reconnect? | Messaging stores, consumers, receipts and replay contracts. |
+| Capability meaning | Does this post information, request a review, read state or change a setting? | Typed endpoint operations and their results. |
+| Agent attention | Does availability of information start or interrupt model work? | Agent/runtime policy, separately authorized and cost-bearing. |
+
+**TCP and QUIC.** TCP supplies a reliable ordered byte stream, with retransmission and flow
+control. It does not preserve application message boundaries. QUIC supplies ordered streams
+within a connection and avoids one stream's missing data necessarily blocking unrelated streams;
+it does not order all streams together. RFC 9000 explicitly distinguishes acknowledging stream
+data from the application consuming it. Neither transport acknowledgment proves that a message
+was durably stored or a review finished. These standards support keeping a Conduit's logical
+participation separate from its current socket. [TCP RFC 9293, §2.2](https://www.rfc-editor.org/rfc/rfc9293.html#section-2.2)
+· [QUIC RFC 9000, §§2, 13.1](https://www.rfc-editor.org/rfc/rfc9000.html#section-13.1)
+
+**WebSocket.** RFC 6455 adds a handshake and bidirectional message framing over TCP, with
+control frames such as ping/pong and close. That makes it a possible live carrier, not a retained
+inbox, application receipt or recovery journal. A pong is evidence about the connection endpoint,
+not proof an Agent is available to think. We should not select WebSocket merely because the
+product uses the word “connection.” [WebSocket RFC 6455](https://www.rfc-editor.org/rfc/rfc6455.html)
+
+**Signal.** Its user-facing receipts distinguish sent to the service, delivered to the recipient's
+device and read with receipts enabled. That distinction is directly useful for honest Interfaces.
+[Signal receipt meanings](https://support.signal.org/hc/en-us/articles/360007320751-How-do-I-know-if-my-message-was-delivered-or-read)
+
+Sesame revision 2 describes asynchronous, multi-device **encryption-session management**. It
+assumes per-device mailboxes, possible delay/reordering/duplication, device replacement and lost
+or rolled-back local state. Its optional retry mechanism maintains per-recipient-device message
+records and can acknowledge successful decryption. This is evidence for separating logical
+identity, recipient endpoints and their progress; it is not a specification of today's entire
+Signal service or a universal Agent job scheduler. A Signal cryptographic “session” is not a
+Conduit Agent instance. [Sesame, §§2.2, 4.1](https://signal.org/docs/specifications/sesame/)
+
+Signal's end-to-end encrypted conversations also imply a different trust boundary from a server
+that can inspect plaintext. Conduit could enforce routing/operation metadata while content is
+encrypted, but content inspection/search would require an authorized endpoint with plaintext.
+We cannot promise both intermediary-blind encryption and arbitrary intermediary content filtering.
+The v0 local design need not import Signal's encryption or device-enrollment architecture.
+[Signal privacy model](https://support.signal.org/hc/en-us/articles/360007320391-Is-it-private-Can-I-trust-it)
+
+**MQTT 5.0.** Its QoS levels distinguish at-most-once, at-least-once and exactly-once delivery
+within its sender/receiver protocol. Server-to-subscriber delivery can use a different QoS;
+recipients are handled independently. Session state can outlive the network connection, and
+retained messages survive separately from session state. A retained topic value is the latest
+retained value, not a conversation history. Therefore MQTT is useful inspiration for explicit
+delivery choices and lifetimes, but its QoS is not a promise that a model performs an external
+action exactly once. [MQTT 5.0, §§3.3.1.3, 4.1–4.3](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
+
+**AMQP 1.0.** Links, delivery identities, unsettled transfers and receiver-issued credit separate
+logical delivery from connection transport and bound how much work can be offered. Delivery
+state and settlement are different: settlement ends tracking of that delivery, while its outcome
+describes processing at the receiving endpoint. “Accepted” at a storage service cannot attest that
+a downstream model completed a task. Borrow the explicit boundary and backpressure ideas without
+copying the full link/session machinery into authoring YAML.
+[AMQP transport, §§2.6.7–2.6.13](https://docs.oasis-open.org/amqp/core/v1.0/amqp-core-transport-v1.0.html)
+· [AMQP messaging, §3.4](https://docs.oasis-open.org/amqp/core/v1.0/amqp-core-messaging-v1.0.html)
+
+**NATS/JetStream.** Core NATS serves connected subscribers; JetStream adds stored streams and
+stateful consumers. Independent consumers can track different positions; multiple clients sharing
+one consumer can instead divide work. These are different semantics for “send to B and C” versus
+“let one reviewer handle this.” Storage, replication and retention are configurable, so a claimed
+durability guarantee must identify the actual configuration. [JetStream concepts](https://docs.nats.io/concepts/jetstream)
+
+Pull consumers bound batches and bytes; acknowledgments, negative acknowledgments and in-progress
+reports control redelivery. A too-short acknowledgment timeout can duplicate work still running.
+For Conduit, durable inbox admission and Agent work completion should not be conflated into one
+timeout: a review might legitimately wait for attention for hours. Message redelivery must not
+automatically start another model turn. A broker is an optional implementation, not a v0 dependency.
+[Pull consumers](https://docs.nats.io/learn/jetstream/pull-consumers)
+· [Acknowledgment and redelivery](https://docs.nats.io/learn/jetstream/acknowledgment)
+
+**Zenoh and Matrix as contrasting examples.** Zenoh combines publication, query/reply, storage
+and liveliness, demonstrating that distinct interactions can share addressing and infrastructure.
+Its storage entity combines subscription and query behavior; a plain subscription is not itself
+historical storage. [Zenoh 1.0.0 entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html)
+
+Matrix's versioned federation specification uses room-event predecessor links to represent a
+partial order and defines recovery of missing events. That is useful if Conduit later needs
+independent remote writers and converging history. It would be needless complexity to require
+room federation, event-DAG reconciliation or Matrix membership for a local two-Agent exchange.
+[Matrix v1.15 federation](https://spec.matrix.org/v1.15/server-server-api/#pdus)
+
+**MCP and A2A.** MCP remains the preferred external capability surface. Named tools provide
+typed invocation; a `post` tool can return a retained record reference, while a `review` tool
+can expose work under its declared result contract. Transport success does not replace the
+tool's domain result. [MCP 2026-07-28 tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
+
+Version details matter. MCP 2026-07-28 Streamable HTTP uses POST requests and request-scoped
+response streams, removes protocol sessions/GET streams and does not resume streams through
+`Last-Event-ID`. A Conduit attachment, durable exchange ID or cursor must therefore not depend
+on those older transport mechanisms. Native clients using older MCP versions need explicit
+adapter compatibility. [MCP 2026-07-28 transport](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)
+
+Current `subscriptions/listen` can carry supported Resource-change notifications; a lost
+subscription must be reestablished. Its standard notification filters are not arbitrary
+user-defined message topics. A communication Resource could signal changed content through
+supported mechanisms and offer explicit bounded history reads, without claiming the notification
+stream is a durable inbox. [MCP subscriptions](https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/subscriptions)
+
+The separately negotiated MCP Tasks extension can return a task handle from a tool call and
+provide later state/results. It is not safe to assume every Agent client implements it. A
+declared ordinary tool result containing a Conduit work reference is another possible adapter
+contract, not permission to send unsupported extension messages.
+[Tasks extension 2026-07-28](https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html)
+
+A2A 1.0 distinguishes immediate messages, longer-running tasks, artifacts and task observation.
+A task's lifecycle is independent of an individual observing stream. Send-message idempotency is
+optional, so an A2A message ID alone does not establish safe replay. Its context grouping also
+does not grant access to another Agent's private context. These are useful adapter concepts;
+adopting A2A wholesale or making its fixed task-state vocabulary Conduit's universal vocabulary
+is not necessary. [A2A 1.0 specification, §§3.3, 3.5](https://a2a-protocol.org/v1.0.0/specification/)
+
+**Local evidence.** Agentwatch at `04025a6f8e3887b8c1152ea44930e1c429b75948` persists accepted
+posts before fan-out, separates room history from live membership and bounds live queues. The
+Pi/Chord study contributes typed calls and snapshot/delta observation. Keep the existing source
+analysis rather than treating either as proof of durable Agent execution or adopting its room,
+expiry or wake policy. [Agentwatch room source](https://github.com/jxp-software/agentwatch/blob/04025a6f8e3887b8c1152ea44930e1c429b75948/crates/agentwatch-server/src/rooms.rs)
+· [Pi/Chord synthesis](PI_CONNECTORS.md#three-proposed-interaction-families)
+
+Two foundational papers explain why these distinctions recur:
+
+- Saltzer, Reed and Clark's *End-to-End Arguments in System Design* locates guarantees at the
+  endpoints that can actually establish them. Our application: a transport or broker can help
+  reliability, but review completion and external-effect reconciliation belong to the responsible
+  capability/runtime. [Author-hosted paper](https://web.mit.edu/saltzer/www/publications/endtoend/endtoend.pdf)
+- Lamport's *Time, Clocks, and the Ordering of Events in a Distributed System* distinguishes causal
+  partial order from a chosen total order. Our application: local sequence numbers can order one
+  retained exchange, while explicit reply/request links capture causality across it; wall-clock
+  timestamps and transport ordering cannot establish one universal order across Agents.
+  [1978 paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/12/Time-Clocks-and-the-Ordering-of-Events-in-a-Distributed-System.pdf)
+
+### Failure cases that distinguish the contracts
+
+These are proposed communication behaviors to review against already-accepted identity, permission,
+retention and safe-retry rules. They do not authorize automatic execution or new access.
+
+| Situation in the review example | Proposed behavior or decision to expose |
+| --- | --- |
+| B is offline when A posts | If the selected capability supports retained delivery, store it and report B's delivery/work as pending or unknown. A live-only capability reports unavailability instead. |
+| B's runtime is alive but idle | Delivery, unread availability and model scheduling remain different facts. Decide the attention policy explicitly; do not infer wake authority from an addressed message. |
+| A loses the response after storage commits | Reconcile using the same operation/message identity where supported. Do not assume failure or create another contribution because the transport disconnected. |
+| B completes a provider write, then crashes before recording the result | Report the uncertain effect and use the provider's supported lookup/idempotency mechanism. Neither TCP, QoS nor a delivery receipt proves safe repetition. |
+| B receives a repeated delivery | Recognize the retained contribution/request when possible. Reoffering information must not itself authorize a second review/model turn. State the deduplication boundary and retention, not an unqualified “exactly once.” |
+| B loses artifact permission while the request waits | Recheck current access at delivery and use. Withhold restricted content/operations with scoped diagnostics; the sender's earlier permission does not preserve B's access. |
+| A sends to B and C | Distinguish broadcast with independent progress from a competing-worker request intended for one executor. One recipient's receipt does not acknowledge the other. |
+| Interface falls behind | A state observer can obtain a newer snapshot and discard obsolete intermediate updates if its contract permits. A retained exchange must expose unread/gap information instead of silently coalescing distinct contributions. |
+| Queued content exceeds capacity | Bound admission/fetch/in-flight work and report refusal or incomplete coverage. Do not silently drop already-accepted durable content. Conduit's retain-until-purge policy does not require unbounded admission. |
+| A times out or closes its terminal | Ending a wait is not evidence of cancellation or stopping B. Cancellation is an explicit supported operation with its own outcome. |
+| B is replaced with a new Agent instance | The new ID does not automatically inherit B's addressed work, receipts, grants or private context. Explicit authorized handoff is separate from reconnecting the same instance. |
+| All participants explicitly detach | The Conduit ends under R3. Pool-owned history/results can survive. Later access uses a new Conduit and current authority; offline progress, if retained, belongs to the supporting contract, not a resurrected flow. |
+
+A request/result pair should identify what was actually reviewed: for this example an artifact
+revision or immutable commit plus declared inputs, not “whatever is currently in A's folder.”
+The result's existence does not prove its correctness; validation evidence is still separate.
+
+### Refinement to the proposed Conduit contract
+
+Recommend **shared mechanics with explicit, composable capability semantics**. A generic message
+envelope is compatible with this direction; the false choice is between one wire format and
+meaningful operations. We can use common correlation, references and authorization while allowing
+plugins to define `post`, `review`, `read-history`, `inspect`, or richer operations. Clients learn
+what an endpoint supports through its contract rather than guessing from message prose.
+
+For the examples, contracts need to answer a few independent questions:
+
+| Dimension | What to make explicit | What not to require universally |
+| --- | --- | --- |
+| Meaning and result | Target capability, typed input/result, what acceptance/completion establish. | A fixed set of every possible domain state. |
+| Addressing and participation | One named Agent, explicit group, or one eligible worker; actual recipient identities. | Rooms or one mailbox per socket. |
+| Retention and recovery | Live-only versus retained behavior, identity/replay boundary, independent consumption progress. | A Resource or graph node per delivery attempt. |
+| Ordering and causality | Order within the declared exchange; reply/request/result links where needed. | Global ordering across unrelated operations or conflating log order with completion order. |
+| Observation and flow control | Snapshot/event coverage, bounded reads/buffers and stale/gap reporting. | Recording every streamed token as a durable message or loading the whole history into context. |
+| Attention and execution | Whether and when an eligible delivery can schedule model work. | Waking on every post, retry, status update or acknowledgment. |
+
+Plugin-defined outcomes can remain extensible. The shared contract should identify the fact,
+its subject and the component reporting it; a sender must not promote a transport receipt into
+an Agent's completion claim. Exact fields and supported presets come after the behavior ruling.
+Prefer a small set of useful capability contracts over exposing every combination as a user-facing
+matrix of flags.
+
+This preserves the five families: the **Pool** owns retained communication **Resources**;
+**Conduits** carry authorized interactions; **Agents** own their private execution/context;
+**Interfaces** invoke operations and inspect evidence. Plugins implement those contracts. An
+Agent's review capability can remain attached to that Agent rather than requiring a second
+Resource to impersonate it; any reusable durable exchange service remains Pool-owned. Shared
+authentication does not make messages from different Agents indistinguishable.
+
+The same mechanism can support a two-party conversation, a group conversation, a delegated
+review and a status display without making them identical. Shared-context access remains an
+explicit Resource connection; a conversation does not merge native histories. A tracker issue
+can be linked without determining transport or message semantics.
+
+### Recommended next review
+
+Do not choose TCP versus Signal: one is a transport and the other is a secure messaging system.
+Do not select a broker or enumerate final message types yet. Review these three connected bundles:
+
+1. **Capability meaning and retention:** agree that posting information, requesting work and
+   inspecting state have distinguishable, composable contracts. Choose whether the first local
+   slice includes retained posts only or also a deliberately exposed asynchronous work operation.
+2. **Recipients, recovery and attention:** walk the offline/retry example through named recipients,
+   independent progress, current-access checks, bounded catch-up and the trigger for model work.
+   Passive next-turn notice remains a recommendation; automatic-wake hooks are not accepted here.
+3. **Observation and acceptance scenario:** choose the minimum inspectable evidence and gap
+   handling, then test the two-Agent exchange plus an Interface observer. Tracker coupling,
+   remote federation and richer modes can be explicitly deferred with consequences recorded.
+
+Existing MCP capability exposure is the leading adapter surface, with a local implementation free
+to use in-process calls or local IPC. Keep transport and storage replaceable, and negotiate/version
+adapter features. No Signal, Matrix, MQTT, AMQP, NATS, Zenoh or A2A dependency is implied by this research.
 
 ## Review sequence and tests
 

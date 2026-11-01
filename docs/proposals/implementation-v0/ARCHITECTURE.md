@@ -19,8 +19,9 @@ transport, attachment or database table does not add a family.
 | Pool | Resource ownership and permitted provisioning composition | Named available templates, owned instance IDs and composition outcomes | Automatic deployment, co-location or one daemon per Pool |
 | Conduit | Live logical participation, routes and applicable restrictions | Fixed definition, supported settings, attachments and lifecycle evidence | Ownership of durable conversation content or provider credentials |
 
-The system Pool owns the management Resource through which the Interface exposes registry and
-runtime management. A table does not automatically become a Resource. Whether authority storage
+The system Pool owns system management for registry/creation and a dedicated access-management
+Resource for grants/governing requirements, reached through the Interface's Conduits. A table does
+not automatically become a Resource. Whether authority storage
 itself stays internal, uses a bootstrap-loaded plugin or becomes an explicitly Pool-owned Resource
 is under I4 review. A plugin's private checkpoint is implementation state; a separately exposed
 storage/search/authentication capability is a Pool-owned Resource. Logical ownership, storage
@@ -69,8 +70,10 @@ an access grant, and access is not proof that an operation is implemented or suc
 | Who owns objects and presents evidence? | Pools own Resources; each service owns its assigned facts; the Interface coordinates and presents source-attributed results. | Starting a Resource does not transfer it into the Interface or create a second authoritative copy of its state. |
 
 The root Interface can hold system-wide administrative permission and direct policy changes.
-Management services exposed through the system Pool's management Resource retain shared registry
-and policy facts and enforce applicable rules. This is an implementation of the authority boundary,
+Management services exposed through the system Pool's system management and dedicated access-management
+Resources retain shared registry and governing-binding/grant facts and enforce applicable rules.
+The latter Resource manages access state; the former handles registry/templates and creation.
+This is an implementation of the authority boundary,
 not a second human decision maker. Executors remain authoritative for their assigned instances'
 confirmed configuration and operation results. The Interface retains its own configuration and
 management-workflow progress. Administrative permission does not bypass fixed definitions,
@@ -119,13 +122,14 @@ and actual endpoint enforcement. They also apply to Resource-to-Resource calls a
 on all five families; a protected target need not be a Resource. Governing bindings remain independent
 authoritative state even though they no longer require a separate policy-rule structure.
 
-A Pool-owned management Resource remains the proposed way to expose policy/grant administration
-and evaluation. The next choice is a dedicated access-management Resource in the system Pool versus
-including those capabilities in the existing system management Resource. A dedicated Resource is
-recommended for unitary responsibility; either can be hosted by the same management service and
-one capability can manage many records. This does not move every requirement check into a central
-proxy. Exact hosting, schemas and evaluator remain unruled. Authorization records do not inherit
-ordinary knowledge-sharing semantics.
+**Accepted placement:** the system Pool owns a dedicated access-management Resource exposing
+grant and governing-requirement administration/inspection. The existing system management Resource
+retains registry/template and instance-creation responsibilities. Both may be hosted by the same
+management service and storage implementation; one capability manages many records. This preserves
+unitary responsibilities without a separate process/database per Resource or a central proxy for
+every requirement check. Endpoint implementations retain their enforcement duties. Exact startup,
+schemas and storage remain unruled. Authorization records do not inherit ordinary knowledge-sharing
+semantics.
 Publishing a policy or installing a plugin cannot confer authority.
 
 Ordinary managed access now requires a recorded grant on its selected participation, including
@@ -133,8 +137,8 @@ the root's broad management access. Policy governs issuance/current use without 
 alternative; authorized connection setup can establish one grant for many requests. Grant
 administration now checks current administrator authority, while issued grants remain independent
 of issuer provenance, permissions and grant ancestry. Any authorized administrator can revoke them;
-recipient participation/Conduit end also ends access. Next settle capability placement, remaining
-binding/custom-bound contracts and foundational persistence/engine selection. The trusted authority and first
+recipient participation/Conduit end also ends access. Next settle remaining binding/custom-bound
+contracts and foundational persistence/engine selection. The trusted authority and first
 owner grant still need an explicit startup/repair contract; a Resource wrapper alone does not
 resolve that dependency.
 
@@ -159,7 +163,8 @@ observations, unavailable current policy and confirmed process termination.
 
 **Possible establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then
-establishes the system Pool and its required storage/management Resources in the supported order,
+establishes the system Pool, its system management and access-management Resources, and any selected
+storage dependencies in the supported order,
 opens the management connections, and makes observation/control available to attached frontends.
 On subsequent starts, its recovery operations reuse retained object identities, settings and grants;
 missing or inconsistent state is reported for explicit repair. Resource creation still proceeds

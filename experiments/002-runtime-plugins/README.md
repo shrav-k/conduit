@@ -24,8 +24,10 @@ The [Policy/Grant proposal](../../docs/proposals/implementation-v0/AUTHORIZATION
 adds candidate common Agent/Interface authorization cases for review. These clarify the intended
 protocol proof. Policy as authoritative requirement application and grant administration through
 ordinary protected capabilities are now accepted. Governing bindings share the requirement machinery;
-there is no separate policy-rule language to implement. Additional cases, exact binding/grant schemas
-and management Resource placement remain for review; this does not expand experiment scope or begin implementation.
+there is no separate policy-rule language to implement. A dedicated access-management Resource
+in the system Pool is accepted for grants and governing bindings, alongside system management.
+Both may share the existing management process/store. Additional cases, exact schemas and startup
+wiring remain for review; this does not authorize extra test cases or begin implementation.
 
 ## Question
 
@@ -72,7 +74,8 @@ enrollment and credential placement.
 
 - A test Interface that issues commands and reads retained evidence through the same management
   path. A production TUI is unnecessary.
-- One system Pool and one fixture Pool. The latter owns a fake authentication Resource and a
+- One system Pool owning system management and dedicated access-management Resources, plus one
+  fixture Pool. The latter owns a fake authentication Resource and a
   fake service Resource; fixture identities are not real credentials.
 - Two synthetic Agent instances with independent consumer identities. They do not call models.
 - A Conduit attachment per consumer with distinct allowed operations over shared service access.

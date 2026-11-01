@@ -251,20 +251,18 @@ native context. Runtime supervision can continue while new requests wait for cur
 
 ## 6. Resource, plugin, graph and MCP placement
 
-**Proposed placement:** a Pool-owned authorization-management capability exposes policy/grant
-inspection and authorized changes. The next ruling compares two ways to host it:
+**Accepted placement:** the system Pool owns a dedicated access-management Resource for grant
+records and governing requirement bindings. Its capabilities expose authorized administration and
+inspection through Conduits to Interfaces and permitted Agents. The existing system management
+Resource retains template, registration and instance-creation responsibilities. This separates
+unitary responsibilities without adding an object family.
 
-| Placement | Concrete responsibilities | Tradeoff |
-| --- | --- | --- |
-| Dedicated Resource in the system Pool | Existing system management handles templates/registration/creation; an access-management Resource exposes grant and governing-binding administration/inspection. | Preserves unitary Resource responsibilities and a separately addressable capability, with one additional foundational Resource/connection to establish. |
-| Existing system management Resource | The same Resource exposes registry/lifecycle and grant/governing-binding operations. | Fewer foundational objects, but its contract combines administrative responsibilities that may later need separation. |
-
-Recommend the dedicated Resource, consistent with the unitary-Resource direction. Both can run in
-one management process and use the same selected internal storage implementation; neither requires
-a new process/database, a Resource per rule or sending every provider call through that Resource.
-Endpoint enforcement and shared management authority remain as accepted. Placement is not yet
-ruled; either way, policy remains independent of its administrative Interface, and one capability
-manages many records. The designated service/store retains authoritative facts.
+Both Resources may run in the same management process and use the same internal storage
+implementation. There is no required process/database per Resource, Resource per rule, or central
+proxy for every provider call. Management retains authoritative access state; endpoint-selected
+plugins still fulfill their enforcement duties. Policy remains independent of its administrative
+Interface, and one capability manages many records. Exact capability/type names, storage and
+startup wiring remain open.
 
 The initial trusted authority must be selected by the system's establishment contract. An arbitrary
 Resource advertising policy evaluation cannot approve its own use or confer root authority.
@@ -330,14 +328,18 @@ policy/requirements. No separate ancestry record is required.
 Grant administration uses ordinary protected capabilities. Existing composition, mandatory-check
 and complete-path rules apply without a second policy language or grant-administration rule category.
 
-1. **Management capability placement:** should a dedicated access-management Resource in the system
-   Pool expose grants and governing requirement bindings, or should the existing system management
-   Resource also carry that responsibility? Recommend the dedicated Resource to preserve unitary
-   responsibilities. Both can run within the same management service; neither requires a service
-   per rule or moving endpoint enforcement into a central proxy.
-2. **Remaining applicability/administration contracts:** specify binding targets and supported checks
-   on proposed grant bounds. Current required checks and path composition are already settled;
-   custom bound validation does not assume a universal solver.
+**Accepted placement:** a dedicated access-management Resource in the system Pool manages grants
+and governing requirement bindings, alongside the existing registry/template management Resource.
+Logical separation does not require separate processes, stores or centralized endpoint enforcement.
+
+1. **Binding applicability:** explicitly distinguish requirements on an object's own capabilities
+   from requirements governing other objects selected through ownership. For example, constraining
+   a Pool's provisioning operations does not itself constrain deployment calls on its Resource
+   instances. Recommend explicit target scope, with an owned-Resource selection available where
+   supported, rather than implicit propagation. Exact selector syntax and membership-change behavior
+   remain open; no generic labels or automatic Pool inheritance have been introduced.
+2. **Grant-bound validation:** define supported checks on proposed grant bounds. Current mandatory
+   checks and path composition are already settled; custom validation does not assume a universal solver.
 3. **Startup and persistence:** settle first authority, establishment/repair, then the storage
    interface/engine. The root-owner initial grant is a concrete initialization problem, not
    permission for runtime self-granting.

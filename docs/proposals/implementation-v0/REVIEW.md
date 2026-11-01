@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Requirement application, grant management and foundational storage | Policy as authoritative requirements, ordinary protected grant administration, recorded participation grants and issuer-independent lifetime accepted. Next capability placement, binding/custom-bound details and startup/storage. |
+| I4 | Requirement application, grant management and foundational storage | Policy consolidation, participation grants, issuer-independent lifetime and dedicated access-management Resource accepted. Next binding/custom-bound details and startup/storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -454,14 +454,21 @@ recorded grants and requirements, without a separate policy language or special 
 rule category. Governing bindings remain independent managed state. Existing all-applicable checks,
 complete-path alternatives and mandatory-check failure behavior are settled and carry forward.
 
+**Management placement is accepted:** the system Pool owns a dedicated access-management Resource
+for grants and governing requirement bindings, alongside the existing system management Resource
+for templates, registration and instance creation. Both may share a management service and storage
+implementation; this requires no separate process/database or centralized endpoint enforcement.
+Interfaces and authorized Agents administer access through Conduits. Exact type/capability names
+and first-establishment/repair wiring remain open.
+
 **Next conceptual choices, in order:**
 
-1. Should grants and governing requirement bindings be managed through a dedicated Resource in the
-   system Pool, or through the existing system management Resource? Recommend the dedicated Resource
-   for unitary responsibility. Both may run inside the same management service; this adds no required
-   process, database or central proxy for endpoint enforcement.
-2. Define remaining binding applicability and supported checks on proposed grant bounds, without
-   reopening the accepted composition rules or assuming a general subset solver. Exact schema is I7.
+1. For governing bindings, explicitly distinguish an object's own operations from other objects
+   selected through ownership. Recommend explicit target scope: a rule on Pool provisioning does not
+   implicitly govern deployments through its Resources; an owned-Resource selection can express that
+   broader reach where supported. Exact selectors and live membership behavior remain separate.
+2. Define supported checks on proposed grant bounds without reopening the accepted composition
+   rules or assuming a general subset solver. Exact schema is I7.
 3. Establish first trusted authority and startup/repair, then choose the internal storage boundary
    and engine. The active Interface's directives do not establish their own authority.
 

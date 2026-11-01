@@ -84,7 +84,7 @@ capability operations: the caller needs a grant permitting the operation, with r
 constraining its proposed effect. This avoids a separate grant-administration rule language.
 Other managed callers, including Resource-to-Resource access, retain their existing attribution
 obligations. The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop
-the accepted model and remaining binding, custom-bound-check and Resource-hosting details.
+the accepted model and remaining binding, custom-bound-check and startup/storage details.
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
@@ -185,8 +185,11 @@ lifecycle rules remain intact. Narrower per-Interface authority stays deferred f
 The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) formalize Policy as
 authoritative requirement application and Grant as issued authority for all managed actors.
 Management retains governing requirement bindings independently of the Interface that changed
-them. Exact representation, management capability placement and custom validation details remain
-under review.
+them. A dedicated access-management Resource owned by the system Pool exposes grant and governing
+binding administration/inspection. The existing system management Resource retains registry,
+template and instance-creation responsibilities. Both may share a management process and storage
+implementation; endpoint enforcement remains with its responsible implementations. Exact binding
+representation, custom validation, startup and storage details remain under review.
 
 Keep one authoritative instance configuration. When a supported control confirms application,
 its responsible service records the confirmed settings, revision and outcome. Pending or uncertain
@@ -332,15 +335,16 @@ policy is deferred. Opening a frontend need not create an Interface object. Dire
 is shared across its controlling Interface's frontends as described under runtime/presentation.
 This does not require an always-running process or give Agents the user's administrative identity.
 
-**Bootstrap:** initial local startup seeds a minimal system Pool owning a management
-Resource, a default Interface and a management Conduit connecting them. A small runtime bootstrap
-establishes this initial set before its operations can be invoked. The management Resource exposes
-core template/registry management and instance-creation capabilities through the same five-family
-model. Resource creation still goes through its owning Pool. No application Pool, Agent or external
-service login is required first; this does not introduce a second registry or require a new daemon.
-Built-in definitions, exact management operations and frontend transport/lifecycle remain open.
+**Foundational system:** initial local startup establishes a system Pool owning two management
+Resources: the existing system management Resource for templates, registration and instance creation,
+and a dedicated access-management Resource for grants and governing requirement bindings. The default
+Interface reaches their capabilities through management Conduits. Both Resources can share a service
+and storage implementation. Exact startup ordering, first authority and recovery remain under review;
+initial establishment must precede ordinary use of these operations. Resource creation still goes
+through its owning Pool. No application Pool, Agent or external service login is required first.
+Built-in definitions, exact operations and frontend transport/lifecycle remain open.
 
-**Later startup:** reuse the registered system Pool, management Resource and default
+**Later startup:** reuse the registered system Pool, both management Resources and default
 Interface with their existing identities, saved settings and grants, subject to current access
 checks. Missing or inconsistent expected components are reported for explicitly requested repair;
 ordinary startup does not recreate them from defaults or silently retarget established bindings.

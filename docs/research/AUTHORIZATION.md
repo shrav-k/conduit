@@ -12,6 +12,8 @@ The user has now accepted the consolidated model: Policy is authoritative requir
 and grant administration uses ordinary protected capabilities governed by grants and requirements.
 This reuses Conduit's contract/plugin machinery without a separate policy-rule language. Governing
 bindings remain independent authoritative state; it does not remove access checks or select an engine.
+The user also selected a dedicated access-management Resource in the system Pool for grant and
+governing-binding administration/inspection. This logical boundary need not add another process or store.
 The detailed structures in the [authorization proposal](../proposals/implementation-v0/AUTHORIZATION.md)
 remain for joint review. This report supplies evidence, not additional rulings.
 
@@ -193,8 +195,9 @@ Resolve these within I4 before the final I7 syntax pass:
   state remains; no separate policy-rule language or mandatory policy-plugin process is required.
 - Which exact binding targets and custom grant-bound checks should the initial contracts support?
   Existing complete-path, all-applicable-requirements and mandatory-check rules already apply.
-- Which management Resource capability exposes these records, and how is its first trusted
-  authority established and repaired? No wrapper resolves its own bootstrap dependency.
+- Settled: a dedicated access-management Resource in the system Pool exposes these records,
+  alongside registry/template management. How is its first trusted authority established and
+  repaired? The Resource boundary does not resolve its own startup dependency.
 
 Detailed schemas, package exports, provider-operation matching and implementation bindings remain
 for I7 after these conceptual choices. A proposed extension to Experiment 002 should exercise

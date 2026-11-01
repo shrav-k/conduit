@@ -98,8 +98,10 @@ separate integration evidence.
 
 ## The user workflow
 
-1. A frontend attaches to the default Interface. Bootstrap seeds a system Pool, its management
-   Resource, the Interface and a management Conduit. Later startup reuses retained objects;
+1. A frontend attaches to the default Interface. Initial establishment creates a system Pool,
+   its system management and dedicated access-management Resources, the Interface and management
+   Conduits. The latter Resource manages grants and governing requirement bindings; the former
+   handles templates, registration and instance creation. Later startup reuses retained objects;
    missing or inconsistent components require explicit repair.
 2. The Interface authors templates and composes a Pool's named available Resource entries.
    Listing an entry does not provision it or grant access.
@@ -132,8 +134,9 @@ Shared access policy is independent of any particular Interface's lifecycle. Mul
 Interfaces can administer it, with broad default administration for the owner-operated root.
 Replacing an Interface establishes valid administrative access without transferring policy
 ownership or recreating existing grants. Grant, recipient and target lifecycle rules still apply.
-The authoritative-requirement model is accepted; its exact binding representation and
-management/storage contracts remain under implementation review.
+The authoritative-requirement model and dedicated access-management Resource are accepted. Both
+management Resources may share a process and storage implementation; endpoint plugins retain
+enforcement duties. Exact binding, startup and storage contracts remain under implementation review.
 
 ## Construction and runtime
 

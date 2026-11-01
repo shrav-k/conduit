@@ -1,9 +1,9 @@
 # Independent runtimes, management and network Conduits
 
-Research date: 2026-11-01. **I1 is not accepted.** The user explicitly wants independently
-operating objects, with eventual placement across systems, Resources from one Pool deployed on
-different systems, and Conduits spanning networks. The preceding single-host proposal is an
-alternative to evaluate, not the chosen architecture. This report informs the
+Research date: 2026-11-01. **Subsequent I1 ruling:** separate management and execution services
+are accepted; authority ownership and outage behavior remain open. The user wants independently
+operating objects, eventual placement across systems, Resources from one Pool on different systems
+and network Conduits. The earlier combined-host design is a comparison baseline. This report informs the
 [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
 It does not select a distributed database, transport, scheduler or new object family.
 
@@ -14,9 +14,9 @@ implemented by Conduit. Earlier language research remains in [CONFIGURATION](CON
 Pi/Xerj and plugin mechanisms remain in [RUST_RUNTIME](RUST_RUNTIME.md).
 
 **Current design boundary:** code-optional MCP bindings and independently accessible component
-capabilities are now accepted. They strengthen the separation between implementation, ownership
-and placement but do not choose I1's custody/authority arrangement. Existing services can remain
-externally supervised; Conduit-managed activity still needs an explicit owner. The
+capabilities are now accepted. Execution services now own Conduit-managed activity separately from
+management; existing MCP services retain their external supervision. Those decisions do not settle
+configuration/permission authority or permitted work during outages. The
 [design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 records these consequences without treating this report's topology candidates as rulings.
 
@@ -265,11 +265,11 @@ arrangement and actual guarantees, rather than summarizing every failure as “h
 
 ## 8. What to review next
 
-Keep I1 open and discuss it as three connected choices, in this order:
+I1 is partially settled; preserve the distinction among these connected choices:
 
-1. **Execution custody:** should independent execution services own active instance lifetimes,
-   with management reconnecting rather than parenting all work? Compare B with C before deciding
-   how many processes a local installation starts.
+1. **Execution custody — accepted:** separate execution services supervise Conduit-managed Agents
+   and Resources; management coordinates configuration/control and the Interface presents them.
+   Each executor may host many instances; existing external MCP services retain their supervision.
 2. **Authority:** initially one registry authority with distributed executors, or independently
    authoritative groups of objects? Both can support geographically separated Pool Resources.
 3. **Partition contract and first proof:** which activity continues without management, what must
@@ -277,7 +277,7 @@ Keep I1 open and discuss it as three connected choices, in this order:
 
 I3's worker contract and I4's store ownership depend on these answers. Tokio, exact artifacts,
 finite graphs, MCP-first capability access and Interface observability remain useful under all
-three arrangements. Do not approve I1 by implication while choosing one of those mechanisms.
+three arrangements. Do not infer authority or outage rulings from execution separation or library choices.
 
 ## Source scope and reproducibility
 

@@ -58,10 +58,18 @@ Backing data, credentials and process lifetime are distinct from registry identi
 **Distribution direction:** objects should operate independently and eventually be deployable
 across systems. One Pool can own Resources deployed on different systems; Conduits can span a
 network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
-not require one execution host. Initial authority topology, failure independence and remote
+not require one execution host. Initial authority topology, outage behavior and remote
 deployment guarantees remain open in [implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
 This direction does not claim remote execution is implemented or approve automatic migration,
 federation or offline authorization.
+
+**First implementation arrangement:** use separate management and execution services. Execution
+services supervise Conduit-managed Agents and Resources; management coordinates configuration
+and control; the Interface presents the system. Each executor can host multiple instances,
+including on the same machine initially. External MCP services retain their own supervision.
+This settles execution custody without introducing an object family or requiring one process
+per object. Authoritative definitions/permissions/outcomes, outage admission and concrete
+deployment/storage remain separate review choices; separation alone promises no offline access.
 
 ### Plugins and independently accessible MCP components
 
@@ -99,8 +107,9 @@ ownership where applicable, current Conduit access, supported controls and opera
 even without an attached Interface frontend. Its minimal authority/runtime dependencies remain
 necessary. This permits using parts of the system without requiring every frontend, Agent driver
 or integration, but does not promise that every component can run without its declared dependencies.
-Execution custody, authority placement, outage behavior and client enrollment remain implementation
-review questions; protocol accessibility alone does not settle them.
+Separate execution services own managed activity in the first implementation. Authority placement,
+outage behavior and client enrollment remain review questions; protocol accessibility alone does
+not settle them.
 
 ### Interfaces and the user workflow
 

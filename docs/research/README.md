@@ -10,12 +10,13 @@ to concrete runtime and repository boundaries. Its pending decisions are separat
 findings and from the accepted protocol.
 The current design accepts code-optional MCP-backed plugins and independently accessible
 capabilities. Executable-worker examples in earlier research are implementation options for
-authored code, not a requirement for every contribution. I1's execution/authority placement
-remains open; consult the [design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
+authored code, not a requirement for every contribution. I1 now accepts separate management and
+execution services; authority and outage behavior remain open. Consult the
+[design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
 
 | Report | Read it for |
 | --- | --- |
-| [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | Pending I1: Tilt, Docker/containerd, Kubernetes, Rust systems and papers; independent execution, distributed Pool Resources, network Conduits and partition tradeoffs. |
+| [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | I1 evidence from Tilt, Docker/containerd, Kubernetes, Rust systems and papers: execution separation accepted; authority and partition tradeoffs still open. |
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |
 | [CONSTRUCTION](CONSTRUCTION.md) | The concise rationale for template/plugin/graph/runtime boundaries and their source evidence. |
 | [ESTABLISHMENT](ESTABLISHMENT.md) | Detailed account, database, credential and filesystem setup/recovery cases. |

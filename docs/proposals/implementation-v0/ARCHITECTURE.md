@@ -1,6 +1,7 @@
 # Proposed runtime architecture
 
-Status: implementation proposal, 2026-11-01. I1 remains explicitly open. See [review](REVIEW.md)
+Status: implementation proposal, 2026-11-01. I1's management/execution separation is accepted;
+authority and outage behavior remain open. See [review](REVIEW.md)
 for pending choices and [contracts](CONTRACTS.md) for proposed representations. Accepted semantics remain in
 [DESIGN](../../DESIGN.md).
 
@@ -36,16 +37,13 @@ has its own declared dependencies/guarantees. This adds no process or registry p
 
 ## 2. Management and execution placement
 
-**I1 is explicitly unaccepted.** The user wants independently operating objects, eventual
-placement across systems, Resources from one Pool on different machines and network Conduits.
-The [research comparison](../../research/DISTRIBUTED_RUNTIME.md) examines shared management with
-independent executors alongside independently authoritative object services. A shared local
-execution host remains a baseline, not a ruling.
-
-A candidate arrangement separates registry/management authority from execution services. Several
-executors could first run on one machine. Pool ownership does not determine placement, and no
+**Accepted execution custody:** separate execution services supervise Conduit-managed Agents
+and Resources. Management coordinates configuration/control; the Interface presents the system.
+Each executor can host many instances, and several can first run on one machine. External MCP
+services retain their own supervision. Pool ownership does not determine placement, and no
 process-per-object rule follows. Conduit endpoints carry authorized capability traffic; neither
-the Interface nor the management process must be a global relay for every payload.
+the Interface nor management must be a global relay. The [research](../../research/DISTRIBUTED_RUNTIME.md)
+informs the remaining authority and outage choices.
 
 ```mermaid
 flowchart TD
@@ -61,9 +59,10 @@ flowchart TD
     Y -. observations and receipts .-> I
 ```
 
-This illustrates one candidate, not an approved deployment or wire protocol. Execution services
-supervise instance-owned activity; short-lived setup workers do not own long-lived processes.
-Backing providers can be external to either service. Placement, replication, federation and
+Management/execution separation in this diagram is accepted. Its placement of registry/evidence
+authority is still a proposal, not a completed I1 ruling. Execution services supervise
+instance-owned activity; short-lived setup workers do not own long-lived processes. Backing
+providers can be external to either service. Concrete placement, replication, federation and
 transport remain open. These services are implementation roles, not a sixth object family.
 
 If the first registry authority uses a local store, it needs an OS-held lock, registry ID and
@@ -123,8 +122,9 @@ surviving executors rather than treating its last observation as current truth.
 
 ## 3. Runtime services and ownership
 
-Keep these responsibilities explicit, with ports for tests, executors and workers. I1 determines
-which share a process; this table does not mandate one host. Below, “host” means the responsible
+Keep these responsibilities explicit, with ports for tests, executors and workers. Execution
+supervision is separate from management; exact service grouping and authority remain under review.
+Below, “host” means the responsible
 management or execution service, with transaction boundaries limited to its own authority:
 
 | Service | Responsibilities and constraints |

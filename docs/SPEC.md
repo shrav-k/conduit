@@ -47,8 +47,11 @@ together. Capabilities describe compatibility. These are not additional object f
 
 Objects should support independent operation and eventual placement across systems. Resources
 owned by one Pool may be deployed on different systems, and Conduits may span networks.
-Logical ownership does not require co-location. The initial execution/authority topology and
-remote availability guarantees remain implementation-review questions, not accepted host constraints.
+Logical ownership does not require co-location. The first implementation uses separate management
+and execution services: executors supervise managed Agents/Resources, management coordinates
+configuration/control and the Interface presents them. Each executor can host many instances;
+external MCP services retain their own supervision. Authority ownership, outage behavior and
+remote availability guarantees remain under review.
 
 ## The user workflow
 

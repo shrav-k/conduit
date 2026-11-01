@@ -13,8 +13,8 @@ protocol/structure by authoring plugins; grow helpers from demonstrated needs. P
 inspectable contracts with their implementations; MCP is the public plugin protocol base, with
 a small Conduit profile. Code-optional bindings to existing MCP services and independent component
 exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
-preserves the existing families, ownership and access rules. Execution custody/authority in I1
-is the next unresolved conceptual boundary;
+preserves the existing families, ownership and access rules. I1's management/execution separation
+is accepted; authority ownership and outage behavior are next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -22,15 +22,16 @@ is replaceable.
 
 ## Proposed architecture
 
-**I1 remains open.** The user has not accepted a single host owning all execution. Objects must
-be able to operate independently, with eventual deployment across systems, Resources in one Pool
-on different machines, and network Conduits. The [distributed-runtime research](../../research/DISTRIBUTED_RUNTIME.md)
-compares a shared host, shared management with independent execution services, and independently
-authoritative object services. The middle arrangement is a proposal to examine, not a ruling.
+**I1 is partially settled.** Separate execution services supervise Conduit-managed Agents and
+Resources, management coordinates configuration/control, and the Interface presents them. Each
+executor can host multiple instances; external MCP services retain their own supervision. This
+supports eventual distributed placement without deciding configuration/permission authority or
+outage guarantees. The [research](../../research/DISTRIBUTED_RUNTIME.md) supplies the comparison;
+its authority and failure-policy recommendations remain proposals.
 
 Rust services implement registry authority, instance supervision, authorized capability traffic
-and durable evidence through explicit boundaries. Their process placement and outage guarantees
-are still under review. Replaceable frontends attach to an Interface; authored workers and existing
+and durable evidence through explicit boundaries. Detailed placement, authority and outage
+guarantees are still under review. Replaceable frontends attach to an Interface; authored workers and existing
 MCP services fulfill published plugin contracts through retained implementation bindings. Code-optional
 contributions use shared adapters without inventing a worker per package. Local transactional
 storage remains an I4 candidate, not a requirement that all distributed state live in one file.

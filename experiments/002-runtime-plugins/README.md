@@ -9,8 +9,9 @@ The [implementation proposal](../../docs/proposals/implementation-v0/README.md) 
 worker, schema and persistence boundaries this spike would exercise. Its review choices remain
 pending; this experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
-layout below. **The user has not accepted I1.** The two-executor comparison is proposed evidence
-for that ruling, not an approved deployment or crash-survival guarantee.
+layout below. **I1 accepts separate management and execution services.** Authority and outage
+behavior remain open. The two-executor fixture is proposed evidence for those boundaries, not
+a completed topology or crash-survival guarantee.
 
 ## Question
 
@@ -25,9 +26,9 @@ SDK or Wasm engine merely to run this experiment.
 
 ## Proposed placement comparison
 
-Compare independent execution with the earlier shared-host baseline before claiming either is
-sufficient. Run one management service, two independently supervised execution services and an
-Interface frontend on one machine. One fixture Pool owns Resources across both executors; Pool
+The accepted implementation separates management from execution. The proposed first proof runs
+one management service, two independently supervised execution services and an Interface frontend
+on one machine; a combined-host benchmark is optional, not a prerequisite. One fixture Pool owns Resources across both executors; Pool
 membership must not imply process co-location. Place one synthetic Agent on each executor and
 include a Resource-to-Resource Conduit across them.
 
@@ -37,7 +38,7 @@ comparison does not require a scheduler, replicated registry, federation or publ
 Production remote peer enrollment, secret custody and trust need separate validation. Fixed
 placement is sufficient; unknown ownership never triggers automatic reassignment.
 
-First demonstrate retaining an already-running synthetic process while management is unavailable,
+Candidate outage test: retain an already-running synthetic process while management is unavailable,
 with new effects held whenever current authority cannot be verified. This is a proposed baseline,
 not an implicit offline-grant policy. Record actual reconnect, evidence and output-draining behavior.
 A later two-machine run should retain the same identities/ownership contracts; I1 determines when
@@ -159,7 +160,7 @@ account/private-state verification; this fixture cannot establish those properti
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks; I1 remains open. Added proposed independent-executor comparison, accepted code-optional integration and independent MCP client acceptance cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
+| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Management/execution separation accepted; I1 authority/outage rules remain open. Proposed two-executor proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
 
 Record actual results here when executed, including failures and unresolved behavior. Expected
 outcomes above are acceptance criteria, not completed tests.

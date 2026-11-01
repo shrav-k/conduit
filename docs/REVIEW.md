@@ -29,11 +29,11 @@ with a small Conduit profile. Code-optional contributions and independently acce
 components are also accepted; the design-fit audit below states their boundaries. Detailed syntax
 across contracts and templates stays at the end, after conceptual rulings.
 
-I1 is explicitly unaccepted. The user clarified independent operation,
-eventual distributed placement, Resources from one Pool on different systems and network
-Conduits. [New research](research/DISTRIBUTED_RUNTIME.md) compares execution and authority
-arrangements. Remote production support remains future work; a single execution host is not an
-accepted protocol limitation.
+I1 is partially settled: separate execution services supervise managed Agents/Resources while
+management coordinates configuration/control and the Interface presents them. External MCP
+services retain their own supervision. Authority ownership and outage behavior remain open;
+[research](research/DISTRIBUTED_RUNTIME.md) informs those distinctions. Remote production support
+remains future work; logical ownership does not require co-location or a process per object.
 
 ## Design-fit audit: code-optional plugins and independent MCP access
 
@@ -49,10 +49,9 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 | Interface and independent capabilities | Components may expose supported MCP surfaces without the aggregate UI in the call path. Managed evidence remains inspectable through the Interface; no process-per-object or public setup-export requirement follows. |
 | Partial adoption | Standalone implementations supply their own dependencies/guarantees. Managed components retain required ownership, authority and evidence. A standard MCP client does not need a Conduit graph SDK to use a public capability. |
 
-No additional product-level ruling is needed to adopt these consequences. The remaining question
-is implementation I1: which services own execution and authority, and what continues when a
-connection is lost? Independent MCP accessibility does not decide that arrangement. Resolve its
-execution-custody choice next, then authority/outages and the remaining I2–I6 choices; return to
+No additional product-level ruling is needed to adopt these consequences. I1's management/execution
+separation is now accepted. Resolve authority ownership next, then permitted work during outages
+and the remaining I2–I6 choices; return to
 I3's packaging details where needed. Final contract/template syntax remains I7 work.
 
 ## Configuration walkthrough

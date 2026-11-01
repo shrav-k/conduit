@@ -11,9 +11,10 @@ processes, storage, contracts, crate boundaries and milestones in detail, with a
 review. It builds on this report without treating recommendations as accepted choices.
 
 **Deployment follow-up:** [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) revisits the process,
-authority and lifetime arrangement after the user explicitly kept I1 open. The supervisor/store
-mechanisms below do not imply one host must own all execution. Pool Resources can eventually
-occupy different systems and Conduits can cross a network; exact topology remains under review.
+authority and lifetime arrangement after the initial I1 proposal was kept open. A subsequent
+ruling accepts separate management and execution services. The supervisor/store mechanisms below
+do not combine their authority or settle outage behavior. Pool Resources can eventually occupy
+different systems and Conduits can cross a network; remaining authority/topology choices stay open.
 
 **Accepted extension follow-up:** the design now permits published contracts backed by authored
 code, existing MCP services or both, plus independently accessible component capabilities. The

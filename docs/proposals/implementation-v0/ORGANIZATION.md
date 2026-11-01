@@ -4,10 +4,10 @@ Status: implementation proposal, 2026-11-01. Directory/crate names below describ
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
 [review](REVIEW.md) identifies choices requiring a ruling before they become commitments.
 
-I1 remains open: crate boundaries must not imply a single process supervising all instances.
-The [distributed-runtime comparison](../../research/DISTRIBUTED_RUNTIME.md) proposes testing
-independent execution services. Binary names, service placement and failure guarantees are still
-under review; a single workspace and lockfile do not constrain deployment topology.
+I1 accepts separate management and execution services; crate boundaries must preserve that
+arrangement. The [research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution
+tests. Authority ownership, binary names, concrete placement and failure guarantees remain under
+review; a single workspace and lockfile do not combine execution and management custody.
 
 ## 1. Repository layout
 

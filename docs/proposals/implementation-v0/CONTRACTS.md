@@ -1,7 +1,8 @@
 # Proposed implementation contracts
 
-**Placement review:** I1 remains open. References to a host below mean the responsible management
-or execution service, not necessarily one process. Independent execution and network Conduits
+**Placement review:** separate management and execution services are accepted; I1's authority
+and outage choices remain open. References to a host below mean the responsible management
+or execution service, not one combined process. Independent execution and network Conduits
 require authenticated endpoint identity, retained target outcomes and authority-freshness rules.
 These remain [review work](REVIEW.md#i1--independent-execution-and-management); serialization alone
 would not make this a complete distributed protocol.
@@ -291,7 +292,9 @@ allocate workers for registered templates, idle declarations or objects whose be
 external executable. Trusted dispatch/ownership rules remain in responsible Conduit services;
 they are not restricted to one global process. Worker loss, executor loss and management-channel
 loss have separate meanings. I1 must establish which service retains progress, processes and
-outcomes across each failure before this lifecycle profile can be considered complete.
+outcomes across each failure before this lifecycle profile can be considered complete. Execution
+services own supervised activity, but durable authority and outage admission are not implied by
+that ownership.
 
 For first-party releases, retain the exact worker executable/bundle used by each instance.
 A script bundle additionally needs a defined interpreter/dependency closure; hashing just its

@@ -1,7 +1,7 @@
 # Implementation review: decisions needed
 
 Status: lightweight authoring support, contract publication, MCP, code-optional implementation
-bindings and independent component access are **accepted** below; the seven grouped
+bindings, independent component access and management/execution separation are **accepted** below; the seven grouped
 items still contain unresolved implementation choices. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -59,10 +59,14 @@ component, implicit discovery grant or invented provider guarantee follows. Ordi
 configuration can remain a Resource template; the [search example](AUTHORING.md#worked-comparison-configuring-search-versus-publishing-a-search-capability)
 shows when a reusable contribution is useful. Syntax remains deferred.
 
-**Next discussion:** I1's execution custody, followed by authority and outage behavior. Independent
-MCP accessibility does not specify where the component runs, who supervises it or which facts it
-can commit independently. The audit found no additional five-family design ruling needed before
-this implementation discussion.
+**Accepted execution custody:** separate execution services supervise Conduit-managed Agents
+and Resources; management coordinates configuration/control and the Interface presents the system.
+Each executor may host multiple instances, including initially on the same machine. External MCP
+services retain their own supervision. This adds no object family or process-per-object rule.
+
+**Next discussion:** I1's authority ownership, then outage behavior. Process supervision alone
+does not decide where definitions, permissions and outcomes are authoritative, nor which new
+effects are allowed while management cannot be reached.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -78,7 +82,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I1 | Independent execution, authority and outage behavior | Examine shared management with independent execution services alongside independently authoritative object services; no host arrangement accepted. |
+| I1 | Authority and outage behavior after execution separation | Separate management/execution services accepted; decide authority ownership next, then permitted work during outages. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
 | I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open after I1. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
@@ -93,18 +97,16 @@ queue sizes, internal helper names and performance tuning need tests, not separa
 
 ## I1 — Independent execution and management
 
-**Status:** explicitly unaccepted. The user wants more independent objects, eventual placement
-across systems, Pool Resources on different systems, and network Conduits. A single host owning
-every execution is no longer this packet's default recommendation. Pool ownership is logical;
-it does not specify an execution machine. The [research comparison](../../research/DISTRIBUTED_RUNTIME.md)
-grounds the alternatives in Tilt, Docker/containerd, Kubernetes, Rust systems and papers.
+**Accepted execution arrangement:** use separate management and execution services for the first
+implementation. Execution services supervise Conduit-managed Agents and Resources; management
+coordinates configuration/control; the Interface presents the system. Each execution service can
+host many instances, and several can initially run on one machine. External MCP services retain
+their own supervision. Pool ownership is logical and does not determine placement. These services
+are implementation roles, not new object families or a daemon per object/Pool.
 
-**Recommendation for discussion:** separate definition/management authority, execution custody,
-capability traffic and Interface aggregation. Examine independent execution services that can
-supervise multiple objects; a common registry could initially coordinate them without being
-their process parent or the mandatory transit point for every call. Also examine independently
-authoritative object services before settling the registry boundary. These are implementation
-roles, not new object families or a required daemon per object/Pool.
+The [research comparison](../../research/DISTRIBUTED_RUNTIME.md) grounds this separation in Tilt,
+Docker/containerd, Kubernetes, Rust systems and papers. It does not settle the remaining
+authority, availability, storage or deployment guarantees.
 
 **Example:** one Euphony Pool owns a laptop worktree, a Linear/authentication integration on a
 service machine and search on another machine. Two Agents connect to those Resources through
@@ -112,13 +114,26 @@ Conduits. Losing management visibility does not itself mean all those processes 
 Losing Linear affects Linear access; it does not end the Pool or unrelated work. The Interface
 must show unavailable/stale observations and reconcile them when connectivity returns.
 
-**Resolve together, with examples rather than field-by-field rulings:**
+**Authority recommendation, not yet accepted:** management is authoritative for registered
+definitions, configuration revisions and access rules/grants; each executor is authoritative for
+the execution progress and operation evidence it records for its supervised activity. Resource
+backends remain authoritative for their domain data. The Interface aggregates these sources with
+freshness/coverage rather than maintaining another writable authority. A confirmed execution
+receipt and the corresponding registry configuration update remain separate commits requiring
+coordination; executor observations cannot silently overwrite checked configuration or grant access.
 
-1. Who owns active execution lifetimes: independent execution services, independently authoritative
-   object services, or the previously proposed shared host as a deliberately limited first deployment?
-2. Where is configuration/permission authority: one registry with distributed execution first,
-   or independent authorities from the outset? Physical distribution alone does not decide this.
-3. What can continue during a partition, and what must wait for current authority? Keeping a
+For example, management determines the permitted database configuration and who may request a
+change; the responsible executor records whether startup or migration completed, failed or remains
+uncertain. Provider data remains at the database. This does not require a global payload relay or
+select a database technology. The alternative gives independently authoritative object services
+their configuration/permission state as well as execution evidence, with registry coordination.
+
+**Resolve together:**
+
+1. Adopt that authority split or give object services independent configuration/permission authority.
+   The accepted single local registry/naming model is retained; this question concerns authority
+   behind it, not adding user-facing registries or namespaces.
+2. What can continue during a partition, and what must wait for current authority? Keeping a
    process alive is distinct from admitting a new protected effect. Offline grants would need an
    explicit freshness/withdrawal contract; they cannot silently weaken current-access rules.
 
@@ -126,9 +141,10 @@ must show unavailable/stale observations and reconcile them when connectivity re
 separately faulted management, worker, capability and observation links. Test continuing owned
 activity, blocked unauthorized/uncertain effects, retained outcomes and verified reattachment.
 Two-machine validation and production remote support can follow; whether they are required for
-the first milestone is still open. No crash-survival guarantee is accepted by this proposal.
+the first milestone is still open. Separation is accepted, but specific crash-survival and
+offline-authorization guarantees still require a ruling and evidence.
 
-I3 worker lifetime and I4 persistence ownership depend on this ruling. Frontend detachment,
+I3 worker details and I4 persistence ownership depend on the remaining rulings. Frontend detachment,
 explicit resume of stopped Agent work, current authority checks and no duplicate unknown work
 remain accepted. This review does not reopen those behaviors.
 

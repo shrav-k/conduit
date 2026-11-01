@@ -450,9 +450,12 @@ chain or live access dependency. The proposed administrative/derived lifetime di
 
 **Next conceptual choices, in order:**
 
-1. Should Conduit own a portable typed policy contract for grant administration and use restrictions,
-   implemented by plugins, or expose engine-native policy documents as the primary contract?
-   Recommend the portable contract, reusing applicable requirement definitions; exact syntax and
+1. Clarify [Policy/Requirement reuse](AUTHORIZATION.md#policy-and-requirement-reuse--proposed-refinement)
+   before ruling on the portable policy contract. Recommend Policy as an authoritative composition
+   of reusable requirements plus grant-administration rules, sharing contract/plugin machinery.
+   Policy applicability/administration and issued grants retain their distinct authority meanings;
+   no separate general-purpose constraint language or policy plugin process is implied. The user's
+   interest and request for clarification have not yet settled this choice. Exact syntax and
    evaluator selection remain separate.
 2. How do applicable policy rules, current grants and typed restrictions combine, including errors
    and administration bounds for custom restrictions? Preserve complete-path alternatives and

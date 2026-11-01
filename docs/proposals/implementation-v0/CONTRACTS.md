@@ -339,6 +339,13 @@ and evaluation mechanisms remain open.
 plugin code when endpoints support every constituent. Preserve the original meanings and limits;
 check constituent support rather than treating a bundle's name as proof or a new grant.
 
+**Policy reuse under review:** the [authorization refinement](AUTHORIZATION.md#policy-and-requirement-reuse--proposed-refinement)
+proposes using these same definitions/compositions for policy restrictions and grant boundaries.
+Policy supplies authoritative applicability and administration rules; a recorded grant still
+supplies issued authority. One plugin can implement both uses without separate deployment or
+duplicated schemas. Concrete-request enforcement and checking proposed grant bounds need their
+own declared support; shared definitions do not imply a universal subset checker.
+
 Detailed declaration syntax and matching, the core catalog, composition mechanics, evaluation
 protocol and enforcement policies below remain proposed. A Conduit template composes requirements
 for roles and their relationship. Concrete instantiation binds existing endpoint capabilities and records resolved

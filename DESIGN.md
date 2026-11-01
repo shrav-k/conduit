@@ -24,7 +24,7 @@ supporting concepts, not additional families.
 
 | Family | Template defines | Instance represents |
 | --- | --- | --- |
-| Interface | User-facing authoring, observation, creation and connection capabilities. | An interaction endpoint presented through a CLI, terminal or other frontend. |
+| Interface | Unified control and observability, including authoring, creation and connection capabilities. | The user's interaction and inspection endpoint, presented through a CLI, terminal or other frontend. |
 | Agent | Runtime/account/model configuration, activation, connections and supported controls. | An autonomous participant with private context, concrete configuration and executions. |
 | Resource | Typed creation/attachment, ongoing capability and supported controls. | One unitary capability with exactly one owning Pool. |
 | Pool | Resource composition, shared service-access setup and supported management controls. | Owns its Resource instances and organizes their authentication/access lifecycle. |
@@ -35,6 +35,11 @@ for Conduits. Templates are reusable across Pools; each resulting Resource insta
 Backing data, credentials and process lifetime are distinct from registry identity/ownership.
 
 ### Interfaces and the user workflow
+
+Control and observability are inseparable parts of the Interface contract. The same surface that
+authors, starts, connects or changes instances exposes their state, activity and outcomes. This
+includes Agent-initiated and Resource-to-Resource activity, not only commands issued by a frontend.
+CLI, terminal and test frontends present the same underlying observation/control capabilities.
 
 **Accepted v0 authority:** Interfaces, especially the default Interface, are the user's unrestricted
 local administration surface. They can inspect and administer every template and instance across
@@ -95,6 +100,29 @@ or narrow access under the existing grant model. Running an Agent under the owne
 does not itself constitute a managed grant. Exact owner/client recognition, credential handling
 and native-versus-isolated enforcement remain separate; this authority rule is not proof of
 isolation between processes with the same host privileges.
+
+### Interface observability
+
+V0 requires a durable, inspectable local observability foundation with pluggable export, exposed
+through the Interface as a core capability. Follow Conduit-managed setup steps, controls, access
+decisions, messages, tool calls and failures through their actor, instance, execution and operation
+identities. Include available model/subagent activity and usage. Users can move from an observed
+failure to the affected instance, its configuration and supported controls through the same Interface.
+Exact event fields and exporter formats are drafting work; an external dashboard/backend is not
+required for the first experiment.
+
+Managed components produce evidence even while no frontend is attached. Retention is independent
+of a frontend's lifetime, and reconnecting frontends inspect the same underlying history/state.
+The Interface is the unified access and interaction surface, not the sole producer of observations
+or a requirement for an always-running UI. A dropped observation stream does not cancel Agent work.
+Report gaps and stale/unknown state; a latest-state view need not replay every intermediate update.
+
+Export failure must not erase local committed outcomes. Diagnostic traces and metrics can refer
+to retained evidence without becoming its sole copy. Preserve applicable content access and secret
+handling; pluggable export does not imply putting credentials or every full payload into traces.
+Coverage includes what Conduit manages and what native integrations actually report, with missing
+coverage visible. Specialized domain tracking can be supplied by custom Resources without changing
+this common foundation or introducing a new family. Linear/Jira integration is independent of it.
 
 ### Establishment contracts and instance state
 
@@ -646,12 +674,13 @@ Version the meaning of configuration, including defaults, list composition, refe
 interpretation and transition behavior. Keep concrete input/result/failure examples with
 the contracts so implementations and tools can be checked for agreement. Migration rules
 must expose changed behavior; updating a version string alone is not a migration contract.
-The exact version progression and compatibility policy remain for review.
+Exact version identifiers and compatibility representation are schema work. Any proposed change
+to accepted interpretation or instance-upgrade behavior returns for review.
 
 Keep the core small and extensible through typed contracts. Reusable objects are the first
 composition mechanism; additional template languages, expressions and patch systems need
 concrete use cases. The following sections retain the accepted domain behavior that the
-language must express. [REVIEW.md](REVIEW.md) focuses the remaining choices on those semantics.
+language must express. [REVIEW.md](REVIEW.md) defines the next schema and acceptance walkthrough.
 
 ## Agents
 
@@ -822,6 +851,9 @@ portable task checkpoints.
 
 ### Observation
 
+Agent observation participates in the shared [Interface observability](#interface-observability)
+contract; it is not a separate per-frontend logging system.
+
 Attribute available token usage, tool activity, transcripts and subagent observations
 to Agent/execution identity. Usage records identify account and reporting source, and
 distinguish reported counts, estimates, unknown data and observed zero. Sum only figures
@@ -850,7 +882,7 @@ Resource specs use these fields in both template and instance forms:
 | Field | Contract |
 | --- | --- |
 | `spec.type` | A type-contract reference with separate `group`, `name` and `version` fields. This is distinct from a registry object reference using kind/form/name. |
-| `spec.config` | Type-specific settings validated for the selected type and form. Templates declare establishment intent; instances retain their ongoing configuration. The transition and exact fields remain in review. Unknown fields are rejected except in schema-declared open maps. |
+| `spec.config` | Type-specific settings validated for the selected type and form. Templates declare establishment intent; instances retain initial and then confirmed settings in one map under R6. Exact fields are schema work. Unknown fields are rejected except in schema-declared open maps. |
 | `spec.conduits` | The consumer's Conduit declarations. Their entry shape and contents remain under review. |
 
 Resource types have logical groups independent of installation packages. A plugin package may
@@ -934,7 +966,7 @@ backing identity, operations and shared/per-consumer state before deciding Pool 
 A type contract defines supported semantics; a template supplies reusable establishment
 configuration and declares the permitted configuration changes within that support.
 The minimum common fields and consumer boundaries for other Resource types remain open in
-[REVIEW.md](REVIEW.md#remaining-decision-bundles).
+[REVIEW.md](REVIEW.md#review-outcomes).
 
 For a local folder, the Resource instance describes the configured folder attachment. Each
 Agent's symlink is preparation state, not another Resource instance. Two Agents may use
@@ -978,9 +1010,12 @@ not require a new skill format or package manager. Executable native extensions 
 compatible runtime adapter or port; report unsupported hooks. Agent activation instructions
 control preparation of the selected resources.
 
-Resource providers retain source content and operations. Linear is the first tracker
-integration; the provider owns issue fields, assignments, status and workflow. Conduit
-supports work associations without requiring an internal ticket engine or full replica.
+Resource providers retain source content and operations. Linear/Jira integrations are ordinary
+Pool-owned Resources accessed through Conduits; the provider owns its issue fields, assignments,
+status and workflow. Message history is also a Resource. There is no special tracker abstraction,
+required issue link or mandatory Linear/Jira integration in the core protocol. If an application
+needs specialized message tracking or work associations, it can supply a custom Resource capability.
+This does not introduce an internal ticket engine or make common observability optional.
 Storage, search and graph backends are replaceable; Xerj is a candidate plugin backend.
 Authoritative records, observations of external state and search projections are distinct.
 
@@ -1142,7 +1177,7 @@ No background reconciler is implied.
 Use the accepted local composition declarations, resolved instance bindings and ordinary operation
 evidence without requiring a second provisioning-plan ledger. Pools group unitary Resources and
 derive useful views from their contracts. Exact composition fields and result wiring belong to the
-configuration profile in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
+configuration profile in [REVIEW.md](REVIEW.md#review-outcomes). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
 **Accepted label removal (R4):** Pool inclusion uses explicit named Resource-template entries.
@@ -1523,7 +1558,7 @@ control remain outside this contract. A purged/unavailable operation result does
 the operation never ran. These rules support future communication contracts without
 selecting a delivery guarantee, broker, ordering scheme or automatic-wake policy.
 
-### Communication contract and remaining review
+### Communication contract
 
 Communication uses common mechanics and explicit, composable capability guarantees carried by
 Conduits. Invocation, retention and observation overlap: a retained post is itself an invocation,
@@ -1545,8 +1580,27 @@ acceptance, progress, results and cancellation. An Agent can still ask another t
 message, and ordinary tools, existing named controls and their operation outcomes remain available.
 A request in message prose is not itself a grant or a structured job-acceptance receipt.
 
-R7 still needs the message addressing/history/recovery contract, the attention policy and final
-experiment boundaries such as tracker coupling. No previous room rule is automatically restored.
+The first retained-message capability uses explicitly participating Agent instances and one
+shared append-only exchange history, with an independent read position per Agent. Two participants
+support direct conversation; additional participants support group discussion. A Pool-owned
+Resource retains the history. Current-access checks and bounded catch-up apply on reading;
+participation does not itself widen access. One Agent's reading does not advance another's position.
+Read progress is not evidence of understanding or execution. Ordinary message posting appends
+content; explicit purge and retained-data lifecycle rules remain separate. This selects one
+communication capability, not a universal room model for all Conduits or a Resource per message.
+
+New messages normally produce a brief unread notice at the Agent's next normal turn; the Agent
+retrieves content explicitly. Posting, replay and notices do not automatically wake an idle Agent
+or start model work. Integrations report whether they can supply the notice and any coverage gaps;
+unsupported integrations must not claim notification occurred. Existing explicit reads remain
+available. An optional per-Agent automatic-wake hook is a future extension. It does not inherit
+authorization from ordinary posting or read access. Existing pause/resume rules still apply.
+
+Issue-management integrations and specialized tracking remain ordinary Resource capabilities, with
+no required tracker coupling. The first acceptance work is local, progressing from a two-Agent and
+Interface walkthrough to the required two-Claude/two-Codex account compatibility checks. Remote
+communication remains later work. The retained-history and attention rules above are the selected
+first capability, not a universal topology for every Conduit.
 The [protocol investigation](research/CONDUITS.md#messaging-and-networking-investigation) supplies
 source evidence and failure examples; broader work-submission examples are future capabilities,
 not requirements for the first slice. Concrete fields and transport selection follow those choices.

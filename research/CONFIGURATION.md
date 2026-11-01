@@ -768,8 +768,8 @@ per-caller authority and client reuse require distinct configuration meanings. E
 must follow the current contracts.
 
 Pool composition uses the accepted local entries, resolved instance bindings and ordinary operation
-evidence. No separate provisioning-plan ledger is required. R3 settles retirement; remaining
-selection choices are consolidated in the [closure agenda](../REVIEW.md#remaining-decision-bundles); controls do not
+evidence. No separate provisioning-plan ledger is required. R3 settles retirement; accepted
+selection rules are consolidated in the [review outcomes](../REVIEW.md#review-outcomes); controls do not
 make every operation or parameter another registry object.
 
 ## Composition needs several operators

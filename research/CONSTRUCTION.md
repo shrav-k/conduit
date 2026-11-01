@@ -104,7 +104,7 @@ contract without driving terminal pixels. This is a design requirement, not comp
 An Interface conveys the acting user's identity and authority. Its instance identity identifies
 the interaction endpoint, not a replacement for the user. Agent-originated requests identify the
 Agent and its effective authority. Both use Conduits and the target's declared contracts. Exact
-identity fields and delegation rules remain for review; the existing account separation remains.
+identity fields are schema work; current delegation and account-separation rules still apply.
 
 ### Bootstrap management access
 
@@ -680,7 +680,9 @@ new Conduit instance after flow end. R4 settles explicit/unambiguous routing, re
 delegation lifetime and explicit provision-from-entry versus use-existing-instance intent.
 Generic object labels/selectors are excluded from v0; Pool composition uses explicit entries.
 R5 accepts declared activation and explicit refresh, deferring automatic reload. R6 settles
-configuration/export, strict YAML and implementation retention/replacement. R7 communication remains open.
+configuration/export, strict YAML and implementation retention/replacement. R7 selects retained
+history with independent readers, next-turn notices without automatic wake, and Interface-linked
+local observability with pluggable export. Specialized tracking remains an ordinary Resource capability.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax
@@ -709,7 +711,7 @@ its syntax until the individual contracts work. Detailed supporting research rem
 
 ## Next discussion
 
-Use the [closure agenda](../REVIEW.md#remaining-decision-bundles) for the remaining decisions.
+Use the [review outcomes](../REVIEW.md#review-outcomes) to draft the concrete schema walkthrough.
 Control exposure/defaults, named invocation, applied-state evidence, concurrency and revision
 checks are already accepted. Test their concrete representation through Interface authoring,
 Pool-mediated creation and a configuration change, including rejection and uncertain outcomes.

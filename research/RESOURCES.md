@@ -188,7 +188,8 @@ registering an additional folder Resource merely for its private implementation 
 Resource or Agent must use that directory independently, make that separate access explicit.
 
 An integration Resource promises native access, not an implementation of every domain capability
-reachable through it. Linear MCP does not automatically satisfy a portable ticket-store contract.
+reachable through it. Linear MCP does not automatically satisfy a plugin-defined issue-storage
+capability; issue management has no special core status beyond ordinary Resources.
 A search provider exposed by MCP may require a search Resource and an MCP-access Resource when
 Conduit needs both independently configured responsibilities. The Conduit between them supplies
 the logical access; ordinary socket mechanics do not create an additional Resource.
@@ -566,7 +567,7 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-Use the [single closure agenda](../REVIEW.md#remaining-decision-bundles) within R2's accepted
+Use the [review outcomes](../REVIEW.md#review-outcomes) within R2's accepted
 finite-graph execution, R3's ownership/retirement and R6's configuration/implementation boundaries.
 The following are schema/example drafting tasks, not another sequence of product rulings:
 
@@ -576,8 +577,9 @@ The following are schema/example drafting tasks, not another sequence of product
    outputs and recovery against the three complex establishment cases before finalizing export
    or the simple directory's field layout; then cover Agent preparation/symlinks.
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
-   dependencies, preparation and one failure each. Evaluate content and identity, retaining
-   the agent-communication candidate for the detailed communication review.
+   dependencies, preparation and one failure each. Evaluate content and identity; express the
+   accepted retained-history capability as a Resource contract without assuming a closed set of
+   communication types or adding a special tracker concept.
 3. Draft the minimum shared consumer interfaces and exact bindings under R6's collision/implementation rules.
 4. Define remaining version/name grammar and connection declaration fields from those examples.
 5. Return to Pool grouping with enough information to derive useful behavior and minimize state.

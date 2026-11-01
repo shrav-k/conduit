@@ -443,7 +443,10 @@ refines these into **composable behaviors**, not exclusive protocol families: a 
 also an invocation, and a review can retain its request/result while exposing observations. Keep
 the examples below as requirements to distinguish, not a three-way wire or Resource taxonomy.
 R7 accepts that composable direction and retained messages plus inspection for the first slice.
-Structured work submission is deferred; detailed delivery and attention policies remain open.
+Shared append-only history with independent Agent readers and next-turn notices without automatic
+wake are accepted. Structured work submission and an optional per-Agent wake hook are deferred.
+Interface control/observability uses durable local evidence with pluggable export. Issue integrations
+and specialized tracking are ordinary Resources. Exact message/cursor fields remain drafting work.
 
 | Family | Example | Success means | Recovery needs |
 | --- | --- | --- | --- |
@@ -490,11 +493,10 @@ cannot be erased; required isolated revocation follows the existing stop/explici
 Changing its model-account/provider boundary creates a new Agent; continuity comes through explicit
 shared-context access. Neither handoff nor shared service login merges private Agent histories.
 
-**Attention policy:** recommend passive delivery by default, with explicit future hooks for
-selected requests to start work. Treat receipt, notification, context inclusion and execution
-as separate transitions. This is a proposal for the reopened communication design, not a
-reinstatement of the former room ruling. Prevent status/acknowledgement loops from generating
-unbounded model turns; bound work, concurrency and repeated triggers.
+**Accepted attention policy:** brief next-turn unread notices where the integration supports them,
+with explicit content retrieval and no automatic wake. Receipt, notification, context inclusion
+and execution remain distinct. An optional per-Agent wake hook is future work and would need its
+own authority, concurrency and trigger bounds; it is not implicit in message delivery or replay.
 
 ## Observation and durable execution
 
@@ -508,6 +510,12 @@ Keep durable usage observations distinct from sampled/exported traces. Include c
 failed attempts and child work where reported; retain unknown/overlap flags. Logging every
 MCP result need not put full payloads in traces: retain permitted payload evidence separately
 and link to it. Export failure must not erase a committed operation result.
+
+The accepted Conduit design makes this evidence intrinsic to the Interface's control and observation
+contract, with a durable inspectable local foundation and pluggable export. Managed components
+produce evidence while no frontend is attached; reconnecting frontends inspect the same underlying
+history/state. An external dashboard is optional, and Linear/Jira integration is unrelated to this
+baseline. See [Interface observability](../DESIGN.md#interface-observability).
 
 Durable's existing research remains applicable: persist intent, perform the effect, record
 outcome before claiming completion; use ownership and stale-worker fencing; distinguish input
@@ -553,13 +561,15 @@ The next experiment should be specified in this order:
    authorized live providers. Include partial streams, unknown writes and context conversion.
 4. Provision one memory Resource and one MCP service Resource through a Pool, preserving native
    schemas, Resource revisions and current-access checks. Validate selected MCP version/feature coverage explicitly.
-5. After R7's ruling, add the selected communication capabilities: review/result, retained finding and slow observer
-   are the smallest useful comparison. Do not make a broker or tracker mandatory to prove it.
+5. Exercise the accepted retained-history capability: review requests/findings as ordinary messages,
+   independent readers and a slow state observer. Structured work submission is deferred. Inspect
+   the local evidence through the Interface and exercise pluggable export; no issue-management
+   integration or specific broker is required.
 
-For discussion, resolve the grouped choices in [REVIEW.md](../REVIEW.md#next-discussion)
-before converting remaining proposals into requirements or starting implementation. R5 settles
-activation and explicit refresh; R6 settles configuration/extension resolution. R7 communication
-remains open. That closure agenda replaces a separate Pi review queue.
+Next, draft the schema and acceptance examples in [REVIEW.md](../REVIEW.md#next-discussion).
+R5 settles activation/refresh, R6 configuration/extension resolution, and R7 the first communication
+and Interface-observability slice. Broader research examples remain proposals; this report supplies
+evidence rather than a separate Pi review queue.
 
 [factories]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/all.ts
 [provider-interface]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/models.ts

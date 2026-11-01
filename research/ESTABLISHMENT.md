@@ -146,9 +146,9 @@ its phase and recovery options remain inspectable. Secret-bearing state needs pr
 reusable YAML and ordinary status exports must not become a credential archive.
 
 After completion, retain outcomes/native identities under existing retention rules. Instances
-already retain their resolved setup graph independently of the source template. The representation
-of creation-only inputs versus applied settings remains in R6 of the closure agenda. Incomplete
-attempts need recoverable effective inputs; full template history is unnecessary. R1 confirms
+already retain their resolved setup graph independently of the source template. R6 selects one
+stored configuration map for initial and then confirmed settings, with pending/uncertain requests
+separate. Incomplete attempts need recoverable effective inputs; full template history is unnecessary. R1 confirms
 that fixed-definition changes require a replacement instance even for Interface administration;
 in-place definition upgrades remain deferred.
 
@@ -584,9 +584,9 @@ Bound work through declared deadlines, retry/backoff limits and concurrency wher
 The exact policy fields are open; an interaction wait and an in-flight provider call may need
 different timeout behavior, and timing out either does not prove cancellation completed.
 
-The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
+The [review outcomes](../REVIEW.md#review-outcomes) define the accepted boundaries.
 These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
-the remaining R6 configuration/export profile. Direct complete-instance creation, graph composition
+the accepted R6 configuration/export profile. Direct complete-instance creation, graph composition
 and the template/plugin/instance responsibility split are already accepted. The next schema packet should
 render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 

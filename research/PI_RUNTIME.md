@@ -532,7 +532,8 @@ must be evaluated independently; a remote process protocol alone proves neither.
 ## Communication between Agents through Conduits
 
 Conduits support resource access and communication between Agents. The
-[interaction research brief](../REVIEW.md#remaining-decision-bundles) defines the remaining work.
+[review outcomes](../REVIEW.md#review-outcomes) define the first retained-history/attention contract
+and Interface-linked observability; concrete schema examples are next.
 Separate addressing, authorization, retained exchange, attention and execution when
 comparing candidate contracts; a source library's topology does not choose Conduit's.
 

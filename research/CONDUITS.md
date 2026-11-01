@@ -14,8 +14,11 @@ No live login, deployment or provider mutation was performed for this research.
 
 The [messaging and networking investigation](#messaging-and-networking-investigation)
 develops R7 with a concrete review exchange, primary protocol sources and failure cases. Composable
-capability guarantees and a retained-messages-plus-inspection first slice are now accepted;
-the detailed delivery/attention proposals and broader work-submission examples remain distinct.
+capability guarantees, a retained-messages-plus-inspection first slice, shared history with independent
+readers and next-turn notices without automatic wake are accepted. Interface control and durable
+local observability are inseparable, with pluggable export. Issue integrations and specialized
+tracking are ordinary Resources. Broader work-submission examples remain future capabilities;
+detailed fields and test evidence remain separate.
 
 ## Common model across the scenarios
 
@@ -572,9 +575,11 @@ evaluation implementation remain open. This rule does not prescribe a new policy
 
 ## Messaging and networking investigation
 
-Research date: 2026-10-31. **R7 is partially settled:** composable capability guarantees and
-retained messages plus inspection first; structured work submission is deferred. Delivery,
-attention and final experiment boundaries remain open. Sources describe specific standards,
+Research date: 2026-10-31. **R7 direction is settled:** composable capability guarantees and
+retained messages plus inspection first; shared append-only history with independent readers and
+next-turn notices without automatic wake. Interface observability uses durable local evidence and
+pluggable export. Structured work submission and remote communication are deferred; issue-management
+and specialized tracking remain Resource capabilities. Sources describe specific standards,
 versions or inspected implementations. Research recommendations are Conduit design inferences, not
 claims that adopting one library supplies these guarantees. No broker, transport, cryptographic
 scheme, Agent wake policy or new Resource type is selected here.
@@ -812,7 +817,8 @@ For the examples, contracts need to answer a few independent questions:
 
 Plugin-defined outcomes can remain extensible. The shared contract should identify the fact,
 its subject and the component reporting it; a sender must not promote a transport receipt into
-an Agent's completion claim. Exact fields and supported presets follow the remaining message-contract ruling.
+an Agent's completion claim. Exact fields and supported presets are schema drafting work within the
+accepted first retained-history capability.
 Prefer a small set of useful capability contracts over exposing every combination as a user-facing
 matrix of flags.
 
@@ -825,18 +831,20 @@ authentication does not make messages from different Agents indistinguishable.
 
 The same mechanism can support a two-party conversation, a group conversation, a delegated
 review and a status display without making them identical. Shared-context access remains an
-explicit Resource connection; a conversation does not merge native histories. A tracker issue
-can be linked without determining transport or message semantics.
+explicit Resource connection; a conversation does not merge native histories. External issue
+integrations and specialized tracking can be Resource capabilities without a mandatory issue link
+or special tracker abstraction in the core protocol.
 
 ### Recommended next review
 
 The first slice is now retained messages and state inspection; structured work submission is
 deferred. Do not choose TCP versus Signal: one is a transport and the other is a secure messaging
-system. The remaining review covers message addressing/history/recovery, Agent attention, and
-the final experiment boundaries. Walk offline delivery, response loss, a permission change and
-a slow observer through that smaller slice. Passive next-turn notice remains a recommendation;
-automatic wake and tracker coupling are not accepted here. The
-[review agenda](../REVIEW.md#next-discussion) is the single queue for these choices.
+system. Shared append-only history with independent Agent readers and next-turn unread notices
+without automatic wake are accepted for this capability. Walk offline delivery, response loss,
+a permission change and a slow observer through that smaller slice. An optional per-Agent wake
+hook remains future work. The Interface supplies unified control and observation over durable
+local evidence, with pluggable export; this remains available without external issue-management
+Resources. The [schema walkthrough](../REVIEW.md#next-discussion) is next, with no tracker gate.
 
 Existing MCP capability exposure is the leading adapter surface, with a local implementation free
 to use in-process calls or local IPC. Keep transport and storage replaceable, and negotiate/version
@@ -844,12 +852,12 @@ adapter features. No Signal, Matrix, MQTT, AMQP, NATS, Zenoh or A2A dependency i
 
 ## Review sequence and tests
 
-The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
+The [review outcomes](../REVIEW.md#review-outcomes) define the accepted v0 boundaries.
 Authentication reuse, composite participation, typed filters and access-path composition are
 accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
 now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4 excludes
 generic object labels/selectors and requires explicit provisioning versus existing-Resource binding.
-R7's communication contract remains open. R6 settles the configuration/implementation profile;
+R7 settles the first retained-history/attention and Interface-observability contracts. R6 settles the configuration/implementation profile;
 detailed syntax is drafting work, and these examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:
@@ -868,8 +876,7 @@ Use these change cases alongside the five happy paths:
 8. A template or backing Resource registration is deleted; inspect retained data,
    surviving participants and the exact cleanup action still required.
 
-This changes the review order, not the accepted envelope, identity/update rules, private Agent context, Agent
-activation, Pool ownership/access route or backing-data preservation.
-Detailed attachment representation, topology and communication semantics remain open; composite
-participation and exclusive Pool ownership are settled. The closure agenda separates those
-decisions from implementation work.
+These examples exercise the accepted envelope, identity/update rules, private Agent context,
+activation, Pool ownership/access routes and backing-data preservation. Detailed attachment/event
+representation is schema work; additional communication modes are future capabilities. Material new
+behavior discovered during the walkthrough returns for review rather than being inferred from a source protocol.

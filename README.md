@@ -13,7 +13,7 @@ remain separate.
 
 | Family | Responsibility |
 | --- | --- |
-| Interface | The user-facing authoring, observation and creation layer; opens Conduits to interact with instances, through different frontends. |
+| Interface | Unified control and observability: author, create, connect, inspect and operate through different frontends. |
 | Agent | An autonomous participant that acts through Conduits and can expose operations to other participants. |
 | Resource | A unitary capability, data source or service owned by exactly one Pool instance. |
 | Pool | Makes Resource templates available for provisioning, owns resulting Resource instances and organizes shared service access/authentication. Listing a template does not deploy it. |
@@ -26,9 +26,13 @@ developed. Normal interaction uses Conduits and runtime-supported operations; Re
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
 Changing an instance's fixed setup graph or control definitions requires a replacement in v0,
 including through the Interface. Supported settings, connections and lifecycle remain manageable.
-R1–R6 are settled; [communication is the remaining review bundle](REVIEW.md#next-discussion).
-Implementation details and future
-extensions are tracked separately.
+The current v0 direction review is complete. [Next is concrete YAML and acceptance examples](REVIEW.md#next-discussion).
+Implementation details and future extensions remain separate.
+
+Observability is intrinsic to the Interface, backed by durable local evidence and pluggable export.
+Message history and integrations such as Linear/Jira are ordinary Pool-owned Resources; there is
+no special tracker concept or required issue link. The first communication capability uses shared
+append-only history, independent readers and next-turn notices without automatic wake.
 
 Templates contain complete establishment instructions and declare what instance configuration
 can change and within what parameters. Typed YAML, inline/referenced setup graphs and explicit
@@ -65,7 +69,7 @@ saved on `main` at `c013f0a`; this branch has not been merged into it.
 | --- | --- |
 | [SPEC.md](SPEC.md) | Five families, user workflow, construction/change contract and intended outcomes. |
 | [DESIGN.md](DESIGN.md) | Detailed configuration, controls, ownership, account, memory, access and recovery contracts. |
-| [REVIEW.md](REVIEW.md) | Grouped unresolved choices and the next end-to-end walkthrough. |
+| [REVIEW.md](REVIEW.md) | Completed direction review and the next YAML/acceptance walkthrough. |
 | [Construction research](research/CONSTRUCTION.md) | Graph/runtime evidence and worked examples supporting the current design. |
 
 ## Research

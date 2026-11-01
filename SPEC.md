@@ -2,7 +2,7 @@
 
 Updated: 2026-10-31. Current working model on `research/conduits-as-graphs`; implementation has
 not started. The pre-inquiry design remains on `main` at `c013f0a`. [DESIGN.md](DESIGN.md) holds
-detailed contracts; [REVIEW.md](REVIEW.md) groups remaining decisions. Research is supporting
+detailed contracts; [REVIEW.md](REVIEW.md) records outcomes and the next schema walkthrough. Research is supporting
 evidence and proposed syntax, not an additional source of requirements.
 
 ## Working model
@@ -19,7 +19,7 @@ Shared service identity does not merge private Agent context or model-subscripti
 
 | Family | Responsibility |
 | --- | --- |
-| Interface | User-facing authoring, observation and creation; establishes Conduits for interacting with running targets. |
+| Interface | Unified control and observability: author, instantiate, connect, inspect and operate through replaceable frontends. |
 | Agent | Autonomous participant with runtime/access configuration, private context and executions; may initiate or receive operations. |
 | Resource | One responsibility with related operations, exposed as a particular capability, data source or service. |
 | Pool | Makes Resource templates available for provisioning, owns resulting Resource instances and organizes shared service authentication/access. Template availability alone creates nothing. |
@@ -253,8 +253,22 @@ and unknowns rather than inferring model understanding. Durable shared content r
 The first communication experiment covers retained Agent messages and state inspection.
 Agents can ask each other to review through ordinary messages; structured work submission with
 job acceptance, progress, results and cancellation is deferred as a later capability. Existing
-tools and supported instance controls remain available. Message addressing/recovery, attention
-and final experiment boundaries remain in review; no room or automatic wake policy is implied.
+tools and supported instance controls remain available.
+
+The first retained-message capability provides one append-only exchange history for explicitly
+participating Agents, with an independent read position for each. Two participants support direct
+conversation; more support group discussion. History belongs to a Pool-owned Resource and reads
+use current access checks and bounded catch-up. This is one capability, not the required shape of
+every Conduit. Existing explicit purge and other lifecycle rules still apply.
+
+New messages normally produce a brief unread notice on the Agent's next normal turn; message
+content is retrieved explicitly. Posting, replay and notifications do not automatically wake an
+Agent or start another model turn. Integrations report notice support and gaps. An optional
+per-Agent automatic-wake hook remains a future extension.
+
+Linear/Jira integrations and message history are ordinary Pool-owned Resources. Core communication
+requires no issue link or dedicated tracker abstraction. Specialized tracking can be added through
+a custom Resource capability; it does not change the five-family model.
 
 ## Shared Pool access and authentication
 
@@ -434,10 +448,27 @@ account/private state for two Claude and two Codex/OpenAI subscriptions before c
 Retain current-access checks, portable context, scoped memory/provenance, bounded search, direct
 read-only sharing, safe workspace cleanup, retention and usage coverage in [DESIGN.md](DESIGN.md).
 
+## Observability
+
+V0 includes a durable, inspectable local record of Conduit-managed activity with pluggable export.
+Observability and control are inseparable parts of the Interface contract: the same surface that
+creates or changes instances exposes their state, activity and outcomes, including Agent-initiated
+work. CLI, terminal and test frontends share this contract and inspect the same underlying evidence.
+Managed components retain observations while frontends are disconnected; opening a frontend is
+not a prerequisite for collecting evidence. Exported dashboards can supplement this Interface.
+Correlate setup steps, supported controls, access decisions, messages, tool calls and failures,
+plus available model/subagent activity and usage, through existing actor/instance/execution/operation
+identities. The Interface can inspect this evidence locally without an external dashboard/backend.
+Report native-runtime coverage gaps and distinguish reported usage, estimates, unknowns and zero.
+Keep committed operation evidence independently of exported traces; export failure does not erase it.
+Existing access, retention and credential-handling rules apply. Custom tracking Resources can add
+domain-specific behavior; common observability remains a core requirement.
+
 ## Acceptance scenarios
 
 These are intended outcomes, not completed tests. [REVIEW.md](REVIEW.md#initial-experiment) defines
-remaining choices and staged evidence.
+the schema walkthrough and staged evidence. Begin locally with two Agents and an Interface, then
+verify the required two Claude and two Codex accounts. Remote communication remains later work.
 
 | Scenario | Observable outcome |
 | --- | --- |
@@ -452,6 +483,9 @@ remaining choices and staged evidence.
 | Resource data versus configuration | Writing a note, changing a search setting and attaching a Conduit use their respective contracts. |
 | Recovery | Retain valid setup progress, reconcile uncertain effects, avoid duplicate execution and do not replay unsafe writes. |
 | Native coverage | Unsupported hot control or enforcement is reported; no fabricated provider compatibility. |
+| Retained communication | Explicit participants share append-only history with independent read positions, bounded catch-up and current-access checks. One participant reading does not consume another's unread content. |
+| Agent attention | Supported integrations provide next-turn unread notices; content retrieval is explicit, and posting/replay starts no extra model turn. Missing notice support is visible. |
+| Local observability | Inspect correlated managed activity and usage evidence locally; identify native coverage gaps. Exercise an exporter failure without losing committed local outcomes. No external issue-management service is required. |
 
 ## Design boundary
 
@@ -465,6 +499,9 @@ connection selection/delegation/routing and removal of generic labels/selectors.
 activation and explicit refresh, with automatic refresh policies deferred. R6 settles stored
 configuration/export, strict YAML interpretation and retained implementation selection with replacement
 for upgrades. R7 accepts composable communication guarantees and a messages-plus-inspection first
-slice; [delivery, attention and experiment boundaries remain](REVIEW.md#next-discussion).
-Proposed solutions remain proposals.
-Exact schema/adapter details are tracked separately; the protocol review is not yet complete.
+slice, shared append-only history with independent readers and next-turn notices without automatic
+wake. Durable local observability with pluggable export is required; issue integrations and
+specialized tracking are ordinary Resources. The current v0 direction review is complete.
+[Next is the concrete YAML and acceptance walkthrough](REVIEW.md#next-discussion). Exact schemas,
+adapter evidence and implementation choices remain work to do; examples that expose new behavior
+return for review. Completion of this review is not implementation or compatibility validation.

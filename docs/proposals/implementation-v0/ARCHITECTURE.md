@@ -91,15 +91,54 @@ policy domain from Interface lifecycle. Shared policy with instance-owned state 
 settle which of these logical ownership interpretations applies. Root policy ownership is a live
 proposal, not a ruling; storage, replacement and outage consequences would follow the choice.
 
-**Example — establish Euphony:** a user acts through a frontend attached to the root Interface.
-The Interface starts an attributable management workflow and requests Pool creation through its
-management capability. Resource setup runs under the new Pool's ownership and each Resource's
-responsible service. The Interface can request Agent creation and open declared Conduits as their
-prerequisites become available. If Linear authentication is incomplete, it presents that partial
-state; it does not turn the user's broad permission into a successful login. The Interface's workflow
-records its requests and links to target outcomes rather than overwriting their authoritative records.
-If an Agent receives delegated creation/control permissions, it can also invoke those capabilities;
-this proposal does not make every management action exclusive to the root Interface.
+#### Root authority lifecycle comparison
+
+Both authority interpretations remain open. Compare them with the same objects: root Interface R1,
+a system Pool with management/policy capability P, an Euphony Pool with shared authentication and
+Linear Resources, and Agents A and B on independent executors. These labels are illustrative, not
+proposed YAML or new object types. Assume P and the executors can remain available when R1's
+coordination runtime stops; co-locating their processes would change outage effects in either model.
+
+| Event | Root administers independent policy | Root logically owns system policy |
+| --- | --- | --- |
+| Establish Euphony | R1 acts for the local owner to establish the Pool/Resources and invoke P's management operations. P's policy domain is independent of Interface identity. | R1 establishes the same objects. Its contract is responsible for the policy domain; P's service stores and enforces that policy on its behalf. |
+| Delegate Linear access | R1 issues a grant through P for A's read-only Conduit participation; B can receive different access. P retains the policy and attribution. | The same grant is issued under R1's system-policy responsibility and retained by P. Pool ownership, service login and recipient restrictions are unchanged. |
+| Close the terminal | The frontend detaches from R1. Policy, grants, Resources and independent work persist. | The same. The frontend's lifetime is separate from Interface and policy lifetimes. |
+| Stop R1's coordination runtime; P remains authoritative and reachable | A can make a permitted request using current checks against P. Already-dispatched work and other executors retain their established semantics. | The same can hold: a stopped logical owner need not invalidate persisted policy whose service remains authoritative. Owner liveness is not an extra grant condition. No issuer-liveness revocation is introduced. |
+| Lose P or its current authority, even if R1 is alive | Hold affected new managed requests whose permissions cannot be verified; preserve admitted outcomes under the accepted outage rules. | The same. R1's administrative role does not turn an unavailable policy record into a verified grant. |
+| Restart R1 with the same identity | Reconnect to P, inspect current instance authorities and reconcile R1's retained management progress. | The same, including verification of its existing policy responsibility. Do not recreate policy or replay setup blindly. |
+| Replace R1 with R2 after revising its fixed graph/control definition | R2 must have valid owner access and connect to P. P's logical policy ownership does not change; independent policy/grant IDs can stay intact. Active management work still needs an explicit recovery/coordination path. | The policy role must distinguish R2 from R1. A possible design explicitly transfers responsibility while preserving P's policy/grant IDs and historical attribution; alternatively policy bound to R1's private lifecycle needs migration or retention. The succession contract is unchosen. |
+| Retire/delete R1 | Removing the Interface does not itself remove independently owned policy or Pool data. Normal checks and explicit effects still apply. | The lifecycle must specify what happens to its policy responsibility before retirement. Do not infer that deleting R1 purges shared policy, ends unrelated grants or transfers ownership automatically. |
+
+The accepted delegation rule already says a grant follows recipient participation and current
+restrictions rather than the issuing frontend or coordinator remaining active. Therefore owner
+liveness must not be added silently as a condition in the second model. If a concrete implementation
+stops P together with R1, checks may become unavailable; that is an actual service dependency, not
+proof that every persisted grant was withdrawn. Restart/replacement cannot resurrect a revoked grant.
+
+**Concrete replacement example:** A has read-only access to Euphony through grant G at policy
+revision 12. R1's management workflow has a bug, so the owner wants a new template and R2 instance.
+In the first model, R2 administers the existing P with verified owner authority. In a continuity-
+preserving version of the second, an authorized checked operation changes the recorded system-policy
+responsibility from R1 to R2; G's recipient, restrictions, lifetime and original issuer remain intact.
+R2 does not recreate G from its template or copy old policy over the latest state. Each instance
+retains its own history, fixed definitions and outcomes. Pending management work is reconciled
+separately; replacing the root is not permission to repeat uncertain external effects.
+
+The second transfer is a proposed mechanism, not an accepted operation or automatic failover.
+Interruption during it must leave the responsible service able to identify the confirmed assignment
+or report uncertainty; a name or an unconfirmed local edit cannot promote a second root. No rule
+currently requires every administrative request to have a unique root issuer: broad v0 Interface
+access and explicitly delegated Agent controls remain as agreed. Coordination of the foundational
+policy role is distinct from permitting another actor to issue a management command.
+
+**Possible synthesis, still open:** the root Interface owns the system-direction and administrative
+stewardship role, while durable policy is backed by a stable system-Pool Resource whose identity
+outlives any particular root instance. A replacement explicitly assumes that role over the existing
+policy, leaving Resource ownership and target state authority unchanged. This combines Interface-
+centred responsibility with independently retained policy. It still needs a real succession contract;
+if no lifecycle responsibility differs from ordinary administration, the two interpretations are
+mostly different wording and should not create extra protocol machinery.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops

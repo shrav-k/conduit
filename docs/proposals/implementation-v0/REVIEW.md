@@ -427,12 +427,19 @@ The second more directly puts foundational authority in an Interface, but needs 
 when that root stops or is replaced. It does not make the root the data owner of all objects, move
 Resources out of Pools or require every policy record in its template. This choice remains open.
 
-The [Euphony example](ARCHITECTURE.md#interface-as-system-director--proposed-refinement) illustrates
-this split and its failure/lifecycle consequences. It does not narrow the agreed v0 Interface access,
-add implicit restart loops or assign automatic priority over Agent commands. The active-role ruling
-remains open pending this refinement. Initial Interface persistence, authority verification and
-storage selection follow it; the first-definition load and earliest durable progress still need a
-concrete home even when they are part of the Interface runtime.
+**Lifecycle comparison before a ruling:** the
+[Euphony walkthrough](ARCHITECTURE.md#root-authority-lifecycle-comparison) compares establishment,
+delegation, frontend detachment, root-runtime loss, policy-service loss, restart and replacement.
+Most running behavior is the same. Existing grants do not expire merely because the issuer stops;
+the distinction is whether replacement changes logical policy ownership and requires explicit
+succession. A possible synthesis assigns the administrative stewardship role to the root Interface
+while keeping durable policy in a stable system-Pool Resource. This is an option for discussion,
+not an adopted sixth object, transfer operation or automatic failover mechanism.
+
+The comparison does not narrow v0 Interface access, add implicit restart loops or assign automatic
+priority over Agent commands. The active-role and policy-ownership rulings remain open. Initial
+Interface persistence, authority verification and storage selection follow; the first-definition
+load and earliest durable progress still need a concrete home within its runtime contract.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant

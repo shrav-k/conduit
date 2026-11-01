@@ -2,8 +2,8 @@
 
 Status: semantic proposal for I4 review, 2026-11-01. The user directed us to formalize Policy and
 Grant as essential concepts beneath the five object families, for Agents and Interfaces alike.
-Independent policy and required recorded participation grants are accepted. This document develops
-their structure without selecting exact
+Independent policy, recorded participation grants and issuer-independent grant lifetime are
+accepted. This document develops their structure without selecting exact
 YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
 the [design](../../DESIGN.md) retains accepted behavior and [I4](REVIEW.md#i4--local-transactional-authority)
 is the ruling queue. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
@@ -13,7 +13,7 @@ is the ruling queue. [Research](../../research/AUTHORIZATION.md) provides source
 | Concept | Responsibility | What it does not imply |
 | --- | --- | --- |
 | Policy | Authoritative rules governing access, administration and delegation for applicable actors/targets. | A running instance, a grant merely because a file was authored, or permission inferred from a model instruction. |
-| Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with recorded provenance and lifetime/dependencies. | A bearer secret, an OAuth token, perpetual permission, or the union of unrelated access paths. |
+| Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with its own participation lifetime and authorized administration. | A bearer secret, an OAuth token, a parent-dependent authority chain, or the union of unrelated access paths. |
 | Requirement | A reusable typed guarantee with applicability, timing and endpoint duties. Policies/grants can reuse applicable restrictions. | All requirements being authorization rules, or satisfying a restriction creating positive authority. |
 | Plugin | Contracts and implementation bindings for management, evaluation and enforcement operations. | Every plugin becoming an issuer or implementing its own permission server. |
 | Operation / graph | A callable action / composition of actions that may request access, delegate or invoke capabilities. | An executable declaration granting itself authority or freezing authorization for all later graph nodes. |
@@ -40,7 +40,7 @@ Proposed request identity distinctions:
 | Identity/context | Example | Source of truth |
 | --- | --- | --- |
 | Managed actor | Agent A, Interface E, or a Resource making a dependency call. | Authenticated runtime/endpoint binding, not a claimed name in operation arguments. |
-| Acting principal / delegated origin, when applicable | Local owner using E; a coordinator that authorized A. | Verified caller/delegation context. Historical origin alone is not current permission. |
+| Acting principal, when applicable | Local owner using E. | Verified current caller context. An Agent's historical grant issuer is not its acting principal or a current permission dependency. |
 | Execution/frontend attribution | A's current execution, or the CLI attached to E. | The responsible service's invocation context. |
 | Selected target and path | Linear Resource L through participation C-A. | Resolved stable identities and the chosen route. |
 | Provider service identity | The Pool's shared Linear account. | The authenticated provider binding. It is distinct from A or the local owner. |
@@ -80,9 +80,9 @@ additive RBAC, ordered-rule evaluation or an engine's error behavior merely by s
 | Recipient | The identified actor/subject receiving authority. Human principal and Interface endpoint distinctions remain explicit where needed. |
 | Target and access extent | Concrete targets/capabilities, permitted operations and associated parameter/resource restrictions, preserved together. |
 | Participation/path binding | The logical attachment or other declared authorization context in which the grant may be exercised. Service-access grants already follow recipient participation. |
-| Issuance authority and attribution | Who requested/issued it, the authorized operation and relevant policy/authority evidence. Do not confuse original issuer with current recipient. |
-| Continuing dependencies | Any governing policy or parent authorization whose validity/restrictions must still hold. Historical source references alone must not silently imply live dependency. |
-| Delegation bounds | Whether and how the recipient may issue further grants. Ordinary use does not imply onward delegation. |
+| Administration evidence | A link to normal operation evidence where retained; no separate grant-provenance chain is required for authorization. |
+| Current governing restrictions | Applicable policy and requirements constrain use independently of the grant's issuer/history; this is not a parent-grant dependency. |
+| Grant-administration bounds | Whether and how the recipient may administer further grants. Ordinary use does not imply authority to issue them. |
 | Lifetime and disposition | Applicable start/end conditions and withdrawal information. Participation ending differs from a transport outage. No mandatory expiry interval is selected here. |
 
 Issuance is an authorized operation, not an authored object being trusted on import. The initial
@@ -93,37 +93,38 @@ use its recorded outcome instead of accidentally issuing independent authority t
 Accepted lifetime rules continue: issuer/frontend liveness does not govern recipient access;
 detachment ends that participation's access; withdrawal/current restrictions apply; exported
 configuration does not carry live grants. New instances/identities do not inherit old bindings by
-name. Old issuer attribution stays historical after Interface replacement.
+name. Available operation attribution stays historical after Interface replacement.
 
-**Still open:** exact parent-dependency and delegation-attenuation semantics. Revoking a parent
-grant, changing the issuer's personal permissions and stopping the issuer are different events.
-We should decide which dependencies remain live rather than infer cascade behavior from provenance.
-Previously discussed knowledge-sharing rules do not automatically settle every service grant.
+### Independent issued grants — accepted
 
-### Administrative issuance and onward delegation — proposed distinction
+The administrator must have current permission to issue, change or revoke the particular grant.
+That check includes its target and permitted access extent; ordinary service use does not imply
+authority to administer grants. The same rule applies to authorized Agents and Interfaces.
 
-Recorded participation grants do not imply that every newly issued grant must depend forever on
-the issuer's management connection. That would conflict with retained policy/grants across Interface
-replacement. Distinguish the authority used to issue a grant from any authority it continues to derive:
+Once issued, a grant does not depend on the continuing rights, connection, execution or grant
+history of its issuer. There is one issued-grant model; the proposed administrative-versus-derived
+lifetime split is not adopted. Narrowing or ending the issuer's grant does not automatically narrow
+or end grants it previously issued.
 
-| Route to issuance | Proposed continuing authority | Example |
-| --- | --- | --- |
-| Administrative issuance | The new recipient's grant is governed by target/current policy and its own participation. The issuer's administrative grant is retained as issuance evidence, not automatically a live parent. | Root uses its management grant to authorize A's Linear access. Replacing the root and ending its old management participation does not itself withdraw A's grant. |
-| Onward delegation of received access | The child remains dependent on the particular source grant and cannot exceed its current extent or delegation bounds. | A uses explicit onward-delegation rights in its Linear grant to grant B read-only access. Withdrawal, narrowing or ending of that parent restricts the dependent child at subsequent checks. |
+Any currently authorized administrator can revoke the grant; it need not be the original issuer.
+Ending the recipient's related Conduit or logical participation ends that participation's access.
+Ending only the issuer's unrelated participation does not. Closing a frontend or losing a transport
+is not itself proof that the relevant logical participation ended.
 
-This is about which authority the operation exercises, not whether the issuer is an Interface or
-Agent. An appropriately authorized Agent can perform administrative issuance; an Interface using
-only received delegable access follows the derived-grant rules. A caller cannot choose the first
-route merely to avoid a dependency: the issuing service must verify the required authority.
+Current governing policy and relationship requirements still apply to each use. Independence from
+issuer history is not exemption from those current rules, and a stored grant is not an offline
+authorization guarantee. This revises parent-chain grant proposals, not source-content dependencies
+or actual Resource availability.
 
-The same request may record both an issuance receipt and live dependencies, but they have different
-meanings. Stopping an issuer is not itself grant withdrawal or participation termination. If that
-issuer's lifecycle operation actually ends a source participation, the resulting parent-grant end
-would affect derived children under this proposal. Independent authorized paths retain their own
-rules; this does not authorize silent rerouting, reparenting or restoration of withdrawn grants.
+The normal operation record can retain attribution and outcomes for observability/recovery. No
+extra parent-grant/provenance structure is required to authorize use. We do not revalidate the
+original administrator's present rights on each request or require its participation to stay open.
 
-This distinction and its dependency effects are the next ruling, not accepted behavior yet.
-Detailed narrowing proofs, parent-restoration rules and management-operation syntax remain open.
+**Example:** root authorizes coordinator A to administer read grants. A issues a read grant for B.
+A later loses its administration permission or leaves. B retains its own access under current
+policy until an authorized administrator revokes it or B's participation/Conduit ends. A cannot
+issue another grant without current permission. A different authorized Interface can revoke B's
+grant without consulting A.
 
 ## 5. Decision and enforcement contract
 
@@ -187,7 +188,7 @@ Proposed operation responsibilities, with names deferred:
 | Administration | Inspect policy/grants, submit checked policy changes, issue/narrow/withdraw grants and inspect their outcomes. |
 | Evaluation | Resolve current authoritative access facts for a concrete request and return the typed decision/evidence. |
 | Enforcement | Bind authenticated identity/path, apply declared checks at dispatch/delivery and record outcomes. |
-| Observation | Explain authorized access, dependencies, failed checks and incomplete coverage through the Interface. |
+| Observation | Explain current grants, governing restrictions, failed checks and incomplete coverage through the Interface. |
 
 An ordinary operation plugin author declares operations and requirement duties and consumes trusted
 invocation context; the runtime supplies common authorization plumbing. A policy plugin implements
@@ -203,7 +204,7 @@ collapse Agent identities or justify forwarding the caller's token to another au
 ## 7. Worked delegation across Interface and Agents
 
 This is a semantic example, not final YAML or an adopted permission language. Recorded grants
-supply ordinary managed access as accepted; the detailed delegation dependencies remain proposed.
+supply ordinary managed access and remain independent of their issuer after authorized issuance.
 
 | Stage | Authority and behavior |
 | --- | --- |
@@ -213,7 +214,7 @@ supply ordinary managed access as accepted; the detailed delegation dependencies
 | Worker | A requests a grant for Agent B: read-only Euphony access on B's participation, without further delegation. The issuing authority checks A's actual delegation boundary. |
 | Provider call | B's concrete read request passes the selected grant, governing policy and workspace/operation requirements; the Linear Resource uses its shared provider identity. |
 | Forbidden broadening | B cannot create write authority or redelegate merely by submitting wider YAML or calling the management tool. |
-| A stops | B's participation does not end just because A stopped. Explicit withdrawal or a change in a declared continuing dependency is a different event. |
+| A leaves or loses administration rights | B retains its own grant under current policy. A cannot administer another grant without current authority. B's grant can be revoked by another authorized administrator. |
 | Root replaced | The new Interface establishes valid access to the existing policy; it does not copy grants out of the old template. |
 
 Every issuer may also be a protected target in another operation. Agent-to-Agent controls, Pool
@@ -228,11 +229,18 @@ including the root's broad management access. Policy governs issuance/current us
 provide a grantless alternative. A grant covers many requests and can be established as part of
 authorized connection setup.
 
-1. **Delegation and dependencies:** choose the allowed narrowing behavior, delegation ceilings and
-   live parent/policy dependency rules. Custom constraints must not claim subset relationships
-   they cannot establish; a general solver is not assumed.
-2. **Policy composition and failure:** define applicability, positive/negative rule interaction,
-   incomplete information and trustworthy decision inputs under existing whole-path restrictions.
+**Accepted administration/lifetime:** current authority is checked for each administration
+operation. Issued grants have no live dependency on issuer history/permissions. Authorized
+withdrawal and recipient participation/Conduit lifetime govern their access, subject to current
+policy/requirements. No separate ancestry record is required.
+
+1. **Public policy contract:** should Conduit define a portable typed contract for grant-administration
+   rules and use restrictions, with evaluator/enforcement plugins implementing it, or make engine-native
+   policy documents the primary public contract? Recommend the portable contract; this selects the
+   semantic boundary, not YAML fields, an expression language or engine.
+2. **Policy composition and failure:** define applicability, rule interaction, incomplete information
+   and trustworthy decision inputs under existing whole-path restrictions. Administration boundaries
+   for custom constraints need defined checks; a general solver is not assumed.
 3. **Placement and persistence:** settle the management Resource capability, first authority and
    startup/repair boundary, then storage interface/engine. The root-owner initial grant is a
    concrete initialization problem, not permission for runtime self-granting.
@@ -247,7 +255,8 @@ Candidate additions to Experiment 002, pending scope review:
 - Exercise equivalent capability use and administration through Interface and Agent actors.
 - Author policy/requirements, issue grants and show definitions alone confer nothing.
 - Test permitted delegation and rejected broadening, preserving target/operation relationships.
-- Inspect grant lineage and replace/stop the issuer without confusing that with withdrawal.
+- Replace/stop the issuer and withdraw its administration rights while the recipient retains its
+  own grant. Then revoke that grant through a different authorized Interface.
 - Withdraw access, sever policy reachability and trigger a required-check failure; show distinct
   evidence while none authorizes a new affected operation.
 - Prove an existing provider credential cannot substitute for the requesting Agent's grant.

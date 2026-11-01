@@ -69,7 +69,7 @@ and schema pass should preserve these responsibilities rather than silently chan
 | Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
 | Requirement | What must hold for a particular relationship or its use, with typed parameters and applicability. This can include compatibility or lifecycle obligations as well as restrictions. | A reusable definition can compose existing requirements. Every constituent retains its meaning and limits; support is checked against the constituents. |
 | Policy | Authoritative rules governing access, administration and delegation for applicable actors and targets. | May reuse applicable typed requirements for restrictions. Detailed rule composition and representation are under review; authoring a declaration does not activate authority. |
-| Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with provenance and lifetime/dependencies. | Delegation preserves applicable bounds; exact parent/dependency semantics remain under review. A grant is not a token or a new object family. |
+| Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with its own participation lifetime and authorized administration. | Issuance/changes require current administrative authority. Issued grants have no live dependency on their issuer or the issuer's grants; provenance is not an access condition. |
 | Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
 | Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
 | Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
@@ -1352,8 +1352,8 @@ The following preserve agreed extension semantics; they are not v0 delivery requ
 | Extension | Contract |
 | --- | --- |
 | Richer shares | Pinned shares expose an exact revision; additional operations are explicit and bounded by current authority. Revision-pinned references remain usable in v0 without granting access. |
-| Onward delegation | Explicit permission allows grants within received rights, linked to the parent. Recipients manage their own onward grants, not the incoming grant. Parent restrictions, including loss of delegation permission, constrain dependent grants; other independent grants remain valid. |
-| Grant lifetime | Issued grants survive changes to their creator's Agent or its template. Parent-constrained access recovers when that same chain permits it. Explicitly withdrawn grants require authorized restoration/reissue; a new parent does not replace an old parent link implicitly. |
+| Further grant issuance | Creating or changing another grant requires current authority for that administration. Issued grants are independent of issuer ancestry; there is no parent-grant cascade. Ordinary read access does not itself authorize further grants. |
+| Grant lifetime | Any currently authorized administrator may withdraw a grant. Participation grants also end with their recipient participation or related Conduit. Issuer changes do not retract previous grants; current governing restrictions still apply. Explicitly withdrawn grants require authorized restoration/reissue. |
 | Independent publication | A separate record may release source-access dependencies only with read/publication authority for each released restricted input and destination creation rights. Retain source/version provenance. The published record has its own audience/lifecycle and does not follow source changes or withdrawal. |
 | Published edits | Edits using already-published content need ordinary update rights. New restricted material requires current read/publication authority for those inputs and destination update rights. Explicitly released attribution remains readable. |
 
@@ -1802,15 +1802,23 @@ the delegation; no separate prior Agent-permission setup is required. The creato
 authority to delegate that access, subject to target policy and recipient limits. For example,
 a user can connect a reviewer to shared Linear access with read-only authority in one action.
 
+**Independent issued grants:** check the administrator's current authority when issuing, changing
+or revoking a grant, including the permitted target and access extent. Once issued, the grant is
+not dependent on its issuer's continuing permissions, execution, connection or grant ancestry.
+Losing or ending the issuer's access does not cascade into previously issued grants. Any Interface
+or Agent currently authorized to administer the grant may revoke it; original-issuer permission
+is not required. Ending the recipient's logical participation or the related Conduit ends its
+participation access. Current governing policy and requirements still constrain use.
+Normal operation evidence can attribute grant administration, but no separate provenance chain is
+required for authorization and provenance is not a condition of grant validity. Knowledge-source
+dependencies and Resource readiness retain their distinct contracts.
+
 Keep requested access, the authorized delegation and any additional filters distinguishable.
 Authored configuration requests access; it does not issue its own grant. Filters only narrow
 granted authority. This adds no permission-registry object family and does not implicitly grant
-onward-delegation rights. **Lifetime:** the grant belongs to recipient logical
-participation and survives the issuing frontend closing or coordinator execution stopping.
-Recipient detachment ends that attachment's access; temporary socket loss alone does not.
-Withdrawal and current governing restrictions continue to apply at dispatch and delivery.
-Stopping the issuer is distinct from withdrawing its grant or changing an applicable governing
-restriction. This keeps recipient work independent of the UI/process that established its access.
+onward-delegation rights. Temporary socket loss or frontend closure does not itself end logical
+participation. Withdrawal and current governing restrictions continue to apply at dispatch and
+delivery. This keeps recipient work independent of the UI/process that established its access.
 Exact issuance, attribution and revocation representations remain to be drafted.
 
 Selection supports IDs, owning contexts, defined typed fields and path patterns where the

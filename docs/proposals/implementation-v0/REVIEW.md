@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Policy/Grant contracts and foundational storage, then engine | Independent policy and recorded participation grants accepted. Next distinguish administrative issuance from onward delegation, then composition and hosting before startup/storage. |
+| I4 | Policy/Grant contracts and foundational storage, then engine | Independent policy, recorded participation grants and issuer-independent lifetime accepted. Next public policy contract/composition and hosting before startup/storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -441,15 +441,22 @@ there is no grantless direct-policy alternative. Authorized connection setup can
 covering many requests without another user manifest or per-call token. Initial root-grant
 establishment remains an explicit startup question.
 
+**Grant administration/lifetime is accepted:** check the administrator's current authority when
+issuing, changing or revoking a grant. Issued grants are independent of issuer provenance, later
+permissions and grant ancestry. Another authorized Interface or Agent may revoke them; ending
+recipient participation/the related Conduit ends that access. Current governing policy and
+requirements remain effective. Normal operation attribution is evidence, not a required ancestry
+chain or live access dependency. The proposed administrative/derived lifetime distinction is removed.
+
 **Next conceptual choices, in order:**
 
-1. Distinguish [administrative issuance from onward delegation](AUTHORIZATION.md#administrative-issuance-and-onward-delegation--proposed-distinction).
-   Recommend policy-governed administrative grants that do not depend on the issuer's management
-   participation, versus derived grants that remain bounded by and dependent on their source grant.
-   This preserves Interface replacement while making onward delegation meaningful. The operation's
-   actual authority determines the route, not the issuer's family or a self-selected flag.
+1. Should Conduit own a portable typed policy contract for grant administration and use restrictions,
+   implemented by plugins, or expose engine-native policy documents as the primary contract?
+   Recommend the portable contract, reusing applicable requirement definitions; exact syntax and
+   evaluator selection remain separate.
 2. How do applicable policy rules, current grants and typed restrictions combine, including errors
-   and unknown custom narrowing relationships? Preserve complete-path alternatives and required checks.
+   and administration bounds for custom restrictions? Preserve complete-path alternatives and
+   required checks without assuming a general subset solver.
 3. Which Pool-owned management capability exposes policy/grant operations, and how is its trusted
    initial authority established, persisted and repaired?
 

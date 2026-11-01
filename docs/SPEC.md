@@ -119,6 +119,12 @@ permit alone does not authorize grantless ordinary access. Authorized connection
 the grant for many requests, without a separate user-written manifest or per-call token. Current
 policy, path restrictions and requirement checks still apply; retaining a grant is not offline authority.
 
+Grant administration checks the administrator's current authority at the time of issue, change
+or revocation. Issued grants do not depend on issuer provenance, continued permissions or parent
+grants. Any currently authorized administrator can revoke them; ending the recipient participation
+or related Conduit ends its access. Normal operation attribution is evidence, not a live permission
+dependency. Current governing policy and requirement checks remain applicable.
+
 Shared access policy is independent of any particular Interface's lifecycle. Multiple authorized
 Interfaces can administer it, with broad default administration for the owner-operated root.
 Replacing an Interface establishes valid administrative access without transferring policy

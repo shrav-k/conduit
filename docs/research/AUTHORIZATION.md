@@ -5,6 +5,9 @@ other concepts beneath its five object families, covering Agents as well as Inte
 policy, broad default owner administration, current access checks and no offline grants are already
 accepted. The user subsequently selected recorded grants on ordinary managed participation,
 including root management; policy governs issuance/current use without a grantless alternative.
+The user also selected issuer-independent grant lifetime: check authority when administering a
+grant; do not preserve live parent-grant/provenance dependencies. Authorized withdrawal and the
+recipient's related participation/Conduit lifetime remain effective alongside current restrictions.
 The detailed structures in the [authorization proposal](../proposals/implementation-v0/AUTHORIZATION.md)
 remain for joint review. This report supplies evidence, not additional rulings.
 
@@ -108,8 +111,9 @@ authorizer policies. All applicable checks must succeed. Rust tooling is availab
 [Biscuit specification](https://doc.biscuitsec.org/reference/specifications),
 [Rust support](https://doc.biscuitsec.org/usage/rust)
 
-**Conduit implication:** a delegated grant should retain its restrictions and declared dependencies;
-an extra hop cannot silently broaden authority. A grant's identity or a cryptographically valid
+**Conduit implication after the lifetime ruling:** check permitted grant extent when administering
+access and retain its own restrictions. Conduit does not adopt live grant ancestry or cryptographic
+attenuation chains. A grant's identity or a cryptographically valid
 token is not enough to establish current permission. Offline attenuation/verification does not
 provide knowledge of every subsequent revocation. V0 retains online/current verification, not
 offline bearer grants. A future credential representation could use these ideas without changing
@@ -142,7 +146,7 @@ The protocol work should specify one model for Agents, Interfaces and other mana
 2. A normalized request identifying actor, target, operation, selected path and relevant context.
 3. A decision/evidence contract distinguishing verified permission, refusal and inability to verify.
 4. Administrative operations for inspecting/changing policy and issuing/withdrawing grants.
-5. Delegation bounds and the distinction between issuance provenance and ongoing authority dependencies.
+5. Current administrative authority/bounds, independent issued grants and authorized revocation.
 6. Enforcement responsibilities on endpoints, retaining the requirement contracts already accepted.
 
 These are semantic responsibilities. The companion proposal supplies a concrete starting structure;
@@ -176,8 +180,11 @@ Resolve these within I4 before the final I7 syntax pass:
 - Settled after this comparison: ordinary managed use requires a recorded grant on the selected
   participation, including root management. Policy governs issuance/current use; one grant may
   cover many requests. Establishing the first root authority still needs the startup contract.
-- What delegation may a grant holder issue, and which parent/policy changes affect those grants?
-  Stopping an issuer is already distinct from withdrawing access.
+- Settled after the dependency examples: check current authority on grant administration; issued
+  grants do not depend on issuer history/permissions. Another authorized administrator may revoke
+  them; recipient participation/Conduit end also ends access. No ancestry structure is required.
+- Should the public policy contract be portable typed Conduit data with implementation plugins,
+  or primarily engine-native policy documents? This boundary is distinct from backend selection.
 - How are policy sets applied and conflicts/errors handled without dropping required restrictions
   or mixing grants across paths? Which restrictions can be proven to narrow custom conditions?
 - Which management Resource capability exposes these records, and how is its first trusted

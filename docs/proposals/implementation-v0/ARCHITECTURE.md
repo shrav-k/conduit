@@ -124,9 +124,11 @@ Publishing a policy or installing a plugin cannot confer authority.
 
 Ordinary managed access now requires a recorded grant on its selected participation, including
 the root's broad management access. Policy governs issuance/current use without a grantless
-alternative; authorized connection setup can establish one grant for many requests. Next distinguish
-administrative issuance from onward delegation and decide their continuing dependencies, then
-policy composition and foundational persistence/engine selection. The trusted authority and first
+alternative; authorized connection setup can establish one grant for many requests. Grant
+administration now checks current administrator authority, while issued grants remain independent
+of issuer provenance, permissions and grant ancestry. Any authorized administrator can revoke them;
+recipient participation/Conduit end also ends access. Next settle policy contracts/composition and
+foundational persistence/engine selection. The trusted authority and first
 owner grant still need an explicit startup/repair contract; a Resource wrapper alone does not
 resolve that dependency.
 

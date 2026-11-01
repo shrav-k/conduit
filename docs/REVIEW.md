@@ -77,7 +77,10 @@ requirements/plugins; this is an explicit protocol direction, not an optional ad
 The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md) and
 [research](research/AUTHORIZATION.md) develop the structure. Recorded participation grants are now
 required for ordinary managed access, including root management; policy governs issuance/current
-use. I4 next reviews delegation dependencies, policy composition and management capability placement. Detailed
+use. Issued grants are now independent of issuer provenance/permissions: administration checks
+current authority, with explicit withdrawal or recipient participation/Conduit end governing
+access lifetime. There are no parent-grant cascades. I4 next reviews policy contracts/composition
+and management capability placement. Detailed
 schemas, expanded Interface lifecycle, foundational storage and engine remain under discussion.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

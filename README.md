@@ -37,6 +37,8 @@ steps; branching and loops stay inside plugins. Instances manage ongoing behavio
 Agents request permitted changes through Conduits. Agent templates declare starting connections;
 Pools do not supply default Agent connections in v0. Later connections are explicit.
 Type/plugin implementations supply the actual operations, while templates expose and constrain them.
+V0 uses explicit Pool entries and defined object fields; generic object labels and label-based
+selectors are excluded. Knowledge-record classification and typed Conduit filters remain separate.
 
 For example, an Euphony Pool owns a reusable authentication Resource and a Linear MCP Resource
 that accesses it through a Conduit. Several Agents attach to Linear through separately filtered

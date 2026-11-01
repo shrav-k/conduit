@@ -55,7 +55,7 @@ Documentation was accessed on the research date; versioned sources are identifie
 
 | Source | Observed mechanism | Conduit implication and limit |
 | --- | --- | --- |
-| [Kubernetes API groups](https://kubernetes.io/docs/reference/using-api/#api-groups) and [CRD categories](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#categories) | API groups participate in API identity; categories separately support grouped discovery. A CRD supplies a schema rather than just a descriptive tag. | Keep contract identity separate from changeable browsing labels. Adopt neither Kubernetes' combined string syntax nor an automatic controller loop. |
+| [Kubernetes API groups](https://kubernetes.io/docs/reference/using-api/#api-groups) and [CRD categories](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#categories) | API groups participate in API identity; categories separately support grouped discovery. A CRD supplies a schema rather than just a descriptive tag. | Keep contract identity separate from UI organization. Conduit v0 excludes generic labels/selectors and uses defined fields/relationships for discovery. Adopt neither the combined string syntax nor an automatic controller loop. |
 | [Terraform provider schemas](https://developer.hashicorp.com/terraform/plugin/framework/handling-data/schemas) and [providers](https://developer.hashicorp.com/terraform/plugin/framework/providers) | Providers register resource/data-source types with their own schemas and can configure clients used by them. | One implementation can supply several types. Shared provider clients fit Pool-managed authentication; each caller still needs its own Conduit authority. Package membership is not authority. |
 | [Terraform data sources](https://developer.hashicorp.com/terraform/language/data-sources) | Data sources fetch external data without creating or modifying the external resource. | Attachment/observation and management are different responsibilities. Conduit need not copy Terraform's separate top-level constructs to express that difference. |
 | [Pulumi package schemas](https://www.pulumi.com/docs/iac/guides/building-extending/packages/schema/) and [type identity](https://www.pulumi.com/docs/iac/concepts/resources/names/) | Schemas describe exported resources/functions; resource type tokens identify package, module and type. Schemas also drive generated documentation/SDKs. | A useful counterexample to our chosen separation: do not embed installation packaging in Conduit type identity. Borrow discoverable typed contracts and generated inspection/documentation. |
@@ -121,8 +121,8 @@ mandatory block every author must fill in or a new metadata bookkeeping system.
 | Compatibility | Runtime hooks, file formats, protocol versions, optional operations. | A skill written for an agent can include nonportable executable behavior. |
 | Current availability | Configured support, observed support, authorization, health. | A supported operation may be unavailable to this attachment. |
 
-Groups need not encode these dimensions. Labels can help discovery, but labels are not
-verified capabilities or permission grants. Contract-supplied facts should be derived once;
+Groups need not encode these dimensions. Defined contract fields and relationships support
+discovery; generic object labels/selectors are excluded from v0. Contract-supplied facts should be derived once;
 attachment-specific observations belong with the attachment and its outcome.
 
 ### When to create a new type
@@ -164,13 +164,13 @@ catalog, not all required v0 features.
 | Transport: MCP, HTTP, local process | Easy adapter dispatch. | One protocol carries many capabilities; changing transport need not change the data contract. | Typed integration contracts and protocol settings, not the only grouping system. |
 | Location: local, remote, cloud | Useful operational distinction. | Local processes can access remote services; one Resource may combine both. | Backing/preparation metadata and constraints. |
 | Lifetime: ephemeral, persistent | Helps cleanup planning. | One registration may have durable backing and ephemeral clients. | Type-specific lifecycle semantics and observed state. |
-| Very broad buckets: io, tools, memory | Few categories to learn. | IO includes almost everything, tools omits MCP data/prompts, and memory hides storage/search separation. | Search labels or user-facing views where helpful. |
+| Very broad buckets: io, tools, memory | Few categories to learn. | IO includes almost everything, tools omits MCP data/prompts, and memory hides storage/search separation. | Views over defined contract fields where helpful. |
 | Deep hierarchy: data → storage → database → vector | Detailed browsing. | Multiple plausible parents, many unstable paths, and category moves become identity migrations. | Optional catalog navigation, not mandatory type-reference nesting. |
 | Responsibility plus separate interfaces | Explains what each registration configures while supporting compatible implementations. | Requires explicit boundary examples; group names alone are intentionally insufficient for execution. | Recommended canonical grouping, tested against the scenarios below. |
 
 This comparison explains the working core names, rather than proving that four is the final number
-of groups. Keep one canonical group for a type's identity, with multiple optional discovery
-labels. If a new type does not fit, add a coherent group instead of stretching an existing
+of groups. Keep one canonical group for a type's identity; use its defined fields and relationships
+for alternate views. If a new type does not fit, add a coherent group instead of stretching an existing
 definition or adding a catch-all executable type with unvalidated configuration.
 
 ### Accepted working core groups
@@ -396,8 +396,8 @@ Resource's configuration or hard-coding every future group into Pool behavior.
 Conduits supply actual relationships and narrow access; the selected contract establishes what
 can flow and which operations make sense. The Agent's activation rules select how permitted
 capabilities are presented. Neither a matching group nor an implementation package activates a
-Resource or provides authority. A discovery label can help choose a Resource without becoming
-an executable compatibility promise. Pool mechanics should follow these tested contracts.
+Resource or provides authority. Inspection of defined fields helps choose a Resource but does not
+replace verified capability support. Pool mechanics should follow these tested contracts.
 
 ## YAML, identity and extension rules
 
@@ -513,7 +513,7 @@ protocol and common object `apiVersion` keep their separate meanings. The spelli
 is still illustrative. This change does not decide the common `apiVersion` string grammar.
 
 If group participates in contract identity, changing it is a contract-reference change, not
-merely rearranging a UI. Keep canonical groups stable; use labels/catalog views for alternate
+merely rearranging a UI. Keep canonical groups stable; use views over defined fields for alternate
 discovery categories. One type need not be duplicated to appear in several useful searches.
 Do not force every third-party type into the built-in groups.
 

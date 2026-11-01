@@ -566,8 +566,9 @@ evaluation implementation remain open. This rule does not prescribe a new policy
 The [closure agenda](../REVIEW.md#remaining-decision-bundles) is the single decision queue.
 Authentication reuse, composite participation, typed filters and access-path composition are
 accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
-now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4's label/Pool
-selection discussion and R7's communication contract remain open. Detailed
+now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4 excludes
+generic object labels/selectors; its remaining Pool provisioning/binding question and R7's
+communication contract remain open. Detailed
 syntax belongs to R6; examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:

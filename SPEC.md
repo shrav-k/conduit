@@ -254,8 +254,9 @@ Resource identity or credentials. A reusable graph step can establish a selected
 through the Resources' own setup contracts. It must not interpret every available catalog entry
 as a deployment request. Custom graphs can reference entries for extra ordering or checks.
 Here, the available-template list is a view of Pool declarations, not another object family or
-mandatory registry service. The role of labels/selectors in Pool inclusion is under review;
-no live label-driven inclusion policy has been selected. Exact fields and graph syntax remain open.
+mandatory registry service. Pool inclusion uses explicit named entries referencing Resource
+templates. Generic object labels and label-based selectors are excluded from v0; discovery uses
+defined fields and relationships. Exact entry/binding fields and graph syntax remain open.
 
 During partial Pool setup, ready Resources remain usable through authorized Conduits while other
 components wait or fail. Each Resource's prerequisites and declared gates still apply; report the
@@ -333,6 +334,10 @@ separate cleanup/retention rules; orphaned ownership is an inconsistency, not pu
 YAML is the authoring surface; typed objects and explicit semantics define the protocol.
 The common envelope is `apiVersion`, family `kind`, top-level `form`, `metadata`, `spec`, plus
 system-owned `status` for inspection. Exact API version and new control fields remain open.
+
+There is no generic object-label map or label-selector language in v0. Names, IDs, kinds/forms,
+types and ownership/connection relationships remain available for inspection and supported queries.
+Typed Conduit restrictions and knowledge-record classification retain their own contracts.
 
 Resource type references use separate `group`, `name`, `version`, with typed `config` and
 consumer `conduits`. Type-contract versions differ from common API versions and plugin releases.

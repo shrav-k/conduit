@@ -301,10 +301,10 @@ determine how to interpret `spec`. The common authoring envelope is:
 | `apiVersion` | The common object contract version. A Resource's selected type contract has its own separate schema version. |
 | `kind` | The family: `Interface`, `Agent`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
 | `form` | The template/instance distinction, at the top level alongside `kind`. |
-| `metadata` | Author-editable naming/labels and system-owned identity/version information, with ownership defined per field. |
+| `metadata` | Author-editable naming and system-owned identity/version information, with ownership defined per field. No generic object-label map in v0. |
 | `spec` | Configuration defined by the family and form's contract. |
 
-Metadata ownership is defined per field: authors control naming and labels within their
+Metadata ownership is defined per field: authors control naming within their
 permissions, while Conduit assigns and maintains identity/version information. Placing a
 field in `metadata` does not make it editable. Identity and configuration-version checks
 govern updates as described below; exact field names and operation schemas remain open.
@@ -382,7 +382,7 @@ the target makes it unavailable; a new object using its old name is not substitu
 automatically. Rebinding remains subject to current authority.
 
 This fixes object identity, not content revisions or permissions. Current access checks
-continue to apply; live selector membership remains a separate contract. The ID format,
+continue to apply; matches under supported typed access filters remain live. The ID format,
 serialized field, cross-registry identity policy, optional direct-ID forms, import/export
 handling and exact rebind operations remain open.
 
@@ -500,7 +500,7 @@ operation evidence remain kind-specific design choices.
 
 Identity, editable names, source paths, configuration change versions, retained-record
 revisions, plugin releases and provider protocol versions have different meanings. Their
-encoding is open; none may silently stand in for another. A reference, label or capability
+encoding is open; none may silently stand in for another. A reference or capability
 request is not permission. Configuring an account does not prove which identity actually ran.
 
 Schemas describe data shape. Resource and Conduit contracts also describe operations,
@@ -525,13 +525,13 @@ access paths retain their own semantics; field assignment does not redefine thos
 | Relationship | Established constraint; details still to settle |
 | --- | --- |
 | Agent template → Agent | Interpret typed establishment configuration and retain ongoing instance settings. Customize ordinary typed fields with replacement semantics. Continuing authority is explicit; detailed transition/dependency semantics remain under review. |
-| Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Template reuse across Pools creates distinct instances. Selectors cannot assign a foreign instance to another owner; target domains and live behavior remain open. |
+| Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Explicit named entries identify available templates; reuse across Pools creates distinct owned instances. Referencing a foreign instance does not transfer ownership. |
 | Agent → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
 | Agent activation | Instructions materialized in the Agent spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
 | Intent → observation | Runtime observations report whether requests are realized; they do not silently become authored defaults or fresh authority. |
 
 Permission, membership and activation semantics remain independent even when they use
-similar selector notation. A serialization library's merge behavior or filesystem order
+similar reference/filter notation. A serialization library's merge behavior or filesystem order
 must not choose these rules accidentally.
 
 ### Validation, effects and evolution
@@ -543,9 +543,9 @@ identify the relevant object and field, explain the limitation, and preserve unk
 Exact diagnostic codes, stages and partial-failure policy remain open.
 
 Typed configuration rejects unknown fields for both templates and instances, except within
-maps whose schemas explicitly allow arbitrary keys. For example, `metadata.lables` is an
-unknown field; custom keys inside the declared `metadata.labels` map are permitted. Keys and
-values still obey the map's contract; openness is limited to the declared location. Plugin
+maps whose schemas explicitly allow arbitrary keys. For example, `metadata.naem` is an unknown
+field, as is `metadata.labels` in v0. A plugin contract may explicitly declare an open options
+map; its keys and values still obey that contract. Openness is limited to the declared location. Plugin
 contracts can define their own fields and open maps under the same rule. Unknown fields are
 not silently discarded or retained outside those locations.
 
@@ -825,7 +825,7 @@ A repository, storage collection, search capability, skill, document or provider
 example, not a closed taxonomy. Related operations stay within their Resource; each operation
 or native tool does not require a separate Resource merely because it is independently callable.
 Native files, tickets and records likewise need not each become a registry object.
-Labels aid selection, never identity, authority or implicit ownership transfer.
+Discovery uses defined fields and relationships, never granting authority or transferring ownership.
 
 Resource instances record enough identity/contract information to resolve their source and
 supported operations. Provider-owned data retains native contracts; attaching it does not
@@ -1028,18 +1028,18 @@ No background reconciler is implied.
 
 Use the accepted local composition declarations, resolved instance bindings and ordinary operation
 evidence without requiring a second provisioning-plan ledger. Pools group unitary Resources and
-derive useful views from their contracts. Remaining selector and representation choices
+derive useful views from their contracts. Remaining provisioning/binding and representation choices
 are consolidated in [REVIEW.md](REVIEW.md#remaining-decision-bundles). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
-Named local Resource entries can explicitly reference reusable templates. Label-based Pool
-inclusion was considered earlier, but its purpose, target objects and behavior are reopened under
-R4; live catalog matching has not been accepted. Distinguish optional organization/search metadata
-from a selector that changes available templates. Neither is object identity, capability/type
-validation, ownership or an access grant. Template labels and labels on instances/local entries
-must not be assumed interchangeable or automatically inherited. Exact label and selector contracts
-remain open. Existing access-filter contracts are a separate concern. Reusing templates creates
-new owned instances, not overlapping ownership; Pool schemas remain open to new Resource contracts.
+**Accepted label removal (R4):** Pool inclusion uses explicit named Resource-template entries.
+V0 has no generic registry-object labels or label-based selectors, including for discovery or
+automatic Pool inclusion. Inspect/query defined fields such as kind, form, Resource type, owning
+Pool and explicit relationships. No label inheritance or selector-refresh contract is needed.
+Adding/removing an available-template entry is distinct from provisioning/retiring its deployed
+Resources; availability changes do not silently delete instances or retarget existing bindings.
+Knowledge-record classification and typed Conduit filters remain separate. Reusing templates
+creates distinct owned instances, not overlapping ownership; Pool schemas stay open to new types.
 
 Connection participants can access Resources in several Pools through authorized paths to
 the owners. Sharing backing data between separate instances does not transfer ownership or
@@ -1096,7 +1096,7 @@ connection binding and handling of non-reusable internal authentication state re
 | --- | --- |
 | Service authority | The provider identity and grant bound to the capability; reuse is intentional and must be supported. |
 | Caller authority | The Agent/Interface identity and its current permission to use that capability. Shared login does not mean identical rights. |
-| Connection restrictions | Each Conduit narrows permitted Resources, operations and parameters. Pool membership or a matching label does not grant access alone. |
+| Connection restrictions | Each Conduit narrows permitted Resources, operations and parameters. Pool membership alone does not grant access. |
 | Credential custody | Keep upstream authentication with its managed owner. Ordinary capability use does not hand the provider token to the caller. Secret retrieval/injection is a separate explicit operation where supported. |
 | Transport | Shared identity does not mandate one socket/client/process. Clients can be pooled or separate while refresh has one coordinated owner. |
 | Attribution | Record the actual caller and Conduit locally. The provider may attribute all calls to the shared service identity; do not invent per-Agent upstream attribution. |
@@ -1310,8 +1310,10 @@ Stopping the issuer is distinct from withdrawing its grant or changing an applic
 restriction. This keeps recipient work independent of the UI/process that established its access.
 Exact issuance, attribution and revocation representations remain to be drafted.
 
-Selection supports IDs, owning contexts, metadata predicates and path patterns where the
-integration supports them. Matches within established access rules are live. Authorized
+Selection supports IDs, owning contexts, defined typed fields and path patterns where the
+integration supports them. Record classification can narrow knowledge queries under its own
+contract; there is no generic registry-object label selector. Matches within established access
+rules are live. Authorized
 connection, filter and Agent-limit changes apply to subsequent managed requests and are
 shown and recorded; they do not silently change model/account defaults or inject context.
 Continuing authority dependencies are explicit on the instance. Creation-template edits do

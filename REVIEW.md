@@ -13,41 +13,33 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-Finish **R4** by defining the purpose of labels and Pool selection before selecting refresh
-behavior. The user has accepted unambiguous/explicit routing and recipient-bound delegation;
-live label-driven Pool inclusion was not accepted. The earlier reference-plus-selector direction
-is reopened because the Pool model now distinguishes available templates from owned instances.
+**Generic object labels and label-based selectors are removed from v0.** Pool inclusion uses
+explicit named entries; discovery uses defined fields and relationships. This closes the label
+inheritance/matching/refresh questions. Knowledge-record classification, provider-native schemas
+and typed Conduit filters retain their separate contracts. There is no replacement grouping family.
 
-"Catalog" has been shorthand for a Pool's available-template view, not an additional object,
-registry service or package manager. Prefer concrete terms: available Resource templates, owned
-Resource instances and named local entries. The local registry, installed type-contract registry
-and provider-native tool listings have different responsibilities; calling all of them catalogs
-does not make them one mechanism.
+One Pool ambiguity remains in **R4**: an available template entry is not the concrete Resource
+instance a dependency ultimately needs. The local-binding examples provisioned one authentication
+Resource and one Linear Resource together; they did not settle reuse of an already-running instance
+or make every Pool entry a singleton. Repeated template instantiation is already supported.
 
-| Concept | Purpose | Example |
-| --- | --- | --- |
-| Object identity/reference | Identify the definition or instance actually selected. | A named Resource template reference resolves to a stable object ID. |
-| Pool-local entry | Make a template available with configuration and dependency bindings for this Pool. | Euphony's `issues` entry references a reusable Linear template and binds Euphony authentication. |
-| Type/capability contract | Define validated behavior and compatibility. | MCP discovery/invocation support comes from the contract, not a `tool=mcp` label. |
-| Optional label | Describe an object for organization or discovery. | `team=platform` can help list relevant templates/instances; its target and meaning must be explicit. |
-| Label selector | Evaluate metadata to choose a set. Its consequences depend on where it is used. | A search filter lists matches; a Pool-inclusion selector would change what that Pool offers. |
+| Intended use | Recommended template/graph meaning |
+| --- | --- |
+| Give two independent coding tasks their own workspaces. | Explicitly provision from the Pool's worktree entry for each task; bind each consumer to its resulting Resource instance. |
+| Give another Agent access to the Pool's existing Linear capability. | Use the selected existing Resource through an authorized Conduit; do not provision another service/authentication Resource merely because the template matches. |
+| A new service needs the Pool's existing authentication Resource. | Bind that dependency to the selected instance. The entry describing how to provision authentication is a different reference. |
+| Create a Resource registration around an existing local folder. | Provision using a template's explicit attach behavior. This creates a new registered Resource around existing backing, unlike using an already-registered Resource. |
 
-One reusable Linear template can be used by Euphony and personal Pools with different settings.
-Putting `domain=euphony` on that template conflates the reusable definition with one use of it.
-Pool-local entries already express the relationship. Labels on templates, local entries and
-instances must not be silently treated as the same metadata or inherited between them.
+**Recommendation, not yet a ruling:** connection/dependency declarations distinguish using an
+existing Resource instance from provisioning through a named Pool entry. Both yield a concrete
+instance binding under the existing identity, compatibility and authority rules. The template/graph
+encodes the intent; this needs no separate operation manifest or manual question on every start.
+Do not silently switch between reuse and provisioning based only on a matching template/name.
 
-**Recommendation, not a ruling:** use explicit named Resource-template entries for Pool inclusion
-in v0. Optional labels can assist discovery without adding matching templates to a Pool. Defer
-label-driven Pool inclusion until a concrete case needs it. This would revise the earlier
-reference-plus-selector direction for Pool composition; established Conduit access-filter
-contracts and record classification remain separate and are not silently removed.
-
-The alternative is to retain label-driven Pool inclusion and define it now: which objects are
-queried, where labels live, who maintains them, matching/empty-set behavior, refresh and dependency
-binding, and effects when labels change. Labels alone still confer no identity, capability,
-ownership, permission, provisioning instruction or activation. If metadata drives a behavioral
-selector, edits can change its matches; they are more than cosmetic annotations in that use.
+This would preserve reusable entries without introducing a per-entry singleton convention or a
+second ownership model. The alternative delegates that reuse-versus-provision choice implicitly to
+the integration; a future explicit reuse-or-create policy would need its own declared semantics.
+Exact field names and result wiring belong in the schema packet after the behavior is settled.
 
 ## Settled foundation
 
@@ -57,6 +49,7 @@ selector, edits can change its matches; they are more than cosmetic annotations 
 | Administration | Unrestricted v0 Interfaces, reusable frontend attachments and shared Interface control. Delegated Agent commands coexist without taking over or gaining Interface authority. Interface scoping is deferred. |
 | Construction | R2 selects finite, acyclic typed dependency graphs with branching/loops inside plugins; authored conditions, iteration and dynamic fan-out are deferred. Waits, valid-progress recovery and supported independent parallel steps remain. Instances own ongoing behavior. Direct complete-instance creation and repeated template use are both supported. |
 | Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. R1 requires replacement for fixed-definition changes, including Interface administration. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
+| Organization | No generic registry-object labels or label-based selectors in v0. Pools use explicit named entries; discovery uses defined fields and relationships. Knowledge-record classification and typed access filters remain separate. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
 | Composition/access | Pool template availability does not provision Resources. Agent templates declare starting Conduits; no Pool-provided default Agent connections in v0. Local entries, reusable composition, capability matching and partial readiness remain. Filters preserve complete paths; routing is unambiguous or explicitly selected. Grants follow recipient participation under current restrictions. |
@@ -74,7 +67,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R1 — accepted | Can administration edit fixed definitions in place? | Replacement required for graph/control-definition changes, including Interface administration; explicit reuse of backing data is supported where applicable. | In-place definition upgrades deferred. |
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
-| R4 — partly settled | How are connections selected, delegated and routed? | Accepted: availability does not deploy; no Pool connection defaults; unambiguous/explicit routing with no silent fallback; grants follow recipient participation. Labels and Pool inclusion are reopened; recommend explicit named entries in v0. | Defining label-driven Pool inclusion and its metadata/matching/refresh semantics now. |
+| R4 — partly settled | How are connections selected, delegated and routed? | Accepted: explicit Pool entries, no generic labels/selectors, no automatic provisioning or Pool connection defaults; unambiguous/explicit routing; recipient-bound grants. Remaining: distinguish provisioning from an entry versus binding an existing Resource. | Implicit reuse/provision selection or an explicit reuse-or-create policy. |
 | R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
@@ -143,13 +136,20 @@ issuing frontend closing or coordinator execution stopping. Withdrawal and curre
 restrictions still apply; recipient detachment ends that attachment's access. Temporary socket
 loss is not detachment. Issuer shutdown is not itself grant withdrawal.
 
-**Remaining discussion:** labels, the meaning of available-template views and whether Pool inclusion
-needs selectors in v0. No live/snapshot label-selection behavior has been chosen. Existing live
-access matching and stable-ID rebinding rules remain; unsupported restrictions leave affected
-access unavailable, with native bypass limitations honestly reported.
+**Accepted organization:** generic object labels and label-based selectors are excluded from v0.
+Explicit Pool entries identify available templates; discovery uses defined fields/relationships.
+Knowledge-record classification remains; existing typed access matching and stable-ID rebinding
+rules still apply. Unsupported restrictions leave affected access unavailable, with native bypass
+limitations honestly reported.
 
-Closure example: two Pools, overlapping selectors/routes and one revoked consumer; identify the
-chosen target, identity, rights and survivors. [Conduit contracts](DESIGN.md#conduits).
+**Remaining Pool discussion:** an explicit provision-from-entry versus use-existing-instance
+distinction in connection/dependency declarations, as illustrated above. A template entry alone
+does not identify which deployed instance to use. This is not a reopening of reusable templates
+or the accepted create/attach distinction for backing data.
+
+Closure example: two Pools, shared authentication, two worktrees and one revoked consumer;
+identify the creation intent, bound instance, route, rights and survivors.
+[Conduit contracts](DESIGN.md#conduits).
 
 ### R5 — activation and changing sources
 

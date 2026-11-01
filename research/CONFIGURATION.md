@@ -294,7 +294,7 @@ and Agent-to-Agent interaction, without confusing ownership, authority and activ
 | Domain fidelity | The five families have template and instance forms. A Pool instance owns/provisions Resources; connections implement interactions; Agent-spec instructions determine activation. |
 | Predictable evaluation | Given the same declared inputs and versions, static resolution produces the same result. Live discovery and authorization observations are recorded separately. |
 | Explicit dependencies | References resolve to identifiable objects and versions. Relative paths have a known base; credentials and environment inputs are deliberate. |
-| Controlled expressiveness | Reusable objects and selectors cover common cases. Arbitrary conditionals, scripts and inheritance chains need demonstrated use cases before becoming core syntax. |
+| Controlled expressiveness | Reusable objects, explicit references and typed filters cover common cases. Arbitrary conditionals, scripts and inheritance chains need demonstrated use cases before becoming core syntax. |
 | Clear composition | Each field declares replacement, set membership or ordered behavior. Permission constraints are not merged like ordinary settings. |
 | Useful types | An account reference, byte limit, token budget, duration and operation name are distinct domains, even if some serialize as strings or integers. |
 | Inspectability | Show authored value, resolved value, source, applicable limits, unsupported capabilities and the next proposed effects. |
@@ -313,7 +313,7 @@ configuration, not just line count.
 | --- | --- | --- |
 | [Kubernetes objects](https://kubernetes.io/docs/concepts/overview/working-with-objects/) | Versioned kinds, metadata, desired `spec`, observed `status`. | One envelope across Interface, Agent, Resource, Pool and Conduit templates/instances. YAML authoring and API/CLI inspection represent the same objects. |
 | [API conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) | Stable UID, opaque concurrency version, desired-state generation and status conditions. | Separate durable identity, configuration changes and observed preparation/execution. Never treat a file path as identity. |
-| [Labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) | Optional metadata and composable set selection; empty-selector behavior is defined by its use. | Inspiration, not a requirement to use labels for Pool inclusion. R4 reopens that purpose before selecting live/snapshot semantics. Labels never replace identity, capability contracts, ownership or grants. |
+| [Labels/selectors](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) | Optional metadata and composable set selection; empty-selector behavior is defined by its use. | Not adopted in Conduit v0. Use explicit Pool entries and queries over defined fields/relationships. Knowledge classification and typed Conduit filters keep their separate contracts. |
 | [CRD versioning](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/) | API versions can differ from storage versions, with explicit conversion/migration. | Version public schemas separately from storage, plugin releases and provider protocols. Start with one supported authoring version. |
 | [CRD validation](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) | Structural schemas and extension subtrees. | Validate core fields strictly; give plugin configuration a named, versioned schema. Prefer a visible typo error to silently pruning unknown configuration. |
 | [Gateway API ReferenceGrant](https://gateway-api.sigs.k8s.io/reference/api-types/referencegrant/) | A reference alone does not establish cross-boundary authority; owner approval and runtime reevaluation are separate. | Conduit declarations request relationships; authorized establishment supplies grants. Filters never manufacture permission. No extra top-level Grant concept is necessary to learn this distinction. |
@@ -546,7 +546,7 @@ not which has the nicest syntax. None is selected as a dependency by this resear
 | [Dhall](https://docs.dhall-lang.org/discussions/Safety-guarantees.html) | Typed, total configuration functions and semantic integrity checks for imports. Imports can involve files, environment or network; termination does not guarantee cheap evaluation or successful I/O. | Useful model for reproducibility, typed composition and pinned dependencies. Could generate canonical objects; does not replace live access checks or runtime readiness. |
 | [Nickel contracts](https://nickel-lang.org/user-manual/contracts/) and [merging](https://nickel-lang.org/user-manual/merging/) | Composable configurations with runtime contracts, delayed checks and priority-aware merging. Diagnostics can identify the source of a contract violation. The merging guide itself carries a version caveat. | Good lessons for source-aware errors and defaults. Deferred validation means successful construction alone may not check every field; whole-output validation needs an explicit boundary. |
 | [Jsonnet](https://jsonnet.org/ref/language.html) | Functional generation and object composition, with lazy evaluation and explicit external inputs. Its documentation recommends top-level arguments over globally coupled external variables for libraries. | Useful optional generator for repeated objects. Functions and inheritance should not become required knowledge for understanding a resolved Conduit Agent. |
-| [CEL](https://cel.dev/overview/cel-overview) | An expression environment with declared variables/functions and separate parsing, checking and evaluation. | Candidate for bounded predicates if fixed selectors become insufficient. Define types, cost limits and permitted functions first; no expression engine is needed to ship refs and label selectors. |
+| [CEL](https://cel.dev/overview/cel-overview) | An expression environment with declared variables/functions and separate parsing, checking and evaluation. | Candidate if typed filter contracts eventually need richer predicates. Define types, cost limits and permitted functions first; explicit references and typed filters do not require a general expression engine. Generic object-label selectors are excluded from v0. |
 | [Terraform conditions](https://developer.hashicorp.com/terraform/language/validate) | Input validation, preconditions, postconditions and non-blocking checks serve different stages and consequences. Some facts depend on values only known later. | Distinguish invariants from operational checks and observations. A connection-health warning and an invalid permission request should not share one generic validation outcome. |
 
 ### JSON Schema describes data, not the entire contract
@@ -712,7 +712,7 @@ portable and does not carry system-owned identity/version values as editable con
 
 ### Version meaning, not just field names
 
-Publish examples covering family/form references, defaults, selectors, ownership, provisioning,
+Publish examples covering family/form references, defaults, typed filters, ownership, provisioning,
 transitions and failure outcomes. A change to those meanings can break compatibility while
 leaving the YAML shape unchanged. A migration must explain the old and new interpretation,
 including what happens to existing instances. Unknown contract versions remain unsupported.
@@ -724,7 +724,7 @@ Choose the actual API group and version progression separately from the illustra
 | --- | --- |
 | A template is used by two Pools | Each Pool receives distinct Resource instances; no shared ownership. |
 | Two instances attach to one directory/provider object | Shared backing identity/conflicts are visible; separate registration is not isolation. |
-| A Pool selects a foreign instance by label | It cannot adopt or own it; access must use an authorized path to the owner. |
+| A Pool references another Pool's instance | The reference cannot adopt or transfer ownership; access must use an authorized path to the owner. |
 | Opening a connection needs a store | Provision through the designated Pool; expose failures and no unowned usable instance. |
 | Pool provisioning partly succeeds | Retain known effects and operation identity; do not assume external rollback. |
 | A create response is lost | Reconcile/retry using the original operation identity, distinct from deliberate new creation. |

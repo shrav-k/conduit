@@ -569,6 +569,11 @@ from that entry when this Pool provisions the selected composition. Merely listi
 templates. Proposed `bindings` supplies the target for the service's declared `authentication`
 connection; it does not create a second connection or an independent runtime binding ledger.
 
+This example provisions one `auth` instance and one `linear` instance together. It does not make
+each entry a singleton or define how to reuse an already-registered Resource. R4 is settling the
+explicit distinction between provisioning from an entry and binding an existing instance; the
+illustrative `localResource` field is not a general identity-resolution rule.
+
 The `config` block supplies ordinary creation configuration. Assignment replaces that field rather
 than introducing an implicit deep merge; this example assumes the authentication template's
 config is entirely its account selection. Runtime/type settings remain separate. More complicated
@@ -664,7 +669,9 @@ the [v0 Interface has unrestricted administration](#v0-interface-administration)
 replacement for fixed-definition changes. R2 selects finite dependency graphs, with branching
 and loops inside plugins. R3 requires explicit Resource retirement before Pool deletion and a
 new Conduit instance after flow end. R4 now also settles explicit/unambiguous routing and
-recipient-bound delegation lifetime; the purpose of labels in Pool selection remains under review.
+recipient-bound delegation lifetime. Generic object labels/selectors are excluded from v0;
+Pool composition uses explicit entries. Resource provisioning versus existing-instance binding
+is the remaining Pool question in R4.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

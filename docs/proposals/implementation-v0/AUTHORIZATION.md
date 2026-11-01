@@ -74,23 +74,81 @@ additive RBAC, ordered-rule evaluation or an engine's error behavior merely by s
 
 ### Policy and Requirement reuse — proposed refinement
 
-The user asked whether Policy and Requirement should share or combine their evaluation machinery.
-The portable policy-contract choice remains open. Recommend reusing the existing requirement
-contracts and composition mechanism, with Policy supplying authoritative applicability and
-grant-administration rules. This does not require a second general-purpose constraint language.
+The user requested further unification and examples across the alternatives. No choice in this
+comparison is accepted yet. The separate Policy field inventory above is one possible representation;
+it is not a requirement to add a separate rule language or duplicate requirement machinery.
 
-| Layer | Example | Responsibility |
+#### Three degrees of combination
+
+| Approach | What authors provide | Distinction and tradeoff |
 | --- | --- | --- |
-| Requirement definition | A versioned operation restriction or provider-project restriction. | Defines the guarantee, typed parameters, supported contexts and enforcement duties. |
-| Reusable composition | `review-access` combines permitted read operations with an Euphony project restriction. | Reuses constituent meanings and support checks without creating authority. |
-| Activated Policy | Authorized coordinators may issue review access to this service; applicable service access must remain within its project restriction. | Determines whom/what the rules govern and what grant administration is permitted. Installation requires current administrative authority. |
-| Recorded Grant | Worker B receives review access on its selected Conduit participation. | Records actual issued authority and its extent/lifetime. A policy declaration alone cannot replace it. |
-| Conduit requirements | This connection also limits returned results to ten. | Adds relationship guarantees/restrictions without broadening the grant or governing policy. |
+| A — Separate policy language | Policy rules for actor/action/target authorization and administration, alongside relationship requirements. | Gives policy its own expressiveness and evaluator contract, but requires integration with Conduit's grants, requirement meanings and enforcement. A direct policy permit still cannot replace the accepted grant requirement. |
+| B — Policy composes requirements | An explicit Policy record applies reusable requirements and also has grant-administration rules. | Shares constraints/plugins while retaining a separate policy rule structure. This is the previous recommendation; the remaining administration language may duplicate capability permissions. |
+| C — Policy describes authoritative requirement application | Requirement definitions/compositions, their authorized application to targets or relationships, and ordinary grants for administration capabilities. | Grant administration becomes a protected operation governed by requirements, rather than a separate permission-rule language. Policy remains a useful name/view for governing requirements, without a separate executable definition category. |
 
-These are explanatory names and values, not an approved core vocabulary or YAML syntax. The
-coordinator must itself have a valid management grant permitting the administration request;
-being named by a policy or able to read the service does not independently authorize issuance.
-After authorized issuance, B's grant remains independent of the coordinator's later permissions.
+Recommend exploring C as the smaller conceptual model. It retains independent authoritative policy
+state: someone must record which requirements apply where, with current revision and checked
+changes, independently of any administering Interface. It removes neither that state nor mandatory
+authorization. Whether those bindings share a public record shape, and how they are persisted,
+remain open. If the binding format later grows separate permit/deny/exception logic, that would
+introduce a policy language again and requires an explicit decision.
+
+#### Example 1 — Shared Linear access and grant administration
+
+Euphony Pool owns an authenticated Linear Resource. Coordinator A may arrange read access for
+Worker B. These are semantic examples for managed calls; operation names and schemas are illustrative.
+
+- **A:** a policy rule states which coordinators may issue which grants. A separate relationship
+  requirement describes the workspace restriction. Both must agree with the recorded management
+  grant and recipient grant; neither rule is itself a grant.
+- **B:** a Policy applies the reusable `review-access` requirement composition and contains an
+  administration clause allowing the authorized coordinator to issue access within that boundary.
+- **C:** A receives a grant to invoke the management capability's grant-issuance operation. Its
+  permitted use is constrained by requirements over the proposed grant: the target must be the
+  selected Linear Resource, the issued operations must be within the permitted read set, the
+  workspace must be Euphony, and recipient/administration rights must satisfy the declared bounds.
+  Issuance therefore uses the same capability/grant/requirement model as other protected operations.
+
+In C, successfully checked issuance records B's own read grant on B's Conduit participation. An
+additional Resource-level workspace requirement applies to relevant calls on any authorized path
+to that Resource; the Conduit can add a smaller result bound. The same supported workspace meaning
+is reused. A subsequently losing its administration rights does not revoke B's grant. Another
+authorized administrator can revoke B through the corresponding protected operation.
+
+#### Example 2 — A managed deployment capability
+
+A deployment Resource supports a typed region argument. An administrator restricts its managed
+deployments to two named regions; one Agent's Conduit further restricts its own use to one of them.
+
+- **A:** the governing restriction lives in policy rules, while the relationship restriction lives
+  in requirement configuration; the integration must preserve both meanings.
+- **B:** Policy and Conduit each reference the same allowed-region requirement contract.
+- **C:** an authorized requirement binding on the deployment Resource supplies the governing rule;
+  the Conduit supplies another binding of that same contract. The Agent also needs its deployment
+  grant. Both restrictions apply on the chosen path, so that Agent can use only the remaining region.
+
+This also shows why composition location matters: requirements local to one Conduit do not become
+global. A target-wide rule cannot be bypassed by choosing a different Conduit. No automatic Pool
+inheritance is introduced by this example, nor does it claim interception of arbitrary native CLI
+commands. Region checks do not need a general policy engine merely because an administrator
+applied them, but the designated endpoint must enforce them before the managed provider effect.
+
+#### Example 3 — Retained Agent messages
+
+A Pool-owned exchange Resource supplies shared append-only history. Participants have recorded
+read/post grants, and their Conduit requires retained delivery and bounded catch-up.
+
+- **A:** policy handles access; separate requirement support supplies history/delivery guarantees.
+- **B:** a Policy may apply access requirements, while the same requirement machinery also supports
+  connection behavior outside the policy rules.
+- **C:** authoritative access restrictions and relationship delivery guarantees use common typed
+  requirement contracts with different duties. Grants still identify who may read/post; the
+  exchange implementation actually persists messages and fulfills catch-up behavior.
+
+The third example prevents reducing every requirement to an authorization predicate. Retention is
+behavior to provide, not merely a boolean permission decision. The common mechanism describes
+meaning, parameters, support and obligations; implementations may check facts, restrict operations
+or provide ongoing behavior as their contracts require.
 
 **One extension mechanism:** a plugin package can publish the requirement definitions, reusable
 compositions, evaluation operations and endpoint enforcement support together. The same supported
@@ -110,16 +168,16 @@ A result bound must be fulfilled before delivery, while retained-history guarant
 Resource behavior. The same plugin can do both evaluation and enforcement, but a successful
 boolean check alone cannot provide those effects. Plugins retain their declared endpoint duties.
 
-Policy and Requirement therefore need distinct semantic roles without separate implementations
-by default. A requirement may concern compatibility or durable delivery rather than permission.
-An arbitrary template cannot activate a governing policy merely by including requirements. Current
-authorization, grant checks and mandatory restrictions cannot be omitted as optional graph nodes.
-Changing authoritative policy still uses its checked administration contract; configuring a
-relationship's requirements follows its supported controls and fixed-definition rules.
+Under C, Policy describes the authoritative use of requirements rather than another kind of
+executable rule. A requirement definition/composition is reusable material; its governed application
+is checked managed state; a grant records issued permission. An arbitrary template cannot activate
+governing rules or grant itself authority merely by including them. Baseline authorization and grant
+checks cannot be omitted as optional graph nodes. Changing governing bindings remains an authorized
+checked operation; relationship configuration retains its supported-control/fixed-definition rules.
 
-The ruling to consider is a Policy as an authoritative composition of reusable requirements plus
-grant-administration rules, using common contract/plugin machinery. Exact representation, engine,
-rule-combination behavior and permission to activate a policy remain separate questions.
+The next ruling is whether to adopt C or retain B's explicit Policy structure. Exact representation,
+contract identifiers, engine, applicability/composition rules and management capability placement
+remain separate questions. No accepted policy independence or grant-lifetime rule is removed.
 
 ## 4. Proposed Grant structure
 
@@ -283,10 +341,10 @@ operation. Issued grants have no live dependency on issuer history/permissions. 
 withdrawal and recipient participation/Conduit lifetime govern their access, subject to current
 policy/requirements. No separate ancestry record is required.
 
-1. **Policy/Requirement relationship:** review the [shared-machinery example](#policy-and-requirement-reuse--proposed-refinement).
-   Recommend Policy as an authoritative composition of reusable requirements plus grant-administration
-   rules, using the existing contract/plugin mechanisms. This refines the still-open portable public
-   policy contract; it does not select YAML fields, a new expression language or an evaluator.
+1. **Policy/Requirement relationship:** review the [three approaches and examples](#policy-and-requirement-reuse--proposed-refinement).
+   Explore Policy as authoritative requirement application, with grant administration governed
+   through ordinary protected capability operations (C), versus a separate Policy rule structure
+   that reuses requirements (B). No choice is accepted; syntax and implementation remain separate.
 2. **Policy composition and failure:** define applicability, rule interaction, incomplete information
    and trustworthy decision inputs under existing whole-path restrictions. Administration boundaries
    for custom constraints need defined checks; a general solver is not assumed.

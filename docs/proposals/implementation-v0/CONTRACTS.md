@@ -340,11 +340,13 @@ plugin code when endpoints support every constituent. Preserve the original mean
 check constituent support rather than treating a bundle's name as proof or a new grant.
 
 **Policy reuse under review:** the [authorization refinement](AUTHORIZATION.md#policy-and-requirement-reuse--proposed-refinement)
-proposes using these same definitions/compositions for policy restrictions and grant boundaries.
-Policy supplies authoritative applicability and administration rules; a recorded grant still
-supplies issued authority. One plugin can implement both uses without separate deployment or
-duplicated schemas. Concrete-request enforcement and checking proposed grant bounds need their
-own declared support; shared definitions do not imply a universal subset checker.
+compares an explicit Policy structure reusing requirements with a smaller model where Policy names
+their authoritative application and grant administration is an ordinary protected capability.
+Neither is accepted yet. A recorded grant still supplies issued authority. One plugin can implement
+these uses without separate deployment or duplicated schemas. Concrete-request enforcement and
+checking proposed grant bounds need their own declared support; shared definitions do not imply
+a universal subset checker. Governed requirement bindings remain managed state even without a
+separate policy rule language.
 
 Detailed declaration syntax and matching, the core catalog, composition mechanics, evaluation
 protocol and enforcement policies below remain proposed. A Conduit template composes requirements

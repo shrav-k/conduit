@@ -450,13 +450,12 @@ chain or live access dependency. The proposed administrative/derived lifetime di
 
 **Next conceptual choices, in order:**
 
-1. Clarify [Policy/Requirement reuse](AUTHORIZATION.md#policy-and-requirement-reuse--proposed-refinement)
-   before ruling on the portable policy contract. Recommend Policy as an authoritative composition
-   of reusable requirements plus grant-administration rules, sharing contract/plugin machinery.
-   Policy applicability/administration and issued grants retain their distinct authority meanings;
-   no separate general-purpose constraint language or policy plugin process is implied. The user's
-   interest and request for clarification have not yet settled this choice. Exact syntax and
-   evaluator selection remain separate.
+1. Compare [three Policy/Requirement approaches](AUTHORIZATION.md#policy-and-requirement-reuse--proposed-refinement)
+   through shared Linear access, deployment restrictions and retained messages. The user requested
+   further combination rather than accepting the prior proposal. Consider Policy as authoritative
+   requirement application, with grant administration using ordinary protected capability operations
+   (C), versus an explicit Policy structure reusing requirements (B). Independent governed state,
+   mandatory grants and their accepted lifetime remain in both. Syntax, engine and storage stay open.
 2. How do applicable policy rules, current grants and typed restrictions combine, including errors
    and administration bounds for custom restrictions? Preserve complete-path alternatives and
    required checks without assuming a general subset solver.

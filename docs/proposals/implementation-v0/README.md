@@ -10,7 +10,9 @@ accepted protocol.
 choices must be ruled on together, not converted into implementation defaults autonomously.
 The initial authoring direction is accepted: keep Conduit support lightweight and prove the
 protocol/structure by authoring plugins; grow helpers from demonstrated needs. Plugins publish
-inspectable contracts with their implementations. Remaining conceptual choices come next;
+inspectable contracts with their implementations; MCP is the public plugin protocol base, with
+a small Conduit profile. Contract-only integrations backed by existing MCP services and
+independent component exposure are now proposals for review. Remaining conceptual choices come next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement

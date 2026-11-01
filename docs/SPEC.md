@@ -15,6 +15,8 @@ protocol and structure first. A broad SDK/helper library can grow from demonstra
 Plugins publish their inspectable contracts with their implementations, allowing template
 validation without starting plugin code. Detailed contract and template syntax follows the
 remaining conceptual rulings.
+MCP is the accepted base for public plugin invocation, with a small versioned Conduit profile
+for instance/operation context and lifecycle/recovery semantics. Exact bindings remain under review.
 
 This is a design, not an implementation claim. [DESIGN.md](DESIGN.md) holds the detailed contracts.
 The [walkthrough](../experiments/001-shared-access/README.md) proposes concrete YAML within them.

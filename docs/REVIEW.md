@@ -23,8 +23,11 @@ may support the first implementation, but the public authoring and behavioral co
 priority over its efficiency or specific runtime arrangement. The initial authoring direction
 is now accepted: lightweight Conduit support, with real plugins validating the public protocol
 and structure; a broad helper library is not a v0 prerequisite. Plugins publish inspectable
-contracts with their implementations. Runtime protocol questions remain open; detailed syntax
-across contracts and templates moves to the end of review, after conceptual rulings.
+contracts with their implementations, and MCP is accepted as the public plugin protocol base
+with a small Conduit profile. The next proposal allows published contracts to bind existing MCP
+services without new plugin-specific code, alongside authored implementations; independent MCP
+use of components is part of that discussion. Detailed syntax across contracts and templates
+moves to the end of review, after conceptual rulings.
 
 I1 is explicitly unaccepted. The user clarified independent operation,
 eventual distributed placement, Resources from one Pool on different systems and network

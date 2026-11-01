@@ -1512,6 +1512,12 @@ MCP is the preferred external capability contract. Use standard tools, resources
 and supported extensions where applicable; native adapters address concrete runtime,
 account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP servers.
 
+MCP is also the accepted base for public plugin invocation. A small versioned Conduit profile
+supplies the instance/operation context and lifecycle/recovery semantics needed by managed
+implementations. Exact bindings, transports and execution placement remain separate choices.
+Existing provider MCP servers remain usable through adapters without implementing that profile.
+This does not turn every provider tool into a setup operation or require one server per object.
+
 **Catalog boundary:** an integration capability contract can define discovery and
 invocation while concrete provider operations and their schemas are discovered dynamically.
 Conduit does not require its own contract definition for every Linear/MCP tool. The Agent sees

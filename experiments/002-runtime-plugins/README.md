@@ -88,6 +88,13 @@ Record author effort, repeated plumbing and hidden/manual
 prerequisites as evidence alongside correctness, so later helpers address demonstrated needs.
 Built-in-only demonstrations or faster execution cannot substitute for proving this extension path.
 
+MCP is now the accepted public plugin invocation base. A proposed additional authoring case is
+an integration containing only published contracts/bindings to the existing fake MCP service,
+using a common adapter without new plugin-specific code. If that boundary is approved, compare
+its validation, access and observations with an authored implementation. It supplements the
+small-code-plugin case rather than replacing it. Independent component exposure and its minimum
+runtime/authority dependencies also remain under review; no standalone-use guarantee is assumed.
+
 ### Runtime and contract acceptance
 
 | Case | Fault or action | Required observation |

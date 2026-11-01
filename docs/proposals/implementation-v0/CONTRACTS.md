@@ -247,11 +247,20 @@ requiring a tiny script plugin to implement unused lifecycle interfaces.
 
 ### Worker boundary
 
-Use `rmcp` for MCP discovery, calls, resources and supported optional exchanges. A Conduit worker
-profile describes instance-owned lifecycle and recovery that vanilla provider MCP servers do not
-promise. The profile is a versioned binding of the above ports, not another object family.
+MCP is accepted as the public plugin invocation base; `rmcp` remains the proposed Rust library
+for discovery, calls, resources and supported optional exchanges. A small Conduit profile describes
+instance/operation context and lifecycle/recovery semantics that vanilla provider MCP servers do
+not promise. Its exact binding of the above ports remains under review; it adds no object family.
 The SDK provides transport machinery; it does not supply our durable operation identity.
 [Rust MCP SDK][rmcp]
+
+**Proposal under review:** permit published plugin contracts to bind an existing MCP service
+through a standard adapter, without a new plugin-specific executable. The adapter still supplies
+Conduit's context, current access checks, observation and supported lifecycle/recovery boundary.
+Provider-native operations/schemas remain discoverable. Unsupported semantics require additional
+implementation or an explicitly narrower contract, not a declaration claiming guarantees the
+provider cannot establish. Separate contract/adapter pinning from observed hosted-service versions.
+Independent component exposure is being reviewed alongside this implementation-binding extension.
 
 Separate two surfaces: internal setup/driver exports reachable by the host, and capability/control
 exports visible to authorized consumers. An upstream MCP tool never becomes an instance setup

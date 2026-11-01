@@ -141,7 +141,7 @@ permitted controls through a Conduit; the template does not silently propagate e
 In v0, the retained setup graph and control definitions are fixed. Changing their steps, schemas,
 constraints or handler bindings requires a new instance from a revised definition. Declared
 settings, dynamic attachments, live access restrictions and provider catalogs retain their agreed
-behavior. Plugin binary-version and compatible implementation-update policies remain separate.
+behavior. R6 retains exact Conduit-selected implementations and requires replacement for their upgrades.
 This replacement rule applies to Interface administration as well as Agent requests. A replacement
 may explicitly reuse existing backing data where supported; replacing the registered instance
 does not authorize deleting that data or silently transferring its connections and permissions.
@@ -373,6 +373,14 @@ anchors/aliases, merge-key behavior and custom tags in v0. No implicit shell/env
 typed bindings and declared plugin actions supply explicit inputs/effects. JSON and equivalent YAML
 must have the same typed meaning. The profile does not select a parser or add template inheritance.
 
+R6 also fixes implementation selection: choose explicitly or through an unambiguous configured
+default, resolve the exact release/artifact before execution, and retain that binding for the instance.
+Ambiguous/unavailable code is reported without substitution. Known schemas still permit valid
+registration while an implementation is missing; affected execution remains unavailable. Conflicting
+definitions for one contract identity/version cannot silently overwrite each other. Plugin upgrades
+require replacement instances in v0, with explicit backing reuse where supported. This binds
+Conduit-selected plugin code, not remote services/tool catalogs or uncontrolled native-agent binaries.
+
 There is no generic object-label map or label-selector language in v0. Names, IDs, kinds/forms,
 types and ownership/connection relationships remain available for inspection and supported queries.
 Typed Conduit restrictions and knowledge-record classification retain their own contracts.
@@ -441,8 +449,8 @@ for fixed-definition changes, including Interface administration. R2 selects fin
 graphs with branching/loops inside plugins. R3 requires explicit Resource retirement before Pool
 deletion and new instances after Conduit flow end. R4 settles explicit Pool composition intent,
 connection selection/delegation/routing and removal of generic labels/selectors. R5 settles declared
-activation and explicit refresh, with automatic refresh policies deferred. The [two remaining review
-bundles](REVIEW.md#remaining-decision-bundles) cover configuration/extension resolution and
-communication scope.
+activation and explicit refresh, with automatic refresh policies deferred. R6 settles stored
+configuration/export, strict YAML interpretation and retained implementation selection with replacement
+for upgrades. [Communication is the remaining review bundle](REVIEW.md#next-discussion).
 Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

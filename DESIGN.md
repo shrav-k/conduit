@@ -216,8 +216,8 @@ control schemas/constraints or handler bindings requires a new instance from a r
 Existing controls still change their permitted settings; dynamic attachments and current access
 rules remain live. Provider catalogs retain dynamic discovery, with explicit exposure refresh under
 R5. In-place definition upgrades are deferred.
-This does not select plugin binary pinning or compatible implementation-update policy. A new
-instance does not automatically acquire the old one's bindings, private context or permissions.
+R6 also retains exact Conduit-selected implementations and requires replacement instances for their
+upgrades. A new instance does not automatically acquire the old one's bindings, private context or permissions.
 R1 confirms that this applies to Interface administration as well as Agent requests. Broad
 administrative authority does not introduce an in-place definition-upgrade mechanism. The
 Interface can revise templates, create replacement instances and explicitly reconnect consumers.
@@ -376,6 +376,34 @@ not the contents/formats of opaque native files supplied through Resources.
 Parser choice, diagnostics and schema-specific numeric/unit limits remain implementation work.
 Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
 not imply atomic deployment, authority or successful setup.
+
+### Implementation selection
+
+**Accepted v0 rule (R6):** select Conduit plugin implementations explicitly or through an
+unambiguous configured default. Resolve the exact release/artifact identity before execution and
+retain it for the instance's subsequent starts, operations and recovery. Installing a newer package,
+changing a default or package discovery order must not silently change that binding. Record an
+unresolved requested dependency as unresolved, not as located or verified code.
+
+Contract identity/version defines promised configuration and behavior; implementation package/release
+identifies code supplying it. Multiple implementations can deliberately support the same contract.
+Conflicting definitions of one contract identity/version cannot silently overwrite each other;
+unresolved selection ambiguity blocks affected execution rather than choosing the newest package.
+Required schemas must be available for registry writes. With known schemas, otherwise valid
+configuration can still register while code is missing; report its readiness gap without substitution.
+
+Adopting another implementation release/artifact requires a replacement instance in v0, even where
+the new release claims the same contract. Explicit backing-data reuse remains possible under the
+type's create/attach rules; it does not transfer runtime progress, connections or grants implicitly.
+This avoids in-place code migration rules for active work and retained setup progress. It means
+keeping an older implementation available or replacing dependent instances when adopting fixes.
+The retained binding is current executable configuration, not mandatory template-history storage.
+
+This rule applies to Conduit-selected plugin code. It does not freeze remote providers/native tool
+catalogs or promise control of external native-agent binaries. Adapters declare and report those
+separate compatibility/version boundaries. Dynamic Conduit attachments and supported catalog refresh
+retain their accepted behavior. Artifact verification, package storage/delivery, plugin ABI and exact
+binding fields remain engineering design within this contract; public naming governance is deferred.
 
 ### Object identity
 
@@ -850,16 +878,17 @@ distinct group even when they use familiar storage/integration mechanisms. Its n
 Resource-versus-Conduit responsibilities and shared-context semantics remain open. This does
 not select a room topology or a jointly editable memory model.
 
-Contract ownership/third-party collision rules, allowed identifiers and version labels remain
-open. Groups and type contracts add no registered object family, assign no Pool ownership and
+R6 requires conflicting definitions for a contract identity/version to be reported rather than
+silently overwritten. Public contract ownership/governance, allowed identifiers and version labels
+remain drafting/future work. Groups and type contracts add no registered object family, assign no Pool ownership and
 grant no access. [Resource typing](research/RESOURCES.md) retains the supporting investigation,
 candidate types and proposed interface boundaries; those proposals are not built-in requirements.
 
 Resource type contracts are versioned independently of the common object `apiVersion`.
 The common format can remain unchanged while a type's configuration/behavior contract evolves.
 Plugin implementation releases are separate from both versions; a plugin release number does
-not substitute for either contract version. Version identifiers and compatibility/migration
-details remain open.
+not substitute for either contract version. R6's retained implementation binding and replacement
+rule apply; identifier spelling and concrete compatibility checks remain to be drafted.
 
 **Accepted compatibility boundary:** required connections name a versioned capability contract,
 describing the operations and behavioral guarantees a consumer needs. Different Resource types

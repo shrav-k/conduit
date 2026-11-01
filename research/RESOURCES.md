@@ -566,8 +566,8 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-Use the [single closure agenda](../REVIEW.md#remaining-decision-bundles), especially R6, within
-R2's accepted finite-graph execution and R3's ownership/retirement boundaries.
+Use the [single closure agenda](../REVIEW.md#remaining-decision-bundles) within R2's accepted
+finite-graph execution, R3's ownership/retirement and R6's configuration/implementation boundaries.
 The following are schema/example drafting tasks, not another sequence of product rulings:
 
 1. Use the accepted four groups and directory/worktree split for concrete type review; do not
@@ -578,7 +578,7 @@ The following are schema/example drafting tasks, not another sequence of product
 2. Walk through directory, records, search and MCP contracts: configuration, operations,
    dependencies, preparation and one failure each. Evaluate content and identity, retaining
    the agent-communication candidate for the detailed communication review.
-3. Decide the minimum shared consumer interfaces and type-collision/implementation selection rules.
+3. Draft the minimum shared consumer interfaces and exact bindings under R6's collision/implementation rules.
 4. Define remaining version/name grammar and connection declaration fields from those examples.
 5. Return to Pool grouping with enough information to derive useful behavior and minimize state.
 

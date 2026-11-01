@@ -546,13 +546,13 @@ The next experiment should be specified in this order:
    authorized live providers. Include partial streams, unknown writes and context conversion.
 4. Provision one memory Resource and one MCP service Resource through a Pool, preserving native
    schemas, Resource revisions and current-access checks. Validate selected MCP version/feature coverage explicitly.
-5. Add the agreed communication family: review/result, retained finding and slow observer
+5. After R7's ruling, add the selected communication capabilities: review/result, retained finding and slow observer
    are the smallest useful comparison. Do not make a broker or tracker mandatory to prove it.
 
 For discussion, resolve the grouped choices in [REVIEW.md](../REVIEW.md#next-discussion)
 before converting remaining proposals into requirements or starting implementation. R5 settles
-activation and explicit refresh; R6 covers configuration/extension resolution and R7 communication.
-Those closure bundles replace a separate Pi review queue.
+activation and explicit refresh; R6 settles configuration/extension resolution. R7 communication
+remains open. That closure agenda replaces a separate Pi review queue.
 
 [factories]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/all.ts
 [provider-interface]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/models.ts

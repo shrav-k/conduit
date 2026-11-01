@@ -26,8 +26,8 @@ developed. Normal interaction uses Conduits and runtime-supported operations; Re
 still goes through an owning Pool. CLI, terminal UI and test clients use the same contracts.
 Changing an instance's fixed setup graph or control definitions requires a replacement in v0,
 including through the Interface. Supported settings, connections and lifecycle remain manageable.
-R1–R5 are settled; [two review bundles remain](REVIEW.md#remaining-decision-bundles), beginning
-with [the configuration and extension profile](REVIEW.md#next-discussion). Implementation details and future
+R1–R6 are settled; [communication is the remaining review bundle](REVIEW.md#next-discussion).
+Implementation details and future
 extensions are tracked separately.
 
 Templates contain complete establishment instructions and declare what instance configuration
@@ -39,6 +39,8 @@ Pools do not supply default Agent connections in v0. Later connections are expli
 Pool composition explicitly chooses provisioning from an entry or using an existing Resource;
 both resolve to a concrete instance for the connection.
 Type/plugin implementations supply the actual operations, while templates expose and constrain them.
+Instances retain exact Conduit-selected plugin implementations; implementation upgrades require
+replacement instances in v0. External providers/native binaries retain their own integration boundaries.
 V0 YAML uses strict typed values without anchors/aliases, merge keys, custom tags or implicit
 environment/shell expansion. Reuse comes from templates, references and declared graphs.
 V0 uses explicit Pool entries and defined object fields; generic object labels and label-based

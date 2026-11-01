@@ -290,8 +290,9 @@ implicitly editable. A declared setting change does not silently widen its gover
 Kubernetes transitions, Docker runtime updates, schema constraints and Pi commands. Its bounded
 search-control example shows how a template limit and narrower Conduit restriction compose.
 Templates reuse declared type-control defaults and may customize the exposed surface. Exact
-selection notation, change-handler representation, transition rules, storage fields, revision
-mechanics and implementation-version compatibility remain for grouped review. The retained setup
+selection notation, change-handler representation, transition rules, storage fields and revision
+mechanics need concrete schemas. R6 retains exact selected implementations and requires replacement
+for upgrades. The retained setup
 graph and control definitions remain fixed for both Agent requests and Interface administration.
 R1 confirms replacement instances for definition changes; in-place upgrades remain deferred.
 Configuration changes apply one at a time per target by default, with declared safe parallelism.
@@ -678,8 +679,8 @@ and loops inside plugins. R3 requires explicit Resource retirement before Pool d
 new Conduit instance after flow end. R4 settles explicit/unambiguous routing, recipient-bound
 delegation lifetime and explicit provision-from-entry versus use-existing-instance intent.
 Generic object labels/selectors are excluded from v0; Pool composition uses explicit entries.
-R5 accepts declared activation and explicit refresh, deferring automatic reload. R6–R7 cover the
-configuration/extension profile and communication.
+R5 accepts declared activation and explicit refresh, deferring automatic reload. R6 settles
+configuration/export, strict YAML and implementation retention/replacement. R7 communication remains open.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax
@@ -717,5 +718,5 @@ The same template mechanism must express an Agent, a search Resource, a filesyst
 a Conduit's own supported settings without turning every control into an object or imposing one
 provider's queueing behavior. Keep setup graphs, runtime handlers and persistent observations
 separate. Change handlers may use a typed plugin operation or graph; R2 fixes the v0 language
-boundary. Exact fields and extension/implementation resolution belong to R6. Draft recovery
+boundary. R6 settles extension/implementation selection semantics; exact fields remain drafting work. Draft recovery
 examples within the accepted contracts rather than reopening graph composition or its breadth.

@@ -71,8 +71,8 @@ but different handlers.
 
 The named-control boundary, confirmed settings versus outstanding requests, target coordination
 and revision checks are accepted. Exact field bindings, control/handler notation and compatible
-implementation selection remain drafting/review work. R6 now accepts the single configuration map
-and export semantics illustrated below; the remaining field spellings are not selected by this fragment.
+implementation binding fields remain drafting work. R6 accepts the single configuration map/export,
+strict YAML and retained implementation behavior below; field spellings are not selected by this fragment.
 
 **Accepted:** use named typed controls as the normal interaction contract for
 configuration changes. In the sketch, a caller invokes `set-query-limit` with `limit: 15` through
@@ -174,10 +174,10 @@ Keep one stored configuration and separate observation/effect evidence rather th
 and applied maps. Fixed graph/control definitions and named operations remain the boundary for
 changing running settings; this ruling does not select every illustrative field in the example.
 
-### R6 companion proposals: YAML values and implementation selection
+### R6 accepted profile: YAML values and implementation selection
 
 R6 now accepts the YAML data/validation/omission/reuse rules below, alongside the representation/export
-behavior. Implementation resolution remains a proposal. Illustrative field names are not accepted
+behavior, and exact implementation retention/replacement rules. Illustrative field names are not accepted
 merely by appearing in YAML.
 
 | Concern | Status and v0 rule | Concrete consequence |
@@ -187,7 +187,7 @@ merely by appearing in YAML.
 | Omitted, null, empty | Accepted: omission follows the declared default/optional rule; null is a value only where allowed; empty collections are explicit emptiness. | Null does not universally mean reset, and an empty connection list does not inherit another list. |
 | Reuse/evaluation | Accepted: use typed references, templates and graphs; reject YAML merge-key behavior, anchors/aliases and custom tags in v0. No implicit shell or environment interpolation. | `${ACCOUNT}` in a string is literal unless a declared contract explicitly interprets it; credential access uses the appropriate capability. |
 | Contract versus implementation | Keep type/plugin contract identity/version distinct from the installed implementation package/release. | The contract with group `search` and name `prepare` can have more than one implementation. |
-| Implementation resolution | Proposed: select an implementation explicitly or through an unambiguous configured default; resolve exact release/artifact identity before execution and retain it for compatible recovery. Do not silently upgrade or substitute. | Installing another implementation cannot redirect an existing instance; missing code is a readiness gap, not a reason to use another provider. |
+| Implementation resolution | Accepted: select explicitly or through an unambiguous configured default; resolve exact release/artifact identity before execution and retain it. Upgrades require replacement instances in v0; no silent substitution. | Installing another implementation cannot redirect an existing instance; missing code is a readiness gap, not a reason to use another provider. |
 
 Scalar interpretation was checked against the [YAML 1.2.2 Core schema](https://yaml.org/spec/1.2.2/#103-core-schema)
 on 2026-10-31. Core resolves unmatched plain scalars to strings and blank scalar values to null.
@@ -213,24 +213,23 @@ the requested implementation from one actually located/verified; an unresolved a
 invented. Implementation pinning is current executable configuration, not a provenance archive.
 Plugin ABI, registry storage and package delivery mechanics remain engineering choices.
 
-The remaining R6 implementation ruling needs to distinguish code selected by Conduit from external
-provider behavior. Proposed example: an MCP capability contract remains at `v1alpha1`, while its
+The accepted R6 implementation rule distinguishes code selected by Conduit from external
+provider behavior. Illustrative example: an MCP capability contract remains at `v1alpha1`, while its
 selected Conduit adapter is package `example-mcp-adapter`, release `0.3.0`. A later `0.4.0` package
 may implement the same contract without automatically replacing code used by established instances.
 Names/releases here are fictional. Group/name/version identifies a contract, not its installation.
 
-Recommend resolving the selected implementation to an exact release/artifact identity before
-execution and retaining it for that instance. Selection can be explicit or come from a configured
+Resolve the selected implementation to an exact release/artifact identity before
+execution and retain it for that instance. Selection can be explicit or come from a configured
 default; unresolved ambiguity is reported rather than resolved by installation order. Conflicting
 definitions for one contract identity/version must not silently overwrite each other. Known schemas
 still allow valid configuration to register while implementation code is unavailable, with affected
 execution blocked and the unresolved dependency visible.
 
-For v0, recommend replacement instances for implementation upgrades, explicitly reusing backing
-where supported. This extends the fixed-definition rule to implementation selection; it is not yet
-accepted. The alternative supports explicit compatible in-place upgrades and needs compatibility,
-active-work and retained-progress migration rules. Neither choice silently updates an existing
-instance because an installed package/default changed. Pinning covers Conduit-selected plugin code;
+For v0, implementation upgrades require replacement instances, explicitly reusing backing
+where supported. This extends the fixed-definition rule to implementation selection. Compatible
+in-place upgrades and their active-work/retained-progress migration rules are deferred. Installing
+a package or changing a default does not update an existing instance. Pinning covers Conduit-selected plugin code;
 it does not freeze remote provider services/catalogs or assert control over external native binaries.
 Adapters must report those external versions/limitations according to their own contracts.
 
@@ -398,10 +397,10 @@ configuration change. Replacing the handler or expanding its declared range to 2
 control definition and would require a new instance. A Conduit can still narrow the permitted
 range for a caller; current authority and attachments remain live under their own contracts.
 
-In-place upgrades of retained definitions are deferred in v0. They would require migration,
-in-flight-work and recovery rules. This does not choose plugin binary pinning or compatible
-implementation-update policy, or authorize automatic data/permission migration and connection
-rebinding when an instance is replaced.
+In-place upgrades of retained definitions are deferred in v0. R6 also retains exact selected
+implementations and requires replacement for their upgrades, avoiding in-flight-work and recovery
+migration rules. Neither rule authorizes automatic data/permission migration or connection rebinding
+when an instance is replaced.
 
 **Accepted administrative boundary (R1):** the unrestricted v0 Interface also uses replacement
 instances for fixed-definition changes. It can revise templates, create replacements and
@@ -858,7 +857,8 @@ them here. R6 accepts exporting the instance's current stored configuration
 for fresh creation, separately from template export, inspection and recovery state. Applying an
 inspection dump cannot assert runtime status, clone credentials or launch duplicate work.
 Configuration-only export remains portable and does not carry system-owned identity/version
-values as editable configuration. The YAML profile is accepted; implementation-resolution choices remain open.
+values as editable configuration. YAML interpretation and implementation retention/replacement are
+accepted; concrete fields and implementation tooling remain drafting work.
 
 ### Version meaning, not just field names
 

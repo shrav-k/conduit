@@ -63,7 +63,7 @@ remain open. Room-based behavior is one candidate, not the universal Conduit pri
 
 The Pool creates or attaches repository/workspace Resource instances according to their template
 establishment configuration. Direct creation from complete instance configuration is accepted;
-the R6 profile must make establishment inputs/export semantics explicit. No separate authored
+R6 settles stored establishment inputs/configuration export separately from observed state. No separate authored
 operation recipe is required.
 An access connection selects permitted Resources and operations. Agent activation
 can prepare a participant's local path projection, subject to adapter and execution-mode
@@ -572,8 +572,8 @@ Authentication reuse, composite participation, typed filters and access-path com
 accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
 now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4 excludes
 generic object labels/selectors and requires explicit provisioning versus existing-Resource binding.
-R7's communication contract remains open. Detailed
-syntax belongs to R6; examples are not executable schemas.
+R7's communication contract remains open. R6 settles the configuration/implementation profile;
+detailed syntax is drafting work, and these examples are not executable schemas.
 
 Use these change cases alongside the five happy paths:
 

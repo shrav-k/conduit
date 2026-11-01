@@ -4,8 +4,8 @@ Updated: 2026-10-31. Audited all 11 repository Markdown documents for current co
 unresolved decisions, conflicting recommendations and obsolete questions. Source research remains
 dated evidence; this audit did not rerun provider investigations or validate a runtime.
 
-**The review is not complete yet.** R1–R5 are accepted; two connected decision bundles remain below.
-Their recommendations are not newly accepted requirements. Field names, implementation choices
+**The review is not complete yet.** R1–R6 are accepted; R7 communication remains below.
+Its recommendations are not newly accepted requirements. Field names, implementation choices
 and future catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
 remain the accepted design; research supplies evidence rather than a second decision queue.
 Implementation has not started. Work remains on research/conduits-as-graphs; the earlier baseline
@@ -13,42 +13,42 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-**R6 representation/export and YAML interpretation are settled.** Instances use one `spec.config`
-map, exporting stored settings for fresh creation with observations/effects separate. V0 rejects
-anchors/aliases, merge-key behavior, custom tags and implicit shell/environment expansion. Typed
-validation, explicit omission/null/empty behavior and ordinary YAML readability are retained.
+**R6 is settled:** one stored configuration map/export, strict YAML and exact retained
+Conduit-selected implementations, with replacement instances for implementation upgrades in v0.
+Concrete schema fields and tooling remain drafting work within those accepted rules.
 
-Next is **R6's implementation selection and upgrade boundary**. Contract identity/version and
-implementation releases are already separate; the remaining choice is what a particular instance
-binds to and how it can adopt newer code.
+Next is **R7: communication behavior and the first usable scenario**. Start with the meaning of
+interactions, before selecting a topology, broker, room abstraction or wire format. The existing
+five families, Pool ownership, delegated access and Conduit lifecycle continue to apply.
 
-Suppose a capability uses a contract at `v1alpha1` and a fictional implementation package
-`example-mcp-adapter` at release `0.3.0`. A later `0.4.0` package can claim support for the same
-contract without becoming the same executable implementation.
+| Proposed initial capability behavior | Example | What success would mean |
+| --- | --- | --- |
+| Invocation | Interface pauses B through a supported control; A invokes a review capability B deliberately exposes. | The operation's declared response: result, pending work or another supported outcome. Request acceptance alone is not completion. |
+| Retained exchange | A posts a finding or review request that B can read later. | The content is retained according to its contract. Storage does not prove B received it, read it or performed the requested work. |
+| Observation | Interface watches B's current execution state. | A view of state with coverage/freshness evidence. A current snapshot need not represent every intermediate transition. |
 
-| Situation | Proposed v0 behavior |
-| --- | --- |
-| Establish an instance | Select an implementation explicitly or through a configured default; resolve and retain its exact release/artifact identity before execution. |
-| Several implementations exist without a selection/default | Report ambiguity; installation order or newest version does not decide. |
-| Install `0.4.0` or change the default | Existing instances keep their selected implementation; a new instance can deliberately select the new one. |
-| The retained `0.3.0` implementation is unavailable | Report the readiness gap and block affected execution; do not silently substitute `0.4.0`. Valid configuration can still be registered with known schemas. |
-| Upgrade an existing instance's implementation | Create a replacement instance in v0; reuse backing data explicitly where its contract supports that. |
+**First R7 recommendation, not yet a ruling:** distinguish these behaviors through extensible
+capability contracts carried by Conduits. They are not new object families, a closed enum or a
+requirement for separate transports, processes or Resource instances. One Resource can expose
+several compatible capabilities; a composite Conduit can present them together. MCP can express
+the operations without making all three behaviors identical.
 
-**Recommendation, not yet a ruling:** retain exact Conduit-selected plugin implementations per
-instance and use replacement for upgrades. Conflicting definitions for a contract identity/version
-cannot silently overwrite each other. The resolved implementation is current execution configuration,
-not a required template-history archive. A configured default can avoid repetition in every template;
-it is resolved deliberately rather than followed live by existing instances.
+Durable content remains in Pool-owned Resources. An Agent/Interface is the actor; the Conduit is
+its authorized connection; the capability defines the interaction's guarantees. A direct exchange
+or group conversation can be assembled from these parts without requiring every operation to occur
+inside a room. Shared context remains explicit Resource access, not automatic merging of histories.
 
-The tradeoff is replacing instances to adopt fixes, even where a release might be compatible.
-An alternative supports explicit in-place compatible upgrades and needs rules for active work,
-contract verification and retained setup progress. Neither option silently upgrades on installation.
-This does not freeze remote providers/native tool catalogs or promise to pin external native-agent
-binaries; adapters must declare those separate boundaries and coverage.
+The alternative starts with a generic message protocol and defines calls/state observation as
+conventions over it. That can share transport, but its conventions would still need to distinguish
+storage, delivery, reading, execution and results. Recommend making those guarantees inspectable
+in capability contracts from the beginning.
 
-Exact package/artifact fields, parser tooling, plugin ABI and storage can be drafted within the
-selected behavior. The [configuration research](research/CONFIGURATION.md#r6-companion-proposals-yaml-values-and-implementation-selection)
-contains the worked example. Communication remains R7 after this ruling.
+After this boundary, work through A asking B to review a pinned artifact: B is unavailable, access
+changes, B returns, and an observer reconnects. Settle addressing/retention, delivery/progress,
+attention/wake behavior and the local v0 slice together. No former room policy is silently reinstated;
+tracker coupling, automatic wake and exact exchange shape remain open. The
+[Pi/Chord/agentwatch synthesis](research/PI_CONNECTORS.md#three-proposed-interaction-families)
+supplies cases, not mandatory implementations.
 
 ## Settled foundation
 
@@ -59,6 +59,7 @@ contains the worked example. Communication remains R7 after this ruling.
 | Construction | R2 selects finite, acyclic typed dependency graphs with branching/loops inside plugins; authored conditions, iteration and dynamic fan-out are deferred. Waits, valid-progress recovery and supported independent parallel steps remain. Instances own ongoing behavior. Direct complete-instance creation and repeated template use are both supported. |
 | Configuration | One `spec.config` map: initial values then confirmed settings; export stored values for fresh creation. Pending/uncertain state stays separate. Resolved graph/materialized defaults, no required template history. Fixed-definition changes require replacement; named controls, target coordination and revision checks govern supported changes. |
 | YAML interpretation | YAML 1.2 Core scalar resolution, string keys, finite supported numbers and strict typed validation. Explicit omission/null/empty semantics. No anchors/aliases, merge keys, custom tags or implicit shell/environment expansion in v0. |
+| Implementation selection | Explicit selection or configured default, resolved to exact release/artifact before execution and retained per instance. No silent substitution; upgrades require replacement instances in v0. External providers/native binaries retain separate boundaries. |
 | Organization | No generic registry-object labels or label-based selectors in v0. Pools use explicit named entries; discovery uses defined fields and relationships. Knowledge-record classification and typed access filters remain separate. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
@@ -70,7 +71,7 @@ contains the worked example. Communication remains R7 after this ruling.
 
 ## Remaining decision bundles
 
-R1–R5 are settled; agree or explicitly defer R6–R7. Recommendations become normative only after a
+R1–R6 are settled; agree or explicitly defer R7. Recommendations become normative only after a
 ruling. Draft related schemas/examples together instead of voting on every field separately.
 
 | ID | Contract needing a ruling | Recommended v0 direction | Alternative adds |
@@ -80,7 +81,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
 | R4 — accepted | How are connections selected, delegated and routed? | Explicit Pool entries and provision-or-use-existing intent; no generic labels/selectors, automatic deployment or Pool connection defaults. Unambiguous/explicit routing and recipient-bound grants. | No implicit reuse/provision selection; richer reuse policies deferred. |
 | R5 — accepted | When do accessible skills, content and catalogs become active? | Declared compatible preparation, deliberate collision resolution and explicit refresh. Withhold affected known stale/incompatible calls; report detection limits. | Automatic reload/first-use refresh deferred; no implicit precedence or context replacement. |
-| R6 — partly settled | What portable configuration/extension profile is shared? | Accepted: one `spec.config` map/export and strict YAML interpretation. Remaining: exact implementation selection/retention and replacement-versus-in-place upgrades. | Explicit in-place compatible upgrades require active-work and retained-progress rules. |
+| R6 — accepted | What portable configuration/extension profile is shared? | One `spec.config` map/export, strict YAML, exact retained implementation selection and replacement for upgrades. | In-place code upgrades, implicit substitution and YAML convenience features deferred. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
 
 ### R2 — graph execution and recovery
@@ -213,14 +214,13 @@ empty collections stay explicit. Comments and multiline strings remain. Anchors/
 behavior, custom tags and implicit shell/environment expansion are excluded from v0. Use typed
 templates/references/graphs and explicit inputs. Native Resource contents keep their own formats.
 
-Remaining companion proposals:
-
-- Contract identity/version versus implementation package/release. Resolve collisions explicitly;
-  groups are not publisher identities. Recommend a curated local catalog and explicit implementation
-  selection with retained versions in v0; public naming governance can wait.
-- Unknown versions, unavailable implementations and compatible recovery. An installed-package update
-  must not silently reinterpret retained work. Recommend replacement instances for implementation
-  upgrades in v0; dynamic provider catalogs/external runtimes remain separate contracts.
+**Accepted implementation rule:** select explicitly or through a configured default, resolve the
+exact implementation release/artifact before execution and retain it for the instance. Report
+ambiguity or unavailable code without substitution; known schemas still permit valid registration
+with a readiness gap. Conflicting contract definitions cannot silently overwrite each other.
+Implementation upgrades require replacement instances in v0, with explicit backing reuse where
+supported. This covers Conduit-selected code, not remote providers/catalogs or external native-agent
+binaries. Public naming governance and package/ABI mechanics remain future/engineering work.
 
 Field spelling, ID encoding and version labels can be drafted autonomously in that profile;
 new behavior exposed by examples returns for review. This audit does not select a plugin ABI,
@@ -228,9 +228,11 @@ database or schema library. [Configuration evidence](research/CONFIGURATION.md).
 
 ### R7 — communication and the usable slice
 
-Communication is central and still needs a selected contract. Research separates invocation/results,
-retained exchange and observation; these are behavior classes, not additional object families or
-a requirement for separate transports.
+Communication is central and still needs a selected contract. The first proposed ruling distinguishes
+invocation, retained exchange and observation as extensible capability contracts, illustrated above.
+These are behavior classes, not additional object families or a requirement for separate transports,
+processes or Resources. The five-family model carries the relationships; capability contracts state
+the guarantees rather than making room membership universal.
 
 Recommend Pool-owned retained content, Conduit-mediated exchange, independent participant progress,
 acceptance distinct from processing/completion, bounded catch-up and current-access delivery.
@@ -261,11 +263,11 @@ These do not need individual product rulings unless they change an approved cont
 
 | Documents | Outcome |
 | --- | --- |
-| README, SPEC, DESIGN | Current model retained. Direct complete-instance creation was already accepted; removed wording that still questioned it. Remaining semantics map to R1–R7. |
+| README, SPEC, DESIGN | Current model retained. R1–R6 are settled; remaining product choices are under R7. Concrete schemas and implementation details remain drafting work. |
 | REVIEW | Replaced the sprawling agenda with this closure list, recommendations and implementation backlog. |
-| CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary and R6's configuration/export and strict YAML behavior are accepted; implementation/version resolution remains under R6. |
-| ESTABLISHMENT, RESOURCES | R2/R3 execution and ownership boundaries are accepted. Kept lifecycle/type cases; remaining extension choices map to R6, with recovery examples drafted within settled contracts. |
-| CONDUITS | Corrected stale claims that control outcome/concurrency policy was unchosen. R3 settles retirement/ended-flow identity; routing/communication map to R4/R7. |
+| CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2 graph execution and R6 configuration/YAML/implementation rules are accepted; draft concrete schemas within them. |
+| ESTABLISHMENT, RESOURCES | R2/R3 execution/ownership and R6 implementation boundaries are accepted. Kept lifecycle/type cases for schema drafting and recovery verification. |
+| CONDUITS | R3 settles retirement/ended-flow identity and R4 routing. Communication remains R7; detailed fields are drafting work, not another decision queue. |
 | PI_CONNECTORS, PI_RUNTIME | Retained pinned evidence; removed the obsolete single-controller recommendation. Conduit-facing examples use Agent/Interface terminology. R5 settles explicit activation/refresh; communication remains R7. |
 
 No research result proves a Conduit implementation. Source-system terms remain where they describe

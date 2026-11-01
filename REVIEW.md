@@ -21,7 +21,8 @@ The detailed accepted boundary and provider-detection limits appear below.
 
 Next is **R6: the concrete configuration and extension profile**. Work through a coherent
 template → instance → supported change → export example, keeping previously accepted semantics.
-Use it to settle three linked questions:
+The [worked search example](research/CONFIGURATION.md#r6-worked-example-configuration-through-creation-change-and-export)
+is drafted for discussion, not an accepted schema. Use it to settle three linked questions:
 
 | Area | Proposal to make concrete; not yet accepted |
 | --- | --- |
@@ -32,6 +33,20 @@ Use it to settle three linked questions:
 Draft related fields/examples together. Exact spelling, parser library, plugin ABI and storage are
 engineering choices unless they expose a new protocol behavior; they do not need individual votes.
 Communication remains R7 after this profile.
+
+**First R6 ruling proposed:** keep one instance configuration map. Before setup its values are
+initial inputs; after a named control confirms a change, they are the last confirmed settings.
+Pending requests and observed uncertainty remain separate. A fixed graph can read those settings
+on later starts without its definition changing. The template remains unchanged.
+
+For example, a template starts `queryLimit` at 10; an instance control confirms 15. The instance
+stores 15 and its configuration export carries 15 for fresh creation. The unchanged template still
+creates instances starting at 10. Export carries definitions/dependencies, not credentials, grants,
+readiness or execution history, and reports pending/uncertain observations separately. New Resource
+creation still selects an owner and explicit backing create/attach intent through a Pool.
+
+The alternative keeps creation values and applied values in two maps, adding precedence/export
+rules. The companion YAML/implementation proposals remain open whichever representation is chosen.
 
 ## Settled foundation
 
@@ -181,7 +196,8 @@ advance notice. Use the current grants throughout.
 ### R6 — configuration and extension profile
 
 The envelope, forms, IDs, Resource fields, strict schemas and checked authoring writes are settled.
-Prepare one coherent proposal covering the remaining semantics:
+The [worked R6 configuration example](research/CONFIGURATION.md#r6-worked-example-configuration-through-creation-change-and-export)
+and its companion proposals cover the remaining semantics:
 
 - Fixed setup/control definitions, establishment inputs, applied settings and status. Define fresh
   creation/export after settings change without exporting credentials or importing observed success.

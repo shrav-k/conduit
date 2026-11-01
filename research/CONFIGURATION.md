@@ -69,11 +69,10 @@ interactions still need a supported implementation and evidence of application. 
 dynamic choices, filesystem rebinding and filtering changes need the same semantic distinctions
 but different handlers.
 
-**Questions this example leaves open:** exact control-selection notation;
-field bindings and cross-field/transition predicate language;
-plugin application behavior; handler versus composed change graph; version checks;
-contract-version compatibility and storage of pending/applied settings. These are grouped in
-[REVIEW.md](../REVIEW.md), rather than decided by this fragment.
+The named-control boundary, confirmed settings versus outstanding requests, target coordination
+and revision checks are accepted. Exact field bindings, control/handler notation and compatible
+implementation selection remain drafting/review work. The worked R6 example below proposes how
+to represent settings and export them; its new choices are not established by this fragment.
 
 **Accepted:** use named typed controls as the normal interaction contract for
 configuration changes. In the sketch, a caller invokes `set-query-limit` with `limit: 15` through
@@ -85,6 +84,121 @@ A control can represent a coordinated change to several settings and expose its 
 application behavior directly. This does not promise atomic updates or make ordinary provider
 content operations configuration changes. Exact field bindings, default-selection notation and handler
 notation remain open; no separate user-authored operation manifest is required.
+
+### R6 worked example: configuration through creation, change and export
+
+**Proposal for review, not an accepted schema.** Use one complete `spec.config` map for an
+instance's configuration: initial materialized values before setup, then the last confirmed values
+after supported controls apply. Keep pending requests and observations outside that map. The type
+and fixed control definitions decide which values may change; being YAML does not make a field
+writable. There is no required duplicate original-configuration map or desired-state reconciler.
+
+This partial Resource-template projection extends the preceding query-limit example. API version,
+type/plugin names, graph bindings and control syntax remain illustrative. The complete runtime,
+storage Conduit/dependency wiring and type/plugin schemas are omitted to focus on configuration;
+this is not a ready-to-run template or a new built-in Resource type.
+
+```yaml
+apiVersion: example/v0alpha1
+kind: Resource
+form: template
+metadata:
+  name: knowledge-search
+spec:
+  type: {group: search, name: collection, version: v1alpha1}
+  config:
+    queryLimit: 10
+  graph:
+    nodes:
+      prepare:
+        plugin: {group: search, name: prepare, version: v1alpha1}
+        inputs:
+          queryLimit: {from: config, field: queryLimit}
+  controls:
+    set-query-limit:
+      operation: set-query-limit
+      constraints:
+        limit: {minimum: 1, maximum: 100}
+```
+
+The graph's input binding is fixed; the referenced setting can change through the declared control.
+Preparation supplies that value to the instance-managed runtime under the selected type's contract.
+It does not turn the setup node into an ongoing supervisor or rerun setup on every setting change.
+
+An Interface asks the owning Pool to provision `knowledge-search-7f3a` from its named entry.
+The instance retains its resolved graph/control definitions and materialized configuration. Ordinary
+creation customization remains field editing; no new parameter language is introduced.
+
+| Event | Instance `spec.config.queryLimit` | Other state/effect |
+| --- | --- | --- |
+| Register the new instance | `10` | Initial setup input; registration does not prove setup ran. |
+| Setup confirms the runtime uses that limit | `10` | Runtime evidence establishes application. |
+| An authorized caller invokes `set-query-limit` with `limit: 15` and the inspected configuration revision | `10` | Request recorded separately; pending is not applied. |
+| Handler confirms application | `15` | Configuration revision advances; graph, control range and handler binding remain unchanged. |
+| Response is lost before confirmation instead | `10` as last confirmed | Actual state may be unknown. Reconcile; do not claim 10 is still active or replay an uncertain write. |
+| A later explicit start after confirmed application | `15` as proposed input | Use current checks and the type's restart contract; unchanged graph bindings read current settings. Reuse setup progress only if its inputs/results remain valid. |
+
+The original `knowledge-search` template still specifies 10. Ordinary instantiation from that
+unchanged template starts with 10. Changing the control range, handler or setup graph still requires
+a replacement instance; changing a declared setting does not.
+
+**Proposed export:** configuration-only export of the instance uses its current stored settings,
+including confirmed `queryLimit: 15`, together with its complete fixed definitions and explicit
+dependencies. The portable projection omits system ID/version, status, operation history, live
+handles, credentials and secret material. Required account/Resource references remain explicit;
+secrets continue through managed capabilities. Export reports pending/uncertain observations
+separately and never claims a configuration snapshot proves current runtime state.
+
+For illustration, only the changed identity/configuration portion of that export is shown here;
+the full export also contains the retained graph, controls, runtime and dependency declarations:
+
+```yaml
+kind: Resource
+form: instance
+metadata:
+  name: knowledge-search-7f3a
+spec:
+  config:
+    queryLimit: 15
+```
+
+To create a new Resource from the export, choose a new unique name and an owning Pool, validate its
+dependencies and explicitly provision it. The new instance receives 15 as initial configuration;
+it does not inherit readiness, grants, connections, private context or recorded progress from the
+source. Backing create/attach intent stays explicit. Export/import must not silently convert
+creation into attachment or replay a destructive backing operation. A creation-only setting that
+cannot safely be reused is reported for deliberate editing. Source creation values remain available
+only where retained in normal operation evidence; no full template-history archive is required.
+
+The alternative keeps immutable creation settings in `spec.config` and places applied values in a
+second map, requiring precedence and export rules between them. This proposal favors one stored
+configuration and separate observation/effect evidence. Both preserve immutable graph/control
+definitions and named operations as the only supported path for changing running settings.
+
+### R6 companion proposals: YAML values and implementation selection
+
+These are the remaining language choices to examine after the worked representation example;
+they are not accepted merely by appearing in YAML. They refine existing typed-object semantics.
+
+| Concern | Proposed v0 rule | Concrete consequence |
+| --- | --- | --- |
+| Data values | A JSON-compatible YAML value model with string mapping keys, finite numbers and schema-defined units/ranges. No silent scalar coercion. | `queryLimit: "15"` is not integer 15; a boolean must be a boolean. |
+| Invalid/ambiguous structure | Reject duplicate keys and already-prohibited unknown fields; schema-declared open maps retain their own constraints. | Two `queryLimit` keys are an error rather than first/last wins. |
+| Omitted, null, empty | Omission follows the declared default/optional rule; null is a value only where allowed; empty collections are explicit emptiness. | Null does not universally mean reset, and an empty connection list does not inherit another list. |
+| Reuse/evaluation | Use typed references, templates and graphs; defer YAML merge keys, anchors/aliases and custom tags for v0. No implicit shell or environment interpolation. | `${ACCOUNT}` in a string is literal unless a declared contract explicitly interprets it; credential access uses the appropriate capability. |
+| Contract versus implementation | Keep type/plugin contract identity/version distinct from the installed implementation package/release. | The contract with group `search` and name `prepare` can have more than one implementation. |
+| Implementation resolution | Select an implementation explicitly or through an unambiguous configured default; resolve exact release/artifact identity before execution and retain it for compatible recovery. Do not silently upgrade or substitute. | Installing another implementation cannot redirect an existing instance; missing code is a readiness gap, not a reason to use another provider. |
+
+The value model does not select a parser or pretend syntax validation implements lifecycle behavior.
+Comments/mapping order remain presentation; templates preserve omissions and instances materialize
+schema defaults as already accepted. Multiple-object input/batch guarantees remain separate from
+individual object meaning. A JSON input must reach the same typed interpretation as equivalent YAML.
+
+Schemas are still required before registry writes. With schemas available, valid configuration can
+be registered while an implementation or service is unavailable. Resolution evidence must distinguish
+the requested implementation from one actually located/verified; an unresolved artifact is not
+invented. Implementation pinning is current executable configuration, not a provenance archive.
+Plugin ABI, registry storage and package delivery mechanics remain engineering choices.
 
 ### Selecting the exposed controls
 
@@ -686,9 +800,10 @@ macros. A general include or inheritance language can wait. Decide how optional 
 configurations acquire identity/provenance and whether they can later be promoted to templates.
 
 A constrained [YAML 1.2](https://yaml.org/spec/1.2.2/) surface should use string keys, reject
-duplicate keys, define finite numeric/unit types and bound alias expansion.
-Do not silently expand shell/environment strings or interpret unsupported null/empty values.
-Plugin configuration needs a named/versioned schema. These parser details remain proposals.
+duplicate keys and define finite numeric/unit types. The R6 companion proposal defers
+anchors/aliases, merge keys and custom tags in v0; any later alias support would need expansion
+limits. Do not silently expand shell/environment strings or interpret unsupported null/empty
+values. Plugin configuration needs a named/versioned schema. These parser details remain proposals.
 
 Unknown-field rejection is accepted for templates and instances, except in schema-declared
 open maps. Plugin schemas can define their own fields and open maps; map keys/values retain
@@ -705,10 +820,11 @@ distinguish Pool ownership, native backing target, explicit live dependencies, r
 and observations. Source-template changes do not alter instances; current access still applies.
 
 Keep the accepted checked-write/baseline/export rules in DESIGN.md rather than duplicating
-them here. Decide how exporting a template differs from exporting an instance specification,
-a resolved configuration or a recovery snapshot. Applying an inspection dump cannot assert
-runtime status, clone credentials or launch duplicate work. Configuration-only export remains
-portable and does not carry system-owned identity/version values as editable configuration.
+them here. The worked R6 example proposes exporting the instance's current stored configuration
+for fresh creation, separately from template export, inspection and recovery state. Applying an
+inspection dump cannot assert runtime status, clone credentials or launch duplicate work.
+Configuration-only export remains portable and does not carry system-owned identity/version
+values as editable configuration. The representation/export proposal still needs a ruling.
 
 ### Version meaning, not just field names
 

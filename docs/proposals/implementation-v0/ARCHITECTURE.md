@@ -122,12 +122,13 @@ manage many records. The exact hosting boundary, schemas and evaluator are not s
 these concepts. Authorization records do not inherit ordinary knowledge-sharing semantics.
 Publishing a policy or installing a plugin cannot confer authority.
 
-The next conceptual ruling is whether ordinary managed participation must have a recorded grant,
-or direct policy permits may also authorize it. Root administration, delegated Agent work and
-Interface access must be represented consistently. Delegation lineage/current dependencies and
-policy composition follow, before foundational persistence/engine selection. The trusted authority
-and first owner access still need an explicit startup/repair contract; a Resource wrapper alone
-does not resolve that dependency.
+Ordinary managed access now requires a recorded grant on its selected participation, including
+the root's broad management access. Policy governs issuance/current use without a grantless
+alternative; authorized connection setup can establish one grant for many requests. Next distinguish
+administrative issuance from onward delegation and decide their continuing dependencies, then
+policy composition and foundational persistence/engine selection. The trusted authority and first
+owner grant still need an explicit startup/repair contract; a Resource wrapper alone does not
+resolve that dependency.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops

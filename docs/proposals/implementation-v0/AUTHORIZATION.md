@@ -2,7 +2,8 @@
 
 Status: semantic proposal for I4 review, 2026-11-01. The user directed us to formalize Policy and
 Grant as essential concepts beneath the five object families, for Agents and Interfaces alike.
-Independent policy is accepted. This document develops their structure without selecting exact
+Independent policy and required recorded participation grants are accepted. This document develops
+their structure without selecting exact
 YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
 the [design](../../DESIGN.md) retains accepted behavior and [I4](REVIEW.md#i4--local-transactional-authority)
 is the ruling queue. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
@@ -56,7 +57,7 @@ This is a semantic field inventory, not final keys or a requirement for a new un
 | --- | --- |
 | Identity and revision | Stable policy identity, checked update revision and interpretation/contract version. Names are descriptive. |
 | Governing authority and applicability | The authority responsible for the record and the actors, targets, capabilities or relationships it governs. Pool ownership alone does not grant access. |
-| Access and administration rules | What uses or management/delegation actions may be authorized, and any governing restrictions. Direct-permit versus grant-required use is an open ruling. |
+| Access and administration rules | What authority may be issued and how its use is governed. Ordinary managed access requires a recorded participation grant; a direct policy permit alone is insufficient. |
 | Typed conditions/requirements | Versioned references with validated parameters, applicability and needed facts. Reuse compatible requirement contracts rather than duplicate workspace/path semantics. |
 | Delegation boundary | What authority may be issued, to whom, over which targets, and whether further delegation is possible. |
 | Provenance and current validity | Who authorized the change, operation/evidence references and the current authoritative revision/availability. A package source is not an authority. |
@@ -99,6 +100,31 @@ grant, changing the issuer's personal permissions and stopping the issuer are di
 We should decide which dependencies remain live rather than infer cascade behavior from provenance.
 Previously discussed knowledge-sharing rules do not automatically settle every service grant.
 
+### Administrative issuance and onward delegation — proposed distinction
+
+Recorded participation grants do not imply that every newly issued grant must depend forever on
+the issuer's management connection. That would conflict with retained policy/grants across Interface
+replacement. Distinguish the authority used to issue a grant from any authority it continues to derive:
+
+| Route to issuance | Proposed continuing authority | Example |
+| --- | --- | --- |
+| Administrative issuance | The new recipient's grant is governed by target/current policy and its own participation. The issuer's administrative grant is retained as issuance evidence, not automatically a live parent. | Root uses its management grant to authorize A's Linear access. Replacing the root and ending its old management participation does not itself withdraw A's grant. |
+| Onward delegation of received access | The child remains dependent on the particular source grant and cannot exceed its current extent or delegation bounds. | A uses explicit onward-delegation rights in its Linear grant to grant B read-only access. Withdrawal, narrowing or ending of that parent restricts the dependent child at subsequent checks. |
+
+This is about which authority the operation exercises, not whether the issuer is an Interface or
+Agent. An appropriately authorized Agent can perform administrative issuance; an Interface using
+only received delegable access follows the derived-grant rules. A caller cannot choose the first
+route merely to avoid a dependency: the issuing service must verify the required authority.
+
+The same request may record both an issuance receipt and live dependencies, but they have different
+meanings. Stopping an issuer is not itself grant withdrawal or participation termination. If that
+issuer's lifecycle operation actually ends a source participation, the resulting parent-grant end
+would affect derived children under this proposal. Independent authorized paths retain their own
+rules; this does not authorize silent rerouting, reparenting or restoration of withdrawn grants.
+
+This distinction and its dependency effects are the next ruling, not accepted behavior yet.
+Detailed narrowing proofs, parent-restoration rules and management-operation syntax remain open.
+
 ## 5. Decision and enforcement contract
 
 Proposed normalized authorization input:
@@ -122,8 +148,12 @@ a tool from an Agent's catalog alone is not enforcement of a server-side restric
 
 For one request, admission requires a complete positive authorization basis plus all applicable
 restrictions on that path. Separate paths remain alternatives; read on Euphony plus update on Demo
-cannot yield update on Euphony. Governing actor/target restrictions still apply. Whether every
-positive basis must be an issued grant or a policy may directly authorize use is the next ruling.
+cannot yield update on Euphony. Governing actor/target restrictions still apply.
+**Ordinary managed use requires a grant
+on the selected participation**, including root management. Policies govern issuance and current
+use rather than supplying a grantless alternative. Authorized connection setup can establish a
+grant covering many requests; it adds no separate user manifest or per-call token. The first root
+grant still requires an explicit initial-authority contract.
 
 Unverified required access/checks block the affected behavior. Do not turn an evaluator error,
 missing policy, unsupported restriction or cached grant into permission. Preserve the reason so
@@ -172,8 +202,8 @@ collapse Agent identities or justify forwarding the caller's token to another au
 
 ## 7. Worked delegation across Interface and Agents
 
-This is a semantic example, not final YAML or an adopted permission language. Assume explicit
-grants supply ordinary access in this example; the general positive-basis rule is still open.
+This is a semantic example, not final YAML or an adopted permission language. Recorded grants
+supply ordinary managed access as accepted; the detailed delegation dependencies remain proposed.
 
 | Stage | Authority and behavior |
 | --- | --- |
@@ -193,16 +223,17 @@ provisioning and Resource dependency calls follow the same request/basis/check/r
 
 Continue within I4, not a new decision ledger:
 
-1. **Positive authority:** require a recorded grant on ordinary managed participation, including
-   broad root management, or allow direct policy permits as an additional authorization basis?
-   Recommend grants for the first version: it gives all actors inspectable participation authority
-   without a new grant per request. Policy still governs issuance and current use.
-2. **Delegation and dependencies:** choose the allowed narrowing behavior, delegation ceilings and
+**Accepted positive authority:** ordinary managed access requires a recorded participation grant,
+including the root's broad management access. Policy governs issuance/current use; it does not
+provide a grantless alternative. A grant covers many requests and can be established as part of
+authorized connection setup.
+
+1. **Delegation and dependencies:** choose the allowed narrowing behavior, delegation ceilings and
    live parent/policy dependency rules. Custom constraints must not claim subset relationships
    they cannot establish; a general solver is not assumed.
-3. **Policy composition and failure:** define applicability, positive/negative rule interaction,
+2. **Policy composition and failure:** define applicability, positive/negative rule interaction,
    incomplete information and trustworthy decision inputs under existing whole-path restrictions.
-4. **Placement and persistence:** settle the management Resource capability, first authority and
+3. **Placement and persistence:** settle the management Resource capability, first authority and
    startup/repair boundary, then storage interface/engine. The root-owner initial grant is a
    concrete initialization problem, not permission for runtime self-granting.
 

@@ -3,7 +3,9 @@
 Research date: 2026-11-01. The user directed Conduit to formalize Policy and Grant alongside the
 other concepts beneath its five object families, covering Agents as well as Interfaces. Independent
 policy, broad default owner administration, current access checks and no offline grants are already
-accepted. The detailed structures in the [authorization proposal](../proposals/implementation-v0/AUTHORIZATION.md)
+accepted. The user subsequently selected recorded grants on ordinary managed participation,
+including root management; policy governs issuance/current use without a grantless alternative.
+The detailed structures in the [authorization proposal](../proposals/implementation-v0/AUTHORIZATION.md)
 remain for joint review. This report supplies evidence, not additional rulings.
 
 Method: read primary specifications, project documentation and research papers. No authorization
@@ -171,8 +173,9 @@ trusted authority and validate responses under the selected contract.
 
 Resolve these within I4 before the final I7 syntax pass:
 
-- Must ordinary managed use have a recorded grant on the selected participation, or may a direct
-  policy permit also supply its positive authority? Keep root broad access explicit in either case.
+- Settled after this comparison: ordinary managed use requires a recorded grant on the selected
+  participation, including root management. Policy governs issuance/current use; one grant may
+  cover many requests. Establishing the first root authority still needs the startup contract.
 - What delegation may a grant holder issue, and which parent/policy changes affect those grants?
   Stopping an issuer is already distinct from withdrawing access.
 - How are policy sets applied and conflicts/errors handled without dropping required restrictions

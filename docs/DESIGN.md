@@ -1781,10 +1781,20 @@ checks and safe-outcome handling; this does not authorize replaying an uncertain
 
 ### Authority and current access
 
-Permissions name operations per Resource contract, with convenience bundles expanding
+Permissions name operations per capability/control contract, with convenience bundles expanding
 into visible grants. Agent limits and explicit exclusions constrain effective access;
 missing limits add no authority. Permitted operations require no extra confirmation merely
 because permission rules exist. Resource and communication permissions do not imply each other.
+
+**Recorded participation grants:** ordinary managed access requires a recorded grant on the
+selected Conduit participation. This applies to Agents, Interfaces and other managed callers,
+including the root Interface's broad management access. Policy governs grant issuance and current
+use; it cannot directly authorize ordinary use without that grant. Authorized connection setup
+can establish the grant as part of connecting, with no separate user-authored manifest or grant
+per invocation. A grant can cover many requests. Current permission, complete-path restrictions
+and required checks still apply, and a retained record is not an offline permission guarantee.
+Initial root authority and grant establishment remain part of the pending startup contract;
+calling an instance root or copying its configuration cannot issue authority.
 
 **Delegation boundary:** an authorized user or Agent may delegate an explicit subset of
 service access when establishing another consumer's Conduit attachment. The attachment records

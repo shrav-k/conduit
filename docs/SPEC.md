@@ -113,6 +113,12 @@ V0 Interfaces have unrestricted local administration. Agents receive explicit gr
 an OS account does not grant managed access. Unrestricted administration still follows supported
 lifecycle/control contracts and cannot rewrite fixed definitions in place.
 
+Ordinary managed access requires a recorded grant on the selected Conduit participation, including
+the root Interface's broad management access. Policies govern issuance and current use; a policy
+permit alone does not authorize grantless ordinary access. Authorized connection setup can establish
+the grant for many requests, without a separate user-written manifest or per-call token. Current
+policy, path restrictions and requirement checks still apply; retaining a grant is not offline authority.
+
 Shared access policy is independent of any particular Interface's lifecycle. Multiple authorized
 Interfaces can administer it, with broad default administration for the owner-operated root.
 Replacing an Interface establishes valid administrative access without transferring policy

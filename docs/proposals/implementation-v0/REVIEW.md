@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Policy/Grant contracts and foundational storage, then engine | Formalize common Agent/Interface authorization. Review positive authority, delegation dependencies, composition and hosting before startup/storage; independent policy is accepted. |
+| I4 | Policy/Grant contracts and foundational storage, then engine | Independent policy and recorded participation grants accepted. Next distinguish administrative issuance from onward delegation, then composition and hosting before startup/storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -435,16 +435,22 @@ below require joint rulings. The [research](../../research/AUTHORIZATION.md) com
 Kubernetes RBAC, OPA, Zanzibar, Macaroons/Biscuit and MCP/OAuth. The
 [authorization proposal](AUTHORIZATION.md) is the canonical semantic structure; I7 still owns syntax.
 
+**Recorded participation grants are accepted:** ordinary managed use, including broad root
+management, requires a grant on the selected participation. Policy governs issuance and current use;
+there is no grantless direct-policy alternative. Authorized connection setup can establish a grant
+covering many requests without another user manifest or per-call token. Initial root-grant
+establishment remains an explicit startup question.
+
 **Next conceptual choices, in order:**
 
-1. Should ordinary managed use require a recorded grant on its selected participation, including
-   broad root management, or can a direct policy permit provide positive authority too? Recommend
-   grants in v0, without a new grant per request; policy governs issuance and current use.
-2. What delegation bounds and live parent/policy dependencies must a grant retain? Distinguish
-   withdrawal, changed issuer permissions and issuer process termination.
-3. How do applicable policy rules, current grants and typed restrictions combine, including errors
+1. Distinguish [administrative issuance from onward delegation](AUTHORIZATION.md#administrative-issuance-and-onward-delegation--proposed-distinction).
+   Recommend policy-governed administrative grants that do not depend on the issuer's management
+   participation, versus derived grants that remain bounded by and dependent on their source grant.
+   This preserves Interface replacement while making onward delegation meaningful. The operation's
+   actual authority determines the route, not the issuer's family or a self-selected flag.
+2. How do applicable policy rules, current grants and typed restrictions combine, including errors
    and unknown custom narrowing relationships? Preserve complete-path alternatives and required checks.
-4. Which Pool-owned management capability exposes policy/grant operations, and how is its trusted
+3. Which Pool-owned management capability exposes policy/grant operations, and how is its trusted
    initial authority established, persisted and repaired?
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate

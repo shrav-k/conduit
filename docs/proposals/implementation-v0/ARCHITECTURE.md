@@ -55,24 +55,70 @@ by itself introduce another language, autonomous model loop, implicit retries or
 state reconciliation. Actions still occur through explicit requests or declared runtime behavior.
 The root Interface can operate without an attached CLI/TUI; frontends remain its user-facing clients.
 
-Distinguish administrative authority from authority over the truth of a recorded outcome:
+The responsibility/authority refinement remains open. A candidate rule is: the Interface declares
+management work to coordinate; authenticated owner/delegated access authorizes it; target contracts
+and responsible services determine what can run and what outcome is confirmed. A directive is not
+an access grant, and access is not proof that an operation is implemented or succeeded.
 
-| Responsibility | Proposed placement consistent with the accepted boundaries |
-| --- | --- |
-| Direct startup and system management | The root Interface's declared runtime and operations coordinate initial establishment, supported lifecycle changes and repair. |
-| Exercise owner administration | The root Interface acts for the verified local owner under the existing v0 administrative authority. Merely naming another Interface root does not grant those rights. |
-| Retain shared registry and access policy | Management services, exposed through the system Pool's management Resource, remain authoritative for those facts. They implement the management capabilities used by the Interface. |
-| Retain instance configuration and outcomes | Each designated instance service keeps its confirmed configuration/revisions, executions and operation results. The Interface cannot confirm another instance's effect without evidence. |
-| Own storage and other capabilities | Pools continue to own Resources. A storage Resource can back runtime state if the eventual storage contract permits it; the Interface directs establishment and access. |
-| Establish access and communication | Conduits retain endpoint relationships and requirements. Endpoint instances continue managing their implementations and local bindings. |
-| Present and issue user actions | CLI, terminal and test frontends attach to the Interface. Closing a frontend does not mean stopping the Interface, its services or its managed instances. |
+| Question | Proposed responsibility | Concrete example |
+| --- | --- | --- |
+| What work should be coordinated? | The Interface's declared directive, graphs and runtime behavior. | Establish the system's dependencies at startup; expose administration; report failures and support explicit repair. |
+| What operations exist? | Selected plugins and the target's fixed capability/control contracts. | A database Resource offers start/inspect; its contract determines recovery and whether a live setting can change. |
+| Who may request an operation? | The authenticated actor and current grants/restrictions on its Conduit path. | The owner-operated root has broad v0 administration; an Agent uses explicitly delegated access. Naming an instance root or adding a directive does not create a grant. |
+| Who performs and confirms a change? | The target instance's designated service and implementation. | Its service admits a revision-checked change, supervises the handler and records confirmed configuration or uncertainty. |
+| Who owns objects and presents evidence? | Pools own Resources; each service owns its assigned facts; the Interface coordinates and presents source-attributed results. | Starting a Resource does not transfer it into the Interface or create a second authoritative copy of its state. |
 
-Management and execution services remain physical implementation roles that may each serve many
-objects. Assigning a management directive to an Interface does not require one process per object,
-copying all state into that Interface or sending every provider request through it. Its own
-configuration and management-workflow progress still have a designated authority. Ordinary Interfaces
-could use the same family contracts with different declared responsibilities; differentiated
-permissions among Interfaces remain deferred as agreed for v0.
+The root Interface can hold system-wide administrative permission and direct policy changes.
+Management services exposed through the system Pool's management Resource retain shared registry
+and policy facts and enforce applicable rules. This is an implementation of the authority boundary,
+not a second human decision maker. Executors remain authoritative for their assigned instances'
+confirmed configuration and operation results. The Interface retains its own configuration and
+management-workflow progress. Administrative permission does not bypass fixed definitions,
+revision checks or the requirement to establish an actual outcome.
+
+There are two meanings of root authority to distinguish before adopting the role:
+
+| Interpretation | Logical policy ownership | Consequence to review |
+| --- | --- | --- |
+| Root as administrator | Registry-wide policy is an independent management capability that the root Interface is authorized to administer. | That policy's identity/lifecycle is independent of any particular Interface; root is a powerful client and coordinator. |
+| Root as system-policy owner | The root Interface's contract owns responsibility for registry-wide administrative policy and delegation; management services store/enforce it on that role's behalf. | Makes authority part of an existing object, but replacing/stopping that root and introducing another administrator require explicit policy-continuity rules. |
+
+Both preserve one authoritative service per fact and independent instance outcomes. Selecting the
+second does not put all grants in template YAML, move Resources out of Pools, require every request
+to visit the root process or give the root a second writable copy of target configuration. Its
+policy can be represented by runtime records and backed by Resources. The first separates that
+policy domain from Interface lifecycle. Shared policy with instance-owned state does not alone
+settle which of these logical ownership interpretations applies. Root policy ownership is a live
+proposal, not a ruling; storage, replacement and outage consequences would follow the choice.
+
+**Example — establish Euphony:** a user acts through a frontend attached to the root Interface.
+The Interface starts an attributable management workflow and requests Pool creation through its
+management capability. Resource setup runs under the new Pool's ownership and each Resource's
+responsible service. The Interface can request Agent creation and open declared Conduits as their
+prerequisites become available. If Linear authentication is incomplete, it presents that partial
+state; it does not turn the user's broad permission into a successful login. The Interface's workflow
+records its requests and links to target outcomes rather than overwriting their authoritative records.
+If an Agent receives delegated creation/control permissions, it can also invoke those capabilities;
+this proposal does not make every management action exclusive to the root Interface.
+
+**Responsibility does not imply continuous enforcement of desired state.** In this example, a
+directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops
+must be declared by the runtime contract. Closing the frontend detaches it. Stopping the Interface
+or losing its management connection does not implicitly delete its created Resources or stop all
+independent work. Existing outage/admission rules and explicit shutdown contracts still apply.
+Other authorized actors do not acquire ownership of an unavailable service merely by observing it.
+
+The root Interface is distinguished by its foundational system-management responsibility and
+owner association; it remains an Interface template/instance. The earlier broad v0 Interface access
+is not being narrowed by this proposal, and permissions among multiple Interfaces remain deferred.
+Later Interfaces could have different responsibilities using the same contracts. No automatic
+priority for user commands over delegated Agent commands is introduced; existing target coordination
+still handles concurrent requests. This remains one local ownership model, not a federation design.
+
+Management and execution services remain implementation roles that may each serve many objects.
+The root Interface can direct those services without all of them sharing a process or all provider
+traffic passing through the root. A service losing contact with it must still distinguish missing
+observations, unavailable current policy and confirmed process termination.
 
 **Possible establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then

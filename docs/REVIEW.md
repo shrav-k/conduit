@@ -66,8 +66,10 @@ has started.
 I4 is exploring an [active Interface role](proposals/implementation-v0/ARCHITECTURE.md#interface-as-system-director--proposed-refinement):
 the root Interface would direct establishment and ongoing administration/repair as part of its
 normal responsibilities. Frontends attach to it; management and instance services retain their
-accepted state authority, and Pools retain Resource ownership. This refinement, its foundational
-storage and the first storage engine remain under discussion.
+accepted state authority, and Pools retain Resource ownership. Responsibility and authority are
+being refined before accepting that role: directives, implemented capabilities, permission to act
+and confirmed target outcomes must remain distinct. The expanded role, its foundational storage
+and the first storage engine remain under discussion.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

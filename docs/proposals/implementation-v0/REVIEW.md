@@ -412,12 +412,27 @@ This is a reusable Interface configuration within the five-family model, not a s
 object. Frontends attach to it; its responsibilities can continue without an open frontend.
 See the [Interface walkthrough](ARCHITECTURE.md#interface-as-system-director--proposed-refinement).
 
-**Next discussion:** assess that active Interface role while distinguishing administrative authority
-from state authority. The Interface can direct a change; the responsible instance service confirms
-and records the outcome. Management still owns shared registry/policy facts, Pools own Resources,
-and Conduits carry normal control/access. The minimal first-definition load and earliest durable
-Interface progress still need a concrete home; folding them into the Interface runtime does not
-make that dependency disappear. Exact persistence and initial authority verification remain open.
+**Next discussion — responsibility and authority, before accepting the expanded role:** distinguish
+what an Interface coordinates, what operations its implementations expose, who may invoke them and
+who confirms their outcomes. The proposed rule is that directives do not themselves grant access:
+the root acts for the verified local owner with broad v0 administration, Agents use explicit grants,
+and targets retain capability, revision, lifecycle and outcome checks. Management services retain
+shared registry/policy facts; Pools own Resources; the Interface records its own workflow and links
+to authoritative target outcomes. Other authorized actors can still invoke management capabilities.
+
+**Authority choice to clarify:** is the root Interface an administrator of an independently owned
+management-policy capability, or the logical owner of the system-policy/delegation role whose
+storage/enforcement is implemented by management services? Both preserve instance-owned outcomes.
+The second more directly puts foundational authority in an Interface, but needs continuity rules
+when that root stops or is replaced. It does not make the root the data owner of all objects, move
+Resources out of Pools or require every policy record in its template. This choice remains open.
+
+The [Euphony example](ARCHITECTURE.md#interface-as-system-director--proposed-refinement) illustrates
+this split and its failure/lifecycle consequences. It does not narrow the agreed v0 Interface access,
+add implicit restart loops or assign automatic priority over Agent commands. The active-role ruling
+remains open pending this refinement. Initial Interface persistence, authority verification and
+storage selection follow it; the first-definition load and earliest durable progress still need a
+concrete home even when they are part of the Interface runtime.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant

@@ -71,8 +71,8 @@ but different handlers.
 
 The named-control boundary, confirmed settings versus outstanding requests, target coordination
 and revision checks are accepted. Exact field bindings, control/handler notation and compatible
-implementation selection remain drafting/review work. The worked R6 example below proposes how
-to represent settings and export them; its new choices are not established by this fragment.
+implementation selection remain drafting/review work. R6 now accepts the single configuration map
+and export semantics illustrated below; the remaining field spellings are not selected by this fragment.
 
 **Accepted:** use named typed controls as the normal interaction contract for
 configuration changes. In the sketch, a caller invokes `set-query-limit` with `limit: 15` through
@@ -87,7 +87,7 @@ notation remain open; no separate user-authored operation manifest is required.
 
 ### R6 worked example: configuration through creation, change and export
 
-**Proposal for review, not an accepted schema.** Use one complete `spec.config` map for an
+**Accepted representation/export semantics (R6); illustrative schema.** Use one complete `spec.config` map for an
 instance's configuration: initial materialized values before setup, then the last confirmed values
 after supported controls apply. Keep pending requests and observations outside that map. The type
 and fixed control definitions decide which values may change; being YAML does not make a field
@@ -136,13 +136,13 @@ creation customization remains field editing; no new parameter language is intro
 | An authorized caller invokes `set-query-limit` with `limit: 15` and the inspected configuration revision | `10` | Request recorded separately; pending is not applied. |
 | Handler confirms application | `15` | Configuration revision advances; graph, control range and handler binding remain unchanged. |
 | Response is lost before confirmation instead | `10` as last confirmed | Actual state may be unknown. Reconcile; do not claim 10 is still active or replay an uncertain write. |
-| A later explicit start after confirmed application | `15` as proposed input | Use current checks and the type's restart contract; unchanged graph bindings read current settings. Reuse setup progress only if its inputs/results remain valid. |
+| A later explicit start after confirmed application | `15` as input | Use current checks and the type's restart contract; unchanged graph bindings read current settings. Reuse setup progress only if its inputs/results remain valid. |
 
 The original `knowledge-search` template still specifies 10. Ordinary instantiation from that
 unchanged template starts with 10. Changing the control range, handler or setup graph still requires
 a replacement instance; changing a declared setting does not.
 
-**Proposed export:** configuration-only export of the instance uses its current stored settings,
+**Accepted export:** configuration-only export of the instance uses its current stored settings,
 including confirmed `queryLimit: 15`, together with its complete fixed definitions and explicit
 dependencies. The portable projection omits system ID/version, status, operation history, live
 handles, credentials and secret material. Required account/Resource references remain explicit;
@@ -170,24 +170,36 @@ creation into attachment or replay a destructive backing operation. A creation-o
 cannot safely be reused is reported for deliberate editing. Source creation values remain available
 only where retained in normal operation evidence; no full template-history archive is required.
 
-The alternative keeps immutable creation settings in `spec.config` and places applied values in a
-second map, requiring precedence and export rules between them. This proposal favors one stored
-configuration and separate observation/effect evidence. Both preserve immutable graph/control
-definitions and named operations as the only supported path for changing running settings.
+Keep one stored configuration and separate observation/effect evidence rather than parallel creation
+and applied maps. Fixed graph/control definitions and named operations remain the boundary for
+changing running settings; this ruling does not select every illustrative field in the example.
 
 ### R6 companion proposals: YAML values and implementation selection
 
-These are the remaining language choices to examine after the worked representation example;
+These are the remaining language choices after the accepted representation/export behavior;
 they are not accepted merely by appearing in YAML. They refine existing typed-object semantics.
 
 | Concern | Proposed v0 rule | Concrete consequence |
 | --- | --- | --- |
-| Data values | A JSON-compatible YAML value model with string mapping keys, finite numbers and schema-defined units/ranges. No silent scalar coercion. | `queryLimit: "15"` is not integer 15; a boolean must be a boolean. |
+| Data values | YAML 1.2 Core scalar resolution into a JSON-compatible value model, restricted to string mapping keys and finite supported numbers, with schema-defined units/ranges. No silent schema coercion. | `queryLimit: "15"` remains a string; unquoted `yes` is not a boolean. |
 | Invalid/ambiguous structure | Reject duplicate keys and already-prohibited unknown fields; schema-declared open maps retain their own constraints. | Two `queryLimit` keys are an error rather than first/last wins. |
 | Omitted, null, empty | Omission follows the declared default/optional rule; null is a value only where allowed; empty collections are explicit emptiness. | Null does not universally mean reset, and an empty connection list does not inherit another list. |
 | Reuse/evaluation | Use typed references, templates and graphs; defer YAML merge keys, anchors/aliases and custom tags for v0. No implicit shell or environment interpolation. | `${ACCOUNT}` in a string is literal unless a declared contract explicitly interprets it; credential access uses the appropriate capability. |
 | Contract versus implementation | Keep type/plugin contract identity/version distinct from the installed implementation package/release. | The contract with group `search` and name `prepare` can have more than one implementation. |
 | Implementation resolution | Select an implementation explicitly or through an unambiguous configured default; resolve exact release/artifact identity before execution and retain it for compatible recovery. Do not silently upgrade or substitute. | Installing another implementation cannot redirect an existing instance; missing code is a readiness gap, not a reason to use another provider. |
+
+Scalar interpretation was checked against the [YAML 1.2.2 Core schema](https://yaml.org/spec/1.2.2/#103-core-schema)
+on 2026-10-31. Core resolves unmatched plain scalars to strings and blank scalar values to null.
+Thus `enabled: yes` fails a boolean field, while `queryLimit:` is an explicit null value rather than
+omission. Conduit's proposed finite-number/string-key restrictions and alias/merge/tag exclusions
+are application choices, not claims that YAML itself lacks those features. Normal comments and
+multiline strings remain available. Reject unsupported numeric range/precision rather than
+silently truncating; exact domain limits belong to the relevant schema.
+
+For a query-limit field defaulting to integer 10: omission uses the default; `15` supplies a number;
+`"15"` is a string and fails the integer contract; null requires a nullable contract and does not
+mean reset. An empty list/map remains explicitly empty with field-specific meaning. Parser reuse
+features and implicit evaluation are separate from the already-accepted typed graph bindings.
 
 The value model does not select a parser or pretend syntax validation implements lifecycle behavior.
 Comments/mapping order remain presentation; templates preserve omissions and instances materialize
@@ -496,9 +508,9 @@ to describe establishment and supported changes.
 Keep the existing small operational guarantees: outcome evidence and idempotent/safe retry where
 supported are runtime concerns, not another document users must maintain. No template snapshots,
 override ledger, permanent declarative controller or per-step registered object is implied. Direct
-instance creation is already accepted. Its export representation, incomplete establishment recovery
-and creation-only fields belong together in the R6 configuration profile, so exports make only
-promises they can support.
+instance creation is already accepted. R6 accepts exporting current stored configuration for fresh
+creation, separately from incomplete establishment recovery. Creation-only field constraints and
+evidence must remain visible so exports make only promises they can support.
 
 ## Kubernetes: an API model with configuration semantics
 
@@ -820,11 +832,11 @@ distinguish Pool ownership, native backing target, explicit live dependencies, r
 and observations. Source-template changes do not alter instances; current access still applies.
 
 Keep the accepted checked-write/baseline/export rules in DESIGN.md rather than duplicating
-them here. The worked R6 example proposes exporting the instance's current stored configuration
+them here. R6 accepts exporting the instance's current stored configuration
 for fresh creation, separately from template export, inspection and recovery state. Applying an
 inspection dump cannot assert runtime status, clone credentials or launch duplicate work.
 Configuration-only export remains portable and does not carry system-owned identity/version
-values as editable configuration. The representation/export proposal still needs a ruling.
+values as editable configuration. Remaining YAML and implementation-resolution choices are separate.
 
 ### Version meaning, not just field names
 

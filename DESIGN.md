@@ -126,9 +126,18 @@ operation evidence. Plugins define what establishes application and describe any
 A last confirmed setting must not be presented as still active when the outcome is unknown.
 Initial creation settings remain establishment inputs, not evidence that setup succeeded.
 
-The exact storage split among spec, status and operation evidence remains open; it must not create
-conflicting sources of truth. Mutable settings do not make every field editable, and reusable
-image-like templates do not imply that all instance configuration is permanently fixed.
+**Accepted configuration representation (R6):** `spec.config` is the instance's single stored
+configuration map. It contains materialized initial values before setup and advances affected
+values only after a supported control confirms application. Fixed setup/control definitions stay
+elsewhere in the spec; observations and outstanding requests remain separate. Field placement does
+not grant mutability. No second original/desired/applied configuration map or required template
+history is introduced. Exact observation/operation-evidence fields and physical storage remain open.
+
+A fixed graph can read current settings on later explicit starts under the type's restart contract.
+Revalidate recorded setup progress against those inputs before reusing it. For example, a confirmed
+query-limit change from 10 to 15 makes 15 the instance's stored setting; its unchanged template still
+starts new instances at 10. A pending or uncertain change does not overwrite the last confirmed
+setting or establish what the runtime is currently doing.
 
 Registration has no provisioning/model-execution effects. An explicit action may combine creation
 and start, reporting their outcomes separately. Resources require a Pool owner. Direct creation
@@ -321,6 +330,18 @@ ignoring it. Configuration-only export contains reusable, authorable object conf
 omitting `status` and system-owned identity/version values. Inspection can still return
 those system values. Update preconditions are separate operation inputs; they do not
 authorize clients to assign system-owned values through object YAML.
+
+**Accepted instance export (R6):** export the current stored `spec.config` with the retained fixed
+definitions and explicit dependencies. Report outstanding requests/uncertain observations alongside
+the export, without treating them as authored values. The configuration is an input for fresh creation,
+not proof of live state. Do not copy credentials, grants, readiness, live handles or execution progress.
+Account/Resource references remain explicit and resolve under current authority on fresh use.
+
+For example, an instance whose query limit was confirmed as 15 exports 15; the unchanged source
+template can still export 10. Fresh creation from the instance export uses a new identity and unique
+name, and Resource creation still goes through an owning Pool. Backing create/attach intent remains
+explicit; report creation-only settings that need editing rather than silently changing intent or
+copying an established binding. The export does not resume the source instance's execution.
 
 The shared envelope does not give every kind the same configuration or status fields.
 Exact metadata/status fields, ID encoding and remaining import/export semantics are open.

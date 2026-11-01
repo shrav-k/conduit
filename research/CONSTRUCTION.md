@@ -317,12 +317,14 @@ it does not settle immutability for all instance types:
   identity is runtime state. Different subscription identities or GPT-to-Claude transitions
   require a new Agent, with continuity available through shared-context Resources.
 - Compatible models within that fixed boundary are selectable by default, optionally narrowed
-  by a list. Initial model is definition data; current model is runtime state. A common gateway
-  or credential alone does not erase the declared provider/domain boundary.
+  by a list. The selected model begins as configuration input and confirmed changes update
+  `spec.config` under R6; current runtime evidence and pending/uncertain requests remain separate.
+  A common gateway or credential alone does not erase the declared provider/domain boundary.
 - A supported selection waits for an appropriate execution boundary without cancelling work;
   pending and applied selections remain distinguishable and eligibility is checked at application.
 - Explicit restart restores the last successfully applied selection after current checks;
-  a new instance uses its initial selection. No silent substitute is chosen if use is uncertain.
+  creation from the unchanged template uses its default, while an instance export supplies the
+  stored selection as the new initial value. No silent substitute is chosen if use is uncertain.
 - After failure, work can continue on a verified eligible previous model. If the active selection
   is uncertain, reconcile before further model requests; independent work need not stop.
 
@@ -345,6 +347,9 @@ parameter DSL or implicit deep merge is required. Instances materialize declared
 retain resolved definitions, not mandatory template snapshots or input/override archives.
 Referenced code, credentials, Resource contents and live handles are not copied into that spec.
 Configuration-only export excludes system-owned status and must identify required dependencies.
+R6 accepts one `spec.config` map and export of its stored settings for fresh creation, with
+outstanding requests/observations separate. Export carries no live connections, grants or execution
+progress; the new instance still follows its owning Pool and backing-resource establishment rules.
 
 ### Plugin contracts and graph nodes
 

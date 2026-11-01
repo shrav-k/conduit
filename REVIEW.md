@@ -13,40 +13,41 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-**R5 is settled:** Agent-declared preparation, deliberate collision resolution and explicit refresh
-of loaded instructions/extensions and exposed tool definitions. Automatic refresh/reload is deferred.
-Dynamic provider catalogs remain discoverable; affected stale/incompatible definitions need explicit
-refresh/reconciliation before use. Changes to underlying data alone need no catalog replacement.
-The detailed accepted boundary and provider-detection limits appear below.
-
-Next is **R6: the concrete configuration and extension profile**. Work through a coherent
-template → instance → supported change → export example, keeping previously accepted semantics.
+**R6 representation/export is settled:** one instance `spec.config` map holds initial values and
+then confirmed settings; outstanding requests and observations stay separate. Export uses stored
+settings for fresh creation without copying readiness, grants, credentials or execution progress.
 The [worked search example](research/CONFIGURATION.md#r6-worked-example-configuration-through-creation-change-and-export)
-is drafted for discussion, not an accepted schema. Use it to settle three linked questions:
+now illustrates accepted behavior, while its remaining field spellings are provisional.
 
-| Area | Proposal to make concrete; not yet accepted |
+Next is **R6's YAML interpretation profile**, followed by implementation/version selection. The
+proposal is readable YAML over predictable typed data: use YAML 1.2 Core scalar resolution, restrict
+mapping keys to strings and numbers to finite supported values, and validate values without silent
+schema coercion. Keep comments, normal collections and multiline strings. Reject duplicate keys
+and already-prohibited unknown fields; schema-declared open maps remain allowed.
+
+| Input in a field with the stated contract | Proposed interpretation |
 | --- | --- |
-| Authoring values | A strict typed YAML data profile: predictable scalars, duplicate/unknown-key rejection, explicit path/environment inputs and no implicit shell evaluation. |
-| Instance representation | Distinguish fixed definitions, creation inputs, confirmed applied settings and observations; make export/fresh creation unambiguous after settings change. |
-| Extension resolution | Separate contract identity/version from implementation release; retain explicit implementation selection and reject silent substitution or migration. |
+| `queryLimit: 15`, where an integer is required | Integer 15, checked against the declared range. |
+| `queryLimit: "15"` | String, rejected for this integer field rather than converted. |
+| Omit `queryLimit` where its default is 10 | Use the declared default; a saved instance materializes 10. |
+| `queryLimit: null` or a blank value | Null, accepted only if the field permits it; not an instruction to reset/default. |
+| An empty list/map | Explicit emptiness, validated under the field's contract; not inherited values. |
+| `enabled: yes`, where a boolean is required | String, rejected; use a boolean such as `true`. |
+| `account: "${ACCOUNT}"` | Literal text, with no implicit environment substitution. An explicit input/capability must supply an account selection. |
+
+**Recommended v0 boundary, not yet accepted:** defer anchors/aliases, merge-key behavior and custom
+tags; use typed templates/references/graphs for reuse. No implicit shell/environment evaluation.
+Schema-defined input binding remains possible, and executable plugin steps can perform their
+declared work. This restriction concerns configuration loading, not a ban on scripts as plugins.
+
+The tradeoff is losing YAML-local copy/merge shorthand. An alternative permits bounded, document-local
+anchors/aliases while retaining the other strict rules; merge semantics would still need an explicit
+choice. The [configuration research](research/CONFIGURATION.md#r6-companion-proposals-yaml-values-and-implementation-selection)
+links the scalar rules to the YAML specification and separates them from Conduit's application policy.
 
 Draft related fields/examples together. Exact spelling, parser library, plugin ABI and storage are
-engineering choices unless they expose a new protocol behavior; they do not need individual votes.
-Communication remains R7 after this profile.
-
-**First R6 ruling proposed:** keep one instance configuration map. Before setup its values are
-initial inputs; after a named control confirms a change, they are the last confirmed settings.
-Pending requests and observed uncertainty remain separate. A fixed graph can read those settings
-on later starts without its definition changing. The template remains unchanged.
-
-For example, a template starts `queryLimit` at 10; an instance control confirms 15. The instance
-stores 15 and its configuration export carries 15 for fresh creation. The unchanged template still
-creates instances starting at 10. Export carries definitions/dependencies, not credentials, grants,
-readiness or execution history, and reports pending/uncertain observations separately. New Resource
-creation still selects an owner and explicit backing create/attach intent through a Pool.
-
-The alternative keeps creation values and applied values in two maps, adding precedence/export
-rules. The companion YAML/implementation proposals remain open whichever representation is chosen.
+engineering choices unless they expose a new protocol behavior. Implementation/version resolution
+is the remaining R6 topic after YAML; communication remains R7.
 
 ## Settled foundation
 
@@ -55,7 +56,7 @@ rules. The companion YAML/implementation proposals remain open whichever represe
 | Model | Interface, Agent, Resource, Pool and Conduit; template and instance forms. Rust-owned runtime, replaceable frontends, Pi as reference. |
 | Administration | Unrestricted v0 Interfaces, reusable frontend attachments and shared Interface control. Delegated Agent commands coexist without taking over or gaining Interface authority. Interface scoping is deferred. |
 | Construction | R2 selects finite, acyclic typed dependency graphs with branching/loops inside plugins; authored conditions, iteration and dynamic fan-out are deferred. Waits, valid-progress recovery and supported independent parallel steps remain. Instances own ongoing behavior. Direct complete-instance creation and repeated template use are both supported. |
-| Configuration | Resolved instance configuration/graph, materialized defaults, no required template-history ledger. R1 requires replacement for fixed-definition changes, including Interface administration. Named controls, confirmed settings separate from outstanding requests, target coordination and revision checks. |
+| Configuration | One `spec.config` map: initial values then confirmed settings; export stored values for fresh creation. Pending/uncertain state stays separate. Resolved graph/materialized defaults, no required template history. Fixed-definition changes require replacement; named controls, target coordination and revision checks govern supported changes. |
 | Organization | No generic registry-object labels or label-based selectors in v0. Pools use explicit named entries; discovery uses defined fields and relationships. Knowledge-record classification and typed access filters remain separate. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
@@ -77,7 +78,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
 | R4 — accepted | How are connections selected, delegated and routed? | Explicit Pool entries and provision-or-use-existing intent; no generic labels/selectors, automatic deployment or Pool connection defaults. Unambiguous/explicit routing and recipient-bound grants. | No implicit reuse/provision selection; richer reuse policies deferred. |
 | R5 — accepted | When do accessible skills, content and catalogs become active? | Declared compatible preparation, deliberate collision resolution and explicit refresh. Withhold affected known stale/incompatible calls; report detection limits. | Automatic reload/first-use refresh deferred; no implicit precedence or context replacement. |
-| R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
+| R6 — partly settled | What portable configuration/extension profile is shared? | Accepted: one `spec.config` map and export of stored settings. Remaining: typed YAML interpretation and explicit contract/implementation resolution, with no implicit environment expansion or substitution proposed. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
 
 ### R2 — graph execution and recovery
@@ -196,11 +197,15 @@ advance notice. Use the current grants throughout.
 ### R6 — configuration and extension profile
 
 The envelope, forms, IDs, Resource fields, strict schemas and checked authoring writes are settled.
-The [worked R6 configuration example](research/CONFIGURATION.md#r6-worked-example-configuration-through-creation-change-and-export)
-and its companion proposals cover the remaining semantics:
+**Accepted representation/export:** the [worked R6 configuration example](research/CONFIGURATION.md#r6-worked-example-configuration-through-creation-change-and-export)
+uses one `spec.config` map for initial and then confirmed settings. Pending/uncertain requests stay
+separate. Fixed definitions remain fixed; later starts read current settings under the type's contract.
+Export carries stored settings for fresh creation, reports uncertainty separately and carries no
+credentials, grants, readiness or progress. Resource creation still requires a Pool and explicit
+backing intent. The template remains unchanged; no parallel creation/applied maps are required.
 
-- Fixed setup/control definitions, establishment inputs, applied settings and status. Define fresh
-  creation/export after settings change without exporting credentials or importing observed success.
+Remaining companion proposals:
+
 - YAML values, string/duplicate keys, null/empty/omitted values, units, explicit path/environment
   inputs and optional parser features. No implicit shell evaluation.
 - Contract identity/version versus implementation package/release. Resolve collisions explicitly;
@@ -250,7 +255,7 @@ These do not need individual product rulings unless they change an approved cont
 | --- | --- |
 | README, SPEC, DESIGN | Current model retained. Direct complete-instance creation was already accepted; removed wording that still questioned it. Remaining semantics map to R1–R7. |
 | REVIEW | Replaced the sprawling agenda with this closure list, recommendations and implementation backlog. |
-| CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary is accepted; settings/export/version representation maps to R6. |
+| CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary and R6's single configuration/export behavior are accepted; YAML/version resolution remains under R6. |
 | ESTABLISHMENT, RESOURCES | R2/R3 execution and ownership boundaries are accepted. Kept lifecycle/type cases; remaining extension choices map to R6, with recovery examples drafted within settled contracts. |
 | CONDUITS | Corrected stale claims that control outcome/concurrency policy was unchosen. R3 settles retirement/ended-flow identity; routing/communication map to R4/R7. |
 | PI_CONNECTORS, PI_RUNTIME | Retained pinned evidence; removed the obsolete single-controller recommendation. Conduit-facing examples use Agent/Interface terminology. R5 settles explicit activation/refresh; communication remains R7. |

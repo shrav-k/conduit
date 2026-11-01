@@ -152,6 +152,14 @@ handler confirms application. Pending or uncertain requests remain separate; a l
 value is not presented as currently active when the outcome is unknown. Plugins define evidence
 of application. Initial creation settings likewise do not prove setup has run.
 
+R6 places these values in one stored `spec.config` map: materialized initial configuration before
+setup, then settings advanced only after confirmed supported changes. Graph/control definitions
+remain fixed; later starts read current settings under the type's restart contract and revalidate
+retained progress. Configuration-only export carries those stored values and retained definitions
+for fresh creation, reporting pending/uncertain observations separately. It carries no credentials,
+grants, readiness or execution progress; new Resource creation still requires an owning Pool and
+explicit backing create/attach intent. The source template is unchanged.
+
 Configuration changes apply one at a time per target instance by default, across all its Conduits.
 A type/plugin contract may allow safe parallel application. Ordinary Resource use follows its own
 rules; queueing versus rejection remains plugin-defined. Ordering alone does not detect stale intent.
@@ -160,9 +168,9 @@ A mismatch reports a conflict; callers can reread and reconcile. A control contr
 allow safe unconditional operations. Inspection and clients can carry the revision without human
 confirmation; exact revision scope and MCP representation remain open.
 
-Blanket instance immutability is replaced by explicit change contracts. Exact mutable fields,
-change-handler syntax, plugin application behavior, revision mechanics and storage
-layout remain for grouped review. This is neither a promise that every setting is mutable nor a
+Blanket instance immutability is replaced by explicit change contracts. Type-specific mutable fields,
+change-handler syntax, plugin application behavior and revision mechanics still need concrete
+contracts; physical storage remains an engineering choice. This is neither a promise that every setting is mutable nor a
 generic unrestricted spec-patch API.
 
 ## Conduits expose permitted interactions

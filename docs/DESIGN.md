@@ -340,9 +340,12 @@ Resources: the existing system management Resource for templates, registration a
 and a dedicated access-management Resource for grants and governing requirement bindings. The default
 root Interface starts from a locally available definition before registry services exist. Its declared
 graph directs this foundational setup and establishes management Conduits; the runtime supplies initial
-owner recognition and minimum loading/persistence support. Both Resources can share a service and
-storage implementation. Exact initial grants, interrupted-setup/repair mechanisms and storage remain
-under review. Initial establishment precedes ordinary use of these operations. Resource creation still goes
+owner recognition and minimum loading/persistence support. During explicit first initialization,
+the runtime authorizes foundational setup from the verified local-owner context. Once access
+management is ready, setup establishes ordinary recorded management grants for subsequent use.
+Initialization authority does not remain an application bypass or silently reopen after an outage.
+Both Resources can share a service and storage implementation. Interrupted-setup/repair mechanisms
+and storage remain under review. Resource creation still goes
 through its owning Pool. No application Pool, Agent or external service login is required first.
 Built-in definitions, exact operations and frontend transport/lifecycle remain open.
 

@@ -323,7 +323,9 @@ startup wiring remain open.
 
 The initial trusted authority must be selected by the system's establishment contract. An arbitrary
 Resource advertising policy evaluation cannot approve its own use or confer root authority.
-Initial owner recognition, first records and management-path repair remain I4 startup questions.
+Explicit first initialization uses verified local-owner authority until ordinary management grants
+are established. Recognition details, first-record schemas and management-path recovery remain I4/I7
+or implementation work; initialization does not become an ordinary grantless access path.
 Policy records are not ordinary knowledge notes: copying, searching or sharing a note cannot confer
 administrative authority or bypass the policy-management contract.
 
@@ -409,14 +411,18 @@ operations remain possible. Detailed schemas and type-specific checks stay for I
 **Accepted first-launch arrangement:** the runtime loads a locally available root Interface
 definition before registry services exist, with initial owner recognition and minimum
 loading/persistence support. Its graph directs establishment of the system Pool and management
-Resources. This chooses orchestration placement, not how initial operations receive authority.
+Resources. During explicit first initialization, the runtime authorizes that setup from the verified
+local-owner context. Once access management is ready, setup establishes ordinary recorded management
+grants and subsequent administration uses normal managed paths. This first-authorization boundary
+is accepted; initialization authority must not remain an application bypass or revive automatically
+after an outage.
 
-**Next area — first authority and recovery:** compare an explicitly verified-owner initialization
-context for foundational setup with recording/evaluating ordinary grants before the graph starts.
-Recommend the former, followed by normal recorded management grants once access management is
-established. This exception is proposed, not accepted; it must not become a normal application
-bypass or revive automatically after an outage. Interrupted setup and explicit repair must preserve
-known identities/outcomes. Storage extension and engine follow these boundaries.
+**Next area — explicit recovery:** recommend resuming partial setup or repairing a broken management
+path through the locally loadable root Interface's declared recovery operations, authorized by
+verified local-owner context when normal access management is unavailable. The alternative uses
+dedicated runtime recovery commands outside the Interface. This route remains proposed; both must
+preserve known identities/outcomes and reconcile uncertain effects. Storage extension and engine
+follow this boundary.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

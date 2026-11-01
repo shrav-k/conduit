@@ -31,8 +31,10 @@ wiring remain for review; this does not authorize extra test cases or begin impl
 
 The accepted first-launch boundary starts the root Interface from a locally available definition
 before registry services exist. Its declared graph directs foundational setup, supported by runtime
-owner recognition and minimum loading/persistence. The exact first-authority and partial-recovery
-mechanisms remain under review; the fixture must not assume them already implemented.
+owner recognition and minimum loading/persistence. Explicit initialization uses verified local-owner
+authority, then establishes ordinary management grants once access management is ready; this initial
+authority cannot silently reopen after an outage. Partial-setup recovery and the repair route remain
+under review. These are design rulings, not implemented fixture behavior or additional test scope.
 
 ## Question
 

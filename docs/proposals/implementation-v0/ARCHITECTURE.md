@@ -56,8 +56,9 @@ the Interface; it can retain supported work independently of an open CLI/TUI.
 
 Management and execution services retain their accepted authority. The Interface directs work;
 current authority permits it; target contracts and responsible services determine the actual
-operation and confirmed outcome. First-grant establishment and unavailable-path repair remain
-under review. A directive does not itself confer access.
+operation and confirmed outcome. Explicit owner-authorized initialization establishes the first
+normal management grants; interrupted setup and unavailable-path repair remain under review.
+A directive does not itself confer access.
 
 | Question | Responsibility | Concrete example |
 | --- | --- | --- |
@@ -138,10 +139,9 @@ of issuer provenance, permissions and grant ancestry. Any authorized administrat
 recipient participation/Conduit end also ends access. Bounded issuance operations may supply
 mandatory use restrictions and compose caller-added restrictions, returning the complete issued
 grant. They preserve intent and refuse explicit broadening; issuance-only checks do not become
-live issuer dependencies. Exact schemas/type-specific validation remain authoring work. Next settle
-initial establishment/repair and foundational persistence/engine selection. The trusted authority and first
-owner grant still need an explicit startup/repair contract; a Resource wrapper alone does not
-resolve that dependency.
+live issuer dependencies. Exact schemas/type-specific validation remain authoring work. First
+establishment uses the accepted owner-authorized initialization contract below. Next settle
+interrupted setup/repair and foundational persistence/engine selection.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops
@@ -174,32 +174,47 @@ connections using their contracts. No arbitrary plugin may claim root authority.
 reuses retained identities/configuration rather than repeating a fresh installation. An unavailable
 existing authority/store is not evidence of an uninitialized system.
 
-#### First authority and grant establishment — proposed
+#### First authority and grant establishment
 
-Both approaches below retain the accepted root-directed graph. They differ in how its first
-foundational operations are authorized before normal access-management services are ready:
+**Accepted:** during explicit first initialization, the runtime authorizes the selected root
+Interface's foundational setup from the verified local-owner context. Its graph establishes the
+system Pool and management Resources. Once access management is ready, setup establishes ordinary
+recorded management grants and subsequent administration uses normal managed paths. The runtime
+does not need to record/evaluate ordinary grants before any setup step can run.
 
-| Approach | Before normal management grants are usable | Consequence |
-| --- | --- | --- |
-| Explicit owner-authorized initialization | The runtime recognizes an explicitly requested initialization for the verified local owner and authorizes the selected root's foundational setup under that initial trust context. Once access management is ready, establish normal participation grants and use normal managed paths. | Breaks the first-grant dependency without requiring the access-management service to authorize its own creation. Needs an explicit initialization boundary, recorded progress and transition to ordinary authority. |
-| Record ordinary grants before setup | Initial runtime support records the root's first normal grant/participation and evaluates it from locally available authoritative state before the graph starts. | Uses ordinary grant semantics from the first step, but requires initial grant targets/state and evaluation before their Resource services are ready. It must later retain one authority for those same records. |
+This initial authority is tied to explicit initialization, the selected root definition and recorded
+setup state. It does not leave a general application bypass after completion or silently reactivate
+when management becomes unavailable. Broad v0 owner administration continues through normal grants;
+Agents gain neither implicit OS-user authority nor offline grants. This resolves the first-grant
+dependency without making templates self-authorizing.
 
-Recommend explicit owner-authorized initialization for the first implementation. This is permission
-for foundational establishment under the selected root definition, not an ordinary application
-access path, a new object family or a global grant-check bypass. Its availability must be tied to
-explicit initialization and recorded setup state; completion must not leave it available for later
-ordinary requests. The root's broad v0 owner administration continues through recorded management
-grants once those services are established.
+Exact owner recognition, first-grant records and persistence remain authoring/implementation work.
+Interrupted establishment and explicit unavailable-path repair still need their contract below;
+partial or inaccessible state must not be treated as a fresh installation.
 
-Interrupted setup would use retained identities/progress and the verified owner context; the exact
-resume/repair contract remains to be settled. Do not silently treat partial or inaccessible state
-as a fresh installation, erase data, or reopen initialization authority merely because management
-is unavailable. Ordinary Agents retain the no-offline-grants rule. Broad owner repair remains
-available as agreed, but its path when normal services fail still needs an explicit contract.
+#### Interrupted setup and repair — proposed
 
-This is a proposal, not an accepted authorization exception. Exact owner recognition, first-grant
-records, persistence and the transition between initial and normal authority remain subsequent
-contract/implementation details. The alternative remains open for ruling.
+Recommend that explicitly requested setup resume and foundational repair use the locally loadable
+root Interface and its declared recovery operations, with the runtime verifying the local owner
+even when ordinary management access cannot be reached. Runtime support would load the retained
+definition/progress and provide that recovery entry, while operation contracts determine what can
+actually be recovered. This extends the accepted Interface role and explicit owner repair; it is
+not permission to restart initialization automatically after an outage.
+
+| Situation | Proposed behavior |
+| --- | --- |
+| Initial setup stops after creating the system Pool, before access management is ready | Explicit resume loads the same root definition and retained identities/progress, checks which effects are confirmed, and continues valid unfinished setup. It does not create a second Pool or blindly repeat uncertain effects. |
+| Established access management cannot start | The owner explicitly requests repair through the locally loadable root Interface. Available state is inspected and supported repair/reconnect operations run without requiring the broken management path to authorize its own repair. Ordinary application requests still need verifiable permission. |
+| A required definition, implementation or authoritative record is missing or inconsistent | Report the unresolved condition and preserve available state. Explicit repair must restore or reconcile what its contracts support; it cannot fabricate previous outcomes, silently replace identities or treat a same-named new object as the old one. |
+
+The alternative puts these recovery actions in dedicated local runtime commands outside the
+Interface's declared operations. That reduces the recovery path's dependence on Interface execution,
+but establishes a second place to author and maintain system-management behavior. Both approaches
+retain broad owner repair, checked operations, fixed-definition replacement rules and backing-data
+preservation. No automatic default reset, application restart or second writable authority follows.
+
+This recovery route is proposed, not yet accepted. It chooses where explicit recovery runs; exact
+operations, retained-record layout, missing-code recovery and storage engine remain separate work.
 
 **Establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then
@@ -209,8 +224,8 @@ opens the management connections, and makes observation/control available to att
 On subsequent starts, its recovery operations reuse retained object identities, settings and grants;
 missing or inconsistent state is reported for explicit repair. Resource creation still proceeds
 through its Pool. Normal running-instance changes use Conduits and supported controls, and fixed
-definition changes still require replacement. This describes the accepted orchestration boundary;
-it is not final YAML or approval of a particular first-authority mechanism or storage plugin.
+definition changes still require replacement. This describes the accepted orchestration and first
+authorization boundaries; it is not final YAML, a complete recovery contract or a storage selection.
 
 The first load and earliest durable progress still need an implementation home. A root Interface
 cannot load the only copy of its definition from a store reachable only after that same definition
@@ -228,10 +243,10 @@ permission does not fabricate missing state or prove that an external action suc
 its frontend differs from stopping its runtime or a management service; the existing outage rules
 still govern new admissions and independent executors' already-dispatched work.
 
-**Review direction:** assess this active Interface role first, then settle how its foundational
-persistence is represented and loaded. Administrative scope, ownership of domain data and durable
-state authority stay distinguishable. This is a proposal under [I4](REVIEW.md#i4--local-transactional-authority),
-not an accepted storage-engine choice or change to every Interface's configuration.
+**Review direction:** settle the explicit recovery route, then how foundational persistence is
+represented and loaded. Administrative scope, ownership of domain data and durable state authority
+stay distinguishable. The remaining [I4](REVIEW.md#i4--local-transactional-authority) proposals do not
+select a storage engine or change every Interface's configuration.
 
 ### Instance execution boundary
 

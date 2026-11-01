@@ -109,8 +109,11 @@ separate integration evidence.
    declared graph establishes the system Pool, its system management and dedicated access-management
    Resources, and management Conduits. Access management handles grants and governing requirement
    bindings; system management handles templates, registration and instance creation. Frontends attach
-   to the Interface. Exact first-grant and interrupted-setup contracts remain open. Later startup reuses retained objects;
-   missing or inconsistent components require explicit repair.
+   to the Interface. Explicit first initialization uses verified local-owner authority until ordinary
+   management grants are established, then subsequent administration uses normal managed paths.
+   Initialization authority does not silently reopen after an outage. Interrupted-setup recovery
+   remains open. Later startup reuses retained objects; missing or inconsistent components require
+   explicit repair.
 2. The Interface authors templates and composes a Pool's named available Resource entries.
    Listing an entry does not provision it or grant access.
 3. Explicit setup provisions selected entries or uses selected existing instances. Every Resource

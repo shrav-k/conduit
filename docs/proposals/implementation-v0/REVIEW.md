@@ -120,8 +120,8 @@ one review queue rather than another decision ledger.
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
 explicit governing targets with live ownership-based matching, and bounded issuance operations.
-Root-directed first launch from a local definition is also accepted. Remaining I4 work is grouped
-into two bundles: first-authority/partial-setup/repair and storage
+Root-directed first launch from a local definition and owner-authorized initialization are also
+accepted. Remaining I4 work is grouped into two bundles: partial-setup/repair and storage
 placement/backend. I5 credential custody/enrollment and I6 capture defaults add two bundles.
 That is four planned conceptual bundles, beginning with startup/repair, followed
 by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
@@ -133,7 +133,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Initial authority, startup/repair and foundational storage | Authorization structure, live governing targets and bounded issuance accepted. Root-directed first launch accepted; next first authority/partial setup/repair, then storage. |
+| I4 | Startup recovery/repair and foundational storage | Root-directed first launch and owner-authorized initialization accepted, alongside the settled authorization model. Next explicit recovery route, then storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -416,7 +416,7 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: root-directed first launch accepted; first authority, recovery and storage remain open.**
+**Status: root-directed first launch and first authority accepted; recovery and storage remain open.**
 The runtime can start the root Interface from a locally available definition before registry
 services exist. Its declared graph establishes the system Pool, system management and dedicated
 access-management Resources, and their management connections. Runtime support supplies initial
@@ -424,12 +424,19 @@ owner recognition and minimum loading/persistence. Continuing administration/obs
 the existing Interface role; no new object family or autonomous reconciliation loop is introduced.
 See the [Interface walkthrough](ARCHITECTURE.md#interface-as-system-director).
 
-**Next discussion — authorization of first setup:** compare an explicitly owner-authorized
-initialization context with recording/evaluating ordinary root grants before setup begins. Both
-preserve the accepted root-directed graph. The [first-authority comparison](ARCHITECTURE.md#first-authority-and-grant-establishment--proposed)
-recommends the former to break the initial service dependency, with recorded setup progress and a
-transition to normal management grants. That recommendation is not accepted yet. The root's initial
-definition does not grant itself authority, and no ordinary Agent receives an offline grant.
+**First authorization is accepted:** during explicit initial setup, the runtime authorizes the
+selected root's foundational graph from verified local-owner context. Setup establishes ordinary
+recorded management grants once access management is ready, then uses normal managed paths. This
+[initialization boundary](ARCHITECTURE.md#first-authority-and-grant-establishment) breaks the first-grant
+dependency without leaving an application bypass or silently reactivating after an outage. The
+definition cannot authorize itself, and ordinary Agents receive no offline grants.
+
+**Next discussion — explicit recovery route:** recommend that partial-setup resume and repair of
+broken management access use the locally loadable root Interface's declared recovery operations,
+with runtime owner verification available independently of that broken path. Compare dedicated
+runtime recovery commands outside the Interface. The [recovery examples](ARCHITECTURE.md#interrupted-setup-and-repair--proposed)
+retain valid progress, identities and outcomes; they do not authorize automatic reinitialization.
+This choice is still open.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.
@@ -449,8 +456,8 @@ Kubernetes RBAC, OPA, Zanzibar, Macaroons/Biscuit and MCP/OAuth. The
 **Recorded participation grants are accepted:** ordinary managed use, including broad root
 management, requires a grant on the selected participation. Policy governs issuance and current use;
 there is no grantless direct-policy alternative. Authorized connection setup can establish a grant
-covering many requests without another user manifest or per-call token. Initial root-grant
-establishment remains an explicit startup question.
+covering many requests without another user manifest or per-call token. The accepted owner-authorized
+first initialization establishes the initial root grants once access management is ready.
 
 **Grant administration/lifetime is accepted:** check the administrator's current authority when
 issuing, changing or revoking a grant. Issued grants are independent of issuer provenance, later
@@ -489,25 +496,23 @@ are I7/conformance work.
 
 **Next conceptual choices, in order:**
 
-1. How is the root's foundational graph authorized before normal access management is ready?
-   Recommend explicit verified-owner initialization, transitioning to recorded management grants
-   once those services are established. The alternative records/evaluates ordinary grants before
-   any graph steps. This is a new ruling, not implicit in accepting root-directed startup.
-2. Settle interrupted-establishment and unavailable-management repair, preserving identities and
-   outcomes rather than silently initializing again. Then review storage extension and the initial
-   engine. Exact loader/record fields remain in I7 or implementation work.
+1. Should explicit interrupted-setup resume and unavailable-management repair use the root
+   Interface's declared recovery operations, with local owner verification, or dedicated runtime
+   recovery commands? Existing preservation, uncertainty and fixed-definition rules apply to both.
+2. Then review storage extension and the initial engine. Exact loader/record fields and recovery
+   methods remain in I7 or implementation work; they need not become individual conceptual rulings.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,
 token format, public policy DSL or storage engine. Local root-definition loading and graph-directed
-establishment are accepted; first-grant issuance, partial recovery, unavailable-path repair and the
-earliest durable progress mechanism remain open.
+establishment and owner-authorized initialization are accepted; the recovery route and earliest
+durable progress mechanism remain open.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant
 failure cases; the [storage comparison](ARCHITECTURE.md#storage-boundary-under-review) separates
 contract, representation and engine. SQLite and pluggability are not mutually exclusive. No storage
-ruling or complete initial-authority/recovery contract has been accepted. The accepted
+ruling or complete recovery contract has been accepted. The accepted
 management/instance-state authority split is unchanged; storage supplies persistence without
 becoming a second owner of policy or instance transitions. Compare three arrangements, which can
 also be combined rather than treated as a closed set of exclusive choices:
@@ -538,7 +543,7 @@ an internal adapter still needs migrations and conformance tests. No cross-servi
 automatic failover or offline permission grant follows. Services exchange information through their
 contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-Finish I4 by settling first authority/recovery, the storage extension/lifecycle boundary and initial implementation. Detailed SQL,
+Finish I4 by settling the recovery route, storage extension/lifecycle boundary and initial implementation. Detailed SQL,
 method names and helper organization need not become separate conceptual rulings.
 
 ## I5 — Credential custody and account compatibility

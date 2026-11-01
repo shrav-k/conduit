@@ -1,24 +1,30 @@
 # Pi runtime, Durable and ecosystem research
 
-Source investigation: 2026-10-30. This report provides evidence for **Session, Resource, Pool and Conduit templates
-and instances**. Current contracts live in [SPEC.md](../SPEC.md) and
-[DESIGN.md](../DESIGN.md); open decisions are in [REVIEW.md](../REVIEW.md). The report's
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
+
+Source investigation: 2026-10-30. This report provides source evidence for the current **Interface, Agent, Resource, Pool and
+Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../SPEC.md) and
+[DESIGN.md](../DESIGN.md); review outcomes and deferred work are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 
 The later [Pi re-review](PI_CONNECTORS.md) refreshes provider/authentication, context
-conversion, MCP version compatibility and Chord evidence against the four-family template/instance model.
+conversion, MCP version compatibility and Chord evidence for the current template/instance model.
 Start there for those topics and the [YAML proposal](CONFIGURATION.md); use this
 report for the detailed Durable, frontend and ecosystem investigation. Proposals in either
 report still require a ruling before becoming accepted contracts.
 
-Read [the recommendation](#recommendation), [frontend evidence](#frontend-components-for-session-interfaces)
+Read [the recommendation](#recommendation), [frontend evidence](#frontend-components-for-interfaces)
 and [the runtime proposal](#proposed-rust-runtime) first. The [Durable investigation](#pi-durable-in-depth)
 contains the source mechanisms and failure cases behind those proposals.
 
 ## Recommendation
 
-Build a small Rust runtime that owns session execution, context construction, provider
+Build a small Rust runtime that owns Agent execution, context construction, provider
 requests, tool dispatch, recovery records, and observation. Put presentation behind a
 frontend contract. Use Pi's terminal components where useful, and reproduce selected
 Pi/Durable behavior in Conduit rather than installing a second agent loop underneath it.
@@ -67,7 +73,7 @@ combine that contract with an older callback/publication description.
 “Test evidence” means an upstream test was inspected unless explicitly listed as run
 in [validation](#validation-and-limits). Rust designs and experiment criteria are proposals.
 
-## Frontend components for Session interfaces
+## Frontend components for Interfaces
 
 ### The stock coding-agent TUI is not an independent runtime client
 
@@ -89,7 +95,7 @@ context, and lifecycle in charge, so it would not meet Conduit’s runtime owner
 
 The selected direction is a custom Conduit terminal. Pi's renderer, editor, Markdown,
 images, completion/keybindings and selected presentation components are reuse candidates.
-Conduit must implement command routing, Session state views and controls. Exact dependencies
+Conduit must implement command routing, Agent state views and controls. Exact dependencies
 remain open; full stock-UI preservation is unnecessary.
 
 The standalone [`pi-tui` package][tui] is a clean UI reuse boundary: its package does
@@ -114,14 +120,14 @@ from UI labels. Use capability negotiation so unsupported features remain visibl
 | Surface | Proposed responsibility |
 | --- | --- |
 | Commands | Submit/steer/follow up, cancel, pause/resume, select supported settings, and request fresh/fork; correlate durable operations separately from transport request IDs. |
-| Control | One controlling frontend, observers elsewhere; a control generation rejects stale input after transfer. Closing a view detaches rather than implicitly cancelling work. |
+| Control | Accepted current design: owner-operated frontends share their reusable Interface's control; delegated Agents can also invoke permitted target controls. Preserve attribution and target coordination. Closing a view detaches rather than cancelling work. |
 | State | Authorized snapshot plus ordered updates, a reconnect position, and explicit gaps. Separate durable transcript/outcomes from provisional token/progress updates. |
 | Interaction | Typed requests for supported user choices and responses. Terminal widgets are presentation capabilities, not mandatory runtime objects. |
 | Recovery | Reattach to a verified execution; fetching status or resubscribing must not start new work. |
 
 MCP remains the default external shared-capability contract. Evaluate standard MCP
 features first; use a small versioned runtime control/event contract where frontend
-streaming, controller transfer, or attachment needs more semantics. Do not expose Pi's
+streaming or attachment needs more semantics. Do not expose Pi's
 internal classes as Conduit's permanent API. Exact transport/schema is a review choice.
 
 ## What to reproduce, reuse, or defer
@@ -130,7 +136,7 @@ internal classes as Conduit's permanent API. Exact transport/schema is a review 
 | --- | --- | --- |
 | `pi-tui` / UI components | Rendering, editing, status and tool-result presentation | Optional frontend dependency; runtime remains Rust. |
 | `pi-ai` | Provider capability descriptions, streaming, message conversion, usage and authentication edge cases | Conduit provider/account adapters, with lower-level libraries evaluated separately. No Pi agent loop. |
-| `pi-agent-core` / coding-agent | Turn/tool loop, queued input, resource loading, compaction, session behavior | Reimplement the needed behavior under Conduit's Session lifecycle and Conduit access contracts. |
+| `pi-agent-core` / coding-agent | Turn/tool loop, queued input, resource loading, compaction, session behavior | Reimplement the needed behavior under Conduit's Agent lifecycle and Conduit access contracts. |
 | `pi-durable` | Transactional execution records, recovery, task ownership, context projections and backend conformance | Architectural/test reference; no Pi Durable runtime dependency. |
 | `pi-mcp` / discovery | Provider-native tools/resources, discovery budgets, connection lifecycle | Conduit-managed MCP clients for its runtime; separate native-host adapters for external agents. |
 | `pi-telemetry` | Structured spans, metrics, propagation and conformance | Conduit observations are authoritative; exporters are replaceable. |
@@ -158,8 +164,8 @@ Conduit should map concepts deliberately:
 
 | Durable concept | Conduit interpretation |
 | --- | --- |
-| Session mutation authority | Internal runtime/store owner; not automatically one public Conduit session. |
-| Conversation | Closest analogue to private conversation state within a logical session. |
+| Session mutation authority | Internal runtime/store owner; not automatically one public Conduit Agent. |
+| Conversation | Closest analogue to private conversation state within a logical Agent. |
 | Task checkpoint | Machine recovery phase and data; distinct from our agent-written portable task checkpoint. |
 | Entries / context head | Retained evidence and selected model-input projection. |
 | Documents | Runtime state with defined lifecycle; not automatically shared knowledge or record revisions. |
@@ -201,7 +207,7 @@ of arbitrary tool outputs. Distinguish memory-cache eviction from permanent rete
 ### 3. Submissions, queues, and activation
 
 Here Pi Durable activation means scheduling execution. It is distinct from Conduit's
-Session template instructions for preparing permitted Resources.
+Agent template instructions for preparing permitted Resources.
 
 Durable persists submissions with queued/placed/settled outcomes, supports steering and
 follow-up placement, and makes cancellation of a waiter distinct from cancellation of
@@ -341,11 +347,11 @@ foreground boundary. [Compaction source][compaction-source] · [Specification][d
 | Retained execution history | What was submitted, generated, attempted, and observed, with provenance and outcomes. |
 | Request context | The authorized content selected for a particular model request, after compatibility transformations. |
 | Frontend projection | Human-readable history and transient progress appropriate to that frontend's access. |
-| Shared knowledge | Explicit Resource records retrieved/written through authorized Pool access; not an automatically merged Session scratchpad. |
+| Shared knowledge | Explicit Resource records retrieved/written through authorized Pool access; not an automatically merged Agent scratchpad. |
 
 Record source references/revisions and transformations with a request-context manifest,
 without requiring another full text copy of every prompt. Pin source bounds; apply
-current Conduit access and Session limits when assembling and dispatching; report omitted/incompatible content.
+current Conduit access and Agent limits when assembling and dispatching; report omitted/incompatible content.
 Start compaction at a safe turn boundary if needed for long sessions. Keep background
 compaction, arbitrary history editing, and sophisticated branch operations later.
 
@@ -429,9 +435,9 @@ plugin framework. Keep the first implementation local and small.
 
 ```mermaid
 flowchart TB
-    UI[Terminal and other frontends] --> API[Session control and state API]
-    Spec[Complete Session spec and activation instructions] --> Runtime
-    API --> Runtime[Rust Session supervisor and turn loop]
+    UI[Terminal and other frontends] --> API[Interface and Agent control/state API]
+    Spec[Complete Agent spec and activation instructions] --> Runtime
+    API --> Runtime[Rust Agent supervisor and turn loop]
     Runtime --> Context[Private context builder]
     Runtime --> Providers[Provider and account adapters]
     Runtime --> Broker[Tool dispatch]
@@ -446,7 +452,7 @@ flowchart TB
     Adapters --> Memory[Memory and search backends]
 ```
 
-An execution reads its Session's complete spec and resolves explicit Conduit bindings, applies activation instructions
+An execution reads its Agent's complete spec and resolves explicit Conduit bindings, applies activation instructions
 to permitted Pool resources, admits input, builds authorized
 context, streams a provider response, validates/dispatches tool calls, persists outcomes,
 and advances until it settles or needs input. Provider-specific messages stay inside
@@ -454,13 +460,13 @@ adapters; Conduit's public identity, access and lifecycle rules remain independe
 
 | Boundary | Minimum first responsibility | Later, when justified |
 | --- | --- | --- |
-| Session supervisor | Logical lifecycle, execution binding, one controller, explicit restart, account separation | Remote workers, richer scheduling and migration. |
+| Agent supervisor | Logical lifecycle, execution binding, shared Interface/delegated control, explicit restart, account separation | Remote workers, richer scheduling and migration. |
 | Provider/account adapter | Selected provider streaming, capabilities, cancellation, credential ownership and identity evidence, honest usage | More providers, routing, additional auth modes. |
 | Context builder | Selected instructions, permitted checkpoint/history/memory, compatibility conversion, bounded context | Background compaction, advanced branch views. |
 | Tool broker | Schema validation, intent/outcome, current managed checks, cancellation, output limits and attribution | Comprehensive MCP operation enforcement and recoverable Code Mode. |
 | Runtime store | Accepted input, execution state, tool outcomes, retained history and usage; inspectable pending work | Optimized batching, generalized durable workflows. |
 | Memory service | Existing record/search/revision/sharing contract through replaceable backends | Optional extraction, indexing/classification enhancements. |
-| Frontend adapter | Input and state presentation, controller transfer, reconnect and capability gaps | Additional frontends and richer native widgets. |
+| Frontend adapter | Input/state presentation, identifiable Interface attachments, reconnect and capability gaps | Additional frontends and richer native widgets. |
 
 Use Rust's types for states and async task ownership; do not assume an in-memory async
 task is durable. Recoverable state must be serializable and versioned. Plugins that
@@ -470,13 +476,13 @@ library remains implementation planning.
 
 ### Fit to the model
 
-These components implement the four-family template/instance model; they are not additional domain concepts.
-Session templates supply execution and activation instructions. Sessions own private execution state.
+These components support the five-family template/instance model; they are not additional domain concepts.
+Agent templates supply execution and activation instructions. Agents own private execution state.
 Resource instances are created and exclusively owned by Pools, then accessed through
-connections. Reusable templates remain distinct from those instances. Frontends present the
-Session, and native adapters supply integration-specific behavior.
+connections. Reusable templates remain distinct from those instances. Frontends present an Interface
+and Agent views; native adapters supply integration-specific behavior.
 
-Remaining implementation choices concern Session durability depth, supported Session template account
+Remaining implementation choices concern Agent durability depth, supported Agent template account
 bindings, Resource compatibility and Conduit behavior. Native authentication delegation is
 appropriate for external-agent adapters; Conduit's own provider adapter needs a supported
 path. Native host execution and isolated execution remain distinct from runtime selection.
@@ -523,10 +529,11 @@ host runtime can access more than a selected tool environment unless the archite
 actually confines it. The isolation backend and supervision/reconnection behavior
 must be evaluated independently; a remote process protocol alone proves neither.
 
-## Communication between Sessions through Conduits
+## Communication between Agents through Conduits
 
-Conduits support resource access and communication between Sessions. The
-[interaction research brief](../REVIEW.md#4-connections-authority-and-communication) defines the remaining work.
+Conduits support resource access and communication between Agents. The
+[review outcomes](../REVIEW.md#review-outcomes) define the first retained-history/attention contract
+and Interface-linked observability; concrete schema examples are next.
 Separate addressing, authorization, retained exchange, attention and execution when
 comparing candidate contracts; a source library's topology does not choose Conduit's.
 
@@ -558,7 +565,7 @@ merely because a reference offers one.
 ## Proposed experiment sequence
 
 The current [experiment order](PI_CONNECTORS.md#validation-performed-and-next-experiment)
-and [four-family acceptance agenda](../REVIEW.md#initial-experiment)
+and [acceptance agenda](../REVIEW.md#initial-experiment)
 are maintained together. The Durable-specific fault cases below supplement that plan;
 they do not define a second implementation sequence.
 
@@ -571,11 +578,11 @@ they do not define a second implementation sequence.
 - Stale worker result after replacement: retain provenance without advancing the new run.
 - Storage commit followed by acknowledgement failure: inspect committed state on reopen.
 - Slow/lost frontend updates: bounded memory, explicit gaps, authorized snapshot recovery.
-- Paused session observed or waited upon: no new provider call.
+- Paused Agent observed or waited upon: no new provider call.
 - Parent cancellation during child work: visible cancellation intent and child cleanup;
   an uncooperative plugin cannot falsely report that it stopped.
 - Compaction/child usage plus parent totals: retain all observations without overlap.
-- Account switch or fresh session: no inherited credentials, provider cache or private
+- Account change through a new Agent, or fresh creation: no inherited credentials, provider cache or private
   history from an unrelated execution.
 
 ## Validation and limits

@@ -1,24 +1,30 @@
 # Pi re-review: connectors, context and communication
 
-Research date: 2026-10-30. **Recommendations for discussion, not new accepted contracts.**
-The accepted model has Session, Resource, Pool and Conduit families, each with templates
-and instances. Activation instructions belong to Session templates. Conduit owns its Rust
-runtime and a replaceable frontend.
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
-Read this report's recommendation, then [the configuration proposal](CONFIGURATION.md)
-and [the synthetic template/instance scenario](templates-instances.scenario.yaml). The earlier
+Research date: 2026-10-30. **Recommendations for discussion, not new accepted contracts.**
+The source review used the earlier Session/Resource/Pool/Conduit vocabulary. Current design
+uses Interface and Agent alongside Resource, Pool and Conduit. Activation remains consumer
+behavior; Conduit owns its Rust runtime and replaceable frontends.
+
+Read this report's recommendation, then [the configuration research](CONFIGURATION.md). The earlier
 [Pi investigation](PI_RUNTIME.md) remains the detailed source for Durable, frontend
-coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) groups the rulings.
+coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) records the settled direction and schema boundary.
 
 ## Recommendation
 
-The source findings inform the four-family template/instance model:
+The source findings inform the current five-family template/instance model:
 
 | Concept | Refinement proposed from this investigation |
 | --- | --- |
-| Session | Templates keep account choices and activation explicit; instances retain original history and execution evidence; construct a separate, permission-checked context projection for each model request. Record the losses and transformations. |
+| Agent | Templates keep account choices and activation explicit; instances retain original history and execution evidence; construct a separate, permission-checked context projection for each model request. Record the losses and transformations. |
 | Resource | Reusable templates describe native contracts; Pool-owned instances record backing identity and compatibility. Provider catalogs, account access and tested behavior are different observations. |
-| Pool | Templates describe provisioning selections; instances exclusively own the Resources they create/attach. Ownership does not itself grant access or activate content. |
+| Pool | Establish owned Resources and shared service authentication; refresh and service identity are separate from caller rights. Ownership alone does not grant use or activate content. |
+| Interface | Present authoring, setup interactions, inspection and Conduit-mediated control across replaceable frontends. |
 | Conduit | Templates define interactions; opened connections realize them, requesting any supporting Resources through Pools. Resource calls, requests for agent work, retained notifications and observable state need different completion and recovery semantics. |
 
 Build Rust protocol adapters beneath Conduit's runtime, with provider definitions and
@@ -32,7 +38,7 @@ Use Kubernetes-shaped objects for configuration and Gateway API's distinction be
 reference, authority and observed attachment. Do not import a Kubernetes control plane,
 automatic agent restarts, or cascading deletion of Pool members.
 
-Two findings change the emphasis of the next review:
+Two findings constrain implementation:
 
 1. **MCP compatibility needs a versioned adapter.** The inspected Pi client implements
    the November 2025 lifecycle; the July 2026 standard substantially changes it. Copying
@@ -75,7 +81,7 @@ For Conduit, the proposed split is:
 | Model catalog | Model IDs, operation families, modalities, limits, reasoning options, prices when known, source/freshness. | That a live request succeeds or reported pricing equals subscription cost. |
 | Account binding | Selected registration, credential resolution/refresh ownership, identity evidence and account-specific availability. | Permission to expose unrelated files, tools or memory to that account. |
 
-These are implementation responsibilities under Session/Resource contracts,
+These are implementation responsibilities under Agent/Resource contracts,
 not additional top-level concepts. An external Codex or Claude Code runtime is a separate
 adapter: it owns its loop, native history and supported authentication. A model-provider
 adapter supplies inference to Conduit's loop. A frontend supplies neither.
@@ -188,7 +194,7 @@ that those requirements have been tested against services.
 
 Image generation and classification should have separate operation contracts. A provider
 being selectable for classification must not make it appear usable as a conversational
-Session model. Add each provider definition with its explicit endpoint/auth/compatibility
+Agent model. Add each provider definition with its explicit endpoint/auth/compatibility
 fixtures; sharing a wire adapter should reduce duplication without hiding exceptions.
 
 Pi's normalized stream distinguishes text, thinking and tool-call starts/deltas/ends,
@@ -219,11 +225,12 @@ Proposed Conduit adaptation:
 - Namespace credentials, refresh locks, catalog caches and logout by **account registration
   and provider**. Preserve provider identity; do not fake different providers just to separate accounts.
 - Give every execution an explicit account binding. Reuse credential ownership where supported,
-  while keeping native/private Session state separate. Persist no token in exported YAML/history.
+  while keeping native/private Agent state separate. Persist no token in exported YAML/history.
 - Inject a deliberately constructed environment and credential resolver. Pi's environment
   override falls back to its base context for empty/missing values; an overlay is not isolation.
-- Separate provider auth from MCP/resource-service auth. Sharing a Resource definition must
-  not accidentally share an OAuth grant, endpoint-derived state or Session root directory.
+- Separate model-provider auth from service auth. Pool-owned service capabilities normally share
+  their managed binding across authorized Agents; template reuse alone does not share an OAuth grant.
+  Coordinate refresh centrally and retain per-caller Conduit permissions/private Agent state.
 - Treat callback-port contention during concurrent enrollment, refresh/logout races, re-login,
   provider account verification and stale-worker results as adapter test cases. Four accounts
   can be enrolled sequentially while subsequent executions run concurrently.
@@ -282,8 +289,8 @@ generated fields. Unmatched tool results are not comprehensively validated by th
 
 ```mermaid
 flowchart LR
-    H[Retained Session history] --> C[Context construction]
-    P[Session activation results] --> C
+    H[Retained Agent history] --> C[Context construction]
+    P[Agent activation results] --> C
     R[Permitted Resource revisions] --> C
     K[Applicable checkpoint] --> C
     C --> A[Target protocol projection]
@@ -314,11 +321,10 @@ own runtime can retain richer structured history; native integrations may offer 
 transcript or opaque resume handle. Report which path was used. This refines the existing
 portable-checkpoint guarantee rather than replacing it with universal full-history fidelity.
 
-Before a model/account switch, close or explicitly classify outstanding tool effects, record
-the execution boundary, reconstruct permitted context, then apply target conversion. An
-unknown tool outcome stays unknown even if the wire format needs a placeholder. Invalidate
-opaque continuation across an account/endpoint change unless the adapter positively proves
-compatibility. A new account is not a reason to change the logical Session ID.
+Before a supported model change, classify outstanding effects and apply the runtime's transition
+contract. Account/provider-boundary changes require a new Agent under the current design; transfer
+permitted context explicitly through Pool-owned Resources and Conduits. Unknown tool outcomes
+remain unknown, and opaque continuation must not be reused across incompatible identities.
 
 Budget before dispatch, including activated prompts/tool descriptions and reserved output.
 Prefer preserving recent tool-call/result groups and recording omitted material to blindly
@@ -326,7 +332,7 @@ truncating serialized JSON. A smaller target may require compaction; failed comp
 not erase history or automatically repeat unsafe tool effects. Compaction is a model operation
 whose provider/account/usage needs attribution. Exact thresholds remain an experiment choice.
 
-## Session activation and Pool resources
+## Agent activation and Pool resources
 
 Pi advertises skill metadata before loading full instructions. Packages can bundle skills,
 prompts, themes and executable extensions; package selections narrow what the package
@@ -336,27 +342,33 @@ selected precedence rules. [Skills][skills] · [Packages][packages]
 
 The proposed preparation sequence is:
 
-1. Read the Session's complete instance spec, materialized at creation, and resolve its explicit dependencies.
+1. Read the Agent's complete instance spec, materialized at creation, and resolve its explicit dependencies.
 2. Open/join selected connections explicitly; resolve owner-Pool Resource access and current authority.
    Any required new Resource is provisioned through its Pool before use.
 3. Build the permitted Resource inventory, including source versions and compatibility.
-4. Apply **activation rules in the Session spec** to that inventory: advertise skills, register permitted
+4. Apply **activation rules in the Agent spec** to that inventory: advertise skills, register permitted
    tools, mount an authorized workspace, or load selected instruction content within a budget.
 5. Record results, skipped resources, conflicts, unsupported capabilities and content provenance.
-6. Let the Session start its model turn using that resolved preparation result.
+6. Let the Agent start its model turn using that resolved preparation result.
 
 This avoids a circular bootstrap where the model must discover and install the tools needed
 to load its own instructions. Structured preparation actions can run before inference;
-free-text behavioral instructions remain agent guidance. The Session template can contain both,
+free-text behavioral instructions remain agent guidance. The Agent template can contain both,
 distinguished explicitly. A Conduit never becomes an installation script.
 
-Recommended v0 rules: same Resource UID/revision/action activates once; incompatible versions
-or duplicate exposed names require an explicit preference or leave the affected activation
-unavailable. Required preparation failure prevents that execution from starting; optional
-failure leaves it usable with a diagnostic. Other permitted bindings need not fail.
-Source updates become available through live access, but do not silently replace executable
-extensions or already-loaded prompt content. Show changes and apply them at a defined safe
-boundary through explicit reconfiguration. These behavior choices need a ruling.
+Accepted Conduit v0 rules (R5): avoid duplicate equivalent preparation without merging different
+configurations, routes or rights. Incompatible versions or duplicate exposed names require a
+deliberate choice or leave affected activation unavailable. Required failure blocks readiness;
+optional failure is reported. Source updates remain available for authorized reads, but loaded
+instructions/extensions and exposed tool definitions change through supported explicit refresh.
+Authorized Agents can request this at a safe boundary without mandatory human confirmation.
+
+Dynamic MCP discovery remains supported; it does not require automatic catalog reload. Detected
+stale/incompatible definitions withhold affected calls pending refresh/reconciliation. Data updates
+alone need not invalidate tool schemas. Detection depends on integration evidence; a rejected call
+may reveal drift for the first time. Do not silently adapt or replay an uncertain write. Automatic
+first-use/background refresh policies are deferred; current access, credential refresh and transport
+recovery remain separate. See [the accepted activation contract](../DESIGN.md#activation-instructions).
 
 Native skill text can be portable while hooks are not. A Claude model in Conduit's runtime
 does not provide Claude Code's plugin API. A Pi-style terminal does not provide Pi's extension
@@ -381,7 +393,7 @@ names cannot always be sent unchanged to every model's tool-name grammar.
 **Version correction:** the inspected client advertises `2025-11-25` and older versions.
 MCP `2026-07-28` removes protocol sessions/initialization in favor of per-request metadata
 and discovery, replaces subscription transport behavior, and removes old SSE resumption.
-Tasks become a redesigned optional extension. Conduit Session identity therefore must not
+Tasks become a redesigned optional extension. Conduit Agent identity therefore must not
 depend on an MCP transport session or JSON-RPC request ID.
 [Current changes](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
 
@@ -426,13 +438,23 @@ Conduit's retain-until-purge policy. [agentwatch README][agentwatch]
 
 ### Three proposed interaction families
 
+The later [messaging/networking investigation](CONDUITS.md#messaging-and-networking-investigation)
+refines these into **composable behaviors**, not exclusive protocol families: a retained post is
+also an invocation, and a review can retain its request/result while exposing observations. Keep
+the examples below as requirements to distinguish, not a three-way wire or Resource taxonomy.
+R7 accepts that composable direction and retained messages plus inspection for the first slice.
+Shared append-only history with independent Agent readers and next-turn notices without automatic
+wake are accepted. Structured work submission and an optional per-Agent wake hook are deferred.
+Interface control/observability uses durable local evidence with pluggable export. Issue integrations
+and specialized tracking are ordinary Resources. Exact message/cursor fields remain drafting work.
+
 | Family | Example | Success means | Recovery needs |
 | --- | --- | --- | --- |
-| Capability request | Read memory; call a permitted MCP tool; ask another Session for a review. | A defined result or explicit pending work handle, with effect outcome separately tracked. | Correlation, authority, idempotency/reconciliation, deadlines and cancellation semantics. |
-| Retained exchange | Deliver a finding to selected Sessions, including one currently offline. | Durable acceptance for named recipients; processing is a later fact. | Stable event IDs, recipient progress, deduplication, bounded replay and current-access checks. |
+| Capability request | Read memory; call a permitted MCP tool; ask another Agent for a review. | A defined result or explicit pending work handle, with effect outcome separately tracked. | Correlation, authority, idempotency/reconciliation, deadlines and cancellation semantics. |
+| Retained exchange | Deliver a finding to selected Agents, including one currently offline. | Durable acceptance for named recipients; processing is a later fact. | Stable event IDs, recipient progress, deduplication, bounded replay and current-access checks. |
 | Observation | Follow execution status, presence or the current Resource inventory. | A sufficiently current view, not receipt of every intermediate change. | Snapshot/version, bounded/coalesced deltas, gap reporting and resubscription. |
 
-“Capability request” can share an envelope across Pool resources and Sessions without
+“Capability request” can share an envelope across Pool resources and Agents without
 pretending that a file read and a model turn cost the same or complete synchronously.
 Request handles, events and observations are supporting contracts, not new top-level nouns.
 Exact names, fan-out, persistence and wake defaults remain proposals.
@@ -440,15 +462,15 @@ Exact names, fan-out, persistence and wake defaults remain proposals.
 | Reference | Best lesson | Boundary to retain |
 | --- | --- | --- |
 | Chord | Typed references, principal-specific interfaces, snapshot/delta flow and routing. | Reference lifetime and coalesced state do not provide a durable conversation ledger. |
-| MCP | Familiar capability invocation, resource access and optional long-running task handles. | Protocol version and negotiated extensions matter; no implied Session lifecycle policy. |
+| MCP | Familiar capability invocation, resource access and optional long-running task handles. | Protocol version and negotiated extensions matter; no implied Agent lifecycle policy. |
 | [A2A task lifecycle](https://a2a-protocol.org/latest/topics/life-of-a-task/) | Separate immediate messages, longer work, artifacts and contextual grouping. | Its `contextId` groups interaction; it is not permission to import private model history. Task IDs need not become Linear issue IDs. |
 | [NATS JetStream](https://docs.nats.io/learn/jetstream/pull-consumers) | Pull-based bounded consumption, independent consumers and explicit acknowledgements. | Delivery acknowledgement is not proof an agent completed work. A broker is optional for a local v0. |
-| [Zenoh entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html) | Separate publication, query/reply, storage and liveliness behind related addressing. | A live subscription is not retained history; native protocol sessions are not Conduit Sessions. |
+| [Zenoh entities](https://spec.zenoh.io/spec/1.0.0/concepts/entities.html) | Separate publication, query/reply, storage and liveliness behind related addressing. | A live subscription is not retained history; native protocol sessions are not Conduit Agents. |
 | agentwatch / Pi ecosystem | Practical catch-up, attachment claims and integration hooks. | Their attention, expiry and topology policies are not inherited. |
 
 ### Flows the contract must make unambiguous
 
-**Review request:** Session A addresses B through an authorized binding, with an operation
+**Review request:** Agent A addresses B through an authorized binding, with an operation
 ID and pinned artifact references. Admission records accepted or rejected. B may remain idle
 until permitted execution is triggered. A can inspect progress without launching B. Completion
 records a result with provenance. A timeout while waiting does not cancel accepted work unless
@@ -461,34 +483,39 @@ still-permitted content. Content may be retained while its delivery is withheld.
 
 **Slow observer:** repeated token/progress updates may collapse into a newer snapshot, while
 an accepted work request or final outcome remains retrievable. A UI disconnect neither
-completes work nor owns cancellation of an independently running Session.
+completes work nor owns cancellation of an independently running Agent.
 
 **Permission change:** narrowing the Conduit immediately changes future managed reads and
 dispatch. Queued content is checked again on delivery. Content already in native model context
 cannot be erased; required isolated revocation follows the existing stop/explicit-restart rule.
 
-**Model/account handoff:** the receiving execution uses the same Session when resuming, with
-fresh current authority and a compatible projection. Its binding identity remains attributable;
-its provider connection and credential state need not be reused.
+**Model/account handoff:** compatible model changes may use the existing Agent's declared control.
+Changing its model-account/provider boundary creates a new Agent; continuity comes through explicit
+shared-context access. Neither handoff nor shared service login merges private Agent histories.
 
-**Attention policy:** recommend passive delivery by default, with explicit future hooks for
-selected requests to start work. Treat receipt, notification, context inclusion and execution
-as separate transitions. This is a proposal for the reopened communication design, not a
-reinstatement of the former room ruling. Prevent status/acknowledgement loops from generating
-unbounded model turns; bound work, concurrency and repeated triggers.
+**Accepted attention policy:** brief next-turn unread notices where the integration supports them,
+with explicit content retrieval and no automatic wake. Receipt, notification, context inclusion
+and execution remain distinct. An optional per-Agent wake hook is future work and would need its
+own authority, concurrency and trigger bounds; it is not implicit in message delivery or replay.
 
 ## Observation and durable execution
 
 Pi telemetry explicitly separates diagnostic spans from durable application state, supports
 explicit propagation and links, and includes adapter conformance cases. Adopt that separation:
-Session/execution/account/Conduit operation IDs are authoritative; trace IDs are optional
-correlation. Forks and cross-Session requests may link traces without falsely making all work
+Agent/execution/account/Conduit operation IDs are authoritative; trace IDs are optional
+correlation. Forks and cross-Agent requests may link traces without falsely making all work
 one nested call. [Telemetry][telemetry]
 
 Keep durable usage observations distinct from sampled/exported traces. Include compaction,
 failed attempts and child work where reported; retain unknown/overlap flags. Logging every
 MCP result need not put full payloads in traces: retain permitted payload evidence separately
 and link to it. Export failure must not erase a committed operation result.
+
+The accepted Conduit design makes this evidence intrinsic to the Interface's control and observation
+contract, with a durable inspectable local foundation and pluggable export. Managed components
+produce evidence while no frontend is attached; reconnecting frontends inspect the same underlying
+history/state. An external dashboard is optional, and Linear/Jira integration is unrelated to this
+baseline. See [Interface observability](../DESIGN.md#interface-observability).
 
 Durable's existing research remains applicable: persist intent, perform the effect, record
 outcome before claiming completion; use ownership and stale-worker fencing; distinguish input
@@ -525,7 +552,7 @@ Temporary probe files were kept outside the product repository.
 
 The next experiment should be specified in this order:
 
-1. Resolve the YAML graph offline: template/instance references, independent Sessions, exclusive
+1. Resolve the YAML graph offline: template/instance references, independent Agents, exclusive
    Pool ownership, narrowing-only filters, explicit activation and visible diagnostics. Use the examples and failure matrix
    in [CONFIGURATION.md](CONFIGURATION.md).
 2. Verify supported account enrollment/identity and independent refresh/logout for the four
@@ -534,11 +561,15 @@ The next experiment should be specified in this order:
    authorized live providers. Include partial streams, unknown writes and context conversion.
 4. Provision one memory Resource and one MCP service Resource through a Pool, preserving native
    schemas, Resource revisions and current-access checks. Validate selected MCP version/feature coverage explicitly.
-5. Add the agreed communication family: review/result, retained finding and slow observer
-   are the smallest useful comparison. Do not make a broker or tracker mandatory to prove it.
+5. Exercise the accepted retained-history capability: review requests/findings as ordinary messages,
+   independent readers and a slow state observer. Structured work submission is deferred. Inspect
+   the local evidence through the Interface and exercise pluggable export; no issue-management
+   integration or specific broker is required.
 
-For discussion, resolve the grouped choices in [REVIEW.md](../REVIEW.md#next-discussion)
-before converting these proposals into requirements or starting implementation.
+The [experiment packet](../../experiments/001-shared-access/README.md) now carries the schema and acceptance examples.
+R5 settles activation/refresh, R6 configuration/extension resolution, and R7 the first communication
+and Interface-observability slice. Broader research examples remain proposals; this report supplies
+evidence rather than a separate Pi review queue.
 
 [factories]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/all.ts
 [provider-interface]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/models.ts

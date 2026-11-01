@@ -1,70 +1,39 @@
 # Establishment, ordering, outputs and recovery
 
-Research: 2026-10-31. **Design investigation and recommendation, not an accepted lifecycle API.**
-The four families, template-owned establishment intent, Pool ownership and existing recovery
-rules remain accepted. The lifecycle protocol, dependency/output notation and composition boundary
-proposed here require review. No accounts were enrolled, services provisioned or model calls made.
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
-Read [the accepted contracts](../DESIGN.md#establishment-contracts-and-instance-state), then the
-worked cases below, including the [filesystem comparison](#filesystem-plugins-and-template-examples). This report extends [configuration research](CONFIGURATION.md) and
-uses the existing [Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth). It does not
-introduce a fifth family, a separate operation-document format or a dependency on Pi's runtime.
+Research: 2026-10-31. **Source evidence and lifecycle examples; no live provider work.**
+Read [the current construction contract](../DESIGN.md#establishment-contracts-and-instance-state),
+then the cases below and the [filesystem comparison](#filesystem-plugins-and-template-examples).
+This report extends [configuration research](CONFIGURATION.md) and the
+[Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth).
 
-## Conclusion and proposed boundary
+## Construction boundary
 
-The requested cases need **ordering guarantees, typed outputs and recoverable multi-stage
-establishment now**. Treating these as possible future additions understates the design problem.
-They do not, by themselves, require authors to write an imperative workflow in every template.
+The examples require ordering, typed outputs, interaction waits and recoverable establishment.
+The chosen authoring approach is typed template YAML with an inline or referenced plugin graph.
+Plugins implement provider-specific behavior; graph bindings describe composition and order.
+A single typed plugin operation can implement a simple handler. Conduit's engine coordinates
+progress and recovery, while the instance owns ongoing services from startup.
 
-Recommend a declarative template language interpreted through **typed, resumable plugin
-lifecycles**. Templates declare the intended result, dependencies, identity selections and
-supported policies. Plugins implement provider-specific steps. Conduit's engine coordinates
-dependencies, persists necessary progress, handles interaction waits and exposes verified results.
-For composition, the language needs references to typed outputs and readiness conditions, not
-only references to object names. Exact syntax remains open.
+YAML represents this contract; a different notation would not itself supply identity, safe retries
+or readiness. An author can compose existing operations without spelling out OAuth exchanges or
+filesystem syscalls. Provider-internal steps remain code unless exposing them is useful to the
+public contract. No general workflow language, per-step Resource or extra operation document is
+required. R2 selects finite, acyclic dependency graphs: provider branching/loops remain inside
+plugins, while interaction waits, valid-progress recovery and independent parallel steps are
+supported. Authored conditions, iteration and dynamic graph fan-out are deferred. Exact handler
+and continuation schemas remain drafting work within this boundary.
 
-YAML can serialize this contract, including graphs or ordered stages if eventually needed.
-The difficult choices concern semantics and execution ownership. Switching to a programming
-language would not define idempotency, credential identity, readiness or crash recovery for us.
-Conversely, selecting YAML does not excuse leaving these properties implicit in arbitrary plugins.
-
-| Approach | Benefit | Main problem for Conduit |
-| --- | --- | --- |
-| Static settings plus one opaque plugin callback | Small authoring surface. | Cannot explain an interaction wait, partial progress or safe recovery without an additional lifecycle contract. |
-| Author-written graph of typed plugin actions | Compose supported behaviors into custom setup without implementing Git, SSH or filesystem internals. | Public step identities, output binding, continuation after edits and cleanup semantics must be designed. This is a narrower option than arbitrary scripts. |
-| Templates list arbitrary shell/HTTP steps | Almost any integration is expressible immediately. | Authors inherit token handling, parsing, retries, platform differences and uncertain side effects; unrelated templates duplicate provider mechanics. |
-| Typed templates plus recoverable plugin lifecycles, recommended | Portable semantic choices, explicit dependencies/results, implementation freedom. | Requires a real plugin lifecycle protocol and conformance cases; this is more than a schema parser. |
-| General workflow language or replayable program as the core | Rich branching, loops, fan-out and custom orchestration. | Adds workflow versioning, expression semantics, replay constraints and authoring complexity before the examples require that much freedom. |
-
-A workflow interpreter could later implement a compatible plugin. It would still respect
-Conduit's ownership, output, authority and recovery contracts. No such dependency or workflow
-Resource type is selected here. Engine bookkeeping is supporting state of instances/attempts;
-each stage does not need its own Resource or user-maintained YAML document.
-
-## The distinction between plugin stages and authored stage graphs
-
-Both options support multiple stages, dependency ordering, outputs and recovery. The distinction
-is **who defines the sequence and which parts become a public authoring contract**:
-
-| Question | Plugin-owned stages | Template-authored typed graph |
-| --- | --- | --- |
-| Who defines a normal Git-worktree creation sequence? | The worktree implementation, selected by configuration. | A graph can call the same implementation as one typed stage. It need not rewrite Git internals. |
-| How does an author choose create versus attach? | An ordinary type-specific field. | The field may remain; graph stages add composition when needed. |
-| How can an author add custom initialization? | Select a supported option or use another capability through declared dependencies. A genuinely new sequence may require an extension. | Add a supported action and connect its inputs/outputs to earlier stages. |
-| Who implements OS calls and provider exchanges? | Plugins. | Still plugins, unless an explicit code/script action is supported. |
-| Who handles run recovery? | Engine plus the plugin's supported continuation contract. | Engine plus each action's continuation contract, with graph identity/version changes also governed. |
-| Must template authors write a graph? | No. | Not necessarily: types can still offer default graphs or ordinary configuration. |
-
-The earlier contrast was too broad: the second option does **not** inherently mean arbitrary
-shell scripts, loops or a full workflow language. A small typed composition graph is a credible
-middle ground. Conversely, needing staged execution does not automatically require author-written
-graphs: a code-defined state machine can expose stages/results and resume through the engine.
-
-Recommend stable built-in type lifecycles plus an explicit composition boundary. Whether authored
-typed graphs ship in v0 should follow a real customization case such as worktree creation followed
-by selected project initialization. The four primitive filesystem cases below work with ordinary
-typed configuration; combining their outcomes with custom processing may justify the graph option.
-No ruling on authored graphs has been accepted yet.
+For ordinary service access, establishment happens through the owning Pool's capability and
+manages its shared authentication. Consumer attachment authorizes use of that capability; it is
+not another mandatory provider login. Distinct service identities remain an explicit exception.
+Agent model-subscription setup remains a separate account contract. A construction graph finishes;
+it does not retain ownership of authentication refresh, transport clients or database processes.
 
 ## Evidence from existing systems
 
@@ -92,13 +61,13 @@ powerful, safe or sufficient without its engine.
 | Templates carry establishment intent | Preserve it; completing a template must not require a second request recipe containing missing setup choices. |
 | YAML over typed objects | Preserve the serialization choice provisionally; strengthen the behavioral contract before considering new syntax. A static schema is insufficient. |
 | Resource types remain unitary; Pools own instances | Preserve the split between storage, indexing and access. A convenient composed setup does not erase those boundaries. |
-| Activation instructions belong in Session configuration | Separate agent-followed guidance from engine-executed lifecycle declarations. A prompt telling the model to log in is not a reliable authentication state machine. |
+| Activation instructions belong in Agent configuration | Separate agent-followed guidance from engine-executed lifecycle declarations. A prompt telling the model to log in is not a reliable authentication state machine. |
 | No mandatory template snapshots or override ledger | Preserve that simplification; incomplete effects still need their own minimal continuation inputs and evidence. |
 | General durable workflow runtime deferred | Do not interpret this as deferring all multi-stage recovery. A bounded plugin lifecycle protocol is necessary for the requested examples. |
 | Instance spec and observed status are separate | Preserve it; neither declared readiness nor successful schema validation proves that authentication/indexing completed. |
 
-The main documents now point to this review, while these new protocol choices remain proposals.
-There is no decision here to replace all adapters, add an object family or implement a scheduler.
+These cases support the chosen template/plugin/instance boundary. Their detailed stage names,
+policies and payloads remain proposals; no additional object family or scheduler is selected.
 
 ## Where the contract belongs
 
@@ -123,7 +92,9 @@ through ordinary typed fields; this proposal does not reinstate a generic parame
 
 ## Ordering and dependency semantics
 
-Recommend **strict prerequisite order with bounded parallelism for independent work**:
+**Accepted R2 boundary:** finite, acyclic execution dependencies with strict prerequisite order
+and supported parallelism for independent work. The following elaborates the contract; exact
+concurrency limits and representations remain to be drafted:
 
 - A dependent action starts only when its named inputs and required conditions are satisfied.
   A folder attachment may require existence; a query surface may require a completed index build.
@@ -138,7 +109,7 @@ Recommend **strict prerequisite order with bounded parallelism for independent w
   without a data dependency. Coordinate on actual backing/account identity, not only Resource ID.
 - Reject or explain an unsatisfiable **blocking establishment cycle**. A password store whose
   only unlock credential must be fetched through itself needs a bootstrap source. Communication
-  cycles among already-established Sessions are valid; do not require the whole runtime graph
+  cycles among already-established Agents are valid; do not require the whole runtime graph
   to be acyclic.
 
 Successful declaration resolution, completed establishment and continuing readiness are separate.
@@ -174,17 +145,19 @@ snapshot or override-history ledger. Internal continuation state can be opaque t
 its phase and recovery options remain inspectable. Secret-bearing state needs protected storage;
 reusable YAML and ordinary status exports must not become a credential archive.
 
-After completion, retain outcomes/native identities under existing retention rules. Whether
-creation-only choices also remain immutable instance configuration is still open. While an
-attempt is incomplete, its effective setup inputs must remain recoverable; deleting the source
-template must not force Conduit to guess them. Full template history is unnecessary.
+After completion, retain outcomes/native identities under existing retention rules. Instances
+already retain their resolved setup graph independently of the source template. R6 selects one
+stored configuration map for initial and then confirmed settings, with pending/uncertain requests
+separate. Incomplete attempts need recoverable effective inputs; full template history is unnecessary. R1 confirms
+that fixed-definition changes require a replacement instance even for Interface administration;
+in-place definition upgrades remain deferred.
 
-## Case 1: a Claude subscription Session
+## Case 1: a Claude subscription Agent
 
 **Verified native surface:** Claude Code documents browser sign-in, separate account configuration
 directories, and credential-source precedence. These directories also contain settings/history;
 the documentation notes an exception for separating certain Console sign-ins. The native adapter
-therefore has to validate credential reuse separately from Conduit's Session-private-state rule.
+therefore has to validate credential reuse separately from Conduit's Agent-private-state rule.
 [Authentication](https://code.claude.com/docs/en/authentication)
 
 The CLI documents `claude auth login` and JSON `claude auth status`; Console login selects API
@@ -193,21 +166,21 @@ that copying native credentials permits subscription use in Conduit's own model 
 [CLI reference](https://code.claude.com/docs/en/cli-reference)
 
 Proposed template content: native runtime selection, account reference, subscription authentication
-intent, permitted interaction mode, Session-state policy, selected native config and required
+intent, permitted interaction mode, Agent-state policy, selected native config and required
 Conduit connections. Provider-specific command flags and browser choreography belong in code.
 
 | Stage | Result or gate | Recovery concern |
 | --- | --- | --- |
-| Prepare selected native state/environment | Account namespace and Session-private state are correctly selected. | Do not overwrite another account or inherit an unintended credential source. |
+| Prepare selected native state/environment | Account namespace and Agent-private state are correctly selected. | Do not overwrite another account or inherit an unintended credential source. |
 | Inspect current authentication | Evidence of actual identity/method and applicable capability, or login required. | An existing credential is not proof it is the requested identity or supported billing path. |
 | Begin native login when required | A correlated interaction challenge; wait for browser completion. | Wait is not a retryable network failure. A callback can expire or become unusable after restart. |
 | Reinspect and verify | Selected identity/method confirmed to the extent exposed by the runtime. | Polling exit code alone is insufficient; unknown capability remains unknown. No fallback account. |
-| Complete required preparation | Native settings and required connections usable; Session ready to execute. | Successful login need not repeat when an unrelated connection fails. Starting the model remains explicit. |
+| Complete required preparation | Native settings and required connections usable; Agent ready to execute. | Successful login need not repeat when an unrelated connection fails. Starting the model remains explicit. |
 
 If the engine stops after native login succeeds but before recording completion, inspect native
 state before launching another login. If the challenge expired, request a new interaction rather
 than replaying a stale browser callback. Reuse an account where supported while keeping private
-Session history separate; do not force users through login for every new Session. Concurrent
+Agent history separate; do not force users through login for every new Agent. Concurrent
 refresh/logout must be coordinated by the integration.
 
 **Boundary:** Conduit owns the recoverable establishment attempt and identity checks; native
@@ -291,22 +264,23 @@ treated as interchangeable login scripts. [Desktop integration](https://www.1pas
 · [Service accounts](https://www.1password.dev/service-accounts/use-with-1password-cli)
 
 The owning Pool contains the password-manager Resource. Its template describes the service,
-permitted target and supported modes. A consuming Session/Resource declares a Conduit attachment
-with a permitted service identity and filters. Authentication state belongs at the appropriate
-participant/account boundary; one participant unlocking access need not authenticate every peer.
+permitted target and supported modes. It normally manages a shared service binding; a consuming
+Agent/Resource declares a Conduit granting restricted use. The provider may require a different
+per-consumer mode, which must be explicit. An unlocked shared capability does not grant every
+participant permission to read it.
 
-Proposed stages: resolve the owned Resource and intended principal → check local integration and
+Proposed shared establishment stages: resolve the owned Resource and intended principal → check local integration and
 authentication → present unlock/consent if needed → verify selected account/vault access → expose
 the permitted capability. The API handshake or native `op` invocation belongs in the adapter.
 Where supported, the output is an expiring access/secret handle or credential injection capability,
 not an ordinary string copied into every model's context. Fetching a particular secret is a later
 authorized operation; successful attachment is not a pretext to fetch the whole vault.
 
-If the vault locks, the provider is unreachable or authorization expires, the attachment becomes
-unusable or needs interaction. Do not switch modes or identities implicitly. A waiting unlock can
+If the shared vault binding locks or expires, its consumers may all lose readiness; revoking one
+consumer's authority affects just its path. Do not switch modes or identities implicitly. A waiting unlock can
 outlive a frontend; a replacement frontend can present the outstanding challenge if supported.
-Cancellation releases this participant's clients/waits without deleting the Resource or logging
-other users out. A credential-dependent database connection may wait on this capability; it must
+Cancelling a consumer attachment releases its own state, not shared authentication needed by
+others. Cancelling shared establishment needs its own lifecycle operation. A credential-dependent database connection may wait on this capability; it must
 not start merely because the password-manager object exists in the registry.
 
 ## Recovery rules to make explicit
@@ -338,19 +312,19 @@ These are design probes, not an implementation roadmap or approved new types.
 
 | Outcome a user might want | Necessary declaration | Implementation/state boundary it tests |
 | --- | --- | --- |
-| Four independent subscription Sessions | Runtime/account selection, private state, required connections. | Interactive enrollment, identity verification, refresh coordination. |
+| Four independent subscription Agents | Runtime/account selection, private state, required connections. | Interactive enrollment, identity verification, refresh coordination. |
 | Local checkout or fresh Git worktree | Attach/create, repository/base, destination, cleanup policy. | Native Git effects, existing-target conflict and preserved local work. |
 | Database plus schema | Engine/target, create/attach, schema revision and migration policy. | Provisioning outputs, readiness, migration lock and partial failure. |
 | Search over a document corpus | Source/data policy, embedding/chunking, destination and completion goal. | Long-running batches, generated outputs, cost and incomplete coverage. |
 | Password-manager access | Service/principal/mode, allowed operations and interaction policy. | Human wait, expiring handles and participant-specific credentials. |
 | AWS deployment capability | Account/role/region, credential dependency and permitted target. | Credential expiry, asynchronous job IDs, concurrency on one remote target. |
 | MCP integration | Native endpoint/process, auth and negotiated capabilities. | Process start versus handshake versus usable authorized tools. |
-| Native skills/plugins for a Session | Selected sources/versions/runtime and activation choices. | Installation/preparation without replacing native package tooling. |
+| Native skills/plugins for an Agent | Selected sources/versions/runtime and activation choices. | Installation/preparation without replacing native package tooling. |
 | Private remote workspace | Image/host, mounts, network and resource limits. | Build, boot, health, transport loss and reconnect; no extra runtime inside each Conduit. |
 | Database snapshot restore | Snapshot reference, destination and compatibility policy. | Large transfer, verification, collision handling and explicit overwrite authority. |
 | Continuous document synchronization | Source/destination, initial synchronization and ongoing policy. | Initial completion versus subscription lifetime, cursors and conflict handling. |
 | Agent conversation capability | Delivery/retention/participant contract and backing Resource references. | State persists in a Pool; live Conduit ends with its final logical participant. |
-| Event-triggered agent work | Trigger/filter, permitted Session and bounded execution policy. | Data delivery versus model wakeup; remains a separate future ruling. |
+| Event-triggered agent work | Trigger/filter, permitted Agent and bounded execution policy. | Data delivery versus model wakeup; remains a separate future ruling. |
 | Private network or SSH tunnel | Endpoints, identity, permitted routes and connection policy. | Connectivity lifetime, host identity and authenticated readiness. |
 | Model server or GPU-backed embedding service | Model artifacts, runtime/hardware and readiness criteria. | Download/build/cache, process startup, capacity and compatibility. |
 | Evaluation or processing pipeline | Dataset/model revisions, typed stages and result contracts. | Dynamic fan-out may eventually justify a richer composition plugin. |
@@ -392,7 +366,7 @@ Its conceptual interface includes config validation, establishment/continuation,
 supported consumer preparation/release, and explicitly authorized cleanup. A result can report
 completion, a dependency/human wait, a resumable phase or an uncertain outcome. These are not fixed
 method names. Contracts declare effects, outputs and recovery capabilities; the code implements
-them. Session activation selects the desired projection and path, while a compatible preparer
+them. Agent activation selects the desired projection and path, while a compatible preparer
 performs the actual link/mount/tool setup. The exact helper ownership/API is unresolved.
 
 ### Existing local directory exposed as a symlink
@@ -414,9 +388,9 @@ The Pool creates a Resource registration bound to that existing directory. The p
 that the configured target can be attached under its path/access contract; it does not create a
 missing target. The instance records the absolute backing path and actual readiness.
 
-Separately, the Session receives the Resource through a Conduit and its activation chooses a
-Session-local symlink. In conceptual terms: expose the authorized input `source` as a symlink at
-`<session-workspace>/source`. This is Session preparation, not a new Resource template or a direct
+Separately, the Agent receives the Resource through a Conduit and its activation chooses a
+Agent-local symlink. In conceptual terms: expose the authorized input `source` as a symlink at
+`<session-workspace>/source`. This is Agent preparation, not a new Resource template or a direct
 reference that bypasses the Conduit. That preparer establishes the link and records enough to
 release its own projection later. Reusing a known projection and encountering an unrelated path
 collision are different cases. Do not overwrite an unrelated file/link or remove the target folder
@@ -447,8 +421,8 @@ conflict semantics → verify and record the result. A preflight existence check
 a racing creation safe; the actual create operation must enforce its conflict rule. Parent-directory
 creation/permissions are additional type-contract choices, not implied by this example.
 
-The output is a concrete Pool-owned directory Resource. Sessions use the same access preparation
-as an attached directory. Stopping a Session or removing its symlink does not remove the directory.
+The output is a concrete Pool-owned directory Resource. Agents use the same access preparation
+as an attached directory. Stopping an Agent or removing its symlink does not remove the directory.
 After an uncertain create, existence alone is insufficient proof that this attempt created the
 path; use retained/native evidence where possible or report an unresolved outcome. Cleanup remains
 explicit and preserves unrelated work.
@@ -479,18 +453,18 @@ spec:
     root: /srv/euphony
 ```
 
-This config does not contain a private key or grant access. A Conduit attachment selects the
-permitted service identity and resolves its credential dependency, perhaps through an authorized
-password-manager Resource. The remote target can be shared while clients/authentication remain
-per participant. Registration may be possible offline; usable attachment requires successful
-connection/authentication and root/capability checks.
+This config does not contain a private key or grant access. The Pool-owned remote-filesystem
+capability normally resolves its shared credential dependency, perhaps through an authorized
+password-manager Resource, and manages the service connection. Consumer Conduits restrict use;
+per-consumer identities remain an explicit supported exception. Registration may be possible
+offline; usable access requires successful service authentication and root/capability checks.
 
-Plugin/attachment stages might be: resolve credentials → establish SSH transport and host identity
+Plugin establishment stages might be: resolve credentials → establish SSH transport and host identity
 → authenticate → verify remote root/capabilities → return the usable attachment. Authentication
 may require interaction. Conduit records waits, outcomes and continued attachment state; it does
 not require each template to spell out SSH handshakes.
 
-Session exposure then chooses a supported mode:
+Agent exposure then chooses a supported mode:
 
 - Remote filesystem tools operate through the authenticated client, without inventing a local path.
 - A mount-capable integration can prepare a local mount, then expose that path. Native support,
@@ -541,14 +515,14 @@ dedicated implementation rather than treating a worktree as an arbitrary newly c
 [git-worktree](https://git-scm.com/docs/git-worktree)
 
 Use ordinary configured file/Git tooling for ongoing work within permitted access; the lifecycle
-handler need not reimplement Git's entire command set. A Session may receive a local path/symlink
-just as for a directory. More Sessions can attach to that same worktree explicitly; independent
+handler need not reimplement Git's entire command set. An Agent may receive a local path/symlink
+just as for a directory. More Agents can attach to that same worktree explicitly; independent
 writers normally use different worktrees. Separate worktrees do not isolate shared branches/refs
 or provider quotas. On restart, inspect Git's actual registration and retained effect evidence
 before repeating add. Explicit cleanup checks active consumers, local work and the existing
-preservation rules; Session closure does not automatically remove a worktree or its branch.
+preservation rules; Agent closure does not automatically remove a worktree or its branch.
 
-### What option 2 would add
+### Custom graph composition
 
 Suppose the user wants a custom ready-to-use workspace: create a worktree, populate fixtures,
 then perform a supported validation. An illustrative graph fragment inside establishment
@@ -579,20 +553,19 @@ operation/type-version references and Conduit input routing need design before t
 The engine handles dependencies, persistence and retry; each plugin action must support its
 claimed continuation behavior.
 
-This adds genuine flexibility: a user can compose a novel supported sequence without writing a
-new plugin. It also adds public semantics: what edits do to an interrupted graph, how stage IDs
-survive retries, when output handles are valid, which completed work is reused and what cancelling
-a composite releases. A fixed linear graph is much smaller than a general language with loops,
-arbitrary expressions or shell execution, but these semantics still cannot be skipped.
+This lets a user compose a supported sequence without writing a new plugin. R1 keeps the resolved
+graph fixed for the instance; R2 selects finite dependencies, including independent parallel steps.
+Recovery still needs stable step identity, valid output handles, evidence of reusable completed
+work and explicit cancellation outcomes. Those responsibilities remain even though authored
+branching/loops and dynamic graph expansion are deferred.
 
-A useful combined design is **ordinary typed configuration for standard Resource lifecycles,
-plus optional typed graphs for custom composition**. A graph should call complete safe operations,
-not allow bypassing a worktree type's identity checks or hard-code every SSH protocol exchange.
-Whether that composition layer belongs in v0, and whether its authoring home is a Pool template
-or another existing family's contract, remains a single connected ruling rather than an assumed
-new workflow family. This is the question to resolve from the filesystem examples.
+The accepted design combines **typed template configuration with inline or referenced graphs**
+across the five families. A handler can use one plugin operation or compose several operations;
+there is no new workflow family. Graphs call typed operations rather than reimplementing every
+SSH exchange or bypassing worktree identity checks. R2 confirms this initial execution boundary;
+provider procedure stays inside plugins without moving ongoing supervision out of instances.
 
-## What the first protocol must settle
+## Recovery requirements for examples
 
 Recommend a small lifecycle protocol supporting validation/resolution, establishment, observation,
 structured interaction waits, compatible continuation/reconciliation, cancellation and typed
@@ -603,24 +576,19 @@ remaining an unfinished create attempt forever.
 The core should expose a derived dependency/progress view without making authors maintain a
 second plan. Plugins must identify meaningful resumable boundaries; the engine must not promise
 crash-safe continuation of arbitrary code. Retry state and outputs must survive ordinary restart,
-with compatibility/coverage gaps explicit. Initially favor plugin-owned stage machines over
-authored general loops/branches, arbitrary shell hooks or deterministic code replay.
+with compatibility/coverage gaps explicit. Template graphs compose typed plugin operations;
+provider-internal stages need not become authored nodes. General authored loops/branches and
+dynamic graph fan-out are deferred under R2. Arbitrary shell hooks and deterministic code replay
+are not implied by that composition boundary.
 Bound work through declared deadlines, retry/backoff limits and concurrency where supported.
 The exact policy fields are open; an interaction wait and an in-flight provider call may need
 different timeout behavior, and timing out either does not prove cancellation completed.
 
-Review these connected rulings before choosing more field names:
-
-1. Accept or revise the proposed template/plugin/engine split, including user-visible stage and
-   recovery information. Is a typed plugin lifecycle sufficient for the first three examples?
-2. Define dependency inputs, output types/lifetimes and readiness gates together. Preserve
-   Conduit-mediated access and distinguish blocking startup cycles from valid communication graphs.
-3. Define attempt continuation, interaction waits, failure/retry and cancellation together,
-   including who may resume setup and how this differs from restarting a model execution.
-4. Decide creation-only field retention and one-off/import behavior using both failed and successful
-   establishment. An instance export must not falsely promise a complete reproducible deployment.
-5. Identify a concrete composition requiring author-written steps. Only then choose whether
-   ordered typed calls, a plugin workflow language or a richer code authoring frontend is needed.
+The [review outcomes](../REVIEW.md#review-outcomes) define the accepted boundaries.
+These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
+the accepted R6 configuration/export profile. Direct complete-instance creation, graph composition
+and the template/plugin/instance responsibility split are already accepted. The [schema packet](../../experiments/001-shared-access/README.md) should
+render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 
 ## Evidence gates before implementation and live experiments
 
@@ -630,7 +598,7 @@ lost database-create response, partial ingest, source/model change mid-build, st
 credential expiry before consumption, cancellation after an external write, and missing recovery
 handler. Distinguish static schema tests from fault-injection tests and real-provider feasibility.
 
-The existing scenario fixture validates structural ownership/references only; it does not test
-these lifecycles. Live account enrollment remains a separate explicitly initiated experiment.
-Four-account support, provider terms/capability, sandbox bridges and native Session-private-state
+Documentation checks do not validate these lifecycles. New contract examples must follow the
+current model. Live account enrollment remains a separate explicitly initiated experiment.
+Four-account support, provider terms/capability, sandbox bridges and native Agent-private-state
 behavior are not proven by this report or by finding a documented login command.

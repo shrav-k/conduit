@@ -1,0 +1,287 @@
+# Illustrative schema draft. Fixture plugins are not implemented.
+# Registration performs no setup. Each document is registered independently.
+apiVersion: conduit.local/v0alpha1
+kind: Conduit
+form: template
+metadata:
+  name: capability-route
+spec:
+  type: {group: connection, name: capability-route, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    filters: []
+  setup:
+    nodes:
+      establish:
+        operation: route.establish
+        inputs:
+          instance: {from: self}
+          configuration: {from: config}
+  runtime:
+    driver: route.managed
+    inputs:
+      binding: {from: output, node: establish, port: binding}
+  controls: {use: type-defaults}
+  conduits: {}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Resource
+form: template
+metadata:
+  name: project-directory
+spec:
+  type: {group: filesystem, name: local-directory, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    establish: attach
+    path: /example/euphony
+  setup:
+    nodes:
+      directory:
+        operation: directory.establish
+        inputs:
+          configuration: {from: config}
+  runtime:
+    driver: directory.managed
+    inputs:
+      directory: {from: output, node: directory, port: directory}
+  controls: {use: type-defaults}
+  conduits: {}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Resource
+form: template
+metadata:
+  name: service-authentication
+spec:
+  type: {group: integration, name: service-authentication, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    provider: fixture-issues
+    account: team-service
+  setup:
+    nodes:
+      authenticate:
+        operation: auth.establish
+        inputs:
+          configuration: {from: config}
+  runtime:
+    driver: auth.managed
+    inputs:
+      binding: {from: output, node: authenticate, port: binding}
+  controls: {use: type-defaults}
+  conduits: {}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Resource
+form: template
+metadata:
+  name: issue-service
+spec:
+  type: {group: integration, name: mcp, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    endpoint: https://issues.example.invalid/mcp
+    workspace: euphony
+    recovery: {mode: bounded-reconnect, attempts: 3}
+  conduits:
+    authentication:
+      required: true
+      capability: {group: integration, name: service-authentication, version: v0alpha1}
+      open:
+        templateRef: {kind: Conduit, form: template, name: capability-route}
+        config:
+          filters:
+            - type: {group: access, name: operations, version: v0alpha1}
+              config: {allow: [bind-service]}
+      # Pool composition must bind a concrete target before instance creation.
+  setup:
+    nodes:
+      prepare:
+        operation: consumer.prepare
+        inputs:
+          consumer: {from: self}
+      client:
+        operation: mcp.prepare
+        inputs:
+          configuration: {from: config}
+          authentication: {from: output, node: prepare, port: authentication}
+  runtime:
+    driver: mcp.managed
+    inputs:
+      preparedClient: {from: output, node: client, port: client}
+  controls: {use: type-defaults}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Resource
+form: template
+metadata:
+  name: conversation-history
+spec:
+  type: {group: storage, name: message-history, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    establish: create
+    backingKey: euphony-exchange
+    readLimit: 20
+  setup:
+    nodes:
+      history:
+        operation: history.establish
+        inputs:
+          configuration: {from: config}
+  runtime:
+    driver: history.managed
+    inputs:
+      store: {from: output, node: history, port: store}
+  controls:
+    use: type-defaults
+    constraints:
+      set-read-limit:
+        limit: {minimum: 1, maximum: 100}
+  conduits: {}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Pool
+form: template
+metadata:
+  name: project-pool
+spec:
+  type: {group: composition, name: resource-pool, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    entries:
+      checkout:
+        templateRef: {kind: Resource, form: template, name: project-directory}
+      auth:
+        templateRef: {kind: Resource, form: template, name: service-authentication}
+      issues:
+        templateRef: {kind: Resource, form: template, name: issue-service}
+      exchange:
+        templateRef: {kind: Resource, form: template, name: conversation-history}
+  setup:
+    nodes:
+      establish-selected:
+        operation: pool.compose
+        inputs:
+          owner: {from: self}
+          entries: {from: config, path: [entries]}
+          items:
+            checkout:
+              provision: {entry: checkout}
+            auth:
+              provision: {entry: auth}
+            issues:
+              provision: {entry: issues}
+              bind:
+                authentication: {item: auth}
+            exchange:
+              provision: {entry: exchange}
+  runtime: {driver: pool.managed, inputs: {}}
+  controls: {use: type-defaults}
+  conduits: {}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Agent
+form: template
+metadata:
+  name: collaborator
+spec:
+  type: {group: agent, name: fixture, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    account: agent-account-a
+    providerDomain: fixture-models
+    model: fixture-small
+    execution: native
+    privateState: per-instance
+    activation:
+      checkout: {as: directory, location: workspace}
+      issues: {as: native-mcp-tools, refresh: explicit}
+      exchange: {as: tools, unreadNotice: next-turn, automaticWake: false}
+  conduits:
+    checkout:
+      required: true
+      capability: {group: filesystem, name: directory-access, version: v0alpha1}
+      open:
+        templateRef: {kind: Conduit, form: template, name: capability-route}
+        config:
+          target: {kind: Resource, form: instance, name: project-directory-0001}
+          filters:
+            - type: {group: access, name: operations, version: v0alpha1}
+              config: {allow: [read]}
+    issues:
+      required: false
+      capability: {group: integration, name: mcp-access, version: v0alpha1}
+      open:
+        templateRef: {kind: Conduit, form: template, name: capability-route}
+        config:
+          target: {kind: Resource, form: instance, name: issue-service-0001}
+          filters:
+            - type: {group: access, name: operations, version: v0alpha1}
+              config: {allow: [discover, invoke]}
+            - type: {group: integration, name: fixture-issue-access, version: v0alpha1}
+              config: {workspace: euphony, actions: [read]}
+    exchange:
+      required: true
+      capability: {group: communication, name: retained-messages, version: v0alpha1}
+      open:
+        templateRef: {kind: Conduit, form: template, name: capability-route}
+        config:
+          target: {kind: Resource, form: instance, name: conversation-history-0001}
+          filters:
+            - type: {group: access, name: operations, version: v0alpha1}
+              config: {allow: [post, read, advance-reader, inspect]}
+  setup:
+    nodes:
+      login:
+        operation: agent.authenticate
+        inputs:
+          account: {from: config, path: [account]}
+      prepare:
+        operation: consumer.prepare
+        inputs:
+          consumer: {from: self}
+      activate:
+        operation: agent.activate
+        inputs:
+          identity: {from: output, node: login, port: identity}
+          access: {from: output, node: prepare, port: connections}
+          rules: {from: config, path: [activation]}
+  runtime:
+    driver: agent.managed
+    inputs:
+      environment: {from: output, node: activate, port: environment}
+  controls: {use: type-defaults}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Interface
+form: template
+metadata:
+  name: owner-console
+spec:
+  type: {group: interface, name: local-owner, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    frontends: [cli, terminal, test]
+    observations: {source: local-managed-evidence, exporters: []}
+  conduits:
+    management:
+      required: true
+      capability: {group: management, name: registry, version: v0alpha1}
+      open:
+        templateRef: {kind: Conduit, form: template, name: capability-route}
+        config:
+          target: {kind: Resource, form: instance, name: system-management-0001}
+          filters: []
+  setup:
+    nodes:
+      prepare:
+        operation: consumer.prepare
+        inputs:
+          consumer: {from: self}
+  runtime:
+    driver: interface.managed
+    inputs:
+      connections: {from: output, node: prepare, port: connections}
+  controls: {use: type-defaults}

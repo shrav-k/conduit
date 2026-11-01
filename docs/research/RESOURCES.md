@@ -1,5 +1,11 @@
 # Resource types, groups and extensibility
 
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+define five template/instance families, Pool-managed shared service authentication and
+Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
+plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
+terminology is retained where it describes those systems; proposed syntax below is not a schema.
+
 Research: 2026-10-31. **Evidence, accepted working groups and proposals; no implementation.**
 Logical type groups independent of plugin packages, separate `spec.type.group`, `spec.type.name`
 and `spec.type.version` fields, and the four core group names are accepted. Filesystem's
@@ -8,7 +14,7 @@ contracts still need review; local-directory supports explicit attachment and cr
 its Pool in v0. Other types, consumer interfaces and extension governance remain open. An
 agent-communication group is a candidate for further design, alongside content and identity.
 
-Read alongside [DESIGN.md](../DESIGN.md#resources), [the review agenda](../REVIEW.md),
+Read alongside [DESIGN.md](../DESIGN.md#resources), [review outcomes](../REVIEW.md),
 [connection scenarios](CONDUITS.md) and [configuration research](CONFIGURATION.md).
 This investigation examined primary specifications/documentation, two research foundations and
 the existing pinned Pi checkout. It performed design walkthroughs, not provider integration
@@ -19,7 +25,7 @@ tests, account sign-ins, runtime implementation or a benchmark.
 The accepted working core is **filesystem, storage, search and integration**. Evaluate
 **content**, **identity** and an **agent-communication group** as additional candidates. These
 are catalog boundaries, not a commitment to implement every example in v0. New groups and
-types must remain possible without changing the four object families or requiring an
+types must remain possible without changing the five object families or requiring an
 implementation package for each group.
 
 The harder design issue is what a type promises. A useful catalog distinguishes:
@@ -28,18 +34,18 @@ The harder design issue is what a type promises. A useful catalog distinguishes:
 | --- | --- | --- |
 | Group | Stable organization of related Resource contracts. | `storage` |
 | Type and contract version | Configuration and behavioral contract for one responsibility. | A versioned record-store type. |
-| Consumer interface, proposed | Operations/semantics another component can depend on across compatible types. | Read a record by stable ID and revision. |
+| Capability contract | Versioned operations/behavior a consumer can depend on across compatible Resource types. | Read a record by stable ID and revision. |
 | Implementation package | Code and schemas delivering one or more contracts. | One package could implement storage, search and MCP access. |
 | Resource template | Reusable values for a selected type. | Euphony's knowledge-store defaults. |
 | Resource instance | Concrete configured capability, exclusively owned by a Pool. | The attached Euphony knowledge store. |
-| Consumer attachment | Current authorized use through a Conduit, including private preparation. | One Session's service identity, cursor or filesystem projection. |
+| Consumer attachment | Current authorized use through a Conduit, including private preparation. | One Agent's permissions, cursor or filesystem projection; normally uses the shared service binding. |
 
-Only the existing four families are registered object families. Interfaces and package metadata
-would describe contracts, not introduce another user-managed fleet of objects. Ordinary users
+The five managed families remain Interface, Agent, Resource, Pool and Conduit. A capability
+contract is a definition, not an additional Interface instance or object family. Ordinary users
 should configure instances; they should not repeatedly author capabilities already defined by
 a type's implementation and schema.
 
-**Main proposed rule:** group by responsibility; select and operate through explicit contracts.
+**Working rule:** group by responsibility; select and operate through explicit contracts.
 Do not infer read/write behavior, isolation, compatibility or lifetime from the group name.
 
 ## Evidence from other systems
@@ -49,8 +55,8 @@ Documentation was accessed on the research date; versioned sources are identifie
 
 | Source | Observed mechanism | Conduit implication and limit |
 | --- | --- | --- |
-| [Kubernetes API groups](https://kubernetes.io/docs/reference/using-api/#api-groups) and [CRD categories](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#categories) | API groups participate in API identity; categories separately support grouped discovery. A CRD supplies a schema rather than just a descriptive tag. | Keep contract identity separate from changeable browsing labels. Adopt neither Kubernetes' combined string syntax nor an automatic controller loop. |
-| [Terraform provider schemas](https://developer.hashicorp.com/terraform/plugin/framework/handling-data/schemas) and [providers](https://developer.hashicorp.com/terraform/plugin/framework/providers) | Providers register resource/data-source types with their own schemas and can configure clients used by them. | One implementation can supply several types. A shared client must still respect Conduit's per-attachment identity boundaries; package membership is not authority. |
+| [Kubernetes API groups](https://kubernetes.io/docs/reference/using-api/#api-groups) and [CRD categories](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#categories) | API groups participate in API identity; categories separately support grouped discovery. A CRD supplies a schema rather than just a descriptive tag. | Keep contract identity separate from UI organization. Conduit v0 excludes generic labels/selectors and uses defined fields/relationships for discovery. Adopt neither the combined string syntax nor an automatic controller loop. |
+| [Terraform provider schemas](https://developer.hashicorp.com/terraform/plugin/framework/handling-data/schemas) and [providers](https://developer.hashicorp.com/terraform/plugin/framework/providers) | Providers register resource/data-source types with their own schemas and can configure clients used by them. | One implementation can supply several types. Shared provider clients fit Pool-managed authentication; each caller still needs its own Conduit authority. Package membership is not authority. |
 | [Terraform data sources](https://developer.hashicorp.com/terraform/language/data-sources) | Data sources fetch external data without creating or modifying the external resource. | Attachment/observation and management are different responsibilities. Conduit need not copy Terraform's separate top-level constructs to express that difference. |
 | [Pulumi package schemas](https://www.pulumi.com/docs/iac/guides/building-extending/packages/schema/) and [type identity](https://www.pulumi.com/docs/iac/concepts/resources/names/) | Schemas describe exported resources/functions; resource type tokens identify package, module and type. Schemas also drive generated documentation/SDKs. | A useful counterexample to our chosen separation: do not embed installation packaging in Conduit type identity. Borrow discoverable typed contracts and generated inspection/documentation. |
 | [Crossplane managed resources, v2.4](https://docs.crossplane.io/v2.4/managed-resources/managed-resources/) | A managed registration and external object have separate identities. Management policies distinguish observation, creation, updates and deletion; support varies by provider. | Resource ownership does not prove ownership of the native target. Type support and the requested management mode must be visible; Conduit retains explicit effects instead of adopting continuous reconciliation. |
@@ -69,13 +75,13 @@ also identifies prompt discovery, removes protocol sessions/initialization, and 
 metadata and discovery. Therefore an MCP-access Resource's responsibility is access to the
 server's supported surface, not just tool invocation. Neither an MCP protocol resource nor an
 HTTP connection is automatically a Conduit Resource instance. Durable Conduit attachments and
-Session identities must not depend on legacy MCP transport-session identity.
+Agent identities must not depend on legacy MCP transport-session identity.
 
 Pi's pinned [package documentation](https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/coding-agent/docs/packages.md)
 bundles skills, prompts, themes and extensions as a distribution unit. Its declared selections
 can narrow those contents. This supports retaining native bundles while recognizing different
 activation requirements. A bundle's installation format does not guarantee its executable
-extensions work in Conduit's runtime. The [existing Pi investigation](PI_CONNECTORS.md#session-activation-and-pool-resources)
+extensions work in Conduit's runtime. The [existing Pi investigation](PI_CONNECTORS.md#agent-activation-and-pool-resources)
 documents that compatibility boundary. No Pi runtime dependency follows from this finding.
 
 ### Research methods and their limits
@@ -109,14 +115,14 @@ mandatory block every author must fill in or a new metadata bookkeeping system.
 | Backing and placement | Local, remote, embedded, externally managed. | A local MCP process can call a remote service. |
 | Creation/management | Attach existing, create managed, observe only. | A database can support attachment without permitting creation. |
 | Preparation | Symlink, client configuration, index setup, credential resolution. | Not every instance needs a resident process. |
-| Identity | External target, service principal, attachment identity. | Several logins may reach the same target and still need private state. |
+| Identity | External target, shared or explicitly separate service principal, caller identity. | Many Agents can use one managed provider identity without sharing their own authority/private state. |
 | Effects and concurrency | Reads, revisions, append, exclusive operation, shared limits. | More clients do not create more independent deployment targets. |
 | Persistence | Durable backing, rebuildable index, ephemeral client state. | A Conduit may end while its backing log remains. |
 | Compatibility | Runtime hooks, file formats, protocol versions, optional operations. | A skill written for an agent can include nonportable executable behavior. |
 | Current availability | Configured support, observed support, authorization, health. | A supported operation may be unavailable to this attachment. |
 
-Groups need not encode these dimensions. Labels can help discovery, but labels are not
-verified capabilities or permission grants. Contract-supplied facts should be derived once;
+Groups need not encode these dimensions. Defined contract fields and relationships support
+discovery; generic object labels/selectors are excluded from v0. Contract-supplied facts should be derived once;
 attachment-specific observations belong with the attachment and its outcome.
 
 ### When to create a new type
@@ -158,13 +164,13 @@ catalog, not all required v0 features.
 | Transport: MCP, HTTP, local process | Easy adapter dispatch. | One protocol carries many capabilities; changing transport need not change the data contract. | Typed integration contracts and protocol settings, not the only grouping system. |
 | Location: local, remote, cloud | Useful operational distinction. | Local processes can access remote services; one Resource may combine both. | Backing/preparation metadata and constraints. |
 | Lifetime: ephemeral, persistent | Helps cleanup planning. | One registration may have durable backing and ephemeral clients. | Type-specific lifecycle semantics and observed state. |
-| Very broad buckets: io, tools, memory | Few categories to learn. | IO includes almost everything, tools omits MCP data/prompts, and memory hides storage/search separation. | Search labels or user-facing views where helpful. |
+| Very broad buckets: io, tools, memory | Few categories to learn. | IO includes almost everything, tools omits MCP data/prompts, and memory hides storage/search separation. | Views over defined contract fields where helpful. |
 | Deep hierarchy: data → storage → database → vector | Detailed browsing. | Multiple plausible parents, many unstable paths, and category moves become identity migrations. | Optional catalog navigation, not mandatory type-reference nesting. |
 | Responsibility plus separate interfaces | Explains what each registration configures while supporting compatible implementations. | Requires explicit boundary examples; group names alone are intentionally insufficient for execution. | Recommended canonical grouping, tested against the scenarios below. |
 
 This comparison explains the working core names, rather than proving that four is the final number
-of groups. Keep one canonical group for a type's identity, with multiple optional discovery
-labels. If a new type does not fit, add a coherent group instead of stretching an existing
+of groups. Keep one canonical group for a type's identity; use its defined fields and relationships
+for alternate views. If a new type does not fit, add a coherent group instead of stretching an existing
 definition or adding a catch-all executable type with unvalidated configuration.
 
 ### Accepted working core groups
@@ -179,10 +185,11 @@ definition or adding a catch-all executable type with unvalidated configuration.
 `filesystem` and `storage` deliberately differ by the abstraction promised: path/tree semantics
 versus a record/blob/log/graph model. A store may persist its bytes in a directory without
 registering an additional folder Resource merely for its private implementation files. If another
-Resource or Session must use that directory independently, make that separate access explicit.
+Resource or Agent must use that directory independently, make that separate access explicit.
 
 An integration Resource promises native access, not an implementation of every domain capability
-reachable through it. Linear MCP does not automatically satisfy a portable ticket-store contract.
+reachable through it. Linear MCP does not automatically satisfy a plugin-defined issue-storage
+capability; issue management has no special core status beyond ordinary Resources.
 A search provider exposed by MCP may require a search Resource and an MCP-access Resource when
 Conduit needs both independently configured responsibilities. The Conduit between them supplies
 the logical access; ordinary socket mechanics do not create an additional Resource.
@@ -203,14 +210,14 @@ preserves bring-your-own skills rather than reviving the earlier Conduit skill f
 
 Keep a distinct group for agent communication under consideration. `communication` is a
 possible name, not an accepted identifier. Its justification is the contract exposed to agents:
-Session addressing, participant context, exchanges and coordination. Familiar backing storage
+Agent addressing, participant context, exchanges and coordination. Familiar backing storage
 does not eliminate those semantics or require placing every such capability in `storage`.
 
 | Mode to explore | Agent-specific responsibilities to examine | Questions still open |
 | --- | --- | --- |
-| Direct messaging | Address a Session, distinguish a request from a reply, track message availability. | Dedicated mailbox type, a two-participant conversation, or a Conduit mode? Delivery, offline handling and acknowledgements remain undecided. |
+| Direct messaging | Address an Agent, distinguish a request from a reply, track message availability. | Dedicated mailbox type, a two-participant conversation, or a Conduit mode? Delivery, offline handling and acknowledgements remain undecided. |
 | Multi-participant conversation | Participant-visible history, topic/thread relationships and context for agents joining later. | Which state belongs to a Pool-owned Resource versus the live flow? No room topology, invitation or wake policy is selected. |
-| Shared context | Make selected knowledge, checkpoints or collaboratively maintained material available across Sessions. | Snapshot exchange, shared references, live collection or editable state? Define updates, provenance and conflicts before selecting a contract. |
+| Shared context | Make selected knowledge, checkpoints or collaboratively maintained material available across Agents. | Snapshot exchange, shared references, live collection or editable state? Define updates, provenance and conflicts before selecting a contract. |
 
 These are examples to test, not a closed list or three approved types. A group can cover several
 agent-focused contracts without becoming one broad Resource that promises all communication.
@@ -234,7 +241,7 @@ room working-memory model.
 
 | Potential group | Candidate types/use cases | Boundary to protect |
 | --- | --- | --- |
-| `execution` | A container environment, VM, job runner or browser environment. | Session remains the durable participant; a provisioned execution environment need not become another Session. Do not require this indirection for every native launch. |
+| `execution` | A container environment, VM, job runner or browser environment. | Agent remains the durable participant; a provisioned execution environment need not become another Agent. Do not require this indirection for every native launch. |
 | `messaging` | Durable queue, broker topic or stream service. | Infrastructure-level capability; distinguish it from the agent-communication candidate above. Whether these need separate groups remains open. No default room topology follows. |
 | `observability` | Trace store, metric-query endpoint, audit sink. | Reuse storage/integration types when sufficient; use a new type only for signal-specific semantics. |
 | `coordination` | Lease service, lock service, rate/quota allocator. | Lock state has a target and authority; a category name does not make arbitrary native operations safe. |
@@ -255,7 +262,7 @@ existing target. Neither operation happens on registration, and cleanup remains 
 Relative template paths resolve against an explicit creation base; the complete instance saves
 an absolute host backing path. For example, `./repo` with base `/work/euphony` becomes
 `/work/euphony/repo`, independently of later launch directories. This does not yet select
-symlink-resolution behavior or the Session's prepared path.
+symlink-resolution behavior or the Agent's prepared path.
 Remaining detailed configuration and lifecycle choices in this walkthrough are proposals.
 Plain directory access does not imply Git management, even when the folder contains a checkout.
 The [filesystem lifecycle comparison](ESTABLISHMENT.md#filesystem-plugins-and-template-examples)
@@ -263,7 +270,7 @@ now works through existing/new directories, remote trees and Git worktrees, with
 fragments, plugin responsibilities and optional author-written typed composition.
 
 Attach an existing checkout as a `filesystem` / `local-directory` Resource through its Pool.
-Two Sessions can receive separate symlinks from their Conduit attachments; those symlinks are
+Two Agents can receive separate symlinks from their Conduit attachments; those symlinks are
 preparation, not extra Resources. Their edits still affect the same target. For independent
 writers, provision a `filesystem` / `git-worktree` Resource for each workspace through the Pool.
 The repository's shared administration and remote remain distinct from each working tree.
@@ -274,10 +281,11 @@ the accepted cleanup rules. No file-locking guarantee arises from ownership or n
 
 ### Linear MCP and AWS CLI
 
-Use an `integration` / `mcp` template for configured Linear access. The same Resource can serve
-multiple permitted service principals per attachment where supported. Workspace restriction is
-a provider/adapter capability to verify; a field named workspace cannot establish it by itself.
-Keep provider tool names/schemas visible. A Session's model account remains independent.
+Use an `integration` / `mcp` template for configured Linear access. Its Pool normally establishes
+shared authentication, with Conduits narrowing each caller's use. Multiple permitted service
+principals remain an explicit alternative. Workspace restriction is a provider/adapter capability
+to verify; a field named workspace cannot establish it by itself.
+Keep provider tool names/schemas visible. An Agent's model account remains independent.
 
 An `integration` / `cli` candidate represents prepared native command access. The AWS executable,
 credential profile, target account and region are not all the same thing. Attaching four clients
@@ -290,8 +298,12 @@ The [existing AWS walkthrough](CONDUITS.md#4-access-aws-through-its-cli) contain
 
 Ordinary 1Password CLI access could initially use a native integration. If Conduit manages
 credential resolution/injection as a distinct capability, an `identity` type becomes useful.
-The Pool owns that configured service Resource. A Session's login, refresh state and private
-cache remain per-attachment/runtime state where needed, not a second ownership hierarchy.
+The Pool owns that configured capability. Shared service authentication and coordinated refresh
+normally belong to the managed provider binding; consumer-specific permissions and preparation
+belong to each Conduit relationship. Explicit per-consumer identities remain possible where needed.
+Reusable authentication is now a Pool-owned Resource accessed by service Resources through
+Conduits. Its type group/name, operation contract and treatment of non-reusable internal state
+remain open; it adds no family or mandatory Resource per token.
 Each downstream connection still requires authority; same-Pool membership does not deliver secrets.
 Provider authentication modes remain integration-specific, as explored in the
 [credential walkthrough](CONDUITS.md#3-access-a-1password-account-or-vault).
@@ -299,9 +311,9 @@ Provider authentication modes remain integration-specific, as explored in the
 ### Memory storage, search and a backend plugin
 
 An Euphony Pool can own a `storage` / `records` Resource and a `search` / `index` Resource.
-A declared Conduit gives search the required storage access. Sessions access each through
+A declared Conduit gives search the required storage access. Agents access each through
 their permitted Conduits; authority for index maintenance does not authorize returning every
-indexed record to every querying Session. Enforce the receiving Session's current access
+indexed record to every querying Agent. Enforce the receiving Agent's current access
 before returning results and retain the agreed incomplete-search reporting.
 
 One backend package may implement both responsibilities, and an MCP-access Resource can expose
@@ -314,14 +326,14 @@ Whether an index exposes both query and maintenance operations depends on one co
 responsibility and lifecycle. A separately operated ingestion pipeline may warrant another
 type. Avoid enforcing either decomposition until a concrete backend demonstrates the need.
 
-### Skills, documents and Session activation
+### Skills, documents and Agent activation
 
 A native skill bundle can be a candidate `content` Resource when it has independently selected
 source/version/compatibility. Its bytes might come from a filesystem or storage Resource through
 a Conduit. Do not register every backing file again. For a plain document already in permitted
 storage, a reference can suffice; a specialized Resource is useful when its management differs.
 
-Session activation decides whether to advertise skill metadata, load selected instructions or
+Agent activation decides whether to advertise skill metadata, load selected instructions or
 prepare a compatible native plugin. The Conduit filters availability. A `content` group cannot
 cause automatic loading, and a model family alone cannot establish runtime-hook compatibility.
 
@@ -341,14 +353,18 @@ the only possible Resource contract for this scenario.
 
 ## What should actually drive compatibility
 
-**Proposal:** a small set of versioned interfaces, introduced only where real consumers need
-interchangeability. Type-group membership should help discovery, not imply interface inheritance.
+**Accepted direction:** required connections match named, versioned capability contracts covering
+operations and behavior, so different compatible Resource types can supply them. Type-group
+membership helps discovery; it does not imply capability inheritance. Exact contracts, identifiers,
+version matching and conformance mechanisms remain open.
 
 For example, a search implementation can require record enumeration and revision-aware reads.
 Two different storage types may satisfy that exact requirement. A third may only export bytes,
 so it needs an explicit adapter or is incompatible. Its placement in `storage` is insufficient.
-The Resource contract declares the requirement; its Conduit declaration supplies the actual
-target. Do not maintain duplicate endpoint assignments inside a second configuration structure.
+Resource templates declare connection requirements; Pool composition supplies their concrete
+targets at instantiation. The instance retains its resolved Conduit binding, without duplicate
+endpoint assignments. Both this composition boundary and capability-based compatibility are
+accepted. Provider/account constraints, current authority and readiness remain separate checks.
 
 | Fact | Proposed authority | Example |
 | --- | --- | --- |
@@ -356,7 +372,7 @@ target. Do not maintain duplicate endpoint assignments inside a second configura
 | Implemented interfaces/options | Implementation declaration plus conformance evidence. | A backend supports conditional writes. |
 | Selected mode/target | Resource instance spec. | Attach to an existing collection. |
 | Observed current service support | Preparation/discovery state, with provenance/freshness. | A remote endpoint currently offers a search operation. |
-| Permitted use | Current authority, filters and attachment identity. | This Session can read but not update. |
+| Permitted use | Current authority, filters and attachment identity. | This Agent can read but not update. |
 | Successfully established access | Actual preparation/operation outcome. | Authentication completed for the selected service principal. |
 
 These facts can overlap but are not interchangeable. If a feature is mandatory in a contract,
@@ -364,9 +380,13 @@ its absence is a compatibility/readiness failure; it is not silently downgraded 
 Groups, advertised capabilities and schema validity do not prove enforcement by a remote server.
 An instance author may request narrower use, but cannot declare unsupported behavior into existence.
 
-For v0, prefer concrete adapters and only the shared interfaces needed by the experiment.
-The open design question is how far to formalize this before implementation. A universal trait
-registry, multiple inheritance, generated method wrappers for every service, or a policy field
+For v0, prefer concrete adapters and only the capability contracts needed by the experiment.
+Integration contracts now support discovery/invocation over dynamically supplied provider catalogs
+and schemas, preserving native tools without a new Conduit contract for each operation. Static
+contracts remain valid. Discovery is not authority. R5 adopts initial discovery and explicit refresh
+in v0, with affected stale/incompatible definitions withheld pending refresh/reconciliation. Automatic
+refresh policies are deferred; exact invalidation/version evidence remains integration work.
+A universal trait registry, multiple inheritance, generated method wrappers for every service, or a policy field
 per provider call would add bookkeeping before demonstrating value.
 
 ### Consequences for Pools and Conduits
@@ -377,92 +397,32 @@ unavailable. This is a candidate meaning of intelligent grouping, without duplic
 Resource's configuration or hard-coding every future group into Pool behavior.
 
 Conduits supply actual relationships and narrow access; the selected contract establishes what
-can flow and which operations make sense. The Session's activation rules select how permitted
+can flow and which operations make sense. The Agent's activation rules select how permitted
 capabilities are presented. Neither a matching group nor an implementation package activates a
-Resource or provides authority. A discovery label can help choose a Resource without becoming
-an executable compatibility promise. Pool mechanics should follow these tested contracts.
+Resource or provides authority. Inspection of defined fields helps choose a Resource but does not
+replace verified capability support. Pool mechanics should follow these tested contracts.
 
 ## YAML, identity and extension rules
 
 ### Template establishment and instance state
 
-**Accepted direction:** Resource templates contain establishment choices in their spec, including
-local-directory create versus attach. Across the four families, users should not need a separate
-operation-request recipe to supply missing setup behavior. An explicit lifecycle action triggers
-what the configuration declares. **Proposed details below:** exact config/status fields and what
-survives in the instance are not settled. The type contract defines semantics; the adapter
-implements them. Template YAML need not contain shell scripts or reproduce adapter code.
+The [current YAML packet](../../experiments/001-shared-access/README.md) supplies complete
+illustrative templates and resolved instances. Resource templates carry explicit create/attach
+intent; instances retain enough current configuration and fixed graph/runtime definitions for
+later starts and export. A status-only claim that backing was created cannot replace that recipe.
+No mandatory source-template snapshot or input/override ledger is needed.
 
-Consider this abbreviated template, using an absolute path to keep contextual resolution out
-of the example. The common apiVersion is omitted because its identifier remains undecided.
-
-```yaml
-kind: Resource
-form: template
-metadata:
-  name: euphony-folder
-spec:
-  type: {group: filesystem, name: local-directory, version: v1alpha1}
-  config:
-    path: /work/euphony/repo
-    establish: create
-```
-
-Selecting this template for establishment through Pool `euphony-development` is sufficient to
-choose creation; the caller does not also supply an action flag or request manifest. Selecting
-the owning Pool is still necessary. A different template, or an ordinary edit to the typed
-configuration before use, can declare `establish: attach`. No implicit create-or-adopt behavior
-is introduced. A complete reusable declaration can reference external inputs; completeness does
-not require embedding credentials, every dependency's contents, or a literal owning Pool.
-How Pool/context supplies declared values such as a relative-path base remains for review.
-
-The type contract must explain the transition, rather than treating it as a blind config copy:
-
-| Stage | Example responsibility |
+| Boundary | Consequence |
 | --- | --- |
-| Validate and resolve | Verify schema/authority/owner, apply declared defaults and resolve any relative path against its explicit base. Registration alone performs no native action. |
-| Establish | The directory adapter follows the declared create/attach intent. Fresh create conflicts with an existing target; attach fails when the directory is absent. |
-| Record the instance | Assign identity/Pool ownership, retain ongoing settings, and report the actual establishment outcome and readiness. Failed/pending outcomes remain visible. |
-| Use and prepare consumers | Sessions receive their own prepared paths through Conduits. This does not repeat backing creation or register another Resource per symlink. |
+| Register versus establish | Validate configuration/owner and materialize instance defaults without performing native effects. Explicit setup then follows the declared intent. |
+| Create versus attach | Fresh create conflicts with an existing target; attach fails if the target is absent. Retry reconciles recorded effects rather than guessing from the path name. |
+| Instance versus projection | Agents prepare local views through Conduits; a symlink does not become another Resource or establish filesystem isolation. |
+| Export versus resume | Export retained configuration, not runtime readiness, grants or credentials. Reimport requires a new identity and explicit backing intent. |
+| Configuration versus data | A permitted setting change does not authorize recreating missing backing or replaying creation. |
 
-One candidate inspection result after success is:
-
-```yaml
-# Abbreviated inspection, not authorable status or an approved schema.
-kind: Resource
-form: instance
-metadata:
-  name: euphony-folder-7f3a
-spec:
-  type: {group: filesystem, name: local-directory, version: v1alpha1}
-  config:
-    path: /work/euphony/repo
-status:
-  establishment: {outcome: created}
-  readiness: ready
-```
-
-The owning Pool and stable ID also exist, but their field layout is omitted. Here the action is
-consumed during establishment and its result is reported. An alternative retains the selected
-mode as immutable establishment configuration on the instance. Both keep intent in the template;
-review which information is necessary for recovery/export without a mandatory full template
-snapshot or override history. Instance spec remains usable configuration, not an editable claim
-that the external effect succeeded. Status fields are system-owned and excluded from config writes.
-
-Reattempting incomplete establishment is different from instantiating another Resource. Internal
-operation identities/outcomes prevent unsafe blind retries without making users author a request
-language. After a directory has been established, losing it does not by itself authorize recreating
-it. Updating instance settings also does not silently replay creation. Exact failure-state retention,
-recovery and permitted instance transitions still require decisions.
-
-Two useful design tests follow. First, an exported instance lacking create/attach intent cannot
-promise to be a complete setup recipe: define an explicit conversion to establishment configuration,
-or retain enough declared intent, rather than guessing. Second, a template can be comprehensive
-without being a universal workflow engine. The [establishment investigation](ESTABLISHMENT.md)
-tests that boundary against subscription login, corpus indexing and password-manager access:
-typed dependencies/results and recoverable stages are needed even if provider procedures live
-in code. [Configuration research](CONFIGURATION.md#establishment-in-configuration) compares
-Compose, Docker's lifecycle boundaries and Kubernetes before selecting extra syntax.
+The [establishment investigation](ESTABLISHMENT.md) tests these boundaries against authentication,
+vector databases and filesystems. Template completeness means explicit contracts/dependencies;
+it does not require embedding credentials or reproducing provider code in YAML.
 
 ### Type reference and extension identity
 
@@ -496,7 +456,7 @@ protocol and common object `apiVersion` keep their separate meanings. The spelli
 is still illustrative. This change does not decide the common `apiVersion` string grammar.
 
 If group participates in contract identity, changing it is a contract-reference change, not
-merely rearranging a UI. Keep canonical groups stable; use labels/catalog views for alternate
+merely rearranging a UI. Keep canonical groups stable; use views over defined fields for alternate
 discovery categories. One type need not be duplicated to appear in several useful searches.
 Do not force every third-party type into the built-in groups.
 
@@ -526,7 +486,7 @@ implementation direction. Built-ins can use the same contract boundary as extern
 Whether handlers are built into the binary, processes, MCP adapters or sandboxed modules remains
 open; this research does not choose an ABI or distribution system.
 
-## Evaluation and the next review
+## Evaluation cases
 
 The desk review classified the user's folder, communication, credential, AWS and Linear examples,
 then tested memory/search, native bundles and future devices/queues against the same boundaries.
@@ -547,21 +507,7 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-Recommended discussion sequence:
-
-1. Use the accepted four groups and directory/worktree split for concrete type review; do not
-   repeat those rulings. Local-directory create/attach intent and absolute instance backing paths
-   are also settled, with establishment intent in the template spec. Review the typed transition,
-   outputs and recovery against the three complex establishment cases before finalizing export
-   or the simple directory's field layout; then cover Session preparation/symlinks.
-2. Walk through directory, records, search and MCP contracts: configuration, operations,
-   dependencies, preparation and one failure each. Evaluate content and identity, retaining
-   the agent-communication candidate for the detailed communication review.
-3. Decide the minimum shared consumer interfaces and type-collision/implementation selection rules.
-4. Define remaining version/name grammar and connection declaration fields from those examples.
-5. Return to Pool grouping with enough information to derive useful behavior and minimize state.
-
-The initial implementation slice can be much smaller than this catalog: local directory access,
-one record-store contract, the search behavior needed for it, and MCP access, with native content
-activation as required by the experiment. A group can start with one supported type. Final scope
-and exact adapters remain a review choice, not a new implementation authorization.
+The [experiment packet](../../experiments/001-shared-access/README.md) is the current concrete
+schema review. Its fixture contracts demonstrate the boundaries without approving this entire
+candidate catalog or claiming provider compatibility. Further type work should be driven by a
+specific responsibility, capability and lifecycle example, including at least one failure case.

@@ -150,23 +150,35 @@ of durable storage or exactly-once execution.
 
 ## Proposed requirement-authoring proof
 
-Candidate addition for the composable-requirements discussion; not yet an accepted milestone
-expansion or executed test. Reuse the existing fake service, two consumers and separate authorities:
+Candidate addition covering both requirement and executable composition; not yet an accepted
+milestone expansion or executed test. Reuse the existing fake service, two consumers and separate
+authorities. This is a focused authoring exercise, not a new deployment topology:
 
-- Compose known operation restrictions in two Conduit templates without modifying endpoint code.
-- Publish one custom requirement outside core modules, with typed parameters and runtime support
-  selected in the fixture endpoint template. A fake deployment operation with an allowed-region
-  condition is a candidate; this makes no claim about real cloud/CLI interception.
+- Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
+  then invoke that operation from a template. Composition should need no new glue executable or
+  hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.
+- Exercise default result derivation and an explicitly constructed domain result over the same
+  underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
+  then explicitly retry the same invocation to demonstrate still-valid progress reuse and child
+  recovery instead of blindly replaying effects.
+- Compose two reusable starting requirements in a named definition and use it in Conduit templates.
+  Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
+  core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.
+- Publish one custom requirement outside core modules, with typed parameters, declared fulfillment
+  duties and implementation support selected in the endpoint template. Allowed regions on a fake
+  deployment operation is a candidate; this makes no claim about real cloud or CLI interception.
 - Show valid/invalid parameter diagnostics without running the service; show that known schemas
   with missing runtime support leave the affected connection unready rather than dropping the rule.
-- Demonstrate one allowed and one rejected invocation, inspect actual fake-service dispatches and
-  retain the selected requirement/implementation identities and explanation in Interface evidence.
+- Demonstrate allowed and rejected invocations and inspect actual fake-service dispatches. Interface
+  evidence identifies selected contracts/implementations, fulfillment responsibilities and outcomes;
+  recorded support alone is not evidence of enforcement.
 - Change a relevant authorized fact or governing restriction after establishment and show that a
   cached setup result does not bypass required runtime checking. Preserve unrelated usable work.
 
-The purpose is to prove extension without a hard-coded requirement/provider switch in Rust, not to
-build a large vocabulary, expression engine or generic solver. Review this scope alongside I3 before
-implementation; package syntax, process placement and detailed evidence capture remain separate.
+The purpose is to prove the public extension/composition boundaries without a hard-coded requirement
+or provider switch in Rust, a large vocabulary, expression engine or general solver. This recommendation
+adds no live cloud dependencies and does not approve implementation start. Review its scope in I3;
+package syntax, physical plugin placement and detailed evidence capture remain separate.
 
 ## Measurements and decision gates
 

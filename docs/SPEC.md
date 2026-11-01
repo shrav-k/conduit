@@ -188,8 +188,11 @@ publication syntax and the first catalog remain under review.
 
 Conduits support explicit opening/joining, reusable composition and per-consumer participation.
 Typed filters narrow operations, targets and parameters. Every restriction along the selected
-path must pass. Separate authorized paths remain alternatives, without mixing their permissions.
-Ambiguous routes need explicit selection; failures do not silently switch paths or accounts.
+path must pass. Constituents remain individually enforced; known-conflict checks or explanations
+of their combined effect are optional, with no general solver or merge algorithm required from
+extension authors. An unverifiable required check still blocks affected behavior. Separate authorized
+paths remain alternatives, without mixing their permissions. Ambiguous routes need explicit
+selection; failures do not silently switch paths or accounts.
 
 Preparation establishes required connections by default; optional failures report and continue.
 Later dependency failures allow independent work. Current authority is checked on managed access

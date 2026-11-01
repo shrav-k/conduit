@@ -1625,6 +1625,13 @@ while a result constraint may apply before delivery. The selected Resource-side 
 the former while the Agent-side plugin presents the permitted tools. These obligations do not impose
 a fixed universal phase list. Exact representation, evidence and evaluation mechanisms remain open.
 
+Composed requirements remain individually enforced in v0. Checks that detect known conflicts or
+explain a combined effect are optional; a custom type need not supply a general solver or merge
+algorithm. For example, result limits of 20 and 10 can both apply without creating a merged
+requirement. Every applicable guarantee must still hold at its declared point; an unverifiable
+required check keeps the affected behavior unavailable. Report known conflicts and do not present
+unproved global compatibility as established. Exact diagnostic and optimization rules remain open.
+
 Requirements express obligations and restrictions. Existing graphs coordinate declared procedures
 to establish prerequisites, while instances own ongoing behavior. Resource configuration and plugin
 input/output contracts remain; a relationship requirement does not redefine a target operation.
@@ -1633,7 +1640,7 @@ Requirements cannot create permission grants or override baseline identity, owne
 rules. Registration still performs no provider effects; observed readiness remains distinct from
 valid configuration. Detailed satisfaction/evidence and failure rules require implementation review.
 
-The concrete core catalog, publication syntax, support-matching details, composition operators,
+The concrete core catalog, publication syntax, support-matching details, parameter bindings,
 version identifiers, satisfaction evidence and enforcement-binding representation remain open. The
 [implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
 tracks those choices; accepting the compositional model does not select an expression language,

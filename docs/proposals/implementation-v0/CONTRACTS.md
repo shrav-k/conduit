@@ -339,7 +339,7 @@ names. Matching a name, JSON shape or similarly named field is not sufficient ev
 | Implementation support | Accepted: publish supported requirement versions, endpoint roles and known limitations; check before establishment, then verify applicable runtime facts. Exact declaration/matching syntax remains open. |
 | Satisfaction | Proposed detail: describe evidence/checks, preconditions and guarantees sufficient for a particular requirement. |
 | Runtime responsibility | Accepted: definitions declare when guarantees must hold and applicable endpoint-role duties; established Conduits record responsible selected implementations. Detailed evidence/evaluation interfaces remain open. |
-| Composition | Accepted: definitions can compose existing requirements with constituent meanings/support preserved. Detailed repetition, conflict and parameter-binding rules remain proposed. |
+| Composition | Accepted: definitions compose existing requirements with individual enforcement; known-conflict or combined-effect checks are optional. Detailed diagnostics, optimizations and parameter bindings remain open. |
 | Lifecycle | Describe when evidence must be refreshed and what unavailable support means for the affected behavior. No universal closed domain-state enum is selected. |
 
 These are conceptual responsibilities, not mandatory fields for every tiny extension. A derived
@@ -354,18 +354,15 @@ result-size/count bounds; and applicable identity/binding lifecycle requirements
 identity, outcome retention and participation rules are not optional knobs that authors can omit.
 Domain-specific examples belong in extension packages, not an ever-growing hard-coded core enum.
 
-**Composition boundary and next recommendation:** the accepted whole-path rule requires every
-applicable restriction to hold, preserving operation/target constraints together. Separate authorized
-routes remain complete alternatives. Recommend retaining constituent requirements and checking each
-at its declared point, without requiring a general solver or merge algorithm for every extension.
-Contract-specific static conflict checks or simplifications may be supplied; for example, limits of
-20 and 10 can remain separate obligations, with a supported comparison explaining an effective limit
-of 10. Known contradictions and empty permitted sets must be reported; absent proof of global
-compatibility must not be presented as a proof. It is distinct from inability to establish a
-required guarantee at its point of use, which still blocks the affected behavior. This recommendation
-remains pending; the alternative requires a composition/compatibility algorithm for every composable
-type. No last-write-wins or automatic dropping of requirements is proposed. Exact diagnostic and
-optimization-equivalence contracts remain open; no alternative/advisory expression syntax is selected.
+**Accepted composition checking:** retain and individually enforce every constituent at its
+declared point. Contract-specific checks for known conflicts or explanations of combined effects
+are optional; custom requirement types need no general solver or merge algorithm. Limits of 20
+and 10 can remain separate obligations, with a supported comparison explaining an effective limit
+of 10. Report known contradictions and empty permitted sets without claiming unproved global
+compatibility. An unverifiable required check still blocks the affected behavior. Preserve complete
+operation/target constraints; separate authorized routes remain alternatives. No last-write-wins or
+automatic dropping of requirements follows. Exact diagnostic and optimization-equivalence contracts
+remain open; no alternative/advisory expression syntax is selected.
 
 **Validation and operation:**
 

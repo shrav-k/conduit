@@ -766,11 +766,11 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, review composition checking, detailed fulfillment evidence and runtime
-revalidation/failure behavior. Default graph recovery and declared fulfillment duties are accepted;
-custom recovery hooks and exact coordination remain open. The small core vocabulary
-and first authoring proof follow those choices. Do not make every custom requirement a Boolean
-expression or assume a general constraint solver can establish arbitrary provider guarantees.
+Requirement composition keeps individual enforcement, with optional known-conflict or combined-effect
+checks. No general solver or merge algorithm is required from custom authors. Default graph recovery
+and declared fulfillment duties are also accepted. The next review item is a small proof of composed
+operations and requirements using the existing synthetic fixture; it does not select a permanent core
+catalog. Detailed evidence, evaluation interfaces, custom recovery hooks and syntax remain open.
 
 Separate helpers can contain ordinary plugin crashes and support language-neutral implementations;
 an instance-specific runner can host multiple handlers; trusted in-process code can reduce

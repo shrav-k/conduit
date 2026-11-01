@@ -388,7 +388,9 @@ Definitions are reusable across implementations; plugins publish support declara
 before establishment, followed by applicable runtime verification. A Rust implementation can keep
 versioned definitions and typed parameter validation separate from selected endpoint support. The
 detailed matching contract remains under review. Custom meanings must not require adding a Rust
-enum variant or provider-name branch to core dispatch. Exact internal interfaces remain open.
+enum variant or provider-name branch to core dispatch. Individual enforcement and optional
+contract-specific composition checks are accepted; a general solver or merge algorithm is not a
+prerequisite for extension support. Exact internal interfaces remain open.
 
 Separate static definition/parameter checks, endpoint binding establishment and runtime checks.
 Accepted requirement contracts specify fulfillment timing and applicable endpoint-role duties.

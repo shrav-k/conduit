@@ -95,7 +95,8 @@ implementations remain accepted. Composite public results are derived by default
 public bindings and constituent contracts, with explicit construction available. Graph recovery
 is the default for composed operations, resuming valid child progress on explicit retry and
 preserving child recovery boundaries. Requirement contracts declare fulfillment timing/role duties;
-established Conduits record the responsible implementations. Next settle composition checking.
+established Conduits record the responsible implementations. Individual requirement enforcement
+with optional composition checks is accepted. Next settle the focused authoring proof scope.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -311,16 +312,25 @@ Resource-side MCP plugin, while the Agent-side plugin presents permitted tools. 
 can apply before result delivery or at establishment. This imposes no universal fixed phase list,
 extra authored manifest or always-running checker. Exact evidence and evaluation mechanisms remain open.
 
-**Next ruling — composition checking:** recommend retaining and enforcing every constituent
-requirement, with optional contract-specific checks for known conflicts or simplifications. For
-example, limits of 20 and 10 can both be enforced without requiring a new merged requirement; a
-supported bound comparison can report the effective limit of 10. Authors of new requirement types
-need not implement a general solver or merge algorithm merely to participate. Report known conflicts
-and leave unproved global compatibility explicit; this does not weaken the requirement that all
-applicable guarantees hold at their declared points. If a necessary runtime check cannot establish
-fulfillment, the affected behavior remains unavailable under existing rules. The alternative
-requires each composable type to supply a composition/compatibility algorithm before use. Exact
-validation/diagnostic syntax and any optimization equivalence rules remain open.
+**Accepted — individual enforcement, optional composition checks:** retain and enforce each
+constituent requirement at its declared point. Optional checks can detect known conflicts or explain
+combined effects, such as two limits of 20 and 10 imposing a maximum of 10. Custom authors need no
+general solver or merge algorithm. Known conflicts are reported and unproved global compatibility
+remains explicit; an unverifiable required check still blocks affected behavior. Exact diagnostics
+and optimization rules remain open.
+
+**Next ruling — focused authoring proof:** recommend demonstrating both forms of composition in
+Experiment 002's existing synthetic service and two-consumer fixture. Author one small plugin, publish
+a graph-backed operation that reuses it, and exercise derived/explicit results and valid-progress
+recovery after a controlled failure. Compose a small pair of starting requirements (operation
+allowlist and result-count bound are candidates) and add one custom requirement outside core code,
+such as allowed regions on a fake deployment operation. Inspect selected implementations, fulfillment
+duties, child progress and allowed/rejected requests through the Interface. This tests the authoring
+contract without introducing live cloud dependencies or a broad SDK. The alternative proves primitive
+plugins/templates first and adds composition in a later experiment. Approving this scope would not
+approve exact syntax, a permanent core catalog, worker placement or implementation start; those
+remain separate review items. The [candidate proof](../../../experiments/002-runtime-plugins/README.md#proposed-requirement-authoring-proof)
+describes the proposed extension to the fixture.
 
 Final package/schema spelling remains I7 work. Graph representation, publication and runtime
 supervision retain their distinct responsibilities.
@@ -332,13 +342,13 @@ Review the remaining consequences in three groups, before returning to process p
    default result derivation and graph recovery are accepted. Exact coordination/custom hooks
    remain open; consolidate final names after the concepts stabilize. Detailed representations
    remain I7 work, using existing publication without another object family or broad SDK prerequisite.
-2. **Composition and execution:** settle the scope of static compatibility/conflict checking.
-   Fulfillment duties and responsible-implementation records are accepted; detailed evidence,
+2. **Composition and execution:** individual enforcement with optional composition checks,
+   fulfillment duties and responsible-implementation records are accepted. Detailed evidence,
    changing-fact handling and evaluation interfaces remain open. Preserve whole-path narrowing,
    current access and effect/recovery rules rather than inventing new authority through requirements.
-3. **First vocabulary and proof:** choose a minimal meaningful set and demonstrate an externally
-   authored requirement without changing core dispatch. The experiment's
-   [proposed addition](../../../experiments/002-runtime-plugins/README.md#proposed-requirement-authoring-proof)
+3. **First vocabulary and proof:** choose a small fixture set and demonstrate composed plugin
+   operations and requirements, including an externally authored extension without core changes.
+   The experiment's [proposed addition](../../../experiments/002-runtime-plugins/README.md#proposed-requirement-authoring-proof)
    is a candidate for review, not a silently expanded accepted milestone.
 
 Typed plugin input/output schemas and Resource configuration contracts remain. The Conduit owns

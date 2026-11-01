@@ -252,20 +252,18 @@ If migration effects cannot be confirmed, report that uncertainty; an error mess
 establish the database schema. Keep known retained outputs subject to their validity rules.
 
 Mapping a failure is not handling its effects: translating `migration-failed` into a public result
-does not retry, compensate or roll back. Explicit recovery continues from valid recorded progress
-under existing contracts; composed results cannot invent atomicity or strengthen a child's retry
-guarantee. Parent/child retry coordination remains a separate ruling.
+does not retry, compensate or roll back. Composed results cannot invent atomicity or strengthen a
+child's retry guarantee.
 
-**Next ruling — default recovery support:** recommend that graph-backed operations reuse the
-graph runtime's valid-progress recovery by default. An explicit retry of the same unchanged
-invocation resumes its retained child progress; the child's declared recovery behavior handles
-unconfirmed effects. A parent resumes that composite rather than blindly invoking its whole graph
-again. For database setup, retain the verified running database, reconcile the migration outcome
-and proceed only as the migration contract permits. A result mapping supplies no retry authority.
-The alternative requires a bespoke recovery implementation for each published composite, even
-when its graph already provides the necessary progress/dependency structure. This chooses where
-normal recovery support comes from, not automatic retries, rollback, guaranteed recoverability or
-exactly-once effects. Detailed coordination and custom recovery hooks remain open. The
+**Accepted recovery default:** graph-backed operations reuse the graph runtime's valid-progress
+recovery. An explicit retry of the same unchanged invocation resumes retained child progress and
+reuses only still-valid results. The affected child's recovery contract handles unconfirmed external
+effects; the parent resumes that composite rather than blindly invoking its whole graph again.
+For database setup, retain the verified running database, reconcile the migration outcome and
+proceed only as its contract permits. Authors need no separate recovery implementation merely for
+composition. Current authority and validity rules still apply; a result mapping grants no retry
+permission. This enables neither automatic retries nor promised rollback, guaranteed recoverability
+or exactly-once effects. Detailed coordination and custom recovery hooks remain open. The
 [database example](AUTHORING.md#derived-and-authored-composite-results) supplies the concrete case.
 
 ## 5. Plugin package and runtime contracts

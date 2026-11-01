@@ -104,7 +104,14 @@ values and call selected operations. Composition preserves existing authority, e
 implementation retention and instance-owned runtime rules. It does not automatically make several
 external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;
 nesting does not introduce authored recursion or loops. Exact graph-call/binding syntax, publication
-layout and composite outcome/recovery details remain open.
+layout and detailed outcome/recovery coordination remain open.
+
+Graph-backed operations reuse Conduit's graph recovery by default. An explicit retry of the same
+unchanged invocation resumes retained child progress, reuses only still-valid results, and delegates
+uncertain external effects to the affected child's recovery contract. A composite author need not
+write separate recovery code merely for composition. This neither starts automatic retries nor
+promises rollback or recovery unsupported by a child. Custom recovery hooks and exact coordination
+remain open; instance supervision and current authority still apply.
 
 Composite output contracts account for their composed success and failure modes. Derive the
 initial public result contract by default from declared public output bindings and constituent

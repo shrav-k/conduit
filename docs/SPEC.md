@@ -50,10 +50,12 @@ A graph can itself implement a typed operation published by a plugin, allowing c
 graphs to reuse the composite behavior through its contract. Composite output contracts account
 for composed success/failure modes. Derive them by default from declared public output bindings
 and constituent contracts, with explicit construction available. Internal outputs are not exposed
-automatically; relevant effects, uncertainty and scoped evidence remain represented. Detailed
-mapping and recovery rules remain under review. Plugins publish contracts and
-implementation bindings for these behaviors. These are authoring and extension concepts beneath
-the five families, not additional object families. The
+automatically; relevant effects, uncertainty and scoped evidence remain represented. Graph-backed
+operations reuse graph recovery by default: explicit retry resumes retained valid child progress,
+with uncertain effects delegated to child recovery contracts. This adds no automatic retries or
+rollback guarantee. Detailed mapping/coordination and custom recovery hooks remain open. Plugins
+publish contracts and implementation bindings for these behaviors. These are authoring and
+extension concepts beneath the five families, not additional object families. The
 [concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) records the accepted temporary
 names and divisions; final terminology may change after conceptual review.
 

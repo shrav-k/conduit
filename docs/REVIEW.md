@@ -47,9 +47,11 @@ assemble these into the five families. Graphs may themselves implement typed ope
 through plugins for reuse by callers or other graphs. Final names may change after conceptual
 review. Composite public results are derived by default from declared public bindings and
 constituent contracts, with explicit construction available and underlying effects/uncertainty
-preserved. The [implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
-next addresses recovery support for composed operations. Detailed execution/recovery mechanisms,
-syntax and experiment additions remain proposals.
+preserved. Graph-backed operations reuse graph recovery by default, resuming valid child progress
+on explicit retry and delegating uncertain effects to child contracts. The
+[implementation review](proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
+next addresses requirement fulfillment duties. Detailed coordination, custom recovery hooks, syntax
+and experiment additions remain proposals.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

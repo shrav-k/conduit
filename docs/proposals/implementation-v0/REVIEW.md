@@ -92,8 +92,9 @@ operations published through plugins. See the
 [composite operation example](AUTHORING.md#publishing-a-graph-as-a-reusable-operation). Independent
 requirement definitions, published support with runtime verification and endpoint-selected/managed
 implementations remain accepted. Composite public results are derived by default from declared
-public bindings and constituent contracts, with explicit construction available. Next settle
-default recovery support for graph-backed operations, then requirement fulfillment duties.
+public bindings and constituent contracts, with explicit construction available. Graph recovery
+is the default for composed operations, resuming valid child progress on explicit retry and
+preserving child recovery boundaries. Next settle requirement fulfillment duties.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -294,26 +295,35 @@ mapping and recovery semantics remain open. See the
 [proposal](CONTRACTS.md#composite-outputs-and-outcomes--proposal) and
 [database example](AUTHORING.md#derived-and-authored-composite-results).
 
-**Next ruling — default recovery support:** recommend that graph-backed operations use the graph
-runtime's valid-progress recovery, with child contracts resolving their own uncertain effects.
-An explicit retry of the same unchanged composite resumes retained child progress: reuse a verified
-running database and reconcile its migration before any supported continuation. Parent graphs
-resume the existing child operation rather than blindly rerunning its graph. The alternative
-requires bespoke recovery code for every published composite. This settles normal authoring/runtime
-responsibility; automatic retry, rollback and guaranteed recovery do not follow. Detailed coordination
-and custom recovery hooks remain open.
+**Accepted — reuse graph recovery by default:** graph-backed operations reuse retained child
+progress on an explicit retry of the same unchanged invocation, reusing only still-valid results
+and delegating uncertain effects to child recovery contracts. Authors need no bespoke recovery
+implementation merely for composition. A parent resumes the existing composite rather than
+blindly reissuing its graph. This does not enable automatic retries or promise rollback or recovery
+unsupported by a child. Detailed coordination and custom recovery hooks remain open.
 
-Requirement fulfillment duties follow. Composition alone promises neither
-atomic effects nor safe replay. Final package/schema spelling remains I7 work. Graph representation,
-publication and runtime supervision retain their distinct responsibilities.
+**Next ruling — fulfillment responsibilities:** recommend that a requirement contract state when
+its guarantee must hold and any applicable endpoint-role obligations, while an established Conduit
+records the selected implementation(s) responsible for fulfilling them. For example, a workspace
+restriction must hold before each managed provider dispatch; the selected Resource-side MCP plugin
+can enforce it, while the Agent-side plugin presents the permitted native tools. Setup compatibility
+alone does not establish request-level enforcement. Another requirement may apply to results before
+delivery or to connection establishment instead. These duties should be inspectable through the
+Interface, using existing binding/evidence state rather than another authored manifest. The
+alternative leaves timing and responsibility within plugin implementation details, relying on their
+broad support declarations. Exact obligation syntax, evidence and evaluation mechanisms remain open;
+this does not choose a universal fixed phase enum or an always-running check process.
+
+Final package/schema spelling remains I7 work. Graph representation, publication and runtime
+supervision retain their distinct responsibilities.
 
 Review the remaining consequences in three groups, before returning to process placement:
 
 1. **Composition and authoring:** distinguish the accepted composition of obligations from the
    procedural composition of plugin operations. Graph-backed callable operations are accepted;
-   review composite outcome/recovery responsibilities and consolidate final names after the concepts
-   stabilize. Detailed representations remain I7 work, using
-   existing contract publication without another object family or broad helper SDK prerequisite.
+   default result derivation and graph recovery are accepted. Exact coordination/custom hooks
+   remain open; consolidate final names after the concepts stabilize. Detailed representations
+   remain I7 work, using existing publication without another object family or broad SDK prerequisite.
 2. **Composition and execution:** which static conflicts can be diagnosed; who checks/enforces a
    requirement at binding, invocation, delivery or cleanup; how changing facts, uncertain evidence
    and unavailable implementations affect dependent operations. Preserve whole-path narrowing,

@@ -537,9 +537,9 @@ as a plugin. Graph composition is not necessarily one package or process per nod
 
 The composed operation must describe its actual effects and recovery behavior. A successful login
 followed by a failed connection is partial work, not an automatically rolled-back transaction.
-Internal progress and external outcomes follow the existing evidence/recovery obligations; exact
-parent/child outcome and retry coordination remain review questions. Nested composition retains
-v0's finite graph limit and selected implementation/access boundaries.
+Graph-backed operations reuse retained child progress through graph recovery by default, leaving
+uncertain effects to child recovery contracts. Exact parent/child coordination remains open.
+Nested composition retains v0's finite graph limit and selected implementation/access boundaries.
 
 ### Derived and authored composite results
 
@@ -567,12 +567,13 @@ bindings and constituent contracts, with explicit construction available. Both p
 effects, uncertainty and scoped evidence without publishing all intermediate values. Exact field
 names and mapping syntax remain open.
 
-The [next recovery proposal](CONTRACTS.md#composite-outputs-and-outcomes--proposal) lets a published
-graph-backed operation reuse the graph runtime's valid-progress recovery instead of requiring a
-bespoke composite recovery handler. An explicit retry would reuse verified startup progress and
-ask the migration's recovery contract to resolve its effects before repeating anything uncertain.
-This is proposed support for the accepted valid-progress rule, not a promise that all child effects
-can be recovered or a change to automatic retry policy.
+**Accepted recovery default:** a published graph-backed operation reuses graph recovery without
+requiring a bespoke handler merely for composition. Explicit retry of this unchanged invocation
+reuses still-valid startup progress and delegates the uncertain migration effects to its recovery
+contract before proceeding as that contract permits. If it cannot establish a safe continuation,
+the graph cannot infer one. This does not change automatic retry policy or promise rollback.
+[Detailed coordination and custom recovery hooks](CONTRACTS.md#composite-outputs-and-outcomes--proposal)
+remain open.
 
 ### One Linear connection through the authoring concepts
 

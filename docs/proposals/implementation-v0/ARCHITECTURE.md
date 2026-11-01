@@ -197,7 +197,7 @@ management or execution service, with transaction boundaries limited to its own 
 | --- | --- |
 | Registry/configuration | Shared templates, registration/naming and policy; schema/default resolution and stable references. Route instance configuration reads/changes to their designated authority; label aggregate observations. No provider effects inside registry transactions. |
 | Instance supervisor/state authority | Retain the assigned instance's resolved definition, confirmed configuration/revision and operation results; supervise its executions/drivers and generations; apply lifecycle checks and expose preparation/runtime/connection observations. One service can host many instances. |
-| Graph executor | Validate finite dependency graphs, schedule ready steps, retain progress and decide whether recorded results remain usable. |
+| Graph executor | Validate finite dependency graphs, schedule ready steps and retain progress. Supply default recovery for graph-backed operations: explicit retry reuses still-valid child results and delegates uncertain effects to child recovery contracts. Detailed nested coordination remains open. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
 | Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
 | Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and report worker/service failures distinctly. |

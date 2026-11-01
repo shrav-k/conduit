@@ -63,7 +63,9 @@ Two-machine validation follows before remote support is claimed; no failure guar
 
 After that synthetic proof, test real Agents through native Claude/Codex adapters first, then build
 Conduit's own Rust model/tool loop. Both paths remain goals; native-account validation does not
-prove the owned loop's behavior. Initial platform scope remains under review.
+prove the owned loop's behavior. Validate native Agent integration and subscription accounts on
+macOS first, with a portable Rust core and OS-specific adapters. Other platform support requires
+separate integration evidence.
 
 ## The user workflow
 

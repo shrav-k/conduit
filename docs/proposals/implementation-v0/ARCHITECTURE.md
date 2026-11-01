@@ -388,8 +388,9 @@ context is read through a Resource, not implemented by merging private Agent his
 reconnection triggers context injection or model work by itself.
 
 **Accepted I2 delivery order:** validate native Claude/Codex adapters after the synthetic runtime
-proof, then build the owned Rust model/tool loop. Initial platform scope is still open. The custom
-terminal remains a thin Interface attachment throughout; native success is not evidence that the
+proof, then build the owned Rust model/tool loop. Native integration/account validation starts
+on macOS; the Rust core stays portable with OS-specific adapters. Other platforms require their
+own evidence. The custom terminal remains a thin Interface attachment throughout; native success is not evidence that the
 owned-loop driver or every provider/account combination already works.
 
 ## 9. Retained communication

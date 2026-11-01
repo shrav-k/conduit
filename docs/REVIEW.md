@@ -57,9 +57,9 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
 separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-the remaining I2–I6 choices, beginning with I2's initial platform scope. Delivery order is accepted:
-native Claude/Codex adapters after the synthetic proof, then Conduit's Rust model/tool loop. Return to
-I3's packaging details where needed. Final contract/template syntax remains I7 work.
+the remaining I3–I6 choices, beginning with I3's code execution and packaging boundaries. I2 is
+complete: native Claude/Codex adapters after the synthetic proof, then Conduit's Rust model/tool
+loop; macOS-first native integration/account validation with a portable core and OS adapters. Final contract/template syntax remains I7 work.
 
 ## Configuration walkthrough
 

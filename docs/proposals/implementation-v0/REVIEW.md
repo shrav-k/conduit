@@ -3,8 +3,8 @@
 Status: lightweight authoring support, contract publication, MCP, code-optional implementation
 bindings, independent component access, management/execution separation and shared policy with
 instance-owned state, no offline grants and the one-machine first proof are **accepted** below.
-I1 is settled; I2's delivery order is accepted, with initial platform scope still open.
-I3–I7 retain the choices identified in this review. Other recommendations remain proposed.
+I1 and I2 are settled, including native adapters before the Rust loop and macOS-first native
+integration/account validation. I3–I7 retain the choices identified in this review. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
 reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
@@ -81,7 +81,11 @@ remote support. The experiment remains unimplemented.
 **Accepted I2 delivery order:** after the synthetic runtime proof, validate real Agents through
 native Claude/Codex adapters first, then build Conduit's own Rust model/tool loop. Both remain goals.
 
-**Next discussion:** I2's initial platform scope; detailed syntax stays last.
+**Accepted initial platform:** macOS-first native integration and subscription-account validation,
+with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
+
+**Next discussion:** I3's execution boundary for authored plugin code, then distribution scope.
+MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -89,23 +93,22 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1's execution/authority boundary and I2's delivery order are settled. Review I2's platform scope, the remaining
-I3 execution/distribution choices, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a
+I1 and I2 are settled. Review the remaining I3 execution/distribution choices, then I4–I6's
+persistence/custody/evidence support. Preserve the existing IDs; this is a
 change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
 
 ## Pending choices
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I2 | Initial platform scope | Native adapters before the owned Rust loop is accepted. Recommend macOS-first integration/account validation, with portable Rust core boundaries; broader platform claims need evidence. |
 | I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open within the accepted I1 boundaries. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
-I3 establishes the conceptual extension boundary. Accepted I1 and pending I2 determine how to
-execute and demonstrate those contracts; I4–I6 determine retained state and evidence. I7 finalizes their authoring syntax
+I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
+and demonstrate those contracts; I4–I6 determine retained state and evidence. I7 finalizes their authoring syntax
 after those conceptual rulings. Numbers for
 queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
@@ -193,16 +196,14 @@ verify account/private-state separation and report integration coverage gaps. Th
 driver supplies Rust-controlled context, provider dispatch and tool iteration. Native success
 alone cannot establish compatibility of subscription authentication with direct provider access.
 
-**Remaining ruling — initial platform:** recommend macOS-first native integration and account
-validation, reflecting the user's initial environment. Keep the Rust core portable and suitable
-for platform-independent/Linux tests, while isolating OS-specific process, credential and filesystem
-behavior behind adapters. The alternative requires native integration validation on macOS and
-Linux from the first milestone, increasing platform work before the authoring/instance path is proven.
+**Accepted initial platform:** validate native Agent integration and subscription accounts on
+macOS first. Keep the Rust core portable and OS-specific process, credential and filesystem
+behavior behind adapters. Other platforms require their own integration evidence before support
+is claimed. This selects initial test coverage, not a permanent platform restriction.
 
-This chooses the first validated platform, not an enduring macOS-only protocol. Do not claim Linux,
-Windows or isolated native-driver support merely because core Rust builds there; the corresponding
-process, authentication and environment behavior needs evidence. Exact CI coverage and additional
-platform schedules remain implementation work. The replaceable Pi-inspired terminal remains a goal.
+Core compilation alone does not establish Linux/Windows native-driver or isolation support.
+Exact CI coverage and additional platform schedules remain implementation work. The replaceable
+Pi-inspired terminal remains a goal. **I2's delivery order and initial platform rulings are complete.**
 
 ## I3 — Plugin execution and distribution
 
@@ -214,27 +215,34 @@ ownership/access/evidence without forcing every internal export or object to bec
 server. Hosted implementations cannot inherit a binary-pinning guarantee; retain exact
 declarations/adapters and report actual compatibility evidence. Profile details remain open.
 
-**Recommendation for code-backed plugins:** use exact-version executable workers for externally
-supplied implementation code. Standard MCP tools/resources and optional features carry compatible
-exchanges. Internal trusted Rust traits
-remain an implementation convenience. Start with first-party bundled artifacts and explicit local
-package installation; defer a marketplace and arbitrary-language dependency resolver.
+**Next ruling — execution boundary for authored code:** recommend separately supervised MCP
+worker processes for plugin-authored code that Conduit runs, while trusted built-in Rust
+functionality can remain in-process. For example, a checksum handler can run through a lightweight
+runner outside the executor, so the author need not implement a full server. A database driver
+worker requests instance-managed runtime actions and reports supported effects; it does not become
+the owner of instance configuration or long-lived services.
 
-**Example:** a Pool-owned service Resource keeps worker A while a new application release ships
-worker B. A replacement Resource can select B and explicitly reuse compatible backing. Installing
-B does not modify A's behavior. A standard remote MCP service remains usable without pretending
-its server implements the Conduit worker lifecycle profile.
+Existing local/remote MCP services retain their own supervision; declarative bindings do not
+require a new worker. This does not select one process per graph node, invocation or instance.
+Sharing/granularity must preserve identity, credentials, cancellation and retained implementation
+bindings. Process separation helps contain plugin crashes but is not an OS permission sandbox.
+Supported languages, runner packaging and worker transport details remain separate.
 
-**Alternatives:** a dedicated binary RPC for workers may make lifecycle methods simpler but adds
-another public protocol; in-process-only plugins reduce initial process plumbing but complicate
-exact implementation retention and failure containment; Wasm-first adds a host-capability and
-packaging system before proving the required native integrations.
+**Alternative:** initially load authored plugin code into the executor process through an extension
+API. That reduces process plumbing but shares its failure boundary and needs a compatible loading
+and retention mechanism. A Wasm lane can be evaluated later; it is not required to prove the public
+protocol. MCP remains the accepted public invocation protocol under either arrangement.
 
-**Rulings still needed:** execution/distribution boundaries within the accepted custody and
-authority split and accepted no-offline-grants rule. MCP and implementation-binding modes are settled; exact artifact pinning and replacement
-on upgrade are already accepted for Conduit-controlled code. The experiment must test whether
-the profile stays small before treating its method set as stable. Standard protocol support alone
-does not establish provider lifecycle, effect recovery or partition behavior.
+**Subsequent ruling — distribution scope:** recommend first-party bundled artifacts and explicit
+local package installation, deferring a marketplace and arbitrary-language dependency resolver.
+A Pool-owned Resource retains worker A when a new release makes B available; a replacement can
+select B and explicitly reuse compatible backing. Exact Conduit-controlled implementation retention
+and replacement on upgrade are already accepted, not new choices in this review.
+
+The experiment must test whether the Conduit MCP profile stays small before treating its method
+set as stable. Protocol support alone does not establish provider lifecycle or effect recovery.
+Execution and distribution recommendations above remain unaccepted; lightweight author support,
+code-optional integrations and existing-service reuse remain required under either arrangement.
 
 ## I4 — Local transactional authority
 

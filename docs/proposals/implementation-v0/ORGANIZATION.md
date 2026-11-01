@@ -204,7 +204,9 @@ Measure costs after the authoring-to-instance path works; optimization is not it
 
 Each milestone produces an inspectable vertical slice, not just more abstractions. I2 accepts
 native Claude/Codex adapters after the synthetic proof, followed by the owned Rust model/tool loop.
-Initial platform scope remains open. The finer milestone breakdown below is still a proposal;
+Native integration/account validation is macOS-first, with a portable Rust core and OS-specific
+adapters. Other platform support needs separate evidence. The finer milestone breakdown below
+is still a proposal;
 no calendar estimates are implied.
 
 | Milestone | Deliverable | Exit evidence |

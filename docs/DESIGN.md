@@ -947,7 +947,12 @@ connect separate runtimes and report their actual lifecycle/access/telemetry cap
 native Claude/Codex adapters first, then build Conduit's own Rust model/tool loop. The native path
 tests separate subscription accounts, private state and shared Resource access through Conduits;
 it does not establish the owned loop's behavior or unobserved native activity. Both paths remain
-goals. This selects delivery order only; initial platform scope remains in implementation review.
+goals.
+
+**Accepted initial platform:** validate native Agent integration and subscription accounts on
+macOS first. Keep the Rust core portable and isolate OS-specific process,
+credential and filesystem behavior behind adapters. Other platforms require their own integration
+evidence before support is claimed; this is initial test coverage, not a permanent platform limit.
 
 The first frontend is a custom terminal inspired by Pi. Presentation is replaceable;
 it does not own credentials, model calls or authoritative execution state. Pi terminal

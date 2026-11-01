@@ -168,7 +168,8 @@ the first Agent collaboration experiment.
 
 Advance to live Xerj and model-account tests only after the synthetic evidence is recorded.
 I2's accepted Agent delivery order is native Claude/Codex adapters first, then Conduit's owned
-Rust model/tool loop. Initial platform scope remains open. Native success does not establish
+Rust model/tool loop. Native integration/account validation is macOS-first, with a portable core
+and OS-specific adapters; other platform support needs separate evidence. Native success does not establish
 the owned loop's provider behavior or its subscription compatibility.
 The separate two-Claude/two-Codex exercise still needs explicit native authentication and
 account/private-state verification; this fixture cannot establish those properties.

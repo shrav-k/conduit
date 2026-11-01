@@ -16,7 +16,8 @@ exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-c
 preserves the existing families, ownership and access rules. I1 accepts management/execution
 separation, shared policy with instance-owned state, no offline grants, and a one-machine
 first proof with management and two independent executor processes. I2 accepts native adapters
-before the owned Rust model/tool loop; initial platform scope is next;
+before the owned Rust model/tool loop and macOS-first native integration/account validation;
+I3's remaining execution and packaging choices are next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -70,7 +71,7 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 - **Proposed** means an implementation choice recommended here, including crate names, storage
   layouts, wire profiles and numeric limits.
 - **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on; I1 is now settled, while I2–I7 retain the choices shown in REVIEW. Routine engineering choices can be adopted with the implementation
+  pending until ruled on; I1 and I2 are settled, while I3–I7 retain the choices shown in REVIEW. Routine engineering choices can be adopted with the implementation
   and evidence, without asking a separate question for every field.
 - A new counterexample can revise this proposal. It cannot silently override the current design.
   After approval, fold enduring contract changes into DESIGN and keep implementation details here;
@@ -84,7 +85,8 @@ agent supervision and a Conduit-owned model/tool loop have distinct implementati
 accepted I2 order tests real Agents through native Claude/Codex adapters after the synthetic proof,
 then builds Conduit's Rust model/tool loop. Both remain required goals, alongside the replaceable
 Pi-inspired terminal. Subscription compatibility still requires actual native-adapter evidence;
-initial platform scope remains the open I2 choice.
+native integration/account validation starts on macOS. Keep the Rust core portable and OS
+behavior behind adapters; other platforms need their own integration evidence before support claims.
 
 No distributed scheduler, general workflow language, public plugin marketplace, new skill
 framework, generic tracker subsystem, label catalog or mandatory Wasm engine is proposed.

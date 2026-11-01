@@ -119,10 +119,10 @@ one review queue rather than another decision ledger.
 
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
-explicit governing targets. Its remaining conceptual work is grouped into four bundles: live
-target membership, proposed-grant validation, initial authority/startup/repair, and storage
+explicit governing targets with live ownership-based matching. Its remaining conceptual work is
+grouped into three bundles: grant bounds/validation, initial authority/startup/repair, and storage
 placement/backend. I5 credential custody/enrollment and I6 capture defaults add two bundles.
-That is six planned conceptual bundles, including the current live-membership question, followed
+That is five planned conceptual bundles, including the current grant-bounds question, followed
 by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
 future questions: startup, storage or enrollment may reveal a concrete choice that needs splitting.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
@@ -132,7 +132,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Requirement application, grant management and foundational storage | Policy consolidation, grants, dedicated access-management Resource and explicit governing targets accepted. Next target-membership behavior, custom-bound checks and startup/storage. |
+| I4 | Requirement application, grant management and foundational storage | Policy consolidation, grants, dedicated access-management Resource and explicit targets with live matching accepted. Next grant bounds and startup/storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -475,19 +475,20 @@ and first-establishment/repair wiring remain open.
 **Explicit governing targets are accepted:** bindings distinguish an object's own operations from
 operations on explicitly selected owned Resources. Pool ownership and the location of a declaration
 do not propagate requirements automatically. A Pool template can bundle both kinds of rules, and
-an explicit supported ownership scope can cover multiple Resources. Exact selectors and membership
-changes remain open; this does not restore generic object labels/selectors.
+an explicit supported ownership scope can cover multiple Resources. Explicit ownership-based
+governing selections now match live at applicable checks as Resource instances enter/leave the
+selected set, without provisioning or grants. Explicit references retain their resolved stable IDs.
+Exact selectors remain open; this does not restore generic object labels/selectors.
 
 **Next conceptual choices, in order:**
 
-1. Should explicit ownership-based governing selections match live, extending the existing live
-   access-filter rule? Recommend new matching Resources become subject to the requirement at subsequent
-   applicable checks, while nonmatching ones leave that binding's reach. This neither provisions nor
-   grants access. The alternative fixes targets until an explicit refresh; stable-ID reference
-   behavior remains unchanged. This extension is still a ruling, with syntax deferred to I7.
-2. Define supported checks on proposed grant bounds without reopening the accepted composition
-   rules or assuming a general subset solver. Exact schema is I7.
-3. Establish first trusted authority and startup/repair, then choose the internal storage boundary
+1. Should bounded grant issuance [carry mandatory use bounds into the issued grant](AUTHORIZATION.md#carrying-use-bounds-into-issued-grants--proposal),
+   composing additional requested restrictions, or require the caller to submit the complete grant
+   and verify that it stays within the boundary? Recommend carrying required bounds; actual extent
+   remains inspectable and explicit broader requests are refused. Issuance-only checks do not become
+   live dependencies, and bound-check/enforcement support must still be established. This is proposed,
+   not an accepted default; exact schemas remain I7.
+2. Establish first trusted authority and startup/repair, then choose the internal storage boundary
    and engine. The active Interface's directives do not establish their own authority.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate

@@ -69,9 +69,11 @@ independent managed state; declaring or satisfying requirements does not itself 
 Governing requirements have explicit target scope: an object's own operations are distinct from
 operations on Resources it owns. Pool ownership causes no automatic inheritance. An explicitly
 declared owned-Resource scope may target supported capabilities; a Pool template can bundle both
-forms without changing their meaning. Selector syntax and membership-change behavior remain open.
+forms without changing their meaning. Explicit ownership-based governing selections match live at
+applicable checks as Resource instances enter/leave the selected set. This neither provisions nor
+grants access; explicit ID references stay fixed. Selector syntax remains open.
 The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop the accepted
-model and remaining schemas, target membership, custom-bound checks and startup/storage decisions.
+model and remaining schemas, grant-bound checks and startup/storage decisions.
 
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate

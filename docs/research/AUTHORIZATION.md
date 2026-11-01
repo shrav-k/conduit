@@ -194,8 +194,9 @@ Resolve these within I4 before the final I7 syntax pass:
   grant administration expressed through ordinary protected capabilities. Independent governed
   state remains; no separate policy-rule language or mandatory policy-plugin process is required.
 - Settled: governing bindings distinguish an object's own operations from operations on explicitly
-  selected owned Resources; there is no automatic Pool inheritance. Should ownership-based target
-  membership match live? Exact selectors and custom grant-bound checks remain open. Existing
+  selected owned Resources; there is no automatic Pool inheritance. Explicit ownership-based target
+  selection now matches live without provisioning or grants; explicit ID references stay fixed.
+  Exact selectors and custom grant-bound checks remain open. Existing
   complete-path, all-applicable-requirements and mandatory-check rules already apply.
 - Settled: a dedicated access-management Resource in the system Pool exposes these records,
   alongside registry/template management. How is its first trusted authority established and

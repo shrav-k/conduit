@@ -88,8 +88,9 @@ protected capabilities. Existing requirement composition and current-grant check
 a separate policy language. A dedicated access-management Resource in the system Pool now manages
 grants and governing requirement bindings alongside the registry/template management Resource.
 Explicit governing targets are now accepted: Pool operations and operations on owned Resources
-have distinct scope, with no automatic Pool inheritance. I4 next reviews target-membership changes
-and grant-bound checks, then startup/repair and storage.
+have distinct scope, with no automatic Pool inheritance. Explicit ownership-based governing
+selections now match live, without provisioning Resources or granting access; explicit ID references
+stay fixed. I4 next reviews grant bounds, then startup/repair and storage.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

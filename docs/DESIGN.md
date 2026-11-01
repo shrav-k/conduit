@@ -1805,7 +1805,11 @@ one binding per Resource. A Pool template may declare both kinds of rules togeth
 placement in that template does not determine their reach. V0 has no automatic Pool inheritance.
 The access-management Resource stores/administers the bindings; that storage location is not
 their target. Requirement applicability/support still matters, and grants still supply permission.
-Exact selector syntax and changes to ownership-based target membership remain separate choices.
+Explicit ownership-based governing scopes match live: newly matching Resource instances become
+subject to the requirement at subsequent applicable checks, and instances that stop matching leave
+that binding's reach. This neither provisions Resources nor issues grants; other bindings and
+current access checks still apply. Explicit references remain bound to their resolved stable IDs.
+Exact selector syntax and implementation mechanisms remain open.
 
 Grant administration is an ordinary protected capability. For example, a coordinator's management
 grant permits issuance, while requirements limit the proposed recipient grant's targets, operations

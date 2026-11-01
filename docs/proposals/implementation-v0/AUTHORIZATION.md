@@ -94,6 +94,13 @@ A repository-wide read-only requirement applies across relevant Conduits to that
 a read-only restriction on one review Conduit stays local to that path. In each case the declared
 requirement contract must support the target/context, and the caller still needs its grant.
 
+**Accepted live matching:** an explicit ownership-based governing selection uses current matching
+Resource instances at applicable checks. A newly matching instance becomes subject to the binding;
+one that stops matching leaves that binding's reach. Other requirements and grants retain their
+own rules. This neither provisions Resources nor grants access. Explicit references stay bound to
+their resolved stable IDs; matching is not automatic Pool inheritance or substitution of a deleted
+referenced target. Current-authority and no-offline-grants checks still apply.
+
 All applicable requirements must hold at their declared enforcement points. Actor-wide and
 target-wide restrictions apply wherever their declared applicability requires; Conduit-local
 restrictions remain local to that path. Separate authorized paths stay complete alternatives, and
@@ -132,6 +139,40 @@ cannot establish root authority.
 extent are different tasks. Shared requirement definitions do not make a per-request checker a
 general subset prover. Implementations must support the relevant use; unverifiable bounds cannot
 be assumed satisfied. Exact custom-bound validation contracts remain open.
+
+### Carrying use bounds into issued grants — proposal
+
+The remaining grant-validation choice is how an issuance operation establishes the permitted
+extent of its output. Recommend that a bounded issuance contract include its mandatory use
+restrictions in the resulting grant, while any caller-supplied additional restrictions compose
+conjunctively. It would return the actual issued extent for inspection. This uses the accepted
+requirement-composition machinery and does not require a generic proof that an arbitrary proposed
+condition is equivalent to, or narrower than, another condition.
+
+For example, A's administrative capability may issue read access to Euphony's Linear Resource.
+The handler includes the permitted operation/target/workspace bounds in B's grant even if A omits
+their repeated declaration. A request can add a smaller result bound. An explicitly requested
+operation or target outside the permitted extent is refused rather than silently reported as
+issued; known conflicting requirements are reported. Unknown comparisons or unsupported required
+checks cannot be treated as satisfied.
+
+Only restrictions defined to govern subsequent use are carried into the grant, with the concrete
+values and referenced contract versions that give them meaning. Checks declared only for issuance,
+such as the issuer's current administrative authority, do not become ongoing grant dependencies.
+Requirements retain their declared applicability, timing and duties; current recipient/target
+restrictions continue to apply where their contracts require them.
+A provider-request checker does not automatically support checking a proposed grant. Relevant
+support remains contract-declared and verified, and custom administration checks may still be needed.
+
+B's retained bounds are its own authorization data, not a link to A's grant or an issuer-provenance
+chain. A later losing permission does not change B's grant. Current governing requirements still
+apply, and an authorized administrator can change or revoke B's grant through the existing model.
+
+The alternative requires the caller to supply the complete proposed grant and validates that its
+extent is within every administration boundary before accepting it. That keeps the proposal fully
+explicit but requires repeated bounds or supported semantic comparison. Neither approach grants
+permission from requirement satisfaction alone or replaces current authority checks. Exact
+operation input/output schemas stay for I7; this proposal is not an accepted issuance default.
 
 ### Concrete examples
 
@@ -350,23 +391,20 @@ Logical separation does not require separate processes, stores or centralized en
 owned Resources. Pool templates may bundle those rules, but ownership/authoring location alone
 does not propagate requirements. No automatic Pool inheritance is introduced.
 
-1. **Ownership-based target membership:** should explicit governing selections match live as
-   Resources enter/leave the selected ownership/capability set, extending the existing live
-   access-filter behavior? Recommend live matching at subsequent applicable checks. This would
-   neither provision Resources nor grant access; an explicit reference still retains its resolved
-   stable ID. The alternative fixes the selected targets until an explicit refresh. This extension
-   is not yet ruled; exact selector syntax stays for I7.
+**Accepted live target matching:** explicit ownership-based governing selections match live at
+subsequent applicable checks. Newly matching Resource instances become subject to the binding;
+nonmatching instances leave its reach. This does not provision Resources or issue grants, and
+explicit references retain their resolved stable IDs. Other applicable restrictions remain in force.
+For example, a binding targeting Euphony's deployment Resources also applies to a newly provisioned
+matching `worker-deploy`, while an unrelated directory Resource does not match. Exact selectors
+and membership-resolution mechanisms remain I7/implementation work.
 
-   Example: a binding explicitly targets deployment-capable Resources owned by Euphony Pool and
-   requires deployments in an approved region. Initially only `api-deploy` matches. After someone
-   explicitly provisions `worker-deploy` into that Pool, live selection would apply the same
-   requirement to its relevant managed deployments; a fixed selection would still contain only
-   `api-deploy` until refreshed. An unrelated directory Resource would not match. This changes the
-   reach of this binding, not the caller's grants or Resource provisioning, and other restrictions
-   still apply under either option. The example selects neither final type names nor syntax.
-2. **Grant-bound validation:** define supported checks on proposed grant bounds. Current mandatory
-   checks and path composition are already settled; custom validation does not assume a universal solver.
-3. **Startup and persistence:** settle first authority, establishment/repair, then the storage
+1. **Grant bounds:** choose how a bounded issuance operation constructs/verifies the final grant.
+   Recommend including mandatory use restrictions itself and composing caller-added restrictions
+   conjunctively, rather than requiring every caller to restate and prove the complete boundary.
+   The [worked proposal](#carrying-use-bounds-into-issued-grants--proposal) separates retained use bounds
+   from administration-only checks. This remains a ruling; no universal solver is assumed.
+2. **Startup and persistence:** settle first authority, establishment/repair, then the storage
    interface/engine. The root-owner initial grant is a concrete initialization problem, not
    permission for runtime self-granting.
 

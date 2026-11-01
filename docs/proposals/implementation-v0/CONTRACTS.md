@@ -351,7 +351,10 @@ changes, without a separate policy-rule language or executable definition catego
 operations on owned Resources selected by the binding. Pool ownership and declaration placement
 do not automatically propagate requirements. The selected capability/context must be supported;
 one binding may explicitly cover multiple owned Resources without becoming a permission grant.
-Exact selectors and ownership-based membership changes remain under review.
+Explicit ownership-based governing selections match live at subsequent applicable checks as Resource
+instances enter/leave the selected set. They neither provision Resources nor issue grants, and
+explicit references retain their resolved stable IDs. Exact selectors and evaluation mechanisms
+remain under review; live selection does not provide authority when current facts are unverifiable.
 
 Detailed declaration syntax and matching, the core catalog, composition mechanics, evaluation
 protocol and enforcement policies below remain proposed. A Conduit template composes requirements

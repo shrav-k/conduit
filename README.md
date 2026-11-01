@@ -39,6 +39,8 @@ Pools do not supply default Agent connections in v0. Later connections are expli
 Pool composition explicitly chooses provisioning from an entry or using an existing Resource;
 both resolve to a concrete instance for the connection.
 Type/plugin implementations supply the actual operations, while templates expose and constrain them.
+V0 YAML uses strict typed values without anchors/aliases, merge keys, custom tags or implicit
+environment/shell expansion. Reuse comes from templates, references and declared graphs.
 V0 uses explicit Pool entries and defined object fields; generic object labels and label-based
 selectors are excluded. Knowledge-record classification and typed Conduit filters remain separate.
 

@@ -364,6 +364,15 @@ YAML is the authoring surface; typed objects and explicit semantics define the p
 The common envelope is `apiVersion`, family `kind`, top-level `form`, `metadata`, `spec`, plus
 system-owned `status` for inspection. Exact API version and new control fields remain open.
 
+R6 adopts a strict v0 YAML profile: YAML 1.2 Core scalar interpretation, string mapping keys and
+finite supported numeric values, followed by typed validation without silent coercion. Reject
+duplicate keys and unknown fields outside schema-declared open maps. Omission follows the declared
+default/optional rule; null is allowed only by the field's schema and is not a universal reset;
+empty collections remain explicitly empty. Keep comments and multiline strings. Reject YAML
+anchors/aliases, merge-key behavior and custom tags in v0. No implicit shell/environment expansion;
+typed bindings and declared plugin actions supply explicit inputs/effects. JSON and equivalent YAML
+must have the same typed meaning. The profile does not select a parser or add template inheritance.
+
 There is no generic object-label map or label-selector language in v0. Names, IDs, kinds/forms,
 types and ownership/connection relationships remain available for inspection and supported queries.
 Typed Conduit restrictions and knowledge-record classification retain their own contracts.

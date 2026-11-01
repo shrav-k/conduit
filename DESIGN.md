@@ -348,9 +348,34 @@ Exact metadata/status fields, ID encoding and remaining import/export semantics 
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
 in the research. In particular, the API group/version, registry storage layout, reference
-extensions, YAML subset, schema toolchain and command names remain for review. Configuration
-objects also do not force every memory record, native tool or runtime event into an
+extensions, schema toolchain and command names remain to be drafted. The v0 YAML interpretation
+profile is accepted below. Configuration objects also do not force every memory record, native tool or runtime event into an
 individually authored YAML file.
+
+### YAML interpretation
+
+**Accepted v0 profile (R6):** use YAML 1.2 Core scalar interpretation, restricted to string
+mapping keys and finite supported numeric values. Typed schemas enforce field types, ranges and
+units without silently converting a string to a number or boolean. Reject duplicate mapping keys
+and unknown fields outside schema-declared open maps. Unsupported numeric range/precision is an
+error, not permission to truncate. Equivalent JSON/YAML inputs have the same typed meaning.
+
+Omission follows the declared default/optional rule; instances materialize declared defaults.
+Null is an explicit value accepted only where the field permits it, including a blank YAML scalar;
+it does not universally mean reset or use-default. Empty lists/maps remain explicitly empty and
+follow their field's contract rather than inheriting values. For example, integer `queryLimit: 15`
+can be valid, `queryLimit: "15"` fails that integer contract, and `enabled: yes` fails a boolean one.
+
+Comments, ordinary mappings/sequences and multiline strings remain supported. V0 rejects
+anchors/aliases, merge-key behavior and custom tags; templates, typed references and declared
+graphs provide reuse. Loading configuration does not implicitly expand shell/environment strings.
+An explicit typed input binding or plugin operation can supply a value or perform its declared
+work; script-based plugins remain supported. This profile governs Conduit's configuration loader,
+not the contents/formats of opaque native files supplied through Resources.
+
+Parser choice, diagnostics and schema-specific numeric/unit limits remain implementation work.
+Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
+not imply atomic deployment, authority or successful setup.
 
 ### Object identity
 

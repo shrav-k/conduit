@@ -13,41 +13,42 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-**R6 representation/export is settled:** one instance `spec.config` map holds initial values and
-then confirmed settings; outstanding requests and observations stay separate. Export uses stored
-settings for fresh creation without copying readiness, grants, credentials or execution progress.
-The [worked search example](research/CONFIGURATION.md#r6-worked-example-configuration-through-creation-change-and-export)
-now illustrates accepted behavior, while its remaining field spellings are provisional.
+**R6 representation/export and YAML interpretation are settled.** Instances use one `spec.config`
+map, exporting stored settings for fresh creation with observations/effects separate. V0 rejects
+anchors/aliases, merge-key behavior, custom tags and implicit shell/environment expansion. Typed
+validation, explicit omission/null/empty behavior and ordinary YAML readability are retained.
 
-Next is **R6's YAML interpretation profile**, followed by implementation/version selection. The
-proposal is readable YAML over predictable typed data: use YAML 1.2 Core scalar resolution, restrict
-mapping keys to strings and numbers to finite supported values, and validate values without silent
-schema coercion. Keep comments, normal collections and multiline strings. Reject duplicate keys
-and already-prohibited unknown fields; schema-declared open maps remain allowed.
+Next is **R6's implementation selection and upgrade boundary**. Contract identity/version and
+implementation releases are already separate; the remaining choice is what a particular instance
+binds to and how it can adopt newer code.
 
-| Input in a field with the stated contract | Proposed interpretation |
+Suppose a capability uses a contract at `v1alpha1` and a fictional implementation package
+`example-mcp-adapter` at release `0.3.0`. A later `0.4.0` package can claim support for the same
+contract without becoming the same executable implementation.
+
+| Situation | Proposed v0 behavior |
 | --- | --- |
-| `queryLimit: 15`, where an integer is required | Integer 15, checked against the declared range. |
-| `queryLimit: "15"` | String, rejected for this integer field rather than converted. |
-| Omit `queryLimit` where its default is 10 | Use the declared default; a saved instance materializes 10. |
-| `queryLimit: null` or a blank value | Null, accepted only if the field permits it; not an instruction to reset/default. |
-| An empty list/map | Explicit emptiness, validated under the field's contract; not inherited values. |
-| `enabled: yes`, where a boolean is required | String, rejected; use a boolean such as `true`. |
-| `account: "${ACCOUNT}"` | Literal text, with no implicit environment substitution. An explicit input/capability must supply an account selection. |
+| Establish an instance | Select an implementation explicitly or through a configured default; resolve and retain its exact release/artifact identity before execution. |
+| Several implementations exist without a selection/default | Report ambiguity; installation order or newest version does not decide. |
+| Install `0.4.0` or change the default | Existing instances keep their selected implementation; a new instance can deliberately select the new one. |
+| The retained `0.3.0` implementation is unavailable | Report the readiness gap and block affected execution; do not silently substitute `0.4.0`. Valid configuration can still be registered with known schemas. |
+| Upgrade an existing instance's implementation | Create a replacement instance in v0; reuse backing data explicitly where its contract supports that. |
 
-**Recommended v0 boundary, not yet accepted:** defer anchors/aliases, merge-key behavior and custom
-tags; use typed templates/references/graphs for reuse. No implicit shell/environment evaluation.
-Schema-defined input binding remains possible, and executable plugin steps can perform their
-declared work. This restriction concerns configuration loading, not a ban on scripts as plugins.
+**Recommendation, not yet a ruling:** retain exact Conduit-selected plugin implementations per
+instance and use replacement for upgrades. Conflicting definitions for a contract identity/version
+cannot silently overwrite each other. The resolved implementation is current execution configuration,
+not a required template-history archive. A configured default can avoid repetition in every template;
+it is resolved deliberately rather than followed live by existing instances.
 
-The tradeoff is losing YAML-local copy/merge shorthand. An alternative permits bounded, document-local
-anchors/aliases while retaining the other strict rules; merge semantics would still need an explicit
-choice. The [configuration research](research/CONFIGURATION.md#r6-companion-proposals-yaml-values-and-implementation-selection)
-links the scalar rules to the YAML specification and separates them from Conduit's application policy.
+The tradeoff is replacing instances to adopt fixes, even where a release might be compatible.
+An alternative supports explicit in-place compatible upgrades and needs rules for active work,
+contract verification and retained setup progress. Neither option silently upgrades on installation.
+This does not freeze remote providers/native tool catalogs or promise to pin external native-agent
+binaries; adapters must declare those separate boundaries and coverage.
 
-Draft related fields/examples together. Exact spelling, parser library, plugin ABI and storage are
-engineering choices unless they expose a new protocol behavior. Implementation/version resolution
-is the remaining R6 topic after YAML; communication remains R7.
+Exact package/artifact fields, parser tooling, plugin ABI and storage can be drafted within the
+selected behavior. The [configuration research](research/CONFIGURATION.md#r6-companion-proposals-yaml-values-and-implementation-selection)
+contains the worked example. Communication remains R7 after this ruling.
 
 ## Settled foundation
 
@@ -57,6 +58,7 @@ is the remaining R6 topic after YAML; communication remains R7.
 | Administration | Unrestricted v0 Interfaces, reusable frontend attachments and shared Interface control. Delegated Agent commands coexist without taking over or gaining Interface authority. Interface scoping is deferred. |
 | Construction | R2 selects finite, acyclic typed dependency graphs with branching/loops inside plugins; authored conditions, iteration and dynamic fan-out are deferred. Waits, valid-progress recovery and supported independent parallel steps remain. Instances own ongoing behavior. Direct complete-instance creation and repeated template use are both supported. |
 | Configuration | One `spec.config` map: initial values then confirmed settings; export stored values for fresh creation. Pending/uncertain state stays separate. Resolved graph/materialized defaults, no required template history. Fixed-definition changes require replacement; named controls, target coordination and revision checks govern supported changes. |
+| YAML interpretation | YAML 1.2 Core scalar resolution, string keys, finite supported numbers and strict typed validation. Explicit omission/null/empty semantics. No anchors/aliases, merge keys, custom tags or implicit shell/environment expansion in v0. |
 | Organization | No generic registry-object labels or label-based selectors in v0. Pools use explicit named entries; discovery uses defined fields and relationships. Knowledge-record classification and typed access filters remain separate. |
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
@@ -78,7 +80,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
 | R4 — accepted | How are connections selected, delegated and routed? | Explicit Pool entries and provision-or-use-existing intent; no generic labels/selectors, automatic deployment or Pool connection defaults. Unambiguous/explicit routing and recipient-bound grants. | No implicit reuse/provision selection; richer reuse policies deferred. |
 | R5 — accepted | When do accessible skills, content and catalogs become active? | Declared compatible preparation, deliberate collision resolution and explicit refresh. Withhold affected known stale/incompatible calls; report detection limits. | Automatic reload/first-use refresh deferred; no implicit precedence or context replacement. |
-| R6 — partly settled | What portable configuration/extension profile is shared? | Accepted: one `spec.config` map and export of stored settings. Remaining: typed YAML interpretation and explicit contract/implementation resolution, with no implicit environment expansion or substitution proposed. | Broader parser features, version-range selection or implicit migration rules. |
+| R6 — partly settled | What portable configuration/extension profile is shared? | Accepted: one `spec.config` map/export and strict YAML interpretation. Remaining: exact implementation selection/retention and replacement-versus-in-place upgrades. | Explicit in-place compatible upgrades require active-work and retained-progress rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
 
 ### R2 — graph execution and recovery
@@ -204,15 +206,21 @@ Export carries stored settings for fresh creation, reports uncertainty separatel
 credentials, grants, readiness or progress. Resource creation still requires a Pool and explicit
 backing intent. The template remains unchanged; no parallel creation/applied maps are required.
 
+**Accepted YAML profile:** YAML 1.2 Core scalar interpretation, string keys and finite supported
+numbers with typed validation, duplicate/unknown-key rejection and schema-declared open maps.
+Omission uses declared defaults/optionality; null is allowed only where declared and is not reset;
+empty collections stay explicit. Comments and multiline strings remain. Anchors/aliases, merge-key
+behavior, custom tags and implicit shell/environment expansion are excluded from v0. Use typed
+templates/references/graphs and explicit inputs. Native Resource contents keep their own formats.
+
 Remaining companion proposals:
 
-- YAML values, string/duplicate keys, null/empty/omitted values, units, explicit path/environment
-  inputs and optional parser features. No implicit shell evaluation.
 - Contract identity/version versus implementation package/release. Resolve collisions explicitly;
   groups are not publisher identities. Recommend a curated local catalog and explicit implementation
   selection with retained versions in v0; public naming governance can wait.
 - Unknown versions, unavailable implementations and compatible recovery. An installed-package update
-  must not silently reinterpret retained work; dynamic provider catalogs remain a separate contract.
+  must not silently reinterpret retained work. Recommend replacement instances for implementation
+  upgrades in v0; dynamic provider catalogs/external runtimes remain separate contracts.
 
 Field spelling, ID encoding and version labels can be drafted autonomously in that profile;
 new behavior exposed by examples returns for review. This audit does not select a plugin ABI,
@@ -255,7 +263,7 @@ These do not need individual product rulings unless they change an approved cont
 | --- | --- |
 | README, SPEC, DESIGN | Current model retained. Direct complete-instance creation was already accepted; removed wording that still questioned it. Remaining semantics map to R1–R7. |
 | REVIEW | Replaced the sprawling agenda with this closure list, recommendations and implementation backlog. |
-| CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary and R6's single configuration/export behavior are accepted; YAML/version resolution remains under R6. |
+| CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary and R6's configuration/export and strict YAML behavior are accepted; implementation/version resolution remains under R6. |
 | ESTABLISHMENT, RESOURCES | R2/R3 execution and ownership boundaries are accepted. Kept lifecycle/type cases; remaining extension choices map to R6, with recovery examples drafted within settled contracts. |
 | CONDUITS | Corrected stale claims that control outcome/concurrency policy was unchosen. R3 settles retirement/ended-flow identity; routing/communication map to R4/R7. |
 | PI_CONNECTORS, PI_RUNTIME | Retained pinned evidence; removed the obsolete single-controller recommendation. Conduit-facing examples use Agent/Interface terminology. R5 settles explicit activation/refresh; communication remains R7. |

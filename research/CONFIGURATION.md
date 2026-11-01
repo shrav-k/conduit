@@ -176,22 +176,23 @@ changing running settings; this ruling does not select every illustrative field 
 
 ### R6 companion proposals: YAML values and implementation selection
 
-These are the remaining language choices after the accepted representation/export behavior;
-they are not accepted merely by appearing in YAML. They refine existing typed-object semantics.
+R6 now accepts the YAML data/validation/omission/reuse rules below, alongside the representation/export
+behavior. Implementation resolution remains a proposal. Illustrative field names are not accepted
+merely by appearing in YAML.
 
-| Concern | Proposed v0 rule | Concrete consequence |
+| Concern | Status and v0 rule | Concrete consequence |
 | --- | --- | --- |
-| Data values | YAML 1.2 Core scalar resolution into a JSON-compatible value model, restricted to string mapping keys and finite supported numbers, with schema-defined units/ranges. No silent schema coercion. | `queryLimit: "15"` remains a string; unquoted `yes` is not a boolean. |
-| Invalid/ambiguous structure | Reject duplicate keys and already-prohibited unknown fields; schema-declared open maps retain their own constraints. | Two `queryLimit` keys are an error rather than first/last wins. |
-| Omitted, null, empty | Omission follows the declared default/optional rule; null is a value only where allowed; empty collections are explicit emptiness. | Null does not universally mean reset, and an empty connection list does not inherit another list. |
-| Reuse/evaluation | Use typed references, templates and graphs; defer YAML merge keys, anchors/aliases and custom tags for v0. No implicit shell or environment interpolation. | `${ACCOUNT}` in a string is literal unless a declared contract explicitly interprets it; credential access uses the appropriate capability. |
+| Data values | Accepted: YAML 1.2 Core scalar resolution into a JSON-compatible value model, restricted to string mapping keys and finite supported numbers, with schema-defined units/ranges. No silent schema coercion. | `queryLimit: "15"` remains a string; unquoted `yes` is not a boolean. |
+| Invalid/ambiguous structure | Accepted: reject duplicate keys and already-prohibited unknown fields; schema-declared open maps retain their own constraints. | Two `queryLimit` keys are an error rather than first/last wins. |
+| Omitted, null, empty | Accepted: omission follows the declared default/optional rule; null is a value only where allowed; empty collections are explicit emptiness. | Null does not universally mean reset, and an empty connection list does not inherit another list. |
+| Reuse/evaluation | Accepted: use typed references, templates and graphs; reject YAML merge-key behavior, anchors/aliases and custom tags in v0. No implicit shell or environment interpolation. | `${ACCOUNT}` in a string is literal unless a declared contract explicitly interprets it; credential access uses the appropriate capability. |
 | Contract versus implementation | Keep type/plugin contract identity/version distinct from the installed implementation package/release. | The contract with group `search` and name `prepare` can have more than one implementation. |
-| Implementation resolution | Select an implementation explicitly or through an unambiguous configured default; resolve exact release/artifact identity before execution and retain it for compatible recovery. Do not silently upgrade or substitute. | Installing another implementation cannot redirect an existing instance; missing code is a readiness gap, not a reason to use another provider. |
+| Implementation resolution | Proposed: select an implementation explicitly or through an unambiguous configured default; resolve exact release/artifact identity before execution and retain it for compatible recovery. Do not silently upgrade or substitute. | Installing another implementation cannot redirect an existing instance; missing code is a readiness gap, not a reason to use another provider. |
 
 Scalar interpretation was checked against the [YAML 1.2.2 Core schema](https://yaml.org/spec/1.2.2/#103-core-schema)
 on 2026-10-31. Core resolves unmatched plain scalars to strings and blank scalar values to null.
 Thus `enabled: yes` fails a boolean field, while `queryLimit:` is an explicit null value rather than
-omission. Conduit's proposed finite-number/string-key restrictions and alias/merge/tag exclusions
+omission. Conduit's accepted finite-number/string-key restrictions and alias/merge/tag exclusions
 are application choices, not claims that YAML itself lacks those features. Normal comments and
 multiline strings remain available. Reject unsupported numeric range/precision rather than
 silently truncating; exact domain limits belong to the relevant schema.
@@ -211,6 +212,27 @@ be registered while an implementation or service is unavailable. Resolution evid
 the requested implementation from one actually located/verified; an unresolved artifact is not
 invented. Implementation pinning is current executable configuration, not a provenance archive.
 Plugin ABI, registry storage and package delivery mechanics remain engineering choices.
+
+The remaining R6 implementation ruling needs to distinguish code selected by Conduit from external
+provider behavior. Proposed example: an MCP capability contract remains at `v1alpha1`, while its
+selected Conduit adapter is package `example-mcp-adapter`, release `0.3.0`. A later `0.4.0` package
+may implement the same contract without automatically replacing code used by established instances.
+Names/releases here are fictional. Group/name/version identifies a contract, not its installation.
+
+Recommend resolving the selected implementation to an exact release/artifact identity before
+execution and retaining it for that instance. Selection can be explicit or come from a configured
+default; unresolved ambiguity is reported rather than resolved by installation order. Conflicting
+definitions for one contract identity/version must not silently overwrite each other. Known schemas
+still allow valid configuration to register while implementation code is unavailable, with affected
+execution blocked and the unresolved dependency visible.
+
+For v0, recommend replacement instances for implementation upgrades, explicitly reusing backing
+where supported. This extends the fixed-definition rule to implementation selection; it is not yet
+accepted. The alternative supports explicit compatible in-place upgrades and needs compatibility,
+active-work and retained-progress migration rules. Neither choice silently updates an existing
+instance because an installed package/default changed. Pinning covers Conduit-selected plugin code;
+it does not freeze remote provider services/catalogs or assert control over external native binaries.
+Adapters must report those external versions/limitations according to their own contracts.
 
 ### Selecting the exposed controls
 
@@ -811,11 +833,11 @@ paths, with native-package bases retained. Reusable templates are typed objects,
 macros. A general include or inheritance language can wait. Decide how optional inline
 configurations acquire identity/provenance and whether they can later be promoted to templates.
 
-A constrained [YAML 1.2](https://yaml.org/spec/1.2.2/) surface should use string keys, reject
-duplicate keys and define finite numeric/unit types. The R6 companion proposal defers
-anchors/aliases, merge keys and custom tags in v0; any later alias support would need expansion
-limits. Do not silently expand shell/environment strings or interpret unsupported null/empty
-values. Plugin configuration needs a named/versioned schema. These parser details remain proposals.
+The accepted R6 [YAML 1.2](https://yaml.org/spec/1.2.2/) profile uses Core scalar interpretation,
+string keys, duplicate-key rejection and finite supported numeric values. Anchors/aliases,
+merge-key behavior and custom tags are rejected in v0. There is no implicit shell/environment
+expansion or universal null/reset interpretation. Plugin configuration needs a named/versioned
+schema. Exact parser tooling remains an engineering choice.
 
 Unknown-field rejection is accepted for templates and instances, except in schema-declared
 open maps. Plugin schemas can define their own fields and open maps; map keys/values retain
@@ -836,7 +858,7 @@ them here. R6 accepts exporting the instance's current stored configuration
 for fresh creation, separately from template export, inspection and recovery state. Applying an
 inspection dump cannot assert runtime status, clone credentials or launch duplicate work.
 Configuration-only export remains portable and does not carry system-owned identity/version
-values as editable configuration. Remaining YAML and implementation-resolution choices are separate.
+values as editable configuration. The YAML profile is accepted; implementation-resolution choices remain open.
 
 ### Version meaning, not just field names
 

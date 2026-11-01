@@ -8,11 +8,18 @@ accepted protocol.
 
 ## Proposed architecture
 
-One Rust host owns the local registry, instance supervision, authorized dispatch and durable
-operation evidence. Replaceable frontends attach to an Interface. Versioned workers implement
-provider, filesystem, authentication and other plugin behavior; MCP carries compatible external
-contracts. A small local transactional store supplies authoritative state. Xerj remains an
-optional Resource backend. Pi supplies design evidence, not a runtime dependency.
+**I1 remains open.** The user has not accepted a single host owning all execution. Objects must
+be able to operate independently, with eventual deployment across systems, Resources in one Pool
+on different machines, and network Conduits. The [distributed-runtime research](../../research/DISTRIBUTED_RUNTIME.md)
+compares a shared host, shared management with independent execution services, and independently
+authoritative object services. The middle arrangement is a proposal to examine, not a ruling.
+
+Rust services implement registry authority, instance supervision, authorized capability traffic
+and durable evidence through explicit boundaries. Their process placement and outage guarantees
+are still under review. Replaceable frontends attach to an Interface; versioned workers implement
+provider and other plugin behavior. MCP carries compatible external contracts. Local transactional
+storage remains an I4 candidate, not a requirement that all distributed state live in one file.
+Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 
 Templates remain the complete authoring entry point: typed YAML, finite setup graphs, declared
 runtime behavior and supported controls. Users do not author separate operation-request manifests.
@@ -47,7 +54,7 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 
 ## Scope
 
-The proposed sequence begins with a synthetic, fault-injectable host and Interface, then real
+The proposed sequence begins with synthetic, fault-injectable execution and an Interface, then real
 Resources and Agent adapters, then the required two-Claude/two-Codex account exercise. Native
 agent supervision and a Conduit-owned model/tool loop have distinct implementation paths. Their
 delivery order needs **I2** because the current design calls for both Rust-owned execution and a
@@ -55,6 +62,8 @@ Pi-inspired terminal, while subscription compatibility requires native-adapter e
 
 No distributed scheduler, general workflow language, public plugin marketplace, new skill
 framework, generic tracker subsystem, label catalog or mandatory Wasm engine is proposed.
+Independent placement does not require automatic scheduling or federation; their absence must
+not force a single execution lifetime or a central hop for every capability interaction.
 OS isolation remains an explicit execution mode whose support must be demonstrated, not inferred
 from using Rust, workers or MCP.
 
@@ -65,6 +74,10 @@ executors, actors, workflow systems and plugin mechanisms. This follow-up also i
 documentation for subprocess cancellation/reaping, SQLite durability and backup, JSON Schema
 defaults, YAML parser events, MCP transports, credential-store selection and Cargo workspaces.
 The relevant sources are cited beside the resulting recommendations in this packet.
+
+The [distributed-runtime follow-up](../../research/DISTRIBUTED_RUNTIME.md) adds Tilt,
+Docker/containerd, Kubernetes, Rust control/execution systems and primary distributed-systems
+papers. It revises I1 and the proposed experiment rather than recording an acceptance.
 
 Documentation and source inspection are not executable validation. The
 [runtime experiment](../../../experiments/002-runtime-plugins/README.md) defines the first

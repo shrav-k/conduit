@@ -1,6 +1,6 @@
 # Conduit design contracts
 
-Updated: 2026-11-01. Current working design on `main`; implementation
+Updated: 2026-11-01. Current working design; implementation
 has not started. [SPEC.md](SPEC.md) summarizes the model; [REVIEW.md](REVIEW.md) records the
 completed direction review and schema boundary. The [YAML walkthrough](../experiments/001-shared-access/README.md)
 proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
@@ -32,6 +32,14 @@ supporting concepts, not additional families.
 Resource creation/attachment always goes through its owning Pool, including supporting Resources
 for Conduits. Templates are reusable across Pools; each resulting Resource instance has one owner.
 Backing data, credentials and process lifetime are distinct from registry identity/ownership.
+
+**Distribution direction:** objects should operate independently and eventually be deployable
+across systems. One Pool can own Resources deployed on different systems; Conduits can span a
+network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
+not require one execution host. Initial authority topology, failure independence and remote
+deployment guarantees remain open in [implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
+This direction does not claim remote execution is implemented or approve automatic migration,
+federation or offline authorization.
 
 ### Interfaces and the user workflow
 

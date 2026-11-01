@@ -1,5 +1,11 @@
 # Proposed implementation contracts
 
+**Placement review:** I1 remains open. References to a host below mean the responsible management
+or execution service, not necessarily one process. Independent execution and network Conduits
+require authenticated endpoint identity, retained target outcomes and authority-freshness rules.
+These remain [review work](REVIEW.md#i1--independent-execution-and-management); serialization alone
+would not make this a complete distributed protocol.
+
 Status: draft contract design, 2026-11-01. All new field names, namespaces, limits and wire
 profiles here are proposed. [DESIGN](../../DESIGN.md) supplies accepted semantics;
 [review I3 and I7](REVIEW.md) cover the main extension and authoring choices. Examples are
@@ -146,7 +152,8 @@ setup:
 
 This fragment assumes the enclosing definition supplies `owner`/`database` implementations,
 typed configuration and the managed runtime declaration. `database.establish` requests startup
-from the host for that declared runtime; it does not invent an independent daemon. The output
+from the responsible execution service for that declared instance-owned runtime. Its process
+may be independent of management; it is not an untracked daemon owned by a setup node. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
 
@@ -230,7 +237,7 @@ requiring a tiny script plugin to implement unused lifecycle interfaces.
 ### Worker boundary
 
 Use `rmcp` for MCP discovery, calls, resources and supported optional exchanges. A Conduit worker
-profile describes host-owned lifecycle and recovery that vanilla provider MCP servers do not
+profile describes instance-owned lifecycle and recovery that vanilla provider MCP servers do not
 promise. The profile is a versioned binding of the above ports, not another object family.
 The SDK provides transport machinery; it does not supply our durable operation identity.
 [Rust MCP SDK][rmcp]
@@ -251,7 +258,10 @@ That is an engineering default, not a protocol requirement. It already allows ma
 share one Pool-owned service Resource and its worker. Cross-instance worker multiplexing can
 follow measurements; it must partition state, credentials and cancellation correctly. Do not
 allocate workers for registered templates, idle declarations or objects whose behavior needs no
-external executable. Trusted core dispatch/ownership rules stay in the host.
+external executable. Trusted dispatch/ownership rules remain in responsible Conduit services;
+they are not restricted to one global process. Worker loss, executor loss and management-channel
+loss have separate meanings. I1 must establish which service retains progress, processes and
+outcomes across each failure before this lifecycle profile can be considered complete.
 
 For first-party releases, retain the exact worker executable/bundle used by each instance.
 A script bundle additionally needs a defined interpreter/dependency closure; hashing just its
@@ -335,9 +345,10 @@ Reconciliation must establish reality before another conflicting change can proc
 
 ## 8. Content, handles and secret custody
 
-Ordinary typed values may be serialized. Managed handles reference a host-owned object/driver
-generation and allowed operations; handle access is checked when used. Their serialized inspection
-form contains no live credential or assumption that the old process still exists.
+Ordinary typed values may be serialized. Managed handles identify their target, responsible
+execution endpoint, generation and allowed operations; handle access is checked when used.
+Endpoint identity is distinct from a changeable network address. These are proposed handle
+semantics, not new YAML keys or a sixth object family. Their serialized inspection form contains no live credential or assumption that the old process still exists.
 
 Secret inputs are explicit references or interaction channels whose custody remains with their
 owning authentication capability. The type/operation schema identifies sensitive fields and
@@ -424,8 +435,8 @@ validate both the existing walkthrough and amended examples for multi-plugin gra
 rewrite experiment 001 to make a new parser pass; document any proposed language difference first.
 
 Before declaring the worker profile usable, run the same invocation/recovery tests against the
-in-process fake and real subprocess transport. Before accepting a provider adapter, test actual
-identity, parallel-account behavior, refresh ownership, permitted native operations, interruption
+in-process fake and real subprocess transport, then across independently supervised executors.
+Before accepting a provider adapter, test actual identity, parallel-account behavior, refresh ownership, permitted native operations, interruption
 and telemetry gaps. A manifest plus passing JSON Schema is not evidence that those effects work.
 
 [yaml-events]: https://docs.rs/yaml-rust2/latest/yaml_rust2/parser/enum.Event.html

@@ -10,6 +10,11 @@ The subsequent [implementation proposal](../proposals/implementation-v0/README.m
 processes, storage, contracts, crate boundaries and milestones in detail, with a grouped pending
 review. It builds on this report without treating recommendations as accepted choices.
 
+**Deployment follow-up:** [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) revisits the process,
+authority and lifetime arrangement after the user explicitly kept I1 open. The supervisor/store
+mechanisms below do not imply one host must own all execution. Pool Resources can eventually
+occupy different systems and Conduits can cross a network; exact topology remains under review.
+
 ## Recommendation
 
 Start with a Conduit-owned Rust supervisor built on Tokio, a small durable local control store,

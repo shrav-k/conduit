@@ -4,6 +4,11 @@ Status: implementation proposal, 2026-11-01. Directory/crate names below describ
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
 [review](REVIEW.md) identifies choices requiring a ruling before they become commitments.
 
+I1 remains open: crate boundaries must not imply a single process supervising all instances.
+The [distributed-runtime comparison](../../research/DISTRIBUTED_RUNTIME.md) proposes testing
+independent execution services. Binary names, service placement and failure guarantees are still
+under review; a single workspace and lockfile do not constrain deployment topology.
+
 ## 1. Repository layout
 
 Use one Cargo workspace and one lockfile for the application, workers and first-party plugins.
@@ -73,7 +78,7 @@ not infer a minimum Rust version from whichever compiler happens to be installed
 | `conduit-transport` | MCP client/server adapters, local bridge, worker wire mappings and negotiated feature handling | Core, Tokio, rmcp; dispatch ports | Independent business rules, a second registry or hidden retry policy |
 | `conduit-plugin-sdk` | Helpers for descriptors, typed operation/driver exports, host broker access and conformance harness | Core and transport helpers | Application runtime or unrestricted access to its database |
 | `conduit-builtin` | First-party filesystem/history/auth/MCP/native-agent implementations and fixture exports | SDK and integration libraries | Reimplementing host authorization or defining global caller identity |
-| `conduit-app` | Dependency wiring, `conduit`, `conduitd`, worker entry points and terminal attachment | Implementations above | A second source of domain semantics in CLI handlers |
+| `conduit-app` | Dependency wiring, `conduit`, management/executor entry points, workers and terminal attachment (layout pending I1) | Implementations above | A second source of domain semantics in CLI handlers |
 
 Keep core ports narrow and use them where there are real implementations: SQLite versus a test
 store, process worker versus a fake, clock/process control versus deterministic fault fixtures.
@@ -156,8 +161,8 @@ is not implicitly a registry, and changing the shell directory does not select a
   backups/             # explicitly requested consistent snapshots
 ```
 
-This is a proposed physical layout. Credentials normally live in their selected protected store;
-native runtime-owned credential files follow the adapter contract and are not blindly copied here.
+This is a proposed local installation layout, not a shared filesystem required across machines.
+Credentials normally live in their selected protected store; native runtime-owned credential files follow the adapter contract and are not blindly copied here.
 Treat the entire registry as private user data. Exclude runtime state, accounts and experiment
 payloads from Git. Backups preserve access implications and reference completeness; ordinary
 configuration export is deliberately a different operation.
@@ -175,8 +180,8 @@ order after the worker slice is subject to **I2**. No calendar estimates are imp
 | Milestone | Deliverable | Exit evidence |
 | --- | --- | --- |
 | M0 — executable language contract | Core types, strict parser/default pass, versioned schemas, fixture validation and template-to-instance draft expansion | Existing YAML packet differences explained; duplicate/alias/unknown/null/default cases covered; no effects during validation. |
-| M1 — durable management | Local host/bootstrap, registry, checked writes, owner Interface CLI, observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
-| M2 — worker and lifecycle slice | Typed finite DAG, fake worker, managed runtime ownership, control coordination and recovery | Experiment 002 failure matrix, exact artifact A/B retention, unknown effects and no duplicate Agent execution. |
+| M1 — durable management | Registry authority/bootstrap, checked writes, owner Interface CLI, observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
+| M2 — worker and lifecycle slice | Typed finite DAG, fake worker, managed runtime ownership, control coordination and recovery | Experiment 002 failure matrix and proposed two-executor comparison; exact artifacts, unknown effects and no duplicate Agent execution. I1 sets the required independence guarantee. |
 | M3 — shared Resource slice | Local directory, retained history, synthetic auth/MCP service, composite participation and terminal inspection | Two synthetic Agents share service access with different rights; independent readers, detach/reconnect and no automatic wake. |
 | M4 — first real Agent path | Native adapters first if I2 approved, with CLI/native interaction and a minimal Pi-inspired Interface terminal | Separate account and private-state verification, actual managed MCP exposure and explicit coverage gaps. |
 | M5 — owned model loop | Rust context builder, one supported provider adapter, streaming and authorized tool execution | Deterministic fake-provider recovery first; real identity/access verified; transcript/usage distinctions preserved. |
@@ -189,8 +194,9 @@ not complete the Conduit-owned-loop objective.
 The first environment driver can report native-only support. A requested isolated mode must fail
 clearly until an actual isolation driver passes filesystem/process/network tests. Shipping a full
 v0 claim that advertises isolated execution requires that evidence; do not quietly advertise an
-unimplemented security tier. Remote transport, automatic wake, public plugin distribution and
-advanced sharing remain later work.
+unimplemented security tier. Production remote deployment, automatic wake, public plugin
+distribution and advanced sharing remain later work. Serialized executor boundaries and network-failure semantics are proposed for
+the initial spike; testing them locally is not proof of production remote support.
 
 ## 7. Test strategy
 

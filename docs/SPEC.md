@@ -26,6 +26,11 @@ nothing. An instance retains its resolved definition and current stored settings
 a dedicated process. Plugins implement typed operations and runtime behavior; graphs wire them
 together. Capabilities describe compatibility. These are not additional object families.
 
+Objects should support independent operation and eventual placement across systems. Resources
+owned by one Pool may be deployed on different systems, and Conduits may span networks.
+Logical ownership does not require co-location. The initial execution/authority topology and
+remote availability guarantees remain implementation-review questions, not accepted host constraints.
+
 ## The user workflow
 
 1. A frontend attaches to the default Interface. Bootstrap seeds a system Pool, its management

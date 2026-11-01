@@ -9,7 +9,7 @@ reopen the five families, Pool ownership, fixed definitions, shared authenticati
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I1 | Host deployment and crash-survival expectations | Persistent local host; frontend detaches; no mandatory native-execution survival across host crash initially. |
+| I1 | Independent execution, authority and outage behavior | Examine shared management with independent execution services alongside independently authoritative object services; no host arrangement accepted. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
 | I3 | Public plugin boundary and initial distribution | Versioned executable workers, MCP-first lifecycle profile, first-party/local packages; Wasm later. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
@@ -22,26 +22,46 @@ determine what an extension author writes. I4/I5/I6 determine what the first rea
 retains. Numbers for queue sizes, spelling of internal helpers and crate splits are engineering
 defaults to test, not separate ruling queues.
 
-## I1 — Persistent host and recovery boundary
+## I1 — Independent execution and management
 
-**Recommendation:** one persistent host per registry, launched on demand or explicitly. CLI/TUI
-attachments can come and go; managed instances remain. Explicit host shutdown is a separate
-action. Initial native adapters need not keep executions alive across a host crash, but must
-distinguish verified running, verified ended and unknown, and never duplicate unknown work.
+**Status:** explicitly unaccepted. The user wants more independent objects, eventual placement
+across systems, Pool Resources on different systems, and network Conduits. A single host owning
+every execution is no longer this packet's default recommendation. Pool ownership is logical;
+it does not specify an execution machine. The [research comparison](../../research/DISTRIBUTED_RUNTIME.md)
+grounds the alternatives in Tilt, Docker/containerd, Kubernetes, Rust systems and papers.
 
-**Example:** closing the terminal leaves an Agent working. If `conduitd` itself crashes, its
-adapter may verify/reconnect the existing execution, or report that it ended/needs reconciliation.
-It does not silently start another Agent turn. Plugin-worker connection loss invalidates its
-handles; an unresolved remote write stays unresolved even if the worker is killed.
+**Recommendation for discussion:** separate definition/management authority, execution custody,
+capability traffic and Interface aggregation. Examine independent execution services that can
+supervise multiple objects; a common registry could initially coordinate them without being
+their process parent or the mandatory transit point for every call. Also examine independently
+authoritative object services before settling the registry boundary. These are implementation
+roles, not new object families or a required daemon per object/Pool.
 
-**Alternative:** require a separate persistent execution broker from the beginning so native
-Agents survive supervisor replacement. That adds broker identity, reconnection, credential
-handoff and process-ownership recovery before the first integration. A foreground-only host is
-another option, but makes frontend-independent lifetime harder to deliver naturally.
+**Example:** one Euphony Pool owns a laptop worktree, a Linear/authentication integration on a
+service machine and search on another machine. Two Agents connect to those Resources through
+Conduits. Losing management visibility does not itself mean all those processes have stopped.
+Losing Linear affects Linear access; it does not end the Pool or unrelated work. The Interface
+must show unavailable/stale observations and reconcile them when connectivity returns.
 
-**Ruling needed:** accept the persistent-host model and the stated first-version crash boundary,
-or make crash-surviving native execution a launch requirement. Normal frontend detachment is
-already accepted and is not being reconsidered.
+**Resolve together, with examples rather than field-by-field rulings:**
+
+1. Who owns active execution lifetimes: independent execution services, independently authoritative
+   object services, or the previously proposed shared host as a deliberately limited first deployment?
+2. Where is configuration/permission authority: one registry with distributed execution first,
+   or independent authorities from the outset? Physical distribution alone does not decide this.
+3. What can continue during a partition, and what must wait for current authority? Keeping a
+   process alive is distinct from admitting a new protected effect. Offline grants would need an
+   explicit freshness/withdrawal contract; they cannot silently weaken current-access rules.
+
+**Proposed evidence:** extend experiment 002 to two execution processes on one machine, with
+separately faulted management, worker, capability and observation links. Test continuing owned
+activity, blocked unauthorized/uncertain effects, retained outcomes and verified reattachment.
+Two-machine validation and production remote support can follow; whether they are required for
+the first milestone is still open. No crash-survival guarantee is accepted by this proposal.
+
+I3 worker lifetime and I4 persistence ownership depend on this ruling. Frontend detachment,
+explicit resume of stopped Agent work, current authority checks and no duplicate unknown work
+remain accepted. This review does not reopen those behaviors.
 
 ## I2 — First real Agent path and supported platform
 
@@ -87,9 +107,12 @@ experiment must test whether the MCP profile stays small before treating its met
 
 ## I4 — Local transactional authority
 
-**Recommendation:** a SQLite control store, owned by one host and accessed through a bounded store
-thread. It holds registry revisions, operation outcomes, participation and committed evidence;
-Resource implementations can use separate backends. Default durable control commits use WAL/FULL.
+**Recommendation to evaluate after I1:** SQLite for each chosen local durable authority, accessed
+through a bounded store thread with WAL/FULL commits. Registry revisions, target execution
+outcomes and aggregated observations need explicit ownership; an independent execution service
+cannot rely exclusively on a vanished management process's in-memory state. Resource backends
+remain separate. This is not a proposal to share one SQLite file across machines or to permit
+multiple writable copies of an instance spec.
 
 **Example:** Xerj is offline but the Interface can still show that a search Resource is unavailable,
 what setup completed and which control is uncertain. Rebuilding its search index does not change
@@ -100,8 +123,9 @@ That requires a stronger transactional/concurrency/bootstrap contract and could 
 on the failed plugin. JSONL-only storage is simpler to inspect but moves transaction/index/compaction
 responsibilities into our code.
 
-**Ruling needed:** accept a built-in local authority store while keeping domain memory/search and
-other Resource backing extensible. This does not make SQLite a required backend for every Resource.
+**Ruling needed:** choose local persistence after settling authority and execution separation.
+Which facts commit together locally, and which use recoverable inter-service exchanges, must be
+explicit. This does not make SQLite a required backend for every Resource or settle federation.
 
 ## I5 — Credential custody and account compatibility
 

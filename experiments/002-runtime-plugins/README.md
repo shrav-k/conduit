@@ -1,4 +1,4 @@
-# 002 — Rust supervisor and plugin boundary
+# 002 — Rust supervision, independent execution and plugins
 
 Status: proposed, not implemented or executed. Written 2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
@@ -8,10 +8,13 @@ choices within the [specification](../../docs/SPEC.md); it does not replace the
 The [implementation proposal](../../docs/proposals/implementation-v0/README.md) expands the host,
 worker, schema and persistence boundaries this spike would exercise. Its review choices remain
 pending; this experiment still contains no executable implementation or measured results.
+The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
+layout below. **The user has not accepted I1.** The two-executor comparison is proposed evidence
+for that ruling, not an approved deployment or crash-survival guarantee.
 
 ## Question
 
-Can a small Rust supervisor coordinate instance-owned activity, finite plugin graphs and
+Can Rust services coordinate independently owned activity, finite plugin graphs and
 recoverable effects while preserving exact plugin implementations and making every managed
 outcome inspectable through the Interface?
 
@@ -19,6 +22,26 @@ Test Tokio, a local transactional store and a versioned executable worker first.
 the worker's compatible capability surface and identify lifecycle semantics that need an
 explicit Conduit profile. Do not add a workflow server, package manager or Wasm engine merely
 to run this experiment.
+
+## Proposed placement comparison
+
+Compare independent execution with the earlier shared-host baseline before claiming either is
+sufficient. Run one management service, two independently supervised execution services and an
+Interface frontend on one machine. One fixture Pool owns Resources across both executors; Pool
+membership must not imply process co-location. Place one synthetic Agent on each executor and
+include a Resource-to-Resource Conduit across them.
+
+Use serialized transport and separately addressable endpoints rather than shared mutable Rust
+objects. Fault management, executor, worker, capability and observation links independently. The
+comparison does not require a scheduler, replicated registry, federation or public network exposure.
+Production remote peer enrollment, secret custody and trust need separate validation. Fixed
+placement is sufficient; unknown ownership never triggers automatic reassignment.
+
+First demonstrate retaining an already-running synthetic process while management is unavailable,
+with new effects held whenever current authority cannot be verified. This is a proposed baseline,
+not an implicit offline-grant policy. Record actual reconnect, evidence and output-draining behavior.
+A later two-machine run should retain the same identities/ownership contracts; I1 determines when
+that run becomes mandatory.
 
 ## Smallest useful fixture
 
@@ -32,7 +55,9 @@ to run this experiment.
   initialization step that can fail. The service has one revision-checked configuration control.
 - A versioned worker with two distinguishable implementations, A and B, and a temporary local
   effect ledger that permits inspection after a deliberately lost response.
-- A minimal committed operation store and optional diagnostic exporter that can be disconnected.
+- A minimal registry/management store plus executor-local recovery evidence, with each fact's
+  authority explicitly assigned. Do not assume a transaction can span both stores. An optional
+  diagnostic exporter can be disconnected independently.
 
 Resources, actors and connections are logical instances; the fixture must not assume one process
 per object. Pin the tested dependencies and worker artifact identities when the spike is written.
@@ -55,7 +80,12 @@ Keep generated databases, logs and binaries in an explicitly selected temporary 
 | Concurrent control | Two callers submit a change from the same configuration revision | Apply one at a time; stale request conflicts. Store confirmed settings separately from unresolved requests. |
 | Interface reconnect | Close all frontend attachments, then reopen | Instance-owned work follows lifecycle policy; committed outcomes remain inspectable. Closing a frontend does not itself terminate it. |
 | Export failure | Disconnect or stall diagnostics export | Local outcomes remain committed and inspectable; export coverage/gaps are visible. |
-| Shutdown and restart | Stop the host around intent, dispatch, result and publication boundaries | Recover distinguishable states. Do not infer “not executed” from a missing local response. |
+| Management loss | Stop management while both executors own live activity | Under the proposed independent arrangement, processes remain supervised; block effects needing unavailable authority, retain evidence and reconnect without duplicate work. |
+| One executor fails | Stop executor A while B remains available | B's independent work and the Pool's other usable Resources remain available; A's status is ended or unknown according to evidence. |
+| Cross-executor route | Interrupt the Resource-to-Resource Conduit transport | Report affected availability without detaching logical participation, changing account/path or inventing a replacement Resource. |
+| Stale coordinator | Deliver a delayed control from an obsolete management generation | The target verifies current authority/ownership and rejects obsolete admission; generation labels alone are not a fencing guarantee. |
+| Evidence backpressure | Disconnect observation aggregation and fill bounded diagnostic queues | Required local outcomes remain recoverable; optional drops/gaps are visible; undrained output must not silently defeat process-survival claims. |
+| Shutdown and restart | Separately stop management, executor or worker around effect/commit boundaries | Distinguish each source's known state; reconcile receipts and registry updates without assuming a cross-service transaction. |
 
 Use deterministic fault hooks for crash windows rather than relying only on timing races. Keep
 the fake effect ledger separate from the host's operation store so a lost response genuinely
@@ -64,7 +94,8 @@ of durable storage or exactly-once execution.
 
 ## Measurements and decision gates
 
-Record worker startup time, idle memory, invocation latency, queue bounds, cancellation/end
+Record arrangement, per-service/worker startup time and idle memory, local/cross-executor invocation
+latency, queue bounds, cancellation/end
 latency and recovery time on the actual test machine. Include dependency versions, repetitions
 and fixture payload sizes. No performance targets have been approved; compare measured costs
 with the workload rather than inventing thresholds here.
@@ -87,7 +118,7 @@ account/private-state verification; this fixture cannot establish those properti
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-01 | Research and experiment design | Source-backed report and documentation checks. No fixture code, runtime tests, benchmarks or provider connections yet. |
+| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks; I1 remains open. Added proposed independent-executor comparison. No fixture code, runtime tests, benchmarks or provider connections yet. |
 
 Record actual results here when executed, including failures and unresolved behavior. Expected
 outcomes above are acceptance criteria, not completed tests.

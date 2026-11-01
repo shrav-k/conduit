@@ -11,6 +11,7 @@ findings and from the accepted protocol.
 
 | Report | Read it for |
 | --- | --- |
+| [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | Pending I1: Tilt, Docker/containerd, Kubernetes, Rust systems and papers; independent execution, distributed Pool Resources, network Conduits and partition tradeoffs. |
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |
 | [CONSTRUCTION](CONSTRUCTION.md) | The concise rationale for template/plugin/graph/runtime boundaries and their source evidence. |
 | [ESTABLISHMENT](ESTABLISHMENT.md) | Detailed account, database, credential and filesystem setup/recovery cases. |
@@ -27,6 +28,8 @@ preserve that identity. RUST_RUNTIME records a separately pinned Pi follow-up an
 Reported offline tests are historical evidence, not new tests performed by later research or
 documentation cleanup. Source-system terminology remains where it describes the source.
 Conduit owns its runtime; investigating Pi does not commit to running its runtime.
+The distributed-runtime follow-up records newer source pins separately. It revises the
+single-host recommendation without treating the replacement proposal as an accepted decision.
 
 Protocol/source dates and primary links stay beside their claims. These reports were not all
 re-fetched during the documentation reorganization. A real implementation must verify current

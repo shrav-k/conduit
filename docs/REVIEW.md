@@ -16,6 +16,12 @@ contracts, persistence, ownership, crate organization and delivery milestones. I
 [review queue](proposals/implementation-v0/REVIEW.md) groups seven pending implementation choices.
 Start there for architecture review; these proposals do not reopen or supersede R1–R7.
 
+**Current focus:** I1 is explicitly unaccepted. The user clarified independent operation,
+eventual distributed placement, Resources from one Pool on different systems and network
+Conduits. [New research](research/DISTRIBUTED_RUNTIME.md) compares execution and authority
+arrangements. Remote production support remains future work; a single execution host is not an
+accepted protocol limitation.
+
 Review the [concrete YAML packet](../experiments/001-shared-access/README.md) as one connected
 example. It now includes templates for all five families, resolved instance examples, fixture
 contracts, a control-change walkthrough and an acceptance plan. Experiments live at the repository

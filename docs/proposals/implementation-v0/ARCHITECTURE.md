@@ -1,7 +1,7 @@
 # Proposed runtime architecture
 
-Status: implementation proposal, 2026-11-01. See [review](REVIEW.md) for pending choices and
-[contracts](CONTRACTS.md) for proposed representations. Accepted semantics remain in
+Status: implementation proposal, 2026-11-01. I1 remains explicitly open. See [review](REVIEW.md)
+for pending choices and [contracts](CONTRACTS.md) for proposed representations. Accepted semantics remain in
 [DESIGN](../../DESIGN.md).
 
 ## 1. System boundaries
@@ -15,7 +15,7 @@ transport, attachment or database table does not add a family.
 | Interface | Frontend attachments, control/inspection connections and user attribution | Definition, settings, connection state and attributable operations | One process per UI, or frontend ownership of active work |
 | Agent | Primary execution, private state, activation and supported controls | Fixed definition, stored settings, executions and available context/evidence | Shared private history because an account is shared |
 | Resource | Its configured capability, backing association and managed driver | Definition, owning Pool, backing association and operation evidence | One process/database per Resource |
-| Pool | Resource ownership and permitted provisioning composition | Named available templates, owned instance IDs and composition outcomes | Automatic deployment of listed templates |
+| Pool | Resource ownership and permitted provisioning composition | Named available templates, owned instance IDs and composition outcomes | Automatic deployment, co-location or one daemon per Pool |
 | Conduit | Live logical participation, routes and applicable restrictions | Fixed definition, supported settings, attachments and lifecycle evidence | Ownership of durable conversation content or provider credentials |
 
 The system Pool owns the management Resource through which the Interface exposes registry and
@@ -23,99 +23,113 @@ runtime management. The physical implementation of the control database is not a
 Resource automatically created for every table. A plugin's private checkpoint is implementation
 state; a separately exposed storage/search/authentication capability is a Pool-owned Resource.
 
-## 2. Processes and local deployment
+## 2. Management and execution placement
 
-**Recommendation, I1:** run one persistent `conduitd` host per local registry. The `conduit` CLI
-and terminal are clients. Normal CLI startup may launch the host on demand; the frontend then
-attaches to the retained default Interface. Its exit does not stop the host or its instances.
-An explicit host stop is separate from closing a frontend or pausing an Agent.
+**I1 is explicitly unaccepted.** The user wants independently operating objects, eventual
+placement across systems, Resources from one Pool on different machines and network Conduits.
+The [research comparison](../../research/DISTRIBUTED_RUNTIME.md) examines shared management with
+independent executors alongside independently authoritative object services. A shared local
+execution host remains a baseline, not a ruling.
+
+A candidate arrangement separates registry/management authority from execution services. Several
+executors could first run on one machine. Pool ownership does not determine placement, and no
+process-per-object rule follows. Conduit endpoints carry authorized capability traffic; neither
+the Interface nor the management process must be a global relay for every payload.
 
 ```mermaid
 flowchart TD
-    C[CLI / terminal / test clients] --> I[Interface management and observation]
-    I --> H[conduitd: dispatch and instance supervisors]
-    H <--> S[Transactional state and evidence]
-    H --> G[Finite graph executor]
-    H --> P[Managed process and driver host]
-    G --> P
-    P --> W[Versioned plugin workers]
-    W --> N[Native agents and provider services]
-    W --> B[Filesystem / MCP / optional Xerj backend]
-    S --> I
-    H --> E[Optional telemetry export]
+    C[CLI / terminal / test clients] --> I[Interface control and observation]
+    I <--> M[Management and registry authority]
+    M <--> S[Registry and management evidence]
+    M -. placement and control .-> X[Execution service A]
+    M -. placement and control .-> Y[Execution service B]
+    X --> A[Agent / filesystem instances]
+    Y --> R[Auth / MCP / search instances]
+    A <-->|Authorized Conduit traffic| R
+    X -. observations and receipts .-> I
+    Y -. observations and receipts .-> I
 ```
 
-The host owns its registry lock and all writes to its control store. A second host must refuse
-ownership rather than race to reconcile the same instances. Use an OS-held lock, a registry ID
-and a host-generation ID. A stale PID file is diagnostic evidence, not the ownership lock.
+This illustrates one candidate, not an approved deployment or wire protocol. Execution services
+supervise instance-owned activity; short-lived setup workers do not own long-lived processes.
+Backing providers can be external to either service. Placement, replication, federation and
+transport remain open. These services are implementation roles, not a sixth object family.
 
-Proposed local management transport is MCP over a private local byte stream, exposed to native
-MCP clients by a stdio bridge. The Rust SDK supports custom async read/write transports as well
-as standard stdio and HTTP. This does not claim Unix sockets are a standard MCP transport.
-Provider-facing HTTP remains a separate client concern. A loopback HTTP frontend adapter can
-follow if a frontend actually needs it. [MCP transport API][rmcp-transport]
+If the first registry authority uses a local store, it needs an OS-held lock, registry ID and
+authority generation. A second writer must not race it. Executors need separate verified identities
+and generation checks; a PID/address alone is insufficient. A local lock does not establish remote
+exclusive execution, and a generation blocks obsolete requests only where the receiver enforces it.
 
-The local connection authenticates an Interface attachment or delegated actor. Owner bootstrap
-material is distinct from Agent connection material. OS ownership can establish the initializing
-human context, but normal managed Agent calls do not acquire administrator authority merely
-because they share that UID. Native agents still have their actual host privileges: a same-user
-process may be able to read local credentials outside mediation. This is not an OS sandbox claim.
+One candidate local management transport is MCP over a private byte stream, exposed to native MCP
+clients by a stdio bridge. The Rust SDK supports custom async read/write transports and standard
+stdio/HTTP; this does not claim Unix sockets are a standard MCP transport. The independent-executor
+spike must exercise serialized service boundaries. Peer authentication, route establishment and
+authority freshness need explicit contracts before remote support is claimed. [MCP transports][rmcp-transport]
+
+The management connection authenticates an Interface attachment or delegated actor. Owner
+bootstrap material differs from Agent connection material. OS ownership can establish the
+initializing human context, but a shared UID does not itself grant managed Agent authority.
+Native processes retain their actual host privileges; a private channel is not an OS sandbox.
 
 ### Bootstrap and repair
 
-On first explicit initialization, the host creates the registry identity, minimal system objects,
-local owner binding and selected management implementation together where possible. Bootstrap
-records incomplete external initialization and can inspect its own partial state. It requires
-no application Pool, model login or search service.
+First explicit initialization establishes the registry identity, minimal system objects, local
+owner binding and management implementation, recording partial external outcomes. It needs no
+application Pool, model login or search service. Later starts reuse those identities and settings;
+missing objects or incompatible management code require explicit repair, not default recreation.
 
-Later starts reuse those IDs and definitions. Missing system objects, unknown schema versions
-or incompatible management code produce an explicit repair condition, not default recreation.
-A local owner recovery command can inspect and repair the registered management path without
-depending on that broken path. Repair uses checked operations, reports its changes and preserves
-backing data; it is not an alternate general bypass for rewriting instance definitions.
+Local owner recovery can inspect/repair a broken management path without depending on that path.
+It uses checked operations, preserves backing data and cannot bypass fixed instance definitions.
+Independent executor enrollment and reconnect must reuse assigned identities rather than repeating
+registry bootstrap. Their exact authority and storage contracts remain I1/I4 work.
 
-### Host and worker loss
+### Management, execution and worker loss
 
-Frontend disconnection, worker failure and host failure are different events. Workers are
-replaceable implementation processes, not the owners of logical instances. A worker protocol
-disconnect invalidates its live handles. Its owner records uncertainty and retains unresolved
-operations; it does not infer that every external effect stopped.
+Frontend disconnection, management loss, executor failure, plugin failure and a broken capability
+route are separate events. A disconnected channel makes its handles unusable through that channel;
+it does not prove that the backing process ended. Preserve unresolved operations and distinguish
+local evidence from what another service has confirmed.
 
-For the initial worker contract, request managed child shutdown on loss of the owning host
-connection and report end when it can be proved. Do not promise survival/reconnection of arbitrary
-native PTYs across a host crash. An adapter that can verify and reconnect an existing execution
-may do so; otherwise the Agent remains stopped or unknown and needs explicit reconciliation/resume.
-**I1** asks whether crash-surviving native executions must be a first-version requirement.
+The earlier proposed kill-on-management-disconnect policy is withdrawn as a default. A surviving
+executor could retain owned processes and evidence while management is down; admitting new effects
+depends on current authority, exclusive ownership and operation contracts. Offline grants are not
+settled. Immediate global withdrawal cannot be promised across a disconnected network.
 
-Use process groups where supported and retain handles until reaping completes. `kill_on_drop`
-is only a fallback: Tokio documents that dropping a child normally does not terminate it, and
-sending a kill does not by itself establish all cleanup. A PID alone can be reused and cannot
-prove identity on recovery. [Tokio process contract][tokio-process]
+An adapter that verifies an existing execution may reconnect. Otherwise report ended or unknown;
+do not launch a duplicate or a new model turn. Temporary unreachability is not logical detachment,
+so it does not by itself end a Conduit. Execution survival, output draining, authority checks and
+recoverable evidence all need testing; process survival alone is insufficient.
 
-Explicit host shutdown first stops new effect admission, then requests supported driver shutdown,
-drains bounded in-flight work and records confirmed ends or remaining uncertainty before closing
-the store. Preserve credentials, backing data and retained outcomes. A shutdown deadline is not
-proof that every remote effect ended. Restart inspection can expose the final shutdown record even
-when its requesting frontend lost the connection before receiving acknowledgement.
+Use process groups where supported and retain handles until reaping completes. Tokio documents
+that dropping a child normally does not terminate it; sending a kill does not establish all cleanup.
+A PID can be reused and cannot alone prove recovery identity. [Tokio process contract][tokio-process]
+
+Stopping management must be distinguishable from stopping an executor or the entire deployment.
+Explicit executor shutdown stops new admission, requests supported driver shutdown, drains bounded
+work and records confirmed ends or uncertainty. Preserve credentials, backing data and outcomes.
+A shutdown deadline does not prove all remote effects ended. Management restart reconciles with
+surviving executors rather than treating its last observation as current truth.
 
 ## 3. Runtime services and ownership
 
-Keep these services inside the host initially, with explicit ports for tests and workers:
+Keep these responsibilities explicit, with ports for tests, executors and workers. I1 determines
+which share a process; this table does not mandate one host. Below, “host” means the responsible
+management or execution service, with transaction boundaries limited to its own authority:
 
 | Service | Responsibilities and constraints |
 | --- | --- |
 | Registry/configuration | Checked template edits, instance registration, naming, schema/default resolution and stable references. No provider effects inside registry transactions. |
-| Instance supervisor | Own executions/drivers and generations; apply family lifecycle checks; expose independent preparation/runtime/connection observations. |
+| Instance supervisor | At the selected execution location, own executions/drivers and generations; apply family lifecycle checks; expose independent preparation/runtime/connection observations. |
 | Graph executor | Validate finite dependency graphs, schedule ready steps, retain progress and decide whether recorded results remain usable. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
-| Route/access service | Resolve one complete authorized path, enforce supported filters, manage participation and record delegation. |
+| Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
 | Plugin host | Resolve exact implementations, start/stop workers, validate protocol/schema compatibility and translate worker failures. |
-| Evidence service | Commit attributable outcomes; expose permitted snapshots/catch-up and optional diagnostics export. |
+| Evidence service | Retain outcomes at their authoritative source; expose snapshots/catch-up and aggregate for the Interface with freshness/gaps. |
 | Artifact/credential services | Supply verified implementation artifacts and protected credential references through narrowly defined host facilities. |
 
 There is no giant mutex around a model turn or a service call. Use bounded message queues and
 short state transitions. A per-instance coordinator owns its in-memory execution state; the
-store owns durable truth. Cross-instance operations use explicit coordination, not arbitrary
+responsible store owns its durable facts. Cross-instance operations use explicit coordination, not arbitrary
 shared mutable structures or plugins reaching into another supervisor.
 
 Readiness is composed from observed facts. A Resource can be registered, partly prepared,
@@ -125,7 +139,7 @@ domain lifecycle enum on every plugin or the external protocol.
 
 ## 4. Persistence and transactions
 
-**Recommendation, I4:** SQLite is the authoritative local control store, accessed through
+**Candidate, I4 after I1:** SQLite can implement a local authority store, accessed through
 `rusqlite` on a dedicated store thread with a bounded queue. The async host never blocks a Tokio
 worker on a database operation. Permit bounded read connections only if consistent snapshots
 and connection configuration are tested; start with one owner rather than a generic ORM.
@@ -134,6 +148,11 @@ Use WAL, foreign-key enforcement and explicit transactions. Default to `synchron
 committed control/effect evidence; `NORMAL` can lose recent committed transactions on power loss.
 This is a durability configuration choice, not a promise against faulty storage hardware.
 [SQLite synchronization][sqlite-sync] · [rusqlite][rusqlite]
+
+Independent executors need durable execution/outcome evidence that survives management loss.
+Assign one authority to each fact and distinguish remote reports from authoritative state. Do not
+share SQLite over a network or independently edit replicated copies of `spec.config`. The tables
+below describe logical facts, not one required global database.
 
 ### Logical data layout
 
@@ -163,7 +182,10 @@ authority for operation completion or access grants.
 Admission commits the operation identity and recoverable dispatch inputs before effects begin.
 The host checks authority again immediately before dispatch. It does not hold a write transaction
 while waiting for a provider. When a handler confirms a configuration change, update `spec.config`,
-its revision and the operation/evidence rows in one local transaction. Publish afterward.
+its revision and the operation/evidence rows in one local transaction where they share authority.
+Publish afterward. A remote executor's receipt and a registry commit are not one transaction;
+reserve/reconcile that operation before another conflicting change. I1/I4 must settle this boundary
+rather than rely on the original single-process transaction assumption.
 
 Local commit cannot be atomic with an arbitrary upstream write. A provider success followed by a
 lost reply remains uncertain until its recovery contract establishes the result. A store failure
@@ -181,7 +203,8 @@ restoring records does not recreate their side effects. [SQLite backup][sqlite-b
 
 ### Recovery
 
-On host start, acquire exclusive ownership, verify storage/schema and load retained objects.
+On authority/executor start, acquire its relevant ownership, verify storage/schema and load
+retained objects and assignments.
 Mark stale live observations unknown until checked. Examine incomplete operations and execution
 generations. Recovery can read and reconcile; repeating effects still needs current authority and
 an explicit safe-retry contract. A stopped Agent does not automatically receive a new turn.
@@ -253,10 +276,14 @@ the attachment's delegated rights, composite/component filters and provider capa
 It never combines operation rights from one route with target rights from another. Ambiguity
 requires deliberate selection; a failed route does not silently choose a different account.
 
-Serialize the final authority check with local dispatch admission so a restriction change has a
-defined ordering against a new request. Once a request has been sent upstream, later withdrawal
+Within each authority domain, serialize the final check with dispatch admission so a restriction
+change has a defined ordering against a new request. Once a request has been sent upstream, later withdrawal
 cannot promise to undo it; use supported cancellation, record its actual outcome and recheck
 permissions before delivering retained content or starting another effect.
+
+Across independently operating endpoints, current-authority verification and revocation need
+an explicit freshness contract. Until I1 resolves partition behavior, do not assume a cached grant
+permits disconnected dispatch. Loss of a management connection is distinct from verified withdrawal.
 
 Filters are typed contracts with inspectable parameters. Provider adapters implement semantic
 checks where the meaning of native arguments matters. If the implementation can enforce only
@@ -281,8 +308,8 @@ generic keyring API. [Credential-store guidance][keyring]
 ### Native MCP exposure
 
 An Agent sees provider-native tool names/schemas through its prepared provider-specific endpoint.
-The endpoint authenticates Conduit participation, not the upstream provider token. The host routes
-to the Resource's client and shared service identity. Credential refresh is service-runtime work,
+The endpoint authenticates Conduit participation, not the upstream provider token. The selected
+Conduit path reaches the Resource's client and shared service identity, possibly across a network. Credential refresh is service-runtime work,
 not a new Agent login or a reason to broaden that Agent's grants.
 
 Catalogs are captured for preparation and explicit refresh. Known incompatible drift blocks
@@ -350,8 +377,11 @@ Use three distinct streams:
 | Live observations | Snapshot plus cursor/generation, with freshness/coverage; dropping intermediate observations cannot erase an operation result. |
 | Diagnostic traces/metrics | Bounded, optionally sampled/exported; explicit exporter failures and dropped-observation counts where known. |
 
-The Interface subscribes to committed events and can catch up after disconnect. To avoid the
-snapshot/subscribe race, return a snapshot with its high-water cursor, then deliver later events.
+The Interface subscribes to committed events and can catch up after disconnect. Independent
+sources need source/generation cursors and freshness; do not invent a global order from wall clocks.
+The following snapshot/cursor discipline applies within a source; a combined view exposes gaps.
+To avoid the snapshot/subscribe race, return a snapshot with its high-water cursor, then deliver
+later events.
 If the cursor is purged or unavailable, return a scoped gap and require a new snapshot. Slow
 clients do not block commits; close or limit their stream with a recoverable cursor.
 
@@ -371,7 +401,7 @@ concurrency, output size, content capture and observation delivery. Initial numb
 defaults measured by the spike, not permanent protocol constants. Reject excessive inputs before
 effects; store oversized legitimate outputs by reference where their contract supports it.
 
-| Failure | Host response |
+| Failure | Responsible service response |
 | --- | --- |
 | Invalid config / missing schema | Reject write, preserve current object and source file. |
 | Missing code / unavailable dependency | Retain valid registration; report unready operations. |

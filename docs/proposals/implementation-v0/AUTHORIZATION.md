@@ -356,6 +356,14 @@ does not propagate requirements. No automatic Pool inheritance is introduced.
    neither provision Resources nor grant access; an explicit reference still retains its resolved
    stable ID. The alternative fixes the selected targets until an explicit refresh. This extension
    is not yet ruled; exact selector syntax stays for I7.
+
+   Example: a binding explicitly targets deployment-capable Resources owned by Euphony Pool and
+   requires deployments in an approved region. Initially only `api-deploy` matches. After someone
+   explicitly provisions `worker-deploy` into that Pool, live selection would apply the same
+   requirement to its relevant managed deployments; a fixed selection would still contain only
+   `api-deploy` until refreshed. An unrelated directory Resource would not match. This changes the
+   reach of this binding, not the caller's grants or Resource provisioning, and other restrictions
+   still apply under either option. The example selects neither final type names nor syntax.
 2. **Grant-bound validation:** define supported checks on proposed grant bounds. Current mandatory
    checks and path composition are already settled; custom validation does not assume a universal solver.
 3. **Startup and persistence:** settle first authority, establishment/repair, then the storage

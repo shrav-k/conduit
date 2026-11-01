@@ -14,11 +14,14 @@ branch until merged. The earlier baseline remains available in Git history at `c
 
 The [implementation proposal](proposals/implementation-v0/README.md) now describes processes,
 contracts, persistence, ownership, crate organization and delivery milestones. Its
-[review queue](proposals/implementation-v0/REVIEW.md) groups seven pending implementation choices.
-Start there for architecture review; these proposals do not reopen or supersede R1–R7.
+[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I3
+are conceptually settled; I4 is partly complete, and I5–I7 remain for review. Start there for the
+remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** conceptual plugin and template boundaries, beginning with I3 and concrete author
-journeys. The [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
+**Current focus:** the remaining I4 governing-target, grant-validation, initial-authority and
+storage choices, followed by I5 credentials, I6 capture defaults and I7 syntax. Concrete plugin and
+template author journeys continue to guide these decisions. The
+[implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
 retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
 may support the first implementation, but the public authoring and behavioral contracts take
 priority over its efficiency or specific runtime arrangement. The initial authoring direction

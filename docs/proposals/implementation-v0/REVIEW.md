@@ -117,6 +117,17 @@ I1–I3 are settled at the conceptual level. Next review I4–I6's persistence, 
 evidence support, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
 one review queue rather than another decision ledger.
 
+**Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
+settles the authorization model, independent grants, dedicated access-management Resource and
+explicit governing targets. Its remaining conceptual work is grouped into four bundles: live
+target membership, proposed-grant validation, initial authority/startup/repair, and storage
+placement/backend. I5 credential custody/enrollment and I6 capture defaults add two bundles.
+That is six planned conceptual bundles, including the current live-membership question, followed
+by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
+future questions: startup, storage or enrollment may reveal a concrete choice that needs splitting.
+Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
+Neither implementation nor the runtime experiment has started.
+
 ## Pending choices
 
 | Item | Decision | Recommendation |

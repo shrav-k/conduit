@@ -562,10 +562,17 @@ several child failures into one domain result. The caller need not receive all i
 The existing default keeps a started runtime managed after setup failure; this table does not add
 automatic retries or rollback.
 
-The [contract proposal](CONTRACTS.md#composite-outputs-and-outcomes--proposal) recommends deriving
-from declared public bindings by default and permitting explicit result construction. Whether this
-is the default or only assistance for an explicitly authored contract is the next ruling. Exact
-field names, mapping syntax and parent/child recovery coordination remain open.
+**Accepted authoring default:** derive the public result contract from declared public output
+bindings and constituent contracts, with explicit construction available. Both preserve relevant
+effects, uncertainty and scoped evidence without publishing all intermediate values. Exact field
+names and mapping syntax remain open.
+
+The [next recovery proposal](CONTRACTS.md#composite-outputs-and-outcomes--proposal) lets a published
+graph-backed operation reuse the graph runtime's valid-progress recovery instead of requiring a
+bespoke composite recovery handler. An explicit retry would reuse verified startup progress and
+ask the migration's recovery contract to resolve its effects before repeating anything uncertain.
+This is proposed support for the accepted valid-progress rule, not a promise that all child effects
+can be recovered or a change to automatic retry policy.
 
 ### One Linear connection through the authoring concepts
 
@@ -756,8 +763,7 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, review the proposed derived/authored result workflow and composed-operation
-recovery, requirement satisfaction
+Before specifying syntax, review composed-operation recovery, requirement satisfaction
 responsibility, conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
 and first authoring proof follow those choices. Do not make every custom requirement a Boolean
 expression or assume a general constraint solver can establish arbitrary provider guarantees.

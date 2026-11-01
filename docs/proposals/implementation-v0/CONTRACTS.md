@@ -207,10 +207,12 @@ connection. Bound nested composition depth and total prepared work.
 
 ### Composite outputs and outcomes — proposal
 
-**Accepted direction:** a composed operation accounts for its constituent success/failure modes;
-its output contract can be derived from the pieces or explicitly constructed. The default workflow
-and the mechanisms below remain proposed. Keep the existing open-ended domain results rather than
-introducing a universal enumeration of business failures.
+**Accepted default:** derive a composed operation's initial public result contract from its
+declared public output bindings and constituent contracts. Authors may explicitly construct a
+domain result instead. Account for composed success/failure modes, preserve relevant effects,
+uncertainty and scoped evidence, and do not automatically export internal outputs. Detailed
+algorithms, mapping syntax and recovery coordination below remain proposed. Keep domain results
+open-ended rather than introducing a universal enumeration of business failures.
 
 Distinguish three concerns within the existing operation contract and evidence system:
 
@@ -220,7 +222,7 @@ Distinguish three concerns within the existing operation contract and evidence s
 | Reported outcome | What the operation can confirm about completion, failures, retained effects and uncertainty. A useful partial output does not mean the whole requested setup completed. |
 | Execution evidence | The attributable child attempts, results and causal links needed for inspection/recovery. Access-scoped references can expose detail without returning every internal payload or credential. |
 
-**Recommended derivation:** use declared public output bindings to derive their data types; use
+**Proposed derivation mechanics:** use declared public output bindings to derive their data types; use
 child operation contracts and graph dependencies to describe declared failure origins and blocked
 work. Preserve the node/operation source so identical failure names from different children are
 unambiguous. The runtime reports the actual completed, failed, blocked or unresolved portions of
@@ -254,11 +256,17 @@ does not retry, compensate or roll back. Explicit recovery continues from valid 
 under existing contracts; composed results cannot invent atomicity or strengthen a child's retry
 guarantee. Parent/child retry coordination remains a separate ruling.
 
-**Next ruling:** derive an initial public contract by default from selected output bindings and
-constituent contracts, with optional explicit construction; or require every published composite
-to have an explicit public contract, using derivation only as authoring assistance. Both preserve
-underlying evidence and uncertainty. The [database example](AUTHORING.md#derived-and-authored-composite-results)
-illustrates the difference without choosing wire fields.
+**Next ruling — default recovery support:** recommend that graph-backed operations reuse the
+graph runtime's valid-progress recovery by default. An explicit retry of the same unchanged
+invocation resumes its retained child progress; the child's declared recovery behavior handles
+unconfirmed effects. A parent resumes that composite rather than blindly invoking its whole graph
+again. For database setup, retain the verified running database, reconcile the migration outcome
+and proceed only as the migration contract permits. A result mapping supplies no retry authority.
+The alternative requires a bespoke recovery implementation for each published composite, even
+when its graph already provides the necessary progress/dependency structure. This chooses where
+normal recovery support comes from, not automatic retries, rollback, guaranteed recoverability or
+exactly-once effects. Detailed coordination and custom recovery hooks remain open. The
+[database example](AUTHORING.md#derived-and-authored-composite-results) supplies the concrete case.
 
 ## 5. Plugin package and runtime contracts
 

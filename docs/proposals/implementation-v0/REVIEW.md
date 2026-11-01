@@ -26,13 +26,15 @@ protocol guarantees, and how it is tested. Keep the accepted typed contracts, fi
 instance-owned lifetimes and fixed implementation bindings; their precise authoring surface is
 still to be settled. Template-only composition should not require inventing a new plugin.
 
-**First discussion, no ruling yet:** the user requested concrete examples before choosing. The
-[authoring walkthrough](AUTHORING.md) compares a directory operation, shared MCP access and a
-managed database. Should ordinary operation plugins use small handlers plus
-typed metadata with an SDK/helper runner supplying protocol plumbing, while advanced authors can
-implement the same wire contract directly? The alternative makes a protocol server the standard
-authoring unit. A helper can handle serialization/correlation but cannot invent safe retry or
-effect semantics. This does not select a language, process layout or transport.
+**First discussion, no ruling yet:** the user requested further refinement before choosing. The
+[authoring walkthrough](AUTHORING.md) now shows the same pure operation and template binding with
+either a standard Conduit adapter or an author-owned protocol service, then adds directory effects,
+shared MCP access and a managed database. Both paths can use small handlers and existing protocol
+libraries. The distinction to settle is whether Conduit's SDK/helper runner supplies the normal
+adapter or authors assemble it themselves, with direct protocol implementations still possible.
+A helper can handle serialization/correlation but cannot invent safe retry or effect semantics.
+File layouts, contract fragments and code are illustrations, not accepted APIs. This does not
+select a language, process layout or transport.
 
 Then review I1's execution/authority boundary against those authoring examples, I2's demonstration
 sequence, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a

@@ -8,8 +8,124 @@ holds the pending choice; [DESIGN](../../DESIGN.md) supplies the settled semanti
 The objective is an extension an ordinary author can understand and test. A template author
 should be able to compose existing behavior without becoming a plugin author. A plugin author
 should implement the behavior their extension adds, without rebuilding the entire Conduit host.
+The user requested a second refinement of these examples; the authoring-path ruling remains open.
 
-## 1. A directory Resource
+## The pieces, before choosing an authoring API
+
+| Piece | Concrete meaning in these examples |
+| --- | --- |
+| Plugin package | Reusable implementation code and published contracts. A package can contribute operations or type implementations; it is not automatically a Resource instance. |
+| Operation export | A callable contribution, such as computing a digest or establishing a directory. Being available to a setup graph does not automatically expose it to Agents. |
+| Resource type | The contract for a configured responsibility, such as a local directory: configuration, capabilities and applicable lifecycle/controls. Its implementation can reuse operation exports. |
+| Template | Selects implementations, supplies configuration and composes setup behavior. It can reuse existing plugins without adding code. |
+| Instance | Holds the resolved definition, current confirmed settings and managed runtime state. A Resource instance has a Pool owner. |
+
+The plugin authoring question is how code reaches the callable boundary. It does not change
+these object distinctions or require one process per package, operation or instance.
+
+## 1. The same small plugin, exposed two ways
+
+Start with a pure operation: `sha256` accepts a UTF-8 string and returns its digest. It needs no
+filesystem access, login, persistent process or recovery lookup. Calling it again with identical
+input produces the same result and has no external side effects. That makes the plumbing visible
+without conflating it with directory ownership or uncertain writes.
+
+Both paths need the same domain contract. This is an **illustrative contract fragment**, not
+approved manifest syntax; the effect/repetition behavior described above is also part of the
+contract, however its eventual representation is chosen:
+
+```yaml
+operations:
+  sha256:
+    inputSchema:
+      type: object
+      properties:
+        text: {type: string}
+      required: [text]
+      additionalProperties: false
+    outputSchema:
+      type: object
+      properties:
+        hex: {type: string, pattern: "^[0-9a-f]{64}$"}
+      required: [hex]
+      additionalProperties: false
+```
+
+Rust is used to make the example tangible, not to settle supported authoring languages. The
+domain function could look like this; schema serialization, dependency declarations and tests
+are omitted, and this snippet has not been compiled:
+
+```rust
+use sha2::{Digest, Sha256};
+
+pub struct Input { pub text: String }
+pub struct Output { pub hex: String }
+
+pub fn digest(input: Input) -> Output {
+    Output { hex: format!("{:x}", Sha256::digest(input.text.as_bytes())) }
+}
+```
+
+### A. Conduit supplies the standard protocol adapter
+
+The author's package might contain:
+
+```text
+digest-plugin/
+  contract.yaml       operation contract; exact format still pending
+  Cargo.toml          implementation and helper dependencies
+  src/lib.rs         digest function
+  src/main.rs        registers the function with the helper runner
+  tests/             domain and contract tests
+```
+
+The entry point means **register `sha256` with this contract and handler; serve using the standard
+adapter**. The helper supplies protocol dispatch, conversion/validation, request correlation and
+standard reporting. The author implements the digest and its declared semantics. This need not
+mean loading arbitrary Rust functions into the host: one possible implementation compiles the
+handler and helper into an executable plugin. That implementation choice remains open.
+
+### B. The author supplies the protocol adapter
+
+The package still has the contract and digest function. Its entry point instead creates an
+MCP/protocol service, registers discovery and invocation handling, adapts the request to `Input`,
+calls `digest`, returns the typed result and integrates the required Conduit execution context
+and reporting. The author can use a standard protocol library for much of this work.
+
+This is not necessarily much more code. The official Rust MCP SDK already supplies tool macros
+and service helpers; a Conduit helper could build on that same SDK. The distinction is who
+supplies and maintains the **Conduit-specific adapter**, not whether one approach uses functions
+and the other hand-writes a protocol. [Rust MCP SDK](https://github.com/modelcontextprotocol/rust-sdk#tools)
+
+An existing server with its own request routing or service lifecycle may fit B naturally. A new
+small extension may benefit from A's consistent defaults. Under either approach the public
+contract and conformance checks must be satisfied; an ordinary MCP tool server alone does not
+prove support for Conduit's execution, identity or recovery semantics.
+
+### What a template sees
+
+The template need not change between A and B. For example, a setup graph could fingerprint text
+returned by an earlier, authorized corpus-read step:
+
+```yaml
+fingerprint:
+  operation: {plugin: text, name: sha256}
+  inputs:
+    text: {from: output, node: read-corpus, port: text}
+```
+
+This is a node fragment. The enclosing template must declare the `text` implementation alias,
+the `read-corpus` operation and the capability access that operation needs. The digest operation
+does not acquire corpus access merely by receiving an input. Conduit resolves the exact
+implementation and contract, orders the nodes, invokes the adapter and records the outcome.
+No extra Resource is necessary solely to host this pure setup function. If digesting is to be
+offered as a callable Resource capability, that exposure must be declared separately.
+
+The proposed shared authoring experience is therefore: implement the behavior once, publish its
+contract, and let templates bind its inputs. The remaining choice is whether Conduit provides
+a standard adapter as the normal starting point or expects authors to assemble that adapter.
+
+## 2. A directory Resource
 
 ### What the template author supplies
 
@@ -86,23 +202,26 @@ the outcome remains uncertain. A helper runner cannot infer an exactly-once guar
 These requirements should have reusable implementations where possible rather than being copied
 into every author project.
 
-### Two ways to expose the same operation
+### What this adds to the pure operation
 
-| Authoring path | Author writes | Reusable tooling supplies |
-| --- | --- | --- |
-| Small handler + contract | Domain function, typed inputs/outputs and applicable effect/recovery declarations or handlers. | An SDK/helper runner adapts invocation messages, correlation, standard validation/error transport and configured host facilities. |
-| Protocol-service implementation | A service using an MCP/protocol library, registration of its operations, contract descriptors and applicable lifecycle/recovery behavior. | Existing protocol libraries can supply framing, validation and server loops; the author controls the service integration. |
+| Situation | Expected behavior in this example |
+| --- | --- |
+| `create`, path absent | Create the directory and report the result. |
+| `create`, path already present | Report a conflict; do not reinterpret creation as attachment. |
+| `attach`, existing directory | Verify the target and return its descriptor without creating it. |
+| `attach`, missing path | Report unavailable/missing; do not create it. |
+| Directory created, reply lost | Reconcile using adequate evidence or report an uncertain outcome; do not infer ownership from existence. |
 
-Neither means hand-writing JSON-RPC framing. Both can use existing libraries. The difference is
-whether the normal contribution is a function loaded by a standard runner or a service owned by
-the plugin author. A function runner may itself be an executable worker. A service can also be
-started and supervised by Conduit. This choice does not decide deployment topology.
+A plugin author can start with conservative recovery behavior that reports uncertainty where
+evidence is insufficient; the helper must preserve that distinction. Providing a provider-specific
+recovery handler is a stronger contribution, not something a wrapper can generate from the
+function body. The same responsibility applies to both authoring paths.
 
 In both cases Conduit still binds the exact implementation, establishes the caller and target,
 checks the selected access path, tracks operations and retains inspectable outcomes. Plugin claims
 must conform to their declared contracts; a convenient wrapper does not supply missing semantics.
 
-## 2. A shared Linear MCP Resource
+## 3. A shared Linear MCP Resource
 
 Here the underlying service already exposes a protocol. A user configuring it should normally
 need templates and existing adapters, not a custom plugin implementation.
@@ -136,7 +255,7 @@ This example shows why existing protocol servers remain useful even if small-han
 is selected for new Conduit operations. Those are compatible extension paths, not competing
 requirements to rewrite every integration.
 
-## 3. A Resource with a persistent process
+## 4. A Resource with a persistent process
 
 A local database needs more than a finite establishment function. Its type declares ongoing
 runtime behavior; a setup graph can prepare storage, request instance-managed startup and run
@@ -155,16 +274,26 @@ supervisor automatically. Conversely, the checksum or directory operation should
 to implement database lifecycle hooks. Exactly which contributions are optional, generated or
 provided by reusable types is part of the authoring review.
 
-## 4. The decision these examples expose
+For example, the author's contributions might be `prepare_data`, a database runtime driver and
+`initialize_schema`. The setup graph connects them in that order, requesting instance-managed
+startup before initialization. The driver reports database-specific readiness and supports its
+declared stop/recovery behavior; execution infrastructure supplies the agreed process-management
+facilities. When setup finishes, the database remains under the instance's management. A helper
+server ending does not itself establish that the database ended, nor does using a protocol
+service make it the authority for the Resource's entire lifecycle. Those hosting choices remain
+part of I1/I3.
+
+## 5. The decision these examples expose
 
 Our existing design already distinguishes code, typed contracts, templates, graphs and instances.
 The open question is the **normal unit of plugin authoring**: a handler with metadata, a protocol
 service, or supported authoring profiles for both under one published contract.
 
-My recommendation remains small handlers with helper tooling for ordinary operations, plus a
-direct protocol path for advanced implementations and adapters for existing services. That is a
-recommendation, not a ruling. It keeps simple contributions small without erasing the lifecycle
-contract of a managed Resource. Language support, packaging, declaration/code generation and
+My recommendation remains a standard Conduit adapter for ordinary handlers, plus a direct
+protocol path for advanced implementations and adapters for existing services. That is a
+recommendation, not a ruling. Both paths may already look like small handlers when built with
+good libraries. The useful distinction is the reusable adapter's responsibilities and the public
+contract both paths must satisfy. Language support, packaging, declaration/code generation and
 template reuse will be examined against these same examples after that boundary is understood.
 
 The first experiment should prove both a new plugin contribution and a template-only composition

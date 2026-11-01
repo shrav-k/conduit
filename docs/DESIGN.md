@@ -151,7 +151,8 @@ The same fixture will prove executable and requirement composition together: an 
 a graph-backed operation with derived/explicit results and recovery, composed requirements and a
 custom requirement outside core dispatch, all inspectable through the Interface. The
 [accepted proof scope](../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
-does not select final syntax, a permanent vocabulary, physical plugin placement or implementation start.
+does not select final syntax, a permanent vocabulary or implementation start. The helper execution
+default below is accepted separately; exact process grouping remains open.
 
 ### Shared policy and instance-owned state
 
@@ -222,6 +223,14 @@ connection policy and establishment; opening a Conduit does not select or instal
 at an endpoint. New parameters and supported dynamic provider catalogs can use existing contracts;
 changing fixed implementation definitions still requires a replacement instance in v0.
 
+**Initial execution default:** locally authored plugin code runs in supervised helpers associated
+with the instance it serves; trusted built-in Rust code may remain inside the executor. The
+instance's designated service retains authority, progress and runtime supervision. This separates
+ordinary helper crashes from the executor memory space without creating another object family
+or providing an OS sandbox. It does not require a process per plugin, invocation or instance.
+Graph composition alone needs no extra helper, and existing MCP services retain their own
+supervision. Exact helper grouping, packaging and transport remain implementation choices.
+
 Published contracts remain inspectable without executing code. A standard adapter can supply
 discovery, invocation and Conduit-managed context/evidence while provider-native catalogs stay
 dynamic. A declaration cannot manufacture unsupported effects, lifecycle, recovery or filtering
@@ -250,8 +259,9 @@ even without an attached Interface frontend. Its minimal authority/runtime depen
 necessary. This permits using parts of the system without requiring every frontend, Agent driver
 or integration, but does not promise that every component can run without its declared dependencies.
 Separate execution services own managed activity in the first implementation, with the shared
-policy and instance-state authorities defined above. Outage behavior, concrete placement and
-client enrollment remain review questions; protocol accessibility alone does not settle them.
+policy and instance-state authorities defined above. The accepted outage rules still apply;
+production placement and client enrollment remain review questions. Protocol accessibility alone
+does not settle them.
 
 ### Interfaces and the user workflow
 

@@ -39,7 +39,9 @@ has its own declared dependencies/guarantees. This adds no process or registry p
 
 ### Instance execution boundary
 
-Endpoint implementation selection and management are accepted; process placement remains open.
+Endpoint implementation selection and management are accepted. Locally authored plugin code
+normally runs in supervised helpers associated with the served instance; trusted built-in Rust
+code may remain in the executor process. Exact process grouping remains open.
 Setup, supported changes and ongoing managed behavior run in the context of the instance whose
 contract owns that activity. This context carries identity, retained implementation/definition,
 private state references, applicable authority, lifecycle supervision and attributable outcomes.
@@ -50,7 +52,7 @@ It is not itself a sixth family, a mandatory process/container or an OS sandbox.
 | Definition and state | The instance's fixed setup/control definitions and confirmed settings govern its behavior; its designated service retains authoritative state. |
 | Execution | Plugin handlers and managed processes serve that instance. Endpoint templates select connection plugins; their instances manage execution and local bindings. An execution service supplies hosting and supervision and can host multiple instances. |
 | Authority | An instance context is not an automatic grant. The caller, target, selected Conduit path and current restrictions govern each admitted operation. |
-| Physical placement | An implementation may use trusted in-process handlers, an instance-specific runner hosting several plugins, separate helpers or an external service. Supported placement and isolation guarantees need their own contracts and evidence. |
+| Physical placement | Authored code normally uses supervised instance-associated helpers; trusted built-in Rust handlers may run in-process. A runner can host compatible handlers without requiring a process per plugin, invocation or instance. Existing MCP services retain supervision; graph composition alone needs no helper. This is not an OS sandbox. |
 
 For example, a directory Resource's setup handler runs for that Resource; an Agent's runtime
 setup runs for the Agent. When the Agent invokes a shared MCP Resource, the Resource handles the
@@ -82,12 +84,12 @@ Partial establishment must remain visible; no atomic transaction across endpoint
 
 The implementation must establish an identifiable, supervised instance context before dispatching
 its setup; a record with incomplete setup need not have an ongoing process. Exact registration/start
-sequencing, local-helper custody, cancellation and physical placement remain open. The
+sequencing, helper grouping, cancellation and cleanup mechanics remain open. The
 [family-by-family walkthrough](AUTHORING.md#5-where-the-example-implementations-execute) supplies
 the proposed template/instance mapping and lifecycle examples.
 
-This reframes the pending worker discussion around instance execution first. Sharing implementation
-code need not share private state or credentials. Neither a separate helper nor an instance-specific
+The helper default preserves this instance execution boundary. Sharing implementation code need
+not share private state or credentials. Neither a separate helper nor an instance-specific
 runner becomes the sole authority for instance state simply because it executes plugin code.
 
 ## 2. Management and execution placement

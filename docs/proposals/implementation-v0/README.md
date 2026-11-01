@@ -44,7 +44,10 @@ two executor processes on one machine, faulting their connections. Two-machine v
 before remote support is claimed. Persistence and production deployment details remain under review. Replaceable frontends attach to an Interface; authored workers and existing
 MCP services fulfill published plugin contracts through retained implementation bindings. Graphs
 can also implement exported typed operations, composing selected operations without new glue code.
-Code-optional contributions use shared adapters or graph composition without a worker per package.
+Authored code normally uses supervised instance-associated helpers; trusted built-in Rust code may
+remain in-process. Instance state authority and endpoint ownership are unchanged; exact helper
+grouping remains open. Existing MCP services retain supervision. Code-optional contributions use
+shared adapters or graph composition without a worker per package.
 Local transactional storage remains an I4 candidate, not a requirement that all distributed state live in one file.
 Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 
@@ -89,7 +92,8 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 Experiment 002's [combined composition-authoring proof](../../../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
 is accepted within its existing synthetic fixture: graph-backed operations, derived/explicit results
 and recovery, composed/custom requirements and Interface evidence. It does not approve implementation
-start, final syntax, permanent core vocabulary or physical plugin placement.
+start, final syntax or permanent core vocabulary. The helper execution default is accepted separately;
+exact process grouping remains open.
 
 The proposed sequence begins with synthetic, fault-injectable execution and an Interface, then real
 Resources and Agent adapters, then the required two-Claude/two-Codex account exercise. Native

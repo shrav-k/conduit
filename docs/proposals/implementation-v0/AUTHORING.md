@@ -5,7 +5,8 @@ extension structure prioritized over a helper library is accepted. Publishing in
 contracts with implementations is also accepted. Detailed contract and template syntax is
 deferred until conceptual review is complete. MCP is accepted as the public invocation base with
 a small Conduit profile. Code-optional implementation bindings and independent component access
-are accepted; profile details, SDK, package syntax and execution arrangement remain open.
+are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in
+Rust code may remain in-process. Profile details, SDK, package syntax and exact helper grouping remain open.
 Code is illustrative and has not been executed.
 The [review](REVIEW.md#review-priority-plugin-and-template-authors) records the ruling and remaining
 choices; [DESIGN](../../DESIGN.md) supplies the settled semantics.
@@ -491,8 +492,9 @@ and local bindings; Conduits match compatible capabilities and coordinate the re
 Conduit templates define relationship contracts by composing reusable typed requirements, with
 a small base vocabulary and author extensions. Definitions may themselves compose existing
 requirements while retaining every constituent's meaning and limits. Detailed publication,
-composition and satisfaction mechanics remain under review. Process placement, SDK API and YAML
-syntax remain open. The [concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families)
+composition and satisfaction mechanics remain under review. Supervised instance-associated helpers
+are the accepted default for authored code; exact grouping, SDK API and YAML syntax remain open.
+The [concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families)
 separates working vocabulary from the five object families; final naming stays open.
 
 ### Plugin, template, graph and instance
@@ -770,19 +772,20 @@ Requirement composition keeps individual enforcement, with optional known-confli
 checks. No general solver or merge algorithm is required from custom authors. Default graph recovery
 and declared fulfillment duties are also accepted. The combined proof of composed operations and
 requirements in the existing synthetic fixture is accepted; it does not select a permanent core
-catalog or authorize implementation start. Physical placement is the next review choice. Detailed
+catalog or authorize implementation start. Distribution scope is the next review choice. Detailed
 evidence, evaluation interfaces, custom recovery hooks and syntax remain open.
 
-The pending placement recommendation runs locally authored code in supervised helper processes
+The accepted execution default runs locally authored code in supervised helper processes
 associated with the served instance, retaining supervision/state in its responsible service.
 Helpers can contain ordinary plugin crashes and support language-neutral implementations; an
 instance-specific runner can host multiple compatible handlers. Trusted built-in code can remain
-in-process; loading authored code there instead would reduce plumbing but share the failure boundary.
+in-process. Helper startup and protocol plumbing are the tradeoff for separating authored code
+from the executor memory space.
 Existing MCP services keep their own supervision. None of these choices automatically
 supplies an OS sandbox, process-per-instance rule or exactly-once effects. A worker crash after
 creating a directory can leave an uncertain result; a database setup helper ending must not orphan
-the database's instance-managed supervision. These placement choices remain open after the
-conceptual boundary review, with lightweight author support and MCP as the public contract.
+the database's instance-managed supervision. Exact process grouping, helper packaging and transport
+remain open, with lightweight author support and MCP as the public contract.
 
 ## 6. Accepted direction and remaining boundaries
 
@@ -801,9 +804,9 @@ Management/execution separation, shared policy with instance-owned state and no 
 the first proof uses separate management and two executor processes on one machine. I2 accepts
 native Claude/Codex adapters before the owned Rust model/tool loop, with macOS-first native
 integration/account validation and a portable core. I3 now accepts endpoint-selected plugins;
-Conduit contract satisfaction, connection lifecycle and execution/packaging remain open. Detailed
-package/contract/template syntax is deferred to the end. These rulings do not choose the
-host/worker arrangement or impose a new server framework.
+supervised instance-associated helpers are the default for locally authored code. Detailed
+fulfillment evidence, connection cleanup, helper grouping and distribution remain open. Package,
+contract and template syntax is deferred to the end; the accepted boundaries impose no new server framework.
 
 The first experiment should prove both a new plugin contribution and a template-only composition
 without modifying core dispatch. Record the author-written files, generated artifacts and actual

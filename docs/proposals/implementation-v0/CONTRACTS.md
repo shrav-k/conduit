@@ -410,13 +410,16 @@ requiring a tiny script plugin to implement unused lifecycle interfaces.
 
 ### Worker boundary
 
-Physical placement remains pending. The accepted
+Locally authored plugin code normally executes in supervised instance-associated helpers; trusted
+built-in Rust code may remain in-process. The accepted
 [instance and endpoint behavior boundary](AUTHORING.md#5-where-the-example-implementations-execute)
 uses endpoint-selected plugins managed by their instances. Conduits match compatible capabilities
 and coordinate participation; they do not supply new endpoint implementation code. Exact endpoint
 connection contracts and establishment/cleanup procedures remain under review. The caller, owning activity,
-target and execution location must remain attributable. The worker mechanisms below are candidates
-for hosting that behavior, not a requirement that each plugin or Conduit have a separate process.
+target and execution location must remain attributable. Detailed worker mechanisms below remain
+proposals; no process per plugin, Conduit or invocation is required. Existing MCP services retain
+their supervision; a graph-backed composition or declarative binding alone needs no new helper.
+Process separation contains ordinary helper crashes but does not supply an OS sandbox.
 
 MCP is accepted as the public plugin invocation base; `rmcp` remains the proposed Rust library
 for discovery, calls, resources and supported optional exchanges. A small Conduit profile describes
@@ -449,7 +452,7 @@ assigns owner/actor context; the worker cannot self-assign administrator authori
 are validated before they alter stored state.
 
 For code that needs an owned worker, one candidate v0 deployment uses one per active driver owner
-or explicit isolation boundary. This remains an I3 proposal, not a worker requirement for
+or explicit isolation boundary. This grouping remains a proposal, not a worker requirement for
 declarative packages or attached external services. It allows many Agents to
 share one Pool-owned service Resource and its worker. Cross-instance worker multiplexing can
 follow measurements; it must partition state, credentials and cancellation correctly. Do not

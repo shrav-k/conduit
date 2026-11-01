@@ -97,8 +97,9 @@ is the default for composed operations, resuming valid child progress on explici
 preserving child recovery boundaries. Requirement contracts declare fulfillment timing/role duties;
 established Conduits record the responsible implementations. Individual requirement enforcement
 with optional composition checks is accepted. Experiment 002's combined composition-authoring proof
-is accepted within the existing synthetic fixture. Next settle physical execution of authored
-plugin code, then distribution scope; endpoint ownership remains unchanged.
+is accepted within the existing synthetic fixture. Locally authored code normally runs in supervised
+instance-associated helpers; trusted built-in Rust code may remain in-process. Endpoint ownership
+remains unchanged. Next settle distribution scope; exact process grouping remains implementation work.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
@@ -107,7 +108,7 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1 and I2 are settled. Review I3's requirement contracts and execution/distribution choices, then I4–I6's
+I1 and I2 are settled. Finish I3's distribution scope, then I4–I6's
 persistence/custody/evidence support. Preserve the existing IDs; this is a
 change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
 
@@ -115,7 +116,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I3 | Requirement extension contracts, execution and distribution | Composable requirements and endpoint-selected/managed plugins accepted; settle publication, satisfaction and a minimal proof before placement. |
+| I3 | Plugin distribution scope | First-party bundled artifacts plus explicit local installation. Requirement composition, combined proof scope and supervised instance-associated helpers are accepted; exact process grouping remains open. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
@@ -329,7 +330,7 @@ candidate examples. Inspect implementation selection, fulfillment duties, child 
 allowed/rejected outcomes through the Interface. The
 [accepted proof scope](../../../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
 adds no live cloud dependency or broad SDK prerequisite. It does not approve exact syntax, permanent
-core vocabulary, physical plugin placement or implementation start.
+core vocabulary or implementation start. The physical execution default is accepted separately below.
 
 Final package/schema spelling remains I7 work. Graph representation, publication and runtime
 supervision retain their distinct responsibilities.
@@ -352,13 +353,13 @@ The conceptual composition review is recorded in these groups; detailed mechanis
 Typed plugin input/output schemas and Resource configuration contracts remain. The Conduit owns
 relationship requirements and composition; it cannot redefine target operation semantics or claim
 unsupported enforcement. MCP remains the public invocation base. The proposal does not select a
-universal endpoint API, Boolean expression language, constraint solver, worker arrangement or
-sandbox. Establishment/cleanup and I4–I7's persistence, credential, observation and syntax choices
-remain in the queue.
+universal endpoint API, Boolean expression language, constraint solver or OS sandbox. Detailed
+establishment/cleanup and I4–I7's persistence, credential, observation and syntax choices remain
+in the queue.
 
-**Next ruling — physical execution of authored code:** recommend supervised child/helper processes
-for locally authored plugin code, operating in the context of the instance whose activity they
-serve. For example, a directory Resource's handler runs in a helper associated with that Resource;
+**Accepted — physical execution of authored code:** locally authored plugin code normally runs
+in supervised child/helper processes associated with the instance whose activity it serves.
+For example, a directory Resource's handler runs in a helper associated with that Resource;
 its execution service retains supervision, authoritative progress and confirmed configuration.
 An ordinary helper crash can be handled without that helper sharing the executor's memory space.
 This is physical placement, not a new owner or independently managed object family: endpoint
@@ -371,23 +372,29 @@ need no new worker. This selects neither one process per invocation/plugin/insta
 An instance-associated runner could host several compatible handlers; exact sharing/granularity must
 preserve identity, credentials, cancellation and retained implementations and remains separate.
 
-**Alternative:** load locally authored plugin code into the executor process through an extension
-API initially. This reduces process/protocol plumbing but shares that executor's memory/failure
-boundary and requires compatible loading/retention. Both arrangements preserve the same public MCP
-contract and logical instance ownership. Languages, helper packaging, transport and any future Wasm
-lane remain separate. The [execution examples](AUTHORING.md#5-where-the-example-implementations-execute)
-remain illustrations, not completed implementation evidence.
+**Rationale:** helpers separate ordinary authored-code crashes from the executor memory space and
+support language-neutral implementations through the public MCP contract. The cost is process and
+protocol plumbing; instance authority, recovery and supervision remain with the designated service.
+Languages, helper packaging, transport and any future Wasm lane remain separate. The
+[execution examples](AUTHORING.md#5-where-the-example-implementations-execute) remain illustrations,
+not completed implementation evidence.
 
-**Subsequent ruling — distribution scope:** recommend first-party bundled artifacts and explicit
-local package installation, deferring a marketplace and arbitrary-language dependency resolver.
+**Next ruling — distribution scope:** recommend first-party bundled artifacts and explicit
+installation of locally supplied plugin packages, deferring a marketplace and arbitrary-language
+dependency resolver. For example, an author supplies a checksum package with contracts and a
+prepared executable; a Linear package can instead contain declarations binding an existing MCP
+service through an available adapter. Neither needs a hosted Conduit package registry. Installing
+a package does not instantiate Resources, authenticate providers or grant access. Authors can
+use existing language tooling to prepare their implementations; package syntax and prerequisites
+remain for the final authoring review.
 A Pool-owned Resource retains worker A when a new release makes B available; a replacement can
 select B and explicitly reuse compatible backing. Exact Conduit-controlled implementation retention
 and replacement on upgrade are already accepted, not new choices in this review.
 
 The experiment must test whether the Conduit MCP profile stays small before treating its method
 set as stable. Protocol support alone does not establish provider lifecycle or effect recovery.
-Execution and distribution recommendations above remain unaccepted; lightweight author support,
-code-optional integrations and existing-service reuse remain required under either arrangement.
+Distribution scope remains unaccepted. Lightweight author support, code-optional integrations and
+existing-service reuse remain required; the helper default does not require every package to ship code.
 
 ## I4 — Local transactional authority
 

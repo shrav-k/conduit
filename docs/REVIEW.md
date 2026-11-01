@@ -55,9 +55,10 @@ hold and relevant endpoint roles; established Conduits identify responsible impl
 Interface inspection. Composed requirements remain individually enforced, with optional known-conflict
 or combined-effect checks and no mandatory general solver. Experiment 002's combined authoring
 proof is accepted: graph-backed operations, derived/explicit results and recovery, composed/custom
-requirements and Interface inspection within the existing synthetic fixture. Physical plugin
-execution and distribution are next. Detailed coordination, evidence mechanisms, custom recovery
-hooks and syntax remain open; no implementation has started.
+requirements and Interface inspection within the existing synthetic fixture. Authored plugin code
+normally runs in supervised instance-associated helpers; trusted built-in Rust code may remain
+in-process. Distribution scope is next; exact helper grouping remains open. Detailed coordination,
+evidence mechanisms, custom recovery hooks and syntax remain open; no implementation has started.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

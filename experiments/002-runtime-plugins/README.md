@@ -1,8 +1,8 @@
 # 002 — Rust supervision, independent execution and plugins
 
 Status: first-proof layout, core authority/outage rules and combined composition-authoring proof
-scope accepted; implementation details remain proposed. Not implemented or executed. Written
-2026-11-01 from the
+scope and supervised instance-associated helper default accepted; remaining implementation details
+are proposed. Not implemented or executed. Written 2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
 choices within the [specification](../../docs/SPEC.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
@@ -39,6 +39,13 @@ on one machine, as separate processes with controlled connection failures. A com
 benchmark is optional, not a prerequisite. One fixture Pool owns Resources across both executors; Pool
 membership must not imply process co-location. Place one synthetic Agent on each executor and
 include a Resource-to-Resource Conduit across them.
+
+Locally authored plugin code normally runs in supervised helpers associated with its served
+instance. The executor retains authoritative state and supervision. Test an ordinary helper crash
+separately from executor loss; inspection and uncertain-effect recovery must remain available when
+the executor survives. Trusted built-ins may run in-process; graph composition alone needs no extra
+helper, and the fake external MCP service retains its own supervision. This chooses neither a
+process per instance/plugin/invocation nor an OS sandbox; exact helper grouping remains open.
 
 Use serialized transport and separately addressable endpoints rather than shared mutable Rust
 objects. Fault management, executor, worker, capability and observation links independently. The
@@ -153,8 +160,8 @@ of durable storage or exactly-once execution.
 
 Accepted experiment scope; not implemented or executed. Demonstrate requirement and executable
 composition together using the existing fake service, two synthetic consumers and separate
-authorities. The accepted process layout is unchanged. Exact syntax, permanent core vocabulary
-and physical plugin placement remain separate choices:
+authorities. The accepted process layout includes the authored-code helper default above. Exact
+syntax, permanent core vocabulary and helper grouping remain separate choices:
 
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
@@ -180,7 +187,7 @@ and physical plugin placement remain separate choices:
 The purpose is to prove the public extension/composition boundaries without a hard-coded requirement
 or provider switch in Rust, a large vocabulary, expression engine or general solver. This accepted
 scope adds no live cloud dependencies and does not authorize implementation start. Package syntax,
-physical plugin placement and detailed evidence capture remain separate review items.
+helper grouping and detailed evidence capture remain separate review items.
 
 ## Measurements and decision gates
 

@@ -8,7 +8,7 @@ terminology is retained where it describes those systems; proposed syntax below 
 
 Source investigation: 2026-10-30. This report provides source evidence for the current **Interface, Agent, Resource, Pool and
 Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../SPEC.md) and
-[DESIGN.md](../DESIGN.md); open decisions are in [REVIEW.md](../REVIEW.md). The report's
+[DESIGN.md](../DESIGN.md); review outcomes and deferred work are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 

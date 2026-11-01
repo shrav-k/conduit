@@ -11,26 +11,16 @@ research/conduits-as-graphs; the earlier baseline is preserved on main at c013f0
 
 ## Next discussion
 
-Draft a coherent YAML and acceptance packet using one concrete scenario. Review the objects
-together so their relationships are visible, instead of voting on every field independently:
+Review the [concrete YAML packet](../experiments/001-shared-access/README.md) as one connected
+example. It now includes templates for all five families, resolved instance examples, fixture
+contracts, a control-change walkthrough and an acceptance plan. Experiments live at the repository
+root with their own documentation; they are separate from the specification and source research.
 
-1. A reusable Interface supplies the unified control and observability surface, exposed through
-   CLI/terminal/test frontends. Establish and inspect the system management connection.
-2. A Pool offers explicit Resource-template entries. Select provisioning or existing-instance use
-   for a directory/worktree, shared authentication, an MCP integration and retained message history.
-   Listing an entry alone starts nothing.
-3. Instantiate two Agents with separate account/private state and declared Conduits to permitted
-   Pool Resources. Agent activation determines what becomes available in the selected runtime.
-4. Walk one supported configuration change through its typed control, handler, revision check,
-   confirmed setting and Interface-visible evidence. Include an uncertain result.
-5. Post a message, disconnect one participant, read independently, narrow permission and reconnect.
-   Follow the same activity through Interface inspection and an exporter test.
-6. Show template YAML, resolved instance configuration and system-owned observations separately;
-   include valid/invalid examples and explain every default and reference.
-
-Draft exact fields, type/capability identifiers, event and cursor shapes within the agreed language.
-If an example reveals a materially new behavior, identify that question with the concrete example.
-Do not reopen settled rules merely to select names, constants or a Rust library.
+Focus on whether Pool entries versus explicit setup, dependency binding, Conduit access,
+instance-owned runtimes and supported controls read naturally together. The proposed identifiers,
+keys and plugin contracts are not approved merely because the files parse. Bring material behavior
+changes back with a counterexample; choose routine spelling and engineering defaults together
+rather than reopening every settled ruling.
 
 ## Review outcomes
 
@@ -103,27 +93,16 @@ Custom tracking Resources can extend this foundation without replacing it.
 
 ## Initial experiment
 
-Prepare the YAML/contract packet and a synthetic acceptance walkthrough before implementation.
-The local-first direction and required four-account compatibility checks remain in force.
-
-1. Use an Interface to establish a Pool and independent Agents. Inspect ownership, resolved
-   configuration, active connections, readiness and outcomes through the same Interface contract.
-2. Exercise shared service authentication and separately filtered access, a directory/worktree,
-   retained message history and the selected memory capabilities. These are Resource examples;
-   no Linear/Jira integration or particular backend is a prerequisite.
-3. With two Agents and an Interface, exercise independent reading, offline catch-up, a lost response
-   and safe retry, permission narrowing, a slow observer and reconnection. Verify no automatic wake.
-4. Inspect the corresponding local evidence, supported usage attribution and explicit gaps.
-   Exercise export and exporter failure. Distinguish simulated evidence from actual enforcement.
-5. Separately verify two Claude and two Codex accounts, private-state and refresh/logout separation,
-   native compatibility and telemetry before claiming support. This document records intended tests,
-   not completed provider validation or live sign-ins.
+The [experiment directory](../experiments/README.md) owns test sequence and evidence. The first
+packet is static documentation; synthetic runtime tests and live provider checks have not run.
+Use the same Interface for control and inspection throughout. Progress from two synthetic Agents
+to the required separate two-Claude/two-Codex compatibility checks, without an issue-tracker gate.
 
 ## Drafting and deferred work
 
 | Work | How to resolve it |
 | --- | --- |
-| YAML field names, API/type/capability versions, exact ID/cursor/receipt formats and validation diagnostics | Draft examples and schemas against the agreed contracts. |
+| YAML field names, API/type/capability versions, exact ID/cursor/receipt formats and validation diagnostics | Review the proposed packet, then define schemas against the agreed contracts. |
 | Rust crates, plugin ABI/processes, persistence, transport, client pooling and exporter implementations | Engineering choices; surface any material behavior or trust change. |
 | Limits, timeouts, provider-specific queues/recovery and UI layout | Type/adapter defaults tested against failure examples, not universal micro-rulings. |
 | Multi-user/remote administration, broader interception and sandbox tiers | Later extensions; retain current native/isolated boundaries and honest coverage. |

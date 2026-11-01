@@ -1,0 +1,67 @@
+# Complete illustrative resolved specs, not inspection/status snapshots.
+# Resource registration must occur through the owning Pool.
+apiVersion: conduit.local/v0alpha1
+kind: Resource
+form: instance
+metadata:
+  name: conversation-history-0001
+spec:
+  type: {group: storage, name: message-history, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  owner: {kind: Pool, form: instance, name: project-pool-0001}
+  config:
+    establish: create
+    backingKey: euphony-exchange
+    readLimit: 20
+  setup:
+    nodes:
+      history:
+        operation: history.establish
+        inputs:
+          configuration: {from: config}
+  runtime:
+    driver: history.managed
+    inputs:
+      store: {from: output, node: history, port: store}
+  controls:
+    set-read-limit:
+      input:
+        type: object
+        required: [limit]
+        additionalProperties: false
+        properties:
+          limit: {type: integer, minimum: 1, maximum: 100}
+      handler: history.set-read-limit
+      changes: [[readLimit]]
+      revision: required
+      concurrency: exclusive
+  conduits: {}
+---
+apiVersion: conduit.local/v0alpha1
+kind: Conduit
+form: instance
+metadata:
+  name: capability-route-0001
+spec:
+  type: {group: connection, name: capability-route, version: v0alpha1}
+  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  config:
+    consumer: {kind: Agent, form: instance, name: collaborator-0001}
+    target: {kind: Resource, form: instance, name: conversation-history-0001}
+    capability: {group: communication, name: retained-messages, version: v0alpha1}
+    filters:
+      - type: {group: access, name: operations, version: v0alpha1}
+        config: {allow: [post, read, advance-reader, inspect]}
+  setup:
+    nodes:
+      establish:
+        operation: route.establish
+        inputs:
+          instance: {from: self}
+          configuration: {from: config}
+  runtime:
+    driver: route.managed
+    inputs:
+      binding: {from: output, node: establish, port: binding}
+  controls: {}
+  conduits: {}

@@ -7,9 +7,8 @@ plugin operations and graphs implement handlers, while instances own ongoing sta
 terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
 Updated: 2026-10-31. The five-family template/instance model, exclusive Pool ownership,
-Pool-managed shared service authentication, Pool-only Resource creation, typed handlers and explicit open/join intents are accepted. Detailed interaction,
-state and lifecycle proposals below remain for review; no schema or implementation is implied.
-[DESIGN.md](../DESIGN.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) groups questions.
+Pool-managed shared service authentication, Pool-only Resource creation, typed handlers and explicit open/join intents are accepted. Broader interaction examples remain research; the current YAML draft is separate from this evidence.
+[DESIGN.md](../DESIGN.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) records the settled direction and schema boundary.
 No live login, deployment or provider mutation was performed for this research.
 
 The [messaging and networking investigation](#messaging-and-networking-investigation)
@@ -835,30 +834,12 @@ explicit Resource connection; a conversation does not merge native histories. Ex
 integrations and specialized tracking can be Resource capabilities without a mandatory issue link
 or special tracker abstraction in the core protocol.
 
-### Recommended next review
+## Evaluation cases
 
-The first slice is now retained messages and state inspection; structured work submission is
-deferred. Do not choose TCP versus Signal: one is a transport and the other is a secure messaging
-system. Shared append-only history with independent Agent readers and next-turn unread notices
-without automatic wake are accepted for this capability. Walk offline delivery, response loss,
-a permission change and a slow observer through that smaller slice. An optional per-Agent wake
-hook remains future work. The Interface supplies unified control and observation over durable
-local evidence, with pluggable export; this remains available without external issue-management
-Resources. The [schema walkthrough](../REVIEW.md#next-discussion) is next, with no tracker gate.
-
-Existing MCP capability exposure is the leading adapter surface, with a local implementation free
-to use in-process calls or local IPC. Keep transport and storage replaceable, and negotiate/version
-adapter features. No Signal, Matrix, MQTT, AMQP, NATS, Zenoh or A2A dependency is implied by this research.
-
-## Review sequence and tests
-
-The [review outcomes](../REVIEW.md#review-outcomes) define the accepted v0 boundaries.
-Authentication reuse, composite participation, typed filters and access-path composition are
-accepted, as are R3's explicit Resource retirement and new-Conduit-after-end rules. These examples
-now also illustrate accepted R4 routing and recipient-bound delegation lifetime. R4 excludes
-generic object labels/selectors and requires explicit provisioning versus existing-Resource binding.
-R7 settles the first retained-history/attention and Interface-observability contracts. R6 settles the configuration/implementation profile;
-detailed syntax is drafting work, and these examples are not executable schemas.
+The accepted first slice is retained messages and inspection. The
+[experiment packet](../../experiments/001-shared-access/README.md) owns the current walkthrough.
+MCP is the leading external capability surface; local internals can use in-process calls or IPC.
+This investigation selects no Signal, Matrix, MQTT, AMQP, NATS, Zenoh or A2A dependency.
 
 Use these change cases alongside the five happy paths:
 

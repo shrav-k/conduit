@@ -565,7 +565,7 @@ there is no new workflow family. Graphs call typed operations rather than reimpl
 SSH exchange or bypassing worktree identity checks. R2 confirms this initial execution boundary;
 provider procedure stays inside plugins without moving ongoing supervision out of instances.
 
-## What the first protocol must settle
+## Recovery requirements for examples
 
 Recommend a small lifecycle protocol supporting validation/resolution, establishment, observation,
 structured interaction waits, compatible continuation/reconciliation, cancellation and typed
@@ -587,7 +587,7 @@ different timeout behavior, and timing out either does not prove cancellation co
 The [review outcomes](../REVIEW.md#review-outcomes) define the accepted boundaries.
 These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
 the accepted R6 configuration/export profile. Direct complete-instance creation, graph composition
-and the template/plugin/instance responsibility split are already accepted. The next schema packet should
+and the template/plugin/instance responsibility split are already accepted. The [schema packet](../../experiments/001-shared-access/README.md) should
 render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 
 ## Evidence gates before implementation and live experiments

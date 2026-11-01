@@ -1,9 +1,9 @@
 # Conduit design contracts
 
 Updated: 2026-10-31. Current working design on `research/conduits-as-graphs`; implementation
-has not started. [SPEC.md](SPEC.md) gives the model and [REVIEW.md](REVIEW.md) groups open choices.
-The earlier design remains on `main` at `c013f0a`. Research supplies evidence and illustrative
-syntax; it does not silently settle the remaining contracts.
+has not started. [SPEC.md](SPEC.md) summarizes the model; [REVIEW.md](REVIEW.md) records the
+completed direction review and schema boundary. The [YAML walkthrough](../experiments/001-shared-access/README.md)
+proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
 
 Prefer minimal bookkeeping: retain authoritative configuration, identity, authority and necessary
 operation evidence; derive views rather than maintain parallel editable descriptions. Shared
@@ -18,8 +18,7 @@ Sharing service access is the normal path, not an optional optimization of per-A
 
 The five families are **Interface, Agent, Resource, Pool and Conduit**, each with template and
 instance forms. Templates are reusable definitions; one can establish many independent instances.
-An instance need not run a dedicated process. Agent replaces the former Session name; Profile
-was the earlier name for its template. Plugin nodes, executions and attachment records are
+An instance need not run a dedicated process. Plugin nodes, executions and attachment records are
 supporting concepts, not additional families.
 
 | Family | Template defines | Instance represents |
@@ -41,7 +40,7 @@ authors, starts, connects or changes instances exposes their state, activity and
 includes Agent-initiated and Resource-to-Resource activity, not only commands issued by a frontend.
 CLI, terminal and test frontends present the same underlying observation/control capabilities.
 
-**Accepted v0 authority:** Interfaces, especially the default Interface, are the user's unrestricted
+**V0 authority:** Interfaces, especially the default Interface, are the user's unrestricted
 local administration surface. They can inspect and administer every template and instance across
 all five families: authoring, creation, connections, configuration, lifecycle and repair. Narrower
 Interface scopes and differentiated authority across multiple Interfaces are deferred while the
@@ -62,7 +61,7 @@ provider effects. The Interface identifies the endpoint; the acting human identi
 CLI, terminal UI and test clients exercise the same administration contract. Future Interface
 scoping can narrow this authority; designing it is not a prerequisite for v0.
 
-**Accepted frontend relationship:** the default Interface is a reusable logical instance. CLI,
+**Frontend relationship:** the default Interface is a reusable logical instance. CLI,
 terminal and test clients attach to it, with multiple clients supported at once. Each attachment
 remains identifiable. Owner-operated frontends share the unrestricted v0 administration authority.
 Another Interface can be instantiated for a different configuration or endpoint; its future access
@@ -70,7 +69,7 @@ policy is deferred. Opening a frontend need not create an Interface object. Dire
 is shared across its controlling Interface's frontends as described under runtime/presentation.
 This does not require an always-running process or give Agents the user's administrative identity.
 
-**Accepted bootstrap:** initial local startup seeds a minimal system Pool owning a management
+**Bootstrap:** initial local startup seeds a minimal system Pool owning a management
 Resource, a default Interface and a management Conduit connecting them. A small runtime bootstrap
 establishes this initial set before its operations can be invoked. The management Resource exposes
 core template/registry management and instance-creation capabilities through the same five-family
@@ -78,7 +77,7 @@ model. Resource creation still goes through its owning Pool. No application Pool
 service login is required first; this does not introduce a second registry or require a new daemon.
 Built-in definitions, exact management operations and frontend transport/lifecycle remain open.
 
-**Accepted later startup:** reuse the registered system Pool, management Resource and default
+**Later startup:** reuse the registered system Pool, management Resource and default
 Interface with their existing identities, saved settings and grants, subject to current access
 checks. Missing or inconsistent expected components are reported for explicitly requested repair;
 ordinary startup does not recreate them from defaults or silently retarget established bindings.
@@ -87,13 +86,13 @@ of deletion or a fresh installation. Supported reconnection to the same targets 
 replacing registered objects. Repair is a deliberately requested operation, not an additional
 confirmation on every launch. Repair is part of unrestricted Interface administration. Its route
 when the normal management path is unavailable, exact steps and partial initial-setup recovery
-remain open. A separately scoped recovery role and Interface restrictions are deferred; this
-ruling does not preserve ended flows or automatically restart Agent work.
-Under R3, later access after a management Conduit fully ends opens a new Conduit instance to
+remain open. Differentiated recovery authority and Interface restrictions are deferred; this
+rule does not preserve ended flows or automatically restart Agent work.
+Later access after a management Conduit fully ends opens a new Conduit instance to
 the retained system objects. Transport recovery while logical participation remains intact
 continues the existing instance; reopening a terminal alone is not evidence that a flow ended.
 
-**Accepted initial authority:** v0 establishes one local registry owner using the initializing
+**Initial authority:** v0 establishes one local registry owner using the initializing
 OS-user context, without separate Conduit login. The default Interface acts for that owner;
 Agents receive explicit delegated access through their own Conduits. Owners can delegate broad
 or narrow access under the existing grant model. Running an Agent under the owner's OS account
@@ -126,7 +125,7 @@ this common foundation or introducing a new family. Linear/Jira integration is i
 
 ### Establishment contracts and instance state
 
-**Accepted:** templates contain the complete instructions needed to establish an instance and
+Templates contain the complete instructions needed to establish an instance and
 specify which instance configuration can subsequently change and within what parameters.
 This is part of the protocol, not merely documentation or a frontend hint. Complete means
 resolvable typed configuration, graph/runtime declarations and explicit dependencies; it does
@@ -148,13 +147,13 @@ input/override archives are not required. Current access and external data remai
 a source template does not silently change an existing instance's behavior or control boundaries.
 
 Keep template intent, concrete instance configuration, requested changes and observed state
-distinguishable. **Accepted:** configuration changes advance stored instance settings only when
+distinguishable. Configuration changes advance stored instance settings only when
 the handler confirms application. Pending or uncertain requests remain separately recorded in
 operation evidence. Plugins define what establishes application and describe any partial effects.
 A last confirmed setting must not be presented as still active when the outcome is unknown.
 Initial creation settings remain establishment inputs, not evidence that setup succeeded.
 
-**Accepted configuration representation (R6):** `spec.config` is the instance's single stored
+**Configuration representation:** `spec.config` is the instance's single stored
 configuration map. It contains materialized initial values before setup and advances affected
 values only after a supported control confirms application. Fixed setup/control definitions stay
 elsewhere in the spec; observations and outstanding requests remain separate. Field placement does
@@ -174,7 +173,7 @@ or establishment intent rather than inventing it. Current schema/default rules s
 
 ### Template-defined configuration changes
 
-**Accepted control surface:** templates expose permitted configuration changes as named typed
+**Control surface:** templates expose permitted configuration changes as named typed
 controls backed by handlers. A control such as `set-query-limit` accepts typed inputs, applies
 the supported change and reports its outcome. One control can cover several related settings;
 this does not itself guarantee atomic application. Templates normally reuse their selected type's
@@ -188,7 +187,7 @@ authorized Conduit. The interaction does not require a separate user-authored op
 or make all instance fields writable. A declaration cannot make an unsupported runtime operation
 work or grant caller authority. Exact default-selection notation and field/handler bindings remain open.
 
-The following lists **contract concerns for review**, not a mandatory field list or exhaustive
+The following lists **shared contract concerns**, not a mandatory field list or exhaustive
 application-state enum. MCP is the accepted standard external expression of this open-ended
 communication pattern. Shared versioned type definitions can avoid copying
 schemas into every template; the resolved template/instance must make its effective contract visible.
@@ -202,7 +201,7 @@ schemas into every template; the resolved template/instance must make its effect
 | Results and observations | What proves application, how progress/failure/unknown outcomes appear, and what clients can inspect afterward. |
 | Recovery and retention | Supported retry/cancel/reconciliation and what applied settings persist across restarts. No universal queue or rollback policy is implied. |
 
-**Accepted exchange:** expose named controls as discoverable MCP tools with typed inputs,
+**Exchange:** expose named controls as discoverable MCP tools with typed inputs,
 explanatory content and plugin-defined structured results. Reuse supported standard mechanisms for
 progress, additional input, observation and long-running work where applicable. MCP's wire/result
 types do not require every plugin's domain lifecycle to fit a shared enum. Plugins define domain
@@ -216,14 +215,14 @@ Exact mappings, optional-feature fallbacks and client compatibility remain in
 under the accepted instance-state rule; accepting a request does not itself select a queue or
 automatic reconciliation policy.
 
-**Accepted coordination:** configuration changes apply one at a time per target instance by
+**Coordination:** configuration changes apply one at a time per target instance by
 default, across all authorized Conduits to it. The type/plugin contract can declare safe parallel
 application. Ordinary Resource operations retain their own concurrency rules. Whether a busy
 target queues or rejects another change remains plugin-defined. Serial application does not
 by itself prevent a later request from relying on stale settings or make external effects atomic.
-Conflict domains and uncertain in-flight effects remain for review.
+Type-specific conflict domains and reconciliation mechanics must be specified by the implementing contracts.
 
-**Accepted state check:** configuration controls normally require the caller's expected
+**State check:** configuration controls normally require the caller's expected
 configuration revision, checked when applying the change. A stale request reports a conflict;
 the caller can reread and reconcile within its authority. Control contracts may explicitly permit
 safe unconditional operations. Clients can carry the revision from inspection without mandatory
@@ -238,7 +237,7 @@ and Conduit filters; none overrides another to widen access. Exact authoring sho
 cross-field expressions, handler composition and version compatibility remain open.
 
 A setting's value and the rule governing its permitted changes are distinct. Changing a value
-must not silently expand the control's allowed range or caller privileges. **Accepted for v0:**
+must not silently expand the control's allowed range or caller privileges. **For v0:**
 an instance's resolved setup graph and control definitions remain fixed. Changing setup steps,
 control schemas/constraints or handler bindings requires a new instance from a revised definition.
 Existing controls still change their permitted settings; dynamic attachments and current access
@@ -284,9 +283,9 @@ connection membership, even if they share the invocation protocol. Adding a docu
 edit a storage Resource's configuration. Observing state does not start model work. Attaching
 another Conduit does not silently rewrite an Agent's template or broaden a control's constraints.
 
-### Lifecycle protocol under review
+### Lifecycle protocol
 
-**Accepted graph boundary (R2):** v0 setup and change-handler graphs are finite, acyclic dependency
+**Graph boundary:** v0 setup and change-handler graphs are finite, acyclic dependency
 graphs of typed plugin operations. Plugins declare typed inputs/outputs; graph nodes bind them.
 Output bindings imply dependencies; explicit prerequisites cover ordering without data. Branching,
 loops and provider-specific procedure remain inside plugins initially. User-authored conditions,
@@ -359,7 +358,7 @@ omitting `status` and system-owned identity/version values. Inspection can still
 those system values. Update preconditions are separate operation inputs; they do not
 authorize clients to assign system-owned values through object YAML.
 
-**Accepted instance export (R6):** export the current stored `spec.config` with the retained fixed
+**Instance export:** export the current stored `spec.config` with the retained fixed
 definitions and explicit dependencies. Report outstanding requests/uncertain observations alongside
 the export, without treating them as authored values. The configuration is an input for fresh creation,
 not proof of live state. Do not copy credentials, grants, readiness, live handles or execution progress.
@@ -382,7 +381,7 @@ individually authored YAML file.
 
 ### YAML interpretation
 
-**Accepted v0 profile (R6):** use YAML 1.2 Core scalar interpretation, restricted to string
+**V0 profile:** use YAML 1.2 Core scalar interpretation, restricted to string
 mapping keys and finite supported numeric values. Typed schemas enforce field types, ranges and
 units without silently converting a string to a number or boolean. Reject duplicate mapping keys
 and unknown fields outside schema-declared open maps. Unsupported numeric range/precision is an
@@ -407,7 +406,7 @@ not imply atomic deployment, authority or successful setup.
 
 ### Implementation selection
 
-**Accepted v0 rule (R6):** select Conduit plugin implementations explicitly or through an
+**V0 rule:** select Conduit plugin implementations explicitly or through an
 unambiguous configured default. Resolve the exact release/artifact identity before execution and
 retain it for the instance's subsequent starts, operations and recovery. Installing a newer package,
 changing a default or package discovery order must not silently change that binding. Record an
@@ -536,7 +535,7 @@ checked deletion. Retain referring objects and their authored references, report
 relationships as unavailable; do not prune those references or cascade removal to referring
 objects. Deleting a Resource registration does not delete its owning Pool. Pool ownership
 is stronger than an ordinary incoming reference: a Pool instance cannot be deleted while it
-owns Resource registrations. R3 requires explicit Resource retirement first, including supported
+owns Resource registrations. Deletion requires explicit Resource retirement first, including supported
 stop/disconnect steps and checked unregistration. An explicit bulk retirement action may handle
 the Resources and then their Pool; partial failure retains the Pool and reports unfinished work.
 Ordinary Pool deletion does not implicitly retire owned Resources. Ownership transfer is deferred.
@@ -560,7 +559,7 @@ conflict even if their submitted configuration matches the current values.
 
 Equality ignores presentation-only formatting, comments and mapping-key order. For instance creation,
 omitting a defaulted field and explicitly supplying the same value produce equivalent resolved
-configuration. Equality/version behavior for subsequent control operations remains under review.
+configuration. Control contracts still need explicit no-op and revision-result semantics; registry equality alone does not define their effects.
 For template updates, compare parsed authored values: omission remains distinct from explicitly setting a default. Lists follow
 their field-specific order rules. Scalar normalization, individual list contracts and
 version-transition details remain open; equality does not compare runtime state, current
@@ -625,9 +624,9 @@ Field contracts separately define omission, empty collections, nullable values, 
 collection order and duplicate identity. Relationship operations such as combining authorized
 access paths retain their own semantics; field assignment does not redefine those operations.
 
-| Relationship | Established constraint; details still to settle |
+| Relationship | Established constraint |
 | --- | --- |
-| Agent template → Agent | Interpret typed establishment configuration and retain ongoing instance settings. Customize ordinary typed fields with replacement semantics. Continuing authority is explicit; detailed transition/dependency semantics remain under review. |
+| Agent template → Agent | Interpret typed establishment configuration and retain ongoing instance settings. Customize ordinary typed fields with replacement semantics. Continuing authority and dependencies remain explicit; the type defines supported transitions. |
 | Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Explicit named entries identify available templates; reuse across Pools creates distinct owned instances. Referencing a foreign instance does not transfer ownership. |
 | Agent → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
 | Agent activation | Instructions materialized in the Agent spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
@@ -711,7 +710,7 @@ prompts, tools and configuration bundles are supplied through Pools; the Agent s
 how to use the permitted selection. Discovering a skill, importing it, exposing a tool
 and placing instructions in model context can require different behavior.
 
-**Accepted activation policy (R5):** apply the Agent's declared compatible preparation actions.
+**Activation policy:** apply the Agent's declared compatible preparation actions.
 Required activation failure prevents readiness; optional failure is visible without blocking
 unrelated usable capabilities. Resolve conflicting exposed names through explicit selection or
 supported distinct names, not discovery order. Avoid duplicate equivalent loading without merging
@@ -805,7 +804,7 @@ it does not own credentials, model calls or authoritative execution state. Pi te
 components may be reused, but Pi's agent loop and Pi Durable are research references.
 A memory backend or frontend change must not replace Conduit's execution loop.
 
-**Accepted shared Interface control:** an Agent's direct user-control belongs to its controlling
+**Shared Interface control:** an Agent's direct user-control belongs to its controlling
 Interface. All authorized frontend attachments of that Interface can issue input, cancellation and
 settings commands; a terminal and CLI need no controller handoff between them. Each request keeps
 its caller/attachment identity and passes through its permitted Conduit path and target contract.
@@ -813,7 +812,7 @@ Owner-operated frontends use the Interface's unrestricted v0 authority; configur
 checks and per-target coordination still provide meaningful outcomes. Simultaneous submission
 does not promise simultaneous execution.
 
-**Accepted delegated Agent control:** an authorized Agent may invoke another Agent's permitted
+**Delegated Agent control:** an authorized Agent may invoke another Agent's permitted
 controls through its own Conduit and identity while user-control through the Interface remains
 available. No exclusive controller handoff is required. Each request remains subject to current
 authority, relevant state checks and target coordination. Neither actor has automatic priority;
@@ -882,8 +881,8 @@ Resource specs use these fields in both template and instance forms:
 | Field | Contract |
 | --- | --- |
 | `spec.type` | A type-contract reference with separate `group`, `name` and `version` fields. This is distinct from a registry object reference using kind/form/name. |
-| `spec.config` | Type-specific settings validated for the selected type and form. Templates declare establishment intent; instances retain initial and then confirmed settings in one map under R6. Exact fields are schema work. Unknown fields are rejected except in schema-declared open maps. |
-| `spec.conduits` | The consumer's Conduit declarations. Their entry shape and contents remain under review. |
+| `spec.config` | Type-specific settings validated for the selected type and form. Templates declare establishment intent; instances retain initial and then confirmed settings in one map under the shared configuration contract. Exact fields are schema work. Unknown fields are rejected except in schema-declared open maps. |
+| `spec.conduits` | The consumer's Conduit declarations. Their concrete entry syntax is proposed in the walkthrough. |
 
 Resource types have logical groups independent of installation packages. A plugin package may
 supply types from several groups; changing implementation packaging need not rename contracts.
@@ -903,14 +902,14 @@ The first working catalog uses four core groups:
 These group boundaries are accepted. Within `filesystem`, `local-directory` and `git-worktree`
 are separate types: both expose directory access, while the latter also has Git-specific
 creation, attachment and cleanup obligations. This selects contract boundaries, not a
-requirement to implement both immediately. Other types and implementation scope need review.
+requirement to implement both immediately. Additional types and their detailed schemas are extensible.
 Keep an additional agent-communication group under consideration for direct messaging,
 multi-participant conversations and shared context. Agent-specific contracts can justify a
 distinct group even when they use familiar storage/integration mechanisms. Its name, types,
-Resource-versus-Conduit responsibilities and shared-context semantics remain open. This does
-not select a room topology or a jointly editable memory model.
+Resource-versus-Conduit responsibilities and shared-context semantics remain open. The first retained-history capability is defined under [communication](#communication-contract);
+that does not require every communication Resource to use that shape.
 
-R6 requires conflicting definitions for a contract identity/version to be reported rather than
+Conflicting definitions for a contract identity/version must be reported rather than
 silently overwritten. Public contract ownership/governance, allowed identifiers and version labels
 remain drafting/future work. Groups and type contracts add no registered object family, assign no Pool ownership and
 grant no access. [Resource typing](research/RESOURCES.md) retains the supporting investigation,
@@ -919,10 +918,10 @@ candidate types and proposed interface boundaries; those proposals are not built
 Resource type contracts are versioned independently of the common object `apiVersion`.
 The common format can remain unchanged while a type's configuration/behavior contract evolves.
 Plugin implementation releases are separate from both versions; a plugin release number does
-not substitute for either contract version. R6's retained implementation binding and replacement
+not substitute for either contract version. The retained implementation binding and replacement
 rule apply; identifier spelling and concrete compatibility checks remain to be drafted.
 
-**Accepted compatibility boundary:** required connections name a versioned capability contract,
+**Compatibility boundary:** required connections name a versioned capability contract,
 describing the operations and behavioral guarantees a consumer needs. Different Resource types
 may fulfill that same contract; consumers need not require a particular concrete Resource type.
 A Resource type still defines configuration, establishment and lifecycle. A capability contract
@@ -965,8 +964,7 @@ interchangeable implementations of a fixed lifecycle. Settle their typed configu
 backing identity, operations and shared/per-consumer state before deciding Pool grouping.
 A type contract defines supported semantics; a template supplies reusable establishment
 configuration and declares the permitted configuration changes within that support.
-The minimum common fields and consumer boundaries for other Resource types remain open in
-[REVIEW.md](REVIEW.md#review-outcomes).
+Other Resource contracts can be developed against the [schema review criteria](REVIEW.md#drafting-and-deferred-work).
 
 For a local folder, the Resource instance describes the configured folder attachment. Each
 Agent's symlink is preparation state, not another Resource instance. Two Agents may use
@@ -1111,7 +1109,7 @@ resulting Resource instances. Pools remain the resource-supply and shared servic
 for Agents and connections, including skills,
 tools, memory and connection support such as conversation storage. A Pool need not run a process.
 
-**Accepted dependency composition:** reusable Resource templates declare their required connections;
+**Dependency composition:** reusable Resource templates declare their required connections;
 Pool composition supplies concrete targets during selected Resource instantiation. The consumer
 instance supplies its own local endpoint and retains the resolved Conduit declaration/target binding. For example,
 one reusable MCP template can connect to Euphony's authentication Resource in a work Pool and to a
@@ -1124,7 +1122,7 @@ connection assignment on the consumer instance, with derived reverse views. Late
 edits do not silently rebind established connections. Compatibility uses the capability contracts
 above; exact declaration syntax, version matching and explicit rebinding controls remain open.
 
-**Accepted local composition:** Pool templates name their Resource entries locally, allowing a
+**Local composition:** Pool templates name their Resource entries locally, allowing a
 dependency binding to refer to another entry in that composition. For example, `linear` binds its
 authentication requirement to `auth`. Provisioning the selected composition resolves that reference
 to the concrete authentication Resource for this Pool, and the consumer retains its resolved stable
@@ -1132,7 +1130,7 @@ target ID. Catalog entries alone have no deployed Resource identity. Other Pool 
 own deployed Resources; template reuse alone does not share instance identity. Local entry names
 are not global registry aliases or an alternative instance identity; referencing one grants no access.
 
-**Accepted provisioning intent (R4):** templates/graphs explicitly distinguish provisioning from a
+**Provisioning intent:** templates/graphs explicitly distinguish provisioning from a
 named Pool entry from using a selected existing Resource instance. The former creates a Resource
 through its owning Pool; the latter binds an already-registered instance without changing its owner.
 Both resolve to a concrete Resource binding. An entry is a reusable provisioning choice, not a
@@ -1148,7 +1146,7 @@ Composition carries the choice without a separate operation manifest or a manual
 start. Authority, compatibility and explicit binding rules still apply; retry reuses valid recorded
 progress rather than treating a provision instruction as permission to create duplicates.
 
-**Accepted composition mechanism:** a reusable graph step consumes the composition's explicit
+**Composition mechanism:** a reusable graph step consumes the composition's explicit
 provisioning/existing-instance choices and dependency bindings. It establishes newly requested
 Resources through their own setup contracts and resolves existing targets without treating their
 selection as a new provisioning request. It exposes concrete results for subsequent bindings.
@@ -1159,7 +1157,7 @@ setup. Required dependencies govern preparation, not YAML mapping order. This pr
 Resource's runtime ownership, authorization and recovery contract. Exact operation names, typed
 results and graph syntax remain open.
 
-**Accepted partial availability:** ready Resources are normally usable through authorized Conduits
+**Partial availability:** ready Resources are normally usable through authorized Conduits
 while other components of their Pool are waiting or have failed. Each Resource's own prerequisites
 and any declared gates still apply. A ready checkout can be used while shared authentication waits
 for consent and Linear remains unavailable. Report the Pool's incomplete setup and component
@@ -1180,7 +1178,7 @@ derive useful views from their contracts. Exact composition fields and result wi
 configuration profile in [REVIEW.md](REVIEW.md#review-outcomes). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
-**Accepted label removal (R4):** Pool inclusion uses explicit named Resource-template entries.
+**Label removal:** Pool inclusion uses explicit named Resource-template entries.
 V0 has no generic registry-object labels or label-based selectors, including for discovery or
 automatic Pool inclusion. Inspect/query defined fields such as kind, form, Resource type, owning
 Pool and explicit relationships. No label inheritance or selector-refresh contract is needed.
@@ -1195,10 +1193,10 @@ establish access. Pool ownership, current access, Agent activation and native ba
 management have distinct meanings.
 
 Creating a Resource for a connection must identify its owning Pool; the connection requests
-provisioning through that Pool. How provisioning retries partial work or resolves dynamic
-support requirements remains open. A template registration alone does not create Resources.
+provisioning through that Pool. Provisioning retries reuse valid recorded progress; any further dynamic support requirements
+need an explicit type contract. A template registration alone does not create Resources.
 
-**Accepted connection selection (R4):** omit Pool-provided default Agent connections in v0.
+**Connection selection:** omit Pool-provided default Agent connections in v0.
 Agent templates declare starting Conduits, optionally referencing reusable composite Conduit
 templates. Authorized Interface/Agent operations explicitly add or remove connections later.
 Pools make provisioning templates and owned Resources available; they do not automatically suggest
@@ -1207,7 +1205,7 @@ and its merge/precedence rules. Defaults inside Resource configuration remain su
 unrelated to Agent connection selection. Current authority and Agent limits still constrain each
 connection; declaring one does not issue its own grant.
 
-**Accepted retirement (R3):** keep a Pool instance registered until its owned Resource instances
+**Retirement:** keep a Pool instance registered until its owned Resource instances
 have been explicitly retired through their supported lifecycle and checked unregistration.
 One explicit bulk action can retire the Resources and then remove the Pool. If retirement only
 partly succeeds, preserve the Pool and report remaining work; do not claim rollback of completed
@@ -1219,7 +1217,7 @@ Missing ownership remains an inconsistency to resolve, never implicit orphan-pur
 
 ### Shared access and authentication
 
-**Accepted:** Pools are the normal place to establish and manage shared service access. Their
+Pools are the normal place to establish and manage shared service access. Their
 owned capabilities retain the selected provider bindings so multiple authorized Agents can use
 them without each completing provider login. This applies beyond MCP: a suitable integration can
 manage database, repository, cloud or credential-service access. Actual provider support and any
@@ -1229,7 +1227,7 @@ A binding means a managed association to an authorized service identity, not a c
 configuration. Plugins implement authentication; instance runtimes own continuing state/refresh.
 The Pool owns and organizes the capability rather than introducing a second authentication engine.
 
-**Accepted representation:** reusable authentication is a Pool-owned Resource, accessed by service
+**Representation:** reusable authentication is a Pool-owned Resource, accessed by service
 Resources through Conduits. It owns the reusable authentication/refresh lifecycle; consumers own
 their service behavior and clients without becoming separate owners of the login. Pool templates
 can compose these Resources and connections so one integration does not require manual authoring
@@ -1297,15 +1295,14 @@ retained attachments that remain usable under current access. Explicit cancellat
 the attachments retained by that preparation. Preserve other consumers, backing Resources and
 recorded outcomes; cancellation does not undo data already delivered or accepted external
 effects. The last-consumer rule governs when a flow ends. Retry/timeout rules, incomplete
-cleanup, ordering and reconfiguration remain under review.
+cleanup, ordering and reconfiguration require explicit type/runtime contracts.
 
 For a declaration inside an Agent or Resource, the enclosing instance supplies the consumer
 endpoint automatically. A reusable search template declaring `storage-read` can therefore be
 used by `search-a` and `search-b`, each resolving itself as the consumer without an authored
 local-endpoint marker or generated instance name in the template. This supplies endpoint
 identity only; authority checks and explicit open/join intent still apply. Preparation supplies
-the default establishment trigger. Remote endpoint selection and exact declaration syntax
-still require review.
+the default establishment trigger. Remote endpoint selection and exact declaration syntax are illustrated in the schema packet.
 Conduits are the extensible interaction layer across the five families. Pool access and
 Agent communication are examples, not a closed list of endpoint roles or protocols.
 
@@ -1332,7 +1329,7 @@ attached between polls, and temporary transport failure affects readiness withou
 that attachment. Ending the flow does not delete its template, backing Resources or retained
 configuration/operation evidence, and does not prove an already accepted remote operation was
 cancelled. Report incomplete or unknown cleanup rather than claiming confirmed disconnection.
-**Accepted ended-flow identity (R3):** later participation opens a new Conduit instance with a
+**Ended-flow identity:** later participation opens a new Conduit instance with a
 new stable ID and fresh attachments. It may explicitly reuse the same Pool-owned Resources or
 retained conversation history within current access, without reviving the old attachments or
 automatically inheriting their grants. Temporary transport failure while logical participation
@@ -1348,7 +1345,7 @@ recovery and composition details remain in [REVIEW.md](REVIEW.md).
 
 ### Composite Conduits
 
-**Accepted:** a reusable Conduit template can compose other Conduits. An Agent can declare one
+A reusable Conduit template can compose other Conduits. An Agent can declare one
 `euphony-access` connection that establishes repository and Linear components. The composite is
 itself a Conduit template/instance, while components retain distinct targets, authority and
 lifecycle. Opening versus joining remains explicit; template reuse does not silently share a
@@ -1359,7 +1356,7 @@ Composition must preserve caller attribution and restrictions at each component.
 combine provider identities or imply permission to use every component. Individual components
 remain inspectable.
 
-**Accepted participation boundary:** each consumer's composite attachment tracks its own
+**Participation boundary:** each consumer's composite attachment tracks its own
 participation in the components, making access, readiness and detach cleanup attributable to that
 consumer. A leaving releases A's participation through the composite and preserves B's participation
 and any independent attachments. Component Conduit instances, upstream clients and authentication
@@ -1404,7 +1401,7 @@ assume the Agent's loading instructions merely because it requested storage.
 
 ### Typed filters
 
-**Accepted:** Conduit filters normally use typed declarations with defined semantics, validated
+Conduit filters normally use typed declarations with defined semantics, validated
 and enforced by supporting plugins. Capability or constraint contracts define the meaning of
 restrictions such as permitted operations, paths, provider targets or control values. Configuration
 selects the restriction and its parameters; implementation code performs the checks.
@@ -1416,7 +1413,7 @@ expression operators and conformance tests remain open. Filters still only narro
 authority; unsupported restrictions must be reported rather than dropped. No additional v0
 agent-wide interception or sandbox guarantee follows from this declaration format.
 
-**Accepted composition:** every applicable restriction along the path used for a request must
+**Composition:** every applicable restriction along the path used for a request must
 pass. Composite and component filters apply together with current authority and target limits;
 a component cannot widen an enclosing restriction. Independent authorized paths remain complete
 alternatives. Preserve target, operation and parameter constraints together: read access to
@@ -1426,7 +1423,7 @@ unrelated connections or grant access through a Resource's internal dependencies
 Boolean alternatives within a filter, conflict diagnostics and evaluation implementation remain
 open; a policy engine may represent the rule without separate physical hops for each restriction.
 
-**Accepted routing (R4):** if a request has no route already selected, automatically resolve it
+**Routing:** if a request has no route already selected, automatically resolve it
 only when one eligible route remains. Several eligible routes require an explicit choice at
 attachment or invocation; that choice can be configured once and reused. Record the chosen path
 and service identity, retaining complete path constraints. Do not select by discovery order or
@@ -1441,7 +1438,7 @@ into visible grants. Agent limits and explicit exclusions constrain effective ac
 missing limits add no authority. Permitted operations require no extra confirmation merely
 because permission rules exist. Resource and communication permissions do not imply each other.
 
-**Accepted delegation boundary:** an authorized user or Agent may delegate an explicit subset of
+**Delegation boundary:** an authorized user or Agent may delegate an explicit subset of
 service access when establishing another consumer's Conduit attachment. The attachment records
 the delegation; no separate prior Agent-permission setup is required. The creator must have
 authority to delegate that access, subject to target policy and recipient limits. For example,
@@ -1450,7 +1447,7 @@ a user can connect a reviewer to shared Linear access with read-only authority i
 Keep requested access, the authorized delegation and any additional filters distinguishable.
 Authored configuration requests access; it does not issue its own grant. Filters only narrow
 granted authority. This adds no permission-registry object family and does not implicitly grant
-onward-delegation rights. **Accepted lifetime (R4):** the grant belongs to recipient logical
+onward-delegation rights. **Lifetime:** the grant belongs to recipient logical
 participation and survives the issuing frontend closing or coordinator execution stopping.
 Recipient detachment ends that attachment's access; temporary socket loss alone does not.
 Withdrawal and current governing restrictions continue to apply at dispatch and delivery.
@@ -1485,7 +1482,7 @@ MCP is the preferred external capability contract. Use standard tools, resources
 and supported extensions where applicable; native adapters address concrete runtime,
 account, lifecycle and non-MCP needs. Internal Rust modules need not be MCP servers.
 
-**Accepted catalog boundary:** an integration capability contract can define discovery and
+**Catalog boundary:** an integration capability contract can define discovery and
 invocation while concrete provider operations and their schemas are discovered dynamically.
 Conduit does not require its own contract definition for every Linear/MCP tool. The Agent sees
 permitted provider-native tools, not a mandatory generic invocation wrapper. Fixed operation
@@ -1495,7 +1492,7 @@ everywhere. Provider schemas remain part of validation rather than becoming unch
 Discovery does not grant authority or silently alter a running instance's control envelope.
 Current grants, Conduit filters and target constraints still govern exposure and dispatch.
 
-**Accepted v0 refresh boundary (R5):** discover permitted native tools during supported preparation
+**V0 refresh boundary:** discover permitted native tools during supported preparation
 and explicit refresh. Dynamic discovery does not require automatic replacement of the Agent's
 exposed catalog. A changed issue or document is service data, not necessarily a changed tool
 contract. A new name, changed schema or relevant service-configuration change can invalidate an

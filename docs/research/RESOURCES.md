@@ -14,7 +14,7 @@ contracts still need review; local-directory supports explicit attachment and cr
 its Pool in v0. Other types, consumer interfaces and extension governance remain open. An
 agent-communication group is a candidate for further design, alongside content and identity.
 
-Read alongside [DESIGN.md](../DESIGN.md#resources), [the review agenda](../REVIEW.md),
+Read alongside [DESIGN.md](../DESIGN.md#resources), [review outcomes](../REVIEW.md),
 [connection scenarios](CONDUITS.md) and [configuration research](CONFIGURATION.md).
 This investigation examined primary specifications/documentation, two research foundations and
 the existing pinned Pi checkout. It performed design walkthroughs, not provider integration
@@ -406,83 +406,23 @@ replace verified capability support. Pool mechanics should follow these tested c
 
 ### Template establishment and instance state
 
-**Accepted direction:** Resource templates contain establishment choices in their spec, including
-local-directory create versus attach. Across the five families, users should not need a separate
-operation-request recipe to supply missing setup behavior. An explicit lifecycle action triggers
-what the configuration declares. **Proposed details below:** exact config/status fields and what
-survives in the instance are not settled. The type contract defines semantics; the adapter
-implements them. Template YAML need not contain shell scripts or reproduce adapter code.
+The [current YAML packet](../../experiments/001-shared-access/README.md) supplies complete
+illustrative templates and resolved instances. Resource templates carry explicit create/attach
+intent; instances retain enough current configuration and fixed graph/runtime definitions for
+later starts and export. A status-only claim that backing was created cannot replace that recipe.
+No mandatory source-template snapshot or input/override ledger is needed.
 
-Consider this abbreviated template, using an absolute path to keep contextual resolution out
-of the example. The common apiVersion is omitted because its identifier remains undecided.
-
-```yaml
-kind: Resource
-form: template
-metadata:
-  name: euphony-folder
-spec:
-  type: {group: filesystem, name: local-directory, version: v1alpha1}
-  config:
-    path: /work/euphony/repo
-    establish: create
-```
-
-Selecting this template for establishment through Pool `euphony-development` is sufficient to
-choose creation; the caller does not also supply an action flag or request manifest. Selecting
-the owning Pool is still necessary. A different template, or an ordinary edit to the typed
-configuration before use, can declare `establish: attach`. No implicit create-or-adopt behavior
-is introduced. A complete reusable declaration can reference external inputs; completeness does
-not require embedding credentials, every dependency's contents, or a literal owning Pool.
-How Pool/context supplies declared values such as a relative-path base remains for review.
-
-The type contract must explain the transition, rather than treating it as a blind config copy:
-
-| Stage | Example responsibility |
+| Boundary | Consequence |
 | --- | --- |
-| Validate and resolve | Verify schema/authority/owner, apply declared defaults and resolve any relative path against its explicit base. Registration alone performs no native action. |
-| Establish | The directory adapter follows the declared create/attach intent. Fresh create conflicts with an existing target; attach fails when the directory is absent. |
-| Record the instance | Assign identity/Pool ownership, retain ongoing settings, and report the actual establishment outcome and readiness. Failed/pending outcomes remain visible. |
-| Use and prepare consumers | Agents receive their own prepared paths through Conduits. This does not repeat backing creation or register another Resource per symlink. |
+| Register versus establish | Validate configuration/owner and materialize instance defaults without performing native effects. Explicit setup then follows the declared intent. |
+| Create versus attach | Fresh create conflicts with an existing target; attach fails if the target is absent. Retry reconciles recorded effects rather than guessing from the path name. |
+| Instance versus projection | Agents prepare local views through Conduits; a symlink does not become another Resource or establish filesystem isolation. |
+| Export versus resume | Export retained configuration, not runtime readiness, grants or credentials. Reimport requires a new identity and explicit backing intent. |
+| Configuration versus data | A permitted setting change does not authorize recreating missing backing or replaying creation. |
 
-One candidate inspection result after success is:
-
-```yaml
-# Abbreviated inspection, not authorable status or an approved schema.
-kind: Resource
-form: instance
-metadata:
-  name: euphony-folder-7f3a
-spec:
-  type: {group: filesystem, name: local-directory, version: v1alpha1}
-  config:
-    path: /work/euphony/repo
-status:
-  establishment: {outcome: created}
-  readiness: ready
-```
-
-The owning Pool and stable ID also exist, but their field layout is omitted. Here the action is
-consumed during establishment and its result is reported. An alternative retains the selected
-mode as immutable establishment configuration on the instance. Both keep intent in the template;
-review which information is necessary for recovery/export without a mandatory full template
-snapshot or override history. Instance spec remains usable configuration, not an editable claim
-that the external effect succeeded. Status fields are system-owned and excluded from config writes.
-
-Reattempting incomplete establishment is different from instantiating another Resource. Internal
-operation identities/outcomes prevent unsafe blind retries without making users author a request
-language. After a directory has been established, losing it does not by itself authorize recreating
-it. Updating instance settings also does not silently replay creation. Exact failure-state retention,
-recovery and permitted instance transitions still require decisions.
-
-Two useful design tests follow. First, an exported instance lacking create/attach intent cannot
-promise to be a complete setup recipe: define an explicit conversion to establishment configuration,
-or retain enough declared intent, rather than guessing. Second, a template can be comprehensive
-without being a universal workflow engine. The [establishment investigation](ESTABLISHMENT.md)
-tests that boundary against subscription login, corpus indexing and password-manager access:
-typed dependencies/results and recoverable stages are needed even if provider procedures live
-in code. [Configuration research](CONFIGURATION.md#establishment-in-configuration) compares
-Compose, Docker's lifecycle boundaries and Kubernetes before selecting extra syntax.
+The [establishment investigation](ESTABLISHMENT.md) tests these boundaries against authentication,
+vector databases and filesystems. Template completeness means explicit contracts/dependencies;
+it does not require embedding credentials or reproducing provider code in YAML.
 
 ### Type reference and extension identity
 
@@ -546,7 +486,7 @@ implementation direction. Built-ins can use the same contract boundary as extern
 Whether handlers are built into the binary, processes, MCP adapters or sandboxed modules remains
 open; this research does not choose an ABI or distribution system.
 
-## Evaluation and the next review
+## Evaluation cases
 
 The desk review classified the user's folder, communication, credential, AWS and Linear examples,
 then tested memory/search, native bundles and future devices/queues against the same boundaries.
@@ -567,24 +507,7 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-Use the [review outcomes](../REVIEW.md#review-outcomes) within R2's accepted
-finite-graph execution, R3's ownership/retirement and R6's configuration/implementation boundaries.
-The following are schema/example drafting tasks, not another sequence of product rulings:
-
-1. Use the accepted four groups and directory/worktree split for concrete type review; do not
-   repeat those rulings. Local-directory create/attach intent and absolute instance backing paths
-   are also settled, with establishment intent in the template spec. Review the typed transition,
-   outputs and recovery against the three complex establishment cases before finalizing export
-   or the simple directory's field layout; then cover Agent preparation/symlinks.
-2. Walk through directory, records, search and MCP contracts: configuration, operations,
-   dependencies, preparation and one failure each. Evaluate content and identity; express the
-   accepted retained-history capability as a Resource contract without assuming a closed set of
-   communication types or adding a special tracker concept.
-3. Draft the minimum shared consumer interfaces and exact bindings under R6's collision/implementation rules.
-4. Define remaining version/name grammar and connection declaration fields from those examples.
-5. Return to Pool grouping with enough information to derive useful behavior and minimize state.
-
-The initial implementation slice can be much smaller than this catalog: local directory access,
-one record-store contract, the search behavior needed for it, and MCP access, with native content
-activation as required by the experiment. A group can start with one supported type. Final scope
-and exact adapters remain a review choice, not a new implementation authorization.
+The [experiment packet](../../experiments/001-shared-access/README.md) is the current concrete
+schema review. Its fixture contracts demonstrate the boundaries without approving this entire
+candidate catalog or claiming provider compatibility. Further type work should be driven by a
+specific responsibility, capability and lifecycle example, including at least one failure case.

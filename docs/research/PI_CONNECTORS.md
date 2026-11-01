@@ -13,7 +13,7 @@ behavior; Conduit owns its Rust runtime and replaceable frontends.
 
 Read this report's recommendation, then [the configuration research](CONFIGURATION.md). The earlier
 [Pi investigation](PI_RUNTIME.md) remains the detailed source for Durable, frontend
-coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) groups the rulings.
+coupling, storage and ecosystem comparisons. [REVIEW.md](../REVIEW.md) records the settled direction and schema boundary.
 
 ## Recommendation
 
@@ -38,7 +38,7 @@ Use Kubernetes-shaped objects for configuration and Gateway API's distinction be
 reference, authority and observed attachment. Do not import a Kubernetes control plane,
 automatic agent restarts, or cascading deletion of Pool members.
 
-Two findings change the emphasis of the next review:
+Two findings constrain implementation:
 
 1. **MCP compatibility needs a versioned adapter.** The inspected Pi client implements
    the November 2025 lifecycle; the July 2026 standard substantially changes it. Copying
@@ -566,7 +566,7 @@ The next experiment should be specified in this order:
    the local evidence through the Interface and exercise pluggable export; no issue-management
    integration or specific broker is required.
 
-Next, draft the schema and acceptance examples in [REVIEW.md](../REVIEW.md#next-discussion).
+The [experiment packet](../../experiments/001-shared-access/README.md) now carries the schema and acceptance examples.
 R5 settles activation/refresh, R6 configuration/extension resolution, and R7 the first communication
 and Interface-observability slice. Broader research examples remain proposals; this report supplies
 evidence rather than a separate Pi review queue.

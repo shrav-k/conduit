@@ -587,9 +587,9 @@ This is a conceptual walkthrough, not final package names or graph syntax:
 | Plugin contributions | Authentication and MCP integration contracts with code or service bindings that implement them. They may be packaged together or separately. |
 | Offered capability | The MCP-access Resource supports discovery and invocation of provider-native tools through its declared integration. |
 | Relationship requirements | A reusable `review-access` definition combines permitted read operations, the selected workspace and a response-size bound. Every part must have endpoint support. |
-| Policy | Governs who may use or delegate access to this capability, including Agents and administering Interfaces. Detailed composition is under review. |
+| Policy | Authoritative application of requirements, such as a workspace restriction governing the Resource across Conduit paths. Uses the same requirement definitions and supporting plugins. |
 | Grant | Records the particular access actually issued to this Agent/participation; declaring `review-access` or sharing provider credentials does not issue it. |
-| Callable operations | Resolve the selected authentication binding, prepare a connection and inspect its supported catalog. Each is an operation export, not necessarily a whole plugin. |
+| Callable operations | Resolve authentication, prepare a connection and inspect its catalog. Grant administration is also an ordinary protected capability operation; requirements constrain the proposed grant. Each operation need not be a separate plugin. |
 | Setup graph | Orders those operations using their typed outputs and dependencies. Runtime startup, where needed during setup, remains instance-managed. |
 | Templates | A Pool template assembles the auth and MCP Resource entries; Resource/Agent templates select their implementations; a Conduit template declares the relationship and restrictions. |
 | Instances | The Pool owns the concrete Resources. Endpoints manage shared authentication/client state and local bindings. The Conduit retains the concrete relationship and participation. |
@@ -600,8 +600,9 @@ The setup graph does not run anew for every call, and its successful completion 
 authorization. Per-call work, ongoing services and connection participation retain their existing
 operation and instance lifetimes. The Interface exposes their correlated state and outcomes.
 
-The [Policy and Grant proposal](AUTHORIZATION.md) develops issuance, current authority and
-delegation through the same managed operations. A small plugin author does not need a separate IAM
+The [Policy and Grant contracts](AUTHORIZATION.md) define issuance, current authority and
+delegation through the same protected operations. Policy applies existing requirement contracts;
+there is no separate policy rule language or mandatory policy-plugin class. A small plugin author does not need a separate IAM
 server: its contract declares operations/requirement duties, while common runtime integration
 supplies trusted invocation context and the selected authority checks. Endpoint enforcement and
 attribution still need to be implemented wherever that plugin accepts responsibility.

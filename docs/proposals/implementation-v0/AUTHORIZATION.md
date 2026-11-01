@@ -1,10 +1,11 @@
 # Policy and Grant contracts
 
-Status: semantic proposal for I4 review, 2026-11-01. The user directed us to formalize Policy and
-Grant as essential concepts beneath the five object families, for Agents and Interfaces alike.
+Status: accepted semantic model with remaining I4 details, 2026-11-01. Policy and Grant are
+essential concepts beneath the five object families, for Agents and Interfaces alike.
 Independent policy, recorded participation grants and issuer-independent grant lifetime are
-accepted. This document develops their structure without selecting exact
-YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
+accepted. Policy is now the authoritative application of reusable requirements, and grant
+administration uses ordinary protected capabilities. This document develops that model without
+selecting exact YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
 the [design](../../DESIGN.md) retains accepted behavior and [I4](REVIEW.md#i4--local-transactional-authority)
 is the ruling queue. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
 
@@ -12,16 +13,16 @@ is the ruling queue. [Research](../../research/AUTHORIZATION.md) provides source
 
 | Concept | Responsibility | What it does not imply |
 | --- | --- | --- |
-| Policy | Authoritative rules governing access, administration and delegation for applicable actors/targets. | A running instance, a grant merely because a file was authored, or permission inferred from a model instruction. |
+| Policy | Authoritative application of reusable requirements to applicable actors, targets or relationships. | A separate executable rule category, permission language, running instance or grant merely because a file was authored. |
 | Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with its own participation lifetime and authorized administration. | A bearer secret, an OAuth token, a parent-dependent authority chain, or the union of unrelated access paths. |
 | Requirement | A reusable typed guarantee with applicability, timing and endpoint duties. Policies/grants can reuse applicable restrictions. | All requirements being authorization rules, or satisfying a restriction creating positive authority. |
 | Plugin | Contracts and implementation bindings for management, evaluation and enforcement operations. | Every plugin becoming an issuer or implementing its own permission server. |
-| Operation / graph | A callable action / composition of actions that may request access, delegate or invoke capabilities. | An executable declaration granting itself authority or freezing authorization for all later graph nodes. |
+| Operation / graph | A callable action / composition of actions, including protected grant administration and governing-binding changes. | An executable declaration granting itself authority or freezing authorization for all later graph nodes. |
 | Conduit | An instantiated relationship carrying concrete participation, routes, applicable requirements and access evidence. | Ownership of every governing policy or independent invention of permission. |
 
 Policy and Grant are protocol concepts with data/lifecycle contracts. They do not extend the five
-families or need their own template-to-running-instance hierarchy. Published definitions, authorized
-policy records and issued grants must remain distinguishable. Installing a plugin or expanding a
+families or need their own template-to-running-instance hierarchy. Published definitions, authoritative
+requirement bindings and issued grants must remain distinguishable. Installing a plugin or expanding a
 template can make definitions available and request access; it does not issue a grant.
 
 ## 2. One authorization model for managed actors
@@ -49,135 +50,109 @@ These distinctions need not become new registry objects or force every call to c
 identity chain. Exact principal representation, trusted claims and autonomous Interface identity
 remain to be reviewed. No actor can gain more rights by supplying an on-behalf-of claim.
 
-## 3. Proposed Policy structure
+## 3. Policy as authoritative requirement application
 
-This is a semantic field inventory, not final keys or a requirement for a new universal policy DSL.
+**Accepted model:** Policy means the authoritative application of reusable Requirement contracts.
+Grant administration is an ordinary protected capability governed by grants and requirements.
+There is no separate policy-rule language, grant-administration rule category or mandatory policy
+plugin process. This is a portable semantic boundary; exact data/wire schemas and engine choices
+remain open.
 
-| Part | Meaning |
+The model distinguishes reusable definitions, their application and issued authority:
+
+| Part | Responsibility |
 | --- | --- |
-| Identity and revision | Stable policy identity, checked update revision and interpretation/contract version. Names are descriptive. |
-| Governing authority and applicability | The authority responsible for the record and the actors, targets, capabilities or relationships it governs. Pool ownership alone does not grant access. |
-| Access and administration rules | What authority may be issued and how its use is governed. Ordinary managed access requires a recorded participation grant; a direct policy permit alone is insufficient. |
-| Typed conditions/requirements | Versioned references with validated parameters, applicability and needed facts. Reuse compatible requirement contracts rather than duplicate workspace/path semantics. |
-| Delegation boundary | What authority may be issued, to whom, over which targets, and whether further delegation is possible. |
-| Provenance and current validity | Who authorized the change, operation/evidence references and the current authoritative revision/availability. A package source is not an authority. |
+| Requirement definition/composition | Versioned meaning, typed parameters, applicability, support and enforcement duties. Composition retains each constituent's guarantees. |
+| Governing requirement binding | Authoritative state recording what requirements apply to which actors, targets or relationships. Policy names this governed application; it remains independent of the administering Interface. |
+| Relationship requirements | Requirements on a particular Conduit and its use. They may narrow access or require behavior without granting authority or becoming global restrictions. |
+| Grant | Actual issued authority on a participant's selected path, with its own access extent and lifetime. |
+| Administrative capability | Operations to administer grants and governing requirement bindings, protected by the same grant/requirement model as other operations. |
 
-Policy changes are managed state changes, separate from editing a fixed instance definition.
-The governing service must authorize and check updates. A change may affect later managed requests
-under the accepted live-restriction rules. It cannot silently install a new evaluator, replace an
-endpoint plugin or drop a requirement the current path cannot enforce.
+An administrator may apply a workspace restriction to a Resource, while a Conduit adds a smaller
+result bound. The same requirement definitions and selected supporting implementations can serve
+both. A template that requests or composes requirements does not activate governing rules or
+issue itself a grant. Installing a plugin also supplies no authority.
 
-The decision must include every applicable governing restriction. A policy on one selected path
-does not automatically become global; actor-wide/target-wide limits apply according to their
-declared applicability. Policy aggregation/effect syntax remains open. We should not inherit
-additive RBAC, ordered-rule evaluation or an engine's error behavior merely by selecting a library.
+### Governing state and composition
 
-### Policy and Requirement reuse — proposed refinement
+Independent policy state remains necessary even without a separate rule language. The responsible
+authority must retain current bindings and coordinate checked changes. An authorized Interface or
+Agent administers that state through its permitted capabilities; it does not own the state merely
+because it requested the change. Replacing an Interface does not reset it.
 
-The user requested further unification and examples across the alternatives. No choice in this
-comparison is accepted yet. The separate Policy field inventory above is one possible representation;
-it is not a requirement to add a separate rule language or duplicate requirement machinery.
+All applicable requirements must hold at their declared enforcement points. Actor-wide and
+target-wide restrictions apply wherever their declared applicability requires; Conduit-local
+restrictions remain local to that path. Separate authorized paths stay complete alternatives, and
+operation/target/parameter bounds cannot be combined across paths to fabricate broader access.
+Known-conflict/combined-effect checks are optional; there is no required general solver. A required
+check that cannot be established blocks the affected behavior. These are existing accepted rules,
+not a new policy-specific precedence system.
 
-#### Three degrees of combination
+A policy change can affect subsequent managed requests under the accepted live-restriction rules.
+It cannot silently install an evaluator, replace endpoint code or drop unsupported requirements.
+The exact applicability/binding schema, management operation granularity and retained versions
+remain for review. No automatic Pool inheritance, generic label selectors or separate
+permit/deny/exception language is introduced. A proposed binding inventory is:
 
-| Approach | What authors provide | Distinction and tradeoff |
-| --- | --- | --- |
-| A — Separate policy language | Policy rules for actor/action/target authorization and administration, alongside relationship requirements. | Gives policy its own expressiveness and evaluator contract, but requires integration with Conduit's grants, requirement meanings and enforcement. A direct policy permit still cannot replace the accepted grant requirement. |
-| B — Policy composes requirements | An explicit Policy record applies reusable requirements and also has grant-administration rules. | Shares constraints/plugins while retaining a separate policy rule structure. This is the previous recommendation; the remaining administration language may duplicate capability permissions. |
-| C — Policy describes authoritative requirement application | Requirement definitions/compositions, their authorized application to targets or relationships, and ordinary grants for administration capabilities. | Grant administration becomes a protected operation governed by requirements, rather than a separate permission-rule language. Policy remains a useful name/view for governing requirements, without a separate executable definition category. |
+| Concern | Meaning, with exact fields still open |
+| --- | --- |
+| Authoritative identity/revision | Identify the managed state and protect checked changes; the unit of binding updates is not selected here. |
+| Applicability | Explicit actors, targets, capabilities, relationships or operations to which the binding applies. |
+| Requirement references and values | Known versioned definitions/compositions with validated parameters and declared context support. |
+| Current availability and operation evidence | Resolve current authority and report checked management outcomes without a grant-ancestry dependency. |
 
-Recommend exploring C as the smaller conceptual model. It retains independent authoritative policy
-state: someone must record which requirements apply where, with current revision and checked
-changes, independently of any administering Interface. It removes neither that state nor mandatory
-authorization. Whether those bindings share a public record shape, and how they are persisted,
-remain open. If the binding format later grows separate permit/deny/exception logic, that would
-introduce a policy language again and requires an explicit decision.
+### Grant administration uses ordinary capabilities
 
-#### Example 1 — Shared Linear access and grant administration
+The administrator needs a recorded grant permitting the requested administration operation.
+Applicable requirements constrain that operation's proposed effect: which target/recipient may
+receive a grant, which operations and parameter bounds it may contain, and whether it may include
+further administrative access. Read access to a service alone does not grant administration.
 
-Euphony Pool owns an authenticated Linear Resource. Coordinator A may arrange read access for
-Worker B. These are semantic examples for managed calls; operation names and schemas are illustrative.
+Issuance, changes and revocation all check current authority. A successful issuance records the
+recipient's own grant. That grant does not depend on the issuer's later rights, execution or
+participation. Another currently authorized administrator can revoke it. The accepted initial
+owner authority still needs a startup contract; presenting an arbitrary grant-issuance plugin
+cannot establish root authority.
 
-- **A:** a policy rule states which coordinators may issue which grants. A separate relationship
-  requirement describes the workspace restriction. Both must agree with the recorded management
-  grant and recipient grant; neither rule is itself a grant.
-- **B:** a Policy applies the reusable `review-access` requirement composition and contains an
-  administration clause allowing the authorized coordinator to issue access within that boundary.
-- **C:** A receives a grant to invoke the management capability's grant-issuance operation. Its
-  permitted use is constrained by requirements over the proposed grant: the target must be the
-  selected Linear Resource, the issued operations must be within the permitted read set, the
-  workspace must be Euphony, and recipient/administration rights must satisfy the declared bounds.
-  Issuance therefore uses the same capability/grant/requirement model as other protected operations.
+**Context support matters:** checking a provider request and checking a proposed grant's permitted
+extent are different tasks. Shared requirement definitions do not make a per-request checker a
+general subset prover. Implementations must support the relevant use; unverifiable bounds cannot
+be assumed satisfied. Exact custom-bound validation contracts remain open.
 
-In C, successfully checked issuance records B's own read grant on B's Conduit participation. An
-additional Resource-level workspace requirement applies to relevant calls on any authorized path
-to that Resource; the Conduit can add a smaller result bound. The same supported workspace meaning
-is reused. A subsequently losing its administration rights does not revoke B's grant. Another
-authorized administrator can revoke B through the corresponding protected operation.
+### Concrete examples
 
-#### Example 2 — A managed deployment capability
+**Shared Linear access:** Euphony Pool owns an authenticated Linear Resource. Coordinator A has
+a grant for the management capability's grant-issuance operation, constrained to selected recipients,
+that Resource, permitted read operations and Euphony workspace access. A requests Worker B's access;
+the administration operation checks these requirements and records B's grant on B's participation.
+B's provider calls require that grant and all applicable governing/Conduit requirements. A later
+losing its administration rights does not revoke B. Another authorized administrator can revoke B
+through the corresponding protected capability. Native provider operation names remain intact.
 
-A deployment Resource supports a typed region argument. An administrator restricts its managed
-deployments to two named regions; one Agent's Conduit further restricts its own use to one of them.
+**Managed deployments:** an administrator applies an allowed-region requirement to a deployment
+Resource, permitting two regions. One Agent's Conduit narrows that to one. The Agent needs a
+deployment grant, and the selected endpoint enforces both requirements before the managed effect.
+Another Conduit cannot bypass the Resource-wide restriction. This does not imply automatic Pool
+inheritance or interception of arbitrary native CLI calls.
 
-- **A:** the governing restriction lives in policy rules, while the relationship restriction lives
-  in requirement configuration; the integration must preserve both meanings.
-- **B:** Policy and Conduit each reference the same allowed-region requirement contract.
-- **C:** an authorized requirement binding on the deployment Resource supplies the governing rule;
-  the Conduit supplies another binding of that same contract. The Agent also needs its deployment
-  grant. Both restrictions apply on the chosen path, so that Agent can use only the remaining region.
+**Retained messages:** a Pool-owned exchange Resource supplies shared append-only history.
+Participants have read/post grants. Their Conduit requires retained delivery and bounded catch-up.
+Access restrictions and delivery guarantees use common typed requirement machinery with different
+duties: plugins check permissions and also provide the promised persistence/delivery behavior.
+Successful boolean evaluation alone cannot supply that behavior.
 
-This also shows why composition location matters: requirements local to one Conduit do not become
-global. A target-wide rule cannot be bypassed by choosing a different Conduit. No automatic Pool
-inheritance is introduced by this example, nor does it claim interception of arbitrary native CLI
-commands. Region checks do not need a general policy engine merely because an administrator
-applied them, but the designated endpoint must enforce them before the managed provider effect.
+### Common extension machinery
 
-#### Example 3 — Retained Agent messages
+One plugin package can publish requirement definitions, compositions, evaluation operations and
+endpoint enforcement support. Separate implementations may support the same versioned meaning.
+There is no required policy-specific package, Resource per rule or process per check. Policies,
+grant bounds and Conduit filters reuse applicable contracts rather than duplicate their schemas.
 
-A Pool-owned exchange Resource supplies shared append-only history. Participants have recorded
-read/post grants, and their Conduit requires retained delivery and bounded catch-up.
-
-- **A:** policy handles access; separate requirement support supplies history/delivery guarantees.
-- **B:** a Policy may apply access requirements, while the same requirement machinery also supports
-  connection behavior outside the policy rules.
-- **C:** authoritative access restrictions and relationship delivery guarantees use common typed
-  requirement contracts with different duties. Grants still identify who may read/post; the
-  exchange implementation actually persists messages and fulfills catch-up behavior.
-
-The third example prevents reducing every requirement to an authorization predicate. Retention is
-behavior to provide, not merely a boolean permission decision. The common mechanism describes
-meaning, parameters, support and obligations; implementations may check facts, restrict operations
-or provide ongoing behavior as their contracts require.
-
-**One extension mechanism:** a plugin package can publish the requirement definitions, reusable
-compositions, evaluation operations and endpoint enforcement support together. The same supported
-project check can serve a policy restriction, a grant's access extent and a Conduit filter; authors
-need not redefine it for each. This does not mandate separate policy/requirement plugins, services
-or processes. Independent implementations can still support the same versioned meaning.
-
-**Contexts remain explicit:** checking a concrete provider request and verifying that a proposed
-grant stays within an administration boundary are different tasks. Shared definitions do not
-make a per-request checker a general subset prover. Support for each use must be declared and
-verified; unsupported checks cannot be assumed successful. Exact administration-bound checks
-remain a subsequent ruling, without requiring a universal solver.
-
-**Evaluation and fulfillment remain distinct:** a plugin may decide whether an operation's
-actual target satisfies a restriction; the endpoint must still prevent disallowed dispatch.
-A result bound must be fulfilled before delivery, while retained-history guarantees need ongoing
-Resource behavior. The same plugin can do both evaluation and enforcement, but a successful
-boolean check alone cannot provide those effects. Plugins retain their declared endpoint duties.
-
-Under C, Policy describes the authoritative use of requirements rather than another kind of
-executable rule. A requirement definition/composition is reusable material; its governed application
-is checked managed state; a grant records issued permission. An arbitrary template cannot activate
-governing rules or grant itself authority merely by including them. Baseline authorization and grant
-checks cannot be omitted as optional graph nodes. Changing governing bindings remains an authorized
-checked operation; relationship configuration retains its supported-control/fixed-definition rules.
-
-The next ruling is whether to adopt C or retain B's explicit Policy structure. Exact representation,
-contract identifiers, engine, applicability/composition rules and management capability placement
-remain separate questions. No accepted policy independence or grant-lifetime rule is removed.
+The operation handler and responsible endpoint still fulfill their declared duties: reject a
+forbidden dispatch, enforce a result bound before delivery, or retain message history. Graphs can
+invoke supporting operations but cannot omit baseline authorization or turn a setup-time check
+into lasting permission. Relationship changes retain their supported-control/fixed-definition
+rules; governing bindings use authorized checked management operations.
 
 ## 4. Proposed Grant structure
 
@@ -189,7 +164,7 @@ remain separate questions. No accepted policy independence or grant-lifetime rul
 | Participation/path binding | The logical attachment or other declared authorization context in which the grant may be exercised. Service-access grants already follow recipient participation. |
 | Administration evidence | A link to normal operation evidence where retained; no separate grant-provenance chain is required for authorization. |
 | Current governing restrictions | Applicable policy and requirements constrain use independently of the grant's issuer/history; this is not a parent-grant dependency. |
-| Grant-administration bounds | Whether and how the recipient may administer further grants. Ordinary use does not imply authority to issue them. |
+| Administrative operation bounds, where applicable | For a grant permitting administrative operations, requirements constrain proposed grants/bindings. Ordinary service-use permission does not imply administration; no separate delegation-rule language is introduced. |
 | Lifetime and disposition | Applicable start/end conditions and withdrawal information. Participation ending differs from a transport outage. No mandatory expiry interval is selected here. |
 
 Issuance is an authorized operation, not an authored object being trusted on import. The initial
@@ -277,10 +252,19 @@ native context. Runtime supervision can continue while new requests wait for cur
 ## 6. Resource, plugin, graph and MCP placement
 
 **Proposed placement:** a Pool-owned authorization-management capability exposes policy/grant
-inspection and authorized changes. It may initially be part of the existing system management
-Resource, or a separate Resource if its responsibility/lifecycle warrants that boundary. This
-placement remains a ruling; either way, policy remains independent of its administrative Interface.
-One capability can manage many records; the designated service/store owns authoritative facts.
+inspection and authorized changes. The next ruling compares two ways to host it:
+
+| Placement | Concrete responsibilities | Tradeoff |
+| --- | --- | --- |
+| Dedicated Resource in the system Pool | Existing system management handles templates/registration/creation; an access-management Resource exposes grant and governing-binding administration/inspection. | Preserves unitary Resource responsibilities and a separately addressable capability, with one additional foundational Resource/connection to establish. |
+| Existing system management Resource | The same Resource exposes registry/lifecycle and grant/governing-binding operations. | Fewer foundational objects, but its contract combines administrative responsibilities that may later need separation. |
+
+Recommend the dedicated Resource, consistent with the unitary-Resource direction. Both can run in
+one management process and use the same selected internal storage implementation; neither requires
+a new process/database, a Resource per rule or sending every provider call through that Resource.
+Endpoint enforcement and shared management authority remain as accepted. Placement is not yet
+ruled; either way, policy remains independent of its administrative Interface, and one capability
+manages many records. The designated service/store retains authoritative facts.
 
 The initial trusted authority must be selected by the system's establishment contract. An arbitrary
 Resource advertising policy evaluation cannot approve its own use or confer root authority.
@@ -292,14 +276,15 @@ Proposed operation responsibilities, with names deferred:
 
 | Surface | Responsibilities |
 | --- | --- |
-| Administration | Inspect policy/grants, submit checked policy changes, issue/narrow/withdraw grants and inspect their outcomes. |
+| Administration | Inspect governing requirement bindings/grants, submit checked binding changes, issue/narrow/withdraw grants and inspect their outcomes. These are ordinary protected capability operations. |
 | Evaluation | Resolve current authoritative access facts for a concrete request and return the typed decision/evidence. |
 | Enforcement | Bind authenticated identity/path, apply declared checks at dispatch/delivery and record outcomes. |
 | Observation | Explain current grants, governing restrictions, failed checks and incomplete coverage through the Interface. |
 
 An ordinary operation plugin author declares operations and requirement duties and consumes trusted
-invocation context; the runtime supplies common authorization plumbing. A policy plugin implements
-a specific decision/management contract when selected. Graphs call operations with current authority
+invocation context; the runtime supplies common authorization plumbing. Selected plugins implement
+the requirement checks and protected management operations; no separate policy-plugin class is needed.
+Graphs call operations with current authority
 at each applicable step; a successful setup node is not a lasting blanket authorization.
 
 MCP remains the invocation/discovery base. The Conduit profile carries the managed context needed
@@ -341,21 +326,26 @@ operation. Issued grants have no live dependency on issuer history/permissions. 
 withdrawal and recipient participation/Conduit lifetime govern their access, subject to current
 policy/requirements. No separate ancestry record is required.
 
-1. **Policy/Requirement relationship:** review the [three approaches and examples](#policy-and-requirement-reuse--proposed-refinement).
-   Explore Policy as authoritative requirement application, with grant administration governed
-   through ordinary protected capability operations (C), versus a separate Policy rule structure
-   that reuses requirements (B). No choice is accepted; syntax and implementation remain separate.
-2. **Policy composition and failure:** define applicability, rule interaction, incomplete information
-   and trustworthy decision inputs under existing whole-path restrictions. Administration boundaries
-   for custom constraints need defined checks; a general solver is not assumed.
-3. **Placement and persistence:** settle the management Resource capability, first authority and
-   startup/repair boundary, then storage interface/engine. The root-owner initial grant is a
-   concrete initialization problem, not permission for runtime self-granting.
+**Accepted consolidation:** Policy is the [authoritative application of requirements](#3-policy-as-authoritative-requirement-application).
+Grant administration uses ordinary protected capabilities. Existing composition, mandatory-check
+and complete-path rules apply without a second policy language or grant-administration rule category.
+
+1. **Management capability placement:** should a dedicated access-management Resource in the system
+   Pool expose grants and governing requirement bindings, or should the existing system management
+   Resource also carry that responsibility? Recommend the dedicated Resource to preserve unitary
+   responsibilities. Both can run within the same management service; neither requires a service
+   per rule or moving endpoint enforcement into a central proxy.
+2. **Remaining applicability/administration contracts:** specify binding targets and supported checks
+   on proposed grant bounds. Current required checks and path composition are already settled;
+   custom bound validation does not assume a universal solver.
+3. **Startup and persistence:** settle first authority, establishment/repair, then the storage
+   interface/engine. The root-owner initial grant is a concrete initialization problem, not
+   permission for runtime self-granting.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract
-types and activating authoritative policy remain different operations. No Cedar/OPA/token engine
-or public policy-programming language is selected by this proposal.
+types and activating governing requirement bindings remain different operations. There is no
+separate public policy-programming language; no Cedar/OPA/token engine is selected.
 
 Candidate additions to Experiment 002, pending scope review:
 

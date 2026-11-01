@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Policy/Grant contracts and foundational storage, then engine | Independent policy, recorded participation grants and issuer-independent lifetime accepted. Next public policy contract/composition and hosting before startup/storage. |
+| I4 | Requirement application, grant management and foundational storage | Policy as authoritative requirements, ordinary protected grant administration, recorded participation grants and issuer-independent lifetime accepted. Next capability placement, binding/custom-bound details and startup/storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -448,19 +448,22 @@ recipient participation/the related Conduit ends that access. Current governing 
 requirements remain effective. Normal operation attribution is evidence, not a required ancestry
 chain or live access dependency. The proposed administrative/derived lifetime distinction is removed.
 
+**Policy/Requirement consolidation is accepted:** [Policy is authoritative requirement application](AUTHORIZATION.md#3-policy-as-authoritative-requirement-application).
+Grant administration and governing-binding changes are ordinary protected capabilities using
+recorded grants and requirements, without a separate policy language or special administration
+rule category. Governing bindings remain independent managed state. Existing all-applicable checks,
+complete-path alternatives and mandatory-check failure behavior are settled and carry forward.
+
 **Next conceptual choices, in order:**
 
-1. Compare [three Policy/Requirement approaches](AUTHORIZATION.md#policy-and-requirement-reuse--proposed-refinement)
-   through shared Linear access, deployment restrictions and retained messages. The user requested
-   further combination rather than accepting the prior proposal. Consider Policy as authoritative
-   requirement application, with grant administration using ordinary protected capability operations
-   (C), versus an explicit Policy structure reusing requirements (B). Independent governed state,
-   mandatory grants and their accepted lifetime remain in both. Syntax, engine and storage stay open.
-2. How do applicable policy rules, current grants and typed restrictions combine, including errors
-   and administration bounds for custom restrictions? Preserve complete-path alternatives and
-   required checks without assuming a general subset solver.
-3. Which Pool-owned management capability exposes policy/grant operations, and how is its trusted
-   initial authority established, persisted and repaired?
+1. Should grants and governing requirement bindings be managed through a dedicated Resource in the
+   system Pool, or through the existing system management Resource? Recommend the dedicated Resource
+   for unitary responsibility. Both may run inside the same management service; this adds no required
+   process, database or central proxy for endpoint enforcement.
+2. Define remaining binding applicability and supported checks on proposed grant bounds, without
+   reopening the accepted composition rules or assuming a general subset solver. Exact schema is I7.
+3. Establish first trusted authority and startup/repair, then choose the internal storage boundary
+   and engine. The active Interface's directives do not establish their own authority.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,

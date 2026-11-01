@@ -79,9 +79,11 @@ The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md) and
 required for ordinary managed access, including root management; policy governs issuance/current
 use. Issued grants are now independent of issuer provenance/permissions: administration checks
 current authority, with explicit withdrawal or recipient participation/Conduit end governing
-access lifetime. There are no parent-grant cascades. I4 next reviews policy contracts/composition
-and management capability placement. Detailed
-schemas, expanded Interface lifecycle, foundational storage and engine remain under discussion.
+access lifetime. There are no parent-grant cascades. The Policy/Requirement consolidation is now
+accepted: Policy is authoritative requirement application, and grant administration uses ordinary
+protected capabilities. Existing requirement composition and current-grant checks apply without
+a separate policy language. I4 next reviews management capability placement, remaining binding and
+grant-bound checks, then startup/repair and storage. Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

@@ -102,24 +102,30 @@ A reused readable name does not restore an old identity or authority. Historical
 intact. The Euphony-only administrator example illustrates later differentiated Interface access;
 it does not narrow today's broad owner-operated v0 administration.
 
-#### Policy representation — proposed
+#### Policy as authoritative requirement application
 
 Policy and Grant are now explicitly part of the protocol concepts beneath the five families,
-covering Agents and Interfaces. They are not optional Interface-administration helpers. Policies
-govern access/administration/delegation; grants record particular issued authority. Requirements
-supply reusable guarantees and restrictions; endpoint-selected plugins implement operations and
-enforcement, while Conduits retain the selected relationships and participation.
+covering Agents and Interfaces. Policy is the authoritative application of reusable requirements;
+grants record particular issued authority. Grant administration and governing-binding changes are
+ordinary protected capability operations, with grants permitting them and requirements bounding
+their proposed effects. The same requirement composition/support machinery applies without a
+separate policy language or mandatory evaluator process. Endpoint-selected plugins implement
+operations and enforcement, while Conduits retain relationships and participation.
 
-The [authorization proposal](AUTHORIZATION.md) is the detailed structure for review, backed by
-[primary-source research](../../research/AUTHORIZATION.md). It distinguishes policy/grant data,
-actor/principal/provider identities, decision inputs/results, delegation dependencies, and evidence
-of actual endpoint enforcement. It also applies to Resource-to-Resource calls and capabilities
-on all five families; a protected target need not be a Resource.
+The [authorization contracts](AUTHORIZATION.md) develop this accepted model and remaining details,
+backed by [primary-source research](../../research/AUTHORIZATION.md). They distinguish governing
+requirement bindings and grants, actor/principal/provider identities, decision inputs/results,
+and actual endpoint enforcement. They also apply to Resource-to-Resource calls and capabilities
+on all five families; a protected target need not be a Resource. Governing bindings remain independent
+authoritative state even though they no longer require a separate policy-rule structure.
 
 A Pool-owned management Resource remains the proposed way to expose policy/grant administration
-and evaluation, potentially using the existing system management Resource. One capability may
-manage many records. The exact hosting boundary, schemas and evaluator are not selected by naming
-these concepts. Authorization records do not inherit ordinary knowledge-sharing semantics.
+and evaluation. The next choice is a dedicated access-management Resource in the system Pool versus
+including those capabilities in the existing system management Resource. A dedicated Resource is
+recommended for unitary responsibility; either can be hosted by the same management service and
+one capability can manage many records. This does not move every requirement check into a central
+proxy. Exact hosting, schemas and evaluator remain unruled. Authorization records do not inherit
+ordinary knowledge-sharing semantics.
 Publishing a policy or installing a plugin cannot confer authority.
 
 Ordinary managed access now requires a recorded grant on its selected participation, including
@@ -127,8 +133,8 @@ the root's broad management access. Policy governs issuance/current use without 
 alternative; authorized connection setup can establish one grant for many requests. Grant
 administration now checks current administrator authority, while issued grants remain independent
 of issuer provenance, permissions and grant ancestry. Any authorized administrator can revoke them;
-recipient participation/Conduit end also ends access. Next settle policy contracts/composition and
-foundational persistence/engine selection. The trusted authority and first
+recipient participation/Conduit end also ends access. Next settle capability placement, remaining
+binding/custom-bound contracts and foundational persistence/engine selection. The trusted authority and first
 owner grant still need an explicit startup/repair contract; a Resource wrapper alone does not
 resolve that dependency.
 

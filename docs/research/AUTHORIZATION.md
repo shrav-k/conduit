@@ -8,6 +8,10 @@ including root management; policy governs issuance/current use without a grantle
 The user also selected issuer-independent grant lifetime: check authority when administering a
 grant; do not preserve live parent-grant/provenance dependencies. Authorized withdrawal and the
 recipient's related participation/Conduit lifetime remain effective alongside current restrictions.
+The user has now accepted the consolidated model: Policy is authoritative requirement application,
+and grant administration uses ordinary protected capabilities governed by grants and requirements.
+This reuses Conduit's contract/plugin machinery without a separate policy-rule language. Governing
+bindings remain independent authoritative state; it does not remove access checks or select an engine.
 The detailed structures in the [authorization proposal](../proposals/implementation-v0/AUTHORIZATION.md)
 remain for joint review. This report supplies evidence, not additional rulings.
 
@@ -24,7 +28,7 @@ access and management operations. An Interface is not the sole place where permi
 
 Keep four distinctions:
 
-- A policy states authoritative access/delegation rules.
+- Policy names authoritative application of requirements; grant administration is a protected capability.
 - A grant records particular authority issued to a subject, under applicable rules.
 - A requirement defines a guarantee that a relationship/use must satisfy, including restrictions.
 - A Resource can expose management/evaluation capabilities; plugins implement those capabilities.
@@ -142,29 +146,30 @@ record, not an OAuth grant type, access token, MCP session ID or reusable decisi
 
 The protocol work should specify one model for Agents, Interfaces and other managed callers:
 
-1. Typed Policy and Grant contracts, with stable identity/revision and distinct authorization roles.
+1. Typed governing requirement bindings and Grant contracts, with checked updates and distinct authorization roles.
 2. A normalized request identifying actor, target, operation, selected path and relevant context.
 3. A decision/evidence contract distinguishing verified permission, refusal and inability to verify.
 4. Administrative operations for inspecting/changing policy and issuing/withdrawing grants.
 5. Current administrative authority/bounds, independent issued grants and authorized revocation.
 6. Enforcement responsibilities on endpoints, retaining the requirement contracts already accepted.
 
-These are semantic responsibilities. The companion proposal supplies a concrete starting structure;
-the user has not yet selected all fields, combining algorithms, representation or engine. Policies
-and grants belong in the protocol's working vocabulary now, rather than being optional helpers.
+These are semantic responsibilities. The companion contracts now record the accepted consolidation
+and remaining details. Existing conjunctive requirement checks and complete-path alternatives
+carry forward; exact binding fields, custom grant-bound validation, representation and engine remain
+open. Policy is not a new language or executable category. Grants still record actual authority.
 
 No implication follows that a small plugin author must implement an IAM server. Authors should
 declare capability operations and supported requirement contracts, receive trusted invocation
-context through the runtime, and enforce the duties they explicitly support. Policy evaluation
-and grant management can be shared implementations under the same published contracts.
+context through the runtime, and enforce the duties they explicitly support. Requirement evaluation
+and protected grant management can share implementations under the same published contracts.
 
 ## 4. Implementation options and limits
 
 | Option | Why investigate it | What it does not settle |
 | --- | --- | --- |
 | Small built-in evaluator for initial typed grants/restrictions | Directly exercises the intended contract with a small fixture. | Designing all semantics remains our responsibility; it is not evidence of general policy-language correctness. |
-| Cedar behind an evaluation boundary | Existing Rust implementation and typed policy validation. | Required-error behavior, current-state acquisition, delegation lifecycle, Resource hosting and path composition need explicit adaptation. |
-| OPA integration | Established policy/data separation with flexible decision outputs. | A generic decision still needs Conduit's typed meaning, admission rules and trustworthy inputs. |
+| Cedar behind an evaluation boundary | Existing Rust implementation and typed policy validation. | An implementation option behind Conduit's accepted requirement/binding contract, not the public authoring language. Required-error behavior, freshness, Resource hosting and path composition need adaptation. |
+| OPA integration | Established policy/data separation with flexible decision outputs. | An optional implementation behind the accepted contract; a generic decision still needs Conduit's typed meaning, admission rules and trustworthy inputs. |
 | Biscuit or another capability credential | Potential future portable, attenuated credentials. | Current revocation, no-offline-grants compliance, service enrollment and audience binding remain necessary. |
 
 The [Cedar implementation](https://github.com/cedar-policy/cedar) is Rust, making it a relevant
@@ -183,10 +188,11 @@ Resolve these within I4 before the final I7 syntax pass:
 - Settled after the dependency examples: check current authority on grant administration; issued
   grants do not depend on issuer history/permissions. Another authorized administrator may revoke
   them; recipient participation/Conduit end also ends access. No ancestry structure is required.
-- Should the public policy contract be portable typed Conduit data with implementation plugins,
-  or primarily engine-native policy documents? This boundary is distinct from backend selection.
-- How are policy sets applied and conflicts/errors handled without dropping required restrictions
-  or mixing grants across paths? Which restrictions can be proven to narrow custom conditions?
+- Settled after consolidation: Policy is authoritative application of reusable requirements, with
+  grant administration expressed through ordinary protected capabilities. Independent governed
+  state remains; no separate policy-rule language or mandatory policy-plugin process is required.
+- Which exact binding targets and custom grant-bound checks should the initial contracts support?
+  Existing complete-path, all-applicable-requirements and mandatory-check rules already apply.
 - Which management Resource capability exposes these records, and how is its first trusted
   authority established and repaired? No wrapper resolves its own bootstrap dependency.
 

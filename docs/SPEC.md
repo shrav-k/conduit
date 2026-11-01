@@ -59,12 +59,15 @@ extension concepts beneath the five families, not additional object families. Th
 [concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) records the accepted temporary
 names and divisions; final terminology may change after conceptual review.
 
-Policy and Grant are also essential concepts beneath the five families. Policies govern access,
-administration and delegation; grants record particular issued authority. Both Agents and
-Interfaces use this authorization structure, with enforcement through their Conduit paths and
-selected endpoint implementations. Applicable requirement definitions supply reusable guarantees
-and restrictions without granting authority themselves. The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md)
-develops the contracts for review; their exact schemas, combining rules and engine remain open.
+Policy and Grant are also essential concepts beneath the five families. Policy is the authoritative
+application of reusable Requirement contracts; grants record particular issued authority. Grant
+administration and governing-binding changes are ordinary protected capability operations, with
+grants permitting them and requirements constraining their effects. No separate policy language,
+executable rule category or policy-plugin process is required. Both Agents and Interfaces use this
+structure through their Conduits and selected endpoint implementations. Governing bindings remain
+independent managed state; declaring or satisfying requirements does not itself grant access.
+The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop the accepted
+model and remaining schemas, applicability details, custom-bound checks and hosting decisions.
 
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate
@@ -114,8 +117,8 @@ an OS account does not grant managed access. Unrestricted administration still f
 lifecycle/control contracts and cannot rewrite fixed definitions in place.
 
 Ordinary managed access requires a recorded grant on the selected Conduit participation, including
-the root Interface's broad management access. Policies govern issuance and current use; a policy
-permit alone does not authorize grantless ordinary access. Authorized connection setup can establish
+the root Interface's broad management access. Governing requirements constrain issuance and current
+use; satisfying them does not authorize access without a grant. Authorized connection setup can establish
 the grant for many requests, without a separate user-written manifest or per-call token. Current
 policy, path restrictions and requirement checks still apply; retaining a grant is not offline authority.
 
@@ -129,7 +132,8 @@ Shared access policy is independent of any particular Interface's lifecycle. Mul
 Interfaces can administer it, with broad default administration for the owner-operated root.
 Replacing an Interface establishes valid administrative access without transferring policy
 ownership or recreating existing grants. Grant, recipient and target lifecycle rules still apply.
-Policy representation and its management/storage contracts remain under implementation review.
+The authoritative-requirement model is accepted; its exact binding representation and
+management/storage contracts remain under implementation review.
 
 ## Construction and runtime
 

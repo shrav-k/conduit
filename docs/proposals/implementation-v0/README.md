@@ -68,7 +68,7 @@ extension contracts, algorithms, libraries and the minimal requirement catalog r
 | [AUTHORING](AUTHORING.md) | Concrete author journeys, the accepted lightweight support direction and illustrative APIs. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Processes, ownership, persistence, scheduling, access, recovery, observability and concrete execution paths. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, plugin/worker contracts, graph interpretation, controls and MCP mappings. |
-| [AUTHORIZATION](AUTHORIZATION.md) | Policy/Grant structure for Agents and Interfaces, delegation, decisions, endpoint enforcement and pending I4 rulings. |
+| [AUTHORIZATION](AUTHORIZATION.md) | Accepted Policy-as-requirements model, protected grant administration, decisions/enforcement, and remaining I4 binding, hosting and startup rulings. |
 | [ORGANIZATION](ORGANIZATION.md) | Repository/crate boundaries, dependencies, implementation milestones, validation and maintenance. |
 | [REVIEW](REVIEW.md) | Seven grouped decisions with recommendations, alternatives and specific consequences. |
 

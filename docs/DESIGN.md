@@ -68,7 +68,7 @@ and schema pass should preserve these responsibilities rather than silently chan
 | Contract | An inspectable agreement about meaning, typed values and behavior. Operation, capability, type and requirement contracts describe different aspects of an extension. | Definitions reference other definitions rather than duplicating their meaning. A schema describes valid data; the behavioral contract also explains what it means. |
 | Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
 | Requirement | What must hold for a particular relationship or its use, with typed parameters and applicability. This can include compatibility or lifecycle obligations as well as restrictions. | A reusable definition can compose existing requirements. Every constituent retains its meaning and limits; support is checked against the constituents. |
-| Policy | Authoritative rules governing access, administration and delegation for applicable actors and targets. | May reuse applicable typed requirements for restrictions. Detailed rule composition and representation are under review; authoring a declaration does not activate authority. |
+| Policy | Authoritative application of reusable requirements to actors, targets or relationships. | Uses the same requirement definitions, composition and implementation support. Governing bindings are checked managed state; no separate policy language or executable rule category is required. |
 | Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with its own participation lifetime and authorized administration. | Issuance/changes require current administrative authority. Issued grants have no live dependency on their issuer or the issuer's grants; provenance is not an access condition. |
 | Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
 | Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
@@ -79,10 +79,12 @@ concepts here. Their authorization contracts must apply consistently to managed 
 controls and delegation, rather than only to Interface administration. Conduit paths and their
 selected endpoint implementations enforce the applicable authority and requirements. The root's
 broad default authority and Agents' explicit delegation remain different permissions within that
-structure. Other managed callers, including Resource-to-Resource access, retain their existing
-attribution/access obligations. Detailed structures, evaluation and delegation choices are proposed
-in [the authorization contracts](proposals/implementation-v0/AUTHORIZATION.md); adding these working
-terms does not settle every field, policy engine or Resource-hosting decision.
+structure. Grant issuance/change/revocation and governing-requirement changes are ordinary protected
+capability operations: the caller needs a grant permitting the operation, with requirements
+constraining its proposed effect. This avoids a separate grant-administration rule language.
+Other managed callers, including Resource-to-Resource access, retain their existing attribution
+obligations. The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) develop
+the accepted model and remaining binding, custom-bound-check and Resource-hosting details.
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
@@ -180,9 +182,11 @@ broad default administration. Replacing an Interface requires valid access to th
 not a transfer of policy ownership or recreation of grants. A new Interface cannot acquire the old
 one's authority merely by reusing its name. Existing recipient-participation, withdrawal and target
 lifecycle rules remain intact. Narrower per-Interface authority stays deferred for v0.
-The [authorization proposal](proposals/implementation-v0/AUTHORIZATION.md) formalizes Policy and
-Grant alongside requirements/plugins for all managed actors. Exact representation, management
-capability placement and evaluation semantics remain under review.
+The [authorization contracts](proposals/implementation-v0/AUTHORIZATION.md) formalize Policy as
+authoritative requirement application and Grant as issued authority for all managed actors.
+Management retains governing requirement bindings independently of the Interface that changed
+them. Exact representation, management capability placement and custom validation details remain
+under review.
 
 Keep one authoritative instance configuration. When a supported control confirms application,
 its responsible service records the confirmed settings, revision and outcome. Pending or uncertain
@@ -1780,6 +1784,21 @@ is supported. An authorized caller may deliberately choose another route, subjec
 checks and safe-outcome handling; this does not authorize replaying an uncertain write.
 
 ### Authority and current access
+
+**Policy uses the requirement model:** Policy is the authoritative application of reusable
+requirement definitions/compositions. It records where guarantees and restrictions govern actors,
+targets or relationships; it is not a separate executable rule category. The same supported
+requirement can constrain a Resource, a Conduit or a proposed grant where its contract supports
+that context. Plugins implement the checks and behavior, without a separate policy-plugin class.
+Governing bindings are independent managed state with authorized checked changes. Template
+declarations, installed plugins and satisfied requirements do not themselves issue authority.
+
+Grant administration is an ordinary protected capability. For example, a coordinator's management
+grant permits issuance, while requirements limit the proposed recipient grant's targets, operations
+and parameters. Checking concrete use and checking proposed grant bounds need their own supported
+contracts; no universal subset solver is assumed. This does not introduce automatic Pool inheritance
+or another permit/deny language. Existing all-applicable-requirements, complete-path and mandatory
+check rules govern evaluation and enforcement.
 
 Permissions name operations per capability/control contract, with convenience bundles expanding
 into visible grants. Agent limits and explicit exclusions constrain effective access;

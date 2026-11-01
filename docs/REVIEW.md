@@ -57,7 +57,8 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
 separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-the remaining I2–I6 choices, beginning with I2's real-Agent delivery order; return to
+the remaining I2–I6 choices, beginning with I2's initial platform scope. Delivery order is accepted:
+native Claude/Codex adapters after the synthetic proof, then Conduit's Rust model/tool loop. Return to
 I3's packaging details where needed. Final contract/template syntax remains I7 work.
 
 ## Configuration walkthrough

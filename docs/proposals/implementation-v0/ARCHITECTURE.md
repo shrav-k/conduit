@@ -387,8 +387,10 @@ different stores with different provenance. Resume/fresh/fork keep the accepted 
 context is read through a Resource, not implemented by merging private Agent histories. No Interface
 reconnection triggers context injection or model work by itself.
 
-**I2** selects delivery order. The custom terminal must remain a thin Interface attachment even
-if native adapters are validated before the owned-loop driver.
+**Accepted I2 delivery order:** validate native Claude/Codex adapters after the synthetic runtime
+proof, then build the owned Rust model/tool loop. Initial platform scope is still open. The custom
+terminal remains a thin Interface attachment throughout; native success is not evidence that the
+owned-loop driver or every provider/account combination already works.
 
 ## 9. Retained communication
 

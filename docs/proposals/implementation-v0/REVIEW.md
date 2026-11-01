@@ -3,7 +3,8 @@
 Status: lightweight authoring support, contract publication, MCP, code-optional implementation
 bindings, independent component access, management/execution separation and shared policy with
 instance-owned state, no offline grants and the one-machine first proof are **accepted** below.
-I1 is settled; I2–I7 retain the choices identified in this review. Other recommendations remain proposed.
+I1 is settled; I2's delivery order is accepted, with initial platform scope still open.
+I3–I7 retain the choices identified in this review. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
 reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
@@ -77,8 +78,10 @@ verifiable permission can continue, subject to existing stop/revocation and deli
 on one machine, with controlled connection failures. Validate across two machines before claiming
 remote support. The experiment remains unimplemented.
 
-**Next discussion:** I2's first real Agent path after the synthetic runtime proof. Initial
-platform scope is a separate remaining I2 choice; detailed syntax stays last.
+**Accepted I2 delivery order:** after the synthetic runtime proof, validate real Agents through
+native Claude/Codex adapters first, then build Conduit's own Rust model/tool loop. Both remain goals.
+
+**Next discussion:** I2's initial platform scope; detailed syntax stays last.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -86,7 +89,7 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1's execution/authority boundary is settled. Review I2's demonstration sequence, the remaining
+I1's execution/authority boundary and I2's delivery order are settled. Review I2's platform scope, the remaining
 I3 execution/distribution choices, and I4–I6's persistence/custody/evidence support. Preserve the existing IDs; this is a
 change of review order, not another decision ledger. Finish with the deferred I7 syntax review.
 
@@ -94,7 +97,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
+| I2 | Initial platform scope | Native adapters before the owned Rust loop is accepted. Recommend macOS-first integration/account validation, with portable Rust core boundaries; broader platform claims need evidence. |
 | I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open within the accepted I1 boundaries. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
@@ -179,23 +182,27 @@ unknown work remain accepted. This review does not reopen those behaviors.
 
 ## I2 — First real Agent path and supported platform
 
-**Recommendation:** validate on macOS first, establish the synthetic Rust supervisor and terminal
-inspection surface, then prioritize native Claude/Codex adapters for the subscription/account
-experiment. Build the Conduit-owned provider/tool loop as a distinct subsequent milestone. Keep
-portable Rust core tests suitable for Linux; do not claim Windows/native isolation support before
-its process/credential/environment adapters exist.
+**Accepted delivery order:** after the synthetic runtime experiment, validate real Agents through
+native Claude/Codex adapters first, then build Conduit's own Rust model/tool loop. Both remain goals;
+no Pi runtime is adopted. This prioritizes subscription-account separation and shared Resource
+access without pretending native adapters implement Conduit's provider/tool loop.
 
-**Example:** two Claude and two Codex subscriptions can exercise shared MCP and communication
-through native drivers while Conduit owns identities, connections, history Resources and evidence.
-That verifies the account goal; it does not pretend their native agent loops are Conduit's loop.
-The later owned-loop driver supplies Rust-controlled context, provider dispatch and tool iteration.
+**Example:** native Agent instances exercise shared MCP and communication while Conduit owns
+instance identity, connections, history Resources and attributable evidence. Actual tests must
+verify account/private-state separation and report integration coverage gaps. The later owned-loop
+driver supplies Rust-controlled context, provider dispatch and tool iteration. Native success
+alone cannot establish compatibility of subscription authentication with direct provider access.
 
-**Alternative:** implement one direct model provider and the owned loop first, then native accounts.
-This demonstrates the desired Rust runtime earlier but may initially require a different supported
-access mechanism and does not establish subscription-account compatibility.
+**Remaining ruling — initial platform:** recommend macOS-first native integration and account
+validation, reflecting the user's initial environment. Keep the Rust core portable and suitable
+for platform-independent/Linux tests, while isolating OS-specific process, credential and filesystem
+behavior behind adapters. The alternative requires native integration validation on macOS and
+Linux from the first milestone, increasing platform work before the authoring/instance path is proven.
 
-**Ruling needed:** delivery order and macOS-first validation scope. The accepted end state still
-includes Conduit's own runtime and a replaceable Pi-inspired terminal. No proposal adopts Pi's loop.
+This chooses the first validated platform, not an enduring macOS-only protocol. Do not claim Linux,
+Windows or isolated native-driver support merely because core Rust builds there; the corresponding
+process, authentication and environment behavior needs evidence. Exact CI coverage and additional
+platform schedules remain implementation work. The replaceable Pi-inspired terminal remains a goal.
 
 ## I3 — Plugin execution and distribution
 

@@ -202,8 +202,10 @@ contracts. Extra process hops or conservative serialization are acceptable initi
 validation, ownership, access and honest effect outcomes are not optional efficiency tradeoffs.
 Measure costs after the authoring-to-instance path works; optimization is not its entry gate.
 
-Each milestone produces an inspectable vertical slice, not just more abstractions. Milestone
-order after the worker slice is subject to **I2**. No calendar estimates are implied.
+Each milestone produces an inspectable vertical slice, not just more abstractions. I2 accepts
+native Claude/Codex adapters after the synthetic proof, followed by the owned Rust model/tool loop.
+Initial platform scope remains open. The finer milestone breakdown below is still a proposal;
+no calendar estimates are implied.
 
 | Milestone | Deliverable | Exit evidence |
 | --- | --- | --- |
@@ -211,20 +213,21 @@ order after the worker slice is subject to **I2**. No calendar estimates are imp
 | M1 — durable management | Shared registration/policy bootstrap, checked template writes, owner Interface CLI, source-aware observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
 | M2 — plugin and lifecycle slice | Typed finite DAG, authored worker plus code-optional MCP binding, managed runtime ownership, instance-owned configuration/results, control coordination and recovery | Experiment 002 contract/effect tests for both paths and the accepted one-machine/two-executor proof; exact controlled artifacts, external compatibility, unknown effects and no duplicate Agent execution. I1 defines the behavior and first-proof scope; passing tests must supply the evidence. |
 | M3 — shared Resource slice | Local directory, retained history, synthetic auth/MCP service, independently usable managed MCP endpoint, composite participation and terminal inspection | Two synthetic Agents and a standard MCP test client exercise permitted access; Interface evidence survives frontend detachment; independent readers, reconnect and no automatic wake. |
-| M4 — first real Agent path | Native adapters first if I2 approved, with CLI/native interaction and a minimal Pi-inspired Interface terminal | Separate account and private-state verification, actual managed MCP exposure and explicit coverage gaps. |
+| M4 — first real Agent path | Native Claude/Codex adapters first, with CLI/native interaction and a minimal Pi-inspired Interface terminal | Separate account and private-state verification, actual managed MCP exposure and explicit coverage gaps. |
 | M5 — owned model loop | Rust context builder, one supported provider adapter, streaming and authorized tool execution | Deterministic fake-provider recovery first; real identity/access verified; transcript/usage distinctions preserved. |
 | M6 — expanded integration | Required two-Claude/two-Codex experiment; optional Xerj backend and additional provider adapters | Recorded account/refresh/isolation evidence; backend outage/coverage tests; no secret or private-context crossover. |
 
-M4/M5 can swap if the owned loop is the first demonstration priority. The four-account goal is
-not considered satisfied by four fake identities or four API keys. Likewise native support does
-not complete the Conduit-owned-loop objective.
+M4 precedes M5 under the accepted delivery order. The four-account goal is not considered
+satisfied by four fake identities or four API keys. Likewise native support does not complete
+the Conduit-owned-loop objective.
 
 The first environment driver can report native-only support. A requested isolated mode must fail
 clearly until an actual isolation driver passes filesystem/process/network tests. Shipping a full
 v0 claim that advertises isolated execution requires that evidence; do not quietly advertise an
 unimplemented security tier. Production remote deployment, automatic wake, public plugin
-distribution and advanced sharing remain later work. Serialized executor boundaries and network-failure semantics are proposed for
-the initial spike; testing them locally is not proof of production remote support.
+distribution and advanced sharing remain later work. Serialized executor boundaries and controlled
+connection failures are accepted for the initial spike; testing them locally is not proof of
+production remote support.
 
 ## 7. Test strategy
 

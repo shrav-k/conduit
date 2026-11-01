@@ -158,11 +158,14 @@ with an account-specific catalog. A helper for OpenRouter personalization exists
 inspected factory does not wire it as its own `refreshModels`; helper existence is not
 evidence of automatic refresh. [Catalog][catalog] · [Radius][p-radius] · [OpenRouter][p-openrouter]
 
-**Proposed delivery order:** implement the two experiment providers and their supported
+**Owned-loop coverage proposal:** implement the two experiment providers and their supported
 subscription flows first; then Completions-compatible definitions with fixture coverage;
 then Google/Vertex/Bedrock/Azure/Mistral and multi-protocol gateways; then optional image,
 classifier and Pi Messages adapters. Keep the complete matrix as a coverage target, not a
-v0 promise. Retain source provenance and review catalog changes before distribution.
+v0 promise. The later I2 ruling places native Claude/Codex adapters after the synthetic proof
+and before Conduit's owned Rust loop. This provider-coverage proposal applies to that later loop;
+it does not override the accepted delivery order or establish subscription compatibility.
+Retain source provenance and review catalog changes before distribution.
 Pi's MIT license permits adaptation subject to its notice requirements; runtime libraries
 and catalog inputs still need their own source/license accounting.
 

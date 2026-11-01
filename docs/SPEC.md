@@ -61,6 +61,10 @@ storage and production placement remain open. The first experiment uses manageme
 independent executors as separate processes on one machine, with controlled connection failures.
 Two-machine validation follows before remote support is claimed; no failure guarantee is yet tested.
 
+After that synthetic proof, test real Agents through native Claude/Codex adapters first, then build
+Conduit's own Rust model/tool loop. Both paths remain goals; native-account validation does not
+prove the owned loop's behavior. Initial platform scope remains under review.
+
 ## The user workflow
 
 1. A frontend attaches to the default Interface. Bootstrap seeds a system Pool, its management

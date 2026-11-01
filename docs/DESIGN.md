@@ -943,6 +943,12 @@ context construction, provider dispatch, recovery and observations. Provider ada
 handle request/response conversion and supported authentication. External-agent adapters
 connect separate runtimes and report their actual lifecycle/access/telemetry capabilities.
 
+**Accepted delivery order:** after the synthetic runtime experiment, validate real Agents through
+native Claude/Codex adapters first, then build Conduit's own Rust model/tool loop. The native path
+tests separate subscription accounts, private state and shared Resource access through Conduits;
+it does not establish the owned loop's behavior or unobserved native activity. Both paths remain
+goals. This selects delivery order only; initial platform scope remains in implementation review.
+
 The first frontend is a custom terminal inspired by Pi. Presentation is replaceable;
 it does not own credentials, model calls or authoritative execution state. Pi terminal
 components may be reused, but Pi's agent loop and Pi Durable are research references.

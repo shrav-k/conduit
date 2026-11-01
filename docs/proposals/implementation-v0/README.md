@@ -15,7 +15,8 @@ a small Conduit profile. Code-optional bindings to existing MCP services and ind
 exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 preserves the existing families, ownership and access rules. I1 accepts management/execution
 separation, shared policy with instance-owned state, no offline grants, and a one-machine
-first proof with management and two independent executor processes; I2 is next;
+first proof with management and two independent executor processes. I2 accepts native adapters
+before the owned Rust model/tool loop; initial platform scope is next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -79,9 +80,11 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 
 The proposed sequence begins with synthetic, fault-injectable execution and an Interface, then real
 Resources and Agent adapters, then the required two-Claude/two-Codex account exercise. Native
-agent supervision and a Conduit-owned model/tool loop have distinct implementation paths. Their
-delivery order needs **I2** because the current design calls for both Rust-owned execution and a
-Pi-inspired terminal, while subscription compatibility requires native-adapter evidence.
+agent supervision and a Conduit-owned model/tool loop have distinct implementation paths. The
+accepted I2 order tests real Agents through native Claude/Codex adapters after the synthetic proof,
+then builds Conduit's Rust model/tool loop. Both remain required goals, alongside the replaceable
+Pi-inspired terminal. Subscription compatibility still requires actual native-adapter evidence;
+initial platform scope remains the open I2 choice.
 
 No distributed scheduler, general workflow language, public plugin marketplace, new skill
 framework, generic tracker subsystem, label catalog or mandatory Wasm engine is proposed.

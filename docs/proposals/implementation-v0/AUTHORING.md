@@ -496,7 +496,8 @@ remain explicit plugin obligations when applicable. Publication of inspectable c
 implementation bindings and MCP as the public invocation base are accepted. Existing-MCP
 bindings and independent component use now join those accepted boundaries. Management/execution
 separation, shared policy with instance-owned state and no offline grants are also accepted;
-the first proof uses separate management and two executor processes on one machine. I2 comes next. Detailed
+the first proof uses separate management and two executor processes on one machine. I2 accepts
+native Claude/Codex adapters before the owned Rust model/tool loop; initial platform scope comes next. Detailed
 package/contract/template syntax is deferred to the end. These rulings do not choose the
 host/worker arrangement or impose a new server framework.
 

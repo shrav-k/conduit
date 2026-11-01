@@ -140,6 +140,13 @@ can supply the behavior. Plugins, packages and adapters are not additional objec
 Templates configure and compose contributions; instances realize them. Ordinary endpoint/account
 configuration for an existing MCP-access type does not itself require a new plugin or Resource type.
 
+**Endpoint implementation selection:** endpoint templates select the plugins that supply their
+supported connection capabilities. Instances retain and manage those implementations and local
+bindings. Conduit templates declare the compatible capabilities/roles they need and coordinate
+connection policy and establishment; opening a Conduit does not select or install new plugin code
+at an endpoint. New parameters and supported dynamic provider catalogs can use existing contracts;
+changing fixed implementation definitions still requires a replacement instance in v0.
+
 Published contracts remain inspectable without executing code. A standard adapter can supply
 discovery, invocation and Conduit-managed context/evidence while provider-native catalogs stay
 dynamic. A declaration cannot manufacture unsupported effects, lifecycle, recovery or filtering
@@ -1468,13 +1475,15 @@ that connection or grant access. This models logical relationships, without crea
 Conduit for every query or underlying socket. Exact endpoint declarations, connection creation
 and runtime state placement remain open.
 
-Conduits express executable connection behavior: their plugins can establish and maintain the
-connection at either or both endpoints, including local preparation, transport and filtering.
-They are not merely passive route records between independently implemented endpoints. A Conduit
-template declares this behavior; the instance realizes it for concrete participants. An endpoint
-may use an existing compatible service rather than receiving newly deployed code. The exact
-division between connection-owned activity and endpoint-owned capability behavior is being
-refined in the [implementation authoring review](proposals/implementation-v0/AUTHORING.md#5-where-the-example-implementations-execute).
+Conduits establish and maintain connections by coordinating endpoint-managed plugin behavior,
+including local preparation, transport and filtering. Endpoint templates select implementations;
+Conduit templates match their compatible capabilities and declare the connection's requirements,
+restrictions and establishment procedure. Each endpoint instance manages its local bindings and
+reports their outcomes; the Conduit retains relationship and participation state. It may use
+orchestration plugins without taking ownership of endpoint-local code or configuration.
+An endpoint can adapt an existing service; paired roles do not imply identical plugin packages
+or separate processes. Exact endpoint contracts, binding negotiation and cleanup/recovery remain
+in the [implementation authoring review](proposals/implementation-v0/AUTHORING.md#5-where-the-example-implementations-execute).
 
 The Conduit engine and plugins perform transfers, maintain clients and run synchronization.
 An individual Conduit has instance-managed behavior implemented by the common runtime/plugins;

@@ -255,10 +255,11 @@ requiring a tiny script plugin to implement unused lifecycle interfaces.
 
 ### Worker boundary
 
-Physical placement remains pending. First define the
-[instance and endpoint behavior boundary](AUTHORING.md#5-where-the-example-implementations-execute):
-a Conduit can establish plugin behavior on either or both sides, with connection-specific
-participation distinct from endpoint-owned capability/configuration. The caller, owning activity,
+Physical placement remains pending. The accepted
+[instance and endpoint behavior boundary](AUTHORING.md#5-where-the-example-implementations-execute)
+uses endpoint-selected plugins managed by their instances. Conduits match compatible capabilities
+and coordinate participation; they do not supply new endpoint implementation code. Exact endpoint
+connection contracts and establishment/cleanup procedures remain under review. The caller, owning activity,
 target and execution location must remain attributable. The worker mechanisms below are candidates
 for hosting that behavior, not a requirement that each plugin or Conduit have a separate process.
 

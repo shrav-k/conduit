@@ -44,6 +44,10 @@ supported controls. One template establishes many independent instances; registr
 nothing. An instance retains its resolved definition and current stored settings and need not have
 a dedicated process. Plugins supply or bind typed operations and runtime behavior; graphs wire them
 together. Capabilities describe compatibility. These are not additional object families.
+Endpoint templates select their connection plugins, and endpoint instances manage their local
+implementations and bindings. Conduits match compatible endpoint capabilities and coordinate
+establishment, restrictions and participation; they do not install new endpoint plugin code.
+Connection lifetime remains distinct from the lifetime of shared endpoint services.
 
 Objects should support independent operation and eventual placement across systems. Resources
 owned by one Pool may be deployed on different systems, and Conduits may span networks.

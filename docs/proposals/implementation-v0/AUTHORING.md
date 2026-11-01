@@ -484,11 +484,11 @@ implementation choices within I1's accepted boundaries and the pending I3 packag
 
 ## 5. Where the example implementations execute
 
-**Current discussion:** define plugin responsibilities across the five families before choosing
-process boundaries. The user clarified that Conduits represent executable connection behavior
-at either or both endpoints. The mapping below is a proposal for the detailed ownership/hosting
-contract; it preserves accepted templates, instance authority, fixed definitions and Pool ownership.
-It does not settle a worker arrangement, SDK API or YAML syntax.
+**Accepted:** endpoint templates select their plugins; endpoint instances manage implementations
+and local bindings; Conduits match compatible capabilities and coordinate the relationship.
+The next proposal is to make the Conduit template itself the relationship contract that plugins
+satisfy. That contract model, its representation and satisfaction checks remain under discussion.
+Process placement, SDK API and YAML syntax remain open.
 
 ### Plugin, template, graph and instance
 
@@ -517,7 +517,7 @@ authentication or grants. Supported external-service association does not imply 
 | Agent | Native or owned runtime, account/provider boundary, activation, initial settings, supported endpoint roles, connection declarations and controls. | Prepare private state, establish the declared runtime, manage local connection bindings, handle interaction and supported setting changes. | A remote tool call remains attributed to this Agent but uses the target Resource's capability through a Conduit. |
 | Resource | One capability responsibility, creation/attachment intent, dependencies, runtime and controls. | Establish a directory, maintain service access, authenticate, search, store or expose other declared behavior as appropriate to its type. | Every Resource instance has one Pool owner. A plugin package is not itself a Resource, and these examples need not be bundled into one Resource. |
 | Pool | Explicit named Resource-template entries, composition bindings and supported management actions. | Coordinate explicit provisioning/reuse and child dependency binding; inspect owned Resources. | Child setup and ongoing capability state belong to the child Resource. Pool ownership does not require co-location. |
-| Conduit | Endpoint roles/contracts, connection establishment, filters, transport/interaction behavior, supported changes and cleanup. | Coordinate endpoint preparation, compatible bindings and restrictions; correlate connection progress, reconnect and release participation. | Executable ownership is under review. The endpoint-managed option keeps local plugins and bindings with endpoints while the Conduit coordinates their relationship. |
+| Conduit | Endpoint roles/contracts, connection establishment, filters, transport/interaction behavior, supported changes and cleanup. | Coordinate endpoint preparation, compatible bindings and restrictions; correlate connection progress, reconnect and release participation. | Endpoint templates select the plugins; endpoint instances manage local execution/bindings. Conduits coordinate compatible capabilities and participation. |
 
 An instance context must exist before its setup effects are dispatched, so incomplete setup has
 an identity and owner for inspection/recovery. The detailed creation sequence remains open. Starting
@@ -528,38 +528,24 @@ plugin implementations and the Conduit retains any orchestration implementation 
 binding is not an implicit implementation upgrade. Genuine new endpoint code requires replacement
 under the fixed-definition rule; new parameters or native tool catalogs can use existing contracts.
 
-### Endpoint-managed pairing versus Conduit-managed helpers
+### Endpoint-selected plugins and Conduit matching
 
-The user leans toward endpoint-managed paired plugins; no ownership ruling has been accepted.
-The distinction is executable ownership, not whether an attachment is released on detachment.
-An endpoint can own an MCP plugin and its shared client while separately managing bindings for
-each Conduit participation. Those bindings do not become permanent merely because the endpoint
-manages them.
+Endpoint templates select the implementations providing their connection capabilities. Instances
+retain those implementations and manage local bindings. Conduits select compatible capabilities,
+connection requirements and restrictions; they do not select or install new endpoint plugin code.
+This is the accepted authoring arrangement, not a requirement for separate worker processes.
 
-| Concern | Endpoint-managed pairing | Conduit-managed helpers |
-| --- | --- | --- |
-| Retained executable definition | In the predeclared-role formulation, each endpoint selects its local implementation and the Conduit matches roles/parameters. Explicitly admitted Conduit-selected pairs are another authoring option below. | The Conduit selects and governs connection-specific implementation fragments hosted at the endpoints, subject to their hosting contracts. |
-| Reusable Conduit authoring | Compose endpoint capabilities without packaging every endpoint's local implementation. Compatibility must exist on each side. | Bundle more of the connection implementation with the Conduit. Endpoints still need a compatible way to host those fragments. |
-| Shared state and supervision | The endpoint can manage its bindings and shared clients together, distinguishing each participation. | A connection helper needs an explicit relationship with the endpoint's independently shared services and supervision. |
-| New behavior | Adding a genuinely unsupported transport or adapter requires a revised endpoint definition/new instance, unless an existing capability already supplies it. | A Conduit can bring new helpers through an already-supported hosting contract; this does not permit arbitrary rewriting of endpoint definitions. |
-| Cleanup and failure | The Conduit requests release; endpoints perform and report local cleanup. Unreachable endpoints leave explicit uncertainty. | The Conduit governs helper cleanup, but still needs its hosting executor/endpoints to perform it; remote failure remains uncertain. |
+For example, an Agent template selects its MCP-consumer implementation and a Resource template
+selects its provider implementation. Their instances can establish multiple separately attributable
+bindings using those supported capabilities. Detachment releases the affected binding without
+removing the endpoint's shared plugin/client or other participation. Fixed-definition changes still
+require replacement; compatible new settings and native provider catalogs follow existing rules.
 
-The endpoint-managed option fits fixed instance definitions and local supervision more directly.
-Its main cost is requiring the appropriate capability at each endpoint. Avoid turning “paired”
-into a hard-coded package-to-package compatibility matrix: prefer two compatible roles in a
-versioned contract, potentially implemented by different packages. The existing capability-matching
-decision supports this direction, but the endpoint-specific contract still needs a ruling.
-Two roles do not require two executables, two copies of a package or custom code inside an
-externally operated service. A managed Resource may adapt an existing MCP service.
-
-**Separate authoring question:** endpoint management does not force endpoint-only plugin selection.
-One template arrangement declares an MCP-consumer plugin on the Agent and an MCP-provider plugin
-on the Resource, with the Conduit matching their roles. Another declares the required pair in
-the Conduit template and asks each endpoint's supported hosting capability to activate/manage its
-side. Both keep execution management at the endpoints. The latter can make a Conduit more
-self-contained but needs explicit admission, retained implementation and per-binding state rules.
-Using an already-declared hosting capability is different from silently changing fixed endpoint
-definitions. Whether v0 offers either or both authoring paths remains open.
+The rationale is clear local supervision, implementation retention and reuse of shared services.
+The tradeoff is that endpoints must already support the behavior a connection requires. A genuinely
+new implementation requires a revised endpoint template/new instance; a new service target need
+not require new code when existing capabilities support it. Matching is about compatible behavior,
+not identical packages or a closed list of named plugin pairs. Exact satisfaction checks remain open.
 
 The Conduit remains active: its graph or orchestration implementation requests preparation,
 coordinates binding, applies declared connection policy through supporting endpoints, aggregates
@@ -576,7 +562,7 @@ would need an appropriate different capability, not reinterpret a remote path as
 
 ### A Conduit with behavior at both ends
 
-This example illustrates the endpoint-managed option under review. Consider Agent A using the
+This example illustrates the accepted endpoint-managed arrangement. Consider Agent A using the
 Pool-owned Linear MCP Resource L. The Pool also owns authentication
 Resource H; L already has authorized access to H through a separate Conduit. Opening C between
 A and L could establish:
@@ -596,7 +582,7 @@ of every filter. Existing compatible endpoint behavior can satisfy one side with
 The target side must enforce restrictions it is responsible for; client-side tool hiding alone
 cannot establish server-side authorization. Exact enforcement placement is contract-specific.
 
-The proposed endpoint-managed ownership split is:
+The endpoint-managed ownership split is:
 
 | Activity/state | Governing instance or contract |
 | --- | --- |
@@ -634,13 +620,32 @@ and cleanup acknowledgement remain review choices.
 | Interface changes an Agent's model | Carry the authorized typed control request and its response/progress. | The Agent's handler applies the change within its fixed provider/account boundary and records confirmed configuration. |
 | Search Resource reads storage | Establish the search-to-storage capability path and restrictions. | Separate Resource responsibilities, backing data and supported search/index lifecycle. |
 
-### What remains to decide
+### Conduit as relationship contract — proposal
 
-The current preference under review is that endpoints manage their plugins and local connection
-bindings, while Conduits coordinate compatible endpoint roles and govern logical participation.
-Shared client lifetime and per-participation binding lifetime remain distinct. Confirm that split,
-then review endpoint compatibility/admission and cleanup/recovery before process placement.
-Opening a connection is not a blanket right to install code or alter an endpoint's fixed definition.
+A Conduit template could define the roles, interaction requirements, restrictions and establishment/
+release obligations for a relationship. Endpoint-selected plugins publish the capabilities and
+behavior they can supply. Instantiation binds concrete endpoints and verifies their satisfaction
+of the configured requirements. A Conduit instance is the live, inspectable realization of that
+contract, not the definition itself or a new object family. This direction remains proposed.
+
+For shared MCP access, the Conduit might require a consumer that can present native tools and a
+provider that can invoke them under the selected operation/target restrictions, with attributable
+results and binding release. Existing MCP operations remain the protocol vocabulary; a Conduit
+need not re-specify every Linear tool. For local directory access, provider and consumer agree on
+an authorized descriptor/local view and its placement/cleanup requirements; these are different
+relationship semantics and do not require a persistent network process.
+
+The proposal changes where relationship requirements are defined; it does not remove plugin
+input/output schemas, Resource-type configuration contracts, current authority or instance-owned
+execution. Reusable typed requirements could be checked against plugin declarations and runtime
+evidence. Mere schema compatibility or a claimed capability cannot prove authentication, effect
+semantics, enforcement or recovery. Missing code cannot be supplied by a declarative contract.
+
+Open questions include whether plugins satisfy reusable requirement/role definitions across many
+Conduit templates or explicitly implement identified Conduit contracts; where requirements can be
+reused without duplicating protocols; and how setup/readiness/cleanup obligations map to endpoint
+operations. Avoid presuming a new universal endpoint API, arbitrary constraint solver or second
+programming language. Keep exact syntax until these conceptual choices are settled.
 
 Separate helpers can contain ordinary plugin crashes and support language-neutral implementations;
 an instance-specific runner can host multiple handlers; trusted in-process code can reduce
@@ -666,7 +671,8 @@ bindings and independent component use now join those accepted boundaries. Manag
 separation, shared policy with instance-owned state and no offline grants are also accepted;
 the first proof uses separate management and two executor processes on one machine. I2 accepts
 native Claude/Codex adapters before the owned Rust model/tool loop, with macOS-first native
-integration/account validation and a portable core. I3 execution/packaging choices come next. Detailed
+integration/account validation and a portable core. I3 now accepts endpoint-selected plugins;
+Conduit contract satisfaction, connection lifecycle and execution/packaging remain open. Detailed
 package/contract/template syntax is deferred to the end. These rulings do not choose the
 host/worker arrangement or impose a new server framework.
 

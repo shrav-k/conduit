@@ -35,18 +35,18 @@ They retain required authority, ownership and evidence services; standard client
 expose every internal setup/driver export. Standalone implementation use outside the managed model
 has its own declared dependencies/guarantees. This adds no process or registry per object.
 
-### Instance execution boundary — proposed for I3 review
+### Instance execution boundary
 
-Before choosing worker placement, define what execution belongs to. The proposed rule is that
-setup, supported changes and ongoing managed behavior run in the context of the instance whose
+Endpoint implementation selection and management are accepted; process placement remains open.
+Setup, supported changes and ongoing managed behavior run in the context of the instance whose
 contract owns that activity. This context carries identity, retained implementation/definition,
 private state references, applicable authority, lifecycle supervision and attributable outcomes.
 It is not itself a sixth family, a mandatory process/container or an OS sandbox.
 
-| Boundary | Meaning under this proposal |
+| Boundary | Meaning and remaining implementation choices |
 | --- | --- |
 | Definition and state | The instance's fixed setup/control definitions and confirmed settings govern its behavior; its designated service retains authoritative state. |
-| Execution | Plugin handlers and managed processes serve that instance. Connection behavior executes at the endpoints; executable ownership is under review. An execution service supplies hosting and supervision and can host multiple instances. |
+| Execution | Plugin handlers and managed processes serve that instance. Endpoint templates select connection plugins; their instances manage execution and local bindings. An execution service supplies hosting and supervision and can host multiple instances. |
 | Authority | An instance context is not an automatic grant. The caller, target, selected Conduit path and current restrictions govern each admitted operation. |
 | Physical placement | An implementation may use trusted in-process handlers, an instance-specific runner hosting several plugins, separate helpers or an external service. Supported placement and isolation guarantees need their own contracts and evidence. |
 
@@ -58,12 +58,12 @@ operation does not transfer its implementation or credentials into the caller's 
 
 A Pool composition step can coordinate child Resource creation while each child's setup belongs
 to that child. Conduits actively establish connections using plugins at either or both endpoints.
-The user now favors endpoint-managed paired plugins, with the Conduit coordinating their compatible
-roles, restrictions and participation. Under that proposed division, each endpoint owns its plugin
-implementation and local binding state; the Conduit retains relationship state and correlated
-establishment/cleanup outcomes. Endpoint ownership does not make a detached binding permanent.
-Connection-owned helpers remain an alternative pending the ruling. See the
-[ownership comparison](AUTHORING.md#endpoint-managed-pairing-versus-conduit-managed-helpers).
+**Accepted:** endpoint templates select their plugins and endpoint instances manage them. Conduits
+match compatible capabilities/roles and coordinate restrictions and participation rather than
+providing endpoint-local implementation fragments. Each endpoint owns its local binding state;
+the Conduit retains relationship state and correlated establishment/cleanup outcomes. Endpoint
+ownership does not make a detached binding permanent. See the
+[authoring boundary](AUTHORING.md#endpoint-selected-plugins-and-conduit-matching).
 
 For example, the Agent's MCP integration manages its local bridge/binding; a Resource's endpoint
 plugin manages the provider-facing binding and shared client. A target configuration change still

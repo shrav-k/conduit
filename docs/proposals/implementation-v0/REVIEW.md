@@ -121,7 +121,7 @@ one review queue rather than another decision ledger.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Active Interface role and foundational storage, then engine | Explore a root Interface directing startup, administration and repair; preserve state/Pool ownership. Storage extension/representation and SQLite remain open. |
+| I4 | Interface authority and foundational storage, then engine | Recommend independent policy administered by authorized Interfaces, with broad default root administration; user leaning, ruling pending. Active direction, storage extension/representation and SQLite remain open. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -420,24 +420,29 @@ and targets retain capability, revision, lifecycle and outcome checks. Managemen
 shared registry/policy facts; Pools own Resources; the Interface records its own workflow and links
 to authoritative target outcomes. Other authorized actors can still invoke management capabilities.
 
-**Authority choice to clarify:** is the root Interface an administrator of an independently owned
-management-policy capability, or the logical owner of the system-policy/delegation role whose
-storage/enforcement is implemented by management services? Both preserve instance-owned outcomes.
-The second more directly puts foundational authority in an Interface, but needs continuity rules
-when that root stops or is replaced. It does not make the root the data owner of all objects, move
-Resources out of Pools or require every policy record in its template. This choice remains open.
+**Authority recommendation after cloud IAM research, not yet accepted:** keep policy independent
+of particular Interfaces. Multiple Interfaces can administer policy within their verified authority;
+the owner-operated root has broad administration by default. The user leans toward this model.
+The [AWS/GCP/Azure follow-up](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
+separates governed policy, administrative principals and clients, with provider-specific caveats
+about root privileges and identity replacement. It supports the recommendation without deciding
+Conduit's storage representation or detailed delegation syntax.
 
 **Lifecycle comparison before a ruling:** the
 [Euphony walkthrough](ARCHITECTURE.md#root-authority-lifecycle-comparison) compares establishment,
 delegation, frontend detachment, root-runtime loss, policy-service loss, restart and replacement.
 Most running behavior is the same. Existing grants do not expire merely because the issuer stops;
 the distinction is whether replacement changes logical policy ownership and requires explicit
-succession. A possible synthesis assigns the administrative stewardship role to the root Interface
-while keeping durable policy in a stable system-Pool Resource. This is an option for discussion,
-not an adopted sixth object, transfer operation or automatic failover mechanism.
+succession. Prefer independently retained policy through the existing system management capability:
+a replacement Interface establishes valid administrative access without transferring policy
+ownership or resetting grants. This replaces the earlier exclusive-stewardship synthesis as the
+recommendation. Reusing a name does not preserve an old instance's identity or authority; current
+grant/recipient/target lifecycle rules still apply.
 
 The comparison does not narrow v0 Interface access, add implicit restart loops or assign automatic
-priority over Agent commands. The active-role and policy-ownership rulings remain open. Initial
+priority over Agent commands. The proposed later Euphony-only Interface illustrates differentiated
+administration rather than introducing it into v0. Policy-management and service-use authority
+must remain distinct. The active-role and policy-ownership rulings remain open. Initial
 Interface persistence, authority verification and storage selection follow; the first-definition
 load and earliest durable progress still need a concrete home within its runtime contract.
 

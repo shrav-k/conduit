@@ -18,7 +18,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
-| [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; concrete change/recovery comparisons and rationale for accepted shared policy with instance-owned state. |
+| [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; accepted shared policy/instance-owned state, plus I4 research recommending policy independent of administrative Interfaces (ruling pending). |
 | [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | I1 evidence from Tilt, Docker/containerd, Kubernetes, Rust systems and papers: execution/authority splits and no offline grants accepted; one-machine process proof accepted, not yet executed. |
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |
 | [CONSTRUCTION](CONSTRUCTION.md) | The concise rationale for template/plugin/graph/runtime boundaries and their source evidence. |

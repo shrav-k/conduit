@@ -11,6 +11,11 @@ using AWS, Google Cloud and Azure, with concrete control and recovery examples. 
 distributed-systems evidence. The [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management)
 records the accepted authority, outage and first-proof rulings.
 
+The [Interface/policy follow-up](#9-interface-administration-and-independent-policy) examines the
+separate I4 question of whether the root Interface owns policy or administers independent policy.
+The user currently leans toward independent policy; that choice is **not yet accepted**. This
+follow-up does not reopen I1's accepted service/state authority boundary.
+
 Method: read primary public architecture, extension and API documentation. No cloud accounts,
 credentials or deployments were used, and no failure behavior was tested. Public API contracts
 do not reveal every internal storage or consensus mechanism. Provider facts below are sourced;
@@ -349,3 +354,121 @@ and two independent executors as separate processes on one machine, with control
 failures. It need not implement all three authority models or deploy on AWS/GCP/Azure. Two-machine
 validation follows before remote support is claimed. Storage technology remains I4; schema spellings
 and MCP profile fields remain I7.
+
+## 9. Interface administration and independent policy
+
+Follow-up researched 2026-11-01. The question is logical policy responsibility, not the storage
+engine: can several Interfaces administer the same durable policy under their own authority,
+while the root has broad default administration? The current recommendation is **yes, with policy
+independent of any particular Interface**. This is our inference from the primary sources below,
+not a claim that Conduit must reproduce cloud IAM or that the user has accepted this ruling.
+
+### Where cloud policy lives
+
+| Platform | Documented policy relationship | Administrative access | Conduit lesson |
+| --- | --- | --- | --- |
+| AWS | Customer-managed IAM policies are reusable policy objects; inline policies belong to one identity and are deleted with it. Resource-based policies attach to the governed resource. | Principals act under policy-defined permissions. Policy attachment is distinct from the console or other client used to author it. | Independence from an administrative Interface does not require every policy to be a standalone object or independent of its governed target. |
+| Google Cloud | An allow policy attaches to a resource; bindings associate principals, roles and optional conditions. Applicable ancestor policies can affect descendants. | Changing access requires the relevant resource's policy-management permissions; console, CLI and API operate on those policies. | Multiple administrators can share one authoritative policy without giving each administrator a private policy copy. |
+| Azure | A role assignment records a principal, role definition and scope, with its own assignment identity. | Assigning roles requires the corresponding authorization permission at the relevant scope. | Make administrative reach explicit; a client's ability to inspect an object is distinct from its ability to grant access to it. |
+
+Sources: [AWS managed/inline policies](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html),
+[AWS identity/resource policies](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_identity-vs-resource.html),
+[Google allow policies](https://docs.cloud.google.com/iam/docs/allow-policies),
+[Google access administration](https://docs.cloud.google.com/iam/docs/granting-changing-revoking-access),
+[Azure role assignments](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments),
+[Azure assignment permissions](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal).
+
+The shared pattern is policy associated with governed identities/resources/scopes and administered
+by authorized principals. It is not policy owned by the UI instance that last changed it. A Conduit
+Interface is more active than a cloud console—it may direct setup and repair—but those duties do
+not by themselves require policy ownership. Shared authority also need not mean one process or a
+network call through the root Interface for every operation.
+
+### Root authority is not one universal cloud concept
+
+AWS's root is an account sign-in identity. Organizations service control policies can constrain a
+member account's root, and do not affect the management account. SCPs constrain permissions rather
+than granting them. This supports retaining Conduit's distinction between grants and narrowing
+requirements, without importing AWS's complete evaluation rules.
+[AWS root identity](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html),
+[SCP scope and effects](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html)
+
+Google distinguishes Workspace/Cloud Identity super administrators from Google Cloud Organization
+Administrators. Its organization setup guide separates assigning IAM roles and inspecting the
+hierarchy from other actions such as creating projects/folders, which require additional roles.
+Administrative ability to obtain or grant access is not identical to currently holding every
+operational permission. [Google organization administration](https://docs.cloud.google.com/resource-manager/docs/creating-managing-organization)
+
+Azure separates Microsoft Entra administration from Azure resource access. An Entra Global
+Administrator can elevate to User Access Administrator at root scope, enabling visibility and
+access assignment across the tenant's subscriptions and management groups. The role is not a
+universal grant of all service operations.
+[Azure elevation and authority boundaries](https://learn.microsoft.com/en-us/azure/role-based-access-control/elevate-access-global-admin)
+
+**Conduit recommendation:** retain the simple owner-operated root with broad managed-system
+administration by default. Express this as verified authority, not a magical property of the name
+`root` or a directive in a template. It can administer all supported Conduit policy and lifecycle
+operations without thereby acquiring an external provider's missing credentials or permissions.
+Existing fixed-definition, revision and outcome contracts still apply. No cloud-style organization
+tree, enterprise enrollment flow or hierarchy of administrator roles is required for v0.
+
+### Lifecycle example: two Interfaces, one policy authority
+
+Use the existing system Pool's management Resource to expose policy management. Its responsible
+service retains the policy facts. Individual grants are records, not necessarily new Resources;
+this proposal adds no object family, dedicated policy Resource type or chosen storage engine.
+
+1. The local owner establishes root Interface R1. R1 can direct system establishment and administer
+   shared policy through its management Conduit. Initial verification/persistence still need the
+   I4 startup contract; calling an object root does not solve that first-load problem.
+2. An Euphony Interface E can administer the policy it is authorized to manage. A future narrower
+   assignment might permit Euphony delegation but exclude a personal Pool. That is an illustration
+   of later differentiated Interface authority; today's broad owner-operated v0 Interface access
+   is not silently narrowed. Both Interfaces use the same policy facts through their own paths.
+3. E delegates read-only Linear access to Agent A's participation. The resulting grant records its
+   attribution and recipient; closing E's frontend or stopping E does not end A's participation.
+   Its current restrictions, withdrawal and detachment rules continue to govern access.
+4. R1 is replaced by R2 after its fixed setup definition changes. R2 must establish valid owner
+   administration and its own management connection. Existing policy/grants do not transfer between
+   Interface owners or get recreated from template defaults. Pending R1 workflow effects still
+   require ordinary inspection/recovery; policy independence does not migrate them automatically.
+5. R2 and E concurrently edit the same policy. The policy's responsible service validates authority
+   and checked changes; neither Interface's cached view becomes a second writable authority.
+6. If R1/R2 is unavailable but policy verification is available, other authorized paths can work.
+   If permission cannot be verified, hold new managed requests under the accepted no-offline-grants
+   rule. Retain supervision and already-dispatched outcomes as previously agreed.
+
+Replacing a client or Interface is also different from replacing the principal to which a grant
+is bound. AWS provides a concrete identity example: a specific role ARN in a trust policy's
+`Principal` is stored using the role's unique principal ID; deleting/recreating that role breaks
+that binding despite reusing its name. This is consistent with Conduit's existing stable-ID rule,
+not a requirement to adopt every AWS ARN or policy behavior.
+[AWS principal identity and replacement](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html)
+
+Consequently, independent policy must not be described as every grant surviving every deletion.
+Deleting its target, recipient or governing policy, explicitly withdrawing it, or ending the
+recipient participation has its own contract. Merely replacing an administrative Interface does
+not imply any of those events. R2 receives valid access; it cannot inherit authority just by
+reusing R1's readable name. Historical attribution remains unchanged.
+
+### What to adopt, and what remains open
+
+Proposed ruling: keep policy independent of Interface lifecycle; permit multiple authorized
+Interfaces to administer it; give the owner-operated root broad default administration. Keep the
+Interface's active direction/observation role and target services' authoritative outcomes. The
+root does not need exclusive policy stewardship or a policy-succession operation merely because
+its own template changes. This replaces the earlier stewardship synthesis as the recommendation,
+not as an accepted decision.
+
+Policy administration must distinguish authority to manage a grant from authority to use its
+target. Future limited administrators need a defined delegation boundary; simple record-update
+permission must not accidentally become unlimited delegation. Existing path/recipient restrictions
+continue to apply. Detailed multi-Interface permissions can stay deferred, as agreed for v0.
+
+After this ruling, I4 still needs initial Interface persistence and repair, authority-store
+representation/extension and engine selection. The cloud comparison does not decide SQLite versus
+another engine, a public storage plugin contract, credential custody, automatic failover or
+multi-machine support. For the eventual experiment, verify two administrative clients against the
+same policy, replacement without policy reset, checked concurrent edits and separate Interface
+versus policy-service failures. These are candidate additions, not newly accepted experiment scope
+or test results.

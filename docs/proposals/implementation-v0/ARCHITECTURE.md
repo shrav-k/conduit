@@ -88,8 +88,9 @@ second does not put all grants in template YAML, move Resources out of Pools, re
 to visit the root process or give the root a second writable copy of target configuration. Its
 policy can be represented by runtime records and backed by Resources. The first separates that
 policy domain from Interface lifecycle. Shared policy with instance-owned state does not alone
-settle which of these logical ownership interpretations applies. Root policy ownership is a live
-proposal, not a ruling; storage, replacement and outage consequences would follow the choice.
+settle which of these logical ownership interpretations applies. The user now leans toward the
+first. The [cloud IAM follow-up](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
+supports independent policy as the current recommendation; neither interpretation is accepted yet.
 
 #### Root authority lifecycle comparison
 
@@ -132,13 +133,28 @@ currently requires every administrative request to have a unique root issuer: br
 access and explicitly delegated Agent controls remain as agreed. Coordination of the foundational
 policy role is distinct from permitting another actor to issue a management command.
 
-**Possible synthesis, still open:** the root Interface owns the system-direction and administrative
-stewardship role, while durable policy is backed by a stable system-Pool Resource whose identity
-outlives any particular root instance. A replacement explicitly assumes that role over the existing
-policy, leaving Resource ownership and target state authority unchanged. This combines Interface-
-centred responsibility with independently retained policy. It still needs a real succession contract;
-if no lifecycle responsibility differs from ordinary administration, the two interpretations are
-mostly different wording and should not create extra protocol machinery.
+**Current recommendation, ruling pending:** independent policy with multiple authorized
+administrative Interfaces. The root remains an active system director with broad default owner
+administration. The existing system Pool's management Resource exposes policy operations; its
+responsible service retains shared policy facts independently of any one Interface. No new family,
+dedicated policy Resource type or storage engine follows. Replace the earlier proposed exclusive
+stewardship/succession synthesis with ordinary verified administrative access for a replacement
+Interface. R2 still needs its own valid connection/authority and reconciliation of any old work;
+it cannot acquire access merely by using R1's name.
+
+The cloud comparison supports separating the acting principal, administrative Interface and policy
+records. An Interface is an active Conduit instance rather than merely a cloud-console analogy,
+but directing startup/repair does not require owning the policy it administers. Multiple Interfaces
+use current shared policy and checked changes; their local observations are not independent writable
+copies. Later Euphony-only and personal Interfaces can have different administrative reach. This
+does not silently narrow today's broad owner-operated v0 Interface access or choose the later grant
+syntax. Permission to manage policy and permission to use a service remain distinct contracts;
+root's broad local administration cannot supply missing external provider authority.
+
+Independent policy does not make every grant immortal. A recipient/target deletion, explicit
+withdrawal or participation ending still has its defined effect. Policy identity is independent of
+the administrative Interface, not of every governed object. Policy-service unavailability still
+blocks new requests whose permission cannot be verified even if the root Interface itself is up.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops

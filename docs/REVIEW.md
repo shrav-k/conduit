@@ -68,8 +68,12 @@ the root Interface would direct establishment and ongoing administration/repair 
 normal responsibilities. Frontends attach to it; management and instance services retain their
 accepted state authority, and Pools retain Resource ownership. Responsibility and authority are
 being refined before accepting that role: directives, implemented capabilities, permission to act
-and confirmed target outcomes must remain distinct. The expanded role, its foundational storage
-and the first storage engine remain under discussion.
+and confirmed target outcomes must remain distinct. The
+[cloud IAM follow-up](research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
+now recommends policy independent of Interface lifecycle, administered by multiple authorized
+Interfaces with broad default root administration. The user leans toward this; it is not yet a
+ruling and does not narrow broad v0 Interface access. The expanded role, foundational storage
+and first storage engine remain under discussion.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP

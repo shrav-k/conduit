@@ -177,6 +177,11 @@ concrete operation catalogs and schemas dynamically. For MCP, expose permitted n
 do not require a separate Conduit contract for every provider operation or a generic model-facing
 wrapper. Static operation contracts remain valid for other capabilities. Discovery supplies
 available behavior, not additional permission or a changed instance-control contract.
+V0 discovers catalogs during supported preparation and explicit refresh; dynamic discovery does
+not imply automatic reload into an Agent. Data changes alone need not invalidate tool definitions.
+Known affected stale/incompatible definitions block dispatch until explicitly refreshed/reconciled;
+integration evidence determines detectable changes, and freshness gaps remain visible. Do not
+silently adapt or replay a call after a schema error or uncertain provider effect.
 
 Filters narrow authority and target capabilities. An allowed operation name alone does not
 establish that every parameter is allowed. Discovery, dispatch and current-state validation must
@@ -328,6 +333,14 @@ Service access follows the [shared Pool authentication contract](#shared-pool-ac
 Resource-to-Resource access uses Conduits. Activation instructions belong to the consumer; Pool
 membership and availability alone do not load skills/documents into model context.
 
+R5 adopts Agent-declared compatible preparation: required activation failure blocks readiness;
+optional failure is reported. Resolve conflicting exposed names deliberately and avoid duplicate
+equivalent loading without combining distinct configurations, routes or rights. Updated source
+content remains readable, but replacing loaded instructions/extensions or exposed tool definitions
+uses a supported explicit refresh at a safe boundary. Authorized Agents can request it without
+mandatory human confirmation. Automatic reload/refresh policies are deferred; current permissions,
+credential refresh and supported transport recovery retain their separate contracts.
+
 Conduits needing durable content use Pool-owned Resources. Routing state need not be a Resource
 per cursor. Pool ownership does not grant data access or authorize deletion of backing files.
 R3 requires explicit retirement of owned Resource instances before deleting their Pool instance:
@@ -410,8 +423,9 @@ settled direction, including Pool-owned reusable authentication Resources. R1 co
 for fixed-definition changes, including Interface administration. R2 selects finite dependency
 graphs with branching/loops inside plugins. R3 requires explicit Resource retirement before Pool
 deletion and new instances after Conduit flow end. R4 settles explicit Pool composition intent,
-connection selection/delegation/routing and removal of generic labels/selectors. The [three remaining
-review bundles](REVIEW.md#remaining-decision-bundles) cover activation, configuration/extension
-resolution, and communication scope.
+connection selection/delegation/routing and removal of generic labels/selectors. R5 settles declared
+activation and explicit refresh, with automatic refresh policies deferred. The [two remaining review
+bundles](REVIEW.md#remaining-decision-bundles) cover configuration/extension resolution and
+communication scope.
 Proposed solutions remain proposals.
 Exact schema/adapter details are tracked separately; the protocol review is not yet complete.

@@ -276,7 +276,11 @@ One shared upstream catalog is not proof that all consumers can use every tool.
 The accepted Conduit boundary is a versioned discovery/invocation capability contract with the
 provider's concrete tools and schemas discovered dynamically. Each permitted tool remains native
 in the Agent's view; it does not need its own Conduit contract or generic model-facing wrapper.
-Catalog refresh and schema evolution remain detailed integration questions, not new authority.
+R5 selects supported initial discovery and explicit refresh in v0; dynamic discovery does not
+require automatic replacement of exposed definitions. Detected incompatible/stale definitions
+block affected dispatch pending refresh/reconciliation. Data changes alone need not invalidate
+tools. Exact detection evidence and future automatic-refresh procedures remain integration work,
+not new authority; providers may reveal drift only through a failed call.
 
 An ongoing logical relationship does not require an always-open socket: Streamable HTTP uses
 requests and can stream responses. The adapter must negotiate what the deployed service actually

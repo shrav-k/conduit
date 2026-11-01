@@ -673,7 +673,8 @@ and loops inside plugins. R3 requires explicit Resource retirement before Pool d
 new Conduit instance after flow end. R4 settles explicit/unambiguous routing, recipient-bound
 delegation lifetime and explicit provision-from-entry versus use-existing-instance intent.
 Generic object labels/selectors are excluded from v0; Pool composition uses explicit entries.
-R5–R7 cover activation, the configuration/extension profile and communication.
+R5 accepts declared activation and explicit refresh, deferring automatic reload. R6–R7 cover the
+configuration/extension profile and communication.
 
 Local Resource entries are accepted; the names of `resources`, `bindings`, `localResource`,
 `requires` and `requestedAccess`, exact capability/bundle identifiers and the graph-source syntax

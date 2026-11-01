@@ -204,8 +204,9 @@ A setting's value and the rule governing its permitted changes are distinct. Cha
 must not silently expand the control's allowed range or caller privileges. **Accepted for v0:**
 an instance's resolved setup graph and control definitions remain fixed. Changing setup steps,
 control schemas/constraints or handler bindings requires a new instance from a revised definition.
-Existing controls still change their permitted settings; dynamic attachments, current access rules
-and declared dynamic provider catalogs remain live. In-place definition upgrades are deferred.
+Existing controls still change their permitted settings; dynamic attachments and current access
+rules remain live. Provider catalogs retain dynamic discovery, with explicit exposure refresh under
+R5. In-place definition upgrades are deferred.
 This does not select plugin binary pinning or compatible implementation-update policy. A new
 instance does not automatically acquire the old one's bindings, private context or permissions.
 R1 confirms that this applies to Interface administration as well as Agent requests. Broad
@@ -591,8 +592,8 @@ profile; direct creation itself is accepted. V0 defers inheritance and compositi
 
 Establishment produces the Agent's complete spec. The Agent operates from that spec
 and explicit live dependencies; retain actual execution settings.
-Permission limits remain current. Whether referenced resource content follows source updates
-is a separate open choice.
+Permission limits remain current. Resource data stays available through live authorized reads;
+refresh of loaded content follows the activation contract below.
 
 ### Activation instructions
 
@@ -607,10 +608,30 @@ prompts, tools and configuration bundles are supplied through Pools; the Agent s
 how to use the permitted selection. Discovering a skill, importing it, exposing a tool
 and placing instructions in model context can require different behavior.
 
-Defaults for the Agent template, model and runtime can handle conventional imports. Exact representations,
-compatibility rules, sequencing, duplicate handling, failure behavior and source updates
-remain open. Pi's resource loaders, package support and MCP setup are research inputs.
-Model preference alone does not establish native plugin or hook compatibility.
+**Accepted activation policy (R5):** apply the Agent's declared compatible preparation actions.
+Required activation failure prevents readiness; optional failure is visible without blocking
+unrelated usable capabilities. Resolve conflicting exposed names through explicit selection or
+supported distinct names, not discovery order. Avoid duplicate equivalent loading without merging
+different configurations, access paths or authority. Compatibility depends on the actual runtime;
+model preference alone does not establish native plugin or hook compatibility.
+
+For example, preparation can advertise selected skills for on-demand loading, inject a required
+engineering guide and expose optional Linear tools. These are actions in the existing setup/control
+model. Template/type defaults can supply conventional behavior without a human prompt for each step.
+
+Source content changes become available for ordinary authorized reads, but do not silently replace
+already-loaded instructions or executable extensions. A supported explicit refresh applies at a safe
+runtime boundary and reports what was loaded; it does not rewrite earlier conversation history.
+An authorized Interface or Agent can request refresh without mandatory human confirmation. Where
+refresh is unsupported, report the limitation and use supported restart/replacement behavior; changing
+fixed activation/control definitions still requires a new instance. Late dependency failures retain
+the agreed independent-work behavior, not a new whole-Agent pause requirement.
+
+Automatic reload/refresh policies are deferred beyond v0, including automatic catalog replacement
+on first use. Initial discovery and explicit refresh remain supported. Current access restrictions,
+credential refresh and bounded transport reconnection keep their own contracts. The MCP section
+below distinguishes stale tool definitions from changed service data. Exact action fields, evidence,
+compatibility diagnostics and future automatic-refresh triggers remain schema/adapter work.
 
 ### Account selection
 
@@ -1362,9 +1383,25 @@ contracts remain appropriate for other capabilities; dynamic catalogs are suppor
 everywhere. Provider schemas remain part of validation rather than becoming unchecked arguments.
 
 Discovery does not grant authority or silently alter a running instance's control envelope.
-Current grants, Conduit filters and target constraints still govern exposure and dispatch. Exact
-catalog refresh, schema-change handling, caching and version evidence remain to be specified;
-they must distinguish advertised operations from supported and currently permitted behavior.
+Current grants, Conduit filters and target constraints still govern exposure and dispatch.
+
+**Accepted v0 refresh boundary (R5):** discover permitted native tools during supported preparation
+and explicit refresh. Dynamic discovery does not require automatic replacement of the Agent's
+exposed catalog. A changed issue or document is service data, not necessarily a changed tool
+contract. A new name, changed schema or relevant service-configuration change can invalidate an
+exposed definition; the integration identifies the affected surface using evidence it supports.
+
+Before dispatch, apply current access checks and available compatibility/change evidence. If an
+affected definition is known stale/incompatible, or a detected change leaves compatibility unresolved,
+withhold that call and report the need for explicit refresh/reconciliation. Refresh supplies the
+currently permitted definitions; the caller can then reconsider its request against them. Unaffected
+usable operations need not stop. Do not automatically rewrite arguments or replay an uncertain write.
+
+This does not require a network catalog fetch on every invocation or promise advance detection from
+every provider. A provider rejection may be the first evidence of drift; report known gaps and avoid
+claiming freshness that the integration cannot establish. Detailed invalidation/version evidence,
+cache behavior and future first-use/background refresh procedures remain integration work. Future
+automation must preserve current authorization, supported activation boundaries and safe retry.
 
 Resource templates for MCP services describe reusable endpoint/process/transport/authentication
 setup. Pool-owned instances and connection attachments realize that setup under current access.

@@ -356,13 +356,19 @@ to load its own instructions. Structured preparation actions can run before infe
 free-text behavioral instructions remain agent guidance. The Agent template can contain both,
 distinguished explicitly. A Conduit never becomes an installation script.
 
-Recommended v0 rules: same Resource UID/revision/action activates once; incompatible versions
-or duplicate exposed names require an explicit preference or leave the affected activation
-unavailable. Required preparation failure prevents that execution from starting; optional
-failure leaves it usable with a diagnostic. Other permitted bindings need not fail.
-Source updates become available through live access, but do not silently replace executable
-extensions or already-loaded prompt content. Show changes and apply them at a defined safe
-boundary through explicit reconfiguration. These behavior choices need a ruling.
+Accepted Conduit v0 rules (R5): avoid duplicate equivalent preparation without merging different
+configurations, routes or rights. Incompatible versions or duplicate exposed names require a
+deliberate choice or leave affected activation unavailable. Required failure blocks readiness;
+optional failure is reported. Source updates remain available for authorized reads, but loaded
+instructions/extensions and exposed tool definitions change through supported explicit refresh.
+Authorized Agents can request this at a safe boundary without mandatory human confirmation.
+
+Dynamic MCP discovery remains supported; it does not require automatic catalog reload. Detected
+stale/incompatible definitions withhold affected calls pending refresh/reconciliation. Data updates
+alone need not invalidate tool schemas. Detection depends on integration evidence; a rejected call
+may reveal drift for the first time. Do not silently adapt or replay an uncertain write. Automatic
+first-use/background refresh policies are deferred; current access, credential refresh and transport
+recovery remain separate. See [the accepted activation contract](../DESIGN.md#activation-instructions).
 
 Native skill text can be portable while hooks are not. A Claude model in Conduit's runtime
 does not provide Claude Code's plugin API. A Pi-style terminal does not provide Pi's extension
@@ -544,8 +550,9 @@ The next experiment should be specified in this order:
    are the smallest useful comparison. Do not make a broker or tracker mandatory to prove it.
 
 For discussion, resolve the grouped choices in [REVIEW.md](../REVIEW.md#next-discussion)
-before converting these proposals into requirements or starting implementation. R5 covers activation;
-R7 covers the communication contract. Those closure bundles replace a separate Pi review queue.
+before converting remaining proposals into requirements or starting implementation. R5 settles
+activation and explicit refresh; R6 covers configuration/extension resolution and R7 communication.
+Those closure bundles replace a separate Pi review queue.
 
 [factories]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/providers/all.ts
 [provider-interface]: https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/src/models.ts

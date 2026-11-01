@@ -382,7 +382,9 @@ An instance author may request narrower use, but cannot declare unsupported beha
 For v0, prefer concrete adapters and only the capability contracts needed by the experiment.
 Integration contracts now support discovery/invocation over dynamically supplied provider catalogs
 and schemas, preserving native tools without a new Conduit contract for each operation. Static
-contracts remain valid. Discovery is not authority; exact refresh/schema-change behavior remains open.
+contracts remain valid. Discovery is not authority. R5 adopts initial discovery and explicit refresh
+in v0, with affected stale/incompatible definitions withheld pending refresh/reconciliation. Automatic
+refresh policies are deferred; exact invalidation/version evidence remains integration work.
 A universal trait registry, multiple inheritance, generated method wrappers for every service, or a policy field
 per provider call would add bookkeeping before demonstrating value.
 

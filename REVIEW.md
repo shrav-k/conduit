@@ -4,7 +4,7 @@ Updated: 2026-10-31. Audited all 11 repository Markdown documents for current co
 unresolved decisions, conflicting recommendations and obsolete questions. Source research remains
 dated evidence; this audit did not rerun provider investigations or validate a runtime.
 
-**The review is not complete yet.** R1–R4 are accepted; three connected decision bundles remain below.
+**The review is not complete yet.** R1–R5 are accepted; two connected decision bundles remain below.
 Their recommendations are not newly accepted requirements. Field names, implementation choices
 and future catalog ideas are separated from those rulings. [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md)
 remain the accepted design; research supplies evidence rather than a second decision queue.
@@ -13,36 +13,25 @@ is preserved on main at c013f0a.
 
 ## Next discussion
 
-**R4 is settled.** Pool composition explicitly distinguishes provisioning from a named entry from
-using a selected existing Resource. Both resolve to a concrete instance binding. Generic object
-labels/selectors and Pool-provided default Agent connections are excluded from v0. Exact fields
-belong in the configuration packet, not another Pool ruling.
+**R5 is settled:** Agent-declared preparation, deliberate collision resolution and explicit refresh
+of loaded instructions/extensions and exposed tool definitions. Automatic refresh/reload is deferred.
+Dynamic provider catalogs remain discoverable; affected stale/incompatible definitions need explicit
+refresh/reconciliation before use. Changes to underlying data alone need no catalog replacement.
+The detailed accepted boundary and provider-detection limits appear below.
 
-Next is **R5: activation and source changes**. Agent configuration already owns activation; Conduits
-provide permitted access. The remaining policy concerns preparation, collisions and updating what
-has been loaded. A template can declare these choices once; explicit behavior does not require a
-human prompt for each activation.
+Next is **R6: the concrete configuration and extension profile**. Work through a coherent
+template → instance → supported change → export example, keeping previously accepted semantics.
+Use it to settle three linked questions:
 
-| Available capability | Example Agent-declared activation |
+| Area | Proposal to make concrete; not yet accepted |
 | --- | --- |
-| Skill collection | Advertise compatible skill descriptions; retrieve full instructions when selected. |
-| Instruction document | Load selected content during preparation within the declared context budget. |
-| Linear MCP access | Expose permitted provider-native tools through the supported integration. |
-| Native executable extension | Load only when the actual runtime supports its hooks; model compatibility alone is insufficient. |
+| Authoring values | A strict typed YAML data profile: predictable scalars, duplicate/unknown-key rejection, explicit path/environment inputs and no implicit shell evaluation. |
+| Instance representation | Distinguish fixed definitions, creation inputs, confirmed applied settings and observations; make export/fresh creation unambiguous after settings change. |
+| Extension resolution | Separate contract identity/version from implementation release; retain explicit implementation selection and reject silent substitution or migration. |
 
-**Recommendation, not yet a ruling:** apply declared compatible activation during preparation;
-required failures block readiness and optional failures are reported. Resolve conflicting exposed
-names explicitly rather than choosing by discovery order. Equivalent repeated preparation should
-avoid duplicate loading without merging different configurations, routes or authority.
-
-Changed source content becomes available for reads, but does not silently replace already-loaded
-instructions or extensions. Refresh uses a supported explicit operation at a safe runtime boundary;
-unsupported replacement requires a new execution/instance as its fixed contract dictates. This does
-not freeze live access restrictions or the separately agreed dynamic provider tool catalogs.
-
-The alternative adds automatic reload and precedence rules, including when changed content enters
-model context and what happens to active tools/extensions. Exact action fields, compatibility
-diagnostics and refresh mechanisms belong in the schema/adapter design after this policy is chosen.
+Draft related fields/examples together. Exact spelling, parser library, plugin ABI and storage are
+engineering choices unless they expose a new protocol behavior; they do not need individual votes.
+Communication remains R7 after this profile.
 
 ## Settled foundation
 
@@ -56,13 +45,14 @@ diagnostics and refresh mechanisms belong in the schema/adapter design after thi
 | Ownership/authentication | Exactly one Pool owns each Resource instance; creation/attachment goes through it. Reusable authentication is a Pool-owned Resource. Shared service login does not merge Agent accounts/private state. |
 | Retirement | R3 requires explicit Resource retirement before Pool deletion, with bulk actions allowed and partial failures reported. Ownership transfer is deferred. A fully ended Conduit is replaced by a new instance for later participation; retained Resources/data remain separate. |
 | Composition/access | Explicit provision-from-entry or use-existing-instance intent; availability alone does not deploy. Agent templates declare starting Conduits; no Pool connection defaults. Local entries, reusable composition, capability matching and partial readiness remain. Filters preserve complete paths; routing is unambiguous/explicit. Grants follow recipient participation. |
+| Activation | Declared compatible preparation; required/optional failures and explicit collision resolution. Refresh of loaded content/extensions and exposed tool definitions is explicit in v0; automatic policies are deferred. Known stale/incompatible calls are withheld, with detection limits reported. |
 | Protocol | MCP preferred externally; native provider catalogs preserved. Extensible plugin behavior, no exhaustive domain-state enum or mandatory generic invocation wrapper. |
 | Continuity/evidence | Stable identity, explicit rebind, current-access delivery, safe retries, explicit restart of stopped Agents, portable checkpoints, retained evidence and honest telemetry gaps. |
 | Startup | Seed management objects once, reuse them and explicitly repair inconsistencies. No silent reseeding/purge. Repair mechanics remain implementation work. |
 
 ## Remaining decision bundles
 
-R1–R4 are settled; agree or explicitly defer R5–R7. Recommendations become normative only after a
+R1–R5 are settled; agree or explicitly defer R6–R7. Recommendations become normative only after a
 ruling. Draft related schemas/examples together instead of voting on every field separately.
 
 | ID | Contract needing a ruling | Recommended v0 direction | Alternative adds |
@@ -71,7 +61,7 @@ ruling. Draft related schemas/examples together instead of voting on every field
 | R2 — accepted | What execution semantics do authored graphs guarantee? | Finite, acyclic typed dependency graphs, waits, valid-progress recovery and supported independent parallel steps; branching/loops inside plugins initially. | Authored conditions, iteration and dynamic graph fan-out deferred. |
 | R3 — accepted | How do Resources, Pools and ended Conduits retire or get replaced? | Explicit Resource retirement before Pool deletion; bulk action allowed, partial failure retains the Pool. Later participation after flow end uses a new Conduit ID and fresh attachments. | Ownership transfer deferred; no implicit cascade or same-ID reopening of ended Conduits. |
 | R4 — accepted | How are connections selected, delegated and routed? | Explicit Pool entries and provision-or-use-existing intent; no generic labels/selectors, automatic deployment or Pool connection defaults. Unambiguous/explicit routing and recipient-bound grants. | No implicit reuse/provision selection; richer reuse policies deferred. |
-| R5 | When do accessible skills, content and catalogs become active? | Explicit compatible preparation; resolve collisions deliberately; source changes do not silently replace loaded instructions/extensions. Refresh at a supported boundary. | Hot reload, implicit precedence or automatic context injection semantics. |
+| R5 — accepted | When do accessible skills, content and catalogs become active? | Declared compatible preparation, deliberate collision resolution and explicit refresh. Withhold affected known stale/incompatible calls; report detection limits. | Automatic reload/first-use refresh deferred; no implicit precedence or context replacement. |
 | R6 | What portable configuration/extension profile is shared? | One concrete typed YAML profile; explicit contract/implementation resolution and retained versions; no implicit environment expansion or plugin substitution. | Broader parser features, version-range selection or implicit migration rules. |
 | R7 | What communication contract and usable slice does v0 deliver? | Distinguish calls, retained exchanges and observations; minimal local retained exchange, passive attention and explicit context reads. Trackers optional for the experiment. | Automatic wake, remote guarantees, mandatory tracker coupling or shared editable conversation state. |
 
@@ -159,16 +149,33 @@ identify the creation intent, bound instance, route, rights and survivors.
 
 ### R5 — activation and changing sources
 
-Activation belongs to Agent configuration; access does not imply loading. Recommend compatible
-preparation actions, avoiding duplicate equivalent loading, and explicit collision resolution.
-Resource/revision/action identity is useful but does not erase differing parameters, routes or rights.
-Required activation blocks readiness; optional failure is visible. Changed sources become available,
-but replacing loaded instructions/extensions needs a supported explicit refresh. Dynamic native
-tool catalogs remain supported; incompatible schemas cannot be dispatched as the old contract.
+**Accepted:** activation belongs to Agent configuration; access does not imply loading. Apply declared
+compatible preparation, avoid duplicate equivalent loading and resolve conflicting exposed names
+explicitly. Do not erase differing parameters, routes or rights. Required activation failure blocks
+readiness; optional failure is reported. A template can establish these rules without repeated human
+confirmation. Model compatibility alone does not supply a native extension host.
 
-A new model within the same account/runtime boundary is not the same as installing a native
-extension. Runtime compatibility, model context and native host APIs remain distinct.
-Closure example: activate a skill/tool bundle, change its source, introduce a duplicate and refresh.
+Updated source content remains available for reads, but replacing loaded instructions/extensions
+uses a supported explicit refresh at a safe runtime boundary. Authorized Agents can request it.
+Provider-native catalogs are still discovered dynamically; initial discovery and explicit refresh
+are sufficient for v0. Automatic first-use/background reload policies are deferred. Current access
+restrictions, credential refresh and transport recovery retain their separate behavior.
+
+Distinguish a new Linear issue from a changed tool schema: the first changes data returned by an
+existing operation, while the second may invalidate the exposed contract. At dispatch, use current
+authority and supported change/compatibility evidence. Known affected stale/incompatible definitions,
+or detected changes with unresolved compatibility, withhold the call pending explicit refresh or
+reconciliation. Refresh supplies definitions for the caller to reconsider its request; it does not
+silently adapt arguments or replay writes. Unaffected usable operations can continue.
+
+This is not a universal per-call network fetch or guarantee of pre-call change detection. A provider
+error may be the first evidence; freshness/coverage limits must be visible. Future automatic refresh
+procedures must define invalidation, supported activation boundaries and safe retry. Exact mechanism
+remains adapter work, with no additional v0 ruling required.
+
+Closure example: load a guide/tool bundle, change the guide and a tool schema, detect an affected
+call, explicitly refresh, reconsider the request, and separately handle a provider rejection without
+advance notice. Use the current grants throughout.
 [Pi activation findings](research/PI_CONNECTORS.md#agent-activation-and-pool-resources).
 
 ### R6 — configuration and extension profile
@@ -230,7 +237,7 @@ These do not need individual product rulings unless they change an approved cont
 | CONSTRUCTION, CONFIGURATION | Retained evidence; removed redundant questions about graph-backed controls and a second provisioning ledger. R2's graph boundary is accepted; settings/export/version representation maps to R6. |
 | ESTABLISHMENT, RESOURCES | R2/R3 execution and ownership boundaries are accepted. Kept lifecycle/type cases; remaining extension choices map to R6, with recovery examples drafted within settled contracts. |
 | CONDUITS | Corrected stale claims that control outcome/concurrency policy was unchosen. R3 settles retirement/ended-flow identity; routing/communication map to R4/R7. |
-| PI_CONNECTORS, PI_RUNTIME | Retained pinned evidence; removed the obsolete single-controller recommendation. Conduit-facing examples use Agent/Interface terminology. Activation/communication map to R5/R7. |
+| PI_CONNECTORS, PI_RUNTIME | Retained pinned evidence; removed the obsolete single-controller recommendation. Conduit-facing examples use Agent/Interface terminology. R5 settles explicit activation/refresh; communication remains R7. |
 
 No research result proves a Conduit implementation. Source-system terms remain where they describe
 those systems; candidate types and illustrative fields are not accepted schemas.

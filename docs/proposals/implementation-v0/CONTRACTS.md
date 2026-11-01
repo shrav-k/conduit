@@ -254,9 +254,13 @@ establishment; current authentication, readiness and enforcement still require a
 verification. Shared definitions supply schemas without copying them into each implementation.
 This does not certify the implementation or prove a running connection fulfills the requirement.
 
-Detailed declaration syntax and matching, the core catalog, composition, evaluation protocol and
-enforcement policies below remain proposed. A Conduit template composes requirements for roles and
-their relationship. Concrete instantiation binds existing endpoint capabilities and records resolved
+**Accepted composition:** requirement definitions may compose existing requirements without new
+plugin code when endpoints support every constituent. Preserve the original meanings and limits;
+check constituent support rather than treating a bundle's name as proof or a new grant.
+
+Detailed declaration syntax and matching, the core catalog, composition mechanics, evaluation
+protocol and enforcement policies below remain proposed. A Conduit template composes requirements
+for roles and their relationship. Concrete instantiation binds existing endpoint capabilities and records resolved
 requirements in its retained definition. Plugins do not enumerate user-created Conduit template
 names. Matching a name, JSON shape or similarly named field is not sufficient evidence of support.
 
@@ -267,7 +271,7 @@ names. Matching a name, JSON shape or similarly named field is not sufficient ev
 | Implementation support | Accepted: publish supported requirement versions, endpoint roles and known limitations; check before establishment, then verify applicable runtime facts. Exact declaration/matching syntax remains open. |
 | Satisfaction | Proposed detail: describe evidence/checks, preconditions and guarantees sufficient for a particular requirement. |
 | Runtime responsibility | Where needed, identify supported checking/enforcement behavior from the selected implementations and the facts it requires. A schema alone does not enforce behavior. |
-| Composition | Explain applicable conjunction, repeated constraints and conflicts; preserve source requirements in diagnostics. |
+| Composition | Accepted: definitions can compose existing requirements with constituent meanings/support preserved. Detailed repetition, conflict and parameter-binding rules remain proposed. |
 | Lifecycle | Describe when evidence must be refreshed and what unavailable support means for the affected behavior. No universal closed domain-state enum is selected. |
 
 These are conceptual responsibilities, not mandatory fields for every tiny extension. A derived

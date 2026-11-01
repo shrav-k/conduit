@@ -487,9 +487,11 @@ implementation choices within I1's accepted boundaries and the pending I3 packag
 **Accepted:** endpoint templates select their plugins; endpoint instances manage implementations
 and local bindings; Conduits match compatible capabilities and coordinate the relationship.
 Conduit templates define relationship contracts by composing reusable typed requirements, with
-a small base vocabulary and author extensions. That direction is accepted; definition/publication,
+a small base vocabulary and author extensions. Definitions may themselves compose existing
+requirements while retaining every constituent's meaning and limits. Detailed publication,
 composition and satisfaction mechanics remain under review. Process placement, SDK API and YAML
-syntax remain open.
+syntax remain open. The [concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families)
+separates working vocabulary from the five object families; final naming stays open.
 
 ### Plugin, template, graph and instance
 
@@ -509,6 +511,31 @@ An instance's logical boundary does not dictate its process count. Its responsib
 host trusted handlers, run an instance-specific helper containing several plugins, supervise child
 processes or attach external implementations. Code reuse does not implicitly share private state,
 authentication or grants. Supported external-service association does not imply owning that service.
+
+### One Linear connection through the authoring concepts
+
+This is a conceptual walkthrough, not final package names or graph syntax:
+
+| Concept | In this example |
+| --- | --- |
+| Plugin contributions | Authentication and MCP integration contracts with code or service bindings that implement them. They may be packaged together or separately. |
+| Offered capability | The MCP-access Resource supports discovery and invocation of provider-native tools through its declared integration. |
+| Relationship requirements | A reusable `review-access` definition combines permitted read operations, the selected workspace and a response-size bound. Every part must have endpoint support. |
+| Callable operations | Resolve the selected authentication binding, prepare a connection and inspect its supported catalog. Each is an operation export, not necessarily a whole plugin. |
+| Setup graph | Orders those operations using their typed outputs and dependencies. Runtime startup, where needed during setup, remains instance-managed. |
+| Templates | A Pool template assembles the auth and MCP Resource entries; Resource/Agent templates select their implementations; a Conduit template declares the relationship and restrictions. |
+| Instances | The Pool owns the concrete Resources. Endpoints manage shared authentication/client state and local bindings. The Conduit retains the concrete relationship and participation. |
+
+After setup, an Agent's native Linear tool invocation uses its selected Conduit path. Endpoint
+implementations enforce applicable requirements and invoke the shared Resource's provider access.
+The setup graph does not run anew for every call, and its successful completion is not permanent
+authorization. Per-call work, ongoing services and connection participation retain their existing
+operation and instance lifetimes. The Interface exposes their correlated state and outcomes.
+
+This is why a plugin is not a Resource: the same implementation can serve separate Resources with
+different Pool owners, workspaces and authentication. A requirement is not a setup node: its condition
+may need to hold on every invocation. A Conduit is not a graph: the live relationship can outlast
+its establishment procedure. Final naming should preserve these differences.
 
 ### The five families
 
@@ -643,7 +670,7 @@ into the Conduit definition or replacing familiar tool names with a generic wrap
 | Author task | What is authored | What need not change |
 | --- | --- | --- |
 | Restrict an existing relationship | Compose known requirements with values and selected endpoints in a Conduit template. | Plugin code and core dispatch, where selected endpoints already support the constraints. |
-| Package a reusable specialization | Compose existing typed requirements with deliberate defaults/limits, using explicit definition references. | No new executable merely to restate supported conditions. Exact packaging/composition syntax remains open. |
+| Package a reusable specialization | Accepted: a requirement definition composes existing requirements with explicit references and chosen parameters. Every constituent keeps its meaning and limits. | No new executable when endpoints support every part. Exact packaging/composition syntax remains open. |
 | Introduce new behavior | Publish its requirement meaning, parameter schema and implementation support/checking/enforcement where needed. Select supporting plugins in endpoint templates. | The five families and generic core dispatch; publication alone does not add code to existing instances. |
 
 **Concrete extension example:** a fake deployment service accepts a typed region argument. An
@@ -674,8 +701,8 @@ graphs call declared endpoint operations to establish prerequisites; instances m
 behavior. A satisfied parameter schema does not prove behavioral correctness, authorization or
 recovery. Plugin tests and runtime evidence remain necessary where the requirement calls for them.
 
-Before specifying syntax, review reusable requirement composition, satisfaction responsibility,
-conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
+Before specifying syntax, use the concept map to review reusable procedure contracts, satisfaction
+responsibility, conflict semantics and runtime revalidation/failure behavior. The small core vocabulary
 and first authoring proof follow those choices. Do not make every custom requirement a Boolean
 expression or assume a general constraint solver can establish arbitrary provider guarantees.
 

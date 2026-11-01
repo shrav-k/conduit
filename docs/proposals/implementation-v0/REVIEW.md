@@ -84,9 +84,12 @@ native Claude/Codex adapters first, then build Conduit's own Rust model/tool loo
 **Accepted initial platform:** macOS-first native integration and subscription-account validation,
 with a portable Rust core and OS-specific adapters. Other platforms need their own evidence.
 
-**Next ruling:** I3's reusable requirement composition, followed by runtime satisfaction and a
-minimal proof. Independent requirement definitions, published plugin support declarations with
-runtime verification, and endpoint-selected/managed implementations are accepted.
+**Current framing checkpoint:** clarify the authoring concepts beneath the five object families
+before continuing I3. Requirement composition, independent definitions, published plugin support
+with runtime verification, and endpoint-selected/managed implementations are accepted. Use the
+[concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families) and
+[Linear walkthrough](AUTHORING.md#one-linear-connection-through-the-authoring-concepts); final names
+remain open. Reusable procedure contracts and runtime satisfaction are the next conceptual topics.
 Connection lifecycle, physical execution and distribution follow these conceptual boundaries.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
@@ -263,21 +266,31 @@ its schema. Current authentication, readiness and actual enforcement still requi
 runtime verification. Otherwise valid configuration may remain registered but unready. This does
 not select a general schema-subtyping solver, negotiation format or enforcement API.
 
-**Next ruling — reusable composition:** recommend allowing a requirement definition to compose
-existing requirements without new plugin code when the selected endpoint implementations support
-every constituent. For example, `review-access` could combine permitted read operations, a project
-target restriction and a result-size limit for reuse across Conduit templates. These remain explicit
-obligations with their original meanings and limits; support for the bundle follows its constituents,
-not merely its name. It supplies no new permissions or implementation behavior. The alternative
-keeps requirement definitions primitive and places all reusable grouping in Conduit templates.
-This selects an authoring capability; nesting rules, parameter bindings and exact syntax remain open.
+**Accepted — reusable composition:** a requirement definition may compose existing requirements
+without new plugin code when endpoint implementations support every constituent. For example,
+`review-access` combines permitted read operations, a project restriction and a result-size limit
+for reuse across Conduit templates. Constituents retain their meanings and limits; a bundle name
+supplies no permission or implementation behavior. Nesting/parameter-binding syntax remains open.
+
+**Framing checkpoint:** the user identified unclear vocabulary beneath the five families. Clarify
+responsibilities now without inventing more object classes or prematurely renaming protocol fields.
+Requirements compose obligations; graphs compose operations supplied by plugins. Contracts describe
+meaning and behavior; plugins publish reusable contributions; templates assemble them into object
+definitions and instances realize those definitions. The concept map and Linear example explain
+these relationships. A final naming pass can follow the conceptual review alongside I7.
+
+**Next conceptual topics:** whether a reusable graph should expose a typed operation contract so
+another graph can invoke the procedure, and how requirement definitions assign fulfillment duties
+while endpoint implementations supply the mechanism. Both remain open. Graph representation,
+implementation packaging and runtime supervision must not become synonyms. This checkpoint does
+not reopen accepted Pool ownership, endpoint implementation selection or instance lifecycle rules.
 
 Review the remaining consequences in three groups, before returning to process placement:
 
-1. **Composition and authoring:** reusable definitions composed from existing requirements versus
-   definitions that introduce new semantics. Published implementation support is accepted; its
-   detailed representation remains I7 work. Reuse the contract-bundle path without another object
-   family or broad helper SDK prerequisite.
+1. **Composition and authoring:** distinguish the accepted composition of obligations from the
+   procedural composition of plugin operations. Review reusable graphs and their callable boundaries;
+   consolidate naming after the concepts stabilize. Detailed representations remain I7 work, using
+   existing contract publication without another object family or broad helper SDK prerequisite.
 2. **Composition and execution:** which static conflicts can be diagnosed; who checks/enforces a
    requirement at binding, invocation, delivery or cleanup; how changing facts, uncertain evidence
    and unavailable implementations affect dependent operations. Preserve whole-path narrowing,

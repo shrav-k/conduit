@@ -43,7 +43,13 @@ Templates contain typed configuration, a finite setup graph, ongoing runtime dec
 supported controls. One template establishes many independent instances; registration alone runs
 nothing. An instance retains its resolved definition and current stored settings and need not have
 a dedicated process. Plugins supply or bind typed operations and runtime behavior; graphs wire them
-together. Capabilities describe compatibility. These are not additional object families.
+together. Capabilities describe what endpoints offer; requirements state what a relationship needs.
+Requirements compose obligations, while graphs compose callable operations and their dependencies.
+Plugins publish contracts and implementation bindings for these behaviors. These are authoring and
+extension concepts beneath the five families, not additional object families. The
+[concept map](DESIGN.md#authoring-concepts-beneath-the-object-families) defines the working terms;
+final naming remains open.
+
 Endpoint templates select their connection plugins, and endpoint instances manage their local
 implementations and bindings. Conduits match compatible endpoint capabilities and coordinate
 establishment, restrictions and participation; they do not install new endpoint plugin code.
@@ -157,8 +163,10 @@ Caller identity and shared provider identity are recorded separately.
 ## Connections, filtering and communication
 
 Conduit templates define relationship contracts by composing reusable typed requirements.
-A small base vocabulary is extensible with author-defined requirement types. Endpoint-selected
-plugins satisfy the applicable meanings; Conduit instances bind concrete participants and retain
+A small base vocabulary is extensible with author-defined requirement types. Definitions may also
+compose existing requirements for reuse without new code when endpoints support every constituent;
+composition preserves their meanings and restrictions. Endpoint-selected plugins satisfy the
+applicable meanings; Conduit instances bind concrete participants and retain
 relationship state/evidence. Each requirement's versioned meaning, typed parameters and applicability
 are defined independently of a particular implementation; multiple plugins can implement it, and
 both may ship together. Plugins publish supported requirement versions, endpoint roles and known

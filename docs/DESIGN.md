@@ -55,6 +55,45 @@ Resource creation/attachment always goes through its owning Pool, including supp
 for Conduits. Templates are reusable across Pools; each resulting Resource instance has one owner.
 Backing data, credentials and process lifetime are distinct from registry identity/ownership.
 
+### Authoring concepts beneath the object families
+
+The five families describe the objects Conduit manages. The authoring and extension concepts below
+describe how those objects are defined, connected and operated. They are not competing object
+families or additional independently provisioned things. These are working terms for the existing
+responsibilities; final naming and schema spelling remain a coordinated review task.
+
+| Working term | Responsibility | How it composes |
+| --- | --- | --- |
+| Contract | An inspectable agreement about meaning, typed values and behavior. Operation, capability, type and requirement contracts describe different aspects of an extension. | Definitions reference other definitions rather than duplicating their meaning. A schema describes valid data; the behavioral contract also explains what it means. |
+| Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
+| Requirement | What must hold for a particular relationship or its use, with typed parameters and applicability. This can include compatibility or lifecycle obligations as well as restrictions. | A reusable definition can compose existing requirements. Every constituent retains its meaning and limits; support is checked against the constituents. |
+| Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
+| Graph | A finite dependency structure describing a procedure for setup or a supported change. | Nodes call plugin operations; output bindings and explicit dependencies order the work. A plugin's whole package is not the unit of execution. |
+| Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services or both. | Authors select contributions in templates and compose their exported operations in graphs. A plugin need not be one function, process, Resource or installable package. |
+
+A template assembles these definitions for one of the five families: configuration, selected
+implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
+instances realize that definition with identity, state and managed activity. The template bridges
+authoring and the managed object model; it is not merely a graph. Ongoing services remain under
+instance management rather than belonging to a finite setup node.
+
+There are two distinct forms of composition. Requirements combine obligations; graphs combine
+actions and their dependencies. A graph may establish prerequisites for a requirement, but
+successfully finishing setup does not prove that every later request satisfies it. Conversely, a
+requirement declaration does not itself run an authentication or connection procedure. Plugins can
+supply the behavior for both, without collapsing declaration, execution and ownership together.
+An operation can also be invoked directly through its supported surface; ordinary tool calls do
+not need a new authored graph merely to be callable.
+
+A Conduit uses both forms: its contract composes relationship requirements and its procedures
+coordinate establishment through selected endpoint capabilities. Its instance represents the live
+relationship. It is neither the universal name for any graph nor the package that supplies endpoint
+code. The [Linear walkthrough](proposals/implementation-v0/AUTHORING.md#one-linear-connection-through-the-authoring-concepts)
+illustrates these boundaries. Whether reusable graphs also expose callable operation contracts is
+still a review choice; this framing does not silently add a graph-call or packaging protocol.
+
+### Distribution and execution
+
 **Distribution direction:** objects should operate independently and eventually be deployable
 across systems. One Pool can own Resources deployed on different systems; Conduits can span a
 network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
@@ -1526,9 +1565,13 @@ to recognize every user-created Conduit template by name.
 
 Provide a small base vocabulary and allow authors to define additional requirement types. These
 are contract/authoring definitions, not a sixth object family, a separate deployment or a runtime
-instance per condition. A Conduit may compose known requirements without new code; a new behavioral
-meaning needs suitable implementation support. Publication of a requirement does not install code
-at endpoints or change their fixed definitions.
+instance per condition. Requirement definitions can themselves compose existing requirements:
+`review-access` could combine permitted read operations, a project restriction and a result-size
+limit, then be reused by several Conduit templates. Every constituent retains its meaning and limits;
+support is checked against the constituents rather than inferred from the bundle's name. No new
+plugin code is needed when the selected endpoints support every part. New behavioral meanings still
+need suitable implementation support. Publication does not install endpoint code, change fixed
+definitions or grant access. Composition syntax and parameter binding remain open.
 
 Each requirement has a reusable, versioned definition of its meaning, typed parameters and
 applicability, independent of any single implementation. Multiple endpoint plugins can implement

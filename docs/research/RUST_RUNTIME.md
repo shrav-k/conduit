@@ -6,6 +6,10 @@ dependencies or change the five-family model. The proposed
 [runtime experiment](../../experiments/002-runtime-plugins/README.md) separates hypotheses from
 validation. No runtime implementation or live provider tests were performed for this report.
 
+The subsequent [implementation proposal](../proposals/implementation-v0/README.md) specifies
+processes, storage, contracts, crate boundaries and milestones in detail, with a grouped pending
+review. It builds on this report without treating recommendations as accepted choices.
+
 ## Recommendation
 
 Start with a Conduit-owned Rust supervisor built on Tokio, a small durable local control store,

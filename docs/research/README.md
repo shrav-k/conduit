@@ -5,6 +5,10 @@ It is not an additional set of requirements. The current concrete configuration 
 [experiments](../../experiments/README.md), where proposed syntax and validation evidence are
 kept together. Completed ruling queues and duplicate configuration walkthroughs have been removed.
 
+The [v0 implementation proposal](../proposals/implementation-v0/README.md) applies this evidence
+to concrete runtime and repository boundaries. Its pending decisions are separate from research
+findings and from the accepted protocol.
+
 | Report | Read it for |
 | --- | --- |
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |

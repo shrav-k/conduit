@@ -5,11 +5,16 @@ Read the [specification](SPEC.md) first, then the
 [design contracts](DESIGN.md) for precise behavior and [review](REVIEW.md) for the boundary
 between settled decisions, schema proposals and future work.
 
+For implementation planning, read the [v0 proposal](proposals/implementation-v0/README.md) and its
+[seven-item review](proposals/implementation-v0/REVIEW.md). It is separate from accepted protocol;
+crate, deployment and extension choices remain proposals until reviewed or validated.
+
 | Location | Purpose | Authority |
 | --- | --- | --- |
 | [SPEC.md](SPEC.md) | Concise model, workflow and scope. | Current design summary. |
 | [DESIGN.md](DESIGN.md) | Identity, construction, controls, access, lifecycle and domain contracts. | Detailed accepted behavior. |
 | [REVIEW.md](REVIEW.md) | Consolidated review outcomes and questions to test with examples. | Review boundary; no parallel decision ledger. |
+| [proposals/implementation-v0/](proposals/implementation-v0/README.md) | Concrete runtime architecture, plugin contracts, repository organization and grouped implementation choices. | Proposed implementation; pending rulings are explicit. |
 | [experiments/](../experiments/README.md) | Concrete configuration, walkthroughs and acceptance evidence. | Proposed syntax and tests until adopted/validated. |
 | [research/](research/README.md) | Primary sources, comparisons and recorded probes. | Evidence, not additional requirements. |
 
@@ -17,5 +22,6 @@ Keep each detailed rule in DESIGN. Experiments link to those rules rather than i
 contract. Record actual validation separately from expected outcomes. Research can describe
 broader possibilities or another system's behavior without changing Conduit's design.
 
-Current work is documentation only on `main`. No live provider experiments
-or runtime implementation have been completed by drafting the YAML examples.
+The accepted design is on `main`; implementation planning is still documentation only. No live
+provider experiments or runtime implementation have been completed by drafting the YAML examples
+or implementation proposal.

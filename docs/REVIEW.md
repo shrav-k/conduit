@@ -1,6 +1,6 @@
 # Review outcome and schema walkthrough
 
-Updated: 2026-10-31. The current v0 direction review is complete: R1–R7 are settled within the
+Updated: 2026-11-01. The current v0 direction review is complete: R1–R7 are settled within the
 boundaries below. There is no remaining tracker ruling. Linear/Jira integrations, message history
 and specialized tracking are Resource capabilities within the existing five-family model.
 [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) define the current contract; research supplies evidence,
@@ -10,6 +10,11 @@ This closes direction review, not implementation or provider validation. The rev
 is on `main`; the earlier baseline remains available in Git history at `c013f0a`.
 
 ## Next discussion
+
+The [implementation proposal](proposals/implementation-v0/README.md) now describes processes,
+contracts, persistence, ownership, crate organization and delivery milestones. Its
+[review queue](proposals/implementation-v0/REVIEW.md) groups seven pending implementation choices.
+Start there for architecture review; these proposals do not reopen or supersede R1–R7.
 
 Review the [concrete YAML packet](../experiments/001-shared-access/README.md) as one connected
 example. It now includes templates for all five families, resolved instance examples, fixture
@@ -103,7 +108,7 @@ to the required separate two-Claude/two-Codex compatibility checks, without an i
 | Work | How to resolve it |
 | --- | --- |
 | YAML field names, API/type/capability versions, exact ID/cursor/receipt formats and validation diagnostics | Review the proposed packet, then define schemas against the agreed contracts. |
-| Rust crates, plugin ABI/processes, persistence, transport, client pooling and exporter implementations | [Rust runtime research](research/RUST_RUNTIME.md) and [experiment 002](../experiments/002-runtime-plugins/README.md) propose a first test. Engineering choices remain unratified; surface material behavior or trust changes. |
+| Rust crates, plugin ABI/processes, persistence, transport, client pooling and exporter implementations | The [implementation packet](proposals/implementation-v0/README.md) turns [research](research/RUST_RUNTIME.md) into a proposal and grouped review. [Experiment 002](../experiments/002-runtime-plugins/README.md) provides the first failure tests; implementation choices remain unratified. |
 | Limits, timeouts, provider-specific queues/recovery and UI layout | Type/adapter defaults tested against failure examples, not universal micro-rulings. |
 | Multi-user/remote administration, broader interception and sandbox tiers | Later extensions; retain current native/isolated boundaries and honest coverage. |
 | Advanced sharing/publication, automatic extraction/expiry, inheritance and public registries | Keep deferred until a concrete need warrants the added contracts. |

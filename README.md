@@ -11,6 +11,7 @@ The implementation direction is Rust, with replaceable frontends and provider in
 - [Specification](docs/SPEC.md) — the five-family model and core behavior
 - [Design contracts](docs/DESIGN.md) — detailed accepted rules
 - [Review](docs/REVIEW.md) — settled boundaries and remaining schema work
+- [Implementation proposal](docs/proposals/implementation-v0/README.md) — architecture, contracts, organization and decisions for review
 - [Concrete YAML walkthrough](experiments/001-shared-access/README.md)
 - [Research](docs/research/README.md) — evidence, alternatives and source limitations
 

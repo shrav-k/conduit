@@ -5,6 +5,10 @@ Status: proposed, not implemented or executed. Written 2026-11-01 from the
 choices within the [specification](../../docs/SPEC.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
 
+The [implementation proposal](../../docs/proposals/implementation-v0/README.md) expands the host,
+worker, schema and persistence boundaries this spike would exercise. Its review choices remain
+pending; this experiment still contains no executable implementation or measured results.
+
 ## Question
 
 Can a small Rust supervisor coordinate instance-owned activity, finite plugin graphs and

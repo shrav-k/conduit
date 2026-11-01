@@ -1,0 +1,181 @@
+# Implementation review: decisions needed
+
+Status: all seven items below are **pending**. Recommendations are proposed, not recorded user
+rulings. Read the [architecture](ARCHITECTURE.md) for the connected system and
+[contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
+reopen the five families, Pool ownership, fixed definitions, shared authentication or typed filters.
+
+## Suggested review order
+
+| Item | Decision | Recommendation |
+| --- | --- | --- |
+| I1 | Host deployment and crash-survival expectations | Persistent local host; frontend detaches; no mandatory native-execution survival across host crash initially. |
+| I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
+| I3 | Public plugin boundary and initial distribution | Versioned executable workers, MCP-first lifecycle profile, first-party/local packages; Wasm later. |
+| I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
+| I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
+| I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
+| I7 | Concrete authoring/schema conventions | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles. |
+
+Several items can be approved together, but I1 and I2 determine delivery expectations. I3/I7
+determine what an extension author writes. I4/I5/I6 determine what the first real installation
+retains. Numbers for queue sizes, spelling of internal helpers and crate splits are engineering
+defaults to test, not separate ruling queues.
+
+## I1 — Persistent host and recovery boundary
+
+**Recommendation:** one persistent host per registry, launched on demand or explicitly. CLI/TUI
+attachments can come and go; managed instances remain. Explicit host shutdown is a separate
+action. Initial native adapters need not keep executions alive across a host crash, but must
+distinguish verified running, verified ended and unknown, and never duplicate unknown work.
+
+**Example:** closing the terminal leaves an Agent working. If `conduitd` itself crashes, its
+adapter may verify/reconnect the existing execution, or report that it ended/needs reconciliation.
+It does not silently start another Agent turn. Plugin-worker connection loss invalidates its
+handles; an unresolved remote write stays unresolved even if the worker is killed.
+
+**Alternative:** require a separate persistent execution broker from the beginning so native
+Agents survive supervisor replacement. That adds broker identity, reconnection, credential
+handoff and process-ownership recovery before the first integration. A foreground-only host is
+another option, but makes frontend-independent lifetime harder to deliver naturally.
+
+**Ruling needed:** accept the persistent-host model and the stated first-version crash boundary,
+or make crash-surviving native execution a launch requirement. Normal frontend detachment is
+already accepted and is not being reconsidered.
+
+## I2 — First real Agent path and supported platform
+
+**Recommendation:** validate on macOS first, establish the synthetic Rust supervisor and terminal
+inspection surface, then prioritize native Claude/Codex adapters for the subscription/account
+experiment. Build the Conduit-owned provider/tool loop as a distinct subsequent milestone. Keep
+portable Rust core tests suitable for Linux; do not claim Windows/native isolation support before
+its process/credential/environment adapters exist.
+
+**Example:** two Claude and two Codex subscriptions can exercise shared MCP and communication
+through native drivers while Conduit owns identities, connections, history Resources and evidence.
+That verifies the account goal; it does not pretend their native agent loops are Conduit's loop.
+The later owned-loop driver supplies Rust-controlled context, provider dispatch and tool iteration.
+
+**Alternative:** implement one direct model provider and the owned loop first, then native accounts.
+This demonstrates the desired Rust runtime earlier but may initially require a different supported
+access mechanism and does not establish subscription-account compatibility.
+
+**Ruling needed:** delivery order and macOS-first validation scope. The accepted end state still
+includes Conduit's own runtime and a replaceable Pi-inspired terminal. No proposal adopts Pi's loop.
+
+## I3 — Plugin execution and distribution
+
+**Recommendation:** use exact-version executable workers for externally supplied implementation
+code. Standard MCP tools/resources and optional features carry compatible exchanges; document a
+small Conduit worker profile for owner-bound lifecycle/recovery. Internal trusted Rust traits
+remain an implementation convenience. Start with first-party bundled artifacts and explicit local
+package installation; defer a marketplace and arbitrary-language dependency resolver.
+
+**Example:** a Pool-owned service Resource keeps worker A while a new application release ships
+worker B. A replacement Resource can select B and explicitly reuse compatible backing. Installing
+B does not modify A's behavior. A standard remote MCP service remains usable without pretending
+its server implements the Conduit worker lifecycle profile.
+
+**Alternatives:** a dedicated binary RPC for workers may make lifecycle methods simpler but adds
+another public protocol; in-process-only plugins reduce initial process plumbing but complicate
+exact implementation retention and failure containment; Wasm-first adds a host-capability and
+packaging system before proving the required native integrations.
+
+**Ruling needed:** adopt MCP-first executable workers as the first extension target, or prefer a
+different boundary. Exact artifact pinning and replacement on upgrade are already accepted. The
+experiment must test whether the MCP profile stays small before treating its method set as stable.
+
+## I4 — Local transactional authority
+
+**Recommendation:** a SQLite control store, owned by one host and accessed through a bounded store
+thread. It holds registry revisions, operation outcomes, participation and committed evidence;
+Resource implementations can use separate backends. Default durable control commits use WAL/FULL.
+
+**Example:** Xerj is offline but the Interface can still show that a search Resource is unavailable,
+what setup completed and which control is uncertain. Rebuilding its search index does not change
+an Agent's ID or erase a delegation. A stopped exporter does not lose local operation outcomes.
+
+**Alternative:** make the control store itself replaceable through an external plugin from day one.
+That requires a stronger transactional/concurrency/bootstrap contract and could make repair depend
+on the failed plugin. JSONL-only storage is simpler to inspect but moves transaction/index/compaction
+responsibilities into our code.
+
+**Ruling needed:** accept a built-in local authority store while keeping domain memory/search and
+other Resource backing extensible. This does not make SQLite a required backend for every Resource.
+
+## I5 — Credential custody and account compatibility
+
+**Recommendation:** explicit OS credential-store support for secrets Conduit itself owns, with
+in-memory fake custody for tests. An unavailable/locked store reports a wait/error instead of
+falling back silently. Native Agent adapters keep authentication under their supported native
+runtime ownership and prove separate-account behavior. Pool service identity remains separate.
+
+**Example:** one authentication Resource supplies appropriate service bindings to shared integrations.
+Agents receive permitted capability use, not a token copied into each private profile. Meanwhile,
+each native model account's refresh/logout is tested against the other account and against separate
+Agent histories. This cannot be proved by choosing different directory names alone.
+
+**Alternative:** begin with explicitly protected local credential files, postponing OS-store
+integration. That simplifies automation/headless setups but changes secret-at-rest expectations and
+requires an explicit storage and unlock policy. It must not be an undocumented fallback.
+
+**Ruling needed:** secret-store default and acceptable first-platform enrollment experience. This
+does not require another Conduit login or change native runtime authentication ownership.
+
+## I6 — What observability captures by default
+
+**Recommendation:** always retain operation identity, actor/target/path, effect outcomes, coverage
+and the safely retained inputs needed for promised recovery. Retain message/history content under
+its Resource contract. Capture other full tool/model payloads only under an explicit operation/type
+recording policy, with content references, bounds and sensitive-field handling. Show missing,
+truncated or deliberately uncaptured content clearly. Never log credentials by default.
+
+**Example:** the Interface can prove a Linear call was admitted, which Agent/account/path performed
+it and whether application was confirmed. It may have a permitted stored response, an excerpt or
+only a reference depending on the declared policy. A missing full response is not presented as
+complete transcript coverage. If omitted input prevents replay, that limitation is recorded.
+
+**Alternative:** full managed tool/model payload capture by default, with explicit sensitive-field
+exceptions. This improves debugging/transcript reconstruction but retains more private content and
+requires reliable payload classification, size limits and scoped access from the outset.
+
+**Ruling needed:** capture default. Retention-until-explicit-purge for captured evidence remains
+accepted; this decides what is captured, not a new automatic-expiry rule. Interface observability
+remains a first-class delivery requirement under either option.
+
+## I7 — Authoring conventions and multi-plugin graphs
+
+**Recommendation:** retain the accepted envelope and propose `conduit/v0alpha1` as its initial
+identifier. Apply group/name/version type references uniformly to the five families. Keep
+`spec.implementation` for the type's owner and add a `spec.plugins` alias map for other exact
+implementation dependencies; graph exports use `{plugin, name}`. Keep schema bundles reviewed and
+language-neutral, with Rust schema generation used as assistance rather than silent authority.
+
+**Example:** a Resource can use its owner's generic connection preparation, an authentication
+export from another package and a database migration export, all explicitly bound. Those code
+aliases do not create Resources, own credentials or bypass Conduits. Instance expansion resolves
+the graph/controls and records code selection independently of later template changes.
+
+**Alternative:** use one uniform `implementations` map, with an explicit alias for the type's owner.
+That is more uniform but adds indirection to every simple template. A Rust-derived public schema
+source of truth is also possible, provided release checks prevent accidental language changes.
+
+**Ruling needed:** choose the authoring arrangement and schema source of truth as a bundle, then
+review amended YAML examples. Parser scalar edge cases, numeric precision limits, schema-default
+coverage and negotiated worker-feature details are implementation/conformance work; a failing
+example should surface a concrete decision rather than another speculative questionnaire.
+
+## Decisions not requested again
+
+We retain the five families; Pool-only Resource ownership; templates as complete recipes; finite
+typed graphs; instance-owned runtimes; current authority checks; native tool preservation; fixed
+instance definitions and implementations; supported controls; shared service auth; private Agent
+context; retained communication with independent readers; no default automatic wake; and explicit
+cleanup/purge. None is being quietly traded away for convenience in a crate or framework.
+
+## After review
+
+Record rulings here in place, fold any changed accepted behavior into DESIGN, and update the
+concrete experiment packet before writing code against its new syntax. Implement M0–M2 first.
+Use the runtime experiment to resolve engineering uncertainties, then execute the selected real
+Agent path. This queue should shrink as choices settle, not become another permanent micro-decision ledger.

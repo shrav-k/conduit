@@ -399,7 +399,7 @@ Independent use has two distinct meanings:
 Neither meaning requires a dedicated process per object, exposure of internal setup operations
 to every client, or use of MCP inside every Rust module. The contract surface can be independently
 addressable while an implementation shares an execution service. Pool-owned managed Resources
-still have one owner. Full independence and outage behavior remain I1 decisions.
+still have one owner. Concrete deployment and outage behavior remain I1 decisions; shared policy and instance-owned state are accepted.
 
 This direction follows MCP's independently operating local/remote servers and composable
 capabilities. MCP supplies discovery/invocation; the additional Conduit semantics remain ours
@@ -451,7 +451,7 @@ The conceptual distinction is: templates configure known contributions; plugins
 publish reusable contributions and explain how their contracts are fulfilled. Whether the
 implementation is code, an existing compatible MCP service, or both need not change that role.
 Do not settle package/template distribution syntax or add a second object registry from this
-example. Separate execution services own managed activity; concrete deployment, authority and
+example. Separate execution services own managed activity; concrete deployment, persistence and
 outage boundaries remain under review.
 
 ## 4. A Resource with a persistent process
@@ -495,7 +495,7 @@ adapter is useful where it removes incidental work, but effects, recovery and li
 remain explicit plugin obligations when applicable. Publication of inspectable contracts with
 implementation bindings and MCP as the public invocation base are accepted. Existing-MCP
 bindings and independent component use now join those accepted boundaries. Management/execution
-separation is also accepted; authority and outage choices come next. Detailed
+separation and shared policy with instance-owned state are also accepted; outage choices come next. Detailed
 package/contract/template syntax is deferred to the end. These rulings do not choose the
 host/worker arrangement or impose a new server framework.
 

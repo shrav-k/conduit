@@ -1,11 +1,12 @@
 # Cloud management patterns and Conduit's authority boundary
 
-Research date: 2026-11-01. **I1 remains open on authority and outage behavior.** Separate
-management and execution services are accepted. This report compares the remaining alternatives
+Research date: 2026-11-01. **Subsequent I1 ruling: shared policy with instance-owned state is
+accepted, alongside separate management and execution services.** Outage behavior remains open.
+This report preserves the authority comparison and its rationale
 using AWS, Google Cloud and Azure, with concrete control and recovery examples. It extends
 [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md), rather than replacing its process-supervision and
 distributed-systems evidence. The [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management)
-is the place to make the ruling.
+records the accepted authority split and the remaining outage ruling.
 
 Method: read primary public architecture, extension and API documentation. No cloud accounts,
 credentials or deployments were used, and no failure behavior was tested. Public API contracts
@@ -26,8 +27,8 @@ Three candidates are worth comparing:
 | B — Object services own configuration and policy | Common discovery/naming can remain | The designated object service owns configuration/revisions and execution records | Object services own their policies within an agreed governance model | Composing and withdrawing authority across services needs additional rules. |
 | C — Shared policy, instance-owned state | Shared management authority | One designated service owns an instance's resolved definition, confirmed settings/revision and managed operation records | Shared policy authority; enforcement happens on the selected path | Authoritative object reads and an aggregate inventory must be distinguished; lifecycle/naming changes still need coordination. |
 
-**Recommendation for discussion: C.** It combines the independence the user wants with a common
-access model. This is a refinement of the alternatives, not an accepted implementation change.
+**Accepted direction: C.** It combines the independence the user wants with a common access
+model. The user selected this after reviewing the comparison; alternatives remain here as rationale.
 Under C, the designated service could be an executor for active instances and management for
 passive objects. One service can own many instances. A plugin handler does not become an authority
 merely because it implements an operation.
@@ -237,9 +238,9 @@ confirm the result, how a caller retrieves it after transport loss, what state a
 and what access is checked. These requirements can be implemented by lightweight shared tooling;
 they do not imply a large SDK or an operation manifest authored by the user.
 
-## 7. Consequences to review before choosing C
+## 7. Consequences of the accepted authority split
 
-The recommendation has costs, which should be explicit in the ruling:
+The accepted arrangement has these implementation consequences; it does not settle their exact mechanics:
 
 1. **One logical registry, distributed facts.** The registry remains the naming/registration surface.
    An inventory row can be a cached observation. A current instance read/export may need its owner,
@@ -249,7 +250,7 @@ The recommendation has costs, which should be explicit in the ruling:
 3. **Whole-object consistency still matters.** Registration, renames, retirement and ownership
    changes can involve both the shared directory and the instance owner. Their ID/version checks
    and reservations need coordination. Do not quietly introduce separate, weaker revision checks
-   for metadata or promise atomic multi-object updates. Exact mechanics follow the authority ruling.
+   for metadata or promise atomic multi-object updates. Exact mechanics remain implementation review work.
 4. **Execution and authority are distinct roles.** An assigned executor may host the instance
    authority in v0. Restarting a worker does not transfer that authority. Unknown owner status must
    not trigger a second writer; automatic migration/failover remains out of scope.
@@ -260,15 +261,14 @@ The recommendation has costs, which should be explicit in the ruling:
    Resource configuration and records what the provider confirms. It does not own the provider's
    internal database or gain stronger recovery guarantees by wrapping it.
 
-If these costs outweigh the benefit for the first implementation, A is a reasonable starting
-arrangement, provided its operation protocol preserves the ability to place state ownership
-elsewhere later. B is also coherent, but decentralizing policy is an additional decision beyond
-making execution and configuration independent. No cloud reference makes one arrangement mandatory.
+A remains a useful comparison for the cost of central configuration commits. B illustrates the
+additional complexity of decentralizing policy. The user selected C for Conduit; that selection
+is a design ruling, not a claim that a cloud reference makes one arrangement mandatory.
 
 ## 8. Changes proposed for experiment 002
 
 Keep the accepted separate management/execution layout and synthetic plugin/template authoring
-proof. Add fault boundaries that discriminate between authority choices:
+proof. Test the selected instance-state authority at these fault boundaries:
 
 - Apply the search setting, retain the responsible service's result, and sever its response to
   the caller/aggregator. Inspect the canonical revision separately from the cached view.
@@ -283,6 +283,6 @@ proof. Add fault boundaries that discriminate between authority choices:
   requiring an aggregate frontend or a new plugin-specific recovery server.
 
 These are proposed tests, not observed results. The first experiment need not implement all three
-authority models or deploy on AWS/GCP/Azure. Select the conceptual owner first, then make that
-choice falsifiable with local service boundaries. Storage technology remains I4; schema spellings
+authority models or deploy on AWS/GCP/Azure. Make the selected authority split falsifiable with
+local service boundaries. Storage technology remains I4; schema spellings
 and MCP profile fields remain I7.

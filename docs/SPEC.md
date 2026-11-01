@@ -50,8 +50,11 @@ owned by one Pool may be deployed on different systems, and Conduits may span ne
 Logical ownership does not require co-location. The first implementation uses separate management
 and execution services: executors supervise managed Agents/Resources, management coordinates
 configuration/control and the Interface presents them. Each executor can host many instances;
-external MCP services retain their own supervision. Authority ownership, outage behavior and
-remote availability guarantees remain under review.
+external MCP services retain their own supervision. Management owns templates, registration and
+shared access policy. One designated service owns each instance's resolved definition, confirmed
+configuration/revision and operation results. The Interface aggregates those sources and identifies
+stale observations; it is not another configuration authority. Resource backends own their domain
+data. Outage behavior, concrete storage/placement and remote availability guarantees remain open.
 
 ## The user workflow
 
@@ -96,7 +99,8 @@ system-owned `status`; authoring rejects it. Stable IDs survive renames; names a
 across forms. Readable references include kind/form/name, while established bindings retain the
 resolved identity until explicitly rebound.
 
-The registry holds active configuration. Writes explicitly create or update; editing a file does
+The logical registry exposes active configuration through its authoritative owners; aggregate
+observations are not independently writable copies. Writes explicitly create or update; editing a file does
 not trigger reconciliation. Template updates replace complete authored configuration with separate
 ID/version checks. Strict typed YAML excludes aliases, anchors, merge keys, custom tags, implicit
 expansion and silent scalar conversion.

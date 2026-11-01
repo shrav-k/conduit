@@ -5,9 +5,10 @@ layout, not files already created. [Architecture](ARCHITECTURE.md) defines respo
 [review](REVIEW.md) identifies choices requiring a ruling before they become commitments.
 
 I1 accepts separate management and execution services; crate boundaries must preserve that
-arrangement. The [research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution
-tests. Authority ownership, binary names, concrete placement and failure guarantees remain under
-review; a single workspace and lockfile do not combine execution and management custody.
+arrangement and the accepted shared-policy/instance-state authority split. The
+[research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
+concrete placement, persistence and failure guarantees remain under review; a single workspace
+and lockfile do not combine execution and management custody.
 
 ## 1. Repository layout
 
@@ -203,8 +204,8 @@ order after the worker slice is subject to **I2**. No calendar estimates are imp
 | Milestone | Deliverable | Exit evidence |
 | --- | --- | --- |
 | M0 — executable language contract | Core types, strict parser/default pass, versioned schemas, fixture validation and template-to-instance draft expansion | Existing YAML packet differences explained; duplicate/alias/unknown/null/default cases covered; no effects during validation. |
-| M1 — durable management | Registry authority/bootstrap, checked writes, owner Interface CLI, observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
-| M2 — plugin and lifecycle slice | Typed finite DAG, authored worker plus code-optional MCP binding, managed runtime ownership, control coordination and recovery | Experiment 002 contract/effect tests for both paths and proposed two-executor comparison; exact controlled artifacts, external compatibility, unknown effects and no duplicate Agent execution. I1 sets the required independence guarantee. |
+| M1 — durable management | Shared registration/policy bootstrap, checked template writes, owner Interface CLI, source-aware observation/catch-up and recoverable edits | Restart retains IDs/revisions; stale writes and unavailable repair paths are visible; store/export failure tests. |
+| M2 — plugin and lifecycle slice | Typed finite DAG, authored worker plus code-optional MCP binding, managed runtime ownership, instance-owned configuration/results, control coordination and recovery | Experiment 002 contract/effect tests for both paths and proposed two-executor comparison; exact controlled artifacts, external compatibility, unknown effects and no duplicate Agent execution. I1 sets the required independence guarantee. |
 | M3 — shared Resource slice | Local directory, retained history, synthetic auth/MCP service, independently usable managed MCP endpoint, composite participation and terminal inspection | Two synthetic Agents and a standard MCP test client exercise permitted access; Interface evidence survives frontend detachment; independent readers, reconnect and no automatic wake. |
 | M4 — first real Agent path | Native adapters first if I2 approved, with CLI/native interaction and a minimal Pi-inspired Interface terminal | Separate account and private-state verification, actual managed MCP exposure and explicit coverage gaps. |
 | M5 — owned model loop | Rust context builder, one supported provider adapter, streaming and authorized tool execution | Deterministic fake-provider recovery first; real identity/access verified; transcript/usage distinctions preserved. |

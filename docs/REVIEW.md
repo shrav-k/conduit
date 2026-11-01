@@ -31,12 +31,12 @@ across contracts and templates stays at the end, after conceptual rulings.
 
 I1 is partially settled: separate execution services supervise managed Agents/Resources while
 management coordinates configuration/control and the Interface presents them. External MCP
-services retain their own supervision. Authority ownership and outage behavior remain open;
-[research](research/DISTRIBUTED_RUNTIME.md) informs those distinctions. Remote production support
-remains future work; logical ownership does not require co-location or a process per object.
-The [cloud authority comparison](research/CLOUD_AUTHORITY.md) adds AWS, Google Cloud and Azure
-evidence plus concrete change/recovery examples. Configuration ownership and policy ownership
-are now compared separately; no authority or outage ruling has been made.
+services retain their own supervision. Shared registration/template and access-policy authority
+plus instance-owned state are also accepted: one designated service owns each instance's resolved
+definition, confirmed configuration/revision and operation results; Interface views identify
+freshness and gaps. The [cloud authority comparison](research/CLOUD_AUTHORITY.md) records the
+rationale and alternatives. Outage behavior remains open. Remote production support remains
+future work; logical ownership does not require co-location or a process per object.
 
 ## Design-fit audit: code-optional plugins and independent MCP access
 
@@ -53,7 +53,7 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 | Partial adoption | Standalone implementations supply their own dependencies/guarantees. Managed components retain required ownership, authority and evidence. A standard MCP client does not need a Conduit graph SDK to use a public capability. |
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
-separation is now accepted. Resolve authority ownership next, then permitted work during outages
+separation and shared-policy/instance-state authority are accepted. Resolve permitted work during outages next
 and the remaining I2–I6 choices; return to
 I3's packaging details where needed. Final contract/template syntax remains I7 work.
 

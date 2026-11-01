@@ -9,12 +9,13 @@ The [implementation proposal](../../docs/proposals/implementation-v0/README.md) 
 worker, schema and persistence boundaries this spike would exercise. Its review choices remain
 pending; this experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
-layout below. **I1 accepts separate management and execution services.** Authority and outage
-behavior remain open. The two-executor fixture is proposed evidence for those boundaries, not
+layout below. **I1 accepts separate management/execution services and shared policy with
+instance-owned state.** Outage behavior remains open. The two-executor fixture is proposed evidence for those boundaries, not
 a completed topology or crash-survival guarantee.
 The [cloud authority comparison](../../docs/research/CLOUD_AUTHORITY.md) adds proposed failure
-cases below. It does not select where canonical instance configuration lives; decide that in I1
-before implementing the fixture. The experiment need not implement every authority alternative.
+cases below. Canonical instance configuration and results belong to the designated instance
+service; management owns templates, registration and shared policy. The experiment tests that
+accepted split rather than implementing every authority alternative.
 
 ## Question
 
@@ -63,8 +64,9 @@ that run becomes mandatory.
   no new executable for that contribution; the fake service need not implement the Conduit profile.
 - A standard MCP test client using an independently exposed managed capability through a
   pre-established authorized attachment, without the aggregate frontend in the request path.
-- A minimal registry/management store plus executor-local recovery evidence, with each fact's
-  authority explicitly assigned. Do not assume a transaction can span both stores. An optional
+- A management store for templates, registration and shared policy, plus instance-authority
+  stores for resolved definitions, confirmed settings/revisions and operation results. Aggregate
+  views are projections, not a second writable configuration. Do not assume cross-store transactions. An optional
   diagnostic exporter can be disconnected independently.
 
 Resources, actors and connections are logical instances; the fixture must not assume one process
@@ -123,7 +125,7 @@ proves a production standalone deployment.
 | Shared access | Both Agents use one fake service identity with different operation permissions | Caller and service identity remain distinct. Each complete route enforces its own restrictions. |
 | Revocation/reconnect | Remove access while a request waits, then restore the transport | Dispatch/retry rechecks current authority. No alternate account/path is selected silently. |
 | Concurrent control | Two callers submit a change from the same configuration revision | Apply one at a time; stale request conflicts. Store confirmed settings separately from unresolved requests. |
-| Confirmed change, lost receipt | Apply a control and commit its responsible service's result, then cut the reply to management/caller | Recover the same operation. In management-owned configuration, reconcile before committing its canonical revision; in instance-owned configuration, recover the owner's committed revision. Never repeat the effect solely to refresh a view. |
+| Confirmed change, lost receipt | Apply a control and commit its responsible service's result, then cut the reply to management/caller | Recover the same operation and the instance authority's committed revision. Management updates its projection without a second canonical configuration commit. Never repeat the effect solely to refresh a view. |
 | Stale aggregate inventory | Delay observations while the authoritative instance state advances | Interface identifies source/freshness; older observations cannot overwrite current state. A checked mutation reaches the authority rather than trusting a stale inventory snapshot. |
 | Policy reachability versus process survival | Break authorization reachability while an executor still supervises activity | Distinguish retained supervision, already-admitted effects and new effects requiring admission. Assert the chosen outage policy; do not infer offline permission from a live process. |
 | Interface reconnect | Close all frontend attachments, then reopen | Instance-owned work follows lifecycle policy; committed outcomes remain inspectable. Closing a frontend does not itself terminate it. |
@@ -133,7 +135,7 @@ proves a production standalone deployment.
 | Cross-executor route | Interrupt the Resource-to-Resource Conduit transport | Report affected availability without detaching logical participation, changing account/path or inventing a replacement Resource. |
 | Stale coordinator | Deliver a delayed control from an obsolete management generation | The target verifies current authority/ownership and rejects obsolete admission; generation labels alone are not a fencing guarantee. |
 | Evidence backpressure | Disconnect observation aggregation and fill bounded diagnostic queues | Required local outcomes remain recoverable; optional drops/gaps are visible; undrained output must not silently defeat process-survival claims. |
-| Shutdown and restart | Separately stop management, executor or worker around effect/commit boundaries | Distinguish each source's known state; reconcile receipts and registry updates without assuming a cross-service transaction. |
+| Shutdown and restart | Separately stop management, executor or worker around effect/commit boundaries | Distinguish each source's known state; recover instance-owned results and management projections without assuming a cross-service transaction. |
 
 Use deterministic fault hooks for crash windows rather than relying only on timing races. Keep
 the fake effect ledger separate from the host's operation store so a lost response genuinely
@@ -166,7 +168,7 @@ account/private-state verification; this fixture cannot establish those properti
 
 | Date | Work | Evidence |
 | --- | --- | --- |
-| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Management/execution separation accepted; I1 authority/outage rules remain open. Proposed two-executor proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
+| 2026-11-01 | Research and experiment design | Source-backed reports and documentation checks. Management/execution separation and shared-policy/instance-state authority accepted; I1 outage rules remain open. Proposed two-executor proof plus accepted code-optional integration and independent MCP client cases. No fixture code, runtime tests, benchmarks or provider connections yet. |
 
 Record actual results here when executed, including failures and unresolved behavior. Expected
 outcomes above are acceptance criteria, not completed tests.

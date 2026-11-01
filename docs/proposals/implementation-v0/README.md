@@ -13,8 +13,8 @@ protocol/structure by authoring plugins; grow helpers from demonstrated needs. P
 inspectable contracts with their implementations; MCP is the public plugin protocol base, with
 a small Conduit profile. Code-optional bindings to existing MCP services and independent component
 exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
-preserves the existing families, ownership and access rules. I1's management/execution separation
-is accepted; authority ownership and outage behavior are next;
+preserves the existing families, ownership and access rules. I1 accepts management/execution
+separation and shared policy with instance-owned state; outage behavior is next;
 detailed contract and template syntax is reviewed last. Existing infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -25,16 +25,14 @@ is replaceable.
 **I1 is partially settled.** Separate execution services supervise Conduit-managed Agents and
 Resources, management coordinates configuration/control, and the Interface presents them. Each
 executor can host multiple instances; external MCP services retain their own supervision. This
-supports eventual distributed placement without deciding configuration/permission authority or
-outage guarantees. The [research](../../research/DISTRIBUTED_RUNTIME.md) supplies the comparison;
-its authority and failure-policy recommendations remain proposals.
-The [cloud follow-up](../../research/CLOUD_AUTHORITY.md) compares central configuration authority,
-object-owned configuration/policy, and shared policy with instance-owned state. The last is the
-current recommendation for discussion, not an accepted change. The examples show exactly where
-a confirmed effect, configuration commit and aggregate observation can diverge.
+supports eventual distributed placement. Management owns templates, registration and shared
+access policy; one designated service owns each instance's resolved definition, confirmed
+configuration/revision and operation results. The Interface aggregates these sources with
+freshness and gaps. The [cloud follow-up](../../research/CLOUD_AUTHORITY.md) supplies the accepted
+authority model's rationale and alternative examples; outage behavior remains unruled.
 
 Rust services implement registry authority, instance supervision, authorized capability traffic
-and durable evidence through explicit boundaries. Detailed placement, authority and outage
+and durable evidence through explicit boundaries. Detailed placement, persistence and outage
 guarantees are still under review. Replaceable frontends attach to an Interface; authored workers and existing
 MCP services fulfill published plugin contracts through retained implementation bindings. Code-optional
 contributions use shared adapters without inventing a worker per package. Local transactional
@@ -98,7 +96,8 @@ The relevant sources are cited beside the resulting recommendations in this pack
 
 The [distributed-runtime follow-up](../../research/DISTRIBUTED_RUNTIME.md) adds Tilt,
 Docker/containerd, Kubernetes, Rust control/execution systems and primary distributed-systems
-papers. It revises I1 and the proposed experiment rather than recording an acceptance.
+papers. Together with the cloud follow-up, it informed the accepted execution and authority
+splits. Failure-policy recommendations and proposed tests remain unvalidated.
 
 Documentation and source inspection are not executable validation. The
 [runtime experiment](../../../experiments/002-runtime-plugins/README.md) defines the first

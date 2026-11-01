@@ -58,7 +58,7 @@ Backing data, credentials and process lifetime are distinct from registry identi
 **Distribution direction:** objects should operate independently and eventually be deployable
 across systems. One Pool can own Resources deployed on different systems; Conduits can span a
 network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
-not require one execution host. Initial authority topology, outage behavior and remote
+not require one execution host. The authority split below is accepted; outage behavior and remote
 deployment guarantees remain open in [implementation review I1](proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
 This direction does not claim remote execution is implemented or approve automatic migration,
 federation or offline authorization.
@@ -68,8 +68,38 @@ services supervise Conduit-managed Agents and Resources; management coordinates 
 and control; the Interface presents the system. Each executor can host multiple instances,
 including on the same machine initially. External MCP services retain their own supervision.
 This settles execution custody without introducing an object family or requiring one process
-per object. Authoritative definitions/permissions/outcomes, outage admission and concrete
-deployment/storage remain separate review choices; separation alone promises no offline access.
+per object. Concrete deployment/storage and outage admission remain separate review choices.
+
+### Shared policy and instance-owned state
+
+Management is authoritative for templates, registration/naming and shared access policy. One
+designated service is authoritative for each instance's resolved definition, confirmed
+configuration/revision and operation results. The responsible service can host many instances;
+management can host passive instance authorities and executors active ones. This state authority
+is distinct from a Resource's logical Pool ownership and from a plugin implementing a handler.
+
+Keep one authoritative instance configuration. When a supported control confirms application,
+its responsible service records the confirmed settings, revision and outcome. Pending or uncertain
+changes remain separate. Other services can retain observations, but cannot independently edit
+their copies or substitute a stale view for the authoritative revision. Resource backends remain
+authoritative for their domain data; a Conduit client Resource does not become the authority for
+an external service's internal state.
+
+The Interface combines these sources with identifiable freshness and gaps. A current instance
+read/export must distinguish its authoritative source from an older aggregate observation. The
+single logical registry remains the naming and configuration surface; it does not require all
+facts to share one database. Registration, renames, retirement and other cross-authority operations
+retain their existing ID/version and lifecycle checks; coordination mechanics remain implementation
+work. No distributed transaction or automatic transfer of an unavailable authority is implied.
+
+For example, if a control changes a search limit from 10 to 15, the instance service can retain
+15 and its result even if the response to management is lost. The Interface recovers that result
+instead of reapplying the change. If the external effect occurred before confirmation was
+recorded, its outcome remains uncertain under the existing recovery contract.
+
+This ruling does not grant offline access. Shared policy ownership, enforcement on a Conduit
+path and permission to admit work during an outage remain distinct concerns. Exact process
+placement, persistence technology and outage guarantees are still under review.
 
 ### Plugins and independently accessible MCP components
 
@@ -107,9 +137,9 @@ ownership where applicable, current Conduit access, supported controls and opera
 even without an attached Interface frontend. Its minimal authority/runtime dependencies remain
 necessary. This permits using parts of the system without requiring every frontend, Agent driver
 or integration, but does not promise that every component can run without its declared dependencies.
-Separate execution services own managed activity in the first implementation. Authority placement,
-outage behavior and client enrollment remain review questions; protocol accessibility alone does
-not settle them.
+Separate execution services own managed activity in the first implementation, with the shared
+policy and instance-state authorities defined above. Outage behavior, concrete placement and
+client enrollment remain review questions; protocol accessibility alone does not settle them.
 
 ### Interfaces and the user workflow
 
@@ -581,7 +611,8 @@ They normally check the caller's expected configuration revision at application,
 contract exceptions. Exact revision mechanics and partial-change semantics remain to be settled;
 checked identity and safe outcomes remain necessary. Registry deletion retains its own scope.
 
-The local registry holds active configuration in v0. YAML is explicitly applied or exported;
+The local logical registry exposes active configuration through the authorities defined above;
+its aggregate observations are not independent writable state. YAML is explicitly applied or exported;
 editing an input configuration file alone does not change registry objects, and CLI/API edits
 do not silently rewrite that file. Files may remain in Git without automatic watching or
 bidirectional synchronization. This defines configuration authority, not the registry's

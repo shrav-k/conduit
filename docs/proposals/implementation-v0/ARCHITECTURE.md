@@ -1,7 +1,7 @@
 # Proposed runtime architecture
 
-Status: implementation proposal, 2026-11-01. I1's management/execution separation is accepted;
-authority and outage behavior remain open. See [review](REVIEW.md)
+Status: implementation proposal, 2026-11-01. I1's management/execution separation and shared
+policy with instance-owned state are accepted; outage behavior remains open. See [review](REVIEW.md)
 for pending choices and [contracts](CONTRACTS.md) for proposed representations. Accepted semantics remain in
 [DESIGN](../../DESIGN.md).
 
@@ -49,9 +49,11 @@ and [cloud authority comparison](../../research/CLOUD_AUTHORITY.md) inform the r
 flowchart TD
     C[CLI / terminal / test clients] --> I[Interface control and observation]
     I <--> M[Management and registration]
-    M <--> S[Registry and management evidence]
+    M <--> S[Templates / registration / shared policy]
     M -. placement and control .-> X[Execution service A]
     M -. placement and control .-> Y[Execution service B]
+    X <--> XS[Instance definitions / config / results]
+    Y <--> YS[Instance definitions / config / results]
     X --> A[Agent / filesystem instances]
     Y --> R[Auth / MCP / search instances]
     A <-->|Authorized Conduit traffic| R
@@ -59,19 +61,17 @@ flowchart TD
     Y -. observations and receipts .-> I
 ```
 
-Management/execution separation in this diagram is accepted. Its placement of registry/evidence
-authority is still a proposal, not a completed I1 ruling. Execution services supervise
-instance-owned activity; short-lived setup workers do not own long-lived processes. Backing
-providers can be external to either service. Concrete placement, replication, federation and
-transport remain open. These services are implementation roles, not a sixth object family.
+Management/execution separation and the shared-policy/instance-state authority split are
+accepted. The diagram illustrates executors hosting active instance authorities; management can
+host passive ones. These services are implementation roles, not a sixth family, a service per
+object or a placement rule tied to Pool ownership. Concrete process/storage placement, replication,
+federation and transport remain open. External providers retain their own infrastructure.
 
-**Current recommendation for I1 discussion:** common registration/template and access-policy
-authority, with one designated service owning each instance's resolved definition, confirmed
-configuration/revision and operation records. The Interface/registry may aggregate observations,
-but cached copies are not independently writable configuration. Management can host passive
-instance authorities; executors can host active ones. This is an alternative to management-owned
-configuration, not an accepted relocation. Both arrangements and independent object-policy
-authority are compared in the research. The choice does not establish offline admission rights.
+Management owns templates, registration/naming and shared access policy. One designated service
+owns each instance's resolved definition, confirmed configuration/revision and operation records.
+The Interface/registry can aggregate observations, but cached copies are not independently writable
+configuration. Short-lived workers implement behavior without becoming the state authority.
+Resource backends retain their domain data. This split does not establish offline admission rights.
 
 If the first registry authority uses a local store, it needs an OS-held lock, registry ID and
 authority generation. A second writer must not race it. Executors need separate verified identities
@@ -99,7 +99,7 @@ missing objects or incompatible management code require explicit repair, not def
 Local owner recovery can inspect/repair a broken management path without depending on that path.
 It uses checked operations, preserves backing data and cannot bypass fixed instance definitions.
 Independent executor enrollment and reconnect must reuse assigned identities rather than repeating
-registry bootstrap. Their exact authority and storage contracts remain I1/I4 work.
+registry bootstrap. Their detailed enrollment, outage and storage contracts remain I1/I4 work.
 
 ### Management, execution and worker loss
 
@@ -131,14 +131,14 @@ surviving executors rather than treating its last observation as current truth.
 ## 3. Runtime services and ownership
 
 Keep these responsibilities explicit, with ports for tests, executors and workers. Execution
-supervision is separate from management; exact service grouping and authority remain under review.
+supervision is separate from management; service grouping implements the accepted authority split.
 Below, “host” means the responsible
 management or execution service, with transaction boundaries limited to its own authority:
 
 | Service | Responsibilities and constraints |
 | --- | --- |
-| Registry/configuration | Checked template edits, instance registration, naming, schema/default resolution and stable references. No provider effects inside registry transactions. |
-| Instance supervisor | At the selected execution location, own executions/drivers and generations; apply family lifecycle checks; expose independent preparation/runtime/connection observations. |
+| Registry/configuration | Shared templates, registration/naming and policy; schema/default resolution and stable references. Route instance configuration reads/changes to their designated authority; label aggregate observations. No provider effects inside registry transactions. |
+| Instance supervisor/state authority | Retain the assigned instance's resolved definition, confirmed configuration/revision and operation results; supervise its executions/drivers and generations; apply lifecycle checks and expose preparation/runtime/connection observations. One service can host many instances. |
 | Graph executor | Validate finite dependency graphs, schedule ready steps, retain progress and decide whether recorded results remain usable. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
 | Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
@@ -172,7 +172,7 @@ Independent executors need durable execution/outcome evidence that survives mana
 Assign one authority to each fact and distinguish remote reports from authoritative state. Do not
 share SQLite over a network or independently edit replicated copies of `spec.config`. The tables
 below describe logical facts, not one required global database.
-Under the shared-policy/instance-state candidate, management's inventory of an instance is a
+Under the accepted shared-policy/instance-state split, management's inventory of an instance is a
 projection of its owner's state. Current reads/exports and revision checks must distinguish that
 projection from the authoritative record. Registration, naming and lifecycle changes that cross
 those owners still require coordination; do not weaken the existing ID/version checks.
@@ -203,17 +203,15 @@ authority for operation completion or access grants.
 ### Commit discipline
 
 Admission commits the operation identity and recoverable dispatch inputs before effects begin.
-The host checks authority again immediately before dispatch. It does not hold a write transaction
-while waiting for a provider. When a handler confirms a configuration change, update `spec.config`,
-its revision and the operation/evidence rows in one local transaction where they share authority.
-Publish afterward. A remote executor's receipt and a registry commit are not one transaction;
-reserve/reconcile that operation before another conflicting change. I1/I4 must settle this boundary
-rather than rely on the original single-process transaction assumption.
-Under the instance-state candidate, confirmed configuration and operation completion could commit
-at the responsible instance service, with management receiving a projection afterward. That
-removes the second commit from this particular completion path, not from registration or all
-multi-object lifecycle work. Under management-owned configuration, explicit receipt reconciliation
-remains necessary. Neither candidate makes a remote provider effect transactional.
+The responsible service checks authority again immediately before dispatch. It does not hold a
+write transaction while waiting for a provider. Once a handler confirms application, the instance
+state authority records the confirmed `spec.config`, its revision and the operation result. The
+proposed local-store implementation commits these together, then publishes observations. Management
+receives a projection; its receipt is not a second canonical configuration commit.
+
+Registration, renames, retirement and other operations spanning shared management and instance
+authorities still need checked coordination. No transaction across those stores is assumed. I4
+must establish durable local commits and recovery mechanics within the accepted authority split.
 
 Local commit cannot be atomic with an arbitrary upstream write. A provider success followed by a
 lost reply remains uncertain until its recovery contract establishes the result. A store failure
@@ -352,7 +350,7 @@ The same managed capability can be used by another ordinary MCP client through a
 attachment. Client setup must establish its acting identity and selected path; request parameters
 cannot self-assign authority. An Interface frontend need not relay the call. The responsible
 component records attributable outcomes for later Interface inspection. Exact enrollment and
-authority placement remain I1/I5 work, not a new permission model.
+concrete authority deployment remain I1/I5 work, not a new permission model.
 
 Stopping a managed client binding to an external server releases that binding; it does not kill
 the server or erase its data. A server started under Conduit's custody follows its declared

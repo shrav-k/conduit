@@ -1,7 +1,8 @@
 # Implementation review: decisions needed
 
 Status: lightweight authoring support, contract publication, MCP, code-optional implementation
-bindings, independent component access and management/execution separation are **accepted** below; the seven grouped
+bindings, independent component access, management/execution separation and shared policy with
+instance-owned state are **accepted** below; the seven grouped
 items still contain unresolved implementation choices. Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -64,9 +65,12 @@ and Resources; management coordinates configuration/control and the Interface pr
 Each executor may host multiple instances, including initially on the same machine. External MCP
 services retain their own supervision. This adds no object family or process-per-object rule.
 
-**Next discussion:** I1's authority ownership, then outage behavior. Process supervision alone
-does not decide where definitions, permissions and outcomes are authoritative, nor which new
-effects are allowed while management cannot be reached.
+**Accepted authority:** shared registration/template and access-policy authority; one designated
+service owns each instance's resolved definition, confirmed configuration/revision and operation
+results. The Interface aggregates sources with freshness and gaps. A service can host many instances.
+
+**Next discussion:** I1's outage behavior. Authority ownership is settled; it does not determine
+which new effects are allowed when the relevant authorization service cannot be reached.
 
 **Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
 persistence, credential and observation questions before detailed syntax. I7's identifiers,
@@ -82,7 +86,7 @@ change of review order, not another decision ledger. Finish with the deferred I7
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I1 | Authority and outage behavior after execution separation | Compare three authority arrangements using cloud examples; shared policy with instance-owned state is recommended, not accepted. Decide outage admission separately. |
+| I1 | Outage admission and first independence proof | Separate execution and shared policy/instance-owned state accepted. Recommend retaining supervision/results while holding new effects whose current authority cannot be established; outage ruling remains open. |
 | I2 | First real Agent path and initial platform | macOS-first native adapters for subscription verification, followed by the owned Rust loop; thin custom terminal remains a deliverable. |
 | I3 | Plugin implementation execution and distribution | MCP, code-optional bindings and independent exposure accepted; execution packaging/distribution remain open after I1. |
 | I4 | Authoritative persistence | SQLite for local control/evidence; Resource backends remain replaceable. |
@@ -104,65 +108,63 @@ host many instances, and several can initially run on one machine. External MCP 
 their own supervision. Pool ownership is logical and does not determine placement. These services
 are implementation roles, not new object families or a daemon per object/Pool.
 
-The [distributed-runtime comparison](../../research/DISTRIBUTED_RUNTIME.md) grounds this separation
-in Tilt, Docker/containerd, Kubernetes, Rust systems and papers. The
-[cloud follow-up](../../research/CLOUD_AUTHORITY.md) adds AWS, Google Cloud and Azure, including
-configuration-change and recovery walkthroughs. These do not settle authority, availability,
-storage or deployment guarantees. The user requested comparison before making the authority ruling.
+The [distributed-runtime comparison](../../research/DISTRIBUTED_RUNTIME.md) and
+[cloud follow-up](../../research/CLOUD_AUTHORITY.md) supply the rationale and alternative examples.
+Their shared-policy/instance-state arrangement is now accepted; outage, storage and remote
+availability guarantees are not implied by that ruling.
 
-**Example:** one Euphony Pool owns a laptop worktree, a Linear/authentication integration on a
-service machine and search on another machine. Two Agents connect to those Resources through
-Conduits. Losing management visibility does not itself mean all those processes have stopped.
-Losing Linear affects Linear access; it does not end the Pool or unrelated work. The Interface
-must show unavailable/stale observations and reconcile them when connectivity returns.
+**Accepted authority split:**
 
-**Compare authority choices:**
+| Facts | Authoritative owner |
+| --- | --- |
+| Templates, registration/naming and shared access policy | Management authority |
+| An instance's resolved definition, confirmed configuration/revision and operation results | One designated instance service; a service can host many instances |
+| Backing domain data | The Resource backend/provider |
+| Aggregate inspection | Interface views identify sources, freshness and gaps; no second writable authority |
 
-| Option | Configuration and execution | Access policy | Concrete consequence |
-| --- | --- | --- | --- |
-| A — Management-owned configuration | Management owns registered configuration/revisions; executors retain progress and effect receipts. | Shared authority. | An executor can confirm a change while management still needs to reconcile and commit the configuration. |
-| B — Object-owned configuration and policy | Object services own configuration/revisions and execution evidence. | Object services own policies under an agreed governance model. | Independent operation is possible, but cross-object restrictions and withdrawal need additional authority rules. |
-| C — Shared policy, instance-owned state | Management owns templates/registration; one designated service owns each instance's resolved definition, confirmed configuration/revision and operation records. | Shared authority, enforced on authorized paths. | Confirmed settings and outcomes commit together at the instance owner; aggregate views can lag. |
+Management can host passive instance authorities and executors active ones. State authority is
+separate from a Resource's Pool owner and from the plugin code fulfilling a contract. Keep one
+logical registry and one authoritative `spec.config`; cached views cannot independently change it.
+Registration, names, retirement and other cross-authority changes retain checked coordination.
+Storage engines, automatic migration/failover and exact service placement are not selected here.
 
-**Current recommendation for discussion: C.** This refines the earlier binary question by
-separating configuration ownership from permission ownership. One service can own many instances;
-management can own passive objects and executors active ones. The Interface aggregates views but
-does not create another writable authority. Resource backends remain authoritative for domain
-data. For an external MCP service, Conduit records only the state and results it can establish.
+**Change/recovery example:** a search Resource starts at limit 10/R7. Its control applies 15 and
+the responsible service retains 15/R8 with the result, but the response to management is lost.
+The Interface recovers the result from that service; an aggregate view still showing 10 identifies
+its age. If the provider effect happened before any confirmation was retained, the outcome is
+uncertain and still requires effect inspection or supported deduplication, never blind replay.
 
-**Change/recovery example:** a search Resource starts at limit 10/R7. A control applies 15, then
-the response is lost. In A, the executor retains the result while management holds 10/R7 plus an
-unresolved operation until reconciliation. In B or C, the responsible service can commit 15/R8
-with the result, and the Interface later recovers it there. An aggregate view still showing 10
-must identify its age. If the provider effect happened before any confirming result was retained,
-all three need effect inspection or supported deduplication; none may blindly repeat the write.
+**Remaining ruling — outage admission:** distinguish keeping supervised processes alive, retaining
+results of already-dispatched work, and admitting new effects. A live Agent process or graph is
+not blanket permission for every later tool call or node. A management/observation outage also
+need not imply that every authorization source or instance endpoint is unavailable.
 
-C preserves one authoritative `spec.config`, not desired/applied copies. It changes where a current
-instance read comes from. Naming, registration and retirement still cross authority boundaries and
-need checked coordination; the choice does not automatically solve every lifecycle transaction.
-It also does not permit disconnected requests to rely on stale grants. These are costs to weigh
-before accepting it. Detailed flow comparisons and authoring implications are in the cloud report.
+Recommended v0 baseline, **not yet accepted**: retain supervision and recoverable results; allow
+already-dispatched operations to finish within their admitted contract; hold new affected effects
+when current authority cannot be established. A still-reachable authority can admit permitted
+work. Existing explicit stop/revocation rules remain applicable. This proposes no offline grants
+and does not silently cancel a database migration or invent a replacement Agent.
 
-**Resolve together:**
+The alternative allows explicitly bounded offline grants, with validity, expiry and delayed
+withdrawal semantics. That can improve availability but requires a further permission contract.
+Current native-versus-isolated enforcement limits remain visible under either choice; Conduit
+cannot claim to stop unmediated native tool use merely by blocking a managed request.
 
-1. Choose A, B or C after the concrete comparison. The accepted single logical registry/naming
-   surface is retained; this concerns authority behind it, not new user-facing registries or
-   namespaces. One local registry remains the v0 scope; the owner protocol should permit later
-   remote placement. No storage engine, automatic migration or failover is selected here.
-2. What can continue during a partition, and what must wait for current authority? Keeping a
-   process alive is distinct from admitting a new protected effect. Offline grants would need an
-   explicit freshness/withdrawal contract; they cannot silently weaken current-access rules.
+**Example:** if management disconnects after a migration was dispatched, its executor can retain
+completion evidence. A subsequent protected migration or tool request waits if it cannot establish
+current authority. Unrelated admitted work remains separately supervised. Whether that baseline
+is sufficient or offline grants belong in v0 is the next collaborative ruling.
 
-**Proposed evidence:** extend experiment 002 to two execution processes on one machine, with
-separately faulted management, worker, capability and observation links. Test continuing owned
-activity, blocked unauthorized/uncertain effects, retained outcomes and verified reattachment.
-Two-machine validation and production remote support can follow; whether they are required for
-the first milestone is still open. Separation is accepted, but specific crash-survival and
-offline-authorization guarantees still require a ruling and evidence.
+**Proposed evidence:** experiment 002 uses two execution processes on one machine, separately
+faulting management, worker, capability, policy and observation links. Confirmed configuration
+and outcomes commit at the instance authority; aggregate views recover without overwriting newer
+state. Test retained supervision, held unauthorized/uncertain effects and verified reattachment.
+Production remote support, specific crash-survival guarantees and when a two-machine proof is
+required remain open. The protocol does not promise those results before testing.
 
-I3 worker details and I4 persistence ownership depend on the remaining rulings. Frontend detachment,
-explicit resume of stopped Agent work, current authority checks and no duplicate unknown work
-remain accepted. This review does not reopen those behaviors.
+I3 worker details and I4 persistence choices follow these accepted authority boundaries. Frontend
+detachment, explicit resume of stopped Agent work, current authority checks and no duplicate
+unknown work remain accepted. This review does not reopen those behaviors.
 
 ## I2 — First real Agent path and supported platform
 
@@ -210,8 +212,8 @@ another public protocol; in-process-only plugins reduce initial process plumbing
 exact implementation retention and failure containment; Wasm-first adds a host-capability and
 packaging system before proving the required native integrations.
 
-**Rulings still needed:** execution/distribution boundaries after I1 establishes custody and
-authority. MCP and implementation-binding modes are settled; exact artifact pinning and replacement
+**Rulings still needed:** execution/distribution boundaries within the accepted custody and
+authority split, with outage requirements still pending. MCP and implementation-binding modes are settled; exact artifact pinning and replacement
 on upgrade are already accepted for Conduit-controlled code. The experiment must test whether
 the profile stays small before treating its method set as stable. Standard protocol support alone
 does not establish provider lifecycle, effect recovery or partition behavior.
@@ -234,7 +236,7 @@ That requires a stronger transactional/concurrency/bootstrap contract and could 
 on the failed plugin. JSONL-only storage is simpler to inspect but moves transaction/index/compaction
 responsibilities into our code.
 
-**Ruling needed:** choose local persistence after settling authority and execution separation.
+**Ruling needed:** choose local persistence for the accepted authorities, accounting for the remaining outage requirements.
 Which facts commit together locally, and which use recoverable inter-service exchanges, must be
 explicit. This does not make SQLite a required backend for every Resource or settle federation.
 

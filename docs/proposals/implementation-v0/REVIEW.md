@@ -120,7 +120,8 @@ one review queue rather than another decision ledger.
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
 explicit governing targets with live ownership-based matching, and bounded issuance operations.
-Its remaining conceptual work is grouped into two bundles: initial authority/startup/repair and storage
+Root-directed first launch from a local definition is also accepted. Remaining I4 work is grouped
+into two bundles: first-authority/partial-setup/repair and storage
 placement/backend. I5 credential custody/enrollment and I6 capture defaults add two bundles.
 That is four planned conceptual bundles, beginning with startup/repair, followed
 by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
@@ -132,7 +133,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Initial authority, startup/repair and foundational storage | Authorization structure, live governing targets and bounded issuance accepted. Next root establishment/repair, then storage extension and backend. |
+| I4 | Initial authority, startup/repair and foundational storage | Authorization structure, live governing targets and bounded issuance accepted. Root-directed first launch accepted; next first authority/partial setup/repair, then storage. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -415,22 +416,20 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: open; Interface role and storage boundary precede engine selection.** The current proposal
-makes startup and continuing system direction part of the Interface's own role. A root Interface
-would exercise local-owner administration, establish the system's foundational dependencies and
-provide ongoing observation, lifecycle control and repair through its declared runtime/plugins.
-This is a reusable Interface configuration within the five-family model, not a separate bootstrap
-object. Frontends attach to it; its responsibilities can continue without an open frontend.
-See the [Interface walkthrough](ARCHITECTURE.md#interface-as-system-director--proposed-refinement).
+**Status: root-directed first launch accepted; first authority, recovery and storage remain open.**
+The runtime can start the root Interface from a locally available definition before registry
+services exist. Its declared graph establishes the system Pool, system management and dedicated
+access-management Resources, and their management connections. Runtime support supplies initial
+owner recognition and minimum loading/persistence. Continuing administration/observability use
+the existing Interface role; no new object family or autonomous reconciliation loop is introduced.
+See the [Interface walkthrough](ARCHITECTURE.md#interface-as-system-director).
 
-**Next discussion — initial load and establishment:** authority is now independent of the Interface,
-with broad owner administration and explicit grants. The remaining startup choice is how its
-definition/progress are available before registry and access-management services can be used.
-Recommend [locally loaded root-directed establishment](ARCHITECTURE.md#first-launch-contract--under-review):
-the runtime supplies initial owner/trust checks and minimum persistence, while the selected root
-Interface's graph coordinates foundational setup. Compare runtime-seeded foundations before the
-Interface starts. Neither permits directives to self-authorize or changes Pool ownership, target
-revision/lifecycle checks or service ownership of outcomes. This arrangement is still proposed.
+**Next discussion — authorization of first setup:** compare an explicitly owner-authorized
+initialization context with recording/evaluating ordinary root grants before setup begins. Both
+preserve the accepted root-directed graph. The [first-authority comparison](ARCHITECTURE.md#first-authority-and-grant-establishment--proposed)
+recommends the former to break the initial service dependency, with recorded setup progress and a
+transition to normal management grants. That recommendation is not accepted yet. The root's initial
+definition does not grant itself authority, and no ordinary Agent receives an offline grant.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.
@@ -490,24 +489,25 @@ are I7/conformance work.
 
 **Next conceptual choices, in order:**
 
-1. Choose the first-launch arrangement: locally available root Interface definition and initial
-   progress, with its graph directing foundational establishment, versus runtime-seeded foundations
-   before Interface startup. Initial trust, first-grant issuance and explicit repair must fit the
-   existing authority model. Exact loader/persistence fields are not being selected here.
-2. Settle startup/recovery gaps exposed by that choice, then the storage extension boundary and
-   initial engine. The active Interface's directives do not establish their own authority.
+1. How is the root's foundational graph authorized before normal access management is ready?
+   Recommend explicit verified-owner initialization, transitioning to recorded management grants
+   once those services are established. The alternative records/evaluates ordinary grants before
+   any graph steps. This is a new ruling, not implicit in accepting root-directed startup.
+2. Settle interrupted-establishment and unavailable-management repair, preserving identities and
+   outcomes rather than silently initializing again. Then review storage extension and the initial
+   engine. Exact loader/record fields remain in I7 or implementation work.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,
-token format, public policy DSL or storage engine. The expanded active Interface role still needs
-its startup/repair contract; the new direction does not choose the first-definition load or earliest
-durable progress mechanism.
+token format, public policy DSL or storage engine. Local root-definition loading and graph-directed
+establishment are accepted; first-grant issuance, partial recovery, unavailable-path repair and the
+earliest durable progress mechanism remain open.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant
 failure cases; the [storage comparison](ARCHITECTURE.md#storage-boundary-under-review) separates
 contract, representation and engine. SQLite and pluggability are not mutually exclusive. No storage
-ruling or precise root-Interface lifecycle has been accepted. The accepted
+ruling or complete initial-authority/recovery contract has been accepted. The accepted
 management/instance-state authority split is unchanged; storage supplies persistence without
 becoming a second owner of policy or instance transitions. Compare three arrangements, which can
 also be combined rather than treated as a closed set of exclusive choices:
@@ -538,7 +538,7 @@ an internal adapter still needs migrations and conformance tests. No cross-servi
 automatic failover or offline permission grant follows. Services exchange information through their
 contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-Finish I4 by settling the Interface responsibility, storage extension/lifecycle boundary and initial implementation. Detailed SQL,
+Finish I4 by settling first authority/recovery, the storage extension/lifecycle boundary and initial implementation. Detailed SQL,
 method names and helper organization need not become separate conceptual rulings.
 
 ## I5 — Credential custody and account compatibility

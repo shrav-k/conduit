@@ -338,9 +338,11 @@ This does not require an always-running process or give Agents the user's admini
 **Foundational system:** initial local startup establishes a system Pool owning two management
 Resources: the existing system management Resource for templates, registration and instance creation,
 and a dedicated access-management Resource for grants and governing requirement bindings. The default
-Interface reaches their capabilities through management Conduits. Both Resources can share a service
-and storage implementation. Exact startup ordering, first authority and recovery remain under review;
-initial establishment must precede ordinary use of these operations. Resource creation still goes
+root Interface starts from a locally available definition before registry services exist. Its declared
+graph directs this foundational setup and establishes management Conduits; the runtime supplies initial
+owner recognition and minimum loading/persistence support. Both Resources can share a service and
+storage implementation. Exact initial grants, interrupted-setup/repair mechanisms and storage remain
+under review. Initial establishment precedes ordinary use of these operations. Resource creation still goes
 through its owning Pool. No application Pool, Agent or external service login is required first.
 Built-in definitions, exact operations and frontend transport/lifecycle remain open.
 

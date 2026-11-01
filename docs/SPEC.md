@@ -104,10 +104,12 @@ separate integration evidence.
 
 ## The user workflow
 
-1. A frontend attaches to the default Interface. Initial establishment creates a system Pool,
-   its system management and dedicated access-management Resources, the Interface and management
-   Conduits. The latter Resource manages grants and governing requirement bindings; the former
-   handles templates, registration and instance creation. Later startup reuses retained objects;
+1. The runtime can start the root Interface from a local definition before registry services exist,
+   supplying initial owner recognition and minimum loading/persistence support. The Interface's
+   declared graph establishes the system Pool, its system management and dedicated access-management
+   Resources, and management Conduits. Access management handles grants and governing requirement
+   bindings; system management handles templates, registration and instance creation. Frontends attach
+   to the Interface. Exact first-grant and interrupted-setup contracts remain open. Later startup reuses retained objects;
    missing or inconsistent components require explicit repair.
 2. The Interface authors templates and composes a Pool's named available Resource entries.
    Listing an entry does not provision it or grant access.

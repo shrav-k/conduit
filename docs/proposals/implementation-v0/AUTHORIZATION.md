@@ -406,13 +406,17 @@ and compose additional restrictions, returning the complete grant. They preserve
 refuse explicit broadening and do not create a live issuer dependency. Strict complete-proposal
 operations remain possible. Detailed schemas and type-specific checks stay for I7/conformance.
 
-**Next area — initial authority, startup and repair:** decide how the root Interface first loads
-its definition and directs foundational establishment before normal registry/access services exist.
-Recommend a locally available root definition and retained initial progress, with its graph
-coordinating the system Pool and management Resources; the runtime supplies the initial owner/trust
-and minimum persistence boundary. Compare this with runtime-seeded foundations before Interface
-startup. This startup arrangement is proposed, not yet ruled. First grants and partial-recovery
-mechanisms must respect the accepted authority model; storage extension and engine follow.
+**Accepted first-launch arrangement:** the runtime loads a locally available root Interface
+definition before registry services exist, with initial owner recognition and minimum
+loading/persistence support. Its graph directs establishment of the system Pool and management
+Resources. This chooses orchestration placement, not how initial operations receive authority.
+
+**Next area — first authority and recovery:** compare an explicitly verified-owner initialization
+context for foundational setup with recording/evaluating ordinary grants before the graph starts.
+Recommend the former, followed by normal recorded management grants once access management is
+established. This exception is proposed, not accepted; it must not become a normal application
+bypass or revive automatically after an outage. Interrupted setup and explicit repair must preserve
+known identities/outcomes. Storage extension and engine follow these boundaries.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

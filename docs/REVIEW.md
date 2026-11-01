@@ -66,12 +66,12 @@ review is complete. Persistence, credential custody and observation capture are 
 grouping, evidence mechanisms, recovery details and authoring syntax remain open. No implementation
 has started.
 
-I4 is exploring an [active Interface role](proposals/implementation-v0/ARCHITECTURE.md#interface-as-system-director--proposed-refinement):
-the root Interface would direct establishment and ongoing administration/repair as part of its
-normal responsibilities. Frontends attach to it; management and instance services retain their
-accepted state authority, and Pools retain Resource ownership. Responsibility and authority are
-being refined before accepting that role: directives, implemented capabilities, permission to act
-and confirmed target outcomes must remain distinct. The
+I4 now accepts [root-directed first launch](proposals/implementation-v0/ARCHITECTURE.md#first-launch-contract):
+a local root Interface definition loads before registry services exist, and its graph establishes
+the system Pool and management Resources. The runtime supplies initial owner recognition and
+minimum loading/persistence support. Frontends attach to the Interface; management and instance
+services retain authority, and Pools retain Resource ownership. First-grant establishment,
+interrupted setup, repair and storage remain under review. Directives do not self-authorize. The
 [cloud IAM follow-up](research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
 supports the now-accepted independence of policy from Interface lifecycle, administered by multiple
 authorized Interfaces with broad default root administration. This does not narrow broad v0

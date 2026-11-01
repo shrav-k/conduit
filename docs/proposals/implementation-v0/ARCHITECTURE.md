@@ -40,28 +40,26 @@ They retain required authority, ownership and evidence services; standard client
 expose every internal setup/driver export. Standalone implementation use outside the managed model
 has its own declared dependencies/guarantees. This adds no process or registry per object.
 
-### Interface as system director — proposed refinement
+### Interface as system director
 
-Under discussion: make directing, administering and observing the system a core Interface role
-throughout its lifetime. Initial establishment, supported reconfiguration, recovery and repair
-would be part of that role. A root Interface is a working name for the initial owner-operated
-Interface configuration within the existing family, not a sixth kind or a separate bootstrap-only
-object. This expands the implementation packet's presentation-focused wording; the accepted
-management/execution separation and instance-state authority do not need to collapse with it.
+**Accepted first-launch boundary:** Conduit can start the root Interface from a locally available
+definition before registry services exist. Its declared graph directs establishment of the system
+Pool, system management and access-management Resources, and their management connections. The
+runtime supplies initial owner recognition and minimum loading/persistence support. This keeps
+foundational orchestration in the same template/plugin model rather than a separate runtime setup
+procedure. The root remains an Interface, not a sixth family or a bootstrap-only object.
 
-An Interface template would declare its management responsibilities, dependencies, setup graph,
-runtime behavior and supported controls. Existing typed plugin operations and graphs can implement
-these responsibilities. A directive describes what this Interface is responsible for; it does not
-by itself introduce another language, autonomous model loop, implicit retries or continuous desired-
-state reconciliation. Actions still occur through explicit requests or declared runtime behavior.
-The root Interface can operate without an attached CLI/TUI; frontends remain its user-facing clients.
+Its template declares dependencies, graph, runtime behavior and supported controls. Continuing
+administration and observability use the existing Interface role. No implicit autonomous loop,
+continuous reconciliation, application restart or extra model work follows. Frontends attach to
+the Interface; it can retain supported work independently of an open CLI/TUI.
 
-The responsibility/authority refinement remains open. A candidate rule is: the Interface declares
-management work to coordinate; authenticated owner/delegated access authorizes it; target contracts
-and responsible services determine what can run and what outcome is confirmed. A directive is not
-an access grant, and access is not proof that an operation is implemented or succeeded.
+Management and execution services retain their accepted authority. The Interface directs work;
+current authority permits it; target contracts and responsible services determine the actual
+operation and confirmed outcome. First-grant establishment and unavailable-path repair remain
+under review. A directive does not itself confer access.
 
-| Question | Proposed responsibility | Concrete example |
+| Question | Responsibility | Concrete example |
 | --- | --- | --- |
 | What work should be coordinated? | The Interface's declared directive, graphs and runtime behavior. | Establish the system's dependencies at startup; expose administration; report failures and support explicit repair. |
 | What operations exist? | Selected plugins and the target's fixed capability/control contracts. | A database Resource offers start/inspect; its contract determines recovery and whether a live setting can change. |
@@ -164,29 +162,46 @@ The root Interface can direct those services without all of them sharing a proce
 traffic passing through the root. A service losing contact with it must still distinguish missing
 observations, unavailable current policy and confirmed process termination.
 
-#### First-launch contract — under review
+#### First-launch contract
 
-The next ruling chooses where foundational orchestration lives, without selecting a database or
-creating another object family. Both options retain verified local-owner authority and a root
-Interface that supports ongoing management/observability; neither makes templates self-authorizing.
+The root Interface's locally available definition can be loaded before normal registry/access
+services. Its graph owns foundational orchestration; the runtime supplies trusted owner recognition,
+loading and minimum initial persistence. Exact loader fields, progress storage and storage engine
+remain open. Registry state cannot be the only source needed to establish that same registry.
 
-| Approach | First-launch example | Tradeoff |
+The initial graph must establish Pool ownership, capability instances and verified management
+connections using their contracts. No arbitrary plugin may claim root authority. Later startup
+reuses retained identities/configuration rather than repeating a fresh installation. An unavailable
+existing authority/store is not evidence of an uninitialized system.
+
+#### First authority and grant establishment — proposed
+
+Both approaches below retain the accepted root-directed graph. They differ in how its first
+foundational operations are authorized before normal access-management services are ready:
+
+| Approach | Before normal management grants are usable | Consequence |
 | --- | --- | --- |
-| Locally loaded root Interface directs establishment | The runtime loads the explicitly selected root definition and enough local identity/progress state to start it. Its declared graph establishes the system Pool, system management and access-management Resources, then their management connections. | Uses the same template/plugin machinery for initial setup and later administration. Requires a clear first-load, initial-authority and partial-progress contract before normal registry services exist. |
-| Runtime establishes foundations before starting the Interface | Runtime initialization establishes the system Pool, management Resources and initial authority, then starts the root Interface against them. | A simpler initial dependency boundary, but foundational orchestration lives outside the Interface's own template/graph. The Interface still administers the established system. |
+| Explicit owner-authorized initialization | The runtime recognizes an explicitly requested initialization for the verified local owner and authorizes the selected root's foundational setup under that initial trust context. Once access management is ready, establish normal participation grants and use normal managed paths. | Breaks the first-grant dependency without requiring the access-management service to authorize its own creation. Needs an explicit initialization boundary, recorded progress and transition to ordinary authority. |
+| Record ordinary grants before setup | Initial runtime support records the root's first normal grant/participation and evaluates it from locally available authoritative state before the graph starts. | Uses ordinary grant semantics from the first step, but requires initial grant targets/state and evaluation before their Resource services are ready. It must later retain one authority for those same records. |
 
-Recommend the first option to support the intended active Interface role and authorable system
-setup. The runtime still supplies trusted owner recognition, selected-definition loading and the
-minimum persistence needed before normal services are available. The first grants must be
-established under that explicit initial trust contract, not by any plugin claiming root authority.
-No application Agent receives an offline grant or implicit OS-user authority from this arrangement.
+Recommend explicit owner-authorized initialization for the first implementation. This is permission
+for foundational establishment under the selected root definition, not an ordinary application
+access path, a new object family or a global grant-check bypass. Its availability must be tied to
+explicit initialization and recorded setup state; completion must not leave it available for later
+ordinary requests. The root's broad v0 owner administration continues through recorded management
+grants once those services are established.
 
-This is still a proposal. Precise initial-grant issuance, interrupted-establishment recovery and
-transfer to normal authoritative state need to follow the selected arrangement. Do not create two
-independently writable copies of system authority or treat an unavailable existing store as a fresh
-installation. Storage extension/engine and detailed loader syntax remain separate choices.
+Interrupted setup would use retained identities/progress and the verified owner context; the exact
+resume/repair contract remains to be settled. Do not silently treat partial or inaccessible state
+as a fresh installation, erase data, or reopen initialization authority merely because management
+is unavailable. Ordinary Agents retain the no-offline-grants rule. Broad owner repair remains
+available as agreed, but its path when normal services fail still needs an explicit contract.
 
-**Possible establishment walkthrough:** the local runtime loads the explicitly selected root
+This is a proposal, not an accepted authorization exception. Exact owner recognition, first-grant
+records, persistence and the transition between initial and normal authority remain subsequent
+contract/implementation details. The alternative remains open for ruling.
+
+**Establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then
 establishes the system Pool, its system management and access-management Resources, and any selected
 storage dependencies in the supported order,
@@ -194,8 +209,8 @@ opens the management connections, and makes observation/control available to att
 On subsequent starts, its recovery operations reuse retained object identities, settings and grants;
 missing or inconsistent state is reported for explicit repair. Resource creation still proceeds
 through its Pool. Normal running-instance changes use Conduits and supported controls, and fixed
-definition changes still require replacement. This sequence is illustrative, not final YAML or
-approval of any particular storage plugin.
+definition changes still require replacement. This describes the accepted orchestration boundary;
+it is not final YAML or approval of a particular first-authority mechanism or storage plugin.
 
 The first load and earliest durable progress still need an implementation home. A root Interface
 cannot load the only copy of its definition from a store reachable only after that same definition
@@ -544,7 +559,7 @@ current. Report and reconcile missing evidence; do not silently rebuild identity
 ### Storage boundary under review
 
 The current exploration places initial establishment and continuing system administration in the
-[Interface role](#interface-as-system-director--proposed-refinement). The storage arrangements below
+[Interface role](#interface-as-system-director). The storage arrangements below
 can implement that role; they need not introduce a separate user-facing bootstrap component.
 
 I4 has not selected an engine or extension boundary. The earlier SQLite-versus-storage-plugin

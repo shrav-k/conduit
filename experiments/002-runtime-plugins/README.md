@@ -29,6 +29,11 @@ in the system Pool is accepted for grants and governing bindings, alongside syst
 Both may share the existing management process/store. Additional cases, exact schemas and startup
 wiring remain for review; this does not authorize extra test cases or begin implementation.
 
+The accepted first-launch boundary starts the root Interface from a locally available definition
+before registry services exist. Its declared graph directs foundational setup, supported by runtime
+owner recognition and minimum loading/persistence. The exact first-authority and partial-recovery
+mechanisms remain under review; the fixture must not assume them already implemented.
+
 ## Question
 
 Can Rust services coordinate independently owned activity, finite plugin graphs and

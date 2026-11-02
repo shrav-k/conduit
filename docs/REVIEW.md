@@ -33,8 +33,10 @@ engineering pass remain separate. An open detail in an older report is not autom
   code. The official [LICENSE](../LICENSE) is included; reproduced third-party material retains its
   own terms and attribution. No separate CLA or DCO requirement was selected. Any additional
   contribution procedure remains open if needed; see [license scope](../CONTRIBUTING.md#license-and-attribution).
-- **Public identities.** Choose the GitHub organization/transfer, package naming authority and any
-  domain before publishing permanent identifiers. Directory names do not decide protocol identities.
+- **Public identities — deferred:** keep the current `shrav-k/conduit` repository location while
+  protocol work continues. Organization selection/transfer, domains and permanent package naming
+  remain for the owner to choose later. The accepted one-main-repository direction is unchanged;
+  provisional examples and directory names do not establish permanent protocol identities.
 - **Change and release authority.** Identify who approves protocol changes, maintains supported
   packages and publishes releases. Define the initial support/security contact when distribution begins.
 

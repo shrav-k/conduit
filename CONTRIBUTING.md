@@ -77,7 +77,9 @@ Any future contribution procedure remains an explicit project decision.
 
 ## Remaining publication decisions
 
-One main repository, a common package envelope and Apache-2.0 are accepted. Organization identity,
-change/release authority and any additional contribution procedures remain in
+One main repository, a common package envelope and Apache-2.0 are accepted. Public naming is
+deferred: work continues in `shrav-k/conduit` until the owner selects an organization or transfer.
+Domain/package names remain provisional and do not block protocol development. Change/release
+authority and any additional contribution procedures remain in
 [review](docs/REVIEW.md#owner-decisions-before-public-distribution). This guide introduces no review
 quorum or package-release promise.

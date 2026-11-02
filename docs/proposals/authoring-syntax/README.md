@@ -22,6 +22,9 @@ The remaining representations and detailed schema profile below are proposals wi
 The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.
+Conduit-authored schemas also [reject unrecognized keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance),
+with custom annotations using an explicitly declared mechanism. Its syntax and external MCP
+catalog handling remain open.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

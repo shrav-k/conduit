@@ -8,6 +8,8 @@ ruling. This brief preserves the comparison; remaining profile recommendations a
 merely by appearing here. The [current review](../../REVIEW.md) owns the remaining decisions.
 The subsequent [schema-resolution ruling](../../protocol/CONFIGURATION.md#schema-resolution)
 also accepts supplied/declared schema dependencies with no automatic fetching during validation.
+The owner also accepted [rejecting unrecognized schema keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance)
+in Conduit-authored contracts, with an explicit custom-annotation mechanism still to be specified.
 
 ## Recommendation and scope
 

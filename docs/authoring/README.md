@@ -17,6 +17,9 @@ Schema references resolve from the selected package and explicitly supplied or d
 dependencies, without automatic network fetching during validation. Missing required definitions
 are reported; dependencies may be acquired explicitly beforehand. The detailed schema profile
 and reference syntax remain in review.
+Conduit-authored schemas reject unrecognized keywords, including misspelled validation rules.
+Custom annotations require an explicitly declared mechanism; its syntax and external MCP
+schema handling remain separate. See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
 
 ## From a new capability to an instance
 

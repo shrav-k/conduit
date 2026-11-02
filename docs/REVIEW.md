@@ -96,11 +96,16 @@ resolve from the selected package and explicitly supplied or declared schema dep
 report missing required definitions without automatic network fetching during validation.
 Explicit acquisition beforehand remains possible, and exact reference syntax is open.
 
-The next ruling concerns unrecognized keywords in Conduit-authored data schemas. The proposed
-rule rejects them when accepting a contract, while providing an explicitly declared mechanism
-for custom annotations. For example, a misspelled `minimum` must not silently lose its constraint.
-This is an authoring-profile choice, not an automatic rejection rule for external MCP catalogs;
-the annotation mechanism and any future validation extensions require their own defined semantics.
+The [schema-keyword rule](protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted:
+reject unrecognized keywords in Conduit-authored schemas and allow custom annotations through
+an explicitly declared mechanism. The annotation syntax and handling of external MCP catalogs
+remain separate; annotations do not supply enforcement by themselves.
+
+The next ruling concerns conflicting configuration defaults after schema composition. The
+proposed rule materializes an omitted field only when its applicable defaults agree; otherwise
+the caller supplies an explicit valid value or the contract author resolves the conflict.
+Schema traversal order would not choose a winner. Existing validation constraints and the
+accepted distinction between omitted, null and empty values remain in force.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

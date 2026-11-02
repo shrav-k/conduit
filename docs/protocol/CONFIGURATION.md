@@ -120,6 +120,18 @@ authenticate an external service or grant a runtime capability. Package-local sc
 dependency boundaries still apply. Exact reference spelling, artifact layout and resolver mechanics
 remain authoring and implementation work.
 
+### Schema keyword acceptance
+
+When accepting Conduit-authored data schemas, reject unrecognized schema keywords rather than
+silently accepting them as annotations. For example, `minimun: 1` must report an error instead
+of losing the intended `minimum` constraint. This checks schema-keyword positions; names inside
+declared maps such as `properties` and `$defs` remain governed by those maps' contracts.
+
+Custom annotations use an explicitly declared mechanism, whose exact representation remains
+open. An annotation does not itself implement validation, authorization or another behavioral
+guarantee. This authoring-profile rule does not decide how adapters handle external MCP catalogs;
+their compatibility and schema-support behavior remains a separate contract.
+
 ### Implementation selection
 
 **V0 rule:** select Conduit plugin implementations explicitly or through an

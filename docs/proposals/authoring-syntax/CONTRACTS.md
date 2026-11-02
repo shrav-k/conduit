@@ -106,6 +106,8 @@ merely to resolve exports. The same rule applies to default bindings when they a
    resolve from the selected package and its explicitly supplied or declared schema dependencies;
    report missing required definitions without automatic network fetching. Dependencies may be
    acquired explicitly beforehand. No implicit environment/shell expansion occurs during validation.
+   Conduit-authored schemas reject unrecognized keywords; custom annotations use an explicitly
+   declared mechanism. The mechanism's syntax and external MCP schema handling remain open.
 5. Validate supplied typed values, graph binding positions, control definitions and dependency
    declarations. Defer required-field checks for declared defaulted fields until materialization.
    A template can leave explicitly declared composition inputs unbound; an instance cannot
@@ -122,8 +124,9 @@ our scalar, duplicate-key or denial-of-service behavior. [Parser events][yaml-ev
 The accepted foundation uses JSON Schema 2020-12 for data validation with equivalent YAML/JSON
 representations, plus explicit Conduit semantics for defaults, bindings and transitions.
 The remaining pipeline and profile details here are proposed. JSON Schema's `default` is an annotation and does not
-materialize values. Implement that pass ourselves; reject contradictory or ambiguous default
-definitions rather than selecting a branch by traversal order. Close records explicitly; schemas
+materialize values. Implement that pass ourselves. The next review proposes reporting conflicting
+applicable defaults for an omitted field, requiring an explicit valid value or a contract correction
+rather than selecting by traversal order. Close records explicitly; schemas
 with composition need correct `unevaluatedProperties` behavior. [Defaults][schema-defaults] ·
 [Object properties][schema-objects]
 

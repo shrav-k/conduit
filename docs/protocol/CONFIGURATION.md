@@ -169,6 +169,16 @@ retain it for the instance's subsequent starts, operations and recovery. Install
 changing a default or package discovery order must not silently change that binding. Record an
 unresolved requested dependency as unresolved, not as located or verified code.
 
+A resolved package artifact records a content digest alongside its declared package identity
+and release. Coverage includes its published contracts, graphs, templates and any bundled code;
+packages containing only templates or implementation bindings follow the same rule. Reusing a
+release label with changed contents must not silently replace an existing instance's selected
+definitions. Separately bound dependencies retain their own selected identities.
+
+The digest identifies retained content, not publisher trust or externally operated MCP service
+code. The hash algorithm, exact bundle boundaries, encoding and storage mechanics remain open.
+This makes package-content identity explicit without adding a backward-compatibility promise.
+
 Contract identity/version defines promised configuration and behavior; implementation bindings
 identify the declarations, adapters and any authored code supplying it. Multiple implementations
 can deliberately support the same contract. Code-optional contributions retain their resolved

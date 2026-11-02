@@ -32,6 +32,9 @@ formats and unsupported ones reported. The supported set and custom-extension me
 The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
 requires an explicit valid value or corrected defaults when an omitted field has conflicting
 applicable schema defaults. Traversal order cannot select a winner.
+Resolved package artifacts also retain [package identity, release and a content digest](../../protocol/CONFIGURATION.md#implementation-selection),
+covering published declarations and any bundled code, including template-only packages. Digest
+algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

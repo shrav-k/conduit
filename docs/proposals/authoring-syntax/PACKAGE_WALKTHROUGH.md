@@ -49,8 +49,10 @@ example-history/
 
 These are an inventory of the proposed release, not files claimed to exist in this repository.
 The source project would separately contain the implementation and conformance tests. The release
-must retain the actual declaration/artifact identities required by the accepted pinning rules;
-a package name and `0.1.0` alone do not supply those identities. Installation does not run setup.
+retains the package identity, release and content digest under the accepted artifact rule. That
+digest covers the published contracts, schemas, templates and any bundled worker; the same rule
+applies if the package has no executable. A package name and `0.1.0` alone do not supply exact
+content identity. The hashing/bundle format is still open. Installation does not run setup.
 
 An illustrative `plugin.yaml`:
 

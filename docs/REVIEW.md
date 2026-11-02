@@ -117,11 +117,17 @@ authoring profile. Allowed descriptive annotations do not alone reject a tool; u
 required validation features are reported without stripping constraints or claiming enforcement.
 Exact adapter handling and conformance cases remain open.
 
-The next ruling moves to package publication: should a resolved package artifact have a content
-digest in addition to its declared package identity/release, covering its published declarations
-and any bundled implementation artifacts, including packages containing only templates or bindings?
-This would make exact-content retention explicit without claiming to pin external service code.
-Digest algorithms, bundle boundaries and concrete fields remain proposals.
+The [package-artifact rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
+resolved artifacts retain a content digest alongside package identity and release, covering
+published contracts, graphs, templates and any bundled code, including code-free packages.
+The digest identifies content, not publisher trust or remote service code. Hash algorithms,
+bundle boundaries and concrete fields remain open.
+
+The next ruling concerns locally authored packages during development: should Conduit capture
+the selected package contents in an immutable local snapshot before execution, so later source
+edits leave existing instances' selected contents available? The alternative uses the source
+directory directly, verifies the retained digest and reports unavailability when edits change it.
+Either approach preserves fixed instance bindings; snapshot layout and cleanup remain separate.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

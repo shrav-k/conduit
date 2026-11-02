@@ -1,6 +1,7 @@
 # Research
 
 Current sequence: the [conceptual review](../REVIEW.md) is complete;
+[repository/distribution structure](../proposals/REPOSITORY.md) is the current discussion;
 [authoring syntax](../proposals/authoring-syntax/README.md) is parked for a later PR. The
 [collaborator comparison](../proposals/COLLABORATOR_REVIEW.md) reviews two submitted proposals
 without treating their platform claims as newly verified research or adopting their recommendations.
@@ -23,6 +24,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
+| [ECOSYSTEM_ORGANIZATION](ECOSYSTEM_ORGANIZATION.md) | Source/release/website comparison across Pi, MCP, OpenTelemetry, Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime and uv; evidence for the organizational proposal, not accepted restructuring. |
 | [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and the lightweight debugging package and capture policy accepted in I6. Backend/library/wire recommendations remain proposals. |
 | [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; accepted shared policy/instance-owned state and independent policy. Later I4 rulings define access management and a public persistence plugin loaded as a service dependency, initially using SQLite. |
 | [AUTHORIZATION](AUTHORIZATION.md) | Cedar, Kubernetes RBAC, OPA, Zanzibar, Macaroons/Biscuit and MCP/OAuth: evidence for common Agent/Interface Policy and Grant contracts, delegation and enforcement. |

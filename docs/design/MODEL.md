@@ -41,6 +41,14 @@ and schema pass should preserve these responsibilities rather than silently chan
 | Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
 | Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
 | Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
+| Package | A distribution envelope with declared identity, version, typed contents and dependencies. | Can contain plugin contributions, templates, or both, including template-only collections referencing other available packages. It is not another runtime object family. |
+
+Packages use a common outer contract while each contribution retains its own typed validation and
+behavior. A template-only collection need not supply executable code or a plugin implementation.
+Installing a package makes its definitions available; it does not instantiate objects, authenticate
+services or grant access. The common envelope does not require an identical source directory layout,
+bundled dependency copies or a new general-purpose package manager. Exact fields, dependency references
+and archive layout remain authoring work; automatic dependency resolution stays deferred.
 
 Policy and Grant are essential protocol concepts for Agents and Interfaces, alongside the other
 concepts here. Their authorization contracts must apply consistently to managed capability use,

@@ -11,9 +11,10 @@ features. It does not guarantee that implementation will reveal no further count
 
 ## Next discussion
 
-There are no outstanding rulings in this conceptual review. The next discussion belongs to a
-separate authoring/conformance PR: complete contract and template examples, schemas and wire/profile
-bindings, followed by implementation. Existing examples remain proposals until reviewed together.
+There are no outstanding rulings in this conceptual review. The current
+[repository and distribution review](proposals/REPOSITORY.md) considers organizational boundaries
+before a separate authoring/conformance PR: complete contract and template examples, schemas and
+wire/profile bindings, followed by implementation. Existing examples remain proposals until reviewed together.
 Concrete counterexamples can reopen a semantic issue; this is not a claim that every future extension
 or engineering detail is settled.
 

@@ -15,11 +15,13 @@ can expose supported MCP capabilities independently, with an Interface providing
 - [Specification](docs/SPEC.md) — the five-family model and core behavior
 - [Design contracts](docs/DESIGN.md) — detailed accepted rules
 - [Review](docs/REVIEW.md) — completed conceptual review and deferred authoring work
+- [Repository and distribution review](docs/proposals/REPOSITORY.md) — current organizational proposal before syntax
 - [Implementation proposal](docs/proposals/implementation-v0/README.md) — architecture, contracts, organization and decisions for review
 - [Collaborator proposals](docs/proposals/COLLABORATOR_REVIEW.md) — comparison with the current design
 - [Deferred authoring examples](docs/proposals/authoring-syntax/README.md) — future PR input
 - [Concrete YAML walkthrough](experiments/001-shared-access/README.md) — static, proposed syntax
 - [Research](docs/research/README.md) — evidence, alternatives and source limitations
 
-The conceptual review is complete; concrete syntax and conformance fixtures return in a later PR.
+The conceptual review is complete. Repository, publication and documentation boundaries are now under
+review; concrete syntax and conformance fixtures return in a later PR.
 The earlier design baseline remains available in Git history at `c013f0a`.

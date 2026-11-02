@@ -4,6 +4,12 @@ Status: implementation proposal, 2026-11-01. Directory/crate names below describ
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
 [review](REVIEW.md) identifies choices requiring a ruling before they become commitments.
 
+The newer [repository/distribution review](../REPOSITORY.md) accepts one main repository under a
+Conduit organization, with independently consumable public protocol/conformance, runtime and extension
+surfaces. Publication details remain under review. Use this document's crate/dependency/milestone
+details as earlier candidates; neither directory layout is adopted. Consolidate them after that review
+rather than implementing both trees.
+
 I1 accepts separate management and execution services; crate boundaries must preserve that
 arrangement and the accepted shared-policy/instance-state authority split. The
 [research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
@@ -113,7 +119,8 @@ config, generic contract/support descriptors in core, and binding/runtime coordi
 Endpoint implementations provide requirement-specific support. These are responsibilities within
 the existing candidate crates, not a requirement for a new crate or hard-coded core variant for
 every extension. Definition reuse across implementations is accepted; publication mechanics,
-support/satisfaction interfaces and the first vocabulary await I3. No new expression-language
+support/satisfaction syntax and the first vocabulary remain authoring work; I3's reusable definitions,
+support declarations and composition boundaries are accepted. No new expression-language
 dependency follows from the accepted design direction.
 
 The terminal initially lives as a client module in the app crate, not a second authoritative
@@ -173,8 +180,9 @@ programming languages. The layouts below are proposed mechanics within that scop
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.
-Templates can ship with packages, but installing a package does not instantiate those templates,
-grant access or authenticate an account. The first-party package may supply several Resource
+The accepted common package envelope supports plugin contributions, template-only collections and
+combinations, with each contribution retaining its typed contract. Installing a package does not
+instantiate its templates, grant access or authenticate an account. The first-party package may supply several Resource
 groups. No mandatory public marketplace, namespace service or build DSL is needed in v0.
 
 The application release bundles a schema set, first-party manifests and platform worker artifacts.
@@ -187,12 +195,13 @@ they must preserve versioned semantics or explicitly require repair/migration.
 
 ## 5. Local state and development artifacts
 
-Use an explicit registry directory, with a platform application-data default and an override for
-tests/parallel registries. Resolve paths once and record registry identity. A project checkout
+Use explicit service-local state directories, with a platform application-data default and an override
+for tests/parallel registries. Management and each executor have separate stores; a common installation
+root does not make their database files shared. Resolve paths once and record registry identity. A project checkout
 is not implicitly a registry, and changing the shell directory does not select another account.
 
 ```text
-<registry>/
+<service-state>/       # one authority service, not a shared management/executor database
   state.sqlite
   runtime/             # socket, OS-held lock, current host metadata
   artifacts/           # retained implementation bundles indexed by digest
@@ -226,7 +235,7 @@ Plugin/template authoring is a first-class acceptance path throughout these mile
 first-party integrations must exercise the public extension boundary, and a small separately
 authored plugin must load without a core-code change. Record the files and code the author actually
 needs, including any generated manifest/schema artifacts; do not hide essential setup in the
-developer's environment. SDK/runner details remain implementation work; authoring syntax is deferred to I7.
+developer's environment. SDK/runner details remain implementation work; syntax is deferred to the authoring pass.
 
 Reuse existing infrastructure where its behavior can be adapted and tested against Conduit's
 contracts. Extra process hops or conservative serialization are acceptable initially. Contract

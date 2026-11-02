@@ -452,6 +452,10 @@ the Interface. The alternative represents it as a system-Pool-owned Resource rea
 Conduits. Both use the accepted public contract; the Resource arrangement additionally needs rules
 for starting and administering the dependency that stores its own registry/access records. See the
 [comparison](ARCHITECTURE.md#store-representation-and-lifecycle--proposed). This recommendation is not accepted.
+The current review requests [startup/lifecycle examples](ARCHITECTURE.md#startup-and-lifecycle-comparison).
+They compare first establishment, restart, storage loss, retirement and implementation replacement
+using the same plugin/store. The Resource option's foundational access and dependent-service
+lifecycle rules remain open; the comparison makes no new ruling or implementation commitment.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.

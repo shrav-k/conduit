@@ -678,6 +678,77 @@ requires a supported explicit migration/replacement procedure, with one authorit
 SQLite remains a candidate for the bundled implementation. See [I4](REVIEW.md#i4--local-transactional-authority)
 for the pending representation/lifecycle and engine rulings.
 
+#### Startup and lifecycle comparison
+
+These are illustrative consequences for the pending representation ruling, not accepted lifecycle
+defaults. Use the same bundled plugin and hypothetical local management store in both cases; each
+executor retains its separately owned state under the same chosen pattern. A Resource representation
+does not require a database server, another helper process, or a database per object.
+
+| Property | A — service runtime dependency | B — Pool-owned persistence Resource |
+| --- | --- | --- |
+| Named object representing the store | None separately; the selected implementation and store binding belong to the responsible service's declared dependencies. | For example, `system-state`, a Resource owned by the system Pool. |
+| Persistence path | Responsible service invokes its selected persistence implementation. | Responsible service uses a declared Conduit to the persistence Resource, implemented by that same plugin. |
+| Inspection and repair | Interface observes the service's dependency state and invokes supported recovery. | Interface can also address the storage Resource and its own supported controls/lifecycle. |
+| Public extension | Published persistence contract. | The same contract, exposed through the Resource's capability. |
+| Ownership of grants/configuration/outcomes | The previously designated management or execution service. | The same service; Resource ownership of the storage capability does not confer authority to author stored grants or outcomes. |
+
+**First explicit startup.** In A, the locally loaded root directs foundational setup, with the
+service loading its selected persistence plugin and establishing the store it needs to retain setup
+and subsequent management state. The system Pool and management Resources still exist and follow
+their accepted ownership. The store itself adds no separately registered Resource.
+
+In B, root setup also establishes a storage Resource through the system Pool and a foundational
+connection to it before normal registry operations can depend on it. Early local progress must
+identify that Pool, Resource, retained implementation and backing store sufficiently to complete
+setup and reconcile their registry records once available. There is one set of identities, not a
+second installation discovered afterward. The exact first-record/transition sequence remains open.
+
+Both need trusted initial loading and persistence support. B exposes more of that dependency in
+the object model; it cannot obtain the only copy of its own definition or connection authority by
+asking an unopened registry. In A, service access to its own configured store belongs to its trusted
+implementation boundary. In B, foundational service-to-store access must likewise be verifiable
+without recursively consulting policy held in that store. The applicable identity/binding contract
+would need to be explicit; it is not an offline application grant, nor a rule that ordinary callers
+may bypass access management. A alone does not remove the need to trust and verify plugin loading.
+
+**Normal restart.** In A, load the retained implementation, open the existing configured store,
+recover service state, then resume only what existing lifecycle contracts permit. In B, local
+startup material also has to recover the same storage Resource and its connection state before
+normal registry discovery; opening the payload is not permission to instantiate replacement
+objects. The recovered records must agree with retained startup identity. A missing store,
+mismatched identity or unreadable authority state is reported for explicit repair in either case.
+Neither restart implies a fresh Agent turn, new grants or default recreation.
+
+**Storage failure.** In A, report an unavailable service persistence dependency; in B, also expose
+the affected Resource/Conduit state and dependent services. In either case, hold work whose required
+durable commit or current permission cannot be established. This does not imply that every already-
+running external process has stopped. An effect may finish while its outcome cannot be durably
+recorded; recovery must reconcile it and must not claim missing evidence was retained. The local
+root's declared recovery operations remain available as supported by the retained definition/code
+and verified owner context. Reconnection verifies existing state rather than creating an empty store.
+
+**Stop or retire the store.** A has no separate storage Resource to delete; supported service
+shutdown/maintenance coordinates persistence lifetime. A configuration-file edit does not itself
+authorize deleting the backing data. B offers a Resource lifecycle surface and therefore needs
+explicit dependency rules. For example, ordinary retirement could require dependent services to
+be deliberately stopped or migrated first. Choosing rejection, coordinated shutdown and any
+maintenance exceptions remains a ruling if B is selected. Pool ownership does not make stopping
+or deleting a store safe while its consumers need it. Resource retirement remains separate from
+backing-data purge under the accepted design.
+
+**Replace the implementation.** Both retain the accepted exact-implementation/replacement rules.
+Replacing the selected code cannot silently change the meaning of stored state. The relevant
+service/instance lifecycle must provide a supported migration or reuse procedure and prevent
+competing authorities during replacement. B additionally replaces the storage Resource and
+deliberately rebinds its consumers where required. A separates that work from a Resource lifecycle;
+neither option promises a live backend swap or automatic migration.
+
+A is recommended for the first implementation's simpler foundational lifecycle. B gives more
+uniform template/Resource/Conduit composition and direct Resource administration. Both preserve
+the minimal published plugin contract, Interface-led recovery and independent state authorities.
+The user's request to compare these examples is not acceptance of either arrangement.
+
 ## 5. Graph and runtime execution
 
 Compilation produces a finite DAG of typed operation bindings. Validate cycles, missing ports,

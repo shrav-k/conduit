@@ -12,4 +12,5 @@ proposal prose, examples and dissenting recommendations were retained.
 
 The [comparison](../../proposals/COLLABORATOR_REVIEW.md) records current disposition. The
 [design](../../DESIGN.md) is authoritative; [review](../../REVIEW.md) tracks pending rulings.
-Archival integration does not approve either proposal wholesale or claim the GitHub PRs are merged.
+Both source commits are preserved in the integration history, with their prose verified against the
+archive. This integrates the contributions without adopting either proposal wholesale.

@@ -9,7 +9,7 @@ later authoring/conformance PR.
 | [SPEC.md](SPEC.md) | Concise model and user journey. | Summary of the accepted direction. |
 | [DESIGN.md](DESIGN.md) → [design/](DESIGN.md#contract-map) | Detailed rules divided into model, lifecycle, configuration, Agents, Resources, Pools and Conduits. | Canonical accepted behavior; topic files replace the former monolithic body. |
 | [REVIEW.md](REVIEW.md) | Conformance scope, authority across dependent calls and cross-object lifecycle. | Completed C1–C3 rulings; detailed syntax remains deferred. |
-| [Collaborator comparison](proposals/COLLABORATOR_REVIEW.md) | PR #1 and #2 against the current branch. | Adopted refinements, unadopted alternatives and attributed dissent. |
+| [Collaborator comparison](proposals/COLLABORATOR_REVIEW.md) | PR #1 and #2 against the reviewed design. | Adopted refinements, unadopted alternatives and attributed dissent. |
 | [Implementation proposal](proposals/implementation-v0/README.md) | Runtime mechanisms and delivery plan; concise I1–I7 status. | Accepted boundaries are marked; specific mechanisms remain proposals. |
 | [Authoring proposal](proposals/authoring-syntax/README.md) | Package, contract and complete template examples. | Parked for a future syntax/conformance PR. |
 | [Experiments](../experiments/README.md) | Scenarios, draft configuration, expected outcomes and actual checks. | Static evidence only so far; fixtures do not define the protocol by themselves. |

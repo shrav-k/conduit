@@ -1,16 +1,17 @@
 # Collaborator proposals against the current design
 
-Reviewed: 2026-11-02. Two open PRs from `allocmemory` propose related directions. This document
-compares their submitted text with the current implementation branch. Declared-capability conformance has now been accepted during the review. Other recommendations
-remain explicitly distinguished below; neither PR has been adopted wholesale or merged.
+Reviewed: 2026-11-02. Two PRs from `allocmemory` propose related directions. This document
+compares their submitted text with the reviewed design. Declared-capability conformance and the
+initial evidence threshold are accepted; the remaining recommendations are distinguished below.
+Neither proposal is adopted wholesale.
 
 | Source | Reviewed revision | Subject |
 | --- | --- | --- |
 | [PR #1 — docs(proposal): add roadmap proposal](https://github.com/shrav-k/conduit/pull/1) | `2111b0d4ca60080eb8de36a1728c6e56ffc69c71` | Protocol focus, Sealmesh, an autonomous local root Agent and per-environment VMs. |
 | [PR #2 — How Conduit can become a protocol?](https://github.com/shrav-k/conduit/pull/2) | `c480e96b94db24e7080354161b948428478e14f8` | Schema, wire, lifecycle/error semantics and independent conformance. |
 
-Both proposals explicitly identify themselves as discussion material against `main`. The current
-branch contains later accepted authority, plugin, composition and persistence decisions. Compare
+Both proposals explicitly identify themselves as discussion material against `main`. The reviewed
+design contains later accepted authority, plugin, composition and persistence decisions. Compare
 intent and behavior, rather than treating outdated terminology as disagreement with those rulings.
 
 ## What strengthens the current direction
@@ -86,4 +87,10 @@ remain visible without becoming requirements. Review comments were posted as aut
 [PR #1 comment](https://github.com/shrav-k/conduit/pull/1#issuecomment-6585647532) and
 [PR #2 comment](https://github.com/shrav-k/conduit/pull/2#issuecomment-6585648057).
 They explain the accepted conformance boundary, unadopted alternatives and outstanding choices.
-No GitHub merge has been performed; the archival integration is on the implementation branch.
+Both source commits are retained through merge commits
+[`71d6348`](https://github.com/shrav-k/conduit/commit/71d634879be68399c080450f0c2e8fa401d5b8e8) and
+[`4b3db58`](https://github.com/shrav-k/conduit/commit/4b3db583fdfbcd5c95c36aefa85bad4d73748b12).
+The archived proposal bodies were checked against those exact source commits, permitting only
+relative-link relocation beneath the attribution header. The former `docs/Proposal/` files are not
+retained as competing active specifications. The final integration combines the accepted design
+with the original contributions and dissent; Git history preserves their authorship.

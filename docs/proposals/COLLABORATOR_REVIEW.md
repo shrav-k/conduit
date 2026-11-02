@@ -1,8 +1,8 @@
 # Collaborator proposals against the current design
 
 Reviewed: 2026-11-02. Two open PRs from `allocmemory` propose related directions. This document
-compares their submitted text with the current implementation branch. It does not adopt, merge,
-edit or post a review on either PR. Recommendations below remain for discussion.
+compares their submitted text with the current implementation branch. Declared-capability conformance has now been accepted during the review. Other recommendations
+remain explicitly distinguished below; neither PR has been adopted wholesale or merged.
 
 | Source | Reviewed revision | Subject |
 | --- | --- | --- |
@@ -25,7 +25,9 @@ intent and behavior, rather than treating outdated terminology as disagreement w
 - **Interoperability evidence.** Reuse the experiment scenarios as conformance tests, distinguishing
   parsing, behavior, independent-client/plugin interoperability and actual provider validation.
 
-These align with accepted intent. Their exact conformance/release implications belong to C1 in the
+C1 now accepts declared-capability conformance: limited components can declare supported surfaces,
+while template executors must honor public execution semantics. The initial evidence threshold remains
+open in the
 [conceptual review](../REVIEW.md#c1--what-does-conformance-promise).
 
 ## What needs adaptation
@@ -74,4 +76,10 @@ Remote scheduling and one-VM-per-account/process are not consequences of the fiv
    conformance vectors together. Do not standardize the draft package by copying its field names.
 4. Keep backend/VM/root-Agent experiments separate unless explicitly added to scope.
 
-No collaborator messages, PR comments, approvals or merges were sent during this comparison.
+## Preserved contribution and dissent
+
+The [archive](../archive/collaborator-proposals/README.md) retains both submitted proposals, including
+the opaque-runtime proposal and the root-Agent/VM/Sealmesh alternatives, with author and exact source
+revisions. Relevant accepted conformance semantics are integrated into the design; unadopted ideas
+remain visible without becoming requirements. PR comment links will record the communicated review.
+No GitHub merge has been performed.

@@ -11,7 +11,8 @@ features. It does not guarantee that implementation will reveal no further count
 
 ## Next discussion
 
-There are **three grouped closure topics**. Their recommendations below are not rulings. Work
+There are **three grouped closure topics**. Accepted outcomes are marked; remaining recommendations
+are not rulings. Work
 through one concrete scenario per topic, then record the accepted result in the relevant design
 file. Do not restart the entire decision history or turn each schema field into a new question.
 
@@ -22,24 +23,17 @@ operations, requirements and instance behavior have public semantics. MCP is the
 base, with a Conduit profile. Components can expose supported capabilities independently. A concrete
 frontend, Rust crate layout or storage engine does not define those public semantics.
 
-**Still to decide:** which supported surfaces must an implementation declare to claim conformance,
-and what proof closes the first protocol milestone? Must every implementation run all five families
-and every standard Resource capability, or can it conform to an explicitly bounded surface? What
-must a host understand about a template/graph rather than simply preserve as opaque data?
+**Accepted:** conformance describes explicitly supported capabilities. Clients/plugins can support
+limited surfaces; a runtime claiming portable template execution must honor public graph, control,
+lifecycle and recovery semantics. Required executable behavior cannot silently become opaque.
+The [canonical contract](design/CONFIGURATION.md#declared-capability-conformance) records this ruling.
+Exact names and syntax remain deferred.
 
-**Example:** an MCP client can invoke a retained-history capability without running setup graphs.
-A plugin package can supply a filesystem operation without being a registry or Agent runtime.
-A runtime claiming to execute portable templates needs to interpret their selected graph, control
-and recovery contracts. Those are different compatibility claims.
-
-**Recommendation:** define a common semantic core with explicit capability/conformance profiles.
-A partial implementation reports its supported surface; executing templates requires the relevant
-public execution semantics. Preserve the accepted domain contracts for memory, workspaces and
-messages as capabilities rather than requiring every implementation to supply them. Unsupported
-semantics cannot silently become opaque executable configuration. Test independent clients/plugins
-against the reference implementation first; decide explicitly whether a second full runtime is a
-first-release gate or a later interoperability proof. This is a release/conformance boundary, not a
-request to select wire method names or JSON Schema today.
+**Remaining C1 choice:** what evidence closes the first conformance milestone? The current
+recommendation is an independently authored client and plugin working against published contracts
+and conformance tests, with a second complete runtime deferred. That would test the extension
+boundary, but would not establish interoperability between two runtimes. The user has not yet ruled
+on that evidence threshold.
 
 **Why now:** collaborator PR #2 makes this choice visible. Its opaque setup/runtime proposal would
 lose the portability we have prioritized. [Comparison and sources](proposals/COLLABORATOR_REVIEW.md).

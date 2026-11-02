@@ -371,3 +371,21 @@ composition mechanism; additional template languages, expressions and patch syst
 concrete use cases. The following sections retain the accepted domain behavior that the
 language must express. [REVIEW.md](../REVIEW.md) separates conceptual closure from the later schema and acceptance walkthrough.
 
+
+## Declared-capability conformance
+
+Conformance applies to explicitly declared supported capabilities. A client, plugin or component
+may implement a limited surface without implementing the entire runtime or all Resource types.
+Its claim must identify the public contracts it supports and their applicable common obligations.
+A capability declaration is not proof that an implementation conforms.
+
+A runtime claiming portable template execution must honor the relevant public graph, control,
+lifecycle and recovery semantics, together with required contracts for the selected contributions.
+It cannot claim that execution surface while treating required behavior as opaque configuration.
+A limited client may consume a supported capability without implementing the construction engine;
+unsupported executable semantics must be reported rather than silently ignored.
+
+This separates public behavior from reference-implementation choices such as Rust crate layout,
+physical plugin ABI, process grouping or storage engine. MCP/profile compatibility and the agreed
+managed-access/evidence obligations remain applicable to supported surfaces. Exact profile names,
+version negotiation, schema spelling and initial conformance-release evidence remain review work.

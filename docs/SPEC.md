@@ -41,6 +41,11 @@ Temporary names may evolve without changing their responsibilities. Published la
 contracts are authoritative; implementations conform. Schemas alone cannot describe every effect,
 recovery or lifecycle guarantee.
 
+Conformance describes explicitly supported capabilities. A limited client/plugin need not implement
+an entire runtime; a runtime claiming portable template execution must implement its public graph,
+control, lifecycle and recovery semantics. Physical runtime mechanisms remain replaceable. Exact
+profiles and the initial evidence threshold are separate review work.
+
 A template supplies typed configuration, its setup graph, declared ongoing behavior and permitted
 controls. It can bind compatible contributions from several plugins without a mandatory primary.
 Standard templates and declared defaults simplify authoring, while instances retain explicit resolved

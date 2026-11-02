@@ -13,6 +13,7 @@ package and YAML syntax will return in a later PR.
 | [Implementation proposal](proposals/implementation-v0/README.md) | Runtime mechanisms and delivery plan; concise I1–I7 status. | Accepted boundaries are marked; specific mechanisms remain proposals. |
 | [Authoring proposal](proposals/authoring-syntax/README.md) | Package, contract and complete template examples. | Parked for a future syntax/conformance PR. |
 | [Experiments](../experiments/README.md) | Scenarios, draft configuration, expected outcomes and actual checks. | Static evidence only so far; fixtures do not define the protocol by themselves. |
+| [Archive](archive/README.md) | Attributed historical proposals, including dissent and source revisions. | Historical arguments, not active requirements. |
 | [Research](research/README.md) | Primary sources, comparisons and historical probes. | Evidence and alternatives, not extra requirements. |
 
 Keep an accepted detailed rule in its design topic, a pending semantic choice in REVIEW, an unadopted

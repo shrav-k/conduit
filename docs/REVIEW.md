@@ -4,21 +4,11 @@ Updated: 2026-11-02, after the protocol-documentation migration. This is the onl
 The five-family model and completed conceptual/implementation rulings remain accepted in the
 [protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
-There is no identified contradiction requiring us to reopen the overall model. M1/M2's early-delivery
-direction and proof scope are settled below; M3 is the remaining substantive mapping discussion from
-the migration. Publication decisions and the later authoring/engineering pass remain separate.
-An open detail in an older report is not automatically another ruling.
+The M1–M3 discussions surfaced by the migration are complete. Early delivery stays lightweight;
+contexts fit the existing Resource/Pool/Conduit model. Publication decisions and the later authoring/
+engineering pass remain separate. An open detail in an older report is not automatically another ruling.
 
-## Discuss before the syntax PR
-
-| Topic | What is open | What is already fixed / useful next example |
-| --- | --- | --- |
-| **M3 — Memory content contexts within Pool-owned Resources** | The memory contract retains “task, Pool or personal collection” as examples of a record's owning context. Clarify how those contexts are represented inside a memory Resource and how sharing/derived-source checks refer to them. Is a context domain data managed by that capability, and which ownership/access boundaries must it expose? This is not yet a ruling. | A Resource has exactly one owning Pool; content ownership does not add another Resource owner or object family. Direct live read-only sharing, revision checks, whole-record delivery and source dependencies remain accepted. Walk through a personal note shared into project knowledge, then a derived summary. [Memory contract](protocol/RESOURCES.md). |
-
-M3 is a semantic mapping left visible in the existing memory text. Resolve it collaboratively before
-encoding that mapping in public schemas; the current wording remains in force until a ruling.
-
-## Early-delivery rulings
+## Migration-review rulings
 
 - **M1 accepted:** no backward-compatibility promises or obligation to maintain legacy compatibility
   code. Users can pin a working set. Early delivery prioritizes a working protocol; strict release
@@ -30,6 +20,12 @@ encoding that mapping in public schemas; the current wording remains in force un
   source checkout can suffice initially. Individual package contents and artifacts will be refined
   with the authoring slice; no detailed catalog or release format was selected. See
   [initial delivery](implementation/README.md#delivery-and-evidence).
+- **M3 resolved through the existing model:** contexts can be ordinary Resources exposing specific
+  plugin capabilities. A Pool owns the Resource, and Conduits supply its permitted access and
+  dependencies. No universal Context layer or owning-context hierarchy is added. A filtered Conduit
+  suffices when no separate Resource behavior/lifecycle is needed. Record identity, revisions,
+  provenance and sharing remain capability contracts; exposed source records retain their ownership.
+  See [memory and evidence](protocol/RESOURCES.md#retained-memory-and-evidence).
 
 ## Owner decisions before public distribution
 
@@ -42,6 +38,19 @@ encoding that mapping in public schemas; the current wording remains in force un
 
 These are project-owner decisions, not reasons to reopen the five families or invent another runtime
 authority model. The [repository proposal](archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
+
+### License discussion — not yet ruled
+
+The current recommendation is Apache-2.0 as the default for original Conduit documentation,
+contracts and reference code. It permits broad reuse and includes an explicit, scoped contributor
+patent grant, with license/attribution and change-notice obligations. MIT is a shorter permissive
+alternative, retaining copyright/license notices without Apache's express patent-grant terms.
+Sources: [Apache-2.0 text](https://www.apache.org/licenses/LICENSE-2.0.html),
+[MIT text](https://opensource.org/license/mit), checked 2026-11-02.
+
+This is a proposal, not a license grant or an instruction to relicense third-party material.
+Contribution procedures and any separately licensed material remain distinguishable. No LICENSE
+file has been added; the owner can select an option or defer publication licensing.
 
 ## Refinements to carry into concrete examples
 

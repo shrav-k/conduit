@@ -164,6 +164,18 @@ Authoritative records, observations of external state and search projections are
 
 ### Retained memory and evidence
 
+Contexts, notebooks and similar memory surfaces can be ordinary Resources exposing plugin-backed
+capabilities. Their templates define configuration, setup, ongoing behavior and supported controls;
+their instances belong to one Pool and are accessed through Conduits. A context Resource can retain
+its own data or expose data from other Resources through authorized dependency Conduits. Exposure
+does not transfer the source records' ownership. Where only filtered access to an existing Resource
+is needed, a Conduit can provide it without creating another Resource.
+
+There is no universal core Context layer or record-owning-context hierarchy. Internal collections
+and provider-specific organization belong to the relevant capability contracts. The record,
+revision, provenance and sharing rules below describe the capabilities that provide those behaviors;
+they do not require every Resource type to implement a common memory schema.
+
 Knowledge, checkpoints, usage observations and artifact references share small record
 metadata while retaining type-specific content and operations. Plugins may introduce
 namespaced record kinds. Memory is exposed as Resources through Pools and Conduits.
@@ -171,7 +183,7 @@ Work and personal knowledge remain separate unless explicitly shared.
 
 | Concern | Contract |
 | --- | --- |
-| Identity and ownership | Stable internal record IDs survive names/paths/external-key changes. Each record has one owning context, such as a task, Pool or personal collection. These content contexts do not create additional owners of the containing Resource instance. Mapping them within Pool-owned memory needs a concrete schema; an Agent's working context remains separate. |
+| Identity and ownership | Stable internal record IDs survive names/paths/external-key changes. A managed record has one authoritative owning Resource, which belongs to one Pool. A Resource exposing another Resource's records preserves their source identity and ownership. Provider-owned backing data retains its native ownership; an Agent's private working context remains separate. No generic owning-context object is required. |
 | References | Support live and revision-pinned references. Missing pinned content is reported unavailable, never silently substituted with a newer revision. References alone grant no access. |
 | Revision and concurrency | Each accepted mutable-record update creates an immutable revision. Updates name their base revision; stale writes conflict. Agents may reconcile and retry without mandatory human approval. |
 | Provenance and time | Separate original source/author, revision writer and derivation links. Preserve local recording time separately from labelled source times. Unknown provenance remains unknown. |
@@ -185,7 +197,7 @@ definitions are ordinary accessible knowledge records referenced explicitly; mat
 names do not bind automatically. Background extraction and classifier interfaces are deferred.
 
 Memory search defaults to all memory permitted by the Agent's current Conduits and
-limits. Queries may narrow by owning context, kind or classification; narrowing cannot
+limits. Queries may narrow by source Resource, kind, classification or other supported typed fields; narrowing cannot
 expand access or implicitly search every repository/service. Results contain bounded
 excerpts, record/revision references and permitted provenance. Full content requires an
 explicit read. Configurable defaults/caps bound result count and total returned text;
@@ -198,16 +210,19 @@ current access checks and reveal only permitted diagnostic/provenance details.
 
 ### Sharing and derived content
 
-V0 supports authorized, revocable, direct live read-only shares between owning contexts.
-The source retains its ID and owner; recipients explicitly select incoming shares through
-their access configuration. Other independent grants remain valid after one share is
-withdrawn. Common knowledge can be updated through separately granted update rights.
-Pool ownership alone does not create a share. Sharing a record grants access to source
-content; it does not assign the containing Resource instance to a second Pool.
+V0 supports authorized, revocable, direct live read-only sharing of Resource-backed records
+through Conduits. The source retains its ID and owning Resource. Access may be exposed directly
+or through another Resource providing a shared-context capability; the latter uses authorized
+dependency connections and preserves caller restrictions under the
+[dependent-call contract](CONDUITS.md#authority-across-dependent-calls). Other independent grants
+remain valid after one share is withdrawn. Common knowledge can be updated through separately
+granted update rights. Pool ownership or a record reference alone creates no access. Sharing
+content does not assign its source Resource to a second Pool or require a core context registry.
 
 Share management is separate from read/update permission. A manager may grant only rights
-it currently holds. Selecting a context covers directly owned records by default;
-descendants and incoming shares require explicit inclusion, which presets may provide.
+it currently holds. Incoming-share views, collections and any traversal of their contents are
+explicit behavior of a supporting capability and its authorized connections. Selecting a Resource
+does not itself authorize following arbitrary references or traversing a generic context hierarchy.
 
 Derived records and ordinary copies require read access to the record and all declared
 source inputs. Copies retain those dependencies despite independent identity/content.

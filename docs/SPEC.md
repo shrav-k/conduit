@@ -93,8 +93,10 @@ data. V0 has no offline grants: retain supervision and outcomes of already-dispa
 but hold new managed requests whose current permission cannot be established. Work with verifiable
 permission can continue; existing stop/revocation rules and delivery checks still apply. V0 publishes
 a minimal typed persistence plugin contract with one bundled implementation for management/executor
-state. Services retain state ownership; Resource domain backends remain independent. Storage engine,
-representation/lifecycle and production placement remain open. The first experiment uses management and two
+state, loaded as a service runtime dependency with Interface inspection/recovery. Services retain
+state ownership; Resource domain backends remain independent. Keep the contract suitable for a
+future Pool-owned storage Resource, without requiring that representation in v0. Storage engine
+and production placement remain open. The first experiment uses management and two
 independent executors as separate processes on one machine, with controlled connection failures.
 Two-machine validation follows before remote support is claimed; no failure guarantee is yet tested.
 

@@ -51,7 +51,8 @@ remain in-process. Instance state authority and endpoint ownership are unchanged
 grouping remains open. Existing MCP services retain supervision. Code-optional contributions use
 shared adapters or graph composition without a worker per package.
 I4 accepts a minimal published persistence plugin contract with one bundled implementation.
-Services retain state ownership; engine and store representation/lifecycle remain open. Local
+Services load it as a runtime dependency and retain state ownership; keep a future Pool-owned
+Resource representation viable through the same public contract. The engine remains open. Local
 transactional storage is a candidate, not a requirement that distributed state live in one file.
 Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 

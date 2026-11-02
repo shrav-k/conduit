@@ -38,8 +38,10 @@ use the locally loadable root Interface's declared recovery operations, with run
 verification even when ordinary management access is broken. Valid progress and existing state are
 preserved; uncertain effects require reconciliation. V0 now includes a minimal published persistence
 plugin contract with one bundled implementation. This proof will use that boundary for its retained
-management/executor state; it does not require several storage engines. Engine, store representation/
-lifecycle, exact methods and fixtures remain open.
+management/executor state as a service runtime dependency, with Interface inspection/recovery.
+It does not require several engines or a separately registered storage Resource. Preserve the public
+contract for a future Pool-owned representation; that is not added experiment scope. Engine, exact
+methods and fixtures remain open.
 These are design rulings, not implemented fixture behavior or additional test scope.
 
 ## Question

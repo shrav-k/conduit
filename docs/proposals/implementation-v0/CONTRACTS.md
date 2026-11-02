@@ -27,7 +27,9 @@ management and executor state, with one bundled implementation. The owning servi
 state transitions and permissions. The contract must support its required checked updates,
 durable progress and reconciliation of uncertain writes; exact methods, schemas and conformance
 fixtures belong to the final authoring pass. The [storage boundary](ARCHITECTURE.md#storage-boundary)
-keeps engine choice and Resource representation open. This is not a general database/query API or
+uses a service runtime dependency in v0 and keeps engine choice open. Separate public semantics
+from engine/hosting details to support a future Pool-owned Resource representation; its migration
+and foundational access/lifecycle rules are deferred. This is not a general database/query API or
 permission for ordinary plugins to edit another service's state.
 
 ## 1. Identity and version domains

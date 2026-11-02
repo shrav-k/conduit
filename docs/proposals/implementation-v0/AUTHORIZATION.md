@@ -427,8 +427,9 @@ not reopen initialization automatically or authorize ordinary application reques
 
 **Accepted persistence boundary:** v0 publishes a minimal typed persistence plugin contract with one
 bundled implementation. Services retain authority over their state; Resource domain backends remain
-independent. Representation/lifecycle and engine remain open. The next comparison is a service runtime
-dependency versus a Pool-owned storage Resource, preserving the accepted ownership and recovery rules.
+independent. The implementation is loaded as a service runtime dependency in v0, with status and
+supported recovery visible through the Interface. Preserve a path to future Pool-owned storage
+Resources through the public contract without changing state authority. The engine is the next ruling.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

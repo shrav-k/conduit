@@ -14,8 +14,12 @@ records the accepted authority, outage and first-proof rulings.
 The [Interface/policy follow-up](#9-interface-administration-and-independent-policy) examines the
 separate I4 question of whether the root Interface owns policy or administers independent policy.
 The user subsequently **accepted independent policy**, administered by authorized Interfaces with
-broad default root administration. Policy representation remains open; the follow-up's Resource
-and storage suggestions are not additional rulings. I1's service/state authority boundary remains.
+broad default root administration. Subsequent review adopted Policy as authoritative requirement
+application and a dedicated system-Pool access-management Resource. Authority persistence now has
+a minimal public plugin contract, loaded as a service runtime dependency in v0; the engine remains
+open. Future Pool-owned storage remains a direction, not an implemented lifecycle. These later
+rulings supersede the follow-up's open alternatives without changing its research evidence or I1's
+service/state authority boundary.
 
 The subsequent [authorization research](AUTHORIZATION.md) develops Policy and Grant as essential
 protocol concepts for Agents and Interfaces, following the user's explicit direction. It extends

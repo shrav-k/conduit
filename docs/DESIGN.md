@@ -242,9 +242,12 @@ implement, starting with one bundled implementation. Management and execution se
 ownership of their configuration, grants, progress and outcomes; the selected implementation
 provides the storage and recovery guarantees those services require. The implementation needed for
 initial loading must be available before registry access. Publishing this contract does not expose
-raw authority-store writes to Agents or replace a Resource's domain-data capability. The engine,
-representation as a Pool-owned Resource and exact schemas remain under review. This establishes an
-extension boundary without requiring several backend implementations in the first milestone.
+raw authority-store writes to Agents or replace a Resource's domain-data capability. V0 loads the
+plugin as a service runtime dependency, with status and supported recovery visible through the
+Interface. Preserve the public semantics, implementation bindings and service-owned state so a future
+Pool-owned persistence Resource can expose the same capability. Its foundational access/lifecycle
+and deliberate migration need later design; that representation is not required in v0. The engine
+and exact schemas remain under review. One bundled implementation suffices for the first milestone.
 
 A plugin publishes reusable contracts and explains how they are fulfilled. Its implementation
 binding can select authored code, an existing local/remote MCP service, a graph composing selected

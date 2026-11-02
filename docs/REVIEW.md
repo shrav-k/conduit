@@ -99,8 +99,9 @@ stay fixed. Bounded issuance operations may now supply mandatory use restriction
 additional restrictions and return the complete grant, without creating issuer dependencies or
 treating omitted restrictions as a request for maximum access. I4 accepts a minimal published typed
 persistence plugin contract with one bundled implementation. Management/executors retain state
-ownership and Resource domain backends remain independent. Store representation/lifecycle and the
-initial engine are the next rulings; exact public schemas remain for I7.
+ownership and Resource domain backends remain independent. V0 loads the plugin as a service runtime
+dependency with Interface inspection/recovery, preserving a path to a future Pool-owned Resource.
+The initial engine is the remaining I4 ruling; exact public schemas remain for I7.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

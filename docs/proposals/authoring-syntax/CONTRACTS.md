@@ -344,9 +344,12 @@ execution. Direct handler tests can use editable source; an explicit managed tes
 capture selected contents automatically. Source edits leave existing instances' selected
 artifacts available. Packages explicitly select included files/directories, with directory and
 pattern rules available rather than default capture of the whole working directory. Unselected
-files are outside the artifact and its digest. Exact inclusion syntax, descriptor/symlink handling,
-storage layout and cleanup remain open; this is not a snapshot of credentials, Resource data or
-the host environment.
+files are outside the artifact and its digest. One explicit source directory bounds included
+paths and symlink targets; report outside targets rather than silently including them. Authors
+can stage files, select a wider explicit directory or use a separate package dependency. This
+does not restrict Resource paths or authorized runtime access. Exact inclusion syntax, descriptor
+handling, internal symlink representation, storage layout and cleanup remain open; this is not
+a snapshot of credentials, Resource data or the host environment.
 Registering schemas is not permission to run the package. The proposed manifest/schema bundle
 below illustrates that boundary; detailed syntax and package layout remain I7 work.
 

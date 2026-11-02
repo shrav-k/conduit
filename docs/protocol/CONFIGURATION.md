@@ -195,7 +195,13 @@ Packages explicitly declare which files and directories belong in their captured
 Directory and pattern rules can select groups of files without listing each one individually;
 capture does not include the entire working directory by default. Unselected working files
 are outside the package artifact and its content digest. Exact inclusion syntax, descriptor
-handling and symlink rules remain open.
+handling and internal symlink representation remain open.
+
+Each capture uses one explicit package source directory. Included paths and symlink targets
+must resolve within that directory; report an outside target rather than silently including
+it. Authors can stage shared files inside, choose a wider explicit source directory with
+inclusion rules, or use a separate package dependency. This boundary applies to captured
+package files, not Resource paths or authorized runtime filesystem access.
 
 Contract identity/version defines promised configuration and behavior; implementation bindings
 identify the declarations, adapters and any authored code supplying it. Multiple implementations

@@ -39,8 +39,10 @@ Managed execution of local packages uses retained immutable snapshots, while dir
 may use editable source. Explicit managed test/start workflows can capture a revision automatically;
 no manual archive assembly or public publication is required per edit. Included files/directories
 are explicitly declared, with directory/pattern rules available; capture does not default to the
-whole working directory. Exact inclusion syntax, symlink behavior and cleanup remain open, and
-existing instances do not adopt edited source automatically.
+whole working directory. Captured paths and symlink targets must remain within one explicit
+source directory; outside targets produce an error rather than implicit inclusion. Exact
+inclusion syntax, internal symlink representation and cleanup remain open, and existing instances
+do not adopt edited source automatically. Resource paths/runtime access remain separate.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

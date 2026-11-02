@@ -58,7 +58,11 @@ The package explicitly declares included files/directories, with directory and p
 available. In this example, declarations, schemas, `templates/` and any bundled `bin/` contents
 could form the selected artifact; unrelated logs and scratch files remain outside it and its
 digest. This illustrates the accepted inclusion boundary, not final manifest syntax or a rule
-that every package uses these directory names. Descriptor and symlink handling remain open.
+that every package uses these directory names. One explicit source directory bounds capture,
+including symlink targets. A link to a shared helper outside that directory reports an error;
+stage the helper inside, choose a wider source directory with explicit inclusion rules, or use
+a separate package dependency. Resource paths/runtime access remain separate. Descriptor handling
+and internal symlink representation remain open.
 
 ### Local development and captured artifacts
 

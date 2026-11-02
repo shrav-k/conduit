@@ -77,7 +77,10 @@ contents available. New instances can select the revision explicitly; capture do
 manual archive assembly or public publication for every edit. Package contents do not include
 credentials, Resource data or a frozen host environment. Declare included files, directories or
 patterns explicitly; unrelated working files stay outside the captured artifact and its digest.
-Exact inclusion syntax, symlink handling and cleanup remain open. Fixed instance-definition
+Capture uses one explicit source directory; included paths and symlink targets must stay inside
+it. Stage shared files, choose a wider explicit directory or use a separate package dependency
+when needed. Resource paths and authorized runtime access remain separate. Exact inclusion
+syntax, internal symlink representation and cleanup remain open. Fixed instance-definition
 rules continue to apply.
 
 ## Variants the language must support

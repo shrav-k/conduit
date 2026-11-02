@@ -133,13 +133,21 @@ credentials, Resource data or the host environment; storage layout and cleanup r
 The [package-content rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
 explicitly declare included files/directories, with directory and pattern rules available.
 Do not capture the whole working directory by default. Unselected files do not contribute to
-the artifact or its digest. Exact syntax, descriptor handling and symlink semantics remain open.
+the artifact or its digest. Exact syntax, descriptor handling and internal symlink representation remain open.
 
-The next ruling concerns capture boundaries: should included paths and symlink targets remain
-within one explicit package source root? The proposal rejects escapes rather than silently
-including outside files; authors could stage shared files, choose a wider explicit root or bind
-a separate package dependency. The alternative supports explicitly declared additional source
-roots. This concerns package capture, not Resource paths or authorized runtime filesystem access.
+The [capture-boundary rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
+one explicit source directory bounds included paths and symlink targets. Outside targets are
+reported rather than silently copied. Authors may stage shared files, choose a wider explicit
+directory or use separate package dependencies. Resource paths and authorized runtime access
+are unaffected; internal symlink representation remains open.
+
+The next ruling concerns local artifact storage during iteration: should distinct content
+digests be allowed to coexist under the same declared package identity/release? The proposal
+keeps existing instances pinned and requires selection of a particular artifact when a name/release
+is ambiguous, using existing explicit-selection/default rules. A capture from explicitly selected
+local source already identifies that artifact. The alternative requires a new release label for
+each different artifact admitted locally. Contract-identity checks remain in force; future public
+registry publication rules are not chosen by this local-development decision.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

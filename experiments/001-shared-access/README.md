@@ -18,8 +18,10 @@ packet makes no claims about real-provider behavior. Paths and account names are
 A root YAML stream is a convenient document collection, not an atomic multi-object apply operation.
 The fixture's imaginary executable-backed package is one supported implementation form, not a
 requirement that every plugin contain code. Code-optional MCP bindings and independent component
-access are covered by [experiment 002](../002-runtime-plugins/README.md). This syntax is preserved
-until the final joint contract/template review rather than silently rewritten to settle it here.
+access are covered by [experiment 002](../002-runtime-plugins/README.md). V0 accepts composition
+without a primary plugin. The examples now use a proposed `plugins` map and explicit `{plugin, name}`
+export references so their bindings match that model. Those spellings remain the next I7 ruling;
+updating the example does not ratify syntax.
 
 ```mermaid
 flowchart LR
@@ -273,6 +275,16 @@ and full status/event schemas still need engineering definitions. The exact type
 here are not automatically approved. No new top-level family or change to settled behavior is
 needed by this example. If a concrete counterexample requires one, bring that behavior back to
 review rather than silently extending the fixture.
+
+## Validation update — 2026-11-02
+
+After accepting composition without a mandatory primary implementation, updated the fixture to
+the proposed named-plugin map and export-reference syntax. Parsed all eight templates and two
+instances, checked 24 operation/driver/handler references against declared aliases, checked setup
+dependency acyclicity, and confirmed instance plugin/setup/runtime bindings match their templates.
+Duplicate keys, aliases/anchors, explicit tags and merge keys were absent. These are Ruby Psych
+data/consistency checks, not a Conduit compiler, runtime test or YAML 1.2 conformance claim. The
+alias/export spelling is still under I7 review.
 
 ## Validation record — 2026-10-31
 

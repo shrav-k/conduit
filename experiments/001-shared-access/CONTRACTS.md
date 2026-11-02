@@ -16,7 +16,7 @@ credentials, grants or live handles appear in the authoring documents.
 | Field | Fixture interpretation |
 | --- | --- |
 | `spec.type` | Versioned type contract. Resource grouping is independent of package installation. |
-| `spec.implementation` | Exact supplying package, release and artifact selection. `fixture-001` names imaginary code, not a verified hash or available package. |
+| `spec.plugins` | Proposed named implementation map with no primary entry. Each export reference uses `{plugin, name}`. `fixture-001` names imaginary code, not a verified hash or available package. |
 | `spec.owner` | Resource-instance owning Pool. Registration through that Pool validates and records this relationship; merely writing it cannot claim ownership. |
 | `spec.config` | Typed establishment and behavior settings; defaults are materialized for instances. Current confirmed settings replace initial values after successful controls. |
 | `spec.setup.nodes` | Finite graph of operation bindings. Mapping order has no execution meaning. |
@@ -84,7 +84,9 @@ fixture. General version negotiation/adaptation is not chosen by this example.
 
 ## Plugin operations and runtimes
 
-All operations below are supplied by the fictional `fixture.core` implementation. Their outputs
+All operations below are supplied by the fictional `fixture.core` implementation through the
+explicit alias `fixture`. Runtime drivers and resolved control handlers use the same proposed
+`{plugin, name}` reference form; contract validation distinguishes the export kinds. Their outputs
 are runtime records with declared validity, not YAML values copied into an instance spec.
 
 | Operation | Inputs → outputs | Effects and recovery |

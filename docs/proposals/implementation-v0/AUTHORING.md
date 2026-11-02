@@ -4,7 +4,8 @@ Status: authoring examples, 2026-11-02. Lightweight Conduit support with the pub
 extension structure prioritized over a helper library is accepted. Publishing inspectable
 contracts with implementations is also accepted. Published, language-neutral contracts are authoritative;
 authors may handwrite or generate them, then explicitly review and version the released definitions.
-Implementations conform to those contracts. Detailed contract/template syntax is the current I7 review.
+Implementations conform to those contracts. Complete templates without a mandatory primary plugin,
+with compatible bindings and declared defaults, are accepted for v0. Detailed syntax is the current I7 review.
 MCP is accepted as the public invocation base with
 a small Conduit profile. Code-optional implementation bindings and independent component access
 are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in
@@ -246,24 +247,26 @@ spec:
     group: filesystem
     name: local-directory
     version: v1alpha1
-  implementation:
-    package: example.filesystem
-    release: 0.1.0
+  plugins:
+    filesystem:
+      package: example.filesystem
+      release: 0.1.0
   config:
     path: /example/euphony
     establish: create
   setup:
     nodes:
       establish:
-        operation: {plugin: owner, name: directory.establish}
+        operation: {plugin: filesystem, name: directory.establish}
         inputs:
           configuration: {from: config}
 ```
 
 The example implementation reference is illustrative; artifact selection still resolves and
-retains the exact implementation before execution. The `owner` alias refers to that code package,
-not the Pool owner or a permission grant. This fragment shows setup; the selected type supplies
-its directory capability/runtime contract, which need not require a dedicated long-running process.
+retains the exact implementation before execution. The proposed `filesystem` alias names the
+selected implementation; it is not the Pool owner or a permission grant. This fragment shows setup;
+complete runtime/capability bindings must also resolve under the selected type contract. A directory
+need not require a dedicated long-running process.
 
 The resulting Resource instance has one Pool owner and a concrete path in its execution
 environment. An Agent-local view or symlink is preparation for authorized access, not a
@@ -272,82 +275,44 @@ access/copy/mount capability; it cannot treat this path as its own local directo
 
 ### Worked comparison: two plugins in one directory template
 
-**I7 remains open:** this expands the implementation-selection example, without selecting A or B.
-The package names, exports, aliases and field spellings below are illustrative. These are authoring
-fragments, not configurations executed by an existing Conduit implementation.
+**Accepted v0 model:** a template supplies a complete recipe using compatible contributions from
+one or several plugins, with no mandatory primary implementation. Complete standard templates and
+declared type defaults provide convenience. Concrete `plugins` and `{plugin, name}` syntax below
+is the next I7 proposal; these fragments have not been executed.
 
-An Euphony Pool provisions one Resource from a directory template. Its setup attaches the existing
-`/work/euphony` directory, then checks for `Cargo.toml` and `src`. On success, the instance supplies
-its declared directory capability to consumers through authorized Conduits.
+An Euphony Pool provisions one Resource from a directory template. Setup attaches the existing
+`/work/euphony` directory and then checks for `Cargo.toml` and `src`. The resulting instance exposes
+its declared directory capability through authorized Conduits.
 
-| Piece | What the author selects or defines | What it means after instantiation |
-| --- | --- | --- |
-| Resource type contract | `filesystem`, `local-directory`, `v1alpha1` | Defines valid directory configuration, capability and lifecycle behavior. It is independent of package release. |
-| Filesystem implementation | `example.filesystem`, release `0.1.0` | Supplies a compatible type implementation, including establishment and applicable runtime/control defaults. |
-| Project-check operation | `example.project-checks`, release `0.1.0`, export `verify-layout` | Checks the directory during setup. It does not own the Resource or become a second Resource. |
-| Template | Configuration plus graph selecting those contributions | Resolves into one instance definition; the Pool remains the Resource owner. |
+| Responsibility | Selected contribution |
+| --- | --- |
+| Configuration/capability meaning | The published `filesystem`, `local-directory`, `v1alpha1` type contract |
+| Establishment and ongoing directory access | Exports from `example.filesystem` |
+| Additional setup validation | `verify-layout` from `example.project-checks` |
+| Applicable supported controls | Resolved type defaults or explicitly selected compatible handler/graph bindings |
+| Supervision and authoritative outcomes | The instance's responsible service; the Resource remains Pool-owned |
 
-Both proposed layouts assume the template can select an implementation supplying the type's default
-behavior. Calling it **primary** describes that role, not its execution priority, authority, process
-or size. It can itself be graph-backed or reuse another implementation. Additional plugins can supply
-runtime drivers or control handlers as well as setup operations when the contracts permit; they are
-not limited to temporary helpers. Every override still has to fulfill the selected type contract.
+The type contract need not come from the package supplying most of the code. Likewise, a runtime
+driver can come from one package without making it primary over every operation or control.
+Using a single package is still valid; composition does not require unnecessary decomposition.
 
-**Shared configuration:**
+An illustrative fragment inside `spec`, with proposed alias/export fields:
 
 ```yaml
 type:
   group: filesystem
   name: local-directory
   version: v1alpha1
-config:
-  path: /work/euphony
-  establish: attach
-```
-
-`attach` means a missing directory is an error. The check's required filenames appear as operation
-inputs below, rather than new undeclared fields in the directory type's configuration.
-
-**A — dedicated primary implementation, named additional plugins:**
-
-```yaml
-implementation:
-  package: example.filesystem
-  release: 0.1.0
 plugins:
-  checks:
-    package: example.project-checks
-    release: 0.1.0
-setup:
-  nodes:
-    attach:
-      operation: {plugin: primary, name: directory.establish}
-      inputs:
-        configuration: {from: config}
-    check:
-      operation: {plugin: checks, name: verify-layout}
-      inputs:
-        directory: {from: output, node: attach, port: directory}
-        requiredEntries: [Cargo.toml, src]
-```
-
-Here `primary` is a provisional reserved alias for `implementation`. Earlier draft fragments use
-`owner` for that role; neither alias is approved. `primary` avoids confusing implementation selection
-with Pool ownership. The graph's output binding makes `check` wait for `attach`; map order does not.
-The check accepts the establishment operation's declared directory descriptor. That descriptor is
-not an access grant; dispatch retains the instance's current execution and authority checks.
-
-**B — one implementation map, with an explicit selection of the type implementation:**
-
-```yaml
-implementation: filesystem
-implementations:
   filesystem:
     package: example.filesystem
     release: 0.1.0
   checks:
     package: example.project-checks
     release: 0.1.0
+config:
+  path: /work/euphony
+  establish: attach
 setup:
   nodes:
     attach:
@@ -359,79 +324,39 @@ setup:
       inputs:
         directory: {from: output, node: attach, port: directory}
         requiredEntries: [Cargo.toml, src]
+runtime:
+  driver: {plugin: filesystem, name: directory.managed}
+  inputs:
+    directory: {from: output, node: attach, port: directory}
+controls: {use: type-defaults}
 ```
 
-The graph is identical except for `primary` versus `filesystem`. B gives every contribution the
-same explicit alias mechanism. It still selects a type implementation; it does not remove that
-role or make every package implement the Resource's entire type. A shortens the one-implementation
-case by omitting the map and alias. Neither layout changes the instance model or permissions.
+The binding makes `check` wait for `attach`; map order does not. `requiredEntries` is an operation
+input, not a new undeclared field of the directory type's configuration. The runtime driver is an
+export with the appropriate driver contract, not an arbitrary setup operation. Its input identifies
+the same directory. It need not spawn a daemon. Any selected default controls must resolve their
+handlers to compatible retained implementations too; `use: type-defaults` is illustrative shorthand.
+Release labels are selection inputs, not complete artifact-retention identities.
 
-**What actually happens, in either layout:**
+Registration validates without running either plugin. Explicit Pool provisioning/setup resolves
+implementation selections and invokes establishment under current authority. A missing directory
+fails attachment. If the later required layout check fails, setup remains incomplete, successful
+attachment progress stays recorded and the directory is preserved. Retry reuses only still-valid
+progress under the operations' recovery contracts. Successful setup does not continuously monitor
+file layout; the template would have to declare such behavior separately.
 
-1. Registration validates the declarations without attaching files or running either plugin.
-2. Authorized Pool provisioning resolves and retains the implementation identities for the Resource.
-   Release labels in these examples are selection inputs, not a complete artifact identity format.
-3. Explicit setup invokes `directory.establish`. Its successful output describes the existing
-   directory; the instance authority records the outcome. No directory is created in this example.
-4. `verify-layout` receives that output and checks the named entries. If a required entry is absent,
-   setup remains incomplete, the successful attachment stays recorded and the directory is preserved.
-   Retry follows recorded-progress validity and each operation's recovery contract.
-5. After setup, the instance owns its ongoing capability and applicable lifecycle/control behavior.
-   The directory implementation need not run a dedicated daemon. Setup helper completion does not
-   delete the instance. The layout check is a setup check, not a promise to monitor every file change.
-6. An Agent accesses the directory through its Conduit. Closing that Agent's view releases its
-   participation/prepared view, not the Pool's Resource or backing directory. A later supported
-   control invokes its resolved handler; the check is not rerun unless that handler/graph declares it.
-
-Changing the selected implementations or fixed setup graph requires replacement in v0. Package
-aliases do not create service logins or replace explicit Resource dependencies through Conduits.
-These rules are identical for A and B.
-
-**Decision boundary:** A and B above both assume a distinguished type implementation. The user
-has asked to examine that assumption before choosing either layout. Neither is accepted. The next
-comparison separates useful bundled defaults from a mandatory primary implementation.
-
-### Is a primary implementation necessary?
-
-**Proposal, not a ruling:** do not require one primary plugin for every template. Require a complete,
-compatible implementation of the selected type's obligations, expressed by the resolved template's
-bindings. A named plugin can supply one contribution or a coherent set; no package has special
-protocol authority merely because it supplies the type definition or runtime driver.
-
-The original primary slot was a convenience: select a package that already connects setup,
-capability handling, runtime behavior and controls. That can reduce wiring and provide a tested
-combination. It is not the same as the Resource's Pool owner, the service authoritative for instance
-state, or a requirement that one package implement every behavior. Those accepted ownership and
-execution arrangements do not depend on a primary plugin.
-
-The same directory example can be described without a global primary selection:
-
-| Required behavior | Selected contribution | What must remain consistent |
-| --- | --- | --- |
-| Configuration and capability meaning | Published directory type contract | The template and all bindings conform to the same selected contract version. |
-| Establish the backing | `filesystem.directory.establish` in the setup graph | Returns the declared directory descriptor for this instance and reports attach/create effects. |
-| Additional setup validation | `checks.verify-layout` after establishment | Accepts that descriptor and accesses it only with the current authorized execution context. |
-| Ongoing directory capability | The declared directory driver/handlers from `filesystem` | Operates on the same established backing under the instance's lifecycle and access contract; no daemon is inherently required. |
-| Supported controls, if any | Resolved type defaults or explicit compatible handler/graph bindings | Their constraints, configuration paths and application/recovery behavior remain coherent with the capability implementation. |
-| Progress, supervision and authoritative outcomes | The instance's responsible service | A failed helper does not become a second authority or transfer ownership to another plugin. |
-
-Choosing the directory driver is still necessary where the contract requires it. It does not need
-to select the implementation of unrelated setup checks or every control. Conversely, using only
-one package is entirely valid; a uniform binding model need not force unnecessary decomposition.
-
-A more demanding example is a database Resource: establishment, the declared database runtime,
-migrations and a supported setting-change handler might come from different contributions.
-Matching JSON shapes alone is insufficient. A migration must use the database actually established,
-and a setting handler must understand that runtime's configuration and confirmation semantics.
-No-primary composition shifts this integration responsibility to the complete recipe and its tests;
-a primary package merely provides a convenient place to ship a tested recipe, not proof of correctness.
+The instance owns ongoing behavior after setup helpers finish. Closing an Agent's Conduit releases
+that participation/prepared view, not the Pool's Resource or backing directory. Supported controls
+invoke their resolved handlers; they do not rerun setup checks unless their graph declares it.
+Changing fixed bindings or implementation selections still requires replacement in v0. A descriptor
+or package alias supplies no permission and cannot replace a Resource dependency through a Conduit.
 
 #### Compatibility: what must agree
 
 Compatibility is not package-name equality or a matching JSON shape. It concerns the selected
 contribution's meaning, inputs, execution context, effects and state/lifecycle obligations.
 
-| Example | Why the apparent match is insufficient | Proposed resolution using existing contracts |
+| Example | Why the apparent match is insufficient | Handling under the accepted contracts |
 | --- | --- | --- |
 | Directory establishment returns a path; a checker accepts a string. | A string can name another directory or a path on another host. | Bind the declared directory output, preserving its instance/backing and execution context. The checker must support that access mode; the reference supplies no authority. |
 | A local checker is assigned to host B while the directory is on host A. | `/work/euphony` on B is not the backing on A. | Run the supported check in A's execution context, or select an explicit remote-access implementation/Conduit. Do not treat the local path as portable or silently copy data. |
@@ -449,7 +374,7 @@ Conduit checks different facts at different times:
   guarantees must be established at their declared point; uncertainty is not success.
 - **Conformance/integration tests:** evidence that implementations fulfill their published behavior,
   including partial failure and recovery. Published declarations remain claims to verify. This
-  proposal requires no central certification service or exhaustive matrix of every package pairing.
+  model requires no central certification service or exhaustive matrix of every package pairing.
 
 A checker that can consume an independently readable directory reference can be broadly reusable.
 A handler that depends on an implementation's private live handle is less portable and must declare
@@ -466,7 +391,7 @@ Keep three existing uses of defaults distinct; this does not introduce three new
 | Supported behavior | A type offers a default `set-query-limit` control, its constraints and a reusable handler binding. | The resolved control definition, selected handler implementation and configuration/confirmation contract. |
 | Ready-made recipe | A published directory template already wires establishment, directory access and project checks. | The resolved graph/runtime/control bindings and selected implementations, alongside the configured path. |
 
-The control default is already accepted: it may include an implementation. The new proposal does
+The control default is already accepted: it may include an implementation. Composition without a primary does
 not strip it from the type contract or force every author to rebind it. A default that names a
 specific handler brings that explicit dependency; it does not make its package the implicit provider
 for every other behavior. Authors can reuse the complete template, edit ordinary fields and create
@@ -482,7 +407,7 @@ For example, a standard directory template can already contain:
 | Declared directory capability/runtime defaults | Concrete driver/handler bindings; a directory need not have a dedicated process |
 | Applicable default controls selected within allowed constraints | The fixed resolved control surface; later requests can only change supported settings |
 
-Proposed expansion uses the existing draft/default rules: first apply ordinary caller edits to
+Expansion follows the accepted draft/default rules: first apply ordinary caller edits to
 the draft, then resolve declared defaults only where allowed, validate the completed behavior and
 retain the resolved configuration. An explicit incompatible handler is an error, not a reason to
 silently select the standard one. A string supplied where an integer is required is invalid, not
@@ -501,11 +426,10 @@ Conduit-selected artifacts does not freeze external services or current access r
 runtime checks. Replacing fixed handlers/runtime definitions still requires a new instance, while
 supported controls continue to update confirmed configuration under the accepted contract.
 
-The tradeoff is between a required bundle entry point and explicit composition. My revised
-recommendation is **no mandatory primary implementation**, while allowing common combinations to
-ship in standard templates and plugin contributions. Accepted type-default controls, instance-owned
-runtime management, fixed definitions/implementations and replacement rules all remain. This awaits
-a ruling before changing the common `spec` schema or rewriting existing example layouts.
+The v0 ruling accepts this composition/default boundary. Type-default controls, instance-owned
+runtime management, fixed definitions/implementations and replacement rules remain intact. The
+next authoring choice is the concrete named-plugin map and export-reference form; package identity,
+schema dialect and remaining binding details are still proposals.
 
 ### What the plugin author supplies
 

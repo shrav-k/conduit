@@ -27,7 +27,9 @@ Keychain, and Interface-guided adapter enrollment/unlock. I6 accepts extensible 
 and Conduits, correlated diagnostics, a small health metric set and explicit content-capture policy.
 I1–I6 are conceptually settled. I7 accepts published, language-neutral contracts as authoritative;
 they may be handwritten or generated, then explicitly reviewed and versioned. Implementations
-conform to those contracts. I7's remaining work is concrete contract/template syntax and layout. Existing
+conform to those contracts. V0 also accepts composition without a mandatory primary plugin:
+complete templates and declared defaults resolve to compatible retained bindings. I7's remaining
+work is concrete contract/template syntax and layout. Existing
 infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement

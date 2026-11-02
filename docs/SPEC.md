@@ -200,6 +200,12 @@ separate compatibility/version boundaries. Later
 template edits do not alter existing instances; mandatory template-history and override ledgers
 are unnecessary.
 
+Templates need no primary plugin: resolve all required behavior to compatible contributions from
+one or several implementations. Standard templates and declared type defaults keep common setups
+simple; retained instance bindings remain explicit. Invalid explicit selections do not fall back
+silently, and installed packages do not implicitly merge their defaults. Validate declared contracts,
+then verify actual access/readiness and behavior through runtime checks and conformance tests.
+
 Named typed controls expose allowed changes, reusing type defaults within template and access
 limits. `spec.config` holds initial values, then confirmed applied settings. Pending or uncertain
 requests remain separate; last confirmed does not prove current when an outcome is uncertain.

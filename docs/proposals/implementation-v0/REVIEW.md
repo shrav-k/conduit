@@ -137,7 +137,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I7 | Concrete authoring/schema conventions | Contract authority is accepted. First decide whether a primary implementation is required; then choose binding syntax and complete the connected authoring example. |
+| I7 | Concrete authoring/schema conventions | Contract authority and composition without a primary plugin are accepted. Next choose a named plugin map with uniform export references, then complete the connected authoring example. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
 and demonstrate those contracts; I4 settles authority/persistence and I5 settles custody/interaction.
@@ -651,48 +651,70 @@ may rename its internal `batch_size` variable while `set-query-limit` still acce
 or lifecycle guarantees; the behavioral contract remains necessary. No schema dialect, package
 layout or SDK is selected by this ruling. Dynamic provider catalogs retain their agreed boundary.
 
-**Current review:** work through connected package, contract and template examples. The next
-choice is how a template selects implementations when its graph uses more than one plugin.
+**Accepted — v0 composition and defaults:** templates may fulfill their type contract through
+explicit compatible contributions without a mandatory primary implementation. Complete standard
+templates, reusable operations and declared type defaults keep ordinary authoring simple. Defaults
+may include handler implementations; they resolve into the instance's retained bindings without
+making one package primary. No implicit merging of installed packages, template inheritance or
+new preset family is required. Explicit invalid selections do not silently fall back to defaults.
 
-### Current discussion: must a template select a primary implementation?
+Compatibility includes operation meaning, state/runtime expectations and recovery semantics, not
+only matching input shapes. Validate declared contracts/bindings, verify current identity, access,
+placement and readiness at their required points, and use conformance/integration tests as evidence.
+No general compatibility solver or central certification service is required. Existing schema-write,
+readiness, exact-implementation retention and replacement rules continue to apply. The
+[walkthrough](AUTHORING.md#worked-comparison-two-plugins-in-one-directory-template) explains the
+accepted model, including [compatibility](AUTHORING.md#compatibility-what-must-agree) and
+[defaults](AUTHORING.md#defaults-values-behavior-selections-and-complete-recipes).
 
-**Pending:** the user requested compatibility and default-resolution examples before deciding
-whether a primary implementation is necessary. The earlier A/B examples
-both assumed a distinguished type implementation; neither was accepted. The [expanded walkthrough](AUTHORING.md#is-a-primary-implementation-necessary)
-compares bundled defaults with explicitly composed behavior and retains the directory examples.
+### Next ruling: one plugin map and one export-reference form
 
-A primary implementation is a convenient entry point for a tested combination of setup, runtime,
-capability and control behavior. It is not the Resource's Pool owner or the instance's authoritative
-service. Existing accepted contracts require a complete recipe and coherent runtime ownership;
-they do not require a single package to occupy this special role.
+**Recommendation:** use `spec.plugins` as a map of locally named implementation selections, with
+`{plugin, name}` references wherever a graph operation, runtime driver or control handler selects
+an export. An illustrative template fragment:
 
-**Revised recommendation:** no mandatory primary plugin. Templates resolve the selected type's
-obligations to explicit compatible contributions, potentially from several packages. A runtime
-can still have a specific selected driver. Common combinations remain easy through ready-made
-templates, reusable operations and type defaults; using one package is valid without giving it
-special protocol authority. Defaults resolve into retained instance bindings, with no new implicit
-merging or template-inheritance rules.
+```yaml
+plugins:
+  filesystem:
+    package: example.filesystem
+    release: 0.1.0
+  checks:
+    package: example.project-checks
+    release: 0.1.0
+setup:
+  nodes:
+    attach:
+      operation: {plugin: filesystem, name: directory.establish}
+      inputs:
+        configuration: {from: config}
+    check:
+      operation: {plugin: checks, name: verify-layout}
+      inputs:
+        directory: {from: output, node: attach, port: directory}
+        requiredEntries: [Cargo.toml, src]
+runtime:
+  driver: {plugin: filesystem, name: directory.managed}
+  inputs:
+    directory: {from: output, node: attach, port: directory}
+```
 
-**Alternative:** require every template to select a type implementation supplying a coherent base,
-with additional contributions extending or replacing supported bindings. This gives authors a
-standard starting point but introduces a mandatory bundle selection even for a fully composed recipe.
+The names are local aliases, not object IDs, authority, process placement or primary roles. Export
+validation still distinguishes operations, drivers and handlers. Package/release fields are a draft
+selection format; exact retained identity and package details remain to be reviewed. Defaults must
+resolve to known bindings too. This example does not settle nested graph/package alias scoping.
 
-Either approach must identify all required behavior, validate declared compatibility, preserve
-current authority and record exact implementation selections. Matching input schemas alone cannot
-prove runtime/state/recovery compatibility. Conformance tests and runtime checks remain necessary.
-No mandatory primary does not weaken type obligations, change the authoritative service or unfreeze
-instance definitions. This remains a proposal; exact alias maps and export references follow the ruling.
+**Alternative:** put the complete implementation selection beside each export reference, for example:
 
-The [compatibility examples](AUTHORING.md#compatibility-what-must-agree) distinguish definition
-checks, runtime verification and conformance evidence. A path on the wrong host, a handler with
-different effects despite the same input schema, or an unconfirmed setting change cannot be treated
-as compatible success. No general compatibility solver or central certification service is proposed.
-The [default examples](AUTHORING.md#defaults-values-behavior-selections-and-complete-recipes) separate
-configuration values, default control/handler selections and complete reusable templates. Existing
-type defaults remain usable, including declared implementations; they resolve into retained bindings
-without making one package globally primary. Explicit invalid selections do not fall back silently.
-The initial convenience mechanism can be complete standard templates, without implicit merging of
-installed packages or another preset family. This explanation is not an accepted new ruling.
+```yaml
+operation:
+  implementation: {package: example.filesystem, release: 0.1.0}
+  name: directory.establish
+```
+
+This makes an individual binding self-contained but repeats selections across setup, runtime and
+controls. The recommended map gives the author one place to select each reused contribution.
+Neither option restores a primary implementation. The map name and reference fields remain
+proposed; the updated fixtures illustrate them for review rather than ratifying syntax by example.
 
 **Remaining authoring pass:** use the chosen structure to review one package and consuming template
 with graph/control bindings and published schemas. `conduit/v0alpha1` as the common API identifier,

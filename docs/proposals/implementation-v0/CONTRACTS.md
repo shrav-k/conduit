@@ -59,16 +59,15 @@ The common envelope remains `apiVersion`, `kind`, `form`, `metadata`, `spec`. No
 `status` and system-owned metadata. Inspection adds system identity, revisions and observations;
 configuration export omits system fields and grants. Checked writes carry preconditions separately.
 
-Proposed common spec responsibilities. The `implementation`/`plugins` split below assumes a
-primary type implementation; **I7 is now reviewing whether any primary is necessary** before
-choosing layout. A uniform map with explicit behavior bindings and no primary selection is also
-under consideration. Neither structure is accepted.
+**Accepted composition:** templates require complete compatible bindings, not a primary plugin.
+The table proposes a uniform named `plugins` map for those bindings; the field name and common
+export-reference syntax remain the next I7 ruling. Declared type defaults can still supply handlers
+and other supported behavior, resolving their selected implementations explicitly on the instance.
 
 | Field | Responsibility |
 | --- | --- |
 | `type` | Exact group/name/version contract; uniform across the five families in this proposal. |
-| `implementation` | The selected type's supplying implementation. |
-| `plugins` | Optional named additional implementation dependencies for graph/handler/driver exports. The reserved `owner` alias identifies `implementation`. |
+| `plugins` | Named selected implementation dependencies for graph, handler and driver exports. No entry is implicitly primary. |
 | `config` | The one stored configuration map: initial materialized values, then confirmed control changes. |
 | `setup` | Inline finite graph or explicit graph-source reference in a template; resolved graph in the instance. |
 | `runtime` | Instance-owned driver declaration and typed prepared-input bindings. |
@@ -76,11 +75,11 @@ under consideration. Neither structure is accepted.
 | `conduits` | Consumer requirements and explicit open/join selections. |
 | `owner` | Resource-instance owning Pool, established by Pool-authorized creation rather than self-asserted by YAML. |
 
-The additional `plugins` map addresses a limitation of experiment 001's single fictional
-`fixture.core`: a filesystem operation and an authentication operation may come from different
-packages. Package aliases bind code, not Resources or permission. **I7** asks whether to adopt
-this layout or a uniform implementation map. Do not create a package/module hierarchy in the
-object registry merely to resolve exports.
+The proposed `plugins` map can hold one implementation or several. A filesystem operation and
+an authentication operation may come from different packages. Aliases name implementation bindings,
+not Resources, processes or permission. **I7** asks whether to adopt this map and `{plugin, name}`
+for references to its exports. Do not create a package/module hierarchy in the object registry
+merely to resolve exports. The same rule applies to default bindings when they are resolved.
 
 ### Parsing and validation pipeline
 
@@ -162,7 +161,7 @@ Illustrative syntax, extending the existing fixture rather than approving it:
 setup:
   nodes:
     prepare:
-      operation: {plugin: owner, name: consumer.prepare}
+      operation: {plugin: consumer, name: consumer.prepare}
       inputs:
         consumer: {from: self}
     establish:
@@ -177,7 +176,7 @@ setup:
       after: [prepare]
 ```
 
-This fragment assumes the enclosing definition supplies `owner`/`database` implementations,
+This fragment assumes the enclosing definition supplies `consumer`/`database` implementations,
 typed configuration and the managed runtime declaration. `database.establish` requests startup
 from the responsible execution service for that declared instance-owned runtime. Its process
 may be independent of management; it is not an untracked daemon owned by a setup node. The output

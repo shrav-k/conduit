@@ -7,7 +7,8 @@ metadata:
   name: conversation-history-0001
 spec:
   type: {group: storage, name: message-history, version: v0alpha1}
-  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  plugins:
+    fixture: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
   owner: {kind: Pool, form: instance, name: project-pool-0001}
   config:
     establish: create
@@ -16,11 +17,11 @@ spec:
   setup:
     nodes:
       history:
-        operation: history.establish
+        operation: {plugin: fixture, name: history.establish}
         inputs:
           configuration: {from: config}
   runtime:
-    driver: history.managed
+    driver: {plugin: fixture, name: history.managed}
     inputs:
       store: {from: output, node: history, port: store}
   controls:
@@ -31,7 +32,7 @@ spec:
         additionalProperties: false
         properties:
           limit: {type: integer, minimum: 1, maximum: 100}
-      handler: history.set-read-limit
+      handler: {plugin: fixture, name: history.set-read-limit}
       changes: [[readLimit]]
       revision: required
       concurrency: exclusive
@@ -44,7 +45,8 @@ metadata:
   name: capability-route-0001
 spec:
   type: {group: connection, name: capability-route, version: v0alpha1}
-  implementation: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
+  plugins:
+    fixture: {package: fixture.core, release: 0.1.0, artifact: fixture-001}
   config:
     consumer: {kind: Agent, form: instance, name: collaborator-0001}
     target: {kind: Resource, form: instance, name: conversation-history-0001}
@@ -55,12 +57,12 @@ spec:
   setup:
     nodes:
       establish:
-        operation: route.establish
+        operation: {plugin: fixture, name: route.establish}
         inputs:
           instance: {from: self}
           configuration: {from: config}
   runtime:
-    driver: route.managed
+    driver: {plugin: fixture, name: route.managed}
     inputs:
       binding: {from: output, node: establish, port: binding}
   controls: {}

@@ -145,6 +145,12 @@ public protocol; a helper library is not an acceptance prerequisite. Concrete pa
 formats remain under review, with detailed syntax deferred until conceptual rulings finish.
 Plugins publish contracts with their implementations: demonstrate template validation against
 those contracts without starting plugin code, then test runtime conformance separately.
+Composition requires no primary plugin. The existing composed-operation fixture must resolve its
+required setup/runtime/control contributions explicitly, including declared defaults, and expose
+the retained selections through the Interface. Known incompatible bindings must be diagnosed;
+unavailable code/services remain readiness gaps, and explicit invalid choices must not silently
+fall back to another implementation. This applies the accepted v0 authoring model to the existing
+proof; concrete alias/export syntax remains I7 work.
 Exercise explicit local installation of the authored package and the code-optional package under
 the accepted distribution scope. Verify that installation alone does not instantiate objects,
 authenticate services or grant access; existing implementation-retention tests cover later package

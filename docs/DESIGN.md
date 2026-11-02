@@ -95,6 +95,17 @@ instances realize that definition with identity, state and managed activity. The
 authoring and the managed object model; it is not merely a graph. Ongoing services remain under
 instance management rather than belonging to a finite setup node.
 
+**V0 composition:** no primary plugin is required. A complete template binds the selected type's
+required behavior to compatible contributions from one or several plugins, including setup,
+ongoing runtime/capability behavior and supported controls. Convenience comes from complete standard
+templates, reusable operations and declared type defaults, including default handler implementations.
+These resolve into retained instance bindings; no implicit merging of installed packages, template
+inheritance or new preset family is introduced. Explicit invalid selections do not silently fall
+back to defaults. Declared contract/type compatibility is checked before execution; actual placement,
+identity, access and readiness are verified at their required points. Conformance tests provide
+behavioral evidence; matching schemas or package names alone do not establish compatibility.
+This preserves instance-owned state/runtime responsibility and fixed-definition replacement rules.
+
 There are two distinct forms of composition. Requirements combine obligations; graphs combine
 actions and their dependencies. A graph may establish prerequisites for a requirement, but
 successfully finishing setup does not prove that every later request satisfies it. Conversely, a

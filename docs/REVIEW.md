@@ -1,6 +1,6 @@
 # Review outcome and schema walkthrough
 
-Updated: 2026-11-01. The current v0 direction review is complete: R1–R7 are settled within the
+Updated: 2026-11-02. The current v0 direction review is complete: R1–R7 are settled within the
 boundaries below. There is no remaining tracker ruling. Linear/Jira integrations, message history
 and specialized tracking are Resource capabilities within the existing five-family model.
 [SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) define the current contract; research supplies evidence,
@@ -18,8 +18,11 @@ contracts, persistence, ownership, crate organization and delivery milestones. I
 are conceptually settled, and I5–I7 remain for review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** I5 credential custody/enrollment, then I6 capture defaults and I7 syntax.
-Authority, startup/recovery and persistence choices are settled. Concrete plugin and
+**Current focus:** I5 enrollment/unlock, then I6 capture defaults and I7 syntax.
+Authority, startup/recovery and persistence choices are settled. I5 now accepts OS-backed custody
+for Conduit-retained secrets through a replaceable implementation bundle, initially macOS Keychain,
+with future password-manager/service adapters possible. Native and external custody remain separate;
+there is no silent plaintext fallback. Concrete plugin and
 template author journeys continue to guide these decisions. The
 [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
 retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
@@ -62,7 +65,8 @@ requirements and Interface inspection within the existing synthetic fixture. Aut
 normally runs in supervised instance-associated helpers; trusted built-in Rust code may remain
 in-process. Bundled first-party plugins plus explicit local package installation are accepted; a
 marketplace and automatic dependency resolution across languages are deferred. I3's conceptual
-review is complete. Persistence, credential custody and observation capture are next; exact helper
+review is complete. I4's persistence choices and I5's custody extension are also accepted;
+enrollment/unlock and observation capture are next. Exact helper
 grouping, evidence mechanisms, recovery details and authoring syntax remain open. No implementation
 has started.
 
@@ -75,7 +79,8 @@ verified local-owner authority, then establishes ordinary management grants once
 is ready. This initial authority cannot remain an application bypass or silently reopen after an
 outage. Explicit resume/repair now uses the locally loadable root Interface's declared recovery
 operations, with runtime owner verification even when ordinary management access is broken. Retained
-identities, data and uncertain outcomes are preserved. Storage remains under review; exact recovery
+identities, data and uncertain outcomes are preserved. The minimal persistence contract and bundled
+SQLite service dependency are accepted; exact recovery
 methods follow the accepted route. Directives do not self-authorize. The
 [cloud IAM follow-up](research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
 supports the now-accepted independence of policy from Interface lifecycle, administered by multiple

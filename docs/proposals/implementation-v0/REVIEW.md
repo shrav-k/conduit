@@ -6,7 +6,8 @@ instance-owned state, no offline grants and the one-machine first proof are **ac
 I1 and I2 are settled, including native adapters before the Rust loop and macOS-first native
 integration/account validation. I3's conceptual extension, execution and distribution choices are
 settled. I4's authority, startup/recovery and persistence choices are also settled; detailed
-mechanisms and syntax remain open. I5–I7 retain the pending choices below.
+mechanisms and syntax remain open. I5 accepts OS-backed custody through a replaceable implementation
+bundle; enrollment/unlock remains open alongside I6–I7's choices below.
 Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -114,8 +115,8 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1–I4 are settled at the conceptual level. Next review I5–I6's credential custody and evidence
-support, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
+I1–I4 are settled at the conceptual level. I5's custody default and extension boundary are accepted.
+Next review enrollment/unlock and I6's evidence capture, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
 one review queue rather than another decision ledger.
 
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
@@ -125,7 +126,7 @@ Root-directed first launch, owner-authorized initialization and explicit recover
 Interface are also accepted, as is a minimal published persistence contract with one bundled
 implementation loaded as a service runtime dependency. SQLite is selected, with separate local
 management/executor databases for the first experiment. A future Pool-owned representation remains
-a design direction. I5 credential custody/enrollment and I6 capture defaults are the two remaining
+a design direction. I5 enrollment/unlock and I6 capture defaults are the two remaining
 conceptual bundles, followed by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
 future questions: credential enrollment or capture may reveal a concrete choice that needs splitting.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
@@ -135,7 +136,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
+| I5 | Credential enrollment/unlock | OS-backed custody through implementation bundles is accepted; settle first-platform interaction and unattended-use expectations. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
@@ -518,7 +519,7 @@ Strict complete-proposal operations may coexist. Retained restrictions belong to
 issuance-only checks do not become live issuer dependencies. Detailed schemas/type-specific checks
 are I7/conformance work.
 
-**Next review:** I5 credential custody/enrollment, then I6 capture defaults and the I7 syntax pass.
+**Next review:** I5 enrollment/unlock, then I6 capture defaults and the I7 syntax pass.
 Exact loader/record fields, storage settings and recovery methods remain in I7 or implementation
 work; they need not become individual conceptual rulings.
 
@@ -558,17 +559,18 @@ implementation and conformance evidence rather than additional conceptual ruling
 
 ## I5 — Credential custody and account compatibility
 
-**Recommendation:** explicit OS credential-store support for secrets Conduit itself owns, with
-in-memory fake custody for tests. An unavailable/locked store reports a wait/error instead of
-falling back silently. Native Agent adapters keep authentication under their supported native
-runtime ownership and prove separate-account behavior. Pool service identity remains separate.
+**Accepted:** secrets Conduit itself retains default to an OS credential store, supplied as a
+replaceable adapter through the existing plugin contract/implementation-bundle machinery.
+Publish a minimal typed custody contract with the bundled OS implementation; later password-manager
+or credential-service implementations may satisfy it without changing the object model. macOS
+Keychain is the first platform implementation. Additional providers are not required in v0, and
+in-memory fake custody remains available for tests rather than as a production fallback.
 
-Start the discussion with the storage default, using macOS Keychain for the first validated
-platform. Apple provides Keychain services for encrypted storage of small secrets, including keys
-and passwords; this is a candidate custody mechanism, not a Conduit permission system.
+Apple provides Keychain services for encrypted storage of small secrets, including keys and
+passwords; the backend supplies custody, not Conduit's permission system.
 [Apple Keychain services](https://developer.apple.com/documentation/security/keychain-services)
 
-| Credential | Proposed handling under this choice |
+| Credential | Accepted ownership and handling |
 | --- | --- |
 | A service token/refresh secret Conduit retains for a shared authentication Resource | Store through the selected OS-backed custody implementation; ordinary configuration, SQLite state and events carry a reference rather than the secret value. |
 | A native Agent's subscription sign-in/refresh state | Retain the accepted native-runtime ownership; this ruling does not move it into Conduit's custody or copy it among Agents. |
@@ -576,21 +578,23 @@ and passwords; this is a candidate custody mechanism, not a Conduit permission s
 
 An ordinary Agent's grant to invoke shared Linear tools does not by itself grant permission to
 retrieve the upstream credential. Locked, denied or unavailable custody is reported for supported
-unlock/recovery; no silent plaintext fallback follows. Exact adapters, item/reference schemas and
-headless enrollment/recovery behavior remain for implementation or the next I5 discussion. This
-storage-default recommendation is not accepted yet.
+unlock/recovery; no silent plaintext fallback follows. A custody implementation declares its
+supported behavior and limitations rather than implying that every backend offers identical
+write, renewal or unattended-access capabilities. Implementation retention/replacement rules apply;
+installing a different bundle does not migrate secrets or reinterpret existing references.
 
 **Example:** one authentication Resource supplies appropriate service bindings to shared integrations.
 Agents receive permitted capability use, not a token copied into each private profile. Meanwhile,
 each native model account's refresh/logout is tested against the other account and against separate
 Agent histories. This cannot be proved by choosing different directory names alone.
 
-**Alternative:** begin with explicitly protected local credential files, postponing OS-store
-integration. That simplifies automation/headless setups but changes secret-at-rest expectations and
-requires an explicit storage and unlock policy. It must not be an undocumented fallback.
+The [custody bundle example](AUTHORING.md#credential-custody-as-an-implementation-bundle) separates
+published support, implementation and authentication ownership without prescribing final syntax.
 
-**Ruling needed:** secret-store default and acceptable first-platform enrollment experience. This
-does not require another Conduit login or change native runtime authentication ownership.
+**Still open:** acceptable first-platform enrollment/unlock experience, including how the Interface
+presents required interaction and what unattended execution can expect. Existing human-interaction
+waits and native-runtime authentication ownership are retained. Exact item/reference and bundle
+schemas belong in I7; this does not introduce another Conduit login.
 
 ## I6 — What observability captures by default
 

@@ -1,6 +1,6 @@
 # V0 implementation proposal
 
-Status: **proposed for review**, 2026-11-01. No runtime code has been implemented by this packet.
+Status: **proposed for review**, 2026-11-02. No runtime code has been implemented by this packet.
 The [specification](../../SPEC.md) and [design contracts](../../DESIGN.md) remain authoritative.
 This packet explains how to implement them, identifies consequences that need a ruling, and
 proposes a development sequence. It does not silently promote research or fixture syntax into
@@ -22,7 +22,8 @@ requirements, with a small base vocabulary and author extensions. Its conceptual
 including graph-backed operations, requirement composition, supervised instance-associated helpers
 and bundled first-party plugins plus explicit local installation. Detailed mechanisms remain open;
 I4's authority/startup/persistence choices are also settled, including the SQLite bundled engine.
-Credentials and evidence precede the final contract/template syntax review. Existing
+I5 accepts OS credential custody through a replaceable implementation bundle, initially macOS
+Keychain; enrollment/unlock and evidence capture precede the final contract/template syntax review. Existing
 infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -44,7 +45,8 @@ Offline grants are deferred; existing stop/revocation and result-delivery rules 
 Rust services implement registry authority, instance supervision, authorized capability traffic
 and durable evidence through explicit boundaries. The first proof uses separate management and
 two executor processes on one machine, faulting their connections. Two-machine validation follows
-before remote support is claimed. Persistence and production deployment details remain under review. Replaceable frontends attach to an Interface; authored workers and existing
+before remote support is claimed. Detailed persistence mechanisms and production deployment remain
+implementation work. Replaceable frontends attach to an Interface; authored workers and existing
 MCP services fulfill published plugin contracts through retained implementation bindings. Graphs
 can also implement exported typed operations, composing selected operations without new glue code.
 Authored code normally uses supervised instance-associated helpers; trusted built-in Rust code may
@@ -89,7 +91,8 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 - **Proposed** means an implementation choice recommended here, including crate names, storage
   layouts, wire profiles and numeric limits.
 - **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on; I1–I4 are conceptually settled, while I5–I7 retain the choices in REVIEW.
+  pending until ruled on; I1–I4 are conceptually settled, I5's custody default/extension is accepted,
+  and enrollment/unlock plus I6–I7 retain the choices in REVIEW.
   Routine engineering choices can be adopted with the implementation
   and evidence, without asking a separate question for every field.
 - A new counterexample can revise this proposal. It cannot silently override the current design.

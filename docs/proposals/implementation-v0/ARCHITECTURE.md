@@ -825,14 +825,25 @@ a provider-appropriate binding through a Conduit. Clients may be pooled by targe
 audience, implementation and relevant isolation context; matching URLs alone never merge access.
 Coordinate refresh per binding and prevent competing workers from rotating the same credentials.
 
-Store secrets outside ordinary specs/events. **I5**, still open, recommends an OS-backed credential
-store for secrets Conduit itself retains, initially macOS Keychain, with explicit test/in-memory
-alternatives. Ordinary configuration and SQLite state would retain references. A locked/unavailable
-store would report that state without a silent plaintext fallback. Externally managed secret
-Resources would retain their declared custody. [Apple Keychain services](https://developer.apple.com/documentation/security/keychain-services)
-Native Agent
-authentication remains owned by its native adapter/runtime. Do not copy rotating credentials
+**Accepted I5 custody direction:** secrets Conduit itself retains default to an OS credential-store
+adapter, initially macOS Keychain, behind a minimal typed custody contract published with its
+implementation bundle. Use the existing plugin machinery and keep later password-manager or
+credential-service implementations possible. This does not require another object family, process
+per secret or extra provider implementation in v0. Test/in-memory custody remains a fixture option,
+not an implicit production fallback. [Apple Keychain services](https://developer.apple.com/documentation/security/keychain-services)
+
+Ordinary configuration, SQLite state and events retain references rather than secret values.
+Locked/denied/unavailable custody is reported without silent plaintext fallback. Authentication
+Resources retain service-identity and refresh ownership; their selected custody implementation
+supplies the behavior it declares. A later manager adapter may bind an existing service when it can
+fulfill the contract, or supply authored code where needed. Backend limitations remain explicit;
+no credential migration or reference retargeting follows merely from installing another bundle.
+Secret-manager capabilities exposed independently remain Pool-owned Resources under normal rules.
+
+Native Agent authentication remains owned by its native adapter/runtime. Do not copy rotating credentials
 into every Agent private directory or infer subscription eligibility from a successful API call.
+Externally managed secrets keep their declared custody. Exact adapters, bundle/reference schemas
+and first-platform enrollment/unlock experience remain review/implementation work.
 The current Rust Keyring documentation distinguishes simple convenience APIs from applications
 that select specific stores, so choose the store adapter explicitly rather than assuming an older
 generic keyring API. [Credential-store guidance][keyring]

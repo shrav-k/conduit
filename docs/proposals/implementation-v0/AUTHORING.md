@@ -1,6 +1,6 @@
 # Plugin and template authoring walkthrough
 
-Status: authoring examples, 2026-11-01. Lightweight Conduit support with the public protocol and
+Status: authoring examples, 2026-11-02. Lightweight Conduit support with the public protocol and
 extension structure prioritized over a helper library is accepted. Publishing inspectable
 contracts with implementations is also accepted. Detailed contract and template syntax is
 deferred until conceptual review is complete. MCP is accepted as the public invocation base with
@@ -350,6 +350,30 @@ the adapter must enforce it or leave that binding unavailable; it cannot quietly
 
 Existing protocol servers and authored operations are compatible extension paths. A compatible
 MCP implementation can fulfill a published contribution without new plugin-specific code.
+
+### Credential custody as an implementation bundle
+
+The accepted default uses the existing package model to publish a minimal custody contract and
+an OS-store implementation, initially macOS Keychain. For the shared authentication example:
+
+| Contribution | Responsibility |
+| --- | --- |
+| Published custody contract | Describe typed secret-reference handling, supported storage/access behavior and interaction/recovery limits. Exact methods and schemas remain open. |
+| Bundled OS implementation | Fulfill that contract through the selected platform store; report denied, locked or unavailable access without plaintext fallback. |
+| Authentication Resource | Own the service identity and login/refresh behavior, using the custody implementation where Conduit retains secrets. |
+| Future password-manager implementation | Fulfill the required contract through suitable code or service bindings, declaring any unsupported behavior. No specific provider support is assumed. |
+
+For example, one authentication Resource could keep its retained service secret in Keychain and
+give the shared MCP Resource a supported service binding. Agent A and Agent B use their permitted
+tools; neither receives the raw credential merely by joining a Conduit. A later implementation
+could use a selected password manager under the same custody boundary. Changing backends must
+respect existing implementation replacement rules and explicitly handle existing references;
+installing a package neither migrates secrets nor changes their owner.
+
+The package contains contracts and implementation bindings, not account credentials. It may also
+export a separate password-manager Resource type for independently exposed capabilities, but that
+is not required merely to supply a custody adapter. Additional backends and final bundle syntax
+are deferred; first-platform enrollment/unlock remains an I5 review question.
 
 ### Code-optional MCP integrations
 
@@ -784,7 +808,8 @@ and declared fulfillment duties are also accepted. The combined proof of compose
 requirements in the existing synthetic fixture is accepted; it does not select a permanent core
 catalog or authorize implementation start. I3 and I4 are conceptually complete, including the
 minimal public persistence contract and bundled SQLite implementation loaded as a service runtime
-dependency. Credential custody and evidence capture are next. Detailed evaluation interfaces, custom recovery
+dependency. I5 accepts OS custody through replaceable implementation bundles; enrollment/unlock
+and evidence capture are next. Detailed evaluation interfaces, custom recovery
 hooks and syntax remain open.
 
 The accepted execution default runs locally authored code in supervised helper processes

@@ -361,7 +361,9 @@ management is ready, setup establishes ordinary recorded management grants for s
 Initialization authority does not remain an application bypass or silently reopen after an outage.
 Both Resources can share a service and storage implementation. Explicit setup resume and foundational
 repair use the locally loadable root Interface's declared recovery operations, with runtime owner
-verification available even when ordinary management access is broken. Storage remains under review.
+verification available even when ordinary management access is broken. Services load the accepted
+minimal persistence plugin contract as a runtime dependency, with SQLite as the initial bundled
+implementation; detailed storage/recovery mechanics remain implementation work.
 Resource creation still goes
 through its owning Pool. No application Pool, Agent or external service login is required first.
 Built-in definitions, exact operations and frontend transport/lifecycle remain open.
@@ -1539,6 +1541,24 @@ Resources through Conduits. It owns the reusable authentication/refresh lifecycl
 their service behavior and clients without becoming separate owners of the login. Pool templates
 can compose these Resources and connections so one integration does not require manual authoring
 of every helper. This adds no family and does not make each token or login attempt a Resource.
+
+**Credential-custody implementations:** for secrets Conduit itself retains, the default is an
+OS credential store, initially macOS Keychain on the first validated platform. Supply custody
+through the existing plugin contract/implementation-bundle mechanism: a minimal typed custody
+contract with a bundled OS adapter, open to later password-manager or credential-service
+implementations. This is an adapter choice, not a new family or a requirement to implement those
+additional services in v0. Ordinary configuration, SQLite records and events contain secret
+references rather than the secret values; locked, denied or unavailable custody is reported
+without silent plaintext fallback.
+
+The authentication Resource still owns the selected service identity and refresh behavior; the
+custody implementation provides supported secret-storage/access behavior. Native Agent login
+and externally managed secret Resources keep their declared ownership. A package may also supply
+a standalone password-manager Resource type, but a package itself is not a Resource and installing
+it grants no access. Implementations must declare supported behavior and limitations; selecting a
+backend cannot imply unsupported write, renewal or recovery capabilities. Existing implementation
+selection/replacement rules apply; a new backend does not silently migrate secrets or reinterpret
+existing references. Exact contracts, package syntax and enrollment/unlock experience remain open.
 
 One authentication Resource can provide supported bindings for several service consumers; tokens,
 audiences and provider grants may differ even when the underlying account is the same. Sharing

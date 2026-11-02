@@ -225,6 +225,13 @@ credentials and refresh; ordinary callers receive permitted access, not a copied
 MCP tool names and schemas stay native where supported. Dynamic discovery grants no new authority.
 Caller identity and shared provider identity are recorded separately.
 
+Conduit-retained secrets default to an OS credential-store adapter, initially macOS Keychain,
+published as a custody contract plus implementation bundle through the existing plugin system.
+Later password-manager/service implementations can satisfy that contract. Ordinary configuration
+and operation records retain references; unavailable custody does not silently fall back to plaintext.
+Native Agent authentication and externally managed secrets retain their declared ownership. Exact
+custody schemas, bundle syntax and enrollment/unlock behavior remain for review.
+
 ## Connections, filtering and communication
 
 Conduit templates define relationship contracts by composing reusable typed requirements.

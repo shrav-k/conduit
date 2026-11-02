@@ -594,6 +594,20 @@ Reconciliation must establish reality before another conflicting change can proc
 
 ## 8. Content, handles and secret custody
 
+**Accepted custody extension:** publish a minimal typed credential-custody contract through the
+existing plugin-bundle mechanism, with a bundled OS-store adapter as the v0 default and macOS
+Keychain as the first platform implementation. Keep later password-manager/credential-service
+implementations possible without choosing their APIs or adding them to the first experiment.
+Published contracts, implementation bindings and retained-version/replacement rules apply as usual.
+Bundle syntax and exact custody methods/schemas remain I7 work.
+
+Contracts must describe the behavior an implementation actually supports, including its protected
+reference handling and interaction/recovery limitations. Do not presume all stores support the same
+write/delete, unattended access or renewal operations. Native authentication and an external secret
+Resource can retain their own custody. The owning authentication Resource's identity/refresh contract
+remains distinct from its storage adapter; installing a bundle or invoking a shared service grants
+no general authority to reveal its upstream secrets.
+
 Ordinary typed values may be serialized. Managed handles identify their target, responsible
 execution endpoint, generation and allowed operations; handle access is checked when used.
 Endpoint identity is distinct from a changeable network address. These are proposed handle

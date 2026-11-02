@@ -387,11 +387,63 @@ Changing the selected implementations or fixed setup graph requires replacement 
 aliases do not create service logins or replace explicit Resource dependencies through Conduits.
 These rules are identical for A and B.
 
-**Decision boundary:** the current A/B choice is authoring structure: special primary slot versus
-one uniform map. A is still the simpler recommendation for small templates; B makes all export
-references follow one explicit pattern. If the real concern is whether any selected implementation
-should supply type defaults, that is a separate question shared by both proposals. We should discuss
-it directly rather than treating a choice of YAML layout as acceptance of that assumption.
+**Decision boundary:** A and B above both assume a distinguished type implementation. The user
+has asked to examine that assumption before choosing either layout. Neither is accepted. The next
+comparison separates useful bundled defaults from a mandatory primary implementation.
+
+### Is a primary implementation necessary?
+
+**Proposal, not a ruling:** do not require one primary plugin for every template. Require a complete,
+compatible implementation of the selected type's obligations, expressed by the resolved template's
+bindings. A named plugin can supply one contribution or a coherent set; no package has special
+protocol authority merely because it supplies the type definition or runtime driver.
+
+The original primary slot was a convenience: select a package that already connects setup,
+capability handling, runtime behavior and controls. That can reduce wiring and provide a tested
+combination. It is not the same as the Resource's Pool owner, the service authoritative for instance
+state, or a requirement that one package implement every behavior. Those accepted ownership and
+execution arrangements do not depend on a primary plugin.
+
+The same directory example can be described without a global primary selection:
+
+| Required behavior | Selected contribution | What must remain consistent |
+| --- | --- | --- |
+| Configuration and capability meaning | Published directory type contract | The template and all bindings conform to the same selected contract version. |
+| Establish the backing | `filesystem.directory.establish` in the setup graph | Returns the declared directory descriptor for this instance and reports attach/create effects. |
+| Additional setup validation | `checks.verify-layout` after establishment | Accepts that descriptor and accesses it only with the current authorized execution context. |
+| Ongoing directory capability | The declared directory driver/handlers from `filesystem` | Operates on the same established backing under the instance's lifecycle and access contract; no daemon is inherently required. |
+| Supported controls, if any | Resolved type defaults or explicit compatible handler/graph bindings | Their constraints, configuration paths and application/recovery behavior remain coherent with the capability implementation. |
+| Progress, supervision and authoritative outcomes | The instance's responsible service | A failed helper does not become a second authority or transfer ownership to another plugin. |
+
+Choosing the directory driver is still necessary where the contract requires it. It does not need
+to select the implementation of unrelated setup checks or every control. Conversely, using only
+one package is entirely valid; a uniform binding model need not force unnecessary decomposition.
+
+A more demanding example is a database Resource: establishment, the declared database runtime,
+migrations and a supported setting-change handler might come from different contributions.
+Matching JSON shapes alone is insufficient. A migration must use the database actually established,
+and a setting handler must understand that runtime's configuration and confirmation semantics.
+No-primary composition shifts this integration responsibility to the complete recipe and its tests;
+a primary package merely provides a convenient place to ship a tested recipe, not proof of correctness.
+
+Keep simple authoring through existing mechanisms: publish ready-made templates, reusable graph
+operations and supported type defaults. An author can start with a complete directory template,
+change its path, and instantiate it without wiring every handler. If a default needs an implementation,
+its dependency must resolve into the instance's retained bindings. It does not silently make that
+implementation primary for all other behavior. This introduces no template inheritance, implicit
+merging of package defaults, or new preset object family. Exact default-selection syntax remains open.
+
+Before execution, Conduit checks required declarations/bindings, known type compatibility, declared
+implementation support and retained selections. It reports missing or conflicting bindings rather
+than inventing a default or choosing an arbitrary installed package. Required schemas still govern
+registration; unavailable code/services are readiness gaps under existing rules. Static checks do
+not prove behavioral compatibility: conformance tests and runtime verification remain necessary.
+
+The tradeoff is between a required bundle entry point and explicit composition. My revised
+recommendation is **no mandatory primary implementation**, while allowing common combinations to
+ship in standard templates and plugin contributions. Accepted type-default controls, instance-owned
+runtime management, fixed definitions/implementations and replacement rules all remain. This awaits
+a ruling before changing the common `spec` schema or rewriting existing example layouts.
 
 ### What the plugin author supplies
 

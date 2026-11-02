@@ -59,7 +59,10 @@ The common envelope remains `apiVersion`, `kind`, `form`, `metadata`, `spec`. No
 `status` and system-owned metadata. Inspection adds system identity, revisions and observations;
 configuration export omits system fields and grants. Checked writes carry preconditions separately.
 
-Proposed common spec responsibilities:
+Proposed common spec responsibilities. The `implementation`/`plugins` split below assumes a
+primary type implementation; **I7 is now reviewing whether any primary is necessary** before
+choosing layout. A uniform map with explicit behavior bindings and no primary selection is also
+under consideration. Neither structure is accepted.
 
 | Field | Responsibility |
 | --- | --- |

@@ -137,7 +137,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I7 | Concrete authoring/schema conventions | Contract authority is accepted. Next compare a primary implementation plus named extras against one uniform dependency map, then review the remaining schema/template layout. |
+| I7 | Concrete authoring/schema conventions | Contract authority is accepted. First decide whether a primary implementation is required; then choose binding syntax and complete the connected authoring example. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
 and demonstrate those contracts; I4 settles authority/persistence and I5 settles custody/interaction.
@@ -654,28 +654,33 @@ layout or SDK is selected by this ruling. Dynamic provider catalogs retain their
 **Current review:** work through connected package, contract and template examples. The next
 choice is how a template selects implementations when its graph uses more than one plugin.
 
-### Next ruling: a primary implementation and additional plugins
+### Current discussion: must a template select a primary implementation?
 
-**Pending — example refinement requested.** The [complete directory comparison](AUTHORING.md#worked-comparison-two-plugins-in-one-directory-template)
-shows the same Resource configuration, setup graph and runtime/lifecycle responsibilities under
-both proposed layouts. An Euphony Pool attaches a directory using a filesystem implementation,
-then a second package verifies the project layout. This creates one Pool-owned Resource, not a
-Resource per plugin. The check is a setup operation, not continuous file monitoring.
+**Pending:** the user requested this distinction before choosing a layout. The earlier A/B examples
+both assumed a distinguished type implementation; neither was accepted. The [expanded walkthrough](AUTHORING.md#is-a-primary-implementation-necessary)
+compares bundled defaults with explicitly composed behavior and retains the directory examples.
 
-| Choice | Selection and graph references | Tradeoff |
-| --- | --- | --- |
-| A — recommended | `implementation` selects the type implementation; `plugins` names additional contributions. A provisional `primary` alias references the former in graphs. | Small templates need only one implementation field; the primary has a special selection/reference rule. |
-| B | `implementations` names all contributions; `implementation` selects the type implementation by alias. All graph references use explicit aliases. | Uniform references, with a map and alias even for one implementation. |
+A primary implementation is a convenient entry point for a tested combination of setup, runtime,
+capability and control behavior. It is not the Resource's Pool owner or the instance's authoritative
+service. Existing accepted contracts require a complete recipe and coherent runtime ownership;
+they do not require a single package to occupy this special role.
 
-Both can combine setup operations, runtime drivers and control handlers where their contracts
-permit; neither requires a process per plugin or limits additional plugins to setup helpers.
-Both retain exact selected implementations and preserve Pool ownership, explicit Conduit access
-and the same setup/recovery behavior. Release labels in examples are not complete artifact pins.
-`primary` and the older draft's `owner` alias are illustrative, not accepted field names.
+**Revised recommendation:** no mandatory primary plugin. Templates resolve the selected type's
+obligations to explicit compatible contributions, potentially from several packages. A runtime
+can still have a specific selected driver. Common combinations remain easy through ready-made
+templates, reusable operations and type defaults; using one package is valid without giving it
+special protocol authority. Defaults resolve into retained instance bindings, with no new implicit
+merging or template-inheritance rules.
 
-Both proposals assume a selected type implementation can supply default lifecycle/control behavior.
-If that assumption is the concern, discuss it explicitly before ruling on layout. The A/B choice
-alone changes neither what an instance is nor how its ongoing behavior is managed.
+**Alternative:** require every template to select a type implementation supplying a coherent base,
+with additional contributions extending or replacing supported bindings. This gives authors a
+standard starting point but introduces a mandatory bundle selection even for a fully composed recipe.
+
+Either approach must identify all required behavior, validate declared compatibility, preserve
+current authority and record exact implementation selections. Matching input schemas alone cannot
+prove runtime/state/recovery compatibility. Conformance tests and runtime checks remain necessary.
+No mandatory primary does not weaken type obligations, change the authoritative service or unfreeze
+instance definitions. This remains a proposal; exact alias maps and export references follow the ruling.
 
 **Remaining authoring pass:** use the chosen structure to review one package and consuming template
 with graph/control bindings and published schemas. `conduit/v0alpha1` as the common API identifier,

@@ -21,8 +21,9 @@ remaining architecture decisions; these proposals do not reopen or supersede R1â
 **Current focus:** I7 contract, package and template syntax.
 I7 accepts published, language-neutral contracts as authoritative for public APIs and behavior.
 Contracts may be handwritten or generated, then explicitly reviewed and versioned; implementations
-conform to them. Next compare how a template selects its main implementation and additional plugin
-dependencies. Concrete fields, package layout and schema dialect remain proposals.
+conform to them. Next discuss whether a template needs a primary implementation at all, or can
+fulfill its type contract through explicit composed bindings with convenient reusable defaults.
+Concrete fields, package layout and schema dialect remain proposals.
 
 I6 accepts a lightweight observation bundle: correlated operation traces, structured diagnostics,
 a small health metric set and optional OpenTelemetry export, investigated through the Interface.

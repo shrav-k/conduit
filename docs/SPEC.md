@@ -1,156 +1,165 @@
 # Conduit specification
 
-Conduit provides shared access, context and communication for independent agents. Its core is
-an extensible protocol with a Rust runtime: reusable templates establish instances; typed
-capabilities connect through Conduits; an Interface makes the system controllable and observable.
-Providers, frontends, storage and skill ecosystems remain replaceable.
+Conduit is an extensible protocol for connecting independent Agents to shared Resources and to one
+another. Its durable product is the contract: authors can publish small plugins, compose them into
+repeatable templates, establish instances and inspect/control them through compatible Interfaces.
+A Rust reference implementation and replaceable frontends will demonstrate that contract.
 
-This is a design, not an implementation claim. [DESIGN.md](DESIGN.md) holds the detailed contracts.
-The [walkthrough](../experiments/001-shared-access/README.md) proposes concrete YAML within them.
+Status: conceptual design, 2026-11-02. No runnable implementation exists. The
+[design topics](DESIGN.md#contract-map) hold accepted detailed behavior. The
+[review](REVIEW.md) records completed conceptual closure; specific authoring syntax is deferred.
 
-## Working model
+## Five families
 
-Five families each have template and instance forms:
+Every family has a reusable template form and a concrete instance form. Instances have identity,
+configuration and state; they do not necessarily require their own process.
 
-| Family | Responsibility |
+| Family | Meaning |
 | --- | --- |
-| **Interface** | The user's unified control and observability endpoint. Multiple CLI, terminal and test frontends can attach to one instance. |
-| **Agent** | An actor with private execution/context, a fixed account/runtime/provider boundary, activation rules and supported controls. |
-| **Resource** | One capability responsibility with its related operations, owned by exactly one Pool. |
-| **Pool** | Offers named Resource-template entries, binds dependencies and owns deployed Resources and shared service access. |
-| **Conduit** | An instantiated authorized connection carrying interactions and narrowing access. |
+| Interface | Active management and observability endpoint. Users attach CLI, terminal or test clients; the root Interface directs foundational setup and explicit repair. |
+| Agent | Autonomous participant with a selected runtime/account boundary, private context, supported controls and Conduit attachments. |
+| Resource | One unitary capability with related operations, established and owned by exactly one Pool. |
+| Pool | Organizes available Resource templates and exclusively owns its provisioned Resource instances, including shared authentication. |
+| Conduit | An ongoing relationship with concrete participation and composable requirements, implemented through compatible endpoint behavior. |
 
-Templates contain typed configuration, a finite setup graph, ongoing runtime declarations and
-supported controls. One template establishes many independent instances; registration alone runs
-nothing. An instance retains its resolved definition and current stored settings and need not have
-a dedicated process. Plugins implement typed operations and runtime behavior; graphs wire them
-together. Capabilities describe compatibility. These are not additional object families.
+Pool ownership is logical, not a process or placement rule. A Pool can eventually own Resources on
+several hosts. A Conduit can connect Agents, Resources and other supported endpoints without creating
+a new object for every request or socket. Supporting durable content belongs to Pool-owned Resources.
 
-## The user workflow
+## What powers the families
 
-1. A frontend attaches to the default Interface. Bootstrap seeds a system Pool, its management
-   Resource, the Interface and a management Conduit. Later startup reuses retained objects;
-   missing or inconsistent components require explicit repair.
-2. The Interface authors templates and composes a Pool's named available Resource entries.
-   Listing an entry does not provision it or grant access.
-3. Explicit setup provisions selected entries or uses selected existing instances. Every Resource
-   has one Pool owner. Ready Resources remain usable while other requested components wait or fail.
-4. Agents start with declared Conduits, reusing shared service authentication while retaining
-   separate model subscriptions, private state and caller permissions.
-5. Interfaces and delegated Agents inspect and invoke through Conduits. They can add/remove
-   connections and request supported configuration changes.
-6. The Interface follows those actions through durable local evidence, including work initiated
-   by Agents and Resources, and presents relevant controls alongside observations.
+| Concept | Responsibility |
+| --- | --- |
+| Contract / capability | Public typed meaning and behavior; a capability describes what an endpoint offers. |
+| Operation / graph | A callable action and a finite dependency composition of actions. Graphs can implement reusable operations. |
+| Plugin | Published contracts plus implementation bindings to code, existing MCP services, composed operations, or combinations. |
+| Requirement | A reusable, versioned obligation with parameters, applicability and enforcement duties; requirements can compose. |
+| Policy / grant | Authoritative application of requirements, and recorded permission on a particular Conduit participation. |
 
-V0 Interfaces have unrestricted local administration. Agents receive explicit grants; sharing
-an OS account does not grant managed access. Unrestricted administration still follows supported
-lifecycle/control contracts and cannot rewrite fixed definitions in place.
+These are extension concepts beneath the families, not additional template/instance object stacks.
+Temporary names may evolve without changing their responsibilities. Published language-neutral
+contracts are authoritative; implementations conform. Schemas alone cannot describe every effect,
+recovery or lifecycle guarantee.
 
-## Construction and runtime
+Conformance describes explicitly supported capabilities. A limited client/plugin need not implement
+an entire runtime; a runtime claiming portable template execution must implement its public graph,
+control, lifecycle and recovery semantics. Physical runtime mechanisms remain replaceable. Exact
+profiles remain authoring work. The first conformance milestone uses an independently authored
+client and plugin against the reference runtime and published contracts/tests. A second complete
+runtime is deferred; that initial proof cannot establish runtime-to-runtime portability.
 
-Templates use YAML with an inline or referenced finite dependency graph. Nodes select typed plugin
-operations and bind inputs. Output bindings imply dependencies; explicit ordering handles other
-prerequisites. Plugins handle branching, polling and provider procedures. General authored loops,
-branching and dynamic fan-out are deferred.
+A template supplies typed configuration, its setup graph, declared ongoing behavior and permitted
+controls. It can bind compatible contributions from several plugins without a mandatory primary.
+Standard templates and declared defaults simplify authoring, while instances retain explicit resolved
+bindings. Plugins are not required to contain new code or run a separate server each.
 
-The template declares ongoing behavior; setup supplies prepared inputs. A graph can request that
-its instance start a database, then run migrations. The instance owns that service from startup.
-Readiness, setup completion and execution status remain distinct. Human waits, partial progress
-and uncertain effects must be inspectable.
+## One user journey
 
-Failed setup retains successful work by default. Retry reuses progress only while results and
-prerequisites remain valid. External effects are not assumed reversible or safe to repeat.
-Supported bounded transport reconnect does not replay uncertain writes or start model work.
+1. The local owner starts the root Interface from a locally available definition. Its graph establishes
+   the system Pool, management/access-management Resources and ordinary management Conduits/grants.
+   Later startup reuses them; missing components require explicit repair.
+2. Through the Interface, the user composes an application Pool with named Resource-template entries.
+   Listing an entry does not deploy it, authenticate an account or grant access.
+3. Explicit setup provisions selected Resources or selects existing ones. A shared authentication
+   Resource can support a Linear integration through a Conduit, while a directory Resource exposes
+   the project files. Ready Resources can be used while unrelated setup is incomplete.
+4. Agents start from templates with their own model subscriptions/private state and declared Conduits
+   to permitted capabilities. They reuse shared service authentication under their individual grants.
+5. Users and authorized Agents inspect objects, add/remove connections and invoke supported controls.
+   The Interface relates each request to its effects, progress, failures and evidence.
 
-## Configuration and controls
+Native provider tools preserve their familiar contracts where supported. A managed MCP endpoint may
+proxy them without forcing a generic replacement tool or one combined gateway. Shared provider login
+is distinct from the calling Agent's authorization and from its model subscription.
 
-The envelope is `apiVersion`, `kind`, top-level `form`, `metadata` and `spec`. Inspection adds
-system-owned `status`; authoring rejects it. Stable IDs survive renames; names are unique per kind
-across forms. Readable references include kind/form/name, while established bindings retain the
-resolved identity until explicitly rebound.
+## Construction, controls and recovery
 
-The registry holds active configuration. Writes explicitly create or update; editing a file does
-not trigger reconciliation. Template updates replace complete authored configuration with separate
-ID/version checks. Strict typed YAML excludes aliases, anchors, merge keys, custom tags, implicit
-expansion and silent scalar conversion.
+Registration performs no provisioning or model work. Explicit establishment executes a finite graph
+of typed operations; output bindings establish dependencies. Provider branching/polling remains in
+plugins initially. The instance owns ongoing processes, including a runtime started during setup.
+Graph completion, readiness and execution status are separate observations.
 
-Instances materialize defaults and retain resolved setup/runtime/control definitions and selected
-plugin implementations. Definition or implementation changes require replacement instances. Later
-template edits do not alter existing instances; mandatory template-history and override ledgers
-are unnecessary.
+Instances retain resolved definitions and exact Conduit-selected implementations. Later template edits
+do not alter them; definition or implementation upgrades require replacement in v0. Named typed controls
+can change their permitted settings. The single stored configuration advances only after application
+is confirmed; pending/uncertain requests are recorded separately. Controls normally serialize per target
+and check its inspected revision, with contract-declared safe exceptions.
 
-Named typed controls expose allowed changes, reusing type defaults within template and access
-limits. `spec.config` holds initial values, then confirmed applied settings. Pending or uncertain
-requests remain separate; last confirmed does not prove current when an outcome is uncertain.
-Changes serialize per target by default and normally check the inspected configuration revision.
+Failed setup preserves successful work by default. Explicit retry reuses only valid progress and
+reconciles uncertain effects. A timeout does not prove failure; reconnection is not permission to replay
+a write or start model work. Stop, detachment, unregistration and backing-data purge have distinct effects.
+Retirement stops new work and permits unregistration only after required shutdown duties are
+confirmed. Preserve shared dependencies and operation evidence; local shutdown does not prove an
+external effect was cancelled. Missing confirmation leaves retirement incomplete.
 
-MCP is the preferred external expression of controls/capabilities. Results remain extensible;
-there is no universal domain-state enum or required MCP boundary between all internal components.
-Compatible model changes within an Agent's fixed access boundary can use controls; changing
-subscription accounts or provider domains requires a new Agent.
+## Identity and access
 
-## Resource ownership and shared access
+The accepted authoring envelope uses `apiVersion`, `kind`, `form`, `metadata` and `spec`. Inspection
+adds system-owned `status`; ordinary authoring rejects it. Strict typed YAML excludes ambiguous implicit
+conversions, duplicate keys, anchors/aliases, merge keys, custom tags and undeclared fields. Exact further
+package/schema formats remain proposals.
 
-Resource types use separate group/name/version fields, typed `config` and declared `conduits`.
-Working groups are filesystem, storage, search and integration; further groups/types are open.
-Related operations share a Resource. Distinct responsibilities such as storage, search and MCP
-access remain separate by default, even when backed by one provider.
+Stable IDs survive renaming; names are unique per family across forms. Authored kind/form/name references
+resolve to IDs that remain bound until explicitly rebound. Creation/update intent is explicit; template
+edits are checked complete replacements, and editing a file alone does not change active configuration.
+Instances materialize defaults and export current stored settings, not live credentials, grants or progress.
 
-Pools explicitly reference named Resource-template entries. Composition distinguishes provisioning
-from an entry and using an existing instance. Required versioned capabilities bind to concrete
-targets; membership is not permission. V0 has no generic object labels/selectors or Pool-provided
-default Agent connections.
+Ordinary managed access requires a recorded participation grant, including root management access.
+Governing requirements apply independently of administering Interfaces. Every applicable restriction on
+the selected path must pass; separate paths cannot mix operations and targets into broader permission.
+Requirements and Pool membership do not grant access. Grant administration checks current authority;
+issued grants do not depend on issuer ancestry or continued activity. Recipient detachment, withdrawal
+and current restrictions govern use. V0 has no offline grants.
 
-A reusable authentication Resource can serve integrations through Conduits. Its instance manages
-credentials and refresh; ordinary callers receive permitted access, not a copied token. Provider
-MCP tool names and schemas stay native where supported. Dynamic discovery grants no new authority.
-Caller identity and shared provider identity are recorded separately.
+Resources serving callers use their own dependency grants while preserving authenticated caller
+context and enforcing applicable restrictions on effects and returned content. Autonomous maintenance
+uses the Resource's own authority. A caller need not receive direct access to internal backing services;
+a broader internal grant cannot widen what the caller can cause or receive.
 
-## Connections, filtering and communication
+Endpoint instances select/manage their implementations; Conduits coordinate compatible capabilities,
+requirements and participation. Required setup failures block preparation, optional failures are reported,
+and later dependency failures normally allow unrelated work. Ending the last logical participation ends
+a Conduit; later access uses a new instance. A transport outage alone does not end participation.
 
-Conduits support explicit opening/joining, reusable composition and per-consumer participation.
-Typed filters narrow operations, targets and parameters. Every restriction along the selected
-path must pass. Separate authorized paths remain alternatives, without mixing their permissions.
-Ambiguous routes need explicit selection; failures do not silently switch paths or accounts.
+## Shared content, communication and observation
 
-Preparation establishes required connections by default; optional failures report and continue.
-Later dependency failures allow independent work. Current authority is checked on managed access
-and delivery; no check erases already-delivered native context. Delegation follows the recipient's
-logical participation, subject to withdrawal/current limits, rather than the issuing frontend.
+Memory, search, workspaces, integrations and authentication are Resource capabilities. The accepted
+memory contracts include revisioned records, provenance, bounded scoped search, direct read-only sharing
+and declared source dependencies for derived content. Native service data keeps its provider contracts.
+Resources stay unitary; storage, search and integration remain distinct responsibilities by default.
 
-The last logical consumer/peer leaving ends a Conduit. Later participation uses a new instance;
-a socket outage while participants remain does not. Supporting durable data stays in Pool-owned
-Resources.
+The initial communication capability is a Pool-owned append-only shared history with independent
+read positions and current-access checks. It supports explicit participation, bounded catch-up and
+state inspection. Next-turn unread notices do not automatically wake Agents. Reading is not evidence
+of understanding or task acceptance. Other communication modes remain extensible. Linear/Jira and
+specialized message tracking are ordinary Resources, with no mandatory tracker abstraction.
 
-The first communication capability uses shared append-only message history, explicit participants
-and independent read positions, plus inspection. Reading does not imply understanding or task
-acceptance. Next-turn unread notices do not wake idle Agents; content is retrieved explicitly.
-Other communication modes and custom tracking remain Resource capabilities. Linear/Jira and
-retained messages need no special tracker abstraction or mandatory issue linkage.
+Control and observability are inseparable in the Interface. Local authoritative operation/recovery
+evidence survives frontend closure and optional exporter failure. A lightweight observation bundle
+adds correlated traces/diagnostics, small health metrics and optional OpenTelemetry export; plugins can
+add CPU/token or other domain observations. Report freshness, uncertainty and coverage. Real payload
+capture needs explicit policy; credentials stay out of ordinary logs. Retained controlled content/evidence
+remains until explicit purge, with external retention limits reported.
 
-## Observability and evidence
+## First implementation and limits
 
-Control and observability are inseparable in an Interface. Durable local evidence with pluggable
-export persists even without a frontend attached. Correlate setup, controls, access decisions,
-messages, tools, failures and available model/subagent usage through actors, instances, operations
-and paths. Frontends inspect the same evidence.
+Management owns registration/templates and shared policy; one designated service owns each instance's
+confirmed configuration and outcomes. Executors supervise managed activity; backends own domain data.
+The Interface aggregates sources rather than becoming another writable authority. Initial persistence
+uses a minimal public plugin contract with bundled SQLite as a service dependency. Secret custody uses
+replaceable OS adapters, initially macOS Keychain, with Interface-guided enrollment/unlock.
 
-Report uncertainty, stale views and integration gaps. Distinguish usage counts, estimates, unknown
-data and observed zero; avoid overlapping parent/subagent totals. Export failure cannot erase
-local committed outcomes. Credentials/payloads follow their own access and retention contracts.
+The first synthetic proof uses management and two executor processes on one machine, instance-associated
+helpers for authored code, composed operations/requirements, failure injection and Interface inspection.
+Then validate native Claude/Codex adapters on macOS, followed by Conduit's own Rust model/tool loop.
+Two-Claude/two-Codex accounts and later two-machine support require their own evidence. Pi supplies
+research/frontend inspiration; Xerj is an optional Resource backend.
 
-## Scope and validation
+Native execution remains the default; isolated execution is optional or required by an Agent's fixed
+contract and cannot be claimed until demonstrated. Managed access enforcement is not universal native
+host interception. BYO compatible skills remain native, explicitly activated from permitted Resources.
 
-Conduit owns its runtime and can offer a Pi-inspired terminal; it does not depend on Pi's runtime.
-BYO skills preserve compatible native formats and tooling. Native execution is the default, with
-optional or required isolation. Logical mediation does not prove complete native-host interception.
-
-The [first experiment](../experiments/001-shared-access/README.md) moves from static YAML and synthetic
-checks to two Agents, then separately verifies two Claude and two Codex accounts. Authentication,
-account isolation, native compatibility and telemetry need actual evidence.
-
-Detailed contracts retain portable context, bounded scoped memory search, revisioned records,
-direct read-only sharing, retention until explicit purge and safe workspace cleanup. Pool deletion
-requires explicit Resource retirement first; ordinary deletion/detachment preserves backing data.
-Advanced sharing, remote administration, automatic wake, broad interception, authored graph loops
-and in-place definition upgrades remain deferred.
+The [review](REVIEW.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
+A later PR will review concrete authoring syntax and conformance fixtures. Remote/multi-user operation, automatic wake, general authored loops, in-place
+definition upgrades and a marketplace remain deferred. The [collaborator proposals](proposals/COLLABORATOR_REVIEW.md)
+are evaluated against this model; they do not silently add deployment requirements.

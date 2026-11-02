@@ -1,0 +1,64 @@
+# V0 reference implementation proposal
+
+Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
+provider experiment has run**. The [design](../../DESIGN.md) supplies accepted semantics. The
+[conceptual review](../../REVIEW.md) is complete; the
+[authoring/syntax packet](../authoring-syntax/README.md) is parked for a future PR.
+
+The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
+Use existing infrastructure and lightweight support to prove the contracts. A Rust process layout,
+package example or database choice cannot silently define the public model.
+
+## Reading map
+
+| Document | Purpose / authority |
+| --- | --- |
+| [REVIEW](REVIEW.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
+| [ARCHITECTURE](ARCHITECTURE.md) | Detailed runtime mechanisms and examples; accepted boundaries are marked, other mechanisms remain proposals. |
+| [AUTHORIZATION](AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
+| [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. |
+| [Deferred authoring](../authoring-syntax/README.md) | Contract, plugin/package and template examples for a later PR. |
+| [Collaborator comparison](../COLLABORATOR_REVIEW.md) | PR #1/#2 assessed against the current branch, without adopting or merging them. |
+
+## Accepted implementation boundaries
+
+Management owns registration/templates and shared access policy. One designated service owns each
+instance's resolved definition, confirmed settings and outcomes. Executors supervise managed activity;
+Resource backends own domain data; Interfaces combine evidence with freshness/coverage. No offline
+grants are available. Shared logical ownership does not require shared processes or host placement.
+
+The first proof runs management and two independent executors on one machine. Authored code normally
+uses supervised instance-associated helpers; existing MCP services keep their supervision. Graphs and
+code-optional packages do not require a worker per contribution. Endpoint instances retain selected
+implementations; Conduits coordinate relationship requirements and participation.
+
+A minimal published persistence contract is loaded as a service dependency with bundled SQLite.
+Conduit-retained secrets use replaceable OS credential custody, initially Keychain. The root Interface
+directs foundational setup/recovery. Observation is extensible and inspectable through the Interface,
+with local authoritative evidence independent of optional exports. These choices are accepted initial
+implementations, not mandatory storage/OS dependencies for every future conforming implementation.
+
+## Delivery and evidence
+
+Keep the [Experiment 002](../../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
+compose exported operations with derived/explicit results and recovery, add composed/custom requirements,
+exercise independent service failures and inspect effects through the Interface. It must use public
+extension contracts rather than special-case core dispatch. Implementation has not started.
+
+Next validate real Agents through native Claude/Codex adapters on macOS, then build the owned Rust
+model/tool loop. The two-Claude/two-Codex subscription goal needs actual account/private-state evidence.
+Two-machine validation is required before claiming remote support. Isolation support requires its own
+tests; native mode remains the accepted default. Pi is a research/frontend reference, Xerj an optional
+Resource backend. Neither is an adopted runtime dependency.
+
+The finer milestones and library selections remain proposals. Conceptual closure is complete;
+review authoring/MCP profiles and conformance fixtures in a later PR before implementation. No root
+model, VM default, Sealmesh dependency, second full runtime or new protocol wire is added by this packet.
+
+## Research and maintenance
+
+[Research](../../research/README.md) preserves primary-source comparisons, source pins and limits.
+Earlier static YAML/link checks establish only their stated properties, not runtime recovery,
+authorization, provider compatibility or strict-parser conformance. Keep actual results separate from
+expected outcomes. Record a semantic change once in the design and link to it here; avoid restoring
+long duplicated ruling histories. Git retains earlier proposals and discussion examples.

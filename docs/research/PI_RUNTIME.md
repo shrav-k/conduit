@@ -1,6 +1,6 @@
 # Pi runtime, Durable and ecosystem research
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
@@ -11,6 +11,9 @@ Conduit** design. Pi's native Session terminology remains in source descriptions
 [DESIGN.md](../DESIGN.md); review outcomes and deferred work are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
+Subsequent I4 review selected SQLite for the first bundled persistence plugin, loaded as a service
+runtime dependency behind a minimal public contract. Earlier storage candidates below remain
+research context; the current design and implementation review record the accepted boundary.
 
 The later [Pi re-review](PI_CONNECTORS.md) refreshes provider/authentication, context
 conversion, MCP version compatibility and Chord evidence for the current template/instance model.
@@ -429,6 +432,11 @@ One process owning a store is not cross-process coordination; multiple account s
 must use the owner/API or a proven safe concurrency mechanism.
 
 ## Proposed Rust runtime
+
+The [Rust runtime follow-up](RUST_RUNTIME.md) compares these implications with Xerj source,
+Tokio, process/MCP workers and Wasm options. It also addresses exact plugin implementation
+retention and proposes a focused offline experiment. The recommendations here remain research,
+not a selected crate stack.
 
 The following are responsibility boundaries, not selected crates or a new universal
 plugin framework. Keep the first implementation local and small.

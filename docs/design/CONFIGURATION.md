@@ -1,0 +1,400 @@
+# Configuration and identity
+
+Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
+The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+syntax and implementation examples do not amend these rules.
+
+## Configuration language
+
+**YAML is the authoring format; typed objects and explicit semantics define the language.**
+The five families and their template/instance forms share identity, reference, composition
+and behavioral contracts across every entry point.
+CLI/API/frontends must interpret the same objects consistently. Future generators can
+emit this model; they cannot bypass its validation or authority rules.
+
+Each object uses its family as `kind` and a top-level `form` beside it to identify a template
+or instance. Form is a structural distinction, not an observed lifecycle state: instantiation
+creates a separate object rather than changing the template's form. Family and form jointly
+determine how to interpret `spec`. The common authoring envelope is:
+
+| Field | Meaning |
+| --- | --- |
+| `apiVersion` | The common object contract version. A Resource's selected type contract has its own separate schema version. |
+| `kind` | The family: `Interface`, `Agent`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
+| `form` | The template/instance distinction, at the top level alongside `kind`. |
+| `metadata` | Author-editable naming and system-owned identity/version information, with ownership defined per field. No generic object-label map in v0. |
+| `spec` | Configuration defined by the family and form's contract. |
+
+Metadata ownership is defined per field: authors control naming within their
+permissions, while Conduit assigns and maintains identity/version information. Placing a
+field in `metadata` does not make it editable. Identity and configuration-version checks
+govern updates as described below; exact field names and operation schemas remain open.
+
+Inspection returns the object with a system-owned `status` section alongside its authored
+`spec`. Status reports resolution and observed state appropriate to the kind, such as an
+Agent's bindings, preparation and execution. Normal authored YAML omits `status`; users
+and agents request changes through configuration or operations rather than declaring an
+observed state to be true.
+
+Normal configuration writes reject an included `status` field rather than silently
+ignoring it. Configuration-only export contains reusable, authorable object configuration,
+omitting `status` and system-owned identity/version values. Inspection can still return
+those system values. Update preconditions are separate operation inputs; they do not
+authorize clients to assign system-owned values through object YAML.
+
+**Instance export:** export the current stored `spec.config` with the retained fixed
+definitions and explicit dependencies. Report outstanding requests/uncertain observations alongside
+the export, without treating them as authored values. The configuration is an input for fresh creation,
+not proof of live state. Do not copy credentials, grants, readiness, live handles or execution progress.
+Account/Resource references remain explicit and resolve under current authority on fresh use.
+
+For example, an instance whose query limit was confirmed as 15 exports 15; the unchanged source
+template can still export 10. Fresh creation from the instance export uses a new identity and unique
+name, and Resource creation still goes through an owning Pool. Backing create/attach intent remains
+explicit; report creation-only settings that need editing rather than silently changing intent or
+copying an established binding. The export does not resume the source instance's execution.
+
+The shared envelope does not give every kind the same configuration or status fields.
+Exact metadata/status fields, ID encoding and remaining import/export semantics are open.
+
+This accepts the envelope and organizing principle, not every proposed field or algorithm
+in the research. In particular, the API group/version, registry storage layout, reference
+extensions, schema toolchain and command names remain to be drafted. The v0 YAML interpretation
+profile is accepted below. Configuration objects also do not force every memory record, native tool or runtime event into an
+individually authored YAML file.
+
+### YAML interpretation
+
+**V0 profile:** use YAML 1.2 Core scalar interpretation, restricted to string
+mapping keys and finite supported numeric values. Typed schemas enforce field types, ranges and
+units without silently converting a string to a number or boolean. Reject duplicate mapping keys
+and unknown fields outside schema-declared open maps. Unsupported numeric range/precision is an
+error, not permission to truncate. Equivalent JSON/YAML inputs have the same typed meaning.
+
+Omission follows the declared default/optional rule; instances materialize declared defaults.
+Null is an explicit value accepted only where the field permits it, including a blank YAML scalar;
+it does not universally mean reset or use-default. Empty lists/maps remain explicitly empty and
+follow their field's contract rather than inheriting values. For example, integer `queryLimit: 15`
+can be valid, `queryLimit: "15"` fails that integer contract, and `enabled: yes` fails a boolean one.
+
+Comments, ordinary mappings/sequences and multiline strings remain supported. V0 rejects
+anchors/aliases, merge-key behavior and custom tags; templates, typed references and declared
+graphs provide reuse. Loading configuration does not implicitly expand shell/environment strings.
+An explicit typed input binding or plugin operation can supply a value or perform its declared
+work; script-based plugins remain supported. This profile governs Conduit's configuration loader,
+not the contents/formats of opaque native files supplied through Resources.
+
+Parser choice, diagnostics and schema-specific numeric/unit limits remain implementation work.
+Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
+not imply atomic deployment, authority or successful setup.
+
+### Implementation selection
+
+**V0 rule:** select Conduit plugin implementations explicitly or through an
+unambiguous configured default. Resolve the exact release/artifact identity before execution and
+retain it for the instance's subsequent starts, operations and recovery. Installing a newer package,
+changing a default or package discovery order must not silently change that binding. Record an
+unresolved requested dependency as unresolved, not as located or verified code.
+
+Contract identity/version defines promised configuration and behavior; implementation bindings
+identify the declarations, adapters and any authored code supplying it. Multiple implementations
+can deliberately support the same contract. Code-optional contributions retain their resolved
+binding definitions and exact Conduit-controlled adapters even when no new executable is included.
+Conflicting definitions of one contract identity/version cannot silently overwrite each other;
+unresolved selection ambiguity blocks affected execution rather than choosing the newest package.
+Required schemas must be available for registry writes. With known schemas, otherwise valid
+configuration can still register while code is missing; report its readiness gap without substitution.
+
+Adopting another implementation release/artifact requires a replacement instance in v0, even where
+the new release claims the same contract. Explicit backing-data reuse remains possible under the
+type's create/attach rules; it does not transfer runtime progress, connections or grants implicitly.
+This avoids in-place code migration rules for active work and retained setup progress. It means
+keeping an older implementation available or replacing dependent instances when adopting fixes.
+The retained binding is current executable configuration, not mandatory template-history storage.
+
+This rule applies to Conduit-selected declarations, mappings and plugin/adapter code. It does not
+freeze externally operated services/native tool catalogs or promise control of external native-agent
+binaries. A recorded service reference is not proof of exact provider code. Adapters declare and report those
+separate compatibility/version boundaries. Dynamic Conduit attachments and supported catalog refresh
+retain their accepted behavior. Artifact verification, package storage/delivery, plugin ABI and exact
+binding fields remain engineering design within this contract; public naming governance is deferred.
+Service-target and authentication selections continue to follow the existing instance configuration,
+control and stable-reference rules; an implementation binding supplies no implicit access or fallback.
+
+### Object identity
+
+Every registered template and instance has a system-assigned stable ID independent
+of its name. Renaming an object preserves that ID. Deleting it and creating another object
+with the same name produces a new ID; name reuse does not make them the same object.
+
+Readable configuration-object references explicitly include `kind`, `form` and `name`, such
+as `{kind: Agent, form: template, name: reviewer}`. Kind/name locates the object; form states
+the expected template/instance distinction and must match the target. A wrong-form target is
+rejected. Typed fields such as `templateRef` still require explicit form, and their contracts
+must agree with it. This makes the reference understandable independently of its containing field.
+Conduit records the stable ID selected when the reference resolves. Authors need not copy
+generated IDs into ordinary references; readable lookup and resolved identity remain distinct.
+
+V0 resolves references within one local registry. Names are unique per family `kind` across
+both forms: an Agent template and Agent instance cannot both be named `reviewer`; a Resource
+may use that name because it belongs to another family. Pool ownership does not partition
+this registry naming boundary. Additional Pool-local display names and optional direct-ID
+references remain open. The registry catalogs definitions and IDs while backing data may be
+local or remote. Registry presence grants no access and need not name every native item globally.
+
+Templates name reusable concepts; instance names distinguish specific creations. Template-based
+creation defaults to the template's name plus a generated unique suffix, such as `reviewer-7f3a`.
+Callers may supply an explicit unique name instead. Direct creation from complete instance
+configuration also requires an explicit unique name. All paths obey per-family uniqueness across
+forms. Exact suffix format, name constraints and generated-collision handling remain open. Generated names remain
+separate from stable system IDs, and a specific instance name does not imply automatic expiry.
+
+V0 kind/name lookups use only current object names; registry object-name aliases are deferred.
+After a rename, the old name becomes available for reuse. A fresh lookup of that old name
+finds no object unless the name has been reused, in which case it can resolve to a different ID.
+This does not redirect established bindings, which retain their resolved identity as below.
+
+A rename uses the normal checked configuration update, changing `metadata.name` while
+preserving the object's ID. The original ID/version identifies the target; the new name
+must be available within the applicable naming boundary or the update conflicts.
+
+Other registry objects retain their authored kind/form/name references after a rename. Report
+known mismatches between a written name and its resolved target, and offer explicit checked
+reference updates. The rename does not rewrite source YAML files.
+
+Configuration-only export preserves authored reference names by default and reports known
+mismatches. An explicit option refreshes names from known, unambiguous resolved IDs in the
+exported copy only; it does not update registry objects or rebind anything. An old exported
+name can still fail or identify a different object on a fresh import.
+
+An established binding created from an explicit kind/form/name reference retains its resolved
+stable ID until explicitly rebound. Renaming the target preserves the binding. Deleting
+the target makes it unavailable; a new object using its old name is not substituted
+automatically. Rebinding remains subject to current authority.
+
+This fixes object identity, not content revisions or permissions. Current access checks
+continue to apply; matches under supported typed access filters remain live. The ID format,
+serialized field, cross-registry identity policy, optional direct-ID forms, import/export
+handling and exact rebind operations remain open.
+
+### Configuration updates
+
+The checked full-replacement workflow below governs **template/authoring registry edits**.
+It does not authorize replacing a running instance's spec through a generic registry write.
+Instance configuration changes use the template-declared control contract through a Conduit.
+They apply one at a time per target by default unless the contract allows safe parallelism.
+They normally check the caller's expected configuration revision at application, with explicit
+contract exceptions. Exact revision mechanics and partial-change semantics remain to be settled;
+checked identity and safe outcomes remain necessary. Registry deletion retains its own scope.
+
+The local logical registry exposes active configuration through the authorities defined above;
+its aggregate observations are not independent writable state. YAML is explicitly applied or exported;
+editing an input configuration file alone does not change registry objects, and CLI/API edits
+do not silently rewrite that file. Files may remain in Git without automatic watching or
+bidirectional synchronization. This defines configuration authority, not the registry's
+storage technology or the update behavior of data exposed through Resources. Accepted live
+access rules still apply when the registry configuration changes.
+
+Configuration submissions explicitly select create or update intent. Creation reports a
+conflict if that qualified name already exists. Updating a missing target reports a conflict
+instead of creating it. Neither operation silently switches intent based on name matches;
+exact commands and batch handling remain open. Creating Resource instances must go through
+a Pool operation; a generic registry write cannot bypass the owner requirement. Registering
+a template is distinct from provisioning instances or launching execution.
+
+A v0 template update replaces the complete authored configuration, including `spec` and editable
+metadata. Omitting an optional field removes its explicit setting; the field's omission,
+default and validation rules apply instead of retaining its previous value. Instance creation
+materializes declared schema defaults into its saved configuration;
+configuration-only exports include those explicit values. Template YAML preserves authored
+omissions. Fields without declared defaults retain their required/optional semantics; this
+does not invent values or copy runtime observations into configuration. The object's
+identity is preserved, and Conduit continues to maintain its system-owned version information
+and status. Clients can edit a retrieved configuration copy before submitting it with the
+original baseline. Partial patches are deferred.
+
+Normal updates to an existing configuration object require its expected stable ID and
+the configuration version the edit was based on. Reject the update if either differs
+from the current object. This prevents stale edits from silently overwriting newer
+configuration and prevents a reused name from redirecting an update to a replacement.
+
+Registry-object deletion requires the same expected ID and configuration-version checks.
+An intervening configuration change makes deletion conflict; the caller may reread and
+reconcile before retrying. Incoming references alone do not block an otherwise permitted
+checked deletion. Retain referring objects and their authored references, reporting affected
+relationships as unavailable; do not prune those references or cascade removal to referring
+objects. Deleting a Resource registration does not delete its owning Pool. Pool ownership
+is stronger than an ordinary incoming reference: a Pool instance cannot be deleted while it
+owns Resource registrations. Deletion requires explicit Resource retirement first, including supported
+stop/disconnect steps and checked unregistration. An explicit bulk retirement action may handle
+the Resources and then their Pool; partial failure retains the Pool and reports unfinished work.
+Ordinary Pool deletion does not implicitly retire owned Resources. Ownership transfer is deferred.
+
+Deleting a Resource registration preserves its backing files, repositories and service data,
+including data created through Conduit. Cleanup or purge requires separate explicit operations
+governed by their own permissions. Agent deletion also requires confirmed execution end
+under the [Agent lifecycle contract](AGENT.md#lifecycle-and-continuity). All instance unregistration
+also follows [confirmed retirement duties](LIFECYCLE.md#retirement-and-unregistration). Type contracts
+define specific disconnection and helper cleanup duties; missing required confirmation blocks
+unregistration.
+An unowned Resource is an ownership inconsistency to resolve, not automatic purge authority.
+The existing retain-until-explicit-purge rule remains; automatic orphan collection is not selected.
+
+The configuration version covers stored `spec` and author-editable metadata. Changes to those
+values invalidate the prior version for updates; status-only changes do not. The check
+does not freeze live permissions or replace authorization at the time of the operation.
+
+After authorization and the required ID/version checks pass, submitting unchanged
+configuration reports an unchanged result and retains the current configuration version.
+Record the operation outcome without invalidating other edits. Stale submissions still
+conflict even if their submitted configuration matches the current values.
+
+Equality ignores presentation-only formatting, comments and mapping-key order. For instance creation,
+omitting a defaulted field and explicitly supplying the same value produce equivalent resolved
+configuration. Control contracts still need explicit no-op and revision-result semantics; registry equality alone does not define their effects.
+For template updates, compare parsed authored values: omission remains distinct from explicitly setting a default. Lists follow
+their field-specific order rules. Scalar normalization, individual list contracts and
+version-transition details remain open; equality does not compare runtime state, current
+Resource contents or live authority. Source YAML files are not silently rewritten.
+
+Clients may reread, reconcile and retry within their permissions without mandatory human
+approval. Simply substituting a newly read version does not reconcile an older edit.
+
+The expected ID and configuration version accompany the update as separate operation inputs,
+not as fields in the reusable object YAML. V0 CLI/editor workflows retain a recoverable local
+baseline containing the original configuration and its ID/version, associated with the edit
+but separate from its YAML. An interrupted edit can resume with its original conflict checks.
+Direct API clients supply the required preconditions themselves. An operation request or local
+edit baseline is not an additional core object kind.
+
+When no usable baseline is available, preserve the YAML and require explicit preparation of
+a new baseline against the selected target. A user or agent can perform a recovery/import
+operation that compares with current configuration and captures its ID/version before a
+checked replacement. This cannot reconstruct missing edit history. An existing stale baseline
+still requires reconciliation; it must not be silently replaced with the current version.
+Exact request fields, baseline storage format/lifecycle and remaining creation/import/export
+details remain open.
+
+### Objects, representations and contracts
+
+Each object contract must distinguish what an author requests, what Conduit resolves and
+what a runtime observes. These are representations of the existing concepts, not new
+top-level concepts:
+
+| Representation | Responsibility |
+| --- | --- |
+| Authored intent | Explicit settings, references, requested relationships and constraints. Creation choices can customize a template without becoming a retained override layer. |
+| Instance configuration and resolution | A complete instance spec contains its settings and explicit dependencies. Resolving those dependencies establishes current bindings and availability; template history is unnecessary. |
+| Observed state | Current binding, compatibility, authentication, preparation and execution information, including unknown or unsupported coverage. |
+| Operation evidence | Actual attempts, effects, results and unresolved outcomes attributed to the Agent/execution and integration. |
+
+The combined inspection view presents authored configuration and system-reported state
+together without merging their meanings. Detailed status contents and references to retained
+operation evidence remain kind-specific design choices.
+
+Identity, editable names, source paths, configuration change versions, retained-record
+revisions, plugin releases and provider protocol versions have different meanings. Their
+encoding is open; none may silently stand in for another. A reference or capability
+request is not permission. Configuring an account does not prove which identity actually ran.
+
+Schemas describe data shape. Resource and Conduit contracts also describe operations,
+preconditions, transitions, effects and failure behavior. Runtime compatibility, current
+authority and successful execution require their own evidence. Preserve provider-native
+contracts where possible instead of flattening every integration into one generic payload.
+
+### Composition follows the relationship
+
+In draft editing, explicitly assigning a field replaces its entire value, including an object
+or list. Assigning `[c]` to a field containing `[a, b]` produces `[c]`. Editing a nested child
+leaves its siblings intact; assigning its parent replaces that entire object. Retaining,
+adding or removing entries requires deliberate edits, with no implicit object merge or list
+append. Normal validation and default materialization still apply to the resulting draft.
+These are draft-editing semantics; template writes use complete checked replacements. They do
+not select the shape of runtime configuration-change requests.
+
+Field contracts separately define omission, empty collections, nullable values, defaults,
+collection order and duplicate identity. Relationship operations such as combining authorized
+access paths retain their own semantics; field assignment does not redefine those operations.
+
+| Relationship | Established constraint |
+| --- | --- |
+| Agent template → Agent | Interpret typed establishment configuration and retain ongoing instance settings. Customize ordinary typed fields with replacement semantics. Continuing authority and dependencies remain explicit; the type defines supported transitions. |
+| Resource template → Pool → Resource instance | Only a Pool creates/attaches its instances. Explicit named entries identify available templates; reuse across Pools creates distinct owned instances. Referencing a foreign instance does not transfer ownership. |
+| Agent → Conduit → Pool | Filters narrow authorized resource/operation combinations. Combining access paths must not pair one path's operations with another path's resources to create unintended access. |
+| Agent activation | Instructions materialized in the Agent spec operate on permitted Resources. Their ordering, conflicts, optionality and update behavior must be explicit. |
+| Intent → observation | Runtime observations report whether requests are realized; they do not silently become authored defaults or fresh authority. |
+
+Permission, membership and activation semantics remain independent even when they use
+similar reference/filter notation. A serialization library's merge behavior or filesystem order
+must not choose these rules accidentally.
+
+### Validation, effects and evolution
+
+Distinguish syntax/schema checks, reference resolution, semantic/transition checks,
+environmental probes and effects. A valid object can still have an unresolved reference,
+an unsupported native extension or an expired credential. Error/status reporting must
+identify the relevant object and field, explain the limitation, and preserve unknowns.
+Exact diagnostic codes, stages and partial-failure policy remain open.
+
+Typed configuration rejects unknown fields for both templates and instances, except within
+maps whose schemas explicitly allow arbitrary keys. For example, `metadata.naem` is an unknown
+field, as is `metadata.labels` in v0. A plugin contract may explicitly declare an open options
+map; its keys and values still obey that contract. Openness is limited to the declared location. Plugin
+contracts can define their own fields and open maps under the same rule. Unknown fields are
+not silently discarded or retained outside those locations.
+
+Create and replacement writes require the applicable configuration schemas, including required
+plugin schemas. If a required schema is unavailable, reject the write: preserve source YAML
+and any existing registered object rather than register an unvalidated replacement or new
+object. This supports field validation and declared-default materialization.
+
+When schemas and required registry checks pass, accept configuration even when its plugin
+runtime is missing or a configured external service is offline. Report known readiness gaps
+or unknown readiness, without claiming successful activation. Operations requiring unavailable
+dependencies remain blocked. Registration remains separate from activation; validation,
+authority and Pool-ownership requirements still apply. Schema availability establishes the
+ability to validate configuration, not the availability of its operational dependencies.
+
+Configuration changes, package preparation, binding establishment and agent execution have
+different effects. Their operations must say what they do. An Agent export is not evidence
+of a running execution, and restoring configuration must preserve the explicit-resume and
+no-duplicate-execution rules. Current permissions still govern managed actions after a
+preview. Local configuration consistency does not imply atomic rollback of external effects.
+
+Version the meaning of configuration, including defaults, list composition, reference
+interpretation and transition behavior. Keep concrete input/result/failure examples with
+the contracts so implementations and tools can be checked for agreement. Migration rules
+must expose changed behavior; updating a version string alone is not a migration contract.
+Exact version identifiers and compatibility representation are schema work. Any proposed change
+to accepted interpretation or instance-upgrade behavior returns for review.
+
+Keep the core small and extensible through typed contracts. Reusable objects are the first
+composition mechanism; additional template languages, expressions and patch systems need
+concrete use cases. The following sections retain the accepted domain behavior that the
+language must express. [REVIEW.md](../REVIEW.md) separates conceptual closure from the later schema and acceptance walkthrough.
+
+
+## Declared-capability conformance
+
+Conformance applies to explicitly declared supported capabilities. A client, plugin or component
+may implement a limited surface without implementing the entire runtime or all Resource types.
+Its claim must identify the public contracts it supports and their applicable common obligations.
+A capability declaration is not proof that an implementation conforms.
+
+A runtime claiming portable template execution must honor the relevant public graph, control,
+lifecycle and recovery semantics, together with required contracts for the selected contributions.
+It cannot claim that execution surface while treating required behavior as opaque configuration.
+A limited client may consume a supported capability without implementing the construction engine;
+unsupported executable semantics must be reported rather than silently ignored.
+
+This separates public behavior from reference-implementation choices such as Rust crate layout,
+physical plugin ABI, process grouping or storage engine. MCP/profile compatibility and the agreed
+managed-access/evidence obligations remain applicable to supported surfaces. Exact profile names,
+version negotiation and schema spelling remain authoring work.
+
+**First conformance milestone:** require an independently authored client and plugin to work with
+its reference runtime through published contracts and conformance tests. Exercise the public
+extension boundary rather than depending on private implementation knowledge or special core dispatch.
+A second complete runtime is deferred. Passing this milestone supplies evidence for those client/plugin
+surfaces; it does not establish portability between two runtimes, unsupported capabilities, or
+unexecuted provider/platform scenarios. No conformance test has run merely by adopting this scope.

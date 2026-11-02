@@ -1,114 +1,135 @@
-# Review outcome and schema walkthrough
+# Conceptual closure review
 
-Updated: 2026-10-31. The current v0 direction review is complete: R1–R7 are settled within the
-boundaries below. There is no remaining tracker ruling. Linear/Jira integrations, message history
-and specialized tracking are Resource capabilities within the existing five-family model.
-[SPEC.md](SPEC.md) and [DESIGN.md](DESIGN.md) define the current contract; research supplies evidence,
-examples and future possibilities rather than a separate decision queue.
+Updated: 2026-11-02. **The current conceptual review is complete: C1–C3 are accepted.** Concrete package,
+plugin-reference, graph-binding and schema syntax is deferred to a future PR. The latest history
+package example is preserved as a proposal, not adopted syntax. No implementation has started.
 
-This closes direction review, not implementation or provider validation. The reviewed design
-is on `main`; the earlier baseline remains available in Git history at `c013f0a`.
+The five-family model and the earlier R1–R7 / I1–I6 rulings remain accepted. I7 also settled
+published contract authority and composition without a mandatory primary plugin. This audit
+separates remaining semantic seams from previously settled decisions, drafting work and future
+features. It does not guarantee that implementation will reveal no further counterexamples.
 
 ## Next discussion
 
-Review the [concrete YAML packet](../experiments/001-shared-access/README.md) as one connected
-example. It now includes templates for all five families, resolved instance examples, fixture
-contracts, a control-change walkthrough and an acceptance plan. Experiments live at the repository
-root with their own documentation; they are separate from the specification and source research.
+There are no outstanding rulings in this conceptual review. The next discussion belongs to a
+separate authoring/conformance PR: complete contract and template examples, schemas and wire/profile
+bindings, followed by implementation. Existing examples remain proposals until reviewed together.
+Concrete counterexamples can reopen a semantic issue; this is not a claim that every future extension
+or engineering detail is settled.
 
-Focus on whether Pool entries versus explicit setup, dependency binding, Conduit access,
-instance-owned runtimes and supported controls read naturally together. The proposed identifiers,
-keys and plugin contracts are not approved merely because the files parse. Bring material behavior
-changes back with a counterexample; choose routine spelling and engineering defaults together
-rather than reopening every settled ruling.
+### C1 — What does conformance promise?
+
+**Already settled:** contracts are language-neutral and authoritative; templates, finite graphs,
+operations, requirements and instance behavior have public semantics. MCP is the plugin invocation
+base, with a Conduit profile. Components can expose supported capabilities independently. A concrete
+frontend, Rust crate layout or storage engine does not define those public semantics.
+
+**Accepted:** conformance describes explicitly supported capabilities. Clients/plugins can support
+limited surfaces; a runtime claiming portable template execution must honor public graph, control,
+lifecycle and recovery semantics. Required executable behavior cannot silently become opaque.
+The [canonical contract](design/CONFIGURATION.md#declared-capability-conformance) records this ruling.
+Exact names and syntax remain deferred.
+
+**Accepted evidence threshold:** the first conformance milestone requires an independently authored
+client and plugin working with the reference runtime through published contracts and conformance
+tests. A second complete runtime is deferred. This tests the supported extension surfaces without
+claiming runtime-to-runtime portability. C1 is complete; exact profiles, syntax and fixtures remain
+for the future authoring PR.
+
+**Why now:** collaborator PR #2 makes this choice visible. Its opaque setup/runtime proposal would
+lose the portability we have prioritized. [Comparison and sources](proposals/COLLABORATOR_REVIEW.md).
+
+### C2 — Whose authority governs a dependent call?
+
+**Already settled:** every managed caller needs recorded participation authority; requirements
+narrow access; shared credentials are not caller grants. Resource-to-Resource calls use Conduits.
+Requirements have declared applicability and enforcement duties. Reads and delivery recheck current
+access, and derived knowledge retains declared source-access dependencies.
+
+**Accepted:** a Resource serving an Agent uses its own authorized dependency connections while
+preserving the authenticated originating caller and enforcing applicable restrictions on requested
+effects and returned content. Autonomous work uses the Resource's own authority. Capability contracts
+define the enforcement; callers do not need direct grants to every internal backing service.
+
+For example, search may index Euphony and Demo under its own authority, while an Euphony-only Agent
+cannot retrieve Demo through a query. A shared service credential or dependency grant cannot widen
+that caller's permitted effects/results. This does not introduce issuer ancestry, token forwarding
+or a universal serialized identity chain. The [dependent-call contract](design/CONDUITS.md#authority-across-dependent-calls)
+records the boundary. C2 is complete; concrete propagation and checking mechanisms remain authoring work.
+
+### C3 — What does retirement guarantee across connected objects?
+
+**Already settled:** setup completion, runtime readiness and operation outcomes differ. Retry reuses
+valid progress; uncertain effects are not blindly replayed. Agent deletion requires confirmed
+execution end. Pool deletion requires explicit Resource retirement. A Conduit ends after its last
+logical consumer/peer detaches; external effects may outlive that detach. Backing data is preserved
+unless explicitly cleaned up. Incoming references alone do not cause cascading deletion.
+
+**Accepted:** retirement stops new work, releases the instance's own activity/attachments, and permits
+unregistration only when its contract's required shutdown duties are confirmed. Missing confirmation
+leaves retirement incomplete. Preserve shared dependencies, other instance identities and operation
+evidence. Already-dispatched external effects may outlive local shutdown; no cancellation or rollback
+is inferred. Contracts define the duties without one universal lifecycle enum.
+
+For example, retiring Linear access preserves the Agents and shared authentication Resource, while
+an in-flight write keeps its recorded or uncertain outcome. Frontend detachment is distinct from
+Interface retirement. The [canonical lifecycle rule](design/LIFECYCLE.md#retirement-and-unregistration)
+applies alongside existing Agent/Pool checks and separate cleanup/purge contracts. C3 is complete.
 
 ## Review outcomes
 
-| Bundle | Accepted v0 contract | Deferred boundary |
-| --- | --- | --- |
-| R1 — instance definitions | Fixed graph/control definitions require replacement instances, including for unrestricted Interface administration. Existing controls and connection/lifecycle operations remain available. Explicit backing reuse is supported where its type permits. | In-place definition upgrades and migration. |
-| R2 — construction | Finite acyclic graphs of typed plugin steps; output bindings imply dependencies and explicit ordering covers other prerequisites. Plugins handle branches/loops; instances own ongoing services. Waits, valid-progress recovery and supported parallel steps remain. | Authored loops, branching and dynamic graph fan-out. |
-| R3 — ownership/lifecycle | Each Resource has one Pool owner. Explicit Resource retirement precedes Pool deletion, with bulk action and partial-outcome reporting. The last logical peer/consumer ends a Conduit; later participation gets a new instance. Backing-data cleanup remains separate. | Ownership transfer and same-ID reopening of ended flows. |
-| R4 — composition/access | Explicit named Pool entries and provision-or-use-existing intent. No generic labels/selectors or Pool default Agent connections. Capability matching, whole-path filters, unambiguous/explicit routing and recipient-bound delegation apply. | Implicit creation/reuse inference or silent route/account substitution. |
-| R5 — activation | Declared compatible preparation, required/optional readiness, deliberate collision handling and explicit refresh. Known stale/incompatible calls are withheld; detection limits remain visible. Current access, credential refresh and reconnect are separate. | Automatic first-use/background activation refresh. |
-| R6 — configuration/extensions | Strict typed YAML, materialized instance defaults, one stored configuration map, confirmed control changes and separate uncertain requests. Fixed definitions and exact Conduit-selected implementations remain bound to an instance; upgrade by replacement. | YAML convenience expansion, in-place implementation upgrades and implicit substitution. |
-| R7 — communication/observation | Composable capability guarantees; retained messages and inspection first. Shared append-only history, explicit participants, independent read positions and next-turn notices without automatic wake. Durable local evidence and pluggable export are intrinsic to Interface observability. | Structured work submission, automatic-wake hooks and remote communication. |
+Accepted details now live in the [design topic files](DESIGN.md#contract-map). Review documents
+summarize decisions and link to their authority; they do not repeat a second specification.
 
-These outcomes retain the earlier common envelope/forms, stable IDs, checked writes, explicit
-rebinding, private Agent state, native/default and optional/required isolated execution, scoped
-memory, safe retries, retention-until-purge and supported native-provider contracts. Their details
-remain in DESIGN rather than duplicated as another decision ledger here.
-
-## Communication and Resource boundaries
-
-The first retained-message capability supports direct conversation with two explicit participants
-and group discussion with more. Its shared append-only history belongs to a Pool-owned Resource.
-Each Agent reads independently under current access, with bounded catch-up. Reading does not
-consume another participant's unread content, grant access or prove model understanding.
-
-Posting, retrying delivery or replaying content does not start an extra model turn. Supported
-integrations provide a brief unread notice on the next normal turn; message content is explicitly
-retrieved. Notice support and gaps are inspectable. An optional per-Agent automatic-wake hook
-remains a future capability with its own execution/authorization behavior.
-
-An Agent may ask another to review through a message and later receive findings as another
-contribution. That is not a structured job-acceptance/progress/result protocol. Structured work
-submission is deferred; existing tools, typed controls and their outcomes remain available.
-
-Neither this retained-history capability nor a room is the required shape of every Conduit.
-Conduits remain extensible connections. Resources can supply other communication or tracking
-capabilities. Linear/Jira integrations are ordinary Resources; there is no mandatory issue link,
-core tracker abstraction, ticket engine or unresolved future requirement to add one. A custom
-Resource can implement domain-specific tracking without changing the protocol's object families.
-
-Shared context remains explicit Resource access, not automatic merging of Agent histories.
-Ending a Conduit preserves separately retained Resource content; later access uses a new flow
-with current authority. Existing safe-retry and retention rules apply to message operations.
-
-## Interface observability
-
-Control and observability are inseparable parts of the Interface contract. The same Interface
-that authors, starts, connects and changes instances exposes their state, activity and outcomes.
-Multiple CLI/terminal/test frontend attachments inspect the same underlying evidence, including
-Agent-initiated and Resource-to-Resource operations.
-
-V0 requires a durable, inspectable local foundation with pluggable export. Managed components
-produce evidence even when no frontend is attached. This does not require an always-running UI
-or a second per-frontend event history. An external dashboard/backend is optional; it supplements
-the Interface instead of defining whether core observation exists.
-
-| Coverage | Acceptance evidence |
+| Area | Settled direction |
 | --- | --- |
-| Identity and causality | Follow an action through its actor, target, execution, operation, Conduit path and relevant plugin work without confusing shared service identity with caller identity. |
-| Setup and controls | Inspect progress, waits, failures, valid retry, supported changes and confirmed versus uncertain outcomes. |
-| Communication and access | Inspect posting, independent consumption progress, connection changes and relevant access decisions without claiming storage is execution. |
-| Model/tool activity | Correlate Conduit-managed calls and available model/subagent activity and usage. Distinguish counts, estimates, unknown coverage and observed zero; avoid overlap/double counting. |
-| Persistence and presentation | Reopen a frontend and inspect retained outcomes. Report stale snapshots/gaps. An exporter failure must not erase committed local evidence. |
-| Content boundaries | Retained payloads, credentials, ordinary diagnostic traces and usage records follow their applicable access/retention rules; export does not imply copying every payload or secret. |
+| Object model | Interface, Agent, Resource, Pool and Conduit; reusable templates and concrete instances. |
+| Extensibility | Published contracts, code/MCP/graph-backed plugins, composable requirements, finite graphs; no mandatory primary plugin. |
+| Configuration | Strict typed YAML, stable IDs, explicit creation/updates, fixed instance definitions and exact implementations, named controls for supported changes. |
+| Relationships | Endpoint-managed implementations, explicit open/join, per-consumer participation, narrowing complete access paths, new identity after a flow ends. |
+| Access | Independent governing requirements, recorded participation grants, current checks, no offline grants or issuer-dependent cascades. |
+| Resources and Pools | One Pool owner per Resource; explicit available-template entries and provision/use-existing intent; shared service authentication. |
+| Authority and recovery | Shared registration/policy; one authority per instance; root Interface setup/repair; explicit resume and honest uncertain outcomes. |
+| Reference implementation | Separate management/executors, supervised instance-associated helpers, SQLite service dependencies, replaceable OS credential custody. |
+| First proof | One machine, management plus two executors; composition/requirements, controlled failures and Interface evidence; native macOS Agent adapters next. |
 
-Exact event schemas, exporter formats and UI presentation are drafting/engineering work.
-Native integrations must identify their actual coverage. Core observation does not promise
-interception of every native action or visibility into unreported model-internal activity.
-Custom tracking Resources can extend this foundation without replacing it.
+I1–I7 remain summarized in the [implementation review](proposals/implementation-v0/REVIEW.md).
+The earlier history remains in Git; removing repeated ruling prose does not withdraw accepted rules.
+
+## Design-fit audit: code-optional plugins and independent MCP access
+
+A plugin may bind existing MCP services without new code; it cannot manufacture unsupported
+filtering, recovery or lifecycle guarantees. Independently exposed managed capabilities retain their
+current access checks, Pool ownership where applicable, fixed implementations and operation evidence.
+An ordinary MCP implementation used outside Conduit supplies only its own declared guarantees.
+No process per plugin, mandatory combined gateway or Interface-only invocation route is required.
+C1 settles declared-capability conformance and the independent-client/plugin proof; exact profile
+names and fixtures follow in the future authoring PR.
 
 ## Initial experiment
 
-The [experiment directory](../experiments/README.md) owns test sequence and evidence. The first
-packet is static documentation; synthetic runtime tests and live provider checks have not run.
-Use the same Interface for control and inspection throughout. Progress from two synthetic Agents
-to the required separate two-Claude/two-Codex compatibility checks, without an issue-tracker gate.
+[001](../experiments/001-shared-access/README.md) is a static workflow packet;
+[002](../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
+Neither has executed runtime/provider tests. Keep their existing evidence and scope; translate the
+accepted C1–C3 clarifications into conformance cases in the later authoring PR before finalizing syntax. Do not add
+Sealmesh, VMs, a root model, remote deployment or a second full runtime to the experiment silently.
+Native two-Claude/two-Codex account validation remains a separate required goal.
 
 ## Drafting and deferred work
 
-| Work | How to resolve it |
+| Work | Treatment |
 | --- | --- |
-| YAML field names, API/type/capability versions, exact ID/cursor/receipt formats and validation diagnostics | Review the proposed packet, then define schemas against the agreed contracts. |
-| Rust crates, plugin ABI/processes, persistence, transport, client pooling and exporter implementations | Engineering choices; surface any material behavior or trust change. |
-| Limits, timeouts, provider-specific queues/recovery and UI layout | Type/adapter defaults tested against failure examples, not universal micro-rulings. |
-| Multi-user/remote administration, broader interception and sandbox tiers | Later extensions; retain current native/isolated boundaries and honest coverage. |
-| Advanced sharing/publication, automatic extraction/expiry, inheritance and public registries | Keep deferred until a concrete need warrants the added contracts. |
-| Additional Resource types, communication modes and integrations | Extend capability/type/plugin contracts; no closed catalog or new core tracker concept. |
+| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
+| Crate organization, worker grouping, queue sizes, retry bounds, storage settings and serialization | Engineering/conformance work within accepted contracts. Bring back only a concrete semantic conflict. |
+| Binding/default name scope, compatibility matching, output/result mapping and typed secret handles | Specify in the authoring pass; tests must preserve fixed bindings, current authority and declared recovery. Syntax cannot decide these accidentally. |
+| Full remote/multi-user support, automatic placement/failover, stronger sandbox drivers | Future extensions with separate deployment evidence. |
+| Root Agent, Sealmesh adoption and VM-per-Agent default | Collaborator proposals to evaluate; not prerequisites or accepted changes. |
+| Automatic wake, general authored loops, in-place definition upgrades, marketplace, advanced publication | Remain deferred. |
 
-Research still contains broader candidate behavior. Its descriptions of Signal, MCP, A2A, Pi,
-Chord or agentwatch are evidence, not automatic Conduit requirements. Keep source facts/version
-limits, and bring only material new protocol choices back to review.
+## Closing this pass
+
+C1–C3 were resolved collaboratively and incorporated into their canonical design topics. The
+collaborator comparison identifies adopted refinements, adapted suggestions and preserved dissent;
+original contributions are archived with attribution. No conceptual ruling remains in this queue.
+The next PR can select syntax and build conformance fixtures from the contracts. Existing examples
+are inputs to that work, never a reason to declare whatever they happen to contain mandatory.

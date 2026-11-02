@@ -1,6 +1,6 @@
 # Resource types, groups and extensibility
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
@@ -14,7 +14,7 @@ contracts still need review; local-directory supports explicit attachment and cr
 its Pool in v0. Other types, consumer interfaces and extension governance remain open. An
 agent-communication group is a candidate for further design, alongside content and identity.
 
-Read alongside [DESIGN.md](../DESIGN.md#resources), [review outcomes](../REVIEW.md),
+Read alongside [DESIGN.md](../design/RESOURCES.md#resources), [review outcomes](../REVIEW.md),
 [connection scenarios](CONDUITS.md) and [configuration research](CONFIGURATION.md).
 This investigation examined primary specifications/documentation, two research foundations and
 the existing pinned Pi checkout. It performed design walkthroughs, not provider integration

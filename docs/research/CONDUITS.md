@@ -1,6 +1,6 @@
 # Conduit templates, connections and Pool-owned Resources
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
@@ -8,7 +8,7 @@ terminology is retained where it describes those systems; proposed syntax below 
 
 Updated: 2026-10-31. The five-family template/instance model, exclusive Pool ownership,
 Pool-managed shared service authentication, Pool-only Resource creation, typed handlers and explicit open/join intents are accepted. Broader interaction examples remain research; the current YAML draft is separate from this evidence.
-[DESIGN.md](../DESIGN.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) records the settled direction and schema boundary.
+[DESIGN.md](../design/CONDUITS.md#conduits) records contracts; [REVIEW.md](../REVIEW.md) records the settled direction and schema boundary.
 No live login, deployment or provider mutation was performed for this research.
 
 The [messaging and networking investigation](#messaging-and-networking-investigation)

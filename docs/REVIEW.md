@@ -4,9 +4,10 @@ Updated: 2026-11-02, after the protocol-documentation migration. This is the onl
 The five-family model and completed conceptual/implementation rulings remain accepted in the
 [protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
-The M1–M3 discussions surfaced by the migration are complete. Early delivery stays lightweight;
-contexts fit the existing Resource/Pool/Conduit model. Publication decisions and the later authoring/
-engineering pass remain separate. An open detail in an older report is not automatically another ruling.
+The post-migration review is complete. M1–M3 and the initial owner decisions are settled or explicitly
+deferred below. Early delivery stays lightweight; contexts fit the existing Resource/Pool/Conduit
+model. The next review is the concrete authoring/conformance walkthrough. No syntax was approved by
+closing this review, and an open detail in an older report is not automatically another ruling.
 
 ## Migration-review rulings
 
@@ -37,8 +38,12 @@ engineering pass remain separate. An open detail in an older report is not autom
   protocol work continues. Organization selection/transfer, domains and permanent package naming
   remain for the owner to choose later. The accepted one-main-repository direction is unchanged;
   provisional examples and directory names do not establish permanent protocol identities.
-- **Change and release authority.** Identify who approves protocol changes, maintains supported
-  packages and publishes releases. Define the initial support/security contact when distribution begins.
+- **Change and release authority — accepted:** the repository owner retains final authority over
+  protocol direction. Collaborators propose/review changes; merges and releases use existing repository
+  permissions and explicitly appointed maintainers/delegated responsibilities. Existing task
+  authorizations remain valid. No fixed quorum or formal governance process is required initially.
+  See [project ownership](../CONTRIBUTING.md#project-ownership-and-publication). Public support/security
+  contact details and additional contribution procedures are deferred until needed for distribution.
 
 These are project-owner decisions, not reasons to reopen the five families or invent another runtime
 authority model. The [repository proposal](archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
@@ -62,8 +67,9 @@ return for a conceptual ruling only if an example exposes a real behavior choice
 
 ## Later authoring and conformance pass
 
-The [authoring packet](proposals/authoring-syntax/README.md) is parked until the discussions above.
-Review four connected batches rather than restarting a long list of isolated questions:
+The [authoring packet](proposals/authoring-syntax/README.md) is ready for the next review after these
+rulings are merged. Its examples remain proposals. Start with one complete package-to-instance
+walkthrough, then review four connected batches rather than restarting a long list of isolated questions:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema dialect, package identity,
    typed contents/dependencies, artifact identity and export/reference scope. A mandatory primary plugin

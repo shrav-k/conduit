@@ -7,7 +7,7 @@ The [current review queue](../REVIEW.md) is the only active decision queue; the 
 Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
 provider experiment has run**. The [design](../protocol/README.md) supplies accepted semantics. The
 [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete; the
-[authoring/syntax packet](../proposals/authoring-syntax/README.md) is parked for a future PR.
+[authoring/syntax packet](../proposals/authoring-syntax/README.md) is ready for the next review; its syntax remains proposed.
 
 The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
 Use existing infrastructure and lightweight support to prove the contracts. A Rust process layout,

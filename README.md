@@ -20,7 +20,7 @@ under review. Static examples are not evidence of runtime or provider compatibil
 | [Protocol reference](docs/protocol/README.md) | Accepted behavioral contracts and conformance boundaries. |
 | [Author with the protocol](docs/authoring/README.md) | Define an original extension and template; identify which representations are still proposals. |
 | [Reference implementation](docs/implementation/README.md) | Accepted implementation choices, candidate mechanisms and delivery evidence. |
-| [Current review](docs/REVIEW.md) | Remaining decisions and refinements, separated from later syntax and engineering work. |
+| [Current review](docs/REVIEW.md) | Completed migration rulings and the next authoring/conformance review. |
 | [Documentation map](docs/README.md) | Research, experiments, archived reviews and attributed dissent. |
 
 The repository now separates the active reference from completed reviews without discarding their

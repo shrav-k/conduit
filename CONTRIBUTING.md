@@ -75,11 +75,18 @@ in research likewise retains its applicable terms. The archive index records the
 No separate contributor agreement or DCO/sign-off requirement is introduced by this ruling.
 Any future contribution procedure remains an explicit project decision.
 
-## Remaining publication decisions
+## Project ownership and publication
 
 One main repository, a common package envelope and Apache-2.0 are accepted. Public naming is
 deferred: work continues in `shrav-k/conduit` until the owner selects an organization or transfer.
-Domain/package names remain provisional and do not block protocol development. Change/release
-authority and any additional contribution procedures remain in
-[review](docs/REVIEW.md#owner-decisions-before-public-distribution). This guide introduces no review
-quorum or package-release promise.
+Domain/package names remain provisional and do not block protocol development.
+
+The repository owner retains final authority over protocol direction. Collaborators can propose
+and review changes; merge and release work uses existing repository permissions and responsibilities
+explicitly delegated to appointed maintainers. Existing task authorizations remain valid. This does
+not introduce an additional approval step for already-authorized work, a fixed review quorum or a
+formal committee. Governance can evolve through an explicit project decision when useful.
+
+Public support/security contact details and any additional contribution procedures can be selected
+when distribution needs them. The [review](docs/REVIEW.md#owner-decisions-before-public-distribution)
+records these boundaries; this guide adds no package-release or backward-compatibility promise.

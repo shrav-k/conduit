@@ -6,8 +6,8 @@ repeatable templates, establish instances and inspect/control them through compa
 A Rust reference implementation and replaceable frontends will demonstrate that contract.
 
 Status: conceptual design, 2026-11-02. No runnable implementation exists. The
-[design topics](DESIGN.md#contract-map) hold accepted detailed behavior. The
-[review](REVIEW.md) records completed conceptual closure; specific authoring syntax is deferred.
+[design topics](protocol/README.md#contract-map) hold accepted detailed behavior. The
+[review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure; specific authoring syntax is deferred.
 
 ## Five families
 
@@ -159,7 +159,7 @@ Native execution remains the default; isolated execution is optional or required
 contract and cannot be claimed until demonstrated. Managed access enforcement is not universal native
 host interception. BYO compatible skills remain native, explicitly activated from permitted Resources.
 
-The [review](REVIEW.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
+The [review](archive/reviews/CONCEPTUAL.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
 A later PR will review concrete authoring syntax and conformance fixtures. Remote/multi-user operation, automatic wake, general authored loops, in-place
-definition upgrades and a marketplace remain deferred. The [collaborator proposals](proposals/COLLABORATOR_REVIEW.md)
+definition upgrades and a marketplace remain deferred. The [collaborator proposals](archive/collaborator-proposals/REVIEW.md)
 are evaluated against this model; they do not silently add deployment requirements.

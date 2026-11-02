@@ -3,7 +3,7 @@
 Research date: **2026-11-02**. Baseline: `f8a9973` on the implementation branch.
 This report compares primary cloud/platform documentation and distributed tracing research.
 The initial debugging package and capture policy were subsequently **accepted in
-[I6](../proposals/implementation-v0/REVIEW.md#i6--what-observability-captures-by-default)**:
+[I6](../archive/reviews/IMPLEMENTATION.md#i6--what-observability-captures-by-default)**:
 correlated diagnostics, a small health set, optional OpenTelemetry export and explicit bounded
 synthetic-fixture capture, independent of required authoritative evidence. Other backend, library,
 wire and testing recommendations below remain proposals; I7 settles concrete contracts and syntax.

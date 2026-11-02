@@ -1,8 +1,8 @@
 # Conduit design contracts
 
 Updated: 2026-11-02. Current working design; implementation
-has not started. [SPEC.md](SPEC.md) summarizes the model; [REVIEW.md](REVIEW.md) records the
-conceptual closure review and deferred authoring boundary. The [YAML walkthrough](../experiments/001-shared-access/README.md)
+has not started. [SPEC.md](../OVERVIEW.md) summarizes the model; [REVIEW.md](../archive/reviews/CONCEPTUAL.md) records the
+conceptual closure review and deferred authoring boundary. The [YAML walkthrough](../../experiments/001-shared-access/README.md)
 proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
 
 Prefer minimal bookkeeping: retain authoritative configuration, identity, authority and necessary
@@ -56,27 +56,27 @@ The split preserves the existing rules and their heading anchors; Git retains th
 
 | Topic | Read it for |
 | --- | --- |
-| [Model](design/MODEL.md) | Five families, extension concepts, shared policy, instance authority, Interfaces and observability. |
-| [Lifecycle](design/LIFECYCLE.md) | Templates, setup graphs, instance runtimes, supported controls and recovery. |
-| [Configuration](design/CONFIGURATION.md) | Typed YAML, stable identity, references, checked edits, exports and implementation retention. |
-| [Agents](design/AGENT.md) | Activation, model accounts, native/isolated modes, execution, continuity and observation. |
-| [Resources](design/RESOURCES.md) | Unitary capabilities, type groups, memory, derived content and workspace rules. |
-| [Pools](design/POOLS.md) | Explicit composition/provisioning, ownership, shared authentication and retirement. |
-| [Conduits](design/CONDUITS.md) | Endpoint responsibilities, composable requirements, participation, grants, routing and communication. |
+| [Model](MODEL.md) | Five families, extension concepts, shared policy, instance authority, Interfaces and observability. |
+| [Lifecycle](LIFECYCLE.md) | Templates, setup graphs, instance runtimes, supported controls and recovery. |
+| [Configuration](CONFIGURATION.md) | Typed YAML, stable identity, references, checked edits, exports and implementation retention. |
+| [Agents](AGENT.md) | Activation, model accounts, native/isolated modes, execution, continuity and observation. |
+| [Resources](RESOURCES.md) | Unitary capabilities, type groups, memory, derived content and workspace rules. |
+| [Pools](POOLS.md) | Explicit composition/provisioning, ownership, shared authentication and retirement. |
+| [Conduits](CONDUITS.md) | Endpoint responsibilities, composable requirements, participation, grants, routing and communication. |
 
 ## Review boundary
 
-The [conceptual review](REVIEW.md) is complete. C1 accepts
-[declared-capability conformance](design/CONFIGURATION.md#declared-capability-conformance) and the
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete. C1 accepts
+[declared-capability conformance](CONFIGURATION.md#declared-capability-conformance) and the
 independent-client/plugin milestone. C2 accepts
-[Resource dependency grants with caller restrictions](design/CONDUITS.md#authority-across-dependent-calls).
-C3 accepts [confirmed retirement duties](design/LIFECYCLE.md#retirement-and-unregistration), preserving
+[Resource dependency grants with caller restrictions](CONDUITS.md#authority-across-dependent-calls).
+C3 accepts [confirmed retirement duties](LIFECYCLE.md#retirement-and-unregistration), preserving
 shared dependencies and evidence of external effects. No conceptual ruling remains in that queue.
 
-The [collaborator comparison](proposals/COLLABORATOR_REVIEW.md) identifies which proposed changes
+The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md) identifies which proposed changes
 align, which need adaptation and which remain separate future work.
 
 Specific plugin/package fields, graph bindings and schema choices are parked in the
-[authoring proposal](proposals/authoring-syntax/README.md) for a later PR. Runtime arrangements
-remain in the [implementation proposal](proposals/implementation-v0/README.md). Neither a sample
+[authoring proposal](../proposals/authoring-syntax/README.md) for a later PR. Runtime arrangements
+remain in the [implementation proposal](../implementation/README.md). Neither a sample
 YAML packet nor an implementation convenience may silently redefine a contract.

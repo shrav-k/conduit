@@ -1,9 +1,9 @@
 # Proposed runtime architecture
 
 Status: implementation proposal, 2026-11-01. I1's management/execution separation and shared
-policy with instance-owned state are accepted; v0 has no offline grants. See [review](REVIEW.md)
-for pending choices and [contracts](../authoring-syntax/CONTRACTS.md) for proposed representations. Accepted semantics remain in
-[DESIGN](../../DESIGN.md).
+policy with instance-owned state are accepted; v0 has no offline grants. See [review](../archive/reviews/IMPLEMENTATION.md)
+for pending choices and [contracts](../proposals/authoring-syntax/CONTRACTS.md) for proposed representations. Accepted semantics remain in
+[DESIGN](../protocol/README.md).
 
 ## 1. System boundaries
 
@@ -82,7 +82,7 @@ revision checks or the requirement to establish an actual outcome.
 
 **Accepted: independent policy.** Shared policy is independent of any particular Interface,
 with multiple authorized Interfaces able to administer it and broad default root administration.
-The [cloud IAM comparison](../../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
+The [cloud IAM comparison](../research/CLOUD_AUTHORITY.md#9-interface-administration-and-independent-policy)
 provides the rationale. The root's active management responsibilities do not require ownership of
 the policy it administers. This settles logical authority, not policy representation, storage or
 the earliest startup sequence.
@@ -116,8 +116,8 @@ their proposed effects. The same requirement composition/support machinery appli
 separate policy language or mandatory evaluator process. Endpoint-selected plugins implement
 operations and enforcement, while Conduits retain relationships and participation.
 
-The [authorization contracts](AUTHORIZATION.md) develop this accepted model and remaining details,
-backed by [primary-source research](../../research/AUTHORIZATION.md). They distinguish governing
+The [authorization contracts](../proposals/authoring-syntax/AUTHORIZATION.md) develop this accepted model and remaining details,
+backed by [primary-source research](../research/AUTHORIZATION.md). They distinguish governing
 requirement bindings and grants, actor/principal/provider identities, decision inputs/results,
 and actual endpoint enforcement. They also apply to Resource-to-Resource calls and capabilities
 on all five families; a protected target need not be a Resource. Governing bindings remain independent
@@ -245,7 +245,7 @@ still govern new admissions and independent executors' already-dispatched work.
 
 **Review direction:** settle how foundational persistence is represented and loaded. Administrative
 scope, ownership of domain data and durable state authority
-stay distinguishable. The remaining [I4](REVIEW.md#i4--local-transactional-authority) proposals do not
+stay distinguishable. The remaining [I4](../archive/reviews/IMPLEMENTATION.md#i4--local-transactional-authority) proposals do not
 select a storage engine or change every Interface's configuration.
 
 ### Instance execution boundary
@@ -278,7 +278,7 @@ match compatible capabilities/roles and coordinate restrictions and participatio
 providing endpoint-local implementation fragments. Each endpoint owns its local binding state;
 the Conduit retains relationship state and correlated establishment/cleanup outcomes. Endpoint
 ownership does not make a detached binding permanent. See the
-[authoring boundary](../authoring-syntax/AUTHORING.md#endpoint-selected-plugins-and-conduit-matching).
+[authoring boundary](../proposals/authoring-syntax/AUTHORING.md#endpoint-selected-plugins-and-conduit-matching).
 
 For example, the Agent's MCP integration manages its local bridge/binding; a Resource's endpoint
 plugin manages the provider-facing binding and shared client. A target configuration change still
@@ -296,7 +296,7 @@ Partial establishment must remain visible; no atomic transaction across endpoint
 The implementation must establish an identifiable, supervised instance context before dispatching
 its setup; a record with incomplete setup need not have an ongoing process. Exact registration/start
 sequencing, helper grouping, cancellation and cleanup mechanics remain open. The
-[family-by-family walkthrough](../authoring-syntax/AUTHORING.md#5-where-the-example-implementations-execute) supplies
+[family-by-family walkthrough](../proposals/authoring-syntax/AUTHORING.md#5-where-the-example-implementations-execute) supplies
 the proposed template/instance mapping and lifecycle examples.
 
 The helper default preserves this instance execution boundary. Sharing implementation code need
@@ -311,8 +311,8 @@ Each executor can host many instances. The first experiment runs management and 
 executor processes on one machine, with controlled failures of their connections. External MCP
 services retain their own supervision. Pool ownership does not determine placement, and no
 process-per-object rule follows. Conduit endpoints carry authorized capability traffic; neither
-the Interface nor management must be a global relay. The [distributed-runtime research](../../research/DISTRIBUTED_RUNTIME.md)
-and [cloud authority comparison](../../research/CLOUD_AUTHORITY.md) inform the remaining choices.
+the Interface nor management must be a global relay. The [distributed-runtime research](../research/DISTRIBUTED_RUNTIME.md)
+and [cloud authority comparison](../research/CLOUD_AUTHORITY.md) inform the remaining choices.
 
 ```mermaid
 flowchart TD
@@ -709,7 +709,7 @@ not new blocking rulings for v0 or a promise of automatic conversion.
 
 The first implementation must still support checked revisions, related local commits, durable
 outcome evidence and explicit unavailable/unknown results through the published contract. A lost
-commit reply requires reconciliation. The [I4 engine ruling](REVIEW.md#i4--local-transactional-authority)
+commit reply requires reconciliation. The [I4 engine ruling](../archive/reviews/IMPLEMENTATION.md#i4--local-transactional-authority)
 selects SQLite for the bundled implementation, leaving the public contract engine-independent.
 
 ## 5. Graph and runtime execution
@@ -819,7 +819,7 @@ why an action is unavailable, without claiming validation proved all runtime beh
 payload capture follows declared recording policy; no general full-input logging default is
 introduced. The proposal does not select an expression engine, extra worker processes or an OS
 sandbox. See the
-[contract proposal](../authoring-syntax/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
+[contract proposal](../proposals/authoring-syntax/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
 
 ### Shared authentication
 

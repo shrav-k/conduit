@@ -1,7 +1,7 @@
 # Resource contracts
 
-Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Resources
@@ -104,7 +104,7 @@ interchangeable implementations of a fixed lifecycle. Settle their typed configu
 backing identity, operations and shared/per-consumer state before deciding Pool grouping.
 A type contract defines supported semantics; a template supplies reusable establishment
 configuration and declares the permitted configuration changes within that support.
-Other Resource contracts can be developed against the [schema review criteria](../REVIEW.md#drafting-and-deferred-work).
+Other Resource contracts can be developed against the [schema review criteria](../archive/reviews/CONCEPTUAL.md#drafting-and-deferred-work).
 
 For a local folder, the Resource instance describes the configured folder attachment. Each
 Agent's symlink is preparation state, not another Resource instance. Two Agents may use

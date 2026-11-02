@@ -2,7 +2,7 @@
 
 This guide defines the interpretation of this experiment's proposed YAML. It is a paper contract,
 not a registered schema, implementation or selection of a public API namespace. It implements no
-provider calls. The accepted semantics are in [DESIGN](../../docs/DESIGN.md); the
+provider calls. The accepted semantics are in [DESIGN](../../docs/protocol/README.md); the
 [walkthrough](README.md) shows them in use.
 
 ## Draft syntax

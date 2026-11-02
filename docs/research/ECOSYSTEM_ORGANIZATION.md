@@ -2,7 +2,7 @@
 
 Research date: 2026-11-02. This compares project organization, publication and documentation;
 it does not select dependencies or reopen the accepted object model. Recommendations are in the
-[repository proposal](../proposals/REPOSITORY.md). None is adopted merely by appearing here.
+[repository proposal](../archive/reviews/REPOSITORY-2026-11-02.md). None is adopted merely by appearing here.
 
 ## Method and limits
 
@@ -91,4 +91,4 @@ exist. Repository prose and website prose should share sources rather than drift
 5. Website navigation should follow user and author tasks; the repository should follow authority,
    ownership and build/release boundaries. They need not have identical trees.
 
-The [proposal](../proposals/REPOSITORY.md) applies these lessons and records the decisions still needed.
+The [proposal](../archive/reviews/REPOSITORY-2026-11-02.md) applies these lessons and records the decisions still needed.

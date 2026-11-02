@@ -30,7 +30,7 @@ C1 now accepts declared-capability conformance: limited components can declare s
 while template executors must honor public execution semantics. Its first proof requires an independently
 authored client and plugin; a second complete runtime is deferred. C2 now settles dependent calls using
 Resource grants with applicable authenticated-caller restrictions. See the
-[conceptual review](../REVIEW.md#c1--what-does-conformance-promise).
+[conceptual review](../reviews/CONCEPTUAL.md#c1--what-does-conformance-promise).
 
 ## What needs adaptation
 
@@ -80,7 +80,7 @@ Remote scheduling and one-VM-per-account/process are not consequences of the fiv
 
 ## Preserved contribution and dissent
 
-The [archive](../archive/collaborator-proposals/README.md) retains both submitted proposals, including
+The [archive](README.md) retains both submitted proposals, including
 the opaque-runtime proposal and the root-Agent/VM/Sealmesh alternatives, with author and exact source
 revisions. Relevant accepted conformance semantics are integrated into the design; unadopted ideas
 remain visible without becoming requirements. Review comments were posted as authorized:

@@ -1,7 +1,7 @@
 # Configuration and identity
 
-Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Configuration language
@@ -371,7 +371,7 @@ to accepted interpretation or instance-upgrade behavior returns for review.
 Keep the core small and extensible through typed contracts. Reusable objects are the first
 composition mechanism; additional template languages, expressions and patch systems need
 concrete use cases. The following sections retain the accepted domain behavior that the
-language must express. [REVIEW.md](../REVIEW.md) separates conceptual closure from the later schema and acceptance walkthrough.
+language must express. [REVIEW.md](../archive/reviews/CONCEPTUAL.md) separates conceptual closure from the later schema and acceptance walkthrough.
 
 
 ## Declared-capability conformance

@@ -1,7 +1,7 @@
 # Configuration languages, templates and instances
 
 Updated 2026-11-01. **Research evidence and proposed schema, not an executable specification.**
-Current contracts live in [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md). The five families
+Current contracts live in [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/README.md). The five families
 are Interface, Agent, Resource, Pool and Conduit. Templates specify both complete establishment
 and permitted instance-configuration changes. Pools own Resources and normally establish shared
 service authentication; Conduits narrow each caller's access to those capabilities.
@@ -61,7 +61,7 @@ unknown/unavailable outcomes. Detailed proposed boundaries are in
 
 The current [YAML packet](../../experiments/001-shared-access/README.md) is the single worked
 configuration draft. It replaces earlier partial control and instance examples here. The accepted
-[control contract](../design/LIFECYCLE.md#template-defined-configuration-changes) distinguishes fixed
+[control contract](../protocol/LIFECYCLE.md#template-defined-configuration-changes) distinguishes fixed
 definitions, confirmed settings, outstanding requests and observed state. The research below
 explains why those distinctions matter; it does not introduce a separate mutation protocol.
 
@@ -400,7 +400,7 @@ popularity alone.
 ## Proposed template and instance forms
 
 The current envelope, identity and editing contracts are maintained in
-[DESIGN.md](../design/CONFIGURATION.md#configuration-language). Family/form identify the contract; stable IDs
+[DESIGN.md](../protocol/CONFIGURATION.md#configuration-language). Family/form identify the contract; stable IDs
 are distinct from names. Templates are reusable; instances retain resolved configuration and
 controls independently of later template edits. Setup graphs run at start, and instances manage
 ongoing behavior. The [walkthrough](../../experiments/001-shared-access/README.md) gives the current graph YAML draft.
@@ -411,7 +411,7 @@ different effects. The complete registered schema and operation contract must va
 
 ## How the families connect
 
-The [current user workflow](../SPEC.md#one-user-journey) starts in an Interface: author Resource
+The [current user workflow](../OVERVIEW.md#one-user-journey) starts in an Interface: author Resource
 and Agent templates, compose/instantiate Pools, start Agents with Conduits, then observe and
 request supported changes. Resources are created through exactly one owner Pool; their templates
 remain reusable. Conduits carry operations and data, including Resource-to-Resource access.
@@ -424,7 +424,7 @@ must follow the current contracts.
 
 Pool composition uses the accepted local entries, resolved instance bindings and ordinary operation
 evidence. No separate provisioning-plan ledger is required. R3 settles retirement; accepted
-selection rules are consolidated in the [review outcomes](../REVIEW.md#review-outcomes); controls do not
+selection rules are consolidated in the [review outcomes](../archive/reviews/CONCEPTUAL.md#review-outcomes); controls do not
 make every operation or parameter another registry object.
 
 ## Composition needs several operators
@@ -553,4 +553,4 @@ The Compose/Kustomize probes and papers above remain evidence about reference sy
 do not validate a Conduit runtime. No provider enrollment, real resource provisioning or model
 execution is performed by this documentation rewrite. Source-specific Pi findings remain in
 [PI_CONNECTORS.md](PI_CONNECTORS.md) and [PI_RUNTIME.md](PI_RUNTIME.md). The grouped questions
-in [REVIEW.md](../REVIEW.md) determine how the proposal becomes an implementable contract.
+in [REVIEW.md](../archive/reviews/CONCEPTUAL.md) determine how the proposal becomes an implementable contract.

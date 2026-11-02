@@ -3,7 +3,7 @@
 Status: **repository boundary and common package envelope accepted; remaining proposals under review**, 2026-11-02.
 One main repository under a Conduit GitHub organization and a common package envelope are accepted. The organization name/transfer,
 directory layout, release scheme, license and package syntax remain unsettled. The completed
-[conceptual review](../REVIEW.md) remains complete; this review precedes the authoring/conformance PR.
+[conceptual review](CONCEPTUAL.md) remains complete; this review precedes the authoring/conformance PR.
 
 The documentation discussion establishes the language and public contracts as the primary product.
 The runtime and a thin initial plugin/template set demonstrate it; richer supported packages may
@@ -17,7 +17,7 @@ one installation containing everything or a common version for every package. Pa
 envelope with typed contents, including template-only collections. Exact publication artifacts,
 package syntax and release mechanics remain open.
 
-The [ecosystem comparison](../research/ECOSYSTEM_ORGANIZATION.md) covers Pi, MCP, OpenTelemetry,
+The [ecosystem comparison](../../research/ECOSYSTEM_ORGANIZATION.md) covers Pi, MCP, OpenTelemetry,
 Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime/Component Model and uv. This proposal builds
 on their different strengths rather than treating one project as Conduit's blueprint.
 
@@ -102,7 +102,7 @@ eventual `docs/reference/` should replace the relevant design reference, never d
 
 `crates/` divides implementation responsibilities. Start with the smallest tested vertical slice;
 extract more crates when an actual build, dependency or consumer boundary warrants it. The earlier
-[crate table](implementation-v0/ORGANIZATION.md#2-crate-contracts-and-dependency-direction) is a useful
+[crate table](../../implementation/ORGANIZATION.md#2-crate-contracts-and-dependency-direction) is a useful
 candidate allocation, not a requirement to create every crate. Separate management and execution
 authority remains required even when both use shared Rust libraries.
 
@@ -139,7 +139,7 @@ and the packed installation format are distinct decisions.
 while reusing an MCP adapter; a history package can ship an implementation and operation tests; a
 template-only workflow package can compose their available contributions. All use the same outer
 package contract for identity, version, typed contents and dependencies. Each contribution retains its
-own validation and behavior. The [canonical model](../design/MODEL.md#authoring-concepts-beneath-the-object-families)
+own validation and behavior. The [canonical model](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
 records this boundary. Exact fields, dependency references, archive layout and source-tree conventions
 remain open. Automatic dependency resolution stays deferred, and installation establishes no instances,
 provider authentication or grants.

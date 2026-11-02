@@ -1,7 +1,7 @@
 # Conduit contracts
 
-Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Conduits
@@ -89,7 +89,7 @@ Participant attachment state describes the individual relationship; Resource-own
 authentication and connection support can have a different authority and lifetime. Template reuse
 or joining alone does not merge private Agent context, credentials or access. Connection identity
 is separate from process, transport and backing-Resource identity. Further authoritative-state,
-recovery and composition details remain in [REVIEW.md](../REVIEW.md).
+recovery and composition details remain in [REVIEW.md](../archive/reviews/CONCEPTUAL.md).
 
 ### Composable relationship requirements
 
@@ -148,7 +148,7 @@ valid configuration. Detailed satisfaction/evidence and failure rules require im
 
 The concrete core catalog, publication syntax, support-matching details, parameter bindings,
 version identifiers, satisfaction evidence and enforcement-binding representation remain open. The
-[implementation review](../proposals/implementation-v0/REVIEW.md#i3--plugin-execution-and-distribution)
+[implementation review](../archive/reviews/IMPLEMENTATION.md#i3--plugin-execution-and-distribution)
 tracks those choices; accepting the compositional model does not select an expression language,
 a universal solver or a worker topology. Experiment 002 separately records the accepted authoring proof.
 

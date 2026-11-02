@@ -1,8 +1,8 @@
 # Complete package walkthrough: retained message history
 
 Status: **parked illustrative package design for a future PR**, 2026-11-02. The alias-map ruling
-is unaccepted; [conceptual closure](../../REVIEW.md) is complete and syntax returns in a later PR.
-This follows the accepted [design](../../DESIGN.md) and reuses the history Resource from
+is unaccepted; [conceptual closure](../../archive/reviews/CONCEPTUAL.md) is complete and syntax returns in a later PR.
+This follows the accepted [design](../../protocol/README.md) and reuses the history Resource from
 [Experiment 001](../../../experiments/001-shared-access/README.md). It is a complete walkthrough
 of publication, implementation binding, template use and instance behavior, not an installable
 package. No worker binary, SDK, public schema release or runtime test is supplied here.

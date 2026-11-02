@@ -2,9 +2,9 @@
 
 Status: implementation proposal, 2026-11-01. Directory/crate names below describe the intended
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
-[review](REVIEW.md) identifies choices requiring a ruling before they become commitments.
+[review](../archive/reviews/IMPLEMENTATION.md) identifies choices requiring a ruling before they become commitments.
 
-The newer [repository/distribution review](../REPOSITORY.md) accepts one main repository under a
+The newer [repository/distribution review](../archive/reviews/REPOSITORY-2026-11-02.md) accepts one main repository under a
 Conduit organization, with independently consumable public protocol/conformance, runtime and extension
 surfaces. Publication details remain under review. Use this document's crate/dependency/milestone
 details as earlier candidates; neither directory layout is adopted. Consolidate them after that review
@@ -12,7 +12,7 @@ rather than implementing both trees.
 
 I1 accepts separate management and execution services; crate boundaries must preserve that
 arrangement and the accepted shared-policy/instance-state authority split. The
-[research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
+[research](../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
 concrete deployment and detailed failure mechanisms remain implementation work. I4 selects the
 minimal public persistence plugin contract, service runtime dependency and bundled SQLite engine
 with separate local management/executor databases in the first experiment. A single workspace
@@ -24,15 +24,15 @@ failures; two-machine validation follows before remote support is claimed.
 
 ## Review and PR sequence
 
-The [conceptual review](../../REVIEW.md) is complete, with the
-[collaborator proposals](../COLLABORATOR_REVIEW.md) reconciled and their dissent preserved.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete, with the
+[collaborator proposals](../archive/collaborator-proposals/REVIEW.md) reconciled and their dissent preserved.
 This does not settle package-reference syntax.
 A later authoring PR will review contracts, template/package examples, MCP/profile mappings and
 conformance fixtures together. Implementation milestones follow that approved boundary; a detailed
 crate plan is not authorization to start them now.
 
-The actual documentation layout is [SPEC](../../SPEC.md), [DESIGN and topic files](../../DESIGN.md),
-one active [REVIEW](../../REVIEW.md), separate implementation/authoring proposals, and source evidence
+The actual documentation layout is [SPEC](../OVERVIEW.md), [DESIGN and topic files](../protocol/README.md),
+one active [REVIEW](../archive/reviews/CONCEPTUAL.md), separate implementation/authoring proposals, and source evidence
 in research. Experiments remain outside docs with their own documentation. The proposed source-tree
 layout below is still a planning example, not a list of directories already created.
 
@@ -334,7 +334,7 @@ explicit cleanup authorizes removal.
 
 ## 9. Research and validation limits
 
-The proposal combines the source-pinned [Rust runtime report](../../research/RUST_RUNTIME.md)
+The proposal combines the source-pinned [Rust runtime report](../research/RUST_RUNTIME.md)
 with primary documentation accessed on 2026-11-01. No Cargo workspace, dependency resolution,
 MCP conformance test, keychain interaction, native login or provider request has run as part of
 writing it. The dependency table is a testable plan, not a fabricated build result.

@@ -8,7 +8,7 @@ on one machine, with controlled connection failures; two-machine validation prec
 This report preserves the authority comparison and its rationale
 using AWS, Google Cloud and Azure, with concrete control and recovery examples. It extends
 [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md), rather than replacing its process-supervision and
-distributed-systems evidence. The [implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management)
+distributed-systems evidence. The [implementation review](../archive/reviews/IMPLEMENTATION.md#i1--independent-execution-and-management)
 records the accepted authority, outage and first-proof rulings.
 
 The [Interface/policy follow-up](#9-interface-administration-and-independent-policy) examines the

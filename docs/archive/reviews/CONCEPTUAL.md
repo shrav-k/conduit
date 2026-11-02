@@ -12,7 +12,7 @@ features. It does not guarantee that implementation will reveal no further count
 ## Next discussion
 
 There are no outstanding rulings in this conceptual review. The current
-[repository and distribution review](proposals/REPOSITORY.md) considers organizational boundaries
+[repository and distribution review](REPOSITORY-2026-11-02.md) considers organizational boundaries
 before a separate authoring/conformance PR: complete contract and template examples, schemas and
 wire/profile bindings, followed by implementation. Existing examples remain proposals until reviewed together.
 Concrete counterexamples can reopen a semantic issue; this is not a claim that every future extension
@@ -28,7 +28,7 @@ frontend, Rust crate layout or storage engine does not define those public seman
 **Accepted:** conformance describes explicitly supported capabilities. Clients/plugins can support
 limited surfaces; a runtime claiming portable template execution must honor public graph, control,
 lifecycle and recovery semantics. Required executable behavior cannot silently become opaque.
-The [canonical contract](design/CONFIGURATION.md#declared-capability-conformance) records this ruling.
+The [canonical contract](../../protocol/CONFIGURATION.md#declared-capability-conformance) records this ruling.
 Exact names and syntax remain deferred.
 
 **Accepted evidence threshold:** the first conformance milestone requires an independently authored
@@ -38,7 +38,7 @@ claiming runtime-to-runtime portability. C1 is complete; exact profiles, syntax 
 for the future authoring PR.
 
 **Why now:** collaborator PR #2 makes this choice visible. Its opaque setup/runtime proposal would
-lose the portability we have prioritized. [Comparison and sources](proposals/COLLABORATOR_REVIEW.md).
+lose the portability we have prioritized. [Comparison and sources](../collaborator-proposals/REVIEW.md).
 
 ### C2 — Whose authority governs a dependent call?
 
@@ -55,7 +55,7 @@ define the enforcement; callers do not need direct grants to every internal back
 For example, search may index Euphony and Demo under its own authority, while an Euphony-only Agent
 cannot retrieve Demo through a query. A shared service credential or dependency grant cannot widen
 that caller's permitted effects/results. This does not introduce issuer ancestry, token forwarding
-or a universal serialized identity chain. The [dependent-call contract](design/CONDUITS.md#authority-across-dependent-calls)
+or a universal serialized identity chain. The [dependent-call contract](../../protocol/CONDUITS.md#authority-across-dependent-calls)
 records the boundary. C2 is complete; concrete propagation and checking mechanisms remain authoring work.
 
 ### C3 — What does retirement guarantee across connected objects?
@@ -74,12 +74,12 @@ is inferred. Contracts define the duties without one universal lifecycle enum.
 
 For example, retiring Linear access preserves the Agents and shared authentication Resource, while
 an in-flight write keeps its recorded or uncertain outcome. Frontend detachment is distinct from
-Interface retirement. The [canonical lifecycle rule](design/LIFECYCLE.md#retirement-and-unregistration)
+Interface retirement. The [canonical lifecycle rule](../../protocol/LIFECYCLE.md#retirement-and-unregistration)
 applies alongside existing Agent/Pool checks and separate cleanup/purge contracts. C3 is complete.
 
 ## Review outcomes
 
-Accepted details now live in the [design topic files](DESIGN.md#contract-map). Review documents
+Accepted details now live in the [design topic files](../../protocol/README.md#contract-map). Review documents
 summarize decisions and link to their authority; they do not repeat a second specification.
 
 | Area | Settled direction |
@@ -94,7 +94,7 @@ summarize decisions and link to their authority; they do not repeat a second spe
 | Reference implementation | Separate management/executors, supervised instance-associated helpers, SQLite service dependencies, replaceable OS credential custody. |
 | First proof | One machine, management plus two executors; composition/requirements, controlled failures and Interface evidence; native macOS Agent adapters next. |
 
-I1–I7 remain summarized in the [implementation review](proposals/implementation-v0/REVIEW.md).
+I1–I7 remain summarized in the [implementation review](IMPLEMENTATION.md).
 The earlier history remains in Git; removing repeated ruling prose does not withdraw accepted rules.
 
 ## Design-fit audit: code-optional plugins and independent MCP access
@@ -109,8 +109,8 @@ names and fixtures follow in the future authoring PR.
 
 ## Initial experiment
 
-[001](../experiments/001-shared-access/README.md) is a static workflow packet;
-[002](../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
+[001](../../../experiments/001-shared-access/README.md) is a static workflow packet;
+[002](../../../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
 Neither has executed runtime/provider tests. Keep their existing evidence and scope; translate the
 accepted C1–C3 clarifications into conformance cases in the later authoring PR before finalizing syntax. Do not add
 Sealmesh, VMs, a root model, remote deployment or a second full runtime to the experiment silently.
@@ -120,7 +120,7 @@ Native two-Claude/two-Codex account validation remains a separate required goal.
 
 | Work | Treatment |
 | --- | --- |
-| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
+| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](../../proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
 | Crate organization, worker grouping, queue sizes, retry bounds, storage settings and serialization | Engineering/conformance work within accepted contracts. Bring back only a concrete semantic conflict. |
 | Binding/default name scope, compatibility matching, output/result mapping and typed secret handles | Specify in the authoring pass; tests must preserve fixed bindings, current authority and declared recovery. Syntax cannot decide these accidentally. |
 | Full remote/multi-user support, automatic placement/failover, stronger sandbox drivers | Future extensions with separate deployment evidence. |

@@ -6,8 +6,8 @@ Independent policy, recorded participation grants and issuer-independent grant l
 accepted. Policy is now the authoritative application of reusable requirements, and grant
 administration uses ordinary protected capabilities. This document develops that model without
 selecting exact YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
-the [design](../../DESIGN.md) retains accepted behavior and [I4](REVIEW.md#i4--local-transactional-authority)
-summarizes the accepted boundary. [Conceptual review C2](../../REVIEW.md#c2--whose-authority-governs-a-dependent-call)
+the [design](../../protocol/README.md) retains accepted behavior and [I4](../../archive/reviews/IMPLEMENTATION.md#i4--local-transactional-authority)
+summarizes the accepted boundary. [Conceptual review C2](../../archive/reviews/CONCEPTUAL.md#c2--whose-authority-governs-a-dependent-call)
 records the accepted Resource-grants/caller-restrictions boundary; specific syntax is deferred. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
 
 ## 1. Place in the model
@@ -55,7 +55,7 @@ remain to be reviewed. No actor can gain more rights by supplying an on-behalf-o
 preserving authenticated originating-caller context and enforcing applicable restrictions on effects
 and returned content. Autonomous work uses the Resource's own authority; using a capability does not
 require the caller to hold direct grants to every backing service. This is not issuer ancestry or
-implicit token forwarding. The [canonical rule](../../design/CONDUITS.md#authority-across-dependent-calls)
+implicit token forwarding. The [canonical rule](../../protocol/CONDUITS.md#authority-across-dependent-calls)
 also applies to composed operations; exact supported propagation/enforcement follows the contract.
 
 ## 3. Policy as authoritative requirement application

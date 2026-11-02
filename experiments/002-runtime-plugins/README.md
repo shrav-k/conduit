@@ -4,10 +4,10 @@ Status: first-proof layout, core authority/outage rules and combined composition
 scope and supervised instance-associated helper default accepted; remaining implementation details
 are proposed. Not implemented or executed. Written 2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
-choices within the [specification](../../docs/SPEC.md); it does not replace the
+choices within the [specification](../../docs/OVERVIEW.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
 
-The [implementation proposal](../../docs/proposals/implementation-v0/README.md) expands the host,
+The [implementation proposal](../../docs/implementation/README.md) expands the host,
 worker, schema and persistence boundaries this spike would exercise. Accepted I1–I6 boundaries remain in force; C1–C3 conceptual closure is complete and concrete authoring/syntax returns in a future PR. This experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
 layout below. **I1 accepts separate management/execution services and shared policy with
@@ -19,7 +19,7 @@ cases below. Canonical instance configuration and results belong to the designat
 service; management owns templates, registration and shared policy. The experiment tests that
 accepted split rather than implementing every authority alternative.
 
-The [Policy/Grant proposal](../../docs/proposals/implementation-v0/AUTHORIZATION.md#8-review-sequence-and-conformance-evidence)
+The [Policy/Grant proposal](../../docs/proposals/authoring-syntax/AUTHORIZATION.md#8-review-sequence-and-conformance-evidence)
 adds candidate common Agent/Interface authorization cases for review. These clarify the intended
 protocol proof. Policy as authoritative requirement application and grant administration through
 ordinary protected capabilities are now accepted. Governing bindings share the requirement machinery;

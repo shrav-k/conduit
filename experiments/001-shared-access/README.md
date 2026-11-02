@@ -3,7 +3,7 @@
 **Status: protocol walkthrough and static fixtures only.** No plugins, runtime, accounts or service
 connections were started. YAML parses as data; it is not executable Conduit configuration yet.
 The field names and fixture contracts are a coherent proposal against the
-[accepted design](../../docs/DESIGN.md), not new rulings hidden in examples.
+[accepted design](../../docs/protocol/README.md), not new rulings hidden in examples.
 
 Files:
 

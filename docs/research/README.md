@@ -1,17 +1,17 @@
 # Research
 
-Current sequence: the [conceptual review](../REVIEW.md) is complete;
-[repository/distribution structure](../proposals/REPOSITORY.md) is the current discussion;
+Current sequence: the [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete;
+[repository/distribution structure](../archive/reviews/REPOSITORY-2026-11-02.md) is the current discussion;
 [authoring syntax](../proposals/authoring-syntax/README.md) is parked for a later PR. The
-[collaborator comparison](../proposals/COLLABORATOR_REVIEW.md) reviews two submitted proposals
+[collaborator comparison](../archive/collaborator-proposals/REVIEW.md) reviews two submitted proposals
 without treating their platform claims as newly verified research or adopting their recommendations.
 
-Research supports the [specification](../SPEC.md) and [design contracts](../DESIGN.md).
+Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
 It is not an additional set of requirements. The current concrete configuration belongs in
 [experiments](../../experiments/README.md), where proposed syntax and validation evidence are
 kept together. Completed ruling queues and duplicate configuration walkthroughs have been removed.
 
-The [v0 implementation proposal](../proposals/implementation-v0/README.md) applies this evidence
+The [v0 implementation proposal](../implementation/README.md) applies this evidence
 to concrete runtime and repository boundaries. Its pending decisions are separate from research
 findings and from the accepted protocol.
 The current design accepts code-optional MCP-backed plugins and independently accessible
@@ -20,7 +20,7 @@ authored code, not a requirement for every contribution. I1 now accepts separate
 execution services, shared policy with instance-owned state and no offline grants in v0.
 The accepted first proof uses management and two executor processes on one machine, with
 controlled connection failures; two-machine validation precedes remote-support claims. Consult the
-[design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
+[design-fit audit](../archive/reviews/CONCEPTUAL.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
 
 | Report | Read it for |
 | --- | --- |
@@ -57,4 +57,4 @@ PI_CONNECTORS.
 Examples and candidate types can be broader than the selected v0 slice. Use them as failure cases
 and extension possibilities, not another review agenda. General authored graph loops, structured
 work submission, remote communication and stronger security tiers remain deferred as specified
-in [REVIEW](../REVIEW.md#drafting-and-deferred-work).
+in [REVIEW](../archive/reviews/CONCEPTUAL.md#drafting-and-deferred-work).

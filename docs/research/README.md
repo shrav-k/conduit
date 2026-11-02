@@ -18,6 +18,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
+| [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and a proposed lightweight debugging package for I6. Capture defaults remain unruled. |
 | [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; accepted shared policy/instance-owned state and independent policy. Later I4 rulings define access management and a public persistence plugin loaded as a service dependency, initially using SQLite. |
 | [AUTHORIZATION](AUTHORIZATION.md) | Cedar, Kubernetes RBAC, OPA, Zanzibar, Macaroons/Biscuit and MCP/OAuth: evidence for common Agent/Interface Policy and Grant contracts, delegation and enforcement. |
 | [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) | I1 evidence from Tilt, Docker/containerd, Kubernetes, Rust systems and papers: execution/authority splits and no offline grants accepted; one-machine process proof accepted, not yet executed. |

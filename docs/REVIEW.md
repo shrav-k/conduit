@@ -23,6 +23,8 @@ I6 now accepts observation plugins and authorized Conduits, starting with a ligh
 and adding instance-relevant capabilities over time. Required operation/recovery evidence remains
 independent of optional metrics, full-content capture and exporters. The initial package's
 content-capture default still needs a ruling.
+The [cloud/platform observability research](research/OBSERVABILITY.md) proposes a concrete initial
+debugging package and richer synthetic-fixture capture; these recommendations remain for I6.
 Authority, startup/recovery and persistence choices are settled. I5 now accepts OS-backed custody
 for Conduit-retained secrets through a replaceable implementation bundle, initially macOS Keychain,
 with future password-manager/service adapters possible. Native and external custody remain separate;

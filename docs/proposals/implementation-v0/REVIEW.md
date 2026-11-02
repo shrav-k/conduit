@@ -624,6 +624,15 @@ its Resource contract. Capture other full tool/model payloads only under an expl
 recording policy, with content references, bounds and sensitive-field handling. Show missing,
 truncated or deliberately uncaptured content clearly. Never log credentials by default.
 
+The [observability research](../../research/OBSERVABILITY.md) makes this recommendation concrete:
+start with correlated operation/graph/plugin diagnostics, structured errors, a small service-health
+set and optional OpenTelemetry export. For the low-volume synthetic experiment, propose recording
+all instrumented operation traces and explicitly enabling bounded fixture-input/output capture.
+Real-workload full content remains governed by declared recording policy. Observation loss is
+visible; required authoritative evidence is not sampled. CPU/token providers and a dashboard are
+extensions, not prerequisites. These are recommendations pending the I6 ruling, not an expansion
+of the accepted experiment or a selected production backend.
+
 **Example:** the Interface can prove a Linear call was admitted, which Agent/account/path performed
 it and whether application was confirmed. It may have a permitted stored response, an excerpt or
 only a reference depending on the declared policy. A missing full response is not presented as

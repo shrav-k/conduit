@@ -5,6 +5,10 @@ One main repository under a Conduit GitHub organization and a common package env
 directory layout, release scheme, license and package syntax remain unsettled. The completed
 [conceptual review](../REVIEW.md) remains complete; this review precedes the authoring/conformance PR.
 
+The documentation discussion establishes the language and public contracts as the primary product.
+The runtime and a thin initial plugin/template set demonstrate it; richer supported packages may
+move to ancillary repositories. Exact navigation and the website implementation remain proposals.
+
 **Accepted repository boundary:** keep one main development repository under a Conduit GitHub
 organization initially, with explicit public boundaries so the protocol/conformance kit, reference
 runtime and extension packages remain independently consumable. This allows a contract, example,
@@ -76,7 +80,7 @@ conduit/
     schemas/               # language-neutral core representations
     conformance/           # public scenarios, fixtures and test adapters
   crates/                  # Rust runtime, service/client wiring and internal libraries
-  packages/                # independently inspectable/installable Conduit contributions
+  packages/                # thin initial reference packages; richer packages may live elsewhere
   examples/                # small supported authoring journeys, once executable
   experiments/             # exploratory scenarios, failures and measured evidence
   docs/
@@ -140,9 +144,12 @@ records this boundary. Exact fields, dependency references, archive layout and s
 remain open. Automatic dependency resolution stays deferred, and installation establishes no instances,
 provider authentication or grants.
 
-Start with only the packages needed for Experiment 002. Avoid one opaque `builtin` package containing
-every integration, and avoid a separate package for every function. Choose boundaries by responsibility,
-reuse and dependencies. Resource type groups, package names and implementation languages remain distinct.
+Start with only the packages needed to prove authoring and Experiment 002. The main repository's
+purpose is the protocol, conformance and reference implementation, not accumulating a comprehensive
+integration library. Supported ancillary packages may move into separate repositories as their
+maintenance warrants. Preserve simple external package authoring and public compatibility when they
+move. Choose package boundaries by responsibility, reuse and dependencies; Resource type groups,
+package names and implementation languages remain distinct.
 
 ## 5. Release and delivery proposal
 
@@ -173,14 +180,23 @@ outside the source workspace so workspace paths cannot hide missing schemas, exe
 
 ## 6. Website and documentation experience
 
-Use four clear entry routes, backed by the same source documents:
+Lead with the protocol and original authoring. The earlier product-first navigation was too centered
+on installing templates and composing existing integrations. The proposed replacement is:
 
 | Route | First useful experience |
 | --- | --- |
-| Use Conduit | Understand the five families, install a supported release, run an example, inspect it and recover from a failure. |
-| Build with Conduit | Author a tiny operation, a declaration-only MCP binding, then a composed template; validate and install without editing core code. |
-| Implement the protocol | Read supported capability contracts and transport mappings; run conformance as an independent client/plugin/runtime. |
-| Contribute | Find source responsibilities, local checks, experiments, pending proposals and research rationale. |
+| Learn the protocol | Understand the five families, language, contracts and how their relationships express a system. |
+| Author with the protocol | Define capabilities, operations and requirements; implement a small plugin; construct templates and package contributions. |
+| Protocol reference and conformance | Find exact semantics, representations, MCP mappings, compatibility and observable guarantees. |
+| Reference implementation | Execute and inspect the contracts using the Rust runtime and clients; distinguish those mechanisms from protocol requirements. |
+| Project and ecosystem | Find source responsibilities, experiments, proposals, research, archived alternatives and supported ancillary packages. |
+
+An introductory example should define a small new capability, supply its implementation, use it in
+a Resource template, establish it through a Pool and connect an Agent/Interface through a Conduit.
+Inspection and a failure case should demonstrate its guarantees. Reusing existing integrations is a
+later application of this language. Defining an extension must not require reading executor SQL or
+modifying core dispatch. These are documentation priorities, not a new requirement to implement every
+capability before the first authoring example can be reviewed.
 
 Separate tutorials/task guides from exhaustive reference and architecture explanation. Keep research
 and dissent reachable under contribution/design context without presenting them as supported features.
@@ -195,7 +211,8 @@ visible alongside the relevant instructions.
 
 ## 7. Joint review sequence
 
-Two of four grouped rulings are complete; documentation and release strategy remain before detailed syntax:
+Repository and package rulings are complete. Documentation emphasis is clarified; exact navigation,
+layout and release strategy remain to be settled alongside the transition:
 
 1. **Repository ownership — accepted:** one organization/main repository with explicit public boundaries
    and independently consumable protocol/conformance, runtime and extension packages. Actual organization
@@ -203,8 +220,9 @@ Two of four grouped rulings are complete; documentation and release strategy rem
 2. **Package envelope — accepted:** one common envelope with typed contents supports plugin contributions,
    template-only collections and combinations. Package syntax and the exact artifacts in the proposed
    protocol kit/reference distribution remain drafting and release-review work.
-3. **Documentation:** one source set with use/author/implement/contribute routes, website built from it,
-   and research/proposals separated from reference? I recommend this before choosing a site generator.
+3. **Documentation — emphasis clarified:** the language/contracts and original authoring lead; the
+   runtime and thin reference packages demonstrate the protocol. A single source set rendered as a
+   website remains recommended; exact navigation, source locations and generator remain open.
 4. **Release contract:** coordinated reference releases, separately identified contracts/artifacts,
    macOS-first prepared delivery and local extension installation? I recommend this limited first surface.
 
@@ -218,3 +236,97 @@ Promote one author journey into public conformance fixtures and runnable example
 settle package exports/references, contract versions, bindings and artifact selection together. Keep
 Experiment 002's accepted runtime scope, adding clean-checkout/artifact installation checks to its planned
 authoring evidence when the packaging decisions are accepted. No additional live service is required.
+
+## 8. Preserving the design through the transition
+
+The transition is a proposed work sequence, not approval of syntax or implementation choices. Keep
+accepted behavior readable in the active documentation throughout. Git history protects the original
+material, but readers should not need Git archaeology to discover a rule that still applies.
+
+### Preserve a reviewable baseline
+
+- `4c54263` on `main` preserves the completed conceptual review, research, experiments and attributed
+  collaborator proposals before this organizational review.
+- `a51c87b` on `docs/protocol-framing` preserves the subsequent ecosystem investigation, accepted
+  single-repository/common-package rulings and the then-current organizational proposals. Their status
+  markings distinguish accepted rules from suggestions. The present follow-up records protocol emphasis.
+- Keep structural moves and substantive semantic changes in separate commits. Do not replace either
+  baseline or treat a documentation branch as approval to begin the runtime.
+
+Before removing or merging an existing section, account for its accepted obligations, qualifications,
+examples, rationale and evidence. A temporary section-level migration checklist is sufficient; there
+is no need to recreate the long decision ledger or assign an ID to every sentence. Preserve existing
+decision references where they are still useful and repair links/anchors when moving their targets.
+
+### Map the existing work by authority
+
+These are destination responsibilities; exact directory names remain for the structural pass.
+
+| Existing source | Destination responsibility | What must survive |
+| --- | --- | --- |
+| SPEC and DESIGN index | Protocol overview and reference navigation | Five families, extension concepts, project priorities and clear links to detailed accepted rules. |
+| design/MODEL, CONFIGURATION and LIFECYCLE | General protocol reference | Typed configuration, identity, composition, authority, controls, persistence/observation boundaries and recovery semantics. Separate reference-runtime selections where appropriate without withdrawing their accepted implementation status. |
+| design/AGENT, RESOURCES, POOLS and CONDUITS | Object and relationship contracts | Ownership, account/state boundaries, activation, shared authentication, unitary resources, participation, requirements/grants, dependent-call restrictions and communication/memory behavior. |
+| Completed conceptual and implementation reviews | Closed review summaries linked to current contracts | Accepted rulings, limitations and the independent-client/plugin conformance milestone. They do not become parallel active queues. |
+| Implementation architecture, authorization and organization proposals | Reference-implementation design | Accepted deployment/storage boundaries plus explicitly marked candidate mechanisms. Move mixed protocol syntax into the authoring proposal when needed; do not silently promote candidates. |
+| Authoring, contracts and package walkthrough proposals | One active language/authoring review packet | Small-handler, filesystem, MCP, history, composite operation/requirement and template-only cases; competing syntax remains illustrative until ruled on. |
+| Research | Dated evidence and design rationale | Primary links, source pins, comparisons, failed approaches, actual probes and their limits. Consolidate duplicate recommendations only after preserving unique evidence. |
+| Experiments 001 and 002 | Exploratory fixtures and evidence outside docs | Accepted scope, draft examples, intended outcomes and actual validation records. Expected behavior never becomes a claimed successful test. |
+| Collaborator comparison and archive | Attributed alternatives and dissent | Original source identity, authorship, accepted adaptations and unadopted arguments. |
+
+### Three focused passes
+
+**Pass 1 — protocol documentation and repository preparation.** Review the map, then move intact
+sections first and edit navigation/explanation separately. Present the language, contracts and
+authoring path before the reference application. Keep shared protocol semantics distinct from
+accepted reference-runtime choices such as Rust, SQLite and the first process layout. Carry the
+thin example packages with the implementation only as needed for proof. Introduce contributor and
+validation instructions as they become usable; choose the license and organization details explicitly.
+Do not scaffold a large crate tree or publish an unimplemented installation guide.
+
+Exit evidence: every source section is retained, mapped to a destination, or deliberately archived
+with its reason; accepted behavior has an active home; local links/anchors validate; no semantic
+deletion is disguised as shortening prose. A repository-local documentation check should replace
+reliance on temporary validation scripts when the tooling is introduced.
+
+**Pass 2 — language, package and conformance review.** Use one complete original-authoring journey
+as the backbone, with focused variants for a declaration-only MCP binding and a template-only package.
+Bring the existing examples forward instead of starting a new independent schema draft. Review
+connected questions in batches: package/contract identity and exports; template/reference scope and
+defaults; graph/control bindings and results; MCP/profile mappings and conformance claims. Address
+release compatibility with those examples; installer channel details need not determine language syntax.
+
+For each batch, show the authored files, how names resolve, what instance configuration results,
+what is observable and at least one meaningful rejection or uncertain outcome. Compare syntax against
+the accepted contracts. A proposal that changes behavior names that change explicitly and returns it
+for a ruling. Routine field spelling does not reopen the entire conceptual design.
+
+Exit evidence: reviewed public representations and examples, a coherent package-to-instance journey,
+and conformance cases tied to the rules they exercise. Publish schemas and tests alongside the
+corresponding accepted reference text. Syntax validation alone cannot establish effect or recovery
+guarantees; unresolved cases remain visible rather than receiving invented defaults.
+
+**Pass 3 — smallest executable reference slice.** Implement the reviewed boundary using the accepted
+Experiment 002 arrangement. Start with the authoring path through validation, an externally supplied
+plugin, graph execution, managed instances/connections and Interface evidence. Extend that slice to
+the accepted composition, failure and recovery cases; do not replace the proof with a broad plugin
+library. Keep protocol conformance and runtime-specific tests distinguishable.
+
+Exit evidence: a separately authored client/plugin uses public contracts without private checkout
+imports; package installation works from prepared artifacts; required success/failure cases produce
+inspectable results. The complete first milestone still includes management and two executors,
+authority/outage enforcement and the agreed recovery proof. Smaller development increments do not
+claim that milestone complete. Native account validation and the owned model loop retain their agreed
+later sequence.
+
+### Continue iterating without losing decisions
+
+Keep one current proposal packet for the active language questions. After a ruling, amend its canonical
+contract once and link the corresponding example/conformance case; keep the rationale or source link
+nearby. Record intentional reversals explicitly. Do not force all implementation details into the
+protocol, or keep duplicate editable versions of an accepted rule in research and review documents.
+Code may reveal a counterexample: isolate it, explain which guarantee it affects, and resolve it
+collaboratively. Naming changes, file moves and prototype convenience cannot silently change meaning.
+
+The next substantial change should be the first pass only. The later passes describe the path to
+implementation and are not authorization to settle unresolved syntax or start coding now.

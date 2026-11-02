@@ -9,6 +9,13 @@ Prefer minimal bookkeeping: retain authoritative configuration, identity, author
 operation evidence; derive views rather than maintain parallel editable descriptions. Shared
 contracts need not impose the same lifecycle, process model or implementation on every type.
 
+**Project emphasis:** the language and public contracts are the primary deliverable. The reference
+runtime, minimal authoring support and thin initial plugin/template set demonstrate those contracts.
+Supported ancillary packages can carry richer integrations and workflows. Documentation should teach
+original contract/plugin/template authoring and conformance before foregrounding a catalog of existing
+functionality. This preserves the five-family model and all accepted authority/lifecycle obligations;
+package relocation and exact repository layout remain organizational work.
+
 **Implementation priority:** plugin and template authoring are central to the protocol and the
 first implementation's success. Evaluate runtime choices by whether an author can define a small
 extension, compose it into templates, establish instances and inspect their behavior without

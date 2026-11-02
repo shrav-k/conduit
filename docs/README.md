@@ -5,6 +5,12 @@ Start with [SPEC](SPEC.md) for the system, [DESIGN](DESIGN.md) for the accepted 
 [repository, documentation and distribution structure](proposals/REPOSITORY.md), before package and
 YAML syntax return in a later authoring/conformance PR.
 
+The language and public contracts lead the documentation. The
+[transition plan](proposals/REPOSITORY.md#8-preserving-the-design-through-the-transition) explains how
+to preserve accepted semantics, research and dissent while developing the reference and authoring
+paths. Existing design topics remain authoritative until their deliberate migration; proposed file
+locations or examples do not replace them automatically.
+
 | Location | Purpose | Authority |
 | --- | --- | --- |
 | [SPEC.md](SPEC.md) | Concise model and user journey. | Summary of the accepted direction. |

@@ -6,6 +6,8 @@ equivalent JSON input/interchange and JSON Schema 2020-12. The accepted
 [configuration foundation](../../protocol/CONFIGURATION.md#configuration-language) records that
 ruling. This brief preserves the comparison; remaining profile recommendations are not accepted
 merely by appearing here. The [current review](../../REVIEW.md) owns the remaining decisions.
+The subsequent [schema-resolution ruling](../../protocol/CONFIGURATION.md#schema-resolution)
+also accepts supplied/declared schema dependencies with no automatic fetching during validation.
 
 ## Recommendation and scope
 
@@ -108,9 +110,9 @@ These are parts of making the chosen foundation precise, not reasons to design a
 - Specify supported authoring-schema features, closure/composition rules and diagnostics. Keep
   any authoring restrictions distinct from the obligations of the selected MCP version; never
   silently reinterpret an unsupported upstream schema or claim full conformance from a subset.
-- Define schema-reference resolution against available published artifacts. A schema `$ref` is
-  not a Resource connection, a grant, or permission to fetch arbitrary URLs. MCP itself disables
-  automatic network dereferencing by default.
+- Refine reference syntax and resolver details within the accepted supplied/declared dependency
+  boundary. A schema `$ref` is not a Resource connection, a grant, or permission to fetch arbitrary
+  URLs. MCP itself disables automatic network dereferencing by default.
 - Specify default materialization separately. JSON Schema `default` is an annotation, and
   `readOnly` does not enforce authority. The [validation specification](https://json-schema.org/draft/2020-12/json-schema-validation)
   also distinguishes format annotation from format assertion. Required Conduit semantics must

@@ -89,12 +89,18 @@ The [configuration foundation](protocol/CONFIGURATION.md#configuration-language)
 constrained YAML 1.2 for human authoring, equivalent JSON input/interchange, and JSON Schema
 2020-12 for data contracts, with one shared value model. Conduit defines lifecycle, authorization
 and other behavioral semantics separately. The [comparison](research/language-protocol-foundations/FORMATS.md)
-retains the rationale; detailed schema features and resolution rules are not yet settled.
+retains the rationale; detailed schema features and reference syntax remain open.
 
-The next ruling concerns reusable schema resolution: should validation resolve references only
-from the selected package and its explicitly supplied/declared schema dependencies, with missing
-definitions reported rather than automatically fetched from the network? This is a proposed
-validation boundary, not final reference syntax or a restriction on explicitly acquiring packages.
+The [schema-resolution boundary](protocol/CONFIGURATION.md#schema-resolution) is accepted:
+resolve from the selected package and explicitly supplied or declared schema dependencies;
+report missing required definitions without automatic network fetching during validation.
+Explicit acquisition beforehand remains possible, and exact reference syntax is open.
+
+The next ruling concerns unrecognized keywords in Conduit-authored data schemas. The proposed
+rule rejects them when accepting a contract, while providing an explicitly declared mechanism
+for custom annotations. For example, a misspelled `minimum` must not silently lose its constraint.
+This is an authoring-profile choice, not an automatic rejection rule for external MCP catalogs;
+the annotation mechanism and any future validation extensions require their own defined semantics.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

@@ -19,7 +19,7 @@ as YAML mappings or JSON; authors need not maintain duplicate representations.
 
 Conduit's explicit behavioral contracts define graph execution, default materialization,
 controls, authorization, effects and recovery. Data-schema validation does not establish
-those guarantees. The detailed schema profile, reference-resolution rules, validators and
+those guarantees. The detailed schema profile, reference syntax, validators and
 canonical byte encoding remain to be specified; this ruling does not accept every proposed
 schema feature or introduce another mandatory configuration language.
 
@@ -106,6 +106,19 @@ not the contents/formats of opaque native files supplied through Resources.
 Parser choice, diagnostics and schema-specific numeric/unit limits remain implementation work.
 Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
 not imply atomic deployment, authority or successful setup.
+
+### Schema resolution
+
+Validation resolves schema references only from the selected package and its explicitly supplied
+or declared schema dependencies. Required definitions must be available; report a missing
+definition rather than fetching it automatically from the network or treating it as unconstrained.
+Packages and schema dependencies may be acquired explicitly before validation. A network-shaped
+schema identifier is not permission to retrieve that address during validation.
+
+This rule concerns definitions used for validation. It does not establish Resource access,
+authenticate an external service or grant a runtime capability. Package-local scope and declared
+dependency boundaries still apply. Exact reference spelling, artifact layout and resolver mechanics
+remain authoring and implementation work.
 
 ### Implementation selection
 

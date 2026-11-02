@@ -13,7 +13,10 @@ primary references and worked cases for choosing those representations.
 Author configuration and data schemas in constrained YAML 1.2 or equivalent JSON. Both use
 one value model; JSON Schema 2020-12 supplies data validation, while Conduit defines execution,
 authority and recovery separately. See the accepted [configuration foundation](../protocol/CONFIGURATION.md#configuration-language).
-The detailed schema profile and reference-resolution rules remain in review.
+Schema references resolve from the selected package and explicitly supplied or declared schema
+dependencies, without automatic network fetching during validation. Missing required definitions
+are reported; dependencies may be acquired explicitly beforehand. The detailed schema profile
+and reference syntax remain in review.
 
 ## From a new capability to an instance
 

@@ -19,6 +19,9 @@ remain independent and no backward-compatibility maintenance obligation is added
 Constrained YAML 1.2, equivalent JSON input/interchange and JSON Schema 2020-12 data contracts
 are also accepted in the [configuration foundation](../../protocol/CONFIGURATION.md#configuration-language).
 The remaining representations and detailed schema profile below are proposals within those boundaries.
+The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
+the selected package and supplied/declared schema dependencies, reporting missing definitions
+without automatic network fetching during validation. Dependency acquisition remains explicit.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

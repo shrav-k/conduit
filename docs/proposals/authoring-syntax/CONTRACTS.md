@@ -102,8 +102,10 @@ merely to resolve exports. The same rule applies to default bindings when they a
    before a generic map conversion could erase their source evidence.
 3. Interpret YAML 1.2 Core scalars. Preserve quoted strings; never convert a string to a number
    merely because a schema expects one. Empty collections, omitted fields and allowed nulls differ.
-4. Validate common envelope and field ownership. Resolve only explicitly referenced local
-   schema artifacts; no network fetching or environment/shell expansion during validation.
+4. Validate common envelope and field ownership. Under the accepted schema-resolution rule,
+   resolve from the selected package and its explicitly supplied or declared schema dependencies;
+   report missing required definitions without automatic network fetching. Dependencies may be
+   acquired explicitly beforehand. No implicit environment/shell expansion occurs during validation.
 5. Validate supplied typed values, graph binding positions, control definitions and dependency
    declarations. Defer required-field checks for declared defaulted fields until materialization.
    A template can leave explicitly declared composition inputs unbound; an instance cannot
@@ -119,7 +121,7 @@ our scalar, duplicate-key or denial-of-service behavior. [Parser events][yaml-ev
 
 The accepted foundation uses JSON Schema 2020-12 for data validation with equivalent YAML/JSON
 representations, plus explicit Conduit semantics for defaults, bindings and transitions.
-The detailed pipeline and profile here remain proposed. JSON Schema's `default` is an annotation and does not
+The remaining pipeline and profile details here are proposed. JSON Schema's `default` is an annotation and does not
 materialize values. Implement that pass ourselves; reject contradictory or ambiguous default
 definitions rather than selecting a branch by traversal order. Close records explicitly; schemas
 with composition need correct `unevaluatedProperties` behavior. [Defaults][schema-defaults] ·

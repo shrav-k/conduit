@@ -14,12 +14,12 @@ branch until merged. The earlier baseline remains available in Git history at `c
 
 The [implementation proposal](proposals/implementation-v0/README.md) now describes processes,
 contracts, persistence, ownership, crate organization and delivery milestones. Its
-[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I3
-are conceptually settled; I4 is partly complete, and I5–I7 remain for review. Start there for the
+[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I4
+are conceptually settled, and I5–I7 remain for review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** I4 storage, followed by I5 credentials,
-I6 capture defaults and I7 syntax. Governing-target and grant-issuance choices are settled. Concrete plugin and
+**Current focus:** I5 credential custody/enrollment, then I6 capture defaults and I7 syntax.
+Authority, startup/recovery and persistence choices are settled. Concrete plugin and
 template author journeys continue to guide these decisions. The
 [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
 retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
@@ -101,7 +101,9 @@ treating omitted restrictions as a request for maximum access. I4 accepts a mini
 persistence plugin contract with one bundled implementation. Management/executors retain state
 ownership and Resource domain backends remain independent. V0 loads the plugin as a service runtime
 dependency with Interface inspection/recovery, preserving a path to a future Pool-owned Resource.
-The initial engine is the remaining I4 ruling; exact public schemas remain for I7.
+SQLite is selected for the bundled implementation, with separate local management/executor
+databases in the first experiment. This closes I4's conceptual review; exact public schemas remain
+for I7 and runtime guarantees still need implementation evidence.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while
@@ -132,7 +134,7 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
 separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-the remaining I4–I6 choices; I3's conceptual execution, extension and distribution boundaries are
+the remaining I5–I6 choices; I3's conceptual execution, extension and distribution boundaries are
 settled. I2 is complete: native Claude/Codex adapters after the synthetic proof, then Conduit's
 Rust model/tool loop; macOS-first native integration/account validation with a portable core and
 OS adapters. Final contract/template syntax remains I7 work.

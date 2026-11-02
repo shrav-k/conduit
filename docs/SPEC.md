@@ -95,8 +95,10 @@ permission can continue; existing stop/revocation rules and delivery checks stil
 a minimal typed persistence plugin contract with one bundled implementation for management/executor
 state, loaded as a service runtime dependency with Interface inspection/recovery. Services retain
 state ownership; Resource domain backends remain independent. Keep the contract suitable for a
-future Pool-owned storage Resource, without requiring that representation in v0. Storage engine
-and production placement remain open. The first experiment uses management and two
+future Pool-owned storage Resource, without requiring that representation in v0. The bundled
+implementation uses SQLite initially, with separate local databases for management and each executor
+in the first experiment; services exchange information through their contracts. Exact storage
+settings and production placement remain open. The first experiment uses management and two
 independent executors as separate processes on one machine, with controlled connection failures.
 Two-machine validation follows before remote support is claimed; no failure guarantee is yet tested.
 

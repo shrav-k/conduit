@@ -429,7 +429,9 @@ not reopen initialization automatically or authorize ordinary application reques
 bundled implementation. Services retain authority over their state; Resource domain backends remain
 independent. The implementation is loaded as a service runtime dependency in v0, with status and
 supported recovery visible through the Interface. Preserve a path to future Pool-owned storage
-Resources through the public contract without changing state authority. The engine is the next ruling.
+Resources through the public contract without changing state authority. SQLite is selected for the
+first bundled implementation, with separate local databases for management and each executor in the
+first experiment. I4's conceptual review is complete; credential custody and capture defaults follow.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

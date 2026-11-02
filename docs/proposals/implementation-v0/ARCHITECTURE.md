@@ -142,8 +142,8 @@ recipient participation/Conduit end also ends access. Bounded issuance operation
 mandatory use restrictions and compose caller-added restrictions, returning the complete issued
 grant. They preserve intent and refuse explicit broadening; issuance-only checks do not become
 live issuer dependencies. Exact schemas/type-specific validation remain authoring work. First
-establishment and explicit recovery use the accepted contracts below. Foundational persistence
-and engine selection remain open.
+establishment and explicit recovery use the accepted contracts below. Foundational persistence uses
+the public plugin contract with a bundled SQLite implementation loaded as a service dependency.
 
 **Responsibility does not imply continuous enforcement of desired state.** In this example, a
 directive to establish a Pool can be satisfied by an explicit setup operation. Repair/restart loops
@@ -433,9 +433,11 @@ one bundled implementation. The responsible service retains state-transition and
 the implementation supplies the required storage/recovery guarantees. Initial loading cannot
 depend solely on registry records inside the store being opened. Resource domain-data backends
 remain separately selectable. V0 loads the plugin as a service runtime dependency, retaining a path
-to future Pool-owned storage Resources. Engine and exact method schemas remain open.
+to future Pool-owned storage Resources. SQLite is selected for the bundled implementation, with
+separate local databases for management and each executor in the first experiment. Exact method
+schemas, Rust bindings and durability settings remain implementation/authoring work.
 
-**Candidate, I4:** SQLite can implement a local authority store, accessed through
+**Proposed implementation of the accepted SQLite engine:** access the local authority store through
 `rusqlite` on a dedicated store thread with a bounded queue. The async host never blocks a Tokio
 worker on a database operation. Permit bounded read connections only if consistent snapshots
 and connection configuration are tested; start with one owner rather than a generic ORM.
@@ -519,8 +521,9 @@ as usable after reboot; reacquire or verify its instance-owned backing and autho
 
 ### Worked storage and recovery examples
 
-I4 remains open. These examples illustrate the proposed SQLite implementation of already accepted
-ownership and recovery rules; they do not select new automatic retry, failover or backup policies.
+I4's conceptual review is complete. These examples illustrate the selected SQLite engine and
+accepted ownership/recovery rules; detailed transaction mechanics remain implementation work.
+They do not select new automatic retry, failover or backup policies.
 
 | Storage | Authoritative facts in the proposed first experiment | What it does not establish |
 | --- | --- | --- |
@@ -582,8 +585,8 @@ current. Report and reconcile missing evidence; do not silently rebuild identity
 **Accepted:** v0 publishes a minimal typed persistence contract through the existing plugin
 machinery, beginning with one bundled implementation. Authors can implement the contract without
 changing the authority model. This does not require multiple engines in the first milestone;
-the plugin is loaded as a service runtime dependency in v0. Engine choice, public method/schema
-spellings and detailed loading/recovery mechanics remain open. Initial establishment and recovery
+the plugin is loaded as a service runtime dependency in v0 and initially uses SQLite. Public
+method/schema spellings and detailed loading/recovery mechanics remain open. Initial establishment and recovery
 follow the accepted root Interface contract.
 
 Management owns shared registration/policy; one designated service owns each instance's state.
@@ -600,9 +603,10 @@ Contract boundaries and remaining work:
   belong to authoring/implementation work; MCP invocation alone supplies none of these guarantees.
 - **Future representation:** v0 uses a service runtime dependency. A Pool-owned Resource exposing
   the capability through Conduits remains a future direction, not an outstanding v0 choice.
-- **Engine/deployment:** the bundled implementation could use SQLite or another engine. Physical
-  sharing does not merge logical state authority or Pool ownership. Engines do not make provider
-  effects atomic, provide automatic failover or select a backup policy by themselves.
+- **Engine/deployment:** SQLite is selected for separate management/executor databases in the first
+  local experiment. Physical sharing does not merge logical state authority or Pool ownership.
+  The public contract stays engine-independent; provider atomicity, failover and backups remain
+  separate concerns.
 
 #### Concrete persistence examples
 
@@ -672,7 +676,8 @@ Essential information for loading the root, retained implementation and intended
 available before registry access; its only copy cannot live inside the unopened store. Keep that
 loading material distinct from ordinary registry state rather than maintaining a second writable
 configuration/permission authority. Exact descriptors, custody, method schemas and recovery
-algorithms remain authoring/implementation work. The engine is the remaining I4 ruling.
+algorithms remain authoring/implementation work. The bundled engine is SQLite; this closes I4's
+conceptual review without claiming an implemented or validated recovery path.
 
 #### Future Pool-owned persistence Resources
 
@@ -702,8 +707,8 @@ not new blocking rulings for v0 or a promise of automatic conversion.
 
 The first implementation must still support checked revisions, related local commits, durable
 outcome evidence and explicit unavailable/unknown results through the published contract. A lost
-commit reply requires reconciliation. SQLite remains the recommended candidate for the bundled
-implementation, pending the [I4 engine ruling](REVIEW.md#i4--local-transactional-authority).
+commit reply requires reconciliation. The [I4 engine ruling](REVIEW.md#i4--local-transactional-authority)
+selects SQLite for the bundled implementation, leaving the public contract engine-independent.
 
 ## 5. Graph and runtime execution
 
@@ -820,8 +825,12 @@ a provider-appropriate binding through a Conduit. Clients may be pooled by targe
 audience, implementation and relevant isolation context; matching URLs alone never merge access.
 Coordinate refresh per binding and prevent competing workers from rotating the same credentials.
 
-Store secrets outside ordinary specs/events. **I5** recommends an OS-backed credential store for
-Conduit-owned service credentials, with explicit test/in-memory alternatives. Native Agent
+Store secrets outside ordinary specs/events. **I5**, still open, recommends an OS-backed credential
+store for secrets Conduit itself retains, initially macOS Keychain, with explicit test/in-memory
+alternatives. Ordinary configuration and SQLite state would retain references. A locked/unavailable
+store would report that state without a silent plaintext fallback. Externally managed secret
+Resources would retain their declared custody. [Apple Keychain services](https://developer.apple.com/documentation/security/keychain-services)
+Native Agent
 authentication remains owned by its native adapter/runtime. Do not copy rotating credentials
 into every Agent private directory or infer subscription eligibility from a successful API call.
 The current Rust Keyring documentation distinguishes simple convenience APIs from applications

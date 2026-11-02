@@ -5,7 +5,8 @@ bindings, independent component access, management/execution separation and shar
 instance-owned state, no offline grants and the one-machine first proof are **accepted** below.
 I1 and I2 are settled, including native adapters before the Rust loop and macOS-first native
 integration/account validation. I3's conceptual extension, execution and distribution choices are
-settled; detailed mechanisms and syntax remain open. I4–I7 retain the pending choices below.
+settled. I4's authority, startup/recovery and persistence choices are also settled; detailed
+mechanisms and syntax remain open. I5–I7 retain the pending choices below.
 Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -113,8 +114,8 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1–I3 are settled at the conceptual level. Next review I4–I6's persistence, credential custody and
-evidence support, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
+I1–I4 are settled at the conceptual level. Next review I5–I6's credential custody and evidence
+support, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
 one review queue rather than another decision ledger.
 
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
@@ -122,12 +123,11 @@ settles the authorization model, independent grants, dedicated access-management
 explicit governing targets with live ownership-based matching, and bounded issuance operations.
 Root-directed first launch, owner-authorized initialization and explicit recovery through the root
 Interface are also accepted, as is a minimal published persistence contract with one bundled
-implementation loaded as a service runtime dependency. A future Pool-owned representation remains
-a design direction; the remaining I4 ruling is the initial engine. I5 credential
-custody/enrollment and I6 capture defaults add two bundles.
-That is three planned conceptual bundles, beginning with storage, followed
-by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
-future questions: startup, storage or enrollment may reveal a concrete choice that needs splitting.
+implementation loaded as a service runtime dependency. SQLite is selected, with separate local
+management/executor databases for the first experiment. A future Pool-owned representation remains
+a design direction. I5 credential custody/enrollment and I6 capture defaults are the two remaining
+conceptual bundles, followed by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
+future questions: credential enrollment or capture may reveal a concrete choice that needs splitting.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
 Neither implementation nor the runtime experiment has started.
 
@@ -135,13 +135,12 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Initial persistence engine | Published minimal contract, one bundled implementation and service runtime dependency accepted. Recommend SQLite for the initial local stores; preserve a future Pool-owned representation. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
-and demonstrate those contracts; I4–I6 determine retained state and evidence. I7 finalizes their authoring syntax
+and demonstrate those contracts; I4 settles authority/persistence and I5–I6 finish custody/capture. I7 finalizes their authoring syntax
 after those conceptual rulings. Numbers for
 queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
@@ -212,7 +211,7 @@ machine-loss tolerance, production remote enrollment or credential placement. Co
 worker packaging and storage remain review work; no fixture or failure guarantee is demonstrated
 by documenting it. **I1's conceptual rulings and first-proof scope are complete.**
 
-Accepted I3 helper execution and pending I4 persistence follow these authority boundaries. Frontend
+Accepted I3 helper execution and I4 persistence follow these authority boundaries. Frontend
 detachment, explicit resume of stopped Agent work, current authority checks and no duplicate
 unknown work remain accepted. This review does not reopen those behaviors.
 
@@ -372,8 +371,8 @@ Typed plugin input/output schemas and Resource configuration contracts remain. T
 relationship requirements and composition; it cannot redefine target operation semantics or claim
 unsupported enforcement. MCP remains the public invocation base. The proposal does not select a
 universal endpoint API, Boolean expression language, constraint solver or OS sandbox. Detailed
-establishment/cleanup and I4–I7's persistence, credential, observation and syntax choices remain
-in the queue.
+establishment/cleanup remains implementation work; I5–I7's credential, observation and syntax
+choices remain in the queue. I4's persistence boundary and engine are settled.
 
 **Accepted — physical execution of authored code:** locally authored plugin code normally runs
 in supervised child/helper processes associated with the instance whose activity it serves.
@@ -418,7 +417,9 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: startup/recovery, minimal public persistence contract and service runtime dependency accepted; initial engine remains open.**
+**Status: conceptually settled.** Authority, startup/recovery, the minimal public persistence
+contract, service runtime dependency and initial SQLite engine are accepted. Exact schemas,
+implementation mechanisms and validation remain work to do.
 The runtime can start the root Interface from a locally available definition before registry
 services exist. Its declared graph establishes the system Pool, system management and dedicated
 access-management Resources, and their management connections. Runtime support supplies initial
@@ -455,10 +456,11 @@ service-owned state to support a [future Pool-owned representation](ARCHITECTURE
 Its self-starting access/lifecycle and deliberate migration need later design; these do not reopen
 the v0 choice or add another blocking review bundle.
 
-**Next discussion — initial engine:** recommend SQLite for the bundled implementation, with separate
-local stores for management and each executor in the first experiment. This fits the chosen local
-service dependency and preserves independent state ownership without a separate database server.
-The public contract remains engine-independent. This engine recommendation is not accepted yet.
+**Initial engine is accepted:** use SQLite for the bundled implementation, with separate local
+databases for management and each executor in the first experiment. Services communicate through
+their contracts; the public persistence contract remains engine-independent. This does not provide
+cross-service transactions, atomic external provider effects, replication or failover. Exact Rust
+bindings, tables and durability settings remain implementation/authoring work.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.
@@ -516,32 +518,29 @@ Strict complete-proposal operations may coexist. Retained restrictions belong to
 issuance-only checks do not become live issuer dependencies. Detailed schemas/type-specific checks
 are I7/conformance work.
 
-**Next conceptual choices, in order:**
-
-1. Select the bundled implementation's initial engine; SQLite is recommended for the local proof.
-2. Then move to I5 credential custody/enrollment and I6 capture defaults. Exact loader/record fields,
-   storage settings and recovery methods remain in I7 or implementation work; they need not become
-   individual conceptual rulings.
+**Next review:** I5 credential custody/enrollment, then I6 capture defaults and the I7 syntax pass.
+Exact loader/record fields, storage settings and recovery methods remain in I7 or implementation
+work; they need not become individual conceptual rulings.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,
-token format, public policy DSL or storage engine. Local root-definition loading and graph-directed
+token format or public policy DSL. Local root-definition loading and graph-directed
 establishment, owner-authorized initialization, explicit recovery route, minimal published
-persistence contract and service runtime dependency are accepted; the engine and detailed format
-remain open. The future Resource representation is deferred, with its migration path kept in view.
+persistence contract, service runtime dependency and SQLite engine are accepted; the detailed format
+remains open. The future Resource representation is deferred, with its migration path kept in view.
 
 The [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant
 failure cases; the [storage boundary](ARCHITECTURE.md#storage-boundary) separates
 contract, representation and engine. The minimal public contract and one bundled implementation are
-accepted, as is loading through a service runtime dependency; SQLite and detailed recovery algorithms
-are not. The accepted management/instance-state authority split is unchanged; storage supplies persistence without
+accepted, as are the service runtime dependency and SQLite engine. Detailed recovery algorithms
+remain implementation work. The accepted management/instance-state authority split is unchanged; storage supplies persistence without
 becoming a second owner of policy or instance transitions. A future Pool-owned Resource could expose
 the same capability with additional acyclic loading, self-administration and migration rules. That
 does not require another object family or moving Resource domain data into the authority store.
 Exact startup configuration and public schemas remain open.
 
-**Engine candidate:** SQLite behind each local authority is the recommended
-first implementation. In Experiment 002, management could retain templates/registration/policy,
+**Selected engine:** SQLite supplies local authority storage in the first bundled implementation.
+In Experiment 002, management retains templates/registration/policy,
 while the two executors each retain their assigned instances' definitions, confirmed revisions and
 operation progress/results. The Interface aggregates source-attributed views. A search Resource
 can still use Xerj, a database Resource PostgreSQL, and a directory Resource the filesystem.
@@ -554,8 +553,8 @@ an internal adapter still needs migrations and conformance tests. No cross-servi
 automatic failover or offline permission grant follows. Services exchange information through their
 contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-Finish I4 by selecting the initial engine. Detailed SQL,
-method names and helper organization need not become separate conceptual rulings.
+I4 is closed at the conceptual level. Detailed SQL, method names and helper organization need
+implementation and conformance evidence rather than additional conceptual rulings.
 
 ## I5 — Credential custody and account compatibility
 
@@ -563,6 +562,23 @@ method names and helper organization need not become separate conceptual rulings
 in-memory fake custody for tests. An unavailable/locked store reports a wait/error instead of
 falling back silently. Native Agent adapters keep authentication under their supported native
 runtime ownership and prove separate-account behavior. Pool service identity remains separate.
+
+Start the discussion with the storage default, using macOS Keychain for the first validated
+platform. Apple provides Keychain services for encrypted storage of small secrets, including keys
+and passwords; this is a candidate custody mechanism, not a Conduit permission system.
+[Apple Keychain services](https://developer.apple.com/documentation/security/keychain-services)
+
+| Credential | Proposed handling under this choice |
+| --- | --- |
+| A service token/refresh secret Conduit retains for a shared authentication Resource | Store through the selected OS-backed custody implementation; ordinary configuration, SQLite state and events carry a reference rather than the secret value. |
+| A native Agent's subscription sign-in/refresh state | Retain the accepted native-runtime ownership; this ruling does not move it into Conduit's custody or copy it among Agents. |
+| A secret already managed by an external credential service | Its declared Resource/integration contract retains that ownership; the local default does not require importing every external secret. |
+
+An ordinary Agent's grant to invoke shared Linear tools does not by itself grant permission to
+retrieve the upstream credential. Locked, denied or unavailable custody is reported for supported
+unlock/recovery; no silent plaintext fallback follows. Exact adapters, item/reference schemas and
+headless enrollment/recovery behavior remain for implementation or the next I5 discussion. This
+storage-default recommendation is not accepted yet.
 
 **Example:** one authentication Resource supplies appropriate service bindings to shared integrations.
 Agents receive permitted capability use, not a token copied into each private profile. Meanwhile,

@@ -7,7 +7,9 @@ layout, not files already created. [Architecture](ARCHITECTURE.md) defines respo
 I1 accepts separate management and execution services; crate boundaries must preserve that
 arrangement and the accepted shared-policy/instance-state authority split. The
 [research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
-concrete placement, persistence and failure guarantees remain under review; a single workspace
+concrete deployment and detailed failure mechanisms remain implementation work. I4 selects the
+minimal public persistence plugin contract, service runtime dependency and bundled SQLite engine
+with separate local management/executor databases in the first experiment. A single workspace
 and lockfile do not combine execution and management custody. V0 has no offline grants: retain
 supervision/results while holding new managed requests without verifiable permission; test this
 behavior rather than treating separate processes as proof of it. The first proof runs management

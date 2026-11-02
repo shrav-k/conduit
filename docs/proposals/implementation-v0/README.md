@@ -21,7 +21,8 @@ I3 accepts endpoint-selected/managed plugins and Conduit contracts composed from
 requirements, with a small base vocabulary and author extensions. Its conceptual review is complete,
 including graph-backed operations, requirement composition, supervised instance-associated helpers
 and bundled first-party plugins plus explicit local installation. Detailed mechanisms remain open;
-persistence, credentials and evidence precede the final contract/template syntax review. Existing
+I4's authority/startup/persistence choices are also settled, including the SQLite bundled engine.
+Credentials and evidence precede the final contract/template syntax review. Existing
 infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -52,8 +53,9 @@ grouping remains open. Existing MCP services retain supervision. Code-optional c
 shared adapters or graph composition without a worker per package.
 I4 accepts a minimal published persistence plugin contract with one bundled implementation.
 Services load it as a runtime dependency and retain state ownership; keep a future Pool-owned
-Resource representation viable through the same public contract. The engine remains open. Local
-transactional storage is a candidate, not a requirement that distributed state live in one file.
+Resource representation viable through the same public contract. SQLite is the initial bundled
+engine, with separate local management/executor databases in the first experiment. This does not
+require distributed state to live in one file or select replication/failover behavior.
 Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 
 Templates remain the complete authoring entry point: typed YAML, finite setup graphs, declared
@@ -71,7 +73,7 @@ extension contracts, algorithms, libraries and the minimal requirement catalog r
 | [AUTHORING](AUTHORING.md) | Concrete author journeys, the accepted lightweight support direction and illustrative APIs. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Processes, ownership, persistence, scheduling, access, recovery, observability and concrete execution paths. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, plugin/worker contracts, graph interpretation, controls and MCP mappings. |
-| [AUTHORIZATION](AUTHORIZATION.md) | Accepted Policy-as-requirements model, protected grant administration, decisions/enforcement, and remaining I4 binding, hosting and startup rulings. |
+| [AUTHORIZATION](AUTHORIZATION.md) | Accepted Policy-as-requirements model, protected grant administration, authority/startup boundaries and proposed detailed enforcement/schema contracts. |
 | [ORGANIZATION](ORGANIZATION.md) | Repository/crate boundaries, dependencies, implementation milestones, validation and maintenance. |
 | [REVIEW](REVIEW.md) | Seven grouped decisions with recommendations, alternatives and specific consequences. |
 
@@ -87,7 +89,7 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 - **Proposed** means an implementation choice recommended here, including crate names, storage
   layouts, wire profiles and numeric limits.
 - **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on; I1–I3 are conceptually settled, while I4–I7 retain the choices in REVIEW.
+  pending until ruled on; I1–I4 are conceptually settled, while I5–I7 retain the choices in REVIEW.
   Routine engineering choices can be adopted with the implementation
   and evidence, without asking a separate question for every field.
 - A new counterexample can revise this proposal. It cannot silently override the current design.

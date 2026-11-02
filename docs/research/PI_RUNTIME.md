@@ -11,6 +11,9 @@ Conduit** design. Pi's native Session terminology remains in source descriptions
 [DESIGN.md](../DESIGN.md); review outcomes and deferred work are in [REVIEW.md](../REVIEW.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
+Subsequent I4 review selected SQLite for the first bundled persistence plugin, loaded as a service
+runtime dependency behind a minimal public contract. Earlier storage candidates below remain
+research context; the current design and implementation review record the accepted boundary.
 
 The later [Pi re-review](PI_CONNECTORS.md) refreshes provider/authentication, context
 conversion, MCP version compatibility and Chord evidence for the current template/instance model.

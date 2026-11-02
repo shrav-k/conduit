@@ -246,8 +246,11 @@ raw authority-store writes to Agents or replace a Resource's domain-data capabil
 plugin as a service runtime dependency, with status and supported recovery visible through the
 Interface. Preserve the public semantics, implementation bindings and service-owned state so a future
 Pool-owned persistence Resource can expose the same capability. Its foundational access/lifecycle
-and deliberate migration need later design; that representation is not required in v0. The engine
-and exact schemas remain under review. One bundled implementation suffices for the first milestone.
+and deliberate migration need later design; that representation is not required in v0. The bundled
+implementation initially uses SQLite, with separate local databases for management and each executor
+in the first experiment. The public contract stays engine-independent. Exact schemas, Rust bindings
+and durability settings remain implementation/authoring work; no cross-service transaction,
+replication or atomic external provider effects are implied.
 
 A plugin publishes reusable contracts and explains how they are fulfilled. Its implementation
 binding can select authored code, an existing local/remote MCP service, a graph composing selected
@@ -373,7 +376,7 @@ replacing registered objects. Repair is a deliberately requested operation, not 
 confirmation on every launch. Repair is part of unrestricted Interface administration and uses the
 root's declared recovery operations when the normal management path is unavailable. Explicit resume
 checks retained progress and continues valid unfinished setup; uncertain effects require reconciliation.
-Exact recovery methods and persistence remain open. Differentiated recovery authority and Interface
+Exact recovery methods and persisted schemas remain implementation/authoring work. Differentiated recovery authority and Interface
 restrictions are deferred; this rule does not preserve ended flows or automatically restart Agent work.
 Later access after a management Conduit fully ends opens a new Conduit instance to
 the retained system objects. Transport recovery while logical participation remains intact

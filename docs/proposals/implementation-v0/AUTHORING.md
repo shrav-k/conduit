@@ -782,8 +782,9 @@ Requirement composition keeps individual enforcement, with optional known-confli
 checks. No general solver or merge algorithm is required from custom authors. Default graph recovery
 and declared fulfillment duties are also accepted. The combined proof of composed operations and
 requirements in the existing synthetic fixture is accepted; it does not select a permanent core
-catalog or authorize implementation start. I3's conceptual review is complete; persistence,
-credential custody and evidence capture are next. Detailed evaluation interfaces, custom recovery
+catalog or authorize implementation start. I3 and I4 are conceptually complete, including the
+minimal public persistence contract and bundled SQLite implementation loaded as a service runtime
+dependency. Credential custody and evidence capture are next. Detailed evaluation interfaces, custom recovery
 hooks and syntax remain open.
 
 The accepted execution default runs locally authored code in supervised helper processes

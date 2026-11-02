@@ -40,8 +40,10 @@ preserved; uncertain effects require reconciliation. V0 now includes a minimal p
 plugin contract with one bundled implementation. This proof will use that boundary for its retained
 management/executor state as a service runtime dependency, with Interface inspection/recovery.
 It does not require several engines or a separately registered storage Resource. Preserve the public
-contract for a future Pool-owned representation; that is not added experiment scope. Engine, exact
-methods and fixtures remain open.
+contract for a future Pool-owned representation; that is not added experiment scope. The bundled
+implementation uses SQLite, with separate local databases for management and each executor in this
+experiment. Exact methods, Rust bindings, durability settings and fixtures remain implementation/
+authoring work; no storage or recovery behavior has been validated yet.
 These are design rulings, not implemented fixture behavior or additional test scope.
 
 ## Question

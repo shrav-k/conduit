@@ -16,8 +16,8 @@ separate I4 question of whether the root Interface owns policy or administers in
 The user subsequently **accepted independent policy**, administered by authorized Interfaces with
 broad default root administration. Subsequent review adopted Policy as authoritative requirement
 application and a dedicated system-Pool access-management Resource. Authority persistence now has
-a minimal public plugin contract, loaded as a service runtime dependency in v0; the engine remains
-open. Future Pool-owned storage remains a direction, not an implemented lifecycle. These later
+a minimal public plugin contract, loaded as a service runtime dependency in v0, with SQLite selected
+for the bundled implementation. Future Pool-owned storage remains a direction, not an implemented lifecycle. These later
 rulings supersede the follow-up's open alternatives without changing its research evidence or I1's
 service/state authority boundary.
 
@@ -370,8 +370,8 @@ Follow-up researched 2026-11-01. The question is logical policy responsibility, 
 engine: can several Interfaces administer the same durable policy under their own authority,
 while the root has broad default administration? The subsequently accepted direction is **yes,
 with policy independent of any particular Interface**. The comparison below explains the research
-behind that ruling, rather than requiring Conduit to reproduce cloud IAM. Representation and
-initial persistence remain under review.
+behind that ruling, rather than requiring Conduit to reproduce cloud IAM. Subsequent I4 rulings
+settled representation and initial persistence as summarized above; exact authoring schemas remain open.
 
 ### Where cloud policy lives
 
@@ -468,17 +468,19 @@ Interfaces to administer it; give the owner-operated root broad default administ
 services retain their authoritative outcomes. The root does not need exclusive policy stewardship
 or a policy-succession operation merely because its own template changes. This replaces the earlier
 stewardship synthesis. It is compatible with the proposed active Interface direction role, whose
-startup/repair details remain open. How policy is represented and managed is the next discussion.
+startup/recovery contract was subsequently accepted. Policy is now authoritative requirement
+application managed through a dedicated system-Pool Resource; exact schemas remain for authoring review.
 
 Policy administration must distinguish authority to manage a grant from authority to use its
 target. Future limited administrators need a defined delegation boundary; simple record-update
 permission must not accidentally become unlimited delegation. Existing path/recipient restrictions
 continue to apply. Detailed multi-Interface permissions can stay deferred, as agreed for v0.
 
-After this ruling, I4 still needs initial Interface persistence and repair, authority-store
-representation/extension and engine selection. The cloud comparison does not decide SQLite versus
-another engine, a public storage plugin contract, credential custody, automatic failover or
-multi-machine support. For the eventual experiment, verify two administrative clients against the
+Subsequent review completed I4: locally loaded root-directed setup, explicit owner initialization/
+recovery, a minimal public persistence contract and a bundled SQLite implementation loaded as a
+service runtime dependency. The cloud comparison supplied evidence rather than choosing these
+arrangements itself. Credential custody remains I5; no automatic failover or multi-machine support
+has been established. For the eventual experiment, verify two administrative clients against the
 same policy, replacement without policy reset, checked concurrent edits and separate Interface
 versus policy-service failures. These are candidate additions, not newly accepted experiment scope
 or test results.

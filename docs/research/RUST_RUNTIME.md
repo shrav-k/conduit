@@ -9,6 +9,10 @@ validation. No runtime implementation or live provider tests were performed for 
 The subsequent [implementation proposal](../proposals/implementation-v0/README.md) specifies
 processes, storage, contracts, crate boundaries and milestones in detail, with a grouped pending
 review. It builds on this report without treating recommendations as accepted choices.
+Subsequent I4 review selected a minimal public persistence plugin contract, one bundled SQLite
+implementation and service-runtime loading with separate local management/executor databases for
+the first experiment. Earlier SQLite candidate language below records the research recommendation;
+exact Rust bindings, schemas and durability settings still require implementation evidence.
 
 **Deployment follow-up:** [DISTRIBUTED_RUNTIME](DISTRIBUTED_RUNTIME.md) revisits the process,
 authority and lifetime arrangement after the initial I1 proposal was kept open. A subsequent

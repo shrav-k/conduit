@@ -1,5 +1,9 @@
 # V0 reference implementation proposal
 
+This is the reference-implementation design, subordinate to the public contracts. Moving it out
+of the proposals directory does not approve candidate mechanisms or claim they are implemented.
+The [current review queue](../REVIEW.md) is the only active decision queue; the I1–I7 summary below is historical.
+
 Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
 provider experiment has run**. The [design](../protocol/README.md) supplies accepted semantics. The
 [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete; the
@@ -18,7 +22,7 @@ package example or database choice cannot silently define the public model.
 | [AUTHORIZATION](../proposals/authoring-syntax/AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
 | [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. |
 | [Deferred authoring](../proposals/authoring-syntax/README.md) | Contract, plugin/package and template examples for a later PR. |
-| [Collaborator comparison](../archive/collaborator-proposals/REVIEW.md) | PR #1/#2 assessed against the current branch, without adopting or merging them. |
+| [Collaborator comparison](../archive/collaborator-proposals/REVIEW.md) | Completed assessment of merged PR #1/#2, with adopted refinements and attributed dissent preserved. |
 
 ## Accepted implementation boundaries
 

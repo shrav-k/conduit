@@ -11,6 +11,6 @@ proposal prose, examples and dissenting recommendations were retained.
 | PR #2 | [Protocol path](PR-002-protocol.md) | Declared-capability conformance adopted; opaque setup/runtime semantics not adopted. Independent client/plugin conformance first; a second full runtime is deferred. Detailed wire syntax remains unadopted. |
 
 The [comparison](REVIEW.md) records current disposition. The
-[design](../../protocol/README.md) is authoritative; [review](../reviews/CONCEPTUAL.md) tracks pending rulings.
+[protocol reference](../../protocol/README.md) is authoritative; [current review](../../REVIEW.md) tracks outstanding work.
 Both source commits are preserved in the integration history, with their prose verified against the
 archive. This integrates the contributions without adopting either proposal wholesale.

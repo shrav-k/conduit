@@ -1,8 +1,11 @@
 # Proposed runtime architecture
 
+Current unresolved work is tracked in [REVIEW](../REVIEW.md). Detailed mechanisms below remain
+proposals unless explicitly accepted; the migration does not turn an architecture sketch into a public protocol rule.
+
 Status: implementation proposal, 2026-11-01. I1's management/execution separation and shared
 policy with instance-owned state are accepted; v0 has no offline grants. See [review](../archive/reviews/IMPLEMENTATION.md)
-for pending choices and [contracts](../proposals/authoring-syntax/CONTRACTS.md) for proposed representations. Accepted semantics remain in
+for accepted boundaries and [contracts](../proposals/authoring-syntax/CONTRACTS.md) for proposed representations. Accepted semantics remain in
 [DESIGN](../protocol/README.md).
 
 ## 1. System boundaries

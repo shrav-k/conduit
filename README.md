@@ -1,30 +1,29 @@
 # Conduit
 
 Conduit is an extensible protocol and configuration language for defining capabilities,
-establishing instances and connecting independent agents to shared resources and one another.
-Pools own Resources and shared service authentication; Conduits expose permitted access;
-Interfaces provide unified control and observability.
-Conduit templates compose reusable typed requirements, with a small base vocabulary and author
-extensions; endpoint-selected plugins provide compatible behavior and manage their local bindings.
+establishing instances and connecting independent Agents to shared Resources and one another.
+Pools own Resources and shared service authentication; Conduits express permitted relationships;
+Interfaces provide management and observability.
 
-The language and public contracts are the primary deliverable. A Rust reference implementation,
-replaceable frontends and a thin set of plugins/templates will demonstrate them. Richer integrations
-can be maintained as supported ancillary packages. The project is in protocol design;
-there is no runnable Conduit implementation yet.
-Plugins publish contracts backed by authored code, existing MCP services or both. Components
-can expose supported MCP capabilities independently, with an Interface providing the overall view.
+The language and public contracts are the primary product. Authors can define capabilities and
+requirements, implement operations with code or existing MCP services, compose graphs and publish
+repeatable templates. A Rust reference implementation, replaceable frontends and a thin set of
+plugins/templates will demonstrate those contracts. Richer integrations can live in ancillary packages.
 
-- [Documentation map](docs/README.md)
-- [Specification](docs/OVERVIEW.md) — the five-family model and core behavior
-- [Design contracts](docs/protocol/README.md) — detailed accepted rules
-- [Review](docs/archive/reviews/CONCEPTUAL.md) — completed conceptual review and deferred authoring work
-- [Repository review and transition plan](docs/archive/reviews/REPOSITORY-2026-11-02.md) — preserve the design while preparing protocol documentation, authoring and implementation
-- [Implementation proposal](docs/implementation/README.md) — architecture, contracts, organization and decisions for review
-- [Collaborator proposals](docs/archive/collaborator-proposals/REVIEW.md) — comparison with the current design
-- [Deferred authoring examples](docs/proposals/authoring-syntax/README.md) — future PR input
-- [Concrete YAML walkthrough](experiments/001-shared-access/README.md) — static, proposed syntax
-- [Research](docs/research/README.md) — evidence, alternatives and source limitations
+**Status: protocol design and review. There is no runnable Conduit implementation yet.**
+Accepted semantics are documented; exact schemas, package syntax and MCP profile mappings remain
+under review. Static examples are not evidence of runtime or provider compatibility.
 
-The conceptual review is complete. Repository, publication and documentation boundaries are now under
-review; concrete syntax and conformance fixtures return in a later PR.
-The earlier design baseline remains available in Git history at `c013f0a`.
+| Start here | Purpose |
+| --- | --- |
+| [Learn the protocol](docs/OVERVIEW.md) | Five families, extension concepts and one end-to-end journey. |
+| [Protocol reference](docs/protocol/README.md) | Accepted behavioral contracts and conformance boundaries. |
+| [Author with the protocol](docs/authoring/README.md) | Define an original extension and template; identify which representations are still proposals. |
+| [Reference implementation](docs/implementation/README.md) | Accepted implementation choices, candidate mechanisms and delivery evidence. |
+| [Current review](docs/REVIEW.md) | Remaining decisions and refinements, separated from later syntax and engineering work. |
+| [Documentation map](docs/README.md) | Research, experiments, archived reviews and attributed dissent. |
+
+The repository now separates the active reference from completed reviews without discarding their
+rationale. The [migration record](docs/archive/migrations/2026-11-protocol-framing.md) accounts for the
+previous files and preservation checks. [Contributing](CONTRIBUTING.md) explains how to keep accepted
+rules, proposals and evidence distinct and run the repository-local checks.

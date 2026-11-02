@@ -1,5 +1,10 @@
 # Conduit contracts
 
+Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
+their accepted status without becoming requirements for every capability implementation.
+See the [reference boundary](README.md#protocol-and-reference-implementation) and the
+[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+
 Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
@@ -89,7 +94,7 @@ Participant attachment state describes the individual relationship; Resource-own
 authentication and connection support can have a different authority and lifetime. Template reuse
 or joining alone does not merge private Agent context, credentials or access. Connection identity
 is separate from process, transport and backing-Resource identity. Further authoritative-state,
-recovery and composition details remain in [REVIEW.md](../archive/reviews/CONCEPTUAL.md).
+recovery and composition details remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples).
 
 ### Composable relationship requirements
 

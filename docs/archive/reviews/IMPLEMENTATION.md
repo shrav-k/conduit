@@ -1,5 +1,8 @@
 # Implementation review status
 
+Historical closure record. Accepted choices remain in [implementation boundaries](../../implementation/README.md).
+Use [current review](../../REVIEW.md) for outstanding work; the I1–I7 labels remain useful source references.
+
 Updated: 2026-11-02. I1–I6 and I7's contract-authority/composition rulings are accepted.
 The [conceptual closure review](CONCEPTUAL.md) is complete, including C1–C3. Specific
 syntax is parked for a later PR; implementation has not started. This summary preserves the

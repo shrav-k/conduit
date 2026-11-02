@@ -2,13 +2,14 @@
 
 Status: implementation proposal, 2026-11-01. Directory/crate names below describe the intended
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
-[review](../archive/reviews/IMPLEMENTATION.md) identifies choices requiring a ruling before they become commitments.
+[closed review](../archive/reviews/IMPLEMENTATION.md) records accepted implementation boundaries.
+The [current review](../REVIEW.md) distinguishes remaining decisions from deferred engineering choices.
 
 The newer [repository/distribution review](../archive/reviews/REPOSITORY-2026-11-02.md) accepts one main repository under a
 Conduit organization, with independently consumable public protocol/conformance, runtime and extension
 surfaces. Publication details remain under review. Use this document's crate/dependency/milestone
-details as earlier candidates; neither directory layout is adopted. Consolidate them after that review
-rather than implementing both trees.
+details as earlier candidates. The documentation migration is complete; neither proposed code tree
+is adopted. Resolve source/package boundaries against the first authoring slice before scaffolding crates.
 
 I1 accepts separate management and execution services; crate boundaries must preserve that
 arrangement and the accepted shared-policy/instance-state authority split. The
@@ -31,10 +32,11 @@ A later authoring PR will review contracts, template/package examples, MCP/profi
 conformance fixtures together. Implementation milestones follow that approved boundary; a detailed
 crate plan is not authorization to start them now.
 
-The actual documentation layout is [SPEC](../OVERVIEW.md), [DESIGN and topic files](../protocol/README.md),
-one active [REVIEW](../archive/reviews/CONCEPTUAL.md), separate implementation/authoring proposals, and source evidence
-in research. Experiments remain outside docs with their own documentation. The proposed source-tree
-layout below is still a planning example, not a list of directories already created.
+The actual documentation layout is the [overview](../OVERVIEW.md), [protocol reference](../protocol/README.md),
+[authoring path](../authoring/README.md), one active [REVIEW](../REVIEW.md), reference implementation
+design, deferred syntax proposals and research. Experiments remain outside docs with their own
+documentation. The source-tree layout below is a historical planning example, not a list of directories
+already created or a requirement to create every proposed crate.
 
 ## 1. Repository layout
 
@@ -319,8 +321,8 @@ not need another product ruling. No mandatory ADR for every helper or field.
 
 Keep documentation responsibilities clear:
 
-- SPEC summarizes the accepted model; DESIGN owns detailed protocol behavior.
-- This proposal becomes implementation documentation when approved, with review outcomes folded in.
+- [Overview](../OVERVIEW.md) summarizes the model; [protocol topics](../protocol/README.md) own detailed accepted behavior.
+- Implementation documents identify accepted boundaries and proposed mechanisms separately; a file move does not approve a mechanism.
 - Experiment folders own runnable fixtures, test plans and dated actual results.
 - Research owns source evidence and alternatives, not a competing requirement set.
 - Package docs explain their contracts, capabilities, recovery and limitations using the common format.

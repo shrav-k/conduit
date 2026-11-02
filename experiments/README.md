@@ -1,8 +1,8 @@
 # Experiments
 
-Current sequence: the [conceptual review](../docs/archive/reviews/CONCEPTUAL.md) is complete;
-[repository/distribution review](../docs/archive/reviews/REPOSITORY-2026-11-02.md) precedes syntax and
-conformance cases in a later PR. Preserve these draft fixtures and their existing evidence;
+Current sequence: the [conceptual review](../docs/archive/reviews/CONCEPTUAL.md) is complete.
+The [current review](../docs/REVIEW.md) collects remaining decisions before the later syntax and
+conformance pass. Preserve these draft fixtures and their existing evidence;
 this documentation pass adds no runtime tests or new backend/deployment requirements.
 
 Experiments live outside `docs/`. Each directory keeps its documentation, configuration examples,

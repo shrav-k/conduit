@@ -1,5 +1,10 @@
 # Configuration and identity
 
+Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
+their accepted status without becoming requirements for every capability implementation.
+See the [reference boundary](README.md#protocol-and-reference-implementation) and the
+[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+
 Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
@@ -371,7 +376,7 @@ to accepted interpretation or instance-upgrade behavior returns for review.
 Keep the core small and extensible through typed contracts. Reusable objects are the first
 composition mechanism; additional template languages, expressions and patch systems need
 concrete use cases. The following sections retain the accepted domain behavior that the
-language must express. [REVIEW.md](../archive/reviews/CONCEPTUAL.md) separates conceptual closure from the later schema and acceptance walkthrough.
+language must express. [Current review](../REVIEW.md) separates remaining decisions from the later schema and acceptance walkthrough.
 
 
 ## Declared-capability conformance

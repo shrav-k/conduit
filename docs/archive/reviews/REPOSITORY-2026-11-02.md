@@ -1,5 +1,10 @@
 # Repository, documentation and distribution review
 
+Historical proposal preserved in full. The documentation migration described here has now been
+performed; see its [record](../migrations/2026-11-protocol-framing.md). Its earlier status statements
+and candidate trees describe the proposal at the time. Unresolved publication decisions were carried
+to [current review](../../REVIEW.md); archiving does not approve its remaining recommendations.
+
 Status: **repository boundary and common package envelope accepted; remaining proposals under review**, 2026-11-02.
 One main repository under a Conduit GitHub organization and a common package envelope are accepted. The organization name/transfer,
 directory layout, release scheme, license and package syntax remain unsettled. The completed

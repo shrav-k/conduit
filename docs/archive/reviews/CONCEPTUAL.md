@@ -1,5 +1,8 @@
 # Conceptual closure review
 
+Historical closure record. C1–C3 remain accepted in the [active protocol reference](../../protocol/README.md).
+Use [current review](../../REVIEW.md) for outstanding work; this is not an active ruling queue.
+
 Updated: 2026-11-02. **The current conceptual review is complete: C1–C3 are accepted.** Concrete package,
 plugin-reference, graph-binding and schema syntax is deferred to a future PR. The latest history
 package example is preserved as a proposal, not adopted syntax. No implementation has started.

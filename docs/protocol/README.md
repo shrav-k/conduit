@@ -1,7 +1,11 @@
 # Conduit design contracts
 
+The active protocol reference lives here. Begin with the [overview](../OVERVIEW.md), use the
+[authoring path](../authoring/README.md) to develop an extension, and consult the
+[current review queue](../REVIEW.md) before treating an unresolved detail as settled.
+
 Updated: 2026-11-02. Current working design; implementation
-has not started. [SPEC.md](../OVERVIEW.md) summarizes the model; [REVIEW.md](../archive/reviews/CONCEPTUAL.md) records the
+has not started. The [overview](../OVERVIEW.md) summarizes the model; the [closed review](../archive/reviews/CONCEPTUAL.md) records the
 conceptual closure review and deferred authoring boundary. The [YAML walkthrough](../../experiments/001-shared-access/README.md)
 proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
 
@@ -14,7 +18,8 @@ runtime, minimal authoring support and thin initial plugin/template set demonstr
 Supported ancillary packages can carry richer integrations and workflows. Documentation should teach
 original contract/plugin/template authoring and conformance before foregrounding a catalog of existing
 functionality. This preserves the five-family model and all accepted authority/lifecycle obligations;
-package relocation and exact repository layout remain organizational work.
+package relocation and release/distribution details remain organizational work. The documentation
+layout now follows these boundaries; it does not select a future code or package tree.
 
 **Implementation priority:** plugin and template authoring are central to the protocol and the
 first implementation's success. Evaluate runtime choices by whether an author can define a small
@@ -22,7 +27,7 @@ extension, compose it into templates, establish instances and inspect their beha
 modifying the core. Existing infrastructure can implement these boundaries; early efficiency is
 secondary to correct, enforced contracts and a usable authoring path. This direction does not
 approve particular SDKs, plugin packaging, deployment topology or schema spellings. Material changes
-remain collaborative in the conceptual review; concrete authoring and implementation choices return
+remain collaborative in the [current review](../REVIEW.md); concrete authoring and implementation choices return
 in later PRs.
 
 **Accepted authoring direction:** start with extremely lightweight Conduit support and author
@@ -48,10 +53,29 @@ then let authorized Agents use them through individually restricted Conduits. V0
 provide unrestricted local administration; differentiated Interface permissions are deferred.
 Sharing service access is the normal path, not an optional optimization of per-Agent logins.
 
+## Protocol and reference implementation
+
+These are accepted working semantics, not a released, machine-validated specification. Their
+representations and capability/version claims still need the authoring/conformance pass.
+A conforming implementation claims supported capabilities; it does not inherit every mechanism
+selected for the first reference runtime.
+
+| Boundary | Where to read it |
+| --- | --- |
+| Public behavior | The topic contracts below: identity, templates/instances, ownership, authority, graph/control/recovery semantics and declared capability behavior. |
+| Accepted first implementation | [Implementation boundaries](../implementation/README.md#accepted-implementation-boundaries): Rust direction, separate management/executors, bundled SQLite, macOS-first native adapters and the first process experiment. These remain accepted selections, not universal protocol dependencies. |
+| Proposed mechanisms | [Architecture](../implementation/ARCHITECTURE.md) and [organization](../implementation/ORGANIZATION.md): detailed storage, transport, crate and deployment candidates. |
+| Unsettled representation | [Authoring proposals](../proposals/authoring-syntax/README.md): illustrative schemas, package/export references and MCP mappings. |
+
+The detailed topics still retain the relevant initial-implementation qualifications beside their
+rationale. Their location does not promote Rust, SQLite, an OS adapter or a process arrangement to
+a mandatory protocol feature. Do not duplicate these rules into another editable specification;
+when schemas and conformance tests are approved, link each to its accepted behavioral contract.
+
 ## Contract map
 
 The accepted rules are organized by responsibility. The topic files are the detailed design;
-this index and SPEC summarize them. They are not competing specifications or a new decision ledger.
+this index and the overview summarize them. They are not competing specifications or a new decision ledger.
 The split preserves the existing rules and their heading anchors; Git retains the earlier layout.
 
 | Topic | Read it for |

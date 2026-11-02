@@ -1,5 +1,9 @@
 # Collaborator proposals against the current design
 
+Completed integration record. Both PRs were merged with source attribution preserved. The
+[archive index](README.md) records their sources; adopted rules live in the
+[active protocol reference](../../protocol/README.md), and remaining work in [current review](../../REVIEW.md).
+
 Reviewed: 2026-11-02. Two PRs from `allocmemory` propose related directions. This document
 compares their submitted text with the reviewed design. Declared-capability conformance and the
 initial evidence threshold are accepted; the remaining recommendations are distinguished below.

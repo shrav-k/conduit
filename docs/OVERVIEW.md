@@ -1,4 +1,4 @@
-# Conduit specification
+# Conduit protocol overview
 
 Conduit is an extensible protocol for connecting independent Agents to shared Resources and to one
 another. Its durable product is the contract: authors can publish small plugins, compose them into
@@ -7,7 +7,8 @@ A Rust reference implementation and replaceable frontends will demonstrate that 
 
 Status: conceptual design, 2026-11-02. No runnable implementation exists. The
 [design topics](protocol/README.md#contract-map) hold accepted detailed behavior. The
-[review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure; specific authoring syntax is deferred.
+[closed review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure.
+The [current review](REVIEW.md) collects remaining decisions and refinements; specific authoring syntax is deferred.
 
 ## Five families
 

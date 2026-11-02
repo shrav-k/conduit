@@ -1,5 +1,10 @@
 # Model and system responsibilities
 
+Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
+their accepted status without becoming requirements for every capability implementation.
+See the [reference boundary](README.md#protocol-and-reference-implementation) and the
+[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+
 Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
@@ -61,7 +66,8 @@ constraining its proposed effect. This avoids a separate grant-administration ru
 Other managed callers, including Resource-to-Resource access, retain their existing attribution
 obligations. The [authorization contracts](../proposals/authoring-syntax/AUTHORIZATION.md) illustrate
 the accepted model and proposed detailed representations. Startup and initial storage choices are settled;
-the dependent-call authority seam is tracked in [review](../archive/reviews/CONCEPTUAL.md#c2--whose-authority-governs-a-dependent-call).
+the dependent-call authority rule was settled in [C2](../archive/reviews/CONCEPTUAL.md#c2--whose-authority-governs-a-dependent-call)
+and is specified in [Conduits](CONDUITS.md#authority-across-dependent-calls).
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its

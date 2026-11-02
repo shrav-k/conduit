@@ -27,3 +27,7 @@ The repository now separates the active reference from completed reviews without
 rationale. The [migration record](docs/archive/migrations/2026-11-protocol-framing.md) accounts for the
 previous files and preservation checks. [Contributing](CONTRIBUTING.md) explains how to keep accepted
 rules, proposals and evidence distinct and run the repository-local checks.
+
+Original Conduit documentation, contracts and code are licensed under [Apache-2.0](LICENSE).
+Copyright 2026 Conduit contributors. Reproduced third-party material retains its own terms and
+attribution; see the [license scope](CONTRIBUTING.md#license-and-attribution).

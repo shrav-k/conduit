@@ -60,9 +60,24 @@ listed editorial changes. By default it checks the commit that introduced the mi
 future edits need not remain frozen. Full Git history containing those commits is needed. See the
 [migration record](docs/archive/migrations/2026-11-protocol-framing.md) for working-tree use and limits.
 
-## Publication remains a project decision
+## License and attribution
 
-One main repository and a common package envelope are accepted. License/contribution terms,
-organization identity, release authority and support commitments remain open in
-[review](docs/REVIEW.md#owner-decisions-before-public-distribution). This guide introduces no license,
-contributor agreement, review quorum or package-release promise.
+Original Conduit documentation, contracts and code use the [Apache License, Version 2.0](LICENSE).
+The repository includes the unmodified official license text. Preserve applicable copyright,
+license and attribution notices when adding or adapting material.
+
+This adoption does not relicense reproduced third-party material. In particular, the historical
+collaborator submissions in `docs/archive/collaborator-proposals/PR-001-roadmap.md` and
+`docs/archive/collaborator-proposals/PR-002-protocol.md` retain their authorship and source attribution;
+this change does not assert an additional license grant from their authors. Quoted source material
+in research likewise retains its applicable terms. The archive index records the original sources.
+
+No separate contributor agreement or DCO/sign-off requirement is introduced by this ruling.
+Any future contribution procedure remains an explicit project decision.
+
+## Remaining publication decisions
+
+One main repository, a common package envelope and Apache-2.0 are accepted. Organization identity,
+change/release authority and any additional contribution procedures remain in
+[review](docs/REVIEW.md#owner-decisions-before-public-distribution). This guide introduces no review
+quorum or package-release promise.

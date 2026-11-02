@@ -29,8 +29,10 @@ engineering pass remain separate. An open detail in an older report is not autom
 
 ## Owner decisions before public distribution
 
-- **License and contribution terms.** No repository license was available to carry forward. Select
-  these deliberately; the migration adds no license, CLA or DCO requirement.
+- **License — accepted:** Apache-2.0 for original Conduit documentation, contracts and reference
+  code. The official [LICENSE](../LICENSE) is included; reproduced third-party material retains its
+  own terms and attribution. No separate CLA or DCO requirement was selected. Any additional
+  contribution procedure remains open if needed; see [license scope](../CONTRIBUTING.md#license-and-attribution).
 - **Public identities.** Choose the GitHub organization/transfer, package naming authority and any
   domain before publishing permanent identifiers. Directory names do not decide protocol identities.
 - **Change and release authority.** Identify who approves protocol changes, maintains supported
@@ -39,18 +41,9 @@ engineering pass remain separate. An open detail in an older report is not autom
 These are project-owner decisions, not reasons to reopen the five families or invent another runtime
 authority model. The [repository proposal](archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
 
-### License discussion — not yet ruled
-
-The current recommendation is Apache-2.0 as the default for original Conduit documentation,
-contracts and reference code. It permits broad reuse and includes an explicit, scoped contributor
-patent grant, with license/attribution and change-notice obligations. MIT is a shorter permissive
-alternative, retaining copyright/license notices without Apache's express patent-grant terms.
-Sources: [Apache-2.0 text](https://www.apache.org/licenses/LICENSE-2.0.html),
-[MIT text](https://opensource.org/license/mit), checked 2026-11-02.
-
-This is a proposal, not a license grant or an instruction to relicense third-party material.
-Contribution procedures and any separately licensed material remain distinguishable. No LICENSE
-file has been added; the owner can select an option or defer publication licensing.
+Apache-2.0 was selected for permissive reuse with an explicit, scoped contributor patent grant.
+The [official license text](https://www.apache.org/licenses/LICENSE-2.0.html) was checked on
+2026-11-02. Licensing does not change the no-backward-compatibility rule or select a release process.
 
 ## Refinements to carry into concrete examples
 

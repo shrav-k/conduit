@@ -37,8 +37,10 @@ covering published declarations and any bundled code, including template-only pa
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.
 Managed execution of local packages uses retained immutable snapshots, while direct handler tests
 may use editable source. Explicit managed test/start workflows can capture a revision automatically;
-no manual archive assembly or public publication is required per edit. Included files and cleanup
-remain open, and existing instances do not adopt edited source automatically.
+no manual archive assembly or public publication is required per edit. Included files/directories
+are explicitly declared, with directory/pattern rules available; capture does not default to the
+whole working directory. Exact inclusion syntax, symlink behavior and cleanup remain open, and
+existing instances do not adopt edited source automatically.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

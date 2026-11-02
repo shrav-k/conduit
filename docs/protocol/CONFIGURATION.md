@@ -189,7 +189,13 @@ Direct handler tests may run from editable source. Managed integration tests use
 artifact and the ordinary instance contracts. This does not permit live replacement of an
 existing instance's fixed definitions. Snapshots cover package contents, not credentials,
 Resource data or the entire host environment; separately supplied runtimes/dependencies retain
-their declared boundaries. Included-file rules, storage layout and cleanup remain open.
+their declared boundaries. Storage layout and cleanup remain open.
+
+Packages explicitly declare which files and directories belong in their captured artifact.
+Directory and pattern rules can select groups of files without listing each one individually;
+capture does not include the entire working directory by default. Unselected working files
+are outside the package artifact and its content digest. Exact inclusion syntax, descriptor
+handling and symlink rules remain open.
 
 Contract identity/version defines promised configuration and behavior; implementation bindings
 identify the declarations, adapters and any authored code supplying it. Multiple implementations

@@ -130,11 +130,16 @@ manual archive assembly or public publication on every edit. Existing instances 
 selected contents, and new instances may explicitly select a revision. This does not freeze
 credentials, Resource data or the host environment; storage layout and cleanup remain open.
 
-The next ruling concerns snapshot contents: should a package explicitly declare included files
-and directories, potentially using patterns, rather than capture its entire working directory
-by default with ignore rules? The proposed explicit boundary makes package contents reviewable
-and prevents unrelated working files from changing artifact identity. Exact syntax, required
-descriptor handling and symlink behavior remain open.
+The [package-content rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
+explicitly declare included files/directories, with directory and pattern rules available.
+Do not capture the whole working directory by default. Unselected files do not contribute to
+the artifact or its digest. Exact syntax, descriptor handling and symlink semantics remain open.
+
+The next ruling concerns capture boundaries: should included paths and symlink targets remain
+within one explicit package source root? The proposal rejects escapes rather than silently
+including outside files; authors could stage shared files, choose a wider explicit root or bind
+a separate package dependency. The alternative supports explicitly declared additional source
+roots. This concerns package capture, not Resource paths or authorized runtime filesystem access.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

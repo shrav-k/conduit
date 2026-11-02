@@ -342,8 +342,11 @@ and bundle formats remain open; separately bound dependencies keep their own ide
 Managed execution of locally authored packages uses an immutable snapshot retained before
 execution. Direct handler tests can use editable source; an explicit managed test/start can
 capture selected contents automatically. Source edits leave existing instances' selected
-artifacts available. File inclusion, storage layout and cleanup remain open; this is not a
-snapshot of credentials, Resource data or the host environment.
+artifacts available. Packages explicitly select included files/directories, with directory and
+pattern rules available rather than default capture of the whole working directory. Unselected
+files are outside the artifact and its digest. Exact inclusion syntax, descriptor/symlink handling,
+storage layout and cleanup remain open; this is not a snapshot of credentials, Resource data or
+the host environment.
 Registering schemas is not permission to run the package. The proposed manifest/schema bundle
 below illustrates that boundary; detailed syntax and package layout remain I7 work.
 

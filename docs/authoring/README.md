@@ -75,8 +75,10 @@ start a managed instance from a captured package revision. Conduit retains an im
 before managed execution, so editing the working directory leaves existing instances' selected
 contents available. New instances can select the revision explicitly; capture does not require
 manual archive assembly or public publication for every edit. Package contents do not include
-credentials, Resource data or a frozen host environment. Snapshot contents and cleanup are still
-being specified; fixed instance-definition rules continue to apply.
+credentials, Resource data or a frozen host environment. Declare included files, directories or
+patterns explicitly; unrelated working files stay outside the captured artifact and its digest.
+Exact inclusion syntax, symlink handling and cleanup remain open. Fixed instance-definition
+rules continue to apply.
 
 ## Variants the language must support
 

@@ -54,6 +54,12 @@ digest covers the published contracts, schemas, templates and any bundled worker
 applies if the package has no executable. A package name and `0.1.0` alone do not supply exact
 content identity. The hashing/bundle format is still open. Installation does not run setup.
 
+The package explicitly declares included files/directories, with directory and pattern rules
+available. In this example, declarations, schemas, `templates/` and any bundled `bin/` contents
+could form the selected artifact; unrelated logs and scratch files remain outside it and its
+digest. This illustrates the accepted inclusion boundary, not final manifest syntax or a rule
+that every package uses these directory names. Descriptor and symlink handling remain open.
+
 ### Local development and captured artifacts
 
 The accepted development workflow distinguishes direct source tests from managed execution:
@@ -69,7 +75,7 @@ The accepted development workflow distinguishes direct source tests from managed
    the Resource's explicit attachment and lifecycle contract; replacement does not copy it implicitly.
 
 This does not require manual archive assembly or public publication for each local edit. Handler
-test commands, capture commands and exact file inclusion remain unselected. The snapshot contains
+test commands, capture commands and exact inclusion syntax remain unselected. The snapshot contains
 package contents, not credentials, Resource data or the entire host environment. Storage and
 cleanup rules remain open. The workflow is accepted design, not an implemented CLI demonstration.
 

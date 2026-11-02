@@ -1,14 +1,14 @@
 # Pi runtime, Durable and ecosystem research
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
 terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
 Source investigation: 2026-10-30. This report provides source evidence for the current **Interface, Agent, Resource, Pool and
-Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../SPEC.md) and
-[DESIGN.md](../DESIGN.md); review outcomes and deferred work are in [REVIEW.md](../REVIEW.md). The report's
+Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../OVERVIEW.md) and
+[DESIGN.md](../protocol/README.md); review outcomes and deferred work are in [REVIEW.md](../archive/reviews/CONCEPTUAL.md). The report's
 implementation proposals remain proposals. No Conduit implementation, account enrollment
 or live provider experiment was performed.
 Subsequent I4 review selected SQLite for the first bundled persistence plugin, loaded as a service
@@ -540,7 +540,7 @@ must be evaluated independently; a remote process protocol alone proves neither.
 ## Communication between Agents through Conduits
 
 Conduits support resource access and communication between Agents. The
-[review outcomes](../REVIEW.md#review-outcomes) define the first retained-history/attention contract
+[review outcomes](../archive/reviews/CONCEPTUAL.md#review-outcomes) define the first retained-history/attention contract
 and Interface-linked observability; concrete schema examples are next.
 Separate addressing, authorization, retained exchange, attention and execution when
 comparing candidate contracts; a source library's topology does not choose Conduit's.
@@ -573,7 +573,7 @@ merely because a reference offers one.
 ## Proposed experiment sequence
 
 The current [experiment order](PI_CONNECTORS.md#validation-performed-and-next-experiment)
-and [acceptance agenda](../REVIEW.md#initial-experiment)
+and [acceptance agenda](../archive/reviews/CONCEPTUAL.md#initial-experiment)
 are maintained together. The Durable-specific fault cases below supplement that plan;
 they do not define a second implementation sequence.
 

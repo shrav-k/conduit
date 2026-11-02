@@ -2,13 +2,13 @@
 > Source: [PR #2](https://github.com/shrav-k/conduit/pull/2),
 > [original file at `c480e96`](https://github.com/shrav-k/conduit/blob/c480e96b94db24e7080354161b948428478e14f8/docs/Proposal/PROTOCOL.md).
 > Archived 2026-11-02. Original proposal prose is preserved; only relative links were relocated.
-> This is not accepted design. See the [current comparison](../../proposals/COLLABORATOR_REVIEW.md)
+> This is not accepted design. See the [current comparison](REVIEW.md)
 > for adopted refinements, disagreement and unresolved decisions.
 
 # How Conduit can become a protocol
 
 **Status: proposal for discussion (2026-11-01).** Nothing here is accepted design.
-[SPEC](../../SPEC.md) and [DESIGN](../../DESIGN.md) still govern.
+[SPEC](../../OVERVIEW.md) and [DESIGN](../../protocol/README.md) still govern.
 
 A protocol is a spec, not a program and not a language. Conduit becomes one when someone can
 read the spec, write a client in any language, and work with any conforming implementation
@@ -51,7 +51,7 @@ These parts of today's design already read like protocol rules.
 | Plugin ABI, setup-graph step semantics, persistence, client pooling | Implementation detail; `setup` and `runtime` travel as opaque, implementation-defined fields |
 | Remote and multi-machine (Sealmesh, Tailscale) | v2 transport; v1 message semantics stay compatible |
 | Root agent, VM isolation tiers | Built on v1 later |
-| Multi-user authority, automatic wake, structured task handoff, in-place upgrades | Already deferred in [REVIEW](../../REVIEW.md#drafting-and-deferred-work) |
+| Multi-user authority, automatic wake, structured task handoff, in-place upgrades | Already deferred in [REVIEW](../reviews/CONCEPTUAL.md#drafting-and-deferred-work) |
 
 ## What v1 needs
 

@@ -2,13 +2,13 @@
 > Source: [PR #1](https://github.com/shrav-k/conduit/pull/1),
 > [original file at `2111b0d`](https://github.com/shrav-k/conduit/blob/2111b0d4ca60080eb8de36a1728c6e56ffc69c71/docs/Proposal/README.md).
 > Archived 2026-11-02. Original proposal prose is preserved; only relative links were relocated.
-> This is not accepted design. See the [current comparison](../../proposals/COLLABORATOR_REVIEW.md)
+> This is not accepted design. See the [current comparison](REVIEW.md)
 > for adopted refinements, disagreement and unresolved decisions.
 
 # Proposal: protocol, mesh and a local root agent
 
 **Status: proposal for discussion (2026-11-01).** Nothing here is accepted design.
-[SPEC](../../SPEC.md) and [DESIGN](../../DESIGN.md) still govern.
+[SPEC](../../OVERVIEW.md) and [DESIGN](../../protocol/README.md) still govern.
 
 Four ideas for where Conduit goes next, and how each lines up with the design on `main`.
 

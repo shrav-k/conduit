@@ -1,13 +1,13 @@
 # Establishment, ordering, outputs and recovery
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
 terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
 Research: 2026-10-31. **Source evidence and lifecycle examples; no live provider work.**
-Read [the current construction contract](../design/LIFECYCLE.md#establishment-contracts-and-instance-state),
+Read [the current construction contract](../protocol/LIFECYCLE.md#establishment-contracts-and-instance-state),
 then the cases below and the [filesystem comparison](#filesystem-plugins-and-template-examples).
 This report extends [configuration research](CONFIGURATION.md) and the
 [Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth).
@@ -584,7 +584,7 @@ Bound work through declared deadlines, retry/backoff limits and concurrency wher
 The exact policy fields are open; an interaction wait and an in-flight provider call may need
 different timeout behavior, and timing out either does not prove cancellation completed.
 
-The [review outcomes](../REVIEW.md#review-outcomes) define the accepted boundaries.
+The [review outcomes](../archive/reviews/CONCEPTUAL.md#review-outcomes) define the accepted boundaries.
 These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
 the accepted R6 configuration/export profile. Direct complete-instance creation, graph composition
 and the template/plugin/instance responsibility split are already accepted. The [schema packet](../../experiments/001-shared-access/README.md) should

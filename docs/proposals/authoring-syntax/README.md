@@ -1,19 +1,24 @@
 # Deferred authoring and syntax proposal
 
+Start at [Author with the protocol](../../authoring/README.md) for the accepted semantic path.
+Remaining review work is consolidated in [REVIEW](../../REVIEW.md); this packet preserves examples
+for later syntax discussion and adds no second active question queue.
+
 Status: **parked for a future PR**, 2026-11-02. The
-[conceptual closure review](../../REVIEW.md) is complete. The published-contract and no-primary-plugin
+[conceptual closure review](../../archive/reviews/CONCEPTUAL.md) is complete. The published-contract and no-primary-plugin
 rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
 | Document | Preserve it for |
 | --- | --- |
+| [AUTHORIZATION](AUTHORIZATION.md) | Accepted requirements/grants illustrated with unapproved representation and enforcement details, moved here from the runtime packet. |
 | [AUTHORING](AUTHORING.md) | Small-handler, managed-capability, code-optional MCP and composite-operation author journeys; illustrative APIs. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, graph/output bindings, operation context and managed MCP mappings. |
 | [PACKAGE_WALKTHROUGH](PACKAGE_WALKTHROUGH.md) | One history package from publication through setup/runtime/controls, including the unresolved package-local versus caller-alias scope. |
 
-These documents include useful conceptual examples, but the [design](../../DESIGN.md) is the source
+These documents include useful conceptual examples, but the [design](../../protocol/README.md) is the source
 of accepted semantics. Earlier question sequences remain in Git rather than another active queue.
-The [implementation proposal](../implementation-v0/README.md) preserves runtime options separately.
+The [implementation proposal](../../implementation/README.md) preserves runtime options separately.
 
 ## Later PR scope
 

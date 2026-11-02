@@ -1,135 +1,93 @@
-# Conceptual closure review
+# Current review
 
-Updated: 2026-11-02. **The current conceptual review is complete: C1–C3 are accepted.** Concrete package,
-plugin-reference, graph-binding and schema syntax is deferred to a future PR. The latest history
-package example is preserved as a proposal, not adopted syntax. No implementation has started.
+Updated: 2026-11-02, after the protocol-documentation migration. This is the only active review queue.
+The five-family model and completed conceptual/implementation rulings remain accepted in the
+[protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
-The five-family model and the earlier R1–R7 / I1–I6 rulings remain accepted. I7 also settled
-published contract authority and composition without a mandatory primary plugin. This audit
-separates remaining semantic seams from previously settled decisions, drafting work and future
-features. It does not guarantee that implementation will reveal no further counterexamples.
+There is no identified contradiction requiring us to reopen the overall model. Remaining work falls
+into three broader discussions, publication decisions owned by the project, and the later authoring/
+engineering pass. An open detail in an older report is not automatically another ruling.
 
-## Next discussion
+## Discuss before the syntax PR
 
-There are no outstanding rulings in this conceptual review. The next discussion belongs to a
-separate authoring/conformance PR: complete contract and template examples, schemas and wire/profile
-bindings, followed by implementation. Existing examples remain proposals until reviewed together.
-Concrete counterexamples can reopen a semantic issue; this is not a claim that every future extension
-or engineering detail is settled.
+| Topic | What is open | What is already fixed / useful next example |
+| --- | --- | --- |
+| **M1 — Release and compatibility boundary** | Should the first reference distribution be released as a coordinated tested set, while protocol contracts and extension artifacts retain independent identities? What compatibility/support claims accompany a release and its documentation? Delivery channels and version spelling can follow. | One main repository, independent consumption, common package envelope, exact implementation retention, local installation and macOS-first validation are accepted. Compare a runtime update, a separately released package and a remote MCP catalog change. [Existing proposal](archive/reviews/REPOSITORY-2026-11-02.md#5-release-and-delivery-proposal). |
+| **M2 — Thin public proof and supported package boundary** | Which minimal capability contracts and example contributions belong in the first public conformance kit/reference distribution, and which are optional ancillary packages? Define support without turning the candidate Resource catalog into a mandatory standard library. | Declared-capability conformance, independent client/plugin proof and Experiment 002's composition/recovery scope are accepted. Compare a tiny authored operation, a declaration-only MCP binding and a template-only package. Decide the promised surface; leave export names/manifests for syntax. [Conformance](protocol/CONFIGURATION.md#declared-capability-conformance), [planned proof](../experiments/002-runtime-plugins/README.md). |
+| **M3 — Memory content contexts within Pool-owned Resources** | The memory contract retains “task, Pool or personal collection” as examples of a record's owning context. Clarify how those contexts are represented inside a memory Resource and how sharing/derived-source checks refer to them. Is a context domain data managed by that capability, and which ownership/access boundaries must it expose? This is not yet a ruling. | A Resource has exactly one owning Pool; content ownership does not add another Resource owner or object family. Direct live read-only sharing, revision checks, whole-record delivery and source dependencies remain accepted. Walk through a personal note shared into project knowledge, then a derived summary. [Memory contract](protocol/RESOURCES.md). |
 
-### C1 — What does conformance promise?
+M1 and M2 complete the repository/publication framing; M3 is a semantic mapping left visible in the
+existing memory text. None blocks this documentation migration. Resolve them collaboratively before
+using their answers to select public schemas or build a package distribution.
 
-**Already settled:** contracts are language-neutral and authoritative; templates, finite graphs,
-operations, requirements and instance behavior have public semantics. MCP is the plugin invocation
-base, with a Conduit profile. Components can expose supported capabilities independently. A concrete
-frontend, Rust crate layout or storage engine does not define those public semantics.
+## Owner decisions before public distribution
 
-**Accepted:** conformance describes explicitly supported capabilities. Clients/plugins can support
-limited surfaces; a runtime claiming portable template execution must honor public graph, control,
-lifecycle and recovery semantics. Required executable behavior cannot silently become opaque.
-The [canonical contract](design/CONFIGURATION.md#declared-capability-conformance) records this ruling.
-Exact names and syntax remain deferred.
+- **License and contribution terms.** No repository license was available to carry forward. Select
+  these deliberately; the migration adds no license, CLA or DCO requirement.
+- **Public identities.** Choose the GitHub organization/transfer, package naming authority and any
+  domain before publishing permanent identifiers. Directory names do not decide protocol identities.
+- **Change and release authority.** Identify who approves protocol changes, maintains supported
+  packages and publishes releases. Define the initial support/security contact when distribution begins.
 
-**Accepted evidence threshold:** the first conformance milestone requires an independently authored
-client and plugin working with the reference runtime through published contracts and conformance
-tests. A second complete runtime is deferred. This tests the supported extension surfaces without
-claiming runtime-to-runtime portability. C1 is complete; exact profiles, syntax and fixtures remain
-for the future authoring PR.
+These are project-owner decisions, not reasons to reopen the five families or invent another runtime
+authority model. The [repository proposal](archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
 
-**Why now:** collaborator PR #2 makes this choice visible. Its opaque setup/runtime proposal would
-lose the portability we have prioritized. [Comparison and sources](proposals/COLLABORATOR_REVIEW.md).
+## Refinements to carry into concrete examples
 
-### C2 — Whose authority governs a dependent call?
+These seams need complete examples and conformance cases. Existing guarantees constrain the answer;
+return for a conceptual ruling only if an example exposes a real behavior choice.
 
-**Already settled:** every managed caller needs recorded participation authority; requirements
-narrow access; shared credentials are not caller grants. Resource-to-Resource calls use Conduits.
-Requirements have declared applicability and enforcement duties. Reads and delivery recheck current
-access, and derived knowledge retains declared source-access dependencies.
+| Seam | Preserve while refining | Source |
+| --- | --- | --- |
+| Controls spanning multiple settings/effects | Last confirmed configuration, explicit uncertainty, revision checks and target coordination. No implied atomicity/rollback; specify what each handler can confirm after partial external effects. | [Configuration updates](protocol/CONFIGURATION.md#configuration-updates), [controls](protocol/LIFECYCLE.md). |
+| Composite results, cancellation and recovery | Deliberate public outputs, retained effects/evidence, valid child progress, retirement duties and other participants. Custom recovery hooks/evidence formats remain unselected. | [Composition](protocol/MODEL.md#authoring-concepts-beneath-the-object-families), [retirement](protocol/LIFECYCLE.md#retirement-and-unregistration). |
+| Connection/composite readiness | Required preparation gates, independent later work, per-consumer participation and ready Pool Resources are distinct. Describe observable partial state without one universal lifecycle enum. | [Pools](protocol/POOLS.md), [Conduits](protocol/CONDUITS.md). |
+| Independent MCP access and client enrollment | Familiar provider tools plus current authority, caller identity and evidence. A directly accessible component still needs verifiable authority; no offline grants or bypass is implied. | [Independent components](protocol/MODEL.md#plugins-and-independently-accessible-mcp-components). |
+| Foundational repair and credential interaction | Locally verifiable owner recovery, retained identities/progress and adapter-guided enrollment. No automatic reset, secret logging or duplicate execution when state is unknown. | [Interface workflow](protocol/MODEL.md#interfaces-and-the-user-workflow), [authentication](protocol/POOLS.md#shared-access-and-authentication). |
 
-**Accepted:** a Resource serving an Agent uses its own authorized dependency connections while
-preserving the authenticated originating caller and enforcing applicable restrictions on requested
-effects and returned content. Autonomous work uses the Resource's own authority. Capability contracts
-define the enforcement; callers do not need direct grants to every internal backing service.
+## Later authoring and conformance pass
 
-For example, search may index Euphony and Demo under its own authority, while an Euphony-only Agent
-cannot retrieve Demo through a query. A shared service credential or dependency grant cannot widen
-that caller's permitted effects/results. This does not introduce issuer ancestry, token forwarding
-or a universal serialized identity chain. The [dependent-call contract](design/CONDUITS.md#authority-across-dependent-calls)
-records the boundary. C2 is complete; concrete propagation and checking mechanisms remain authoring work.
+The [authoring packet](proposals/authoring-syntax/README.md) is parked until the discussions above.
+Review four connected batches rather than restarting a long list of isolated questions:
 
-### C3 — What does retirement guarantee across connected objects?
+1. **Identity and publication:** API/type/capability/requirement versions, schema dialect, package identity,
+   typed contents/dependencies, artifact identity and export/reference scope. A mandatory primary plugin
+   is not part of the model; `spec.plugins` and `{plugin, name}` are still proposals.
+2. **Templates and composition:** contribution/default binding, setup/runtime/control declarations,
+   graph inputs/public results, requirement parameters, Pool-local dependencies and provision/use intent.
+3. **Managed invocation and observation:** MCP profile negotiation, operation correlation, authenticated
+   caller/participation, protected handles, grant/requirement evidence, control outcomes, lifecycle progress
+   and observation coverage. Preserve extensibility rather than force a closed enum.
+4. **Conformance and fixtures:** capability claims, independently consumable tests, rejection, partial
+   failure and uncertain-effect cases; revise Experiment 001 YAML and Experiment 002 fixtures explicitly.
 
-**Already settled:** setup completion, runtime readiness and operation outcomes differ. Retry reuses
-valid progress; uncertain effects are not blindly replayed. Agent deletion requires confirmed
-execution end. Pool deletion requires explicit Resource retirement. A Conduit ends after its last
-logical consumer/peer detaches; external effects may outlive that detach. Backing data is preserved
-unless explicitly cleaned up. Incoming references alone do not cause cascading deletion.
+## Implementation details, not new conceptual rulings
 
-**Accepted:** retirement stops new work, releases the instance's own activity/attachments, and permits
-unregistration only when its contract's required shutdown duties are confirmed. Missing confirmation
-leaves retirement incomplete. Preserve shared dependencies, other instance identities and operation
-evidence. Already-dispatched external effects may outlive local shutdown; no cancellation or rollback
-is inferred. Contracts define the duties without one universal lifecycle enum.
+Crate/module boundaries, helper grouping, the initial transport, SQLite tables/durability settings,
+retry budgets, parser/tool choices and website generator remain engineering proposals. Choose them
+against accepted contracts and evidence; elevate a choice when it changes a public guarantee, support
+promise or user-visible scope. No runtime implementation starts during this migration. The
+[implementation packet](implementation/README.md) preserves the candidates.
 
-For example, retiring Linear access preserves the Agents and shared authentication Resource, while
-an in-flight write keeps its recorded or uncertain outcome. Frontend detachment is distinct from
-Interface retirement. The [canonical lifecycle rule](design/LIFECYCLE.md#retirement-and-unregistration)
-applies alongside existing Agent/Pool checks and separate cleanup/purge contracts. C3 is complete.
+## Explicitly later scope
 
-## Review outcomes
+Do not convert these into blockers for the first slice: a second complete runtime; multi-machine
+support claims before validation; multi-user/differentiated Interface permissions; offline grants;
+graph loops/dynamic fan-out; in-place instance-definition upgrades; marketplace or automatic
+cross-language dependency resolution; automatic wake; structured asynchronous work jobs; advanced
+memory sharing/publication; general automatic catalog refresh; ownership transfer; or a Pool-owned
+authority store. Existing native/isolated execution choices and testing obligations remain accepted;
+stronger isolation claims require their own evidence.
 
-Accepted details now live in the [design topic files](DESIGN.md#contract-map). Review documents
-summarize decisions and link to their authority; they do not repeat a second specification.
+## Closed and preserved
 
-| Area | Settled direction |
-| --- | --- |
-| Object model | Interface, Agent, Resource, Pool and Conduit; reusable templates and concrete instances. |
-| Extensibility | Published contracts, code/MCP/graph-backed plugins, composable requirements, finite graphs; no mandatory primary plugin. |
-| Configuration | Strict typed YAML, stable IDs, explicit creation/updates, fixed instance definitions and exact implementations, named controls for supported changes. |
-| Relationships | Endpoint-managed implementations, explicit open/join, per-consumer participation, narrowing complete access paths, new identity after a flow ends. |
-| Access | Independent governing requirements, recorded participation grants, current checks, no offline grants or issuer-dependent cascades. |
-| Resources and Pools | One Pool owner per Resource; explicit available-template entries and provision/use-existing intent; shared service authentication. |
-| Authority and recovery | Shared registration/policy; one authority per instance; root Interface setup/repair; explicit resume and honest uncertain outcomes. |
-| Reference implementation | Separate management/executors, supervised instance-associated helpers, SQLite service dependencies, replaceable OS credential custody. |
-| First proof | One machine, management plus two executors; composition/requirements, controlled failures and Interface evidence; native macOS Agent adapters next. |
+- [Conceptual review](archive/reviews/CONCEPTUAL.md): C1 capability conformance, C2 Resource grants plus
+  caller restrictions and C3 retirement are complete.
+- [Implementation review](archive/reviews/IMPLEMENTATION.md): I1–I6 and I7's contract-authority/composition
+  boundaries are complete; I7's syntax was deliberately deferred.
+- [Collaborator comparison](archive/collaborator-proposals/REVIEW.md): both PRs merged; accepted refinements
+  are in the reference and original dissent remains attributed in the archive.
+- [Migration record](archive/migrations/2026-11-protocol-framing.md): source accounting and checks, not another decision ledger.
 
-I1–I7 remain summarized in the [implementation review](proposals/implementation-v0/REVIEW.md).
-The earlier history remains in Git; removing repeated ruling prose does not withdraw accepted rules.
-
-## Design-fit audit: code-optional plugins and independent MCP access
-
-A plugin may bind existing MCP services without new code; it cannot manufacture unsupported
-filtering, recovery or lifecycle guarantees. Independently exposed managed capabilities retain their
-current access checks, Pool ownership where applicable, fixed implementations and operation evidence.
-An ordinary MCP implementation used outside Conduit supplies only its own declared guarantees.
-No process per plugin, mandatory combined gateway or Interface-only invocation route is required.
-C1 settles declared-capability conformance and the independent-client/plugin proof; exact profile
-names and fixtures follow in the future authoring PR.
-
-## Initial experiment
-
-[001](../experiments/001-shared-access/README.md) is a static workflow packet;
-[002](../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
-Neither has executed runtime/provider tests. Keep their existing evidence and scope; translate the
-accepted C1–C3 clarifications into conformance cases in the later authoring PR before finalizing syntax. Do not add
-Sealmesh, VMs, a root model, remote deployment or a second full runtime to the experiment silently.
-Native two-Claude/two-Codex account validation remains a separate required goal.
-
-## Drafting and deferred work
-
-| Work | Treatment |
-| --- | --- |
-| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
-| Crate organization, worker grouping, queue sizes, retry bounds, storage settings and serialization | Engineering/conformance work within accepted contracts. Bring back only a concrete semantic conflict. |
-| Binding/default name scope, compatibility matching, output/result mapping and typed secret handles | Specify in the authoring pass; tests must preserve fixed bindings, current authority and declared recovery. Syntax cannot decide these accidentally. |
-| Full remote/multi-user support, automatic placement/failover, stronger sandbox drivers | Future extensions with separate deployment evidence. |
-| Root Agent, Sealmesh adoption and VM-per-Agent default | Collaborator proposals to evaluate; not prerequisites or accepted changes. |
-| Automatic wake, general authored loops, in-place definition upgrades, marketplace, advanced publication | Remain deferred. |
-
-## Closing this pass
-
-C1–C3 were resolved collaboratively and incorporated into their canonical design topics. The
-collaborator comparison identifies adopted refinements, adapted suggestions and preserved dissent;
-original contributions are archived with attribution. No conceptual ruling remains in this queue.
-The next PR can select syntax and build conformance fixtures from the contracts. Existing examples
-are inputs to that work, never a reason to declare whatever they happen to contain mandatory.
+After a ruling, update the active contract and examples together, then remove its pending status here.
+Preserve intentional reversals and rationale; file moves and code convenience cannot decide them.

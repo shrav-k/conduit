@@ -1,7 +1,10 @@
 # Implementation review status
 
+Historical closure record. Accepted choices remain in [implementation boundaries](../../implementation/README.md).
+Use [current review](../../REVIEW.md) for outstanding work; the I1–I7 labels remain useful source references.
+
 Updated: 2026-11-02. I1–I6 and I7's contract-authority/composition rulings are accepted.
-The [conceptual closure review](../../REVIEW.md) is complete, including C1–C3. Specific
+The [conceptual closure review](CONCEPTUAL.md) is complete, including C1–C3. Specific
 syntax is parked for a later PR; implementation has not started. This summary preserves the
 I1–I7 references without repeating a parallel detailed specification.
 
@@ -23,8 +26,8 @@ requests wait if current permission cannot be verified.
 
 The first proof uses management and two executor processes on one machine with controlled failures.
 Two-machine validation precedes remote-support claims. See the
-[authority contract](../../design/MODEL.md#shared-policy-and-instance-owned-state) and
-[outage contract](../../design/MODEL.md#v0-outage-admission).
+[authority contract](../../protocol/MODEL.md#shared-policy-and-instance-owned-state) and
+[outage contract](../../protocol/MODEL.md#v0-outage-admission).
 
 ## I2 — First real Agent path and supported platform
 
@@ -32,7 +35,7 @@ Two-machine validation precedes remote-support claims. See the
 model/tool loop. Native subscription-account validation is macOS-first, with a portable core and
 OS adapters. The two-Claude/two-Codex account goal remains; synthetic identities do not satisfy it.
 Pi is research/frontend inspiration, not the runtime dependency. See
-[Agent runtime](../../design/AGENT.md#runtime-and-presentation).
+[Agent runtime](../../protocol/AGENT.md#runtime-and-presentation).
 
 ## I3 — Plugin execution and distribution
 
@@ -50,9 +53,9 @@ Authored code normally uses supervised instance-associated helpers; trusted buil
 in-process. There is no process-per-plugin rule. Bundle first-party plugins and allow explicit local
 installation; defer marketplace and automatic cross-language dependency resolution. Experiment 002
 is scoped to prove executable and requirement composition together. See
-[extension model](../../design/MODEL.md#authoring-concepts-beneath-the-object-families),
-[plugin boundaries](../../design/MODEL.md#plugins-and-independently-accessible-mcp-components) and
-[requirements](../../design/CONDUITS.md#composable-relationship-requirements).
+[extension model](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families),
+[plugin boundaries](../../protocol/MODEL.md#plugins-and-independently-accessible-mcp-components) and
+[requirements](../../protocol/CONDUITS.md#composable-relationship-requirements).
 
 ## I4 — Local transactional authority
 
@@ -68,10 +71,10 @@ failed management does not reopen initialization or grant offline access.
 Publish a minimal persistence plugin contract, loaded as an authority-service runtime dependency
 in v0. Bundle SQLite with separate local service databases. A future Pool-owned store remains
 possible; there is no distributed transaction or atomicity with external effects. See
-[foundational system](../../design/MODEL.md#interfaces-and-the-user-workflow),
-[access](../../design/CONDUITS.md#authority-and-current-access), and
-[persistence](../../design/MODEL.md#plugins-and-independently-accessible-mcp-components).
-[AUTHORIZATION](AUTHORIZATION.md) retains detailed examples/proposed representations.
+[foundational system](../../protocol/MODEL.md#interfaces-and-the-user-workflow),
+[access](../../protocol/CONDUITS.md#authority-and-current-access), and
+[persistence](../../protocol/MODEL.md#plugins-and-independently-accessible-mcp-components).
+[AUTHORIZATION](../../proposals/authoring-syntax/AUTHORIZATION.md) retains detailed examples/proposed representations.
 
 ## I5 — Credential custody and account compatibility
 
@@ -79,7 +82,7 @@ possible; there is no distributed transaction or atomicity with external effects
 initially macOS Keychain. Config/evidence hold references, not secrets; no silent plaintext fallback.
 Interface-guided adapter enrollment/unlock reuses existing access and surfaces required human
 interaction. Native Agent login and external secret ownership remain distinct. See
-[shared authentication and custody](../../design/POOLS.md#shared-access-and-authentication).
+[shared authentication and custody](../../protocol/POOLS.md#shared-access-and-authentication).
 
 ## I6 — What observability captures by default
 
@@ -88,7 +91,7 @@ small health metrics and optional OpenTelemetry export through Interface inspect
 record all instrumented traces at source with bounded fixture capture and visible gaps. Real full
 content needs explicit recording policy; credentials stay out of ordinary logs. Authoritative
 operation/recovery evidence is unsampled and independent of optional exporters. See
-[observability](../../design/MODEL.md#interface-observability).
+[observability](../../protocol/MODEL.md#interface-observability).
 
 ## I7 — Authoring conventions and multi-plugin graphs
 
@@ -97,18 +100,18 @@ be handwritten or generated, then reviewed/versioned; implementations conform. C
 can bind compatible contributions from multiple plugins without a mandatory primary. Standard
 templates and declared defaults resolve to explicit retained bindings, without silently merging
 installed packages or falling back from an invalid explicit choice. See
-[composition](../../design/MODEL.md#authoring-concepts-beneath-the-object-families).
+[composition](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families).
 
 **Deferred:** concrete package, template and contract syntax. The named plugin map, uniform export
 references, package-local/default scope, schema dialect and API identifiers have not been ruled on.
-The [authoring packet](../authoring-syntax/README.md) preserves the examples for a later PR.
+The [authoring packet](../../proposals/authoring-syntax/README.md) preserves the examples for a later PR.
 
 ## After review
 
 C1 conformance, C2 dependent-call authority and C3 retirement are settled in
-[REVIEW](../../REVIEW.md). Concrete authoring syntax returns in a later PR.
+[REVIEW](CONCEPTUAL.md). Concrete authoring syntax returns in a later PR.
 Then derive conformance cases and review the authoring packet as one connected contract. Runtime
-mechanisms and milestones in [ORGANIZATION](ORGANIZATION.md) remain implementation proposals within
+mechanisms and milestones in [ORGANIZATION](../../implementation/ORGANIZATION.md) remain implementation proposals within
 accepted boundaries. Do not begin coding or silently reopen settled choices as part of documentation
 cleanup. A concrete counterexample may require a new ruling; routine field names/tuning do not each
 need their own conceptual review.

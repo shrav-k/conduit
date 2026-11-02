@@ -1,16 +1,18 @@
 # Research
 
-Current sequence: the [conceptual review](../REVIEW.md) is complete;
-[authoring syntax](../proposals/authoring-syntax/README.md) is parked for a later PR. The
-[collaborator comparison](../proposals/COLLABORATOR_REVIEW.md) reviews two submitted proposals
-without treating their platform claims as newly verified research or adopting their recommendations.
+Current sequence: the [documentation migration](../archive/migrations/2026-11-protocol-framing.md)
+preserves the completed conceptual review and supporting research. Remaining decisions are in the
+[current review queue](../REVIEW.md); [authoring syntax](../proposals/authoring-syntax/README.md)
+returns after that discussion. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
+records adopted refinements and unadopted arguments from the two merged PRs, without treating
+their external platform claims as newly verified research.
 
-Research supports the [specification](../SPEC.md) and [design contracts](../DESIGN.md).
+Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
 It is not an additional set of requirements. The current concrete configuration belongs in
 [experiments](../../experiments/README.md), where proposed syntax and validation evidence are
 kept together. Completed ruling queues and duplicate configuration walkthroughs have been removed.
 
-The [v0 implementation proposal](../proposals/implementation-v0/README.md) applies this evidence
+The [v0 implementation proposal](../implementation/README.md) applies this evidence
 to concrete runtime and repository boundaries. Its pending decisions are separate from research
 findings and from the accepted protocol.
 The current design accepts code-optional MCP-backed plugins and independently accessible
@@ -19,10 +21,11 @@ authored code, not a requirement for every contribution. I1 now accepts separate
 execution services, shared policy with instance-owned state and no offline grants in v0.
 The accepted first proof uses management and two executor processes on one machine, with
 controlled connection failures; two-machine validation precedes remote-support claims. Consult the
-[design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
+[design-fit audit](../archive/reviews/CONCEPTUAL.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access).
 
 | Report | Read it for |
 | --- | --- |
+| [ECOSYSTEM_ORGANIZATION](ECOSYSTEM_ORGANIZATION.md) | Source/release/website comparison across Pi, MCP, OpenTelemetry, Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime and uv; evidence behind the repository/documentation migration and still-open distribution proposals. |
 | [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and the lightweight debugging package and capture policy accepted in I6. Backend/library/wire recommendations remain proposals. |
 | [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; accepted shared policy/instance-owned state and independent policy. Later I4 rulings define access management and a public persistence plugin loaded as a service dependency, initially using SQLite. |
 | [AUTHORIZATION](AUTHORIZATION.md) | Cedar, Kubernetes RBAC, OPA, Zanzibar, Macaroons/Biscuit and MCP/OAuth: evidence for common Agent/Interface Policy and Grant contracts, delegation and enforcement. |
@@ -43,8 +46,8 @@ preserve that identity. RUST_RUNTIME records a separately pinned Pi follow-up an
 Reported offline tests are historical evidence, not new tests performed by later research or
 documentation cleanup. Source-system terminology remains where it describes the source.
 Conduit owns its runtime; investigating Pi does not commit to running its runtime.
-The distributed-runtime follow-up records newer source pins separately. It revises the
-single-host recommendation without treating the replacement proposal as an accepted decision.
+The distributed-runtime follow-up records newer source pins separately. Its historical recommendations are evidence; the accepted I1 process/authority choices are
+recorded in the active protocol and implementation boundaries, not inferred from this report.
 
 Protocol/source dates and primary links stay beside their claims. These reports were not all
 re-fetched during the documentation reorganization. A real implementation must verify current
@@ -55,4 +58,4 @@ PI_CONNECTORS.
 Examples and candidate types can be broader than the selected v0 slice. Use them as failure cases
 and extension possibilities, not another review agenda. General authored graph loops, structured
 work submission, remote communication and stronger security tiers remain deferred as specified
-in [REVIEW](../REVIEW.md#drafting-and-deferred-work).
+in [REVIEW](../archive/reviews/CONCEPTUAL.md#drafting-and-deferred-work).

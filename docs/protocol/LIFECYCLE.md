@@ -1,7 +1,12 @@
 # Construction, controls and lifecycle
 
-Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
+their accepted status without becoming requirements for every capability implementation.
+See the [reference boundary](README.md#protocol-and-reference-implementation) and the
+[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+
+Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Establishment contracts and instance state
@@ -92,7 +97,7 @@ remain authorized operations, not authority supplied by the preceding result.
 Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in
-[review](../REVIEW.md#next-discussion). Confirmed settings and outstanding requests remain separate
+[the authoring pass](../REVIEW.md#later-authoring-and-conformance-pass). Confirmed settings and outstanding requests remain separate
 under the accepted instance-state rule; accepting a request does not itself select a queue or
 automatic reconciliation policy.
 
@@ -199,7 +204,7 @@ successful partial attachments are retained for retry. After successful setup, c
 continue independent work when a dependency is unavailable. The selected MCP example uses bounded
 reconnect with a manual option; this is not a universal operation retry policy or permission to
 replay writes/start new model work. Exact graphs, waits, cancellation, retry bounds, live-change
-handlers and recovery compatibility remain in [REVIEW.md](../REVIEW.md).
+handlers and recovery compatibility remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples).
 
 
 ## Retirement and unregistration

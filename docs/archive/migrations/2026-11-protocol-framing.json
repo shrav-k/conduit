@@ -1,0 +1,470 @@
+{
+  "baseline": "8609a64e35ecdc66a3b8f1494cca84536650fa0f",
+  "moves": {
+    "docs/SPEC.md": "docs/OVERVIEW.md",
+    "docs/DESIGN.md": "docs/protocol/README.md",
+    "docs/REVIEW.md": "docs/archive/reviews/CONCEPTUAL.md",
+    "docs/proposals/COLLABORATOR_REVIEW.md": "docs/archive/collaborator-proposals/REVIEW.md",
+    "docs/proposals/REPOSITORY.md": "docs/archive/reviews/REPOSITORY-2026-11-02.md",
+    "docs/proposals/implementation-v0/REVIEW.md": "docs/archive/reviews/IMPLEMENTATION.md",
+    "docs/proposals/implementation-v0/AUTHORIZATION.md": "docs/proposals/authoring-syntax/AUTHORIZATION.md",
+    "docs/design/AGENT.md": "docs/protocol/AGENT.md",
+    "docs/design/LIFECYCLE.md": "docs/protocol/LIFECYCLE.md",
+    "docs/design/RESOURCES.md": "docs/protocol/RESOURCES.md",
+    "docs/design/CONDUITS.md": "docs/protocol/CONDUITS.md",
+    "docs/design/MODEL.md": "docs/protocol/MODEL.md",
+    "docs/design/POOLS.md": "docs/protocol/POOLS.md",
+    "docs/design/CONFIGURATION.md": "docs/protocol/CONFIGURATION.md",
+    "docs/proposals/implementation-v0/README.md": "docs/implementation/README.md",
+    "docs/proposals/implementation-v0/ARCHITECTURE.md": "docs/implementation/ARCHITECTURE.md",
+    "docs/proposals/implementation-v0/ORGANIZATION.md": "docs/implementation/ORGANIZATION.md"
+  },
+  "files": [
+    {
+      "source": "README.md",
+      "destination": "README.md",
+      "rebasedSha256": "f84039eee735cb65f748679af908e59191681a377a894a0f518d0d5ca5e2fea3"
+    },
+    {
+      "source": "docs/DESIGN.md",
+      "destination": "docs/protocol/README.md",
+      "rebasedSha256": "2fe5bc14146f02b730cc778f720e6e93964e9b2c2d9cd51beacaf1722a7a3169"
+    },
+    {
+      "source": "docs/README.md",
+      "destination": "docs/README.md",
+      "rebasedSha256": "3859d32bf256f69c140481aecc2ae4580f1e4ff4c7054bb8d682f6f611f7b0cf"
+    },
+    {
+      "source": "docs/REVIEW.md",
+      "destination": "docs/archive/reviews/CONCEPTUAL.md",
+      "rebasedSha256": "7ae59f227f33fa91bf03233939dcb07f31cca0c3983f06a3ba578b035d730773"
+    },
+    {
+      "source": "docs/SPEC.md",
+      "destination": "docs/OVERVIEW.md",
+      "rebasedSha256": "4ab50ca3d29dde680ca1f26771b7ea7744f56331f91fadb9d03e332a8502246d"
+    },
+    {
+      "source": "docs/archive/README.md",
+      "destination": "docs/archive/README.md",
+      "rebasedSha256": "cdc6beee8beca6cd231e22ee522639f49c05756f5c21caacf5d2c915441d93f7"
+    },
+    {
+      "source": "docs/archive/collaborator-proposals/PR-001-roadmap.md",
+      "destination": "docs/archive/collaborator-proposals/PR-001-roadmap.md",
+      "rebasedSha256": "951187a4a7bd2e6194fe160ffbfcd2d374eda496c99e43c456a19408d369e95f"
+    },
+    {
+      "source": "docs/archive/collaborator-proposals/PR-002-protocol.md",
+      "destination": "docs/archive/collaborator-proposals/PR-002-protocol.md",
+      "rebasedSha256": "d6f87e6e1b1bfe212b912b20223187748b4f9804cf39a30d561057d7e5388e4c"
+    },
+    {
+      "source": "docs/archive/collaborator-proposals/README.md",
+      "destination": "docs/archive/collaborator-proposals/README.md",
+      "rebasedSha256": "b8df10e4442b1f7a28ab21360ebb41fa6fd5419e8d2904440e178756f2464c3c"
+    },
+    {
+      "source": "docs/design/AGENT.md",
+      "destination": "docs/protocol/AGENT.md",
+      "rebasedSha256": "7b90cb0d073cf9177f237385a68cd981cebb104363040501d995aec0bbd45e90"
+    },
+    {
+      "source": "docs/design/CONDUITS.md",
+      "destination": "docs/protocol/CONDUITS.md",
+      "rebasedSha256": "ed225694e51141406bf052ba30b20fdb82abfa7fc3395051958acdc7a560231b"
+    },
+    {
+      "source": "docs/design/CONFIGURATION.md",
+      "destination": "docs/protocol/CONFIGURATION.md",
+      "rebasedSha256": "066f0081ce7981800d5077de87b2f00b7c7681ff7b57c4c8b3cfa3737284d34c"
+    },
+    {
+      "source": "docs/design/LIFECYCLE.md",
+      "destination": "docs/protocol/LIFECYCLE.md",
+      "rebasedSha256": "77323a1e4736667de436ad62aa3068d71f63e6b28a26b8abff5228e5525f8e67"
+    },
+    {
+      "source": "docs/design/MODEL.md",
+      "destination": "docs/protocol/MODEL.md",
+      "rebasedSha256": "230e52be7a90b924774c8e29fdbb78becdf829df28fa4655063c99821a0eeb0e"
+    },
+    {
+      "source": "docs/design/POOLS.md",
+      "destination": "docs/protocol/POOLS.md",
+      "rebasedSha256": "11e4230b80d2db691681d81ac92acbd58ab7947b727e05c153cfedefbc1b8cca"
+    },
+    {
+      "source": "docs/design/RESOURCES.md",
+      "destination": "docs/protocol/RESOURCES.md",
+      "rebasedSha256": "5ce69b865e620b809d6ef295202afb56b7fadb5603878fec14cb2b31db8b6e7a"
+    },
+    {
+      "source": "docs/proposals/COLLABORATOR_REVIEW.md",
+      "destination": "docs/archive/collaborator-proposals/REVIEW.md",
+      "rebasedSha256": "a0c6c2f36d626084df7e46d2ce6f764c909319eb3ac368854bad95af036ae0ab"
+    },
+    {
+      "source": "docs/proposals/REPOSITORY.md",
+      "destination": "docs/archive/reviews/REPOSITORY-2026-11-02.md",
+      "rebasedSha256": "a0ebbdd7907ddf9034d5793aa3c14504255ab85eb846bb7aef5c7be0a848b4f1"
+    },
+    {
+      "source": "docs/proposals/authoring-syntax/AUTHORING.md",
+      "destination": "docs/proposals/authoring-syntax/AUTHORING.md",
+      "rebasedSha256": "936c8a053abe97dd6fa3d3333d129faf5441ac9444cec02c932145f7457985d1"
+    },
+    {
+      "source": "docs/proposals/authoring-syntax/CONTRACTS.md",
+      "destination": "docs/proposals/authoring-syntax/CONTRACTS.md",
+      "rebasedSha256": "5a8fc9ddd77c0e3d0579534c6d95d7b41fa60021d7afb4606ac14fa218e18b82"
+    },
+    {
+      "source": "docs/proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md",
+      "destination": "docs/proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md",
+      "rebasedSha256": "dc226569d14c3596083b6820b6349300ace62b103b7c21d3b5e616cc413989e8"
+    },
+    {
+      "source": "docs/proposals/authoring-syntax/README.md",
+      "destination": "docs/proposals/authoring-syntax/README.md",
+      "rebasedSha256": "72d013bfb02269c024fb4897202d9c27ce8c82831aa81fef1313a9059007cd37"
+    },
+    {
+      "source": "docs/proposals/implementation-v0/ARCHITECTURE.md",
+      "destination": "docs/implementation/ARCHITECTURE.md",
+      "rebasedSha256": "6fe97ade90476c44065e9ee97683d75019a717e0413cb94c0551f43cab722362"
+    },
+    {
+      "source": "docs/proposals/implementation-v0/AUTHORIZATION.md",
+      "destination": "docs/proposals/authoring-syntax/AUTHORIZATION.md",
+      "rebasedSha256": "f73c7e3d929fd565af827490eef30f0270ebca38bf58d6376dfb3e458a7db59b"
+    },
+    {
+      "source": "docs/proposals/implementation-v0/ORGANIZATION.md",
+      "destination": "docs/implementation/ORGANIZATION.md",
+      "rebasedSha256": "5bf78f4770732616289375d93b67dd9126e53d12eb9751f8f99f08adb4978e0c"
+    },
+    {
+      "source": "docs/proposals/implementation-v0/README.md",
+      "destination": "docs/implementation/README.md",
+      "rebasedSha256": "93560739e8840a0bbe1ff566c3bace0df9a99324dfedb5e9fdb214adbabf8a70"
+    },
+    {
+      "source": "docs/proposals/implementation-v0/REVIEW.md",
+      "destination": "docs/archive/reviews/IMPLEMENTATION.md",
+      "rebasedSha256": "921f708a4f56b0d8e2b035c7cd06fea8d036de48aa7bb999236b1abb43b0a7d0"
+    },
+    {
+      "source": "docs/research/AUTHORIZATION.md",
+      "destination": "docs/research/AUTHORIZATION.md",
+      "rebasedSha256": "11691bed0de700cd9581278cf8c9ba6b3b9472f042f09d62fcd7b29b40d6ce4f"
+    },
+    {
+      "source": "docs/research/CLOUD_AUTHORITY.md",
+      "destination": "docs/research/CLOUD_AUTHORITY.md",
+      "rebasedSha256": "4ff150e5a5a0d79c0fd25680a082efe712b8255e4edb43d611c01b13aefb7281"
+    },
+    {
+      "source": "docs/research/CONDUITS.md",
+      "destination": "docs/research/CONDUITS.md",
+      "rebasedSha256": "c69b75360e2b22e8ca34fd78f9536f885d5b90304c9818611dba1606dff589c5"
+    },
+    {
+      "source": "docs/research/CONFIGURATION.md",
+      "destination": "docs/research/CONFIGURATION.md",
+      "rebasedSha256": "85f5afa8e0c7a3bd222dc1b9beaf2759bbcd839420b572a1f615078f2b1ddfa1"
+    },
+    {
+      "source": "docs/research/CONSTRUCTION.md",
+      "destination": "docs/research/CONSTRUCTION.md",
+      "rebasedSha256": "8b58df80e26c07403a2949974790b8aec79e91984789c129ebb0d3097da36ed2"
+    },
+    {
+      "source": "docs/research/DISTRIBUTED_RUNTIME.md",
+      "destination": "docs/research/DISTRIBUTED_RUNTIME.md",
+      "rebasedSha256": "30fe9ad866ef03a07ea34ee52fb2203b89d8a985b6007bf9eb8edf0e52749992"
+    },
+    {
+      "source": "docs/research/ECOSYSTEM_ORGANIZATION.md",
+      "destination": "docs/research/ECOSYSTEM_ORGANIZATION.md",
+      "rebasedSha256": "59fee3f581aef1e7e7d03db75ccc531e555308afbe2d53b85fd374f86d27f7d0"
+    },
+    {
+      "source": "docs/research/ESTABLISHMENT.md",
+      "destination": "docs/research/ESTABLISHMENT.md",
+      "rebasedSha256": "a398d635ce28fd5953226dabfa84b08ec1b1f4ad789d2a0ba7c5f961bec6d47b"
+    },
+    {
+      "source": "docs/research/OBSERVABILITY.md",
+      "destination": "docs/research/OBSERVABILITY.md",
+      "rebasedSha256": "470af1cd6603d542a0dc7b0244b5c6c5cf45ff3810e717b013922b964543961b"
+    },
+    {
+      "source": "docs/research/PI_CONNECTORS.md",
+      "destination": "docs/research/PI_CONNECTORS.md",
+      "rebasedSha256": "0c93a5a9867af41a5eec05fba587157e39390ef6ca8343c80d5c0b3bfdaa4ab2"
+    },
+    {
+      "source": "docs/research/PI_RUNTIME.md",
+      "destination": "docs/research/PI_RUNTIME.md",
+      "rebasedSha256": "9a55a10378600bf1e53c6f62b835e370e23fa3edbca1960685c81b6db8b1c08d"
+    },
+    {
+      "source": "docs/research/README.md",
+      "destination": "docs/research/README.md",
+      "rebasedSha256": "4a5be858e17d21b149ef840d9551aeffed2c2e3bb0eddf35f212baacbde8c3c5"
+    },
+    {
+      "source": "docs/research/RESOURCES.md",
+      "destination": "docs/research/RESOURCES.md",
+      "rebasedSha256": "2d5df57992d64a0649cff4605f1406abfc91151cfafe1ccc171768bacd76580e"
+    },
+    {
+      "source": "docs/research/RUST_RUNTIME.md",
+      "destination": "docs/research/RUST_RUNTIME.md",
+      "rebasedSha256": "a654fd4dac3cd6f529169f7cafebdb77ccbcac5bbd734a0ba87d2511f42f26f2"
+    },
+    {
+      "source": "experiments/001-shared-access/CONTRACTS.md",
+      "destination": "experiments/001-shared-access/CONTRACTS.md",
+      "rebasedSha256": "e9f360f2c58262679e3640cc6e090684257cd3be5d8955730ac9dc486ab8bcad"
+    },
+    {
+      "source": "experiments/001-shared-access/README.md",
+      "destination": "experiments/001-shared-access/README.md",
+      "rebasedSha256": "97c9929445cf00e4efb1147c97be29ed0c8fadbec1506631d380cc57ee4aac37"
+    },
+    {
+      "source": "experiments/002-runtime-plugins/README.md",
+      "destination": "experiments/002-runtime-plugins/README.md",
+      "rebasedSha256": "04c5a98d179083a7373ca122f24302d63aaebd3f5155e158c15be9e7c4a45df3"
+    },
+    {
+      "source": "experiments/README.md",
+      "destination": "experiments/README.md",
+      "rebasedSha256": "74b9e526b716ffa4564621757e59860ef304cf1f5382b68a9df5f336236e0c07"
+    }
+  ],
+  "mechanicalCommit": "23dbccba788c93425ab28bb72a911b499c3800bb",
+  "editorialReplacements": {
+    "docs/protocol/MODEL.md": [
+      {
+        "before": "# Model and system responsibilities\n",
+        "after": "# Model and system responsibilities\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      },
+      {
+        "before": "the dependent-call authority seam is tracked in [review](../archive/reviews/CONCEPTUAL.md#c2--whose-authority-governs-a-dependent-call).",
+        "after": "the dependent-call authority rule was settled in [C2](../archive/reviews/CONCEPTUAL.md#c2--whose-authority-governs-a-dependent-call)\nand is specified in [Conduits](CONDUITS.md#authority-across-dependent-calls)."
+      }
+    ],
+    "docs/protocol/LIFECYCLE.md": [
+      {
+        "before": "# Construction, controls and lifecycle\n",
+        "after": "# Construction, controls and lifecycle\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      },
+      {
+        "before": "[review](../archive/reviews/CONCEPTUAL.md#next-discussion). Confirmed settings and outstanding requests remain separate",
+        "after": "[the authoring pass](../REVIEW.md#later-authoring-and-conformance-pass). Confirmed settings and outstanding requests remain separate"
+      },
+      {
+        "before": "handlers and recovery compatibility remain in [REVIEW.md](../archive/reviews/CONCEPTUAL.md).",
+        "after": "handlers and recovery compatibility remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples)."
+      }
+    ],
+    "docs/protocol/CONFIGURATION.md": [
+      {
+        "before": "# Configuration and identity\n",
+        "after": "# Configuration and identity\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      },
+      {
+        "before": "language must express. [REVIEW.md](../archive/reviews/CONCEPTUAL.md) separates conceptual closure from the later schema and acceptance walkthrough.",
+        "after": "language must express. [Current review](../REVIEW.md) separates remaining decisions from the later schema and acceptance walkthrough."
+      }
+    ],
+    "docs/protocol/AGENT.md": [
+      {
+        "before": "# Agent contracts\n",
+        "after": "# Agent contracts\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      }
+    ],
+    "docs/protocol/RESOURCES.md": [
+      {
+        "before": "# Resource contracts\n",
+        "after": "# Resource contracts\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      }
+    ],
+    "docs/protocol/POOLS.md": [
+      {
+        "before": "# Pool contracts\n",
+        "after": "# Pool contracts\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      }
+    ],
+    "docs/protocol/CONDUITS.md": [
+      {
+        "before": "# Conduit contracts\n",
+        "after": "# Conduit contracts\n\nScope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain\ntheir accepted status without becoming requirements for every capability implementation.\nSee the [reference boundary](README.md#protocol-and-reference-implementation) and the\n[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.\n"
+      },
+      {
+        "before": "recovery and composition details remain in [REVIEW.md](../archive/reviews/CONCEPTUAL.md).",
+        "after": "recovery and composition details remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples)."
+      }
+    ],
+    "docs/protocol/README.md": [
+      {
+        "before": "this index and SPEC summarize them.",
+        "after": "this index and the overview summarize them."
+      },
+      {
+        "before": "package relocation and exact repository layout remain organizational work.",
+        "after": "package relocation and release/distribution details remain organizational work. The documentation\nlayout now follows these boundaries; it does not select a future code or package tree."
+      },
+      {
+        "before": "# Conduit design contracts\n",
+        "after": "# Conduit design contracts\n\nThe active protocol reference lives here. Begin with the [overview](../OVERVIEW.md), use the\n[authoring path](../authoring/README.md) to develop an extension, and consult the\n[current review queue](../REVIEW.md) before treating an unresolved detail as settled.\n"
+      },
+      {
+        "before": "## Contract map",
+        "after": "## Protocol and reference implementation\n\nThese are accepted working semantics, not a released, machine-validated specification. Their\nrepresentations and capability/version claims still need the authoring/conformance pass.\nA conforming implementation claims supported capabilities; it does not inherit every mechanism\nselected for the first reference runtime.\n\n| Boundary | Where to read it |\n| --- | --- |\n| Public behavior | The topic contracts below: identity, templates/instances, ownership, authority, graph/control/recovery semantics and declared capability behavior. |\n| Accepted first implementation | [Implementation boundaries](../implementation/README.md#accepted-implementation-boundaries): Rust direction, separate management/executors, bundled SQLite, macOS-first native adapters and the first process experiment. These remain accepted selections, not universal protocol dependencies. |\n| Proposed mechanisms | [Architecture](../implementation/ARCHITECTURE.md) and [organization](../implementation/ORGANIZATION.md): detailed storage, transport, crate and deployment candidates. |\n| Unsettled representation | [Authoring proposals](../proposals/authoring-syntax/README.md): illustrative schemas, package/export references and MCP mappings. |\n\nThe detailed topics still retain the relevant initial-implementation qualifications beside their\nrationale. Their location does not promote Rust, SQLite, an OS adapter or a process arrangement to\na mandatory protocol feature. Do not duplicate these rules into another editable specification;\nwhen schemas and conformance tests are approved, link each to its accepted behavioral contract.\n\n## Contract map"
+      },
+      {
+        "before": "has not started. [SPEC.md](../OVERVIEW.md) summarizes the model; [REVIEW.md](../archive/reviews/CONCEPTUAL.md) records the",
+        "after": "has not started. The [overview](../OVERVIEW.md) summarizes the model; the [closed review](../archive/reviews/CONCEPTUAL.md) records the"
+      },
+      {
+        "before": "remain collaborative in the conceptual review; concrete authoring and implementation choices return",
+        "after": "remain collaborative in the [current review](../REVIEW.md); concrete authoring and implementation choices return"
+      }
+    ],
+    "docs/OVERVIEW.md": [
+      {
+        "before": "# Conduit specification",
+        "after": "# Conduit protocol overview"
+      },
+      {
+        "before": "[review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure; specific authoring syntax is deferred.",
+        "after": "[closed review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure.\nThe [current review](REVIEW.md) collects remaining decisions and refinements; specific authoring syntax is deferred."
+      }
+    ],
+    "docs/implementation/README.md": [
+      {
+        "before": "| [Collaborator comparison](../archive/collaborator-proposals/REVIEW.md) | PR #1/#2 assessed against the current branch, without adopting or merging them. |",
+        "after": "| [Collaborator comparison](../archive/collaborator-proposals/REVIEW.md) | Completed assessment of merged PR #1/#2, with adopted refinements and attributed dissent preserved. |"
+      },
+      {
+        "before": "# V0 reference implementation proposal\n",
+        "after": "# V0 reference implementation proposal\n\nThis is the reference-implementation design, subordinate to the public contracts. Moving it out\nof the proposals directory does not approve candidate mechanisms or claim they are implemented.\nThe [current review queue](../REVIEW.md) is the only active decision queue; the I1\u2013I7 summary below is historical.\n"
+      }
+    ],
+    "docs/implementation/ARCHITECTURE.md": [
+      {
+        "before": "for pending choices and [contracts]",
+        "after": "for accepted boundaries and [contracts]"
+      },
+      {
+        "before": "# Proposed runtime architecture\n",
+        "after": "# Proposed runtime architecture\n\nCurrent unresolved work is tracked in [REVIEW](../REVIEW.md). Detailed mechanisms below remain\nproposals unless explicitly accepted; the migration does not turn an architecture sketch into a public protocol rule.\n"
+      }
+    ],
+    "docs/implementation/ORGANIZATION.md": [
+      {
+        "before": "[review](../archive/reviews/IMPLEMENTATION.md) identifies choices requiring a ruling before they become commitments.",
+        "after": "[closed review](../archive/reviews/IMPLEMENTATION.md) records accepted implementation boundaries.\nThe [current review](../REVIEW.md) distinguishes remaining decisions from deferred engineering choices."
+      },
+      {
+        "before": "details as earlier candidates; neither directory layout is adopted. Consolidate them after that review\nrather than implementing both trees.",
+        "after": "details as earlier candidates. The documentation migration is complete; neither proposed code tree\nis adopted. Resolve source/package boundaries against the first authoring slice before scaffolding crates."
+      },
+      {
+        "before": "The actual documentation layout is [SPEC](../OVERVIEW.md), [DESIGN and topic files](../protocol/README.md),\none active [REVIEW](../archive/reviews/CONCEPTUAL.md), separate implementation/authoring proposals, and source evidence\nin research. Experiments remain outside docs with their own documentation. The proposed source-tree\nlayout below is still a planning example, not a list of directories already created.",
+        "after": "The actual documentation layout is the [overview](../OVERVIEW.md), [protocol reference](../protocol/README.md),\n[authoring path](../authoring/README.md), one active [REVIEW](../REVIEW.md), reference implementation\ndesign, deferred syntax proposals and research. Experiments remain outside docs with their own\ndocumentation. The source-tree layout below is a historical planning example, not a list of directories\nalready created or a requirement to create every proposed crate."
+      },
+      {
+        "before": "- SPEC summarizes the accepted model; DESIGN owns detailed protocol behavior.",
+        "after": "- [Overview](../OVERVIEW.md) summarizes the model; [protocol topics](../protocol/README.md) own detailed accepted behavior."
+      },
+      {
+        "before": "- This proposal becomes implementation documentation when approved, with review outcomes folded in.",
+        "after": "- Implementation documents identify accepted boundaries and proposed mechanisms separately; a file move does not approve a mechanism."
+      }
+    ],
+    "docs/proposals/authoring-syntax/README.md": [
+      {
+        "before": "| [AUTHORING](AUTHORING.md)",
+        "after": "| [AUTHORIZATION](AUTHORIZATION.md) | Accepted requirements/grants illustrated with unapproved representation and enforcement details, moved here from the runtime packet. |\n| [AUTHORING](AUTHORING.md)"
+      },
+      {
+        "before": "# Deferred authoring and syntax proposal\n",
+        "after": "# Deferred authoring and syntax proposal\n\nStart at [Author with the protocol](../../authoring/README.md) for the accepted semantic path.\nRemaining review work is consolidated in [REVIEW](../../REVIEW.md); this packet preserves examples\nfor later syntax discussion and adds no second active question queue.\n"
+      }
+    ],
+    "docs/research/README.md": [
+      {
+        "before": "Current sequence: the [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete;\n[repository/distribution structure](../archive/reviews/REPOSITORY-2026-11-02.md) is the current discussion;\n[authoring syntax](../proposals/authoring-syntax/README.md) is parked for a later PR. The\n[collaborator comparison](../archive/collaborator-proposals/REVIEW.md) reviews two submitted proposals\nwithout treating their platform claims as newly verified research or adopting their recommendations.",
+        "after": "Current sequence: the [documentation migration](../archive/migrations/2026-11-protocol-framing.md)\npreserves the completed conceptual review and supporting research. Remaining decisions are in the\n[current review queue](../REVIEW.md); [authoring syntax](../proposals/authoring-syntax/README.md)\nreturns after that discussion. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)\nrecords adopted refinements and unadopted arguments from the two merged PRs, without treating\ntheir external platform claims as newly verified research."
+      },
+      {
+        "before": "evidence for the organizational proposal, not accepted restructuring.",
+        "after": "evidence behind the repository/documentation migration and still-open distribution proposals."
+      },
+      {
+        "before": "It revises the\nsingle-host recommendation without treating the replacement proposal as an accepted decision.",
+        "after": "Its historical recommendations are evidence; the accepted I1 process/authority choices are\nrecorded in the active protocol and implementation boundaries, not inferred from this report."
+      }
+    ],
+    "docs/archive/reviews/CONCEPTUAL.md": [
+      {
+        "before": "# Conceptual closure review\n",
+        "after": "# Conceptual closure review\n\nHistorical closure record. C1\u2013C3 remain accepted in the [active protocol reference](../../protocol/README.md).\nUse [current review](../../REVIEW.md) for outstanding work; this is not an active ruling queue.\n"
+      }
+    ],
+    "docs/archive/reviews/IMPLEMENTATION.md": [
+      {
+        "before": "# Implementation review status\n",
+        "after": "# Implementation review status\n\nHistorical closure record. Accepted choices remain in [implementation boundaries](../../implementation/README.md).\nUse [current review](../../REVIEW.md) for outstanding work; the I1\u2013I7 labels remain useful source references.\n"
+      }
+    ],
+    "docs/archive/reviews/REPOSITORY-2026-11-02.md": [
+      {
+        "before": "# Repository, documentation and distribution review\n",
+        "after": "# Repository, documentation and distribution review\n\nHistorical proposal preserved in full. The documentation migration described here has now been\nperformed; see its [record](../migrations/2026-11-protocol-framing.md). Its earlier status statements\nand candidate trees describe the proposal at the time. Unresolved publication decisions were carried\nto [current review](../../REVIEW.md); archiving does not approve its remaining recommendations.\n"
+      }
+    ],
+    "docs/archive/collaborator-proposals/REVIEW.md": [
+      {
+        "before": "# Collaborator proposals against the current design\n",
+        "after": "# Collaborator proposals against the current design\n\nCompleted integration record. Both PRs were merged with source attribution preserved. The\n[archive index](README.md) records their sources; adopted rules live in the\n[active protocol reference](../../protocol/README.md), and remaining work in [current review](../../REVIEW.md).\n"
+      }
+    ],
+    "docs/archive/README.md": [
+      {
+        "before": "Archiving is not approval or evidence that a proposed integration was tested.",
+        "after": "- [Completed conceptual review](reviews/CONCEPTUAL.md) and [implementation review](reviews/IMPLEMENTATION.md) \u2014 accepted ruling summaries, linked to the active reference.\n- [Repository framing proposal](reviews/REPOSITORY-2026-11-02.md) \u2014 research, accepted boundaries and the historical transition plan; remaining proposals were carried to current review.\n- [Documentation migration](migrations/2026-11-protocol-framing.md) \u2014 source/destination accounting and reproducible preservation checks.\n\n[Current review](../REVIEW.md) is the only active question queue. Archiving is not approval or\nevidence that a proposed integration was tested. Historical prose retains its original context;\ncurrent semantics live in [protocol](../protocol/README.md)."
+      }
+    ],
+    "docs/archive/collaborator-proposals/README.md": [
+      {
+        "before": "[design](../../protocol/README.md) is authoritative; [review](../reviews/CONCEPTUAL.md) tracks pending rulings.",
+        "after": "[protocol reference](../../protocol/README.md) is authoritative; [current review](../../REVIEW.md) tracks outstanding work."
+      }
+    ],
+    "experiments/README.md": [
+      {
+        "before": "Current sequence: the [conceptual review](../docs/archive/reviews/CONCEPTUAL.md) is complete;\n[repository/distribution review](../docs/archive/reviews/REPOSITORY-2026-11-02.md) precedes syntax and\nconformance cases in a later PR. Preserve these draft fixtures and their existing evidence;",
+        "after": "Current sequence: the [conceptual review](../docs/archive/reviews/CONCEPTUAL.md) is complete.\nThe [current review](../docs/REVIEW.md) collects remaining decisions before the later syntax and\nconformance pass. Preserve these draft fixtures and their existing evidence;"
+      }
+    ]
+  },
+  "navigationRewritten": [
+    "README.md",
+    "docs/README.md"
+  ],
+  "unchangedFixtures": {
+    "experiments/001-shared-access/templates.yaml": "1ee3d0955fb12888fa1e4064c7aa72f54bc01e21",
+    "experiments/001-shared-access/instances.yaml": "e22b55e24a1c4cce45a5c11aaee9fa6c4b81a91c"
+  },
+  "navigationSha256": {
+    "README.md": "d94e533240c09fca1119ba1d2e542fa26db7c14833527d49600791385e67aae4",
+    "docs/README.md": "67ab9fb866400d36d6b91b9dc1d8bbe60dc2aafdf32b92dbbe54555d20dd38b0"
+  }
+}

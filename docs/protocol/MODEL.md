@@ -1,7 +1,12 @@
 # Model and system responsibilities
 
-Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
+their accepted status without becoming requirements for every capability implementation.
+See the [reference boundary](README.md#protocol-and-reference-implementation) and the
+[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+
+Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Families, templates and instances
@@ -41,6 +46,14 @@ and schema pass should preserve these responsibilities rather than silently chan
 | Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
 | Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
 | Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
+| Package | A distribution envelope with declared identity, version, typed contents and dependencies. | Can contain plugin contributions, templates, or both, including template-only collections referencing other available packages. It is not another runtime object family. |
+
+Packages use a common outer contract while each contribution retains its own typed validation and
+behavior. A template-only collection need not supply executable code or a plugin implementation.
+Installing a package makes its definitions available; it does not instantiate objects, authenticate
+services or grant access. The common envelope does not require an identical source directory layout,
+bundled dependency copies or a new general-purpose package manager. Exact fields, dependency references
+and archive layout remain authoring work; automatic dependency resolution stays deferred.
 
 Policy and Grant are essential protocol concepts for Agents and Interfaces, alongside the other
 concepts here. Their authorization contracts must apply consistently to managed capability use,
@@ -51,9 +64,10 @@ structure. Grant issuance/change/revocation and governing-requirement changes ar
 capability operations: the caller needs a grant permitting the operation, with requirements
 constraining its proposed effect. This avoids a separate grant-administration rule language.
 Other managed callers, including Resource-to-Resource access, retain their existing attribution
-obligations. The [authorization contracts](../proposals/implementation-v0/AUTHORIZATION.md) illustrate
+obligations. The [authorization contracts](../proposals/authoring-syntax/AUTHORIZATION.md) illustrate
 the accepted model and proposed detailed representations. Startup and initial storage choices are settled;
-the dependent-call authority seam is tracked in [review](../REVIEW.md#c2--whose-authority-governs-a-dependent-call).
+the dependent-call authority rule was settled in [C2](../archive/reviews/CONCEPTUAL.md#c2--whose-authority-governs-a-dependent-call)
+and is specified in [Conduits](CONDUITS.md#authority-across-dependent-calls).
 
 A template assembles these definitions for one of the five families: configuration, selected
 implementations, setup/change procedures, ongoing runtime behavior and supported controls. Its
@@ -122,7 +136,7 @@ across systems. One Pool can own Resources deployed on different systems; Condui
 network. Pool ownership is not a placement or process-parenting rule. A unified Interface does
 not require one execution host. The authority split and v0 outage rule below are accepted;
 the first proof uses separate processes on one machine, as recorded in
-[implementation review I1](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
+[implementation review I1](../archive/reviews/IMPLEMENTATION.md#i1--independent-execution-and-management).
 Remote deployment guarantees still require separate validation.
 This direction does not claim remote execution is implemented or approve automatic migration,
 federation or offline authorization.
@@ -163,7 +177,7 @@ broad default administration. Replacing an Interface requires valid access to th
 not a transfer of policy ownership or recreation of grants. A new Interface cannot acquire the old
 one's authority merely by reusing its name. Existing recipient-participation, withdrawal and target
 lifecycle rules remain intact. Narrower per-Interface authority stays deferred for v0.
-The [authorization contracts](../proposals/implementation-v0/AUTHORIZATION.md) formalize Policy as
+The [authorization contracts](../proposals/authoring-syntax/AUTHORIZATION.md) formalize Policy as
 authoritative requirement application and Grant as issued authority for all managed actors.
 Management retains governing requirement bindings independently of the Interface that changed
 them. A dedicated access-management Resource owned by the system Pool exposes grant and governing

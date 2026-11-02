@@ -1,7 +1,12 @@
 # Pool contracts
 
-Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
+Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
+their accepted status without becoming requirements for every capability implementation.
+See the [reference boundary](README.md#protocol-and-reference-implementation) and the
+[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+
+Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Pools
@@ -84,7 +89,7 @@ No background reconciler is implied.
 Use the accepted local composition declarations, resolved instance bindings and ordinary operation
 evidence without requiring a second provisioning-plan ledger. Pools group unitary Resources and
 derive useful views from their contracts. Exact composition fields and result wiring belong to the
-configuration profile in [REVIEW.md](../REVIEW.md#review-outcomes). Stable identity, explicit
+configuration profile in [REVIEW.md](../archive/reviews/CONCEPTUAL.md#review-outcomes). Stable identity, explicit
 effects, safe retry and separate backing-data cleanup remain requirements.
 
 **Label removal:** Pool inclusion uses explicit named Resource-template entries.

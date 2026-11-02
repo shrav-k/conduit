@@ -1,9 +1,13 @@
 # V0 reference implementation proposal
 
+This is the reference-implementation design, subordinate to the public contracts. Moving it out
+of the proposals directory does not approve candidate mechanisms or claim they are implemented.
+The [current review queue](../REVIEW.md) is the only active decision queue; the I1–I7 summary below is historical.
+
 Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
-provider experiment has run**. The [design](../../DESIGN.md) supplies accepted semantics. The
-[conceptual review](../../REVIEW.md) is complete; the
-[authoring/syntax packet](../authoring-syntax/README.md) is parked for a future PR.
+provider experiment has run**. The [design](../protocol/README.md) supplies accepted semantics. The
+[conceptual review](../archive/reviews/CONCEPTUAL.md) is complete; the
+[authoring/syntax packet](../proposals/authoring-syntax/README.md) is parked for a future PR.
 
 The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
 Use existing infrastructure and lightweight support to prove the contracts. A Rust process layout,
@@ -13,12 +17,12 @@ package example or database choice cannot silently define the public model.
 
 | Document | Purpose / authority |
 | --- | --- |
-| [REVIEW](REVIEW.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
+| [REVIEW](../archive/reviews/IMPLEMENTATION.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Detailed runtime mechanisms and examples; accepted boundaries are marked, other mechanisms remain proposals. |
-| [AUTHORIZATION](AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
+| [AUTHORIZATION](../proposals/authoring-syntax/AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
 | [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. |
-| [Deferred authoring](../authoring-syntax/README.md) | Contract, plugin/package and template examples for a later PR. |
-| [Collaborator comparison](../COLLABORATOR_REVIEW.md) | PR #1/#2 assessed against the current branch, without adopting or merging them. |
+| [Deferred authoring](../proposals/authoring-syntax/README.md) | Contract, plugin/package and template examples for a later PR. |
+| [Collaborator comparison](../archive/collaborator-proposals/REVIEW.md) | Completed assessment of merged PR #1/#2, with adopted refinements and attributed dissent preserved. |
 
 ## Accepted implementation boundaries
 
@@ -40,7 +44,7 @@ implementations, not mandatory storage/OS dependencies for every future conformi
 
 ## Delivery and evidence
 
-Keep the [Experiment 002](../../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
+Keep the [Experiment 002](../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
 compose exported operations with derived/explicit results and recovery, add composed/custom requirements,
 exercise independent service failures and inspect effects through the Interface. It must use public
 extension contracts rather than special-case core dispatch. Implementation has not started.
@@ -57,7 +61,7 @@ model, VM default, Sealmesh dependency, second full runtime or new protocol wire
 
 ## Research and maintenance
 
-[Research](../../research/README.md) preserves primary-source comparisons, source pins and limits.
+[Research](../research/README.md) preserves primary-source comparisons, source pins and limits.
 Earlier static YAML/link checks establish only their stated properties, not runtime recovery,
 authorization, provider compatibility or strict-parser conformance. Keep actual results separate from
 expected outcomes. Record a semantic change once in the design and link to it here; avoid restoring

@@ -6,7 +6,7 @@ proof uses management and two independent executor processes on one machine, wit
 connection failures; two-machine validation precedes remote-support claims. The user wants independently
 operating objects, eventual placement across systems, Resources from one Pool on different systems
 and network Conduits. The earlier combined-host design is a comparison baseline. This report informs the
-[implementation review](../proposals/implementation-v0/REVIEW.md#i1--independent-execution-and-management).
+[implementation review](../archive/reviews/IMPLEMENTATION.md#i1--independent-execution-and-management).
 It does not select a distributed database, transport, scheduler or new object family.
 
 The investigation combines primary documentation, selected source inspection and papers. No
@@ -27,7 +27,7 @@ management; existing MCP services retain their external supervision. Shared regi
 and instance-owned definitions, confirmed configuration and results are accepted. V0 retains
 supervision/dispatched outcomes while blocking new managed requests without verifiable permission.
 Offline grants are deferred. The
-[design-fit audit](../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
+[design-fit audit](../archive/reviews/CONCEPTUAL.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
 records these consequences; other topology candidates remain research comparisons.
 
 ## 1. The boundary to establish

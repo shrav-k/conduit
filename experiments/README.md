@@ -1,12 +1,13 @@
 # Experiments
 
-Current sequence: the [conceptual review](../docs/REVIEW.md) is complete; return to syntax and
-conformance cases in a later PR. Preserve these draft fixtures and their existing evidence;
+Current sequence: the [conceptual review](../docs/archive/reviews/CONCEPTUAL.md) is complete.
+The [current review](../docs/REVIEW.md) collects remaining decisions before the later syntax and
+conformance pass. Preserve these draft fixtures and their existing evidence;
 this documentation pass adds no runtime tests or new backend/deployment requirements.
 
 Experiments live outside `docs/`. Each directory keeps its documentation, configuration examples,
-expected outcomes and validation record together. The [specification](../docs/SPEC.md) and
-[design contracts](../docs/DESIGN.md) remain authoritative for accepted behavior.
+expected outcomes and validation record together. The [specification](../docs/OVERVIEW.md) and
+[design contracts](../docs/protocol/README.md) remain authoritative for accepted behavior.
 
 | Experiment | Purpose | Current evidence |
 | --- | --- | --- |

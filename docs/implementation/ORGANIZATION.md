@@ -2,11 +2,18 @@
 
 Status: implementation proposal, 2026-11-01. Directory/crate names below describe the intended
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
-[review](REVIEW.md) identifies choices requiring a ruling before they become commitments.
+[closed review](../archive/reviews/IMPLEMENTATION.md) records accepted implementation boundaries.
+The [current review](../REVIEW.md) distinguishes remaining decisions from deferred engineering choices.
+
+The newer [repository/distribution review](../archive/reviews/REPOSITORY-2026-11-02.md) accepts one main repository under a
+Conduit organization, with independently consumable public protocol/conformance, runtime and extension
+surfaces. Publication details remain under review. Use this document's crate/dependency/milestone
+details as earlier candidates. The documentation migration is complete; neither proposed code tree
+is adopted. Resolve source/package boundaries against the first authoring slice before scaffolding crates.
 
 I1 accepts separate management and execution services; crate boundaries must preserve that
 arrangement and the accepted shared-policy/instance-state authority split. The
-[research](../../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
+[research](../research/DISTRIBUTED_RUNTIME.md) informs independent execution tests. Binary names,
 concrete deployment and detailed failure mechanisms remain implementation work. I4 selects the
 minimal public persistence plugin contract, service runtime dependency and bundled SQLite engine
 with separate local management/executor databases in the first experiment. A single workspace
@@ -18,17 +25,18 @@ failures; two-machine validation follows before remote support is claimed.
 
 ## Review and PR sequence
 
-The [conceptual review](../../REVIEW.md) is complete, with the
-[collaborator proposals](../COLLABORATOR_REVIEW.md) reconciled and their dissent preserved.
+The [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete, with the
+[collaborator proposals](../archive/collaborator-proposals/REVIEW.md) reconciled and their dissent preserved.
 This does not settle package-reference syntax.
 A later authoring PR will review contracts, template/package examples, MCP/profile mappings and
 conformance fixtures together. Implementation milestones follow that approved boundary; a detailed
 crate plan is not authorization to start them now.
 
-The actual documentation layout is [SPEC](../../SPEC.md), [DESIGN and topic files](../../DESIGN.md),
-one active [REVIEW](../../REVIEW.md), separate implementation/authoring proposals, and source evidence
-in research. Experiments remain outside docs with their own documentation. The proposed source-tree
-layout below is still a planning example, not a list of directories already created.
+The actual documentation layout is the [overview](../OVERVIEW.md), [protocol reference](../protocol/README.md),
+[authoring path](../authoring/README.md), one active [REVIEW](../REVIEW.md), reference implementation
+design, deferred syntax proposals and research. Experiments remain outside docs with their own
+documentation. The source-tree layout below is a historical planning example, not a list of directories
+already created or a requirement to create every proposed crate.
 
 ## 1. Repository layout
 
@@ -113,7 +121,8 @@ config, generic contract/support descriptors in core, and binding/runtime coordi
 Endpoint implementations provide requirement-specific support. These are responsibilities within
 the existing candidate crates, not a requirement for a new crate or hard-coded core variant for
 every extension. Definition reuse across implementations is accepted; publication mechanics,
-support/satisfaction interfaces and the first vocabulary await I3. No new expression-language
+support/satisfaction syntax and the first vocabulary remain authoring work; I3's reusable definitions,
+support declarations and composition boundaries are accepted. No new expression-language
 dependency follows from the accepted design direction.
 
 The terminal initially lives as a client module in the app crate, not a second authoritative
@@ -173,8 +182,9 @@ programming languages. The layouts below are proposed mechanics within that scop
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.
-Templates can ship with packages, but installing a package does not instantiate those templates,
-grant access or authenticate an account. The first-party package may supply several Resource
+The accepted common package envelope supports plugin contributions, template-only collections and
+combinations, with each contribution retaining its typed contract. Installing a package does not
+instantiate its templates, grant access or authenticate an account. The first-party package may supply several Resource
 groups. No mandatory public marketplace, namespace service or build DSL is needed in v0.
 
 The application release bundles a schema set, first-party manifests and platform worker artifacts.
@@ -187,12 +197,13 @@ they must preserve versioned semantics or explicitly require repair/migration.
 
 ## 5. Local state and development artifacts
 
-Use an explicit registry directory, with a platform application-data default and an override for
-tests/parallel registries. Resolve paths once and record registry identity. A project checkout
+Use explicit service-local state directories, with a platform application-data default and an override
+for tests/parallel registries. Management and each executor have separate stores; a common installation
+root does not make their database files shared. Resolve paths once and record registry identity. A project checkout
 is not implicitly a registry, and changing the shell directory does not select another account.
 
 ```text
-<registry>/
+<service-state>/       # one authority service, not a shared management/executor database
   state.sqlite
   runtime/             # socket, OS-held lock, current host metadata
   artifacts/           # retained implementation bundles indexed by digest
@@ -226,7 +237,7 @@ Plugin/template authoring is a first-class acceptance path throughout these mile
 first-party integrations must exercise the public extension boundary, and a small separately
 authored plugin must load without a core-code change. Record the files and code the author actually
 needs, including any generated manifest/schema artifacts; do not hide essential setup in the
-developer's environment. SDK/runner details remain implementation work; authoring syntax is deferred to I7.
+developer's environment. SDK/runner details remain implementation work; syntax is deferred to the authoring pass.
 
 Reuse existing infrastructure where its behavior can be adapted and tested against Conduit's
 contracts. Extra process hops or conservative serialization are acceptable initially. Contract
@@ -310,8 +321,8 @@ not need another product ruling. No mandatory ADR for every helper or field.
 
 Keep documentation responsibilities clear:
 
-- SPEC summarizes the accepted model; DESIGN owns detailed protocol behavior.
-- This proposal becomes implementation documentation when approved, with review outcomes folded in.
+- [Overview](../OVERVIEW.md) summarizes the model; [protocol topics](../protocol/README.md) own detailed accepted behavior.
+- Implementation documents identify accepted boundaries and proposed mechanisms separately; a file move does not approve a mechanism.
 - Experiment folders own runnable fixtures, test plans and dated actual results.
 - Research owns source evidence and alternatives, not a competing requirement set.
 - Package docs explain their contracts, capabilities, recovery and limitations using the common format.
@@ -325,7 +336,7 @@ explicit cleanup authorizes removal.
 
 ## 9. Research and validation limits
 
-The proposal combines the source-pinned [Rust runtime report](../../research/RUST_RUNTIME.md)
+The proposal combines the source-pinned [Rust runtime report](../research/RUST_RUNTIME.md)
 with primary documentation accessed on 2026-11-01. No Cargo workspace, dependency resolution,
 MCP conformance test, keychain interaction, native login or provider request has run as part of
 writing it. The dependency table is a testable plan, not a fabricated build result.

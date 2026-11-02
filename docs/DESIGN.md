@@ -1,6 +1,6 @@
 # Conduit design contracts
 
-Updated: 2026-11-01. Current working design; implementation
+Updated: 2026-11-02. Current working design; implementation
 has not started. [SPEC.md](SPEC.md) summarizes the model; [REVIEW.md](REVIEW.md) records the
 completed direction review and schema boundary. The [YAML walkthrough](../experiments/001-shared-access/README.md)
 proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
@@ -27,9 +27,12 @@ implementation priority, not package syntax, supported languages, transports or 
 **Plugin publication:** publish inspectable contracts with their implementation bindings. Conduit can
 inspect exports and validate typed configuration/graph bindings without starting plugin code;
 actual availability, authority and behavioral conformance still require their respective checks.
-Provider-native catalogs can remain dynamic behind an integration's published contract. Detailed
-contract/template syntax, package layout and authored-versus-generated descriptors are deferred
-until the remaining conceptual questions are settled.
+Provider-native catalogs can remain dynamic behind an integration's published contract.
+The published, language-neutral contract is authoritative for a plugin's public API and behavior;
+implementations conform to it. Authors may handwrite or generate contracts, then explicitly review
+and version the released definitions. Internal code changes do not implicitly change the public
+contract. Schemas describe valid data; effects, recovery and lifecycle guarantees remain part of
+the behavioral contract. Exact syntax, package layout and generation tooling remain I7 work.
 
 **Primary access model:** establish capabilities and service authentication through a Pool once,
 then let authorized Agents use them through individually restricted Conduits. V0 Interfaces

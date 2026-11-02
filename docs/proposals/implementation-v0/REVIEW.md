@@ -137,7 +137,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
+| I7 | Concrete authoring/schema conventions | Contract authority is accepted. Next compare a primary implementation plus named extras against one uniform dependency map, then review the remaining schema/template layout. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
 and demonstrate those contracts; I4 settles authority/persistence and I5 settles custody/interaction.
@@ -642,53 +642,79 @@ and wire recommendations remain proposals. I6 is conceptually closed; I7 settles
 
 ## I7 — Authoring conventions and multi-plugin graphs
 
-**Current review:** work through one connected authoring example across contracts, packages and
-templates, now that I1–I6 are conceptually settled. Publication with implementations is already
-accepted; the field layouts, identifiers and schema-authoring choices below remain proposals.
+**Accepted — contract authority:** the published, language-neutral contract defines a plugin's
+public API and behavior. Implementations conform to it. Authors may handwrite or generate the
+contract, then explicitly review and version the released definitions. Internal Rust types do
+not independently redefine public inputs, outputs or guarantees. For example, an implementation
+may rename its internal `batch_size` variable while `set-query-limit` still accepts public input
+`limit`, an integer from 1–100. Data schemas alone do not define effects, authorization, recovery
+or lifecycle guarantees; the behavioral contract remains necessary. No schema dialect, package
+layout or SDK is selected by this ruling. Dynamic provider catalogs retain their agreed boundary.
 
-**Recommendation:** retain the accepted envelope and propose `conduit/v0alpha1` as its initial
-identifier. Apply group/name/version type references uniformly to the five families. Keep
-`spec.implementation` for the type's owner and add a `spec.plugins` alias map for other exact
-implementation dependencies; graph exports use `{plugin, name}`. Keep schema bundles reviewed and
-language-neutral, with Rust schema generation used as assistance rather than silent authority.
+**Current review:** work through connected package, contract and template examples. The next
+choice is how a template selects implementations when its graph uses more than one plugin.
 
-**Example:** a Resource can use its owner's generic connection preparation, an authentication
-export from another package and a database migration export, all explicitly bound. Those code
-aliases do not create Resources, own credentials or bypass Conduits. Instance expansion resolves
-the graph/controls and records code selection independently of later template changes.
+### Next ruling: a primary implementation and additional plugins
 
-**Alternative:** use one uniform `implementations` map, with an explicit alias for the type's owner.
-That is more uniform but adds indirection to every simple template. A Rust-derived public schema
-source of truth is also possible, provided release checks prevent accidental language changes.
+Consider a local-directory Resource that attaches an existing checkout and verifies its expected
+project layout before completing setup. The fictional `example.filesystem` package implements the
+Resource's type and directory lifecycle. A separate `example.project-checks` package exports a
+`verify-layout` operation. The latter adds a setup step; it does not become another Resource or
+replace the directory's runtime. The graph passes the established directory output to the check,
+which establishes ordering under the accepted output-dependency rule.
 
-**First ruling — contract authority:** recommend the published, language-neutral contract as the
-public source of truth. Schemas can be handwritten or generated, but their released definitions
-and behavioral guarantees are reviewed independently of implementation internals. Rust, scripts
-and external-MCP bindings conform to the same contract. This does not require handwritten schemas
-or a large SDK.
-
-For example, a `set-query-limit` operation could accept this illustrative schema fragment:
+**A — recommended: a dedicated primary implementation plus named extras.** An illustrative fragment
+inside the template's `spec`:
 
 ```yaml
-type: object
-properties:
-  limit: {type: integer, minimum: 1, maximum: 100}
-required: [limit]
-additionalProperties: false
+implementation:
+  package: example.filesystem
+  release: 0.1.0
+plugins:
+  checks:
+    package: example.project-checks
+    release: 0.1.0
 ```
 
-A Rust handler can call its internal field `batch_size` while the public input remains `limit`.
-Changing the public bound or name requires a deliberate contract change. A Python implementation
-or an MCP binding uses that same public definition. Under the Rust-first alternative, Rust type
-declarations generate the public schema; authors maintain serialization annotations and release
-checks to keep internal refactors from changing the contract. Schema validation alone does not
-define effects, authorization, recovery or lifecycle guarantees; those remain part of the published
-behavioral contract in either approach. This fragment does not settle package layout or schema dialect.
+The directory operation is resolved against the primary implementation; `verify-layout` is resolved
+against `checks`. A simple template needs only `implementation`. The primary implementation supplies
+the selected type's behavior and can itself compose other operations; it need not be one executable.
 
-After that ruling, review one package and consuming template together to choose implementation
-bindings, graph references and the common identifiers. Parser scalar edge cases, numeric precision limits, schema-default
-coverage and negotiated worker-feature details are implementation/conformance work; a failing
-example should surface a concrete decision rather than another speculative questionnaire.
+**B — alternative: put every implementation in one named map and select the primary by alias.**
+
+```yaml
+implementation: filesystem
+implementations:
+  filesystem:
+    package: example.filesystem
+    release: 0.1.0
+  checks:
+    package: example.project-checks
+    release: 0.1.0
+```
+
+Every graph reference uses a named entry in the same map. This is uniform for larger compositions,
+but even a template with one implementation needs an alias and a separate selection of that alias.
+
+Both layouts retain exact selected implementation identities on the instance; the release strings
+above illustrate selection, not a complete artifact-retention format. Aliases select published
+contributions, not processes, credentials, Resource ownership or grants. The Resource remains
+Pool-owned; setup/connection authority still applies. External-MCP and graph-backed implementations
+use the same selection model. This choice does not require authors to duplicate every internal
+package dependency in the template.
+
+**Ruling needed:** choose A or B for the normal authoring structure. These fragments illustrate
+that choice rather than executable configurations; final export references, reserved aliases and
+package identity fields remain part of the connected syntax pass. In particular, the current
+contract draft's `owner` alias means the supplying implementation, not the Resource's Pool owner;
+its name is provisional.
+
+**Remaining authoring pass:** use the chosen structure to review one package and consuming template
+with graph/control bindings and published schemas. `conduit/v0alpha1` as the common API identifier,
+uniform group/name/version type references across all five families, and the concrete schema dialect
+are still proposed. Parser scalar edge cases, numeric precision limits, schema-default coverage
+and negotiated worker-feature details are implementation/conformance work; a failing example
+should surface a concrete decision rather than another speculative questionnaire.
 
 ## Decisions not requested again
 

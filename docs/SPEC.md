@@ -16,8 +16,10 @@ Plugins publish inspectable contracts and implementation bindings. A binding can
 code, an existing local/remote MCP service, a graph of operations, or a combination; no new
 plugin-specific executable is required when existing behavior or composition fulfills the contract.
 Templates configure and compose these contributions.
-Contracts can be validated without executing the implementation. Detailed syntax follows the
-remaining conceptual rulings.
+Contracts can be validated without executing the implementation. The published, language-neutral
+contract defines the public API and behavior; implementations conform to it. Contracts may be
+handwritten or generated, then explicitly reviewed and versioned. Internal code refactors do not
+implicitly alter that contract. Detailed syntax and authoring layout remain under I7 review.
 MCP is the accepted base for public plugin invocation, with a small versioned Conduit profile
 for instance/operation context and lifecycle/recovery semantics. Exact bindings remain under review.
 Components expose supported MCP capabilities independently where their declared dependencies

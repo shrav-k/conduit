@@ -25,7 +25,9 @@ I4's authority/startup/persistence choices are also settled, including the SQLit
 I5 accepts OS credential custody through a replaceable implementation bundle, initially macOS
 Keychain, and Interface-guided adapter enrollment/unlock. I6 accepts extensible observation plugins
 and Conduits, correlated diagnostics, a small health metric set and explicit content-capture policy.
-I1–I6 are conceptually settled; I7 is the final contract/template syntax review. Existing
+I1–I6 are conceptually settled. I7 accepts published, language-neutral contracts as authoritative;
+they may be handwritten or generated, then explicitly reviewed and versioned. Implementations
+conform to those contracts. I7's remaining work is concrete contract/template syntax and layout. Existing
 infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement

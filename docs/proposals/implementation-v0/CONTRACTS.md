@@ -300,14 +300,21 @@ Conduit can validate against them without executing plugin code. Bindings can us
 an existing local/remote MCP service, a graph of selected operations, or a combination. A reusable
 graph may implement an exported typed operation, including for invocation from another graph.
 Registering schemas is not permission to run the package. The proposed manifest/schema bundle
-below illustrates that boundary; detailed syntax and package layout are deferred until conceptual
-review is complete.
+below illustrates that boundary; detailed syntax and package layout remain I7 work.
+
+**Accepted contract authority:** the published, language-neutral contract defines the public API
+and behavioral guarantees; implementations conform to it. Authors may handwrite contracts or
+generate them from code or graph composition, then explicitly review and version the released
+definitions. Internal Rust types do not independently override the contract. Data schemas alone
+do not establish effects, authority, recovery or lifecycle guarantees. This chooses neither a
+schema dialect nor a required SDK/generation tool; provider-native catalogs retain their agreed
+dynamic boundary behind the integration contract.
 
 **Accepted distribution scope:** bundled first-party plugins and explicit installation of locally
 supplied packages, including code-optional contributions. A marketplace and automatic dependency
 resolution across languages are deferred. Installation does not instantiate objects, authenticate
-providers or grant access. Package syntax, installation mechanics and authored/generated metadata
-remain proposals; exact implementation retention and replacement rules still apply.
+providers or grant access. Package syntax, installation mechanics and generation tooling remain
+proposals; exact implementation retention and replacement rules still apply.
 
 | Manifest concern | Required information when applicable |
 | --- | --- |

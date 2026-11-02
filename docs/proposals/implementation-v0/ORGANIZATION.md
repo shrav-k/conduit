@@ -139,10 +139,13 @@ and deployment assumptions.
 
 ## 4. Schema and package organization
 
-Proposed source of truth: reviewed, versioned language-neutral schema bundles and behavioral
-conformance fixtures. Rust types implement that contract; generated schemas/types are checked
-against the published artifacts. Plugin packages supply their own schemas under exact contract
-identities. Host compilation need not enumerate every future Resource type.
+**Accepted source of truth:** published, language-neutral contracts, including typed schemas and
+behavioral definitions. Authors may handwrite or generate them, then explicitly review and version
+the released contract. Rust types and other implementations conform to it; internal refactors do
+not implicitly change the public API. Schema checks and behavioral conformance fixtures should
+test that agreement. Plugin packages supply schemas under exact contract identities; exact dialect,
+layout and generation tooling remain I7 work. Host compilation need not enumerate every future
+Resource type.
 
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;

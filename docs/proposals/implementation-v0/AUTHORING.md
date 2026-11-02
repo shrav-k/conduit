@@ -2,8 +2,10 @@
 
 Status: authoring examples, 2026-11-02. Lightweight Conduit support with the public protocol and
 extension structure prioritized over a helper library is accepted. Publishing inspectable
-contracts with implementations is also accepted. Detailed contract and template syntax is
-deferred until conceptual review is complete. MCP is accepted as the public invocation base with
+contracts with implementations is also accepted. Published, language-neutral contracts are authoritative;
+authors may handwrite or generate them, then explicitly review and version the released definitions.
+Implementations conform to those contracts. Detailed contract/template syntax is the current I7 review.
+MCP is accepted as the public invocation base with
 a small Conduit profile. Code-optional implementation bindings and independent component access
 are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in
 Rust code may remain in-process. Profile details, SDK, package syntax and exact helper grouping remain open.

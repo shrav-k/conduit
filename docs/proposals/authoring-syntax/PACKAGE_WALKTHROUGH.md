@@ -302,10 +302,14 @@ explicitly exposed dependencies. Such dependencies may now declare default imple
 the history validator can use its declared standard implementation unless the caller explicitly
 selects a compatible replacement. An invalid replacement reports an error rather than falling back.
 The resolved selection is retained on the instance; this does not install packages or grant access.
+V0 imports require an export's explicit support for the requested contract identity and exact version,
+alongside existing compatibility checks. Two different validator releases may satisfy the same
+contract version; an export supporting only a different version does not automatically qualify.
+Cross-version mappings are deferred, without an obligation to maintain older implementations.
 Exact resolution and default-binding syntax remain part of the authoring review.
 
 It exposes concrete follow-up work: package identity/artifact selection, contract schema layout,
-default-binding representation, contract-version matching, nested graph naming details, and how driver/lifecycle and
+default-binding representation, nested graph naming details, and how driver/lifecycle and
 managed invocation metadata use the Conduit MCP profile. These should be resolved against this
 same package, not by adding a new fictional example for each field. A complete runtime implementation
 also requires the worker, publication tooling and conformance fixtures; none has started here.

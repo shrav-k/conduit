@@ -153,6 +153,13 @@ This does not authorize automatic installation or substitution with another avai
 Existing schema-validation and readiness rules apply when the selected contribution is unavailable.
 The resolved implementation is retained on the instance under the existing fixed-definition rules.
 
+For v0, an imported dependency requires an export that explicitly supports the requested contract
+identity and exact version. Existing export-kind, type and behavioral compatibility checks still
+apply; a support declaration alone does not prove conformance. Cross-version compatibility mappings
+are deferred, and matching input/output shapes do not substitute for the required contract.
+Contract versions are independent of implementation releases: different plugin releases can fulfill
+the same contract version. This creates no obligation to retain older contracts or compatibility code.
+
 These are definition and implementation-selection rules. Selecting an export or supplying a
 dependency does not establish a live Resource connection, grant permission or change Pool ownership.
 Resolved instance bindings retain the existing implementation-retention and replacement rules.

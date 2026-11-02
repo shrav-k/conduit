@@ -13,6 +13,9 @@ The first authoring ruling now accepts [package-local scope and explicit depende
 Caller-local aliases cannot override a package's internal references; replaceable dependencies must
 be explicitly exposed. Those dependencies may supply default implementation bindings, with compatible
 explicit replacements taking precedence and invalid replacements producing errors rather than fallback.
+V0 imports require explicit support for the requested contract identity and exact version in addition
+to existing compatibility checks; cross-version mappings are deferred. Implementation release versions
+remain independent and no backward-compatibility maintenance obligation is added.
 The representations below remain proposals within that accepted boundary.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)

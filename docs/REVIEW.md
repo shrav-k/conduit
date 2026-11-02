@@ -82,9 +82,12 @@ caller aliases do not override package internals, and replacements use explicitl
 Replaceable dependencies may declare default implementation bindings. Compatible explicit replacements
 take precedence; invalid selections report errors without fallback. These decisions do not accept
 `spec.plugins`, `{plugin, name}` or an import/export file layout.
-The next choice is whether v0 imports require an export's declared support for the requested contract
-identity and exact version, deferring automatic matching across contract versions. Implementation
-release versions remain independent; this does not require maintaining old contracts. This remains open.
+V0 imports also require an export's explicit support for the requested contract identity and exact
+version, alongside existing compatibility checks. Cross-version mappings are deferred; implementation
+release versions remain independent, with no obligation to maintain old contracts or compatibility code.
+The next choice is the data-schema basis for configuration, operation inputs/results and requirement
+parameters: JSON Schema 2020-12 with a defined Conduit profile is proposed, not yet accepted. YAML remains
+the authoring format; lifecycle, authorization and other behavioral contracts remain separate semantics.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

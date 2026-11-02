@@ -47,6 +47,9 @@ exports for callers and expose any dependency they may replace explicitly; an un
 plugin in the caller cannot change the package's implementation. A replaceable dependency may supply
 a default binding; a valid explicit replacement takes precedence, and an invalid replacement reports
 an error rather than falling back. Runtime Resource access still follows authorized Conduits.
+V0 imports require explicit support for their requested contract identity and exact version, alongside
+the existing compatibility checks. Different plugin releases may implement that same contract;
+cross-version compatibility mappings are deferred.
 
 ## Variants the language must support
 

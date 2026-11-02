@@ -87,6 +87,9 @@ references in their defining package; caller bindings replace only explicitly ex
 Those dependencies may declare default implementation bindings. A valid explicit replacement takes
 precedence; an invalid one reports an error rather than selecting the default. Selection follows
 the existing implementation-retention rules and does not install packages or grant Resource access.
+V0 imports require the selected export to explicitly support the requested contract identity and
+exact version, in addition to the existing compatibility checks. Cross-version mappings are deferred;
+package release versions do not determine contract-version compatibility.
 Do not create a package/module hierarchy in the object registry
 merely to resolve exports. The same rule applies to default bindings when they are resolved.
 

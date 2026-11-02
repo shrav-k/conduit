@@ -4,21 +4,32 @@ Updated: 2026-11-02, after the protocol-documentation migration. This is the onl
 The five-family model and completed conceptual/implementation rulings remain accepted in the
 [protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
-There is no identified contradiction requiring us to reopen the overall model. Remaining work falls
-into three broader discussions, publication decisions owned by the project, and the later authoring/
-engineering pass. An open detail in an older report is not automatically another ruling.
+There is no identified contradiction requiring us to reopen the overall model. M1/M2's early-delivery
+direction and proof scope are settled below; M3 is the remaining substantive mapping discussion from
+the migration. Publication decisions and the later authoring/engineering pass remain separate.
+An open detail in an older report is not automatically another ruling.
 
 ## Discuss before the syntax PR
 
 | Topic | What is open | What is already fixed / useful next example |
 | --- | --- | --- |
-| **M1 — Early delivery and compatibility** | Discuss minimal release contents alongside M2. Formal release coordination, exact packaging and delivery tooling are not prerequisites for the early working protocol; a coordinated distribution remains an option rather than a selected requirement. | **Accepted: no backward-compatibility promises**, initially or automatically at maturity; users can pin a working set. No legacy compatibility code is required solely to support old releases. Particular-contract conformance and retained implementation identity still apply. [Compatibility rule](protocol/CONFIGURATION.md#release-compatibility), [early delivery priority](implementation/README.md#delivery-and-evidence). |
-| **M2 — Thin public proof and supported package boundary** | Which minimal capability contracts and example contributions belong in the first public conformance kit/reference distribution, and which are optional ancillary packages? Define support without turning the candidate Resource catalog into a mandatory standard library. | Declared-capability conformance, independent client/plugin proof and Experiment 002's composition/recovery scope are accepted. Compare a tiny authored operation, a declaration-only MCP binding and a template-only package. Decide the promised surface; leave export names/manifests for syntax. [Conformance](protocol/CONFIGURATION.md#declared-capability-conformance), [planned proof](../experiments/002-runtime-plugins/README.md). |
 | **M3 — Memory content contexts within Pool-owned Resources** | The memory contract retains “task, Pool or personal collection” as examples of a record's owning context. Clarify how those contexts are represented inside a memory Resource and how sharing/derived-source checks refer to them. Is a context domain data managed by that capability, and which ownership/access boundaries must it expose? This is not yet a ruling. | A Resource has exactly one owning Pool; content ownership does not add another Resource owner or object family. Direct live read-only sharing, revision checks, whole-record delivery and source dependencies remain accepted. Walk through a personal note shared into project knowledge, then a derived summary. [Memory contract](protocol/RESOURCES.md). |
 
-M1 and M2 complete the repository/publication framing; M3 is a semantic mapping left visible in the
-existing memory text. None blocks this documentation migration. Resolve them collaboratively before
-using their answers to select public schemas or build a package distribution.
+M3 is a semantic mapping left visible in the existing memory text. Resolve it collaboratively before
+encoding that mapping in public schemas; the current wording remains in force until a ruling.
+
+## Early-delivery rulings
+
+- **M1 accepted:** no backward-compatibility promises or obligation to maintain legacy compatibility
+  code. Users can pin a working set. Early delivery prioritizes a working protocol; strict release
+  coordination, exact packaging and installers are not prerequisites. Claims about particular
+  contracts and retained implementation identity still apply. See [compatibility](protocol/CONFIGURATION.md#release-compatibility).
+- **M2 accepted direction/scope:** language/contracts, a minimal reference implementation, and small
+  authoring examples with conformance checks using the accepted Experiment 002 scope. Bundled
+  capabilities are replaceable and do not become a universal standard library. A documented working
+  source checkout can suffice initially. Individual package contents and artifacts will be refined
+  with the authoring slice; no detailed catalog or release format was selected. See
+  [initial delivery](implementation/README.md#delivery-and-evidence).
 
 ## Owner decisions before public distribution
 

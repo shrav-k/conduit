@@ -270,6 +270,129 @@ environment. An Agent-local view or symlink is preparation for authorized access
 second directory Resource. If another machine needs the files, it needs an appropriate remote
 access/copy/mount capability; it cannot treat this path as its own local directory.
 
+### Worked comparison: two plugins in one directory template
+
+**I7 remains open:** this expands the implementation-selection example, without selecting A or B.
+The package names, exports, aliases and field spellings below are illustrative. These are authoring
+fragments, not configurations executed by an existing Conduit implementation.
+
+An Euphony Pool provisions one Resource from a directory template. Its setup attaches the existing
+`/work/euphony` directory, then checks for `Cargo.toml` and `src`. On success, the instance supplies
+its declared directory capability to consumers through authorized Conduits.
+
+| Piece | What the author selects or defines | What it means after instantiation |
+| --- | --- | --- |
+| Resource type contract | `filesystem`, `local-directory`, `v1alpha1` | Defines valid directory configuration, capability and lifecycle behavior. It is independent of package release. |
+| Filesystem implementation | `example.filesystem`, release `0.1.0` | Supplies a compatible type implementation, including establishment and applicable runtime/control defaults. |
+| Project-check operation | `example.project-checks`, release `0.1.0`, export `verify-layout` | Checks the directory during setup. It does not own the Resource or become a second Resource. |
+| Template | Configuration plus graph selecting those contributions | Resolves into one instance definition; the Pool remains the Resource owner. |
+
+Both proposed layouts assume the template can select an implementation supplying the type's default
+behavior. Calling it **primary** describes that role, not its execution priority, authority, process
+or size. It can itself be graph-backed or reuse another implementation. Additional plugins can supply
+runtime drivers or control handlers as well as setup operations when the contracts permit; they are
+not limited to temporary helpers. Every override still has to fulfill the selected type contract.
+
+**Shared configuration:**
+
+```yaml
+type:
+  group: filesystem
+  name: local-directory
+  version: v1alpha1
+config:
+  path: /work/euphony
+  establish: attach
+```
+
+`attach` means a missing directory is an error. The check's required filenames appear as operation
+inputs below, rather than new undeclared fields in the directory type's configuration.
+
+**A — dedicated primary implementation, named additional plugins:**
+
+```yaml
+implementation:
+  package: example.filesystem
+  release: 0.1.0
+plugins:
+  checks:
+    package: example.project-checks
+    release: 0.1.0
+setup:
+  nodes:
+    attach:
+      operation: {plugin: primary, name: directory.establish}
+      inputs:
+        configuration: {from: config}
+    check:
+      operation: {plugin: checks, name: verify-layout}
+      inputs:
+        directory: {from: output, node: attach, port: directory}
+        requiredEntries: [Cargo.toml, src]
+```
+
+Here `primary` is a provisional reserved alias for `implementation`. Earlier draft fragments use
+`owner` for that role; neither alias is approved. `primary` avoids confusing implementation selection
+with Pool ownership. The graph's output binding makes `check` wait for `attach`; map order does not.
+The check accepts the establishment operation's declared directory descriptor. That descriptor is
+not an access grant; dispatch retains the instance's current execution and authority checks.
+
+**B — one implementation map, with an explicit selection of the type implementation:**
+
+```yaml
+implementation: filesystem
+implementations:
+  filesystem:
+    package: example.filesystem
+    release: 0.1.0
+  checks:
+    package: example.project-checks
+    release: 0.1.0
+setup:
+  nodes:
+    attach:
+      operation: {plugin: filesystem, name: directory.establish}
+      inputs:
+        configuration: {from: config}
+    check:
+      operation: {plugin: checks, name: verify-layout}
+      inputs:
+        directory: {from: output, node: attach, port: directory}
+        requiredEntries: [Cargo.toml, src]
+```
+
+The graph is identical except for `primary` versus `filesystem`. B gives every contribution the
+same explicit alias mechanism. It still selects a type implementation; it does not remove that
+role or make every package implement the Resource's entire type. A shortens the one-implementation
+case by omitting the map and alias. Neither layout changes the instance model or permissions.
+
+**What actually happens, in either layout:**
+
+1. Registration validates the declarations without attaching files or running either plugin.
+2. Authorized Pool provisioning resolves and retains the implementation identities for the Resource.
+   Release labels in these examples are selection inputs, not a complete artifact identity format.
+3. Explicit setup invokes `directory.establish`. Its successful output describes the existing
+   directory; the instance authority records the outcome. No directory is created in this example.
+4. `verify-layout` receives that output and checks the named entries. If a required entry is absent,
+   setup remains incomplete, the successful attachment stays recorded and the directory is preserved.
+   Retry follows recorded-progress validity and each operation's recovery contract.
+5. After setup, the instance owns its ongoing capability and applicable lifecycle/control behavior.
+   The directory implementation need not run a dedicated daemon. Setup helper completion does not
+   delete the instance. The layout check is a setup check, not a promise to monitor every file change.
+6. An Agent accesses the directory through its Conduit. Closing that Agent's view releases its
+   participation/prepared view, not the Pool's Resource or backing directory. A later supported
+   control invokes its resolved handler; the check is not rerun unless that handler/graph declares it.
+
+Changing the selected implementations or fixed setup graph requires replacement in v0. Package
+aliases do not create service logins or replace explicit Resource dependencies through Conduits.
+These rules are identical for A and B.
+
+**Decision boundary:** the current A/B choice is authoring structure: special primary slot versus
+one uniform map. A is still the simpler recommendation for small templates; B makes all export
+references follow one explicit pattern. If the real concern is whether any selected implementation
+should supply type defaults, that is a separate question shared by both proposals. We should discuss
+it directly rather than treating a choice of YAML layout as acceptance of that assumption.
+
 ### What the plugin author supplies
 
 Suppose directory support does not exist. The new implementation needs a typed configuration,

@@ -656,58 +656,26 @@ choice is how a template selects implementations when its graph uses more than o
 
 ### Next ruling: a primary implementation and additional plugins
 
-Consider a local-directory Resource that attaches an existing checkout and verifies its expected
-project layout before completing setup. The fictional `example.filesystem` package implements the
-Resource's type and directory lifecycle. A separate `example.project-checks` package exports a
-`verify-layout` operation. The latter adds a setup step; it does not become another Resource or
-replace the directory's runtime. The graph passes the established directory output to the check,
-which establishes ordering under the accepted output-dependency rule.
+**Pending — example refinement requested.** The [complete directory comparison](AUTHORING.md#worked-comparison-two-plugins-in-one-directory-template)
+shows the same Resource configuration, setup graph and runtime/lifecycle responsibilities under
+both proposed layouts. An Euphony Pool attaches a directory using a filesystem implementation,
+then a second package verifies the project layout. This creates one Pool-owned Resource, not a
+Resource per plugin. The check is a setup operation, not continuous file monitoring.
 
-**A — recommended: a dedicated primary implementation plus named extras.** An illustrative fragment
-inside the template's `spec`:
+| Choice | Selection and graph references | Tradeoff |
+| --- | --- | --- |
+| A — recommended | `implementation` selects the type implementation; `plugins` names additional contributions. A provisional `primary` alias references the former in graphs. | Small templates need only one implementation field; the primary has a special selection/reference rule. |
+| B | `implementations` names all contributions; `implementation` selects the type implementation by alias. All graph references use explicit aliases. | Uniform references, with a map and alias even for one implementation. |
 
-```yaml
-implementation:
-  package: example.filesystem
-  release: 0.1.0
-plugins:
-  checks:
-    package: example.project-checks
-    release: 0.1.0
-```
+Both can combine setup operations, runtime drivers and control handlers where their contracts
+permit; neither requires a process per plugin or limits additional plugins to setup helpers.
+Both retain exact selected implementations and preserve Pool ownership, explicit Conduit access
+and the same setup/recovery behavior. Release labels in examples are not complete artifact pins.
+`primary` and the older draft's `owner` alias are illustrative, not accepted field names.
 
-The directory operation is resolved against the primary implementation; `verify-layout` is resolved
-against `checks`. A simple template needs only `implementation`. The primary implementation supplies
-the selected type's behavior and can itself compose other operations; it need not be one executable.
-
-**B — alternative: put every implementation in one named map and select the primary by alias.**
-
-```yaml
-implementation: filesystem
-implementations:
-  filesystem:
-    package: example.filesystem
-    release: 0.1.0
-  checks:
-    package: example.project-checks
-    release: 0.1.0
-```
-
-Every graph reference uses a named entry in the same map. This is uniform for larger compositions,
-but even a template with one implementation needs an alias and a separate selection of that alias.
-
-Both layouts retain exact selected implementation identities on the instance; the release strings
-above illustrate selection, not a complete artifact-retention format. Aliases select published
-contributions, not processes, credentials, Resource ownership or grants. The Resource remains
-Pool-owned; setup/connection authority still applies. External-MCP and graph-backed implementations
-use the same selection model. This choice does not require authors to duplicate every internal
-package dependency in the template.
-
-**Ruling needed:** choose A or B for the normal authoring structure. These fragments illustrate
-that choice rather than executable configurations; final export references, reserved aliases and
-package identity fields remain part of the connected syntax pass. In particular, the current
-contract draft's `owner` alias means the supplying implementation, not the Resource's Pool owner;
-its name is provisional.
+Both proposals assume a selected type implementation can supply default lifecycle/control behavior.
+If that assumption is the concern, discuss it explicitly before ruling on layout. The A/B choice
+alone changes neither what an instance is nor how its ongoing behavior is managed.
 
 **Remaining authoring pass:** use the chosen structure to review one package and consuming template
 with graph/control bindings and published schemas. `conduit/v0alpha1` as the common API identifier,

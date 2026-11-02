@@ -1,7 +1,8 @@
 # Complete package walkthrough: retained message history
 
-Status: **parked illustrative package design for a future PR**, 2026-11-02. The alias-map ruling
-is unaccepted; [conceptual closure](../../archive/reviews/CONCEPTUAL.md) is complete and syntax returns in a later PR.
+Status: **illustrative package design for authoring review**, 2026-11-02. Package-local scope and
+explicit dependency bindings are accepted; the alias-map syntax remains unaccepted.
+[Conceptual closure](../../archive/reviews/CONCEPTUAL.md) is complete.
 This follows the accepted [design](../../protocol/README.md) and reuses the history Resource from
 [Experiment 001](../../../experiments/001-shared-access/README.md). It is a complete walkthrough
 of publication, implementation binding, template use and instance behavior, not an installable
@@ -92,7 +93,9 @@ templates:
 ```
 
 `worker` is package-local endpoint configuration. It is not a template plugin alias or another
-object instance. The executor supervises the selected helper as instance-associated activity;
+object instance. Under the accepted [scope rule](../../protocol/MODEL.md#package-scope-and-public-bindings),
+an unrelated `worker` alias in an importing template cannot change this internal reference.
+The executor supervises the selected helper as instance-associated activity;
 this manifest does not require one process per export, package or Resource. The driver export
 represents a lifecycle/capability contract, not a single ordinary MCP tool invocation. Its adapter
 uses the named methods as appropriate. Exact lifecycle wire/profile details remain open.
@@ -289,15 +292,16 @@ Stop does not purge message history; closing one consumer's Conduit does not del
 
 ## 8. What remains open after this example
 
-The current ruling is only whether template-local `spec.plugins` aliases and `{plugin, name}`
-export references are a useful common authoring form. This example does not ratify the entire
-manifest or every contract field at once.
+Package-local scope and explicit dependency bindings are now accepted. Template-local
+`spec.plugins` aliases and `{plugin, name}` export references remain proposed spellings.
+This example does not ratify the entire manifest or every contract field at once.
 The uniform reference proposal applies to template/resolved-instance implementation references;
 it need not force package-local defaults, endpoint names or native MCP tool names into that same
-namespace. Their explicit resolution is a separate part of the contract.
+namespace. Package-internal references retain their defining scope; callers replace only
+explicitly exposed dependencies. Exact resolution syntax remains part of the authoring review.
 
 It exposes concrete follow-up work: package identity/artifact selection, contract schema layout,
-package-local defaults versus caller aliases, nested graph scopes, and how driver/lifecycle and
+default implementation bindings for replaceable dependencies, nested graph naming details, and how driver/lifecycle and
 managed invocation metadata use the Conduit MCP profile. These should be resolved against this
 same package, not by adding a new fictional example for each field. A complete runtime implementation
 also requires the worker, publication tooling and conformance fixtures; none has started here.

@@ -41,6 +41,12 @@ The required contracts are detailed in [Resources](../protocol/RESOURCES.md), [P
 [Conduits](../protocol/CONDUITS.md), [lifecycle](../protocol/LIFECYCLE.md) and
 [configuration/conformance](../protocol/CONFIGURATION.md). These govern the example; it adds no new ruling.
 
+Package composition uses [package-local scope and explicit dependency bindings](../protocol/MODEL.md#package-scope-and-public-bindings).
+A package keeps the meaning of its internal names when imported under a caller's alias. Publish
+exports for callers and expose any dependency they may replace explicitly; an unrelated same-named
+plugin in the caller cannot change the package's implementation. Runtime Resource access still
+follows authorized Conduits.
+
 ## Variants the language must support
 
 | Author's contribution | Existing material to carry forward |

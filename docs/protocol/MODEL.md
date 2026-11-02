@@ -129,6 +129,28 @@ results and retained execution evidence serve different purposes. Detailed deriv
 mechanics and recovery coordination remain under review in the
 [composite output proposal](../proposals/authoring-syntax/CONTRACTS.md#composite-outputs-and-outcomes--proposal).
 
+### Package scope and public bindings
+
+A published package resolves its internal references within its own defining scope. Importing it
+under a caller-local alias does not rename or rebind those internal references. A same-named
+contribution in the importing template cannot silently override a package's internal dependency;
+this boundary is preserved when the package is used in a composed graph.
+
+Exports identify contributions the package makes available to callers. Imports declare dependencies
+that need bindings. Callers can supply replacements only through dependency bindings the package
+explicitly exposes, subject to the required contract compatibility. Internal names do not become
+caller-configurable merely because the package is imported.
+
+For example, a history package's internal `checks` helper still selects its history validator when
+the importing template also calls an unrelated repository validator `checks`. The caller may
+replace the history validator only if the package declares that dependency replaceable. Its
+explicit binding must satisfy the required contract; name coincidence supplies no binding.
+
+These are definition and implementation-selection rules. Selecting an export or supplying a
+dependency does not establish a live Resource connection, grant permission or change Pool ownership.
+Resolved instance bindings retain the existing implementation-retention and replacement rules.
+Exact import/export fields, dependency-default rules and reference spellings remain authoring work.
+
 ### Distribution and execution
 
 **Distribution direction:** objects should operate independently and eventually be deployable

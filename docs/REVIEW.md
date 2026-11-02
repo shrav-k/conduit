@@ -77,11 +77,16 @@ they are not Conduit conformance results. Research recommendations remain in the
 without reopening settled concepts or creating a second question queue.
 
 The [authoring packet](proposals/authoring-syntax/README.md) preserves the examples for review.
-Start with one complete package-to-instance
-walkthrough, then review four connected batches rather than restarting a long list of isolated questions:
+The first authoring ruling accepts [package-local scope and explicit dependency bindings](protocol/MODEL.md#package-scope-and-public-bindings):
+caller aliases do not override package internals, and replacements use explicitly exposed bindings.
+This settles that boundary without accepting `spec.plugins`, `{plugin, name}` or an import/export
+file layout. The next choice is whether a replaceable dependency may provide a default implementation
+binding, so callers need only supply a binding when customizing it. This remains open.
+
+Continue the complete package-to-instance walkthrough through four connected batches:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema dialect, package identity,
-   typed contents/dependencies, artifact identity and export/reference scope. A mandatory primary plugin
+   typed contents/dependencies, artifact identity and reference syntax within the accepted package scope. A mandatory primary plugin
    is not part of the model; `spec.plugins` and `{plugin, name}` are still proposals.
 2. **Templates and composition:** contribution/default binding, setup/runtime/control declarations,
    graph inputs/public results, requirement parameters, Pool-local dependencies and provision/use intent.

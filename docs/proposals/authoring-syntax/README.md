@@ -9,6 +9,10 @@ Status: **ready for the next syntax/conformance review; examples remain proposal
 rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
+The first authoring ruling now accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings).
+Caller-local aliases cannot override a package's internal references; replaceable dependencies must
+be explicitly exposed. The representations below remain proposals within that accepted boundary.
+
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).
 WIT/Smithy import boundaries, CWL composition and YANG controls provide concrete alternatives;
@@ -19,7 +23,7 @@ their recommendations do not silently amend this packet or the accepted protocol
 | [AUTHORIZATION](AUTHORIZATION.md) | Accepted requirements/grants illustrated with unapproved representation and enforcement details, moved here from the runtime packet. |
 | [AUTHORING](AUTHORING.md) | Small-handler, managed-capability, code-optional MCP and composite-operation author journeys; illustrative APIs. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, graph/output bindings, operation context and managed MCP mappings. |
-| [PACKAGE_WALKTHROUGH](PACKAGE_WALKTHROUGH.md) | One history package from publication through setup/runtime/controls, including the unresolved package-local versus caller-alias scope. |
+| [PACKAGE_WALKTHROUGH](PACKAGE_WALKTHROUGH.md) | One history package from publication through setup/runtime/controls, applying accepted package scope while leaving binding/default syntax open. |
 
 These documents include useful conceptual examples, but the [design](../../protocol/README.md) is the source
 of accepted semantics. Earlier question sequences remain in Git rather than another active queue.

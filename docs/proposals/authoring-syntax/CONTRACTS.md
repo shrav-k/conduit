@@ -65,7 +65,7 @@ configuration export omits system fields and grants. Checked writes carry precon
 
 **Accepted composition:** templates require complete compatible bindings, not a primary plugin.
 The table proposes a uniform named `plugins` map for those bindings; the field name and common
-export-reference syntax remain the next I7 ruling. Declared type defaults can still supply handlers
+export-reference syntax remain unaccepted authoring proposals. Declared type defaults can still supply handlers
 and other supported behavior, resolving their selected implementations explicitly on the instance.
 
 | Field | Responsibility |
@@ -81,8 +81,10 @@ and other supported behavior, resolving their selected implementations explicitl
 
 The proposed `plugins` map can hold one implementation or several. A filesystem operation and
 an authentication operation may come from different packages. Aliases name implementation bindings,
-not Resources, processes or permission. **I7** asks whether to adopt this map and `{plugin, name}`
-for references to its exports. Do not create a package/module hierarchy in the object registry
+not Resources, processes or permission. The map and `{plugin, name}` export reference remain proposals.
+Accepted [package scope](../../protocol/MODEL.md#package-scope-and-public-bindings) keeps internal
+references in their defining package; caller bindings replace only explicitly exposed dependencies.
+Do not create a package/module hierarchy in the object registry
 merely to resolve exports. The same rule applies to default bindings when they are resolved.
 
 ### Parsing and validation pipeline

@@ -97,8 +97,10 @@ have distinct scope, with no automatic Pool inheritance. Explicit ownership-base
 selections now match live, without provisioning Resources or granting access; explicit ID references
 stay fixed. Bounded issuance operations may now supply mandatory use restrictions, compose
 additional restrictions and return the complete grant, without creating issuer dependencies or
-treating omitted restrictions as a request for maximum access. I4 now reviews the storage extension
-boundary, lifecycle and initial engine.
+treating omitted restrictions as a request for maximum access. I4 accepts a minimal published typed
+persistence plugin contract with one bundled implementation. Management/executors retain state
+ownership and Resource domain backends remain independent. Store representation/lifecycle and the
+initial engine are the next rulings; exact public schemas remain for I7.
 Detailed schemas remain for I7.
 
 I1 is settled for the initial implementation: separate execution services supervise managed Agents/Resources while

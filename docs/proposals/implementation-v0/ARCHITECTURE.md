@@ -21,9 +21,10 @@ transport, attachment or database table does not add a family.
 
 The system Pool owns system management for registry/creation and a dedicated access-management
 Resource for grants/governing requirements, reached through the Interface's Conduits. A table does
-not automatically become a Resource. Whether authority storage
-itself stays internal, uses a bootstrap-loaded plugin or becomes an explicitly Pool-owned Resource
-is under I4 review. A plugin's private checkpoint is implementation state; a separately exposed
+not automatically become a Resource. Authority storage uses the accepted minimal published
+persistence plugin contract, initially with one bundled implementation. Whether that implementation
+is a service runtime dependency or an explicitly Pool-owned Resource remains under I4 review.
+A plugin's private checkpoint is implementation state; a separately exposed
 storage/search/authentication capability is a Pool-owned Resource. Logical ownership, storage
 implementation and physical deployment are distinct choices.
 
@@ -427,6 +428,12 @@ domain lifecycle enum on every plugin or the external protocol.
 
 ## 4. Persistence and transactions
 
+**Accepted extension boundary:** publish a minimal typed persistence plugin contract and begin with
+one bundled implementation. The responsible service retains state-transition and authority logic;
+the implementation supplies the required storage/recovery guarantees. Initial loading cannot
+depend solely on registry records inside the store being opened. Resource domain-data backends
+remain separately selectable. Engine, Resource representation and exact method schemas are open.
+
 **Candidate, I4:** SQLite can implement a local authority store, accessed through
 `rusqlite` on a dedicated store thread with a bounded queue. The async host never blocks a Tokio
 worker on a database operation. Permit bounded read connections only if consistent snapshots
@@ -569,175 +576,107 @@ retention and external-state reconciliation are separate mechanisms. Restoring a
 backup cannot establish that later provider effects never occurred or that old permissions are still
 current. Report and reconcile missing evidence; do not silently rebuild identity from search results.
 
-### Storage boundary under review
+### Storage boundary
 
-Initial establishment, explicit recovery and continuing system administration now belong to the
-accepted [Interface role](#interface-as-system-director). The storage arrangements below can
-implement that role; they need not introduce a separate user-facing bootstrap component.
+**Accepted:** v0 publishes a minimal typed persistence contract through the existing plugin
+machinery, beginning with one bundled implementation. Authors can implement the contract without
+changing the authority model. This does not require multiple engines in the first milestone;
+engine choice, public method/schema spellings, store representation and detailed startup/lifecycle
+remain open. Initial establishment and recovery follow the accepted root Interface contract.
 
-I4 has not selected an engine or extension boundary. The earlier SQLite-versus-storage-plugin
-question combined independent choices. SQLite can back an internal adapter, a published plugin
-or a Pool-owned storage Resource. Conversely, a service could use another engine internally
-without exposing a general storage plugin API. The accepted authority split stays unchanged:
-management owns shared registration/policy; one designated service owns each instance's state.
-A backend implements persistence guarantees without becoming a second writer of object semantics.
+Management owns shared registration/policy; one designated service owns each instance's state.
+The persistence implementation supplies the guarantees those owners need without deciding valid
+object transitions or becoming another authority. Publishing the contract does not expose raw store
+writes to Agents. The configured implementation is part of the trusted persistence boundary.
+Resource domain-data capabilities remain independently selectable. There is no required process,
+database or Resource per instance, plugin or record.
 
-Separate four questions:
+Separate the remaining choices:
 
-- **Meaning:** which instance/service owns a fact and may confirm its transition? Already defined
-  for core configuration, policy and operation outcomes; domain data follows its Resource contract.
-- **Storage contract:** which reads, conditional writes, atomic groups and recovery guarantees must
-  the persistence implementation supply? This can be internal or a published extension contract.
-- **Engine and deployment:** SQLite, another local engine or a service; one service can store many
-  instances, and physical sharing need not merge logical authority or Pool ownership.
-- **Lifecycle:** what starts the storage dependency, how it is inspected, and how it is repaired
-  when its own registry/connection records cannot be read? This is the bootstrap question.
+- **Contract detail:** checked reads/writes, atomic groups, durable operation records and uncertain-
+  write recovery must satisfy the accepted service semantics. Exact schemas and conformance fixtures
+  belong to authoring/implementation work; MCP invocation alone supplies none of these guarantees.
+- **Representation/lifecycle:** a selected plugin may serve as a service runtime dependency, or a
+  Pool-owned Resource may expose the persistence capability with its own supported lifecycle.
+- **Engine/deployment:** the bundled implementation could use SQLite or another engine. Physical
+  sharing does not merge logical state authority or Pool ownership. Engines do not make provider
+  effects atomic, provide automatic failover or select a backup policy by themselves.
 
-For a shared history Resource, the messages and reader positions are domain data governed by its
-capability. The executor's record that the Resource exists, its confirmed settings and its setup
-progress are runtime state. A plugin can also have private recovery information, such as a remote
-subscription cursor: where that is stored must be declared by its lifecycle/recovery contract,
-not assumed to survive in helper memory. A cursor used as recovery evidence is different from a
-rebuildable cache. No second canonical copy of message content or provider data is required merely
-for runtime tracking; references and sufficient recovery evidence can connect the two. Captured
-payloads and retention still follow their accepted contracts and pending I6 policy.
+#### Concrete persistence examples
 
-Consider a directory Resource. Its backing files remain on disk. Conduit retains its stable ID,
-Pool owner, fixed definition, configured path and lifecycle evidence. The filesystem plugin supplies
-operation outcomes and any supported reconciliation. Moving Conduit's metadata to another backend
-does not copy the directory or change who may expose it through a Conduit. Likewise, a state-store
-plugin should not decide whether an Agent may issue a new provider request; the responsible runtime
-still checks the access path and current policy.
+**A grant for shared Linear access.** Access management checks the administrator's authority,
+constructs Agent A's participation grant and required restrictions, then persists the related access
+records and issuance outcome through the selected implementation. The implementation honors storage
+preconditions and commit guarantees; access management determines the permitted Linear access.
+A lost commit reply requires reconciling the recorded write/outcome rather than assuming failure
+or issuing another grant. No transaction across independent services follows. Agents and Interfaces
+continue administering grants through the access-management Resource and authorized Conduits.
 
-Three arrangements help expose the tradeoffs; none is accepted. They can also be combined: a
-published plugin can implement a Pool-owned Resource whose initial loading uses bootstrap:
+**An interrupted database setup.** Executor A retains a database Resource's identity, definition
+and graph progress while the database retains its own tables. If migration M commits in the database
+but completion is not retained by the executor, the persistence implementation recovers that recorded
+uncertainty. The database operation's recovery implementation checks migration evidence; only then
+can the executor confirm and retain an outcome. Changing the persistence implementation neither
+migrates application tables nor proves M failed. Another executor remains independently authoritative
+for its state even when both use the same implementation package.
 
-| Boundary | Example | Main tradeoff |
+**Shared Agent message history.** A history Resource's backend retains messages and independent
+reader positions under its capability contract. Its executor separately retains the Resource's
+fixed definition, confirmed configuration and operation/recovery evidence. The public authority-
+persistence contract applies to that second responsibility. One package may implement both contracts,
+but shared code or an engine does not merge authority, access or retention rules. No Resource per
+message or duplicate canonical transcript is required; observation payload capture remains I6.
+
+A plugin's private recovery information, such as a subscription cursor, also needs a declared
+persistence/recovery contract; helper memory is not implicitly durable. Rebuildable caches differ
+from recovery evidence. A directory Resource similarly keeps its files on disk while Conduit
+retains identity, ownership, path and lifecycle evidence. Moving metadata storage does not move the
+files or change who may access them.
+
+#### Store representation and lifecycle — proposed
+
+Both arrangements below use the accepted published contract and one bundled implementation:
+
+| Arrangement | Concrete startup/operation | Tradeoff |
 | --- | --- | --- |
-| Internal authority-storage adapter | The executor calls a private storage interface implemented with SQLite. The management Resource exposes supported inspection/controls, not raw SQL. | Smallest initial dependency surface; outside authors cannot replace it through the public plugin contract yet. |
-| Published storage contract with bootstrap loading | A retained plugin implements the required persistence operations; startup can load/connect it from an explicit configuration independent of the store being opened. | Extensible without ordinary instance setup recursion, but requires precise storage semantics and a special startup/repair contract. It can be local or remote; MCP alone supplies none of those persistence guarantees. |
-| Pool-owned storage Resource used by authority services | A system Pool owns a state-store Resource, and services use selected Conduit paths to it. It is visible in the same object model as application storage. | Greatest model uniformity; requires an acyclic bootstrap path plus explicit rules for stopping, disconnecting, upgrading or deleting a dependency holding live system state. |
+| Service runtime dependency | A management or execution service loads its retained persistence implementation and opens its configured store before serving work. The root's declared operations direct establishment/recovery; the Interface inspects the service and its storage dependency. | Simpler foundational dependency chain. The store has no separate Resource identity or independently exposed lifecycle in v0; authoring still uses the public plugin contract. |
+| Pool-owned persistence Resource | The system Pool owns a Resource exposing the persistence capability, and authority services connect through declared Conduits. The root has enough local definition/implementation information to establish or recover it before normal registry operations. | Uniform Resource inspection and lifecycle, with additional rules for a dependency holding the records needed to administer itself. Ordinary stop/disconnect/delete cannot be treated as harmless while services depend on it. |
 
-The third boundary is possible, but the naive sequence is circular: read the registry to find the
-storage Resource; read its Conduit/grants to connect; use that connection to read the registry.
-A possible bootstrap sequence is to load a small explicit descriptor identifying the existing
-store and required implementation before ordinary registry operations, open and verify that store,
-then recover its system-Pool/Resource/Conduit representations. A descriptor might identify endpoint,
-artifact and credential references; exact contents and authority verification remain undecided.
-It must not become a second writable copy of all configuration or a cache granting offline access.
-A failed store open cannot silently create an empty registry, replace identities or restore defaults.
-This builds on the accepted minimal bootstrap, but its storage dependency contract is a new choice.
+Recommend a service runtime dependency for v0, keeping its implementation selection, failures and
+supported repair visible through the Interface. This recommendation is not accepted. It concerns
+foundational storage placement, not a return to a private persistence API. Separately exposed
+storage capabilities remain Pool-owned Resources; a plugin's internal persistence dependency does
+not create an unowned Resource. A future Resource representation would need its lifecycle and
+migration contract rather than silently registering a second authority.
 
-A storage capability being visible through the Interface does not by itself settle its startup
-mechanism. The second boundary could later expose a Pool-owned management/inspection representation;
-the third still needs some startup mechanism outside the dependency cycle. Representation, runtime
-ownership and initial loading should be reviewed separately rather than treating visibility as proof
-that every ordinary lifecycle operation is safe or available.
+For either arrangement, the root's locally loadable definition and enough information to load the
+retained implementation and locate existing state must precede registry access. Open and verify
+the intended existing store; missing code or an unreachable store is a dependency gap, not a fresh
+installation. Essential loading information cannot reside only inside the store it is needed to
+open, and must not become a second writable copy of live configuration or an offline permission
+cache. Exact descriptor, credential custody and loading syntax remain open.
 
-Kubernetes provides two relevant reference points: the API server and etcd have separate roles,
-and kubelet-managed static Pods can start from local manifests independently of API-managed Pod
-creation. Those are examples of separating persistence and bootstrap, not a proposal to import
-Kubernetes scheduling or restart rules. [Components](https://kubernetes.io/docs/concepts/overview/components/) ·
-[Static Pod configuration](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/)
-The etcd transaction API also demonstrates that conditional multi-record commits need not be an
-SQL-shaped public interface. Its semantics would still need checking against Conduit's requirements;
-this is not selection of etcd. [etcd transactions](https://etcd.io/docs/v3.6/learning/api/#transaction)
+The Resource arrangement additionally needs to break two dependency cycles: locating its own
+Resource/Conduit records before the registry is readable, and verifying storage access through
+access-management state held in that same store. The accepted explicit owner initialization/recovery
+is a starting point; it does not by itself define ordinary service storage access or grant
+applications an ongoing bypass. These obligations would need resolution if that arrangement is
+selected. Resource visibility alone does not resolve them.
 
-Any backend must preserve checked revisions, atomic updates of related local facts, durable
-operation identity/outcomes and explicit unavailable/unknown states. The responsible service
-retains transition logic, caller attribution and authority checks; plugins do not write arbitrary
-rows in another service's store. An external store adds reachability/authentication concerns and
-recovery when a commit reply is lost. A backend contract must define how to reconcile a possibly committed
-write; it cannot infer failure from a missing reply. Choosing an engine does not make external
-provider effects atomic or supply replication, automatic failover or a backup policy.
+Kubernetes offers relevant reference points: API services and etcd have separate responsibilities,
+and static Pods can start from local manifests independently of API-managed Pod creation. This is
+inspiration for acyclic loading, not adoption of Kubernetes scheduling/restart semantics.
+[Components](https://kubernetes.io/docs/concepts/overview/components/) ·
+[Static Pods](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/)
+The etcd transaction API also illustrates conditional commits without an SQL-shaped public contract;
+it is a reference, not engine selection. [Transactions](https://etcd.io/docs/v3.6/learning/api/#transaction)
 
-**Next ruling — published or internal contract:** recommend a published typed persistence contract
-implemented through the existing plugin machinery, with the implementation needed for initial
-loading available before registry access. This follows the project's emphasis on authorable,
-replaceable contracts. The simpler alternative keeps authority-storage interfaces internal in v0
-and defers a public extension contract. Neither option changes who owns authoritative state or
-requires Resource domain data to use the same backend. A published contract costs additional
-schema, failure-semantics and conformance work; MCP invocation alone is insufficient.
-
-For example, after restarting a service, its selected implementation must recover confirmed object
-revisions and recorded operation progress. The service still decides whether an operation is
-authorized and whether its result can be confirmed. Replacing the persistence implementation would
-need an explicit migration/replacement procedure, not a hot swap or a second concurrent authority.
-The root's locally loadable definition and implementation locator cannot depend solely on records
-inside the store they are needed to open.
-
-This recommendation is not accepted. Whether the implementation is represented as a Pool-owned
-storage Resource, its startup/lifecycle treatment and its first engine follow the extension-boundary
-choice. SQLite remains a candidate, not a selected engine. See [I4](REVIEW.md#i4--local-transactional-authority).
-
-#### Concrete comparison: internal storage and a published persistence contract
-
-These examples answer the request for comparison; they do not accept the proposed public contract,
-select an engine or establish a storage Resource. Hold the engine constant to isolate the choice:
-both an internal adapter and a published plugin could use SQLite in the first implementation.
-
-| Question | Internal adapter initially | Published persistence plugin contract |
-| --- | --- | --- |
-| Who decides whether a grant or instance change is valid? | The responsible Conduit service. | The same responsible service. |
-| Who persists the related records and checks the supplied storage preconditions? | An internal storage implementation. | A selected implementation of the published contract. |
-| How could an outside author add a different backend? | Through core integration work until a public extension exists. | Implement the contract and demonstrate its guarantees through conformance tests; deployment/migration still need explicit support. |
-| What must be standardized now? | Internal semantics sufficient for the chosen implementation and accepted recovery behavior. | The external schemas, commit/precondition guarantees, failure reporting and recovery behavior needed for interchangeable implementations. |
-| Does this select a process or Resource per store? | No. | No; implementation hosting and Resource representation are separate decisions. |
-
-**A grant for shared Linear access.** An authorized Interface connects Agent A with read access to
-Euphony's Linear Resource. Access management validates the issuance and constructs the participation
-grant and required restrictions. It then persists the related access records and issuance outcome.
-With an internal adapter, that storage call stays inside the internal implementation. With a plugin,
-the service sends the same logical commit through the published storage contract. The plugin must
-honor its supplied preconditions and atomicity/durability promises; it does not decide what Linear
-access A deserves. A lost commit reply requires reconciliation of the recorded write/outcome rather
-than assuming failure or issuing another grant. No transaction across independent services follows.
-
-The Interface and Agents still administer grants through the access-management Resource and their
-Conduits. Publishing the persistence contract does not expose raw authority-store writes to them,
-make stored policy into ordinary editable knowledge, or let an arbitrary MCP service become trusted
-authority. The responsible service remains the author of state transitions; its configured storage
-implementation is part of the trusted persistence boundary.
-
-**An interrupted database setup.** Executor A supervises a Pool-owned database Resource. It retains
-the Resource identity/definition and setup progress while the database retains its own tables.
-If migration M commits in the database but its completion is not retained by the executor, either
-storage arrangement recovers the same uncertainty. The database operation's recovery implementation
-checks migration evidence; the authority-store plugin merely supplies the executor's retained
-records and accepts a later confirmed outcome. Changing that plugin neither migrates application
-tables nor proves that M failed. A different executor's state remains independently owned even if
-both use the same plugin package.
-
-**Shared Agent message history.** The history Resource's backend retains messages and independent
-read positions under its capability contract. Its executor separately retains the Resource's fixed
-definition, confirmed configuration and operation/recovery evidence. A public authority-persistence
-contract applies to that second responsibility; a history backend can already be supplied through
-the Resource's own plugin contract under either storage approach. One package could implement both
-contracts, but shared code or an engine does not merge their authority, access or retention rules.
-This adds no Resource per message and does not require a duplicate canonical transcript in the
-executor store. Observation payload capture remains the separate I6 choice.
-
-**The first load after a restart.** The root's definition and enough information to load its retained
-implementation and locate existing state must be available before reading the registry. An internal
-adapter ships that persistence behavior with core; a published plugin makes it an explicitly
-selected implementation. Both must open the intended existing store and reconcile retained setup
-progress. A missing implementation or unreachable store reports a dependency gap rather than an
-empty new system. Exact local descriptor, credential custody and loading syntax remain open.
-
-Representing the store as a **Pool-owned Resource** is an additional modeling choice compatible with
-the published contract. It would make the store's instance and supported administration visible
-through the ordinary object model. It also requires rules for administering a dependency that holds
-the registry/grants needed to reach it; its only startup instructions cannot be inside itself.
-The accepted locally loadable root and explicit owner recovery provide a starting point, not a
-complete storage lifecycle. Visibility through the Interface alone does not require this Resource
-representation.
-
-The immediate ruling is whether outside authors should be able to implement the authority-persistence
-contract in v0. Engine selection, public method names, Resource representation and exact startup
-configuration remain separate. A public contract is recommended for the project's extension goals;
-the internal option reduces the first milestone's protocol surface. A public contract could start
-with one bundled implementation and conformance fixtures, rather than support several engines at
-once; that is a delivery proposal, not added experiment scope. Neither boundary is accepted yet.
+The first implementation must preserve revisions, related local commits, durable outcome evidence
+and explicit unavailable/unknown results. An uncertain storage commit needs reconciliation, just
+as an uncertain provider effect does; a missing reply is not proof of failure. Engine replacement
+requires a supported explicit migration/replacement procedure, with one authority for each fact.
+SQLite remains a candidate for the bundled implementation. See [I4](REVIEW.md#i4--local-transactional-authority)
+for the pending representation/lifecycle and engine rulings.
 
 ## 5. Graph and runtime execution
 

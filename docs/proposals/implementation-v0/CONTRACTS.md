@@ -22,6 +22,14 @@ checks, and Conduit paths enforce current authority. Neither package installatio
 MCP connectivity grants permission by itself. Use that document as the single detailed proposal
 for authorization inputs, issued records, decisions, delegation and evidence.
 
+**Accepted persistence extension:** v0 publishes a minimal typed contract for storing/recovering
+management and executor state, with one bundled implementation. The owning service still decides
+state transitions and permissions. The contract must support its required checked updates,
+durable progress and reconciliation of uncertain writes; exact methods, schemas and conformance
+fixtures belong to the final authoring pass. The [storage boundary](ARCHITECTURE.md#storage-boundary)
+keeps engine choice and Resource representation open. This is not a general database/query API or
+permission for ordinary plugins to edit another service's state.
+
 ## 1. Identity and version domains
 
 Keep the following values distinct in Rust types and wire records:
@@ -35,7 +43,7 @@ Keep the following values distinct in Rust types and wire records:
 | API version | Proposed `conduit/v0alpha1` | Interpretation of the common object envelope. This is a protocol group, not a DNS or ownership claim. |
 | Type/capability version | Exact group/name/version tuple | Configuration or capability semantics, separate from implementation release. |
 | Implementation identity | Published contract/binding identity, retained adapter/artifact identities and external service binding where applicable | Conduit-controlled definitions/code are pinned; endpoint identity and observed provider versions do not prove exact hosted code. |
-| Storage schema version | Host-internal migration number | Interpretation of persisted tables; never substituted for protocol versions. |
+| Storage schema version | Implementation-managed format revision | Interpretation/migration of the selected backend's persisted state; distinct from the public persistence contract and object protocol versions. |
 | Observation cursor | Opaque scoped cursor | Where a client resumes reading; not permission or proof it understood earlier content. |
 
 Readable references retain `{kind, form, name}`. Established bindings store resolved IDs separately.

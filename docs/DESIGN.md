@@ -237,6 +237,15 @@ retain their actual enforcement limits; preserving a process is not a sandbox gu
 
 ### Plugins and independently accessible MCP components
 
+**Authority-state persistence:** v0 publishes a minimal typed persistence contract that plugins can
+implement, starting with one bundled implementation. Management and execution services retain
+ownership of their configuration, grants, progress and outcomes; the selected implementation
+provides the storage and recovery guarantees those services require. The implementation needed for
+initial loading must be available before registry access. Publishing this contract does not expose
+raw authority-store writes to Agents or replace a Resource's domain-data capability. The engine,
+representation as a Pool-owned Resource and exact schemas remain under review. This establishes an
+extension boundary without requiring several backend implementations in the first milestone.
+
 A plugin publishes reusable contracts and explains how they are fulfilled. Its implementation
 binding can select authored code, an existing local/remote MCP service, a graph composing selected
 operations, or a combination. No new plugin-specific executable is required when existing bindings,

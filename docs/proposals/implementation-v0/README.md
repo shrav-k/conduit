@@ -50,7 +50,9 @@ Authored code normally uses supervised instance-associated helpers; trusted buil
 remain in-process. Instance state authority and endpoint ownership are unchanged; exact helper
 grouping remains open. Existing MCP services retain supervision. Code-optional contributions use
 shared adapters or graph composition without a worker per package.
-Local transactional storage remains an I4 candidate, not a requirement that all distributed state live in one file.
+I4 accepts a minimal published persistence plugin contract with one bundled implementation.
+Services retain state ownership; engine and store representation/lifecycle remain open. Local
+transactional storage is a candidate, not a requirement that distributed state live in one file.
 Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
 
 Templates remain the complete authoring entry point: typed YAML, finite setup graphs, declared

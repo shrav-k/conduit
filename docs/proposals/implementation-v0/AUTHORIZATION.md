@@ -425,9 +425,10 @@ verified local-owner context when normal access management is unavailable, is th
 Recovery preserves known identities, data and outcomes and reconciles uncertain effects. This does
 not reopen initialization automatically or authorize ordinary application requests offline.
 
-**Next area — persistence:** choose whether authority storage has a published plugin contract in
-v0 or remains behind internal service interfaces initially, then settle its representation/lifecycle
-and first engine. These choices must preserve the accepted ownership and recovery contracts.
+**Accepted persistence boundary:** v0 publishes a minimal typed persistence plugin contract with one
+bundled implementation. Services retain authority over their state; Resource domain backends remain
+independent. Representation/lifecycle and engine remain open. The next comparison is a service runtime
+dependency versus a Pool-owned storage Resource, preserving the accepted ownership and recovery rules.
 
 The final I7 pass chooses policy/grant schemas, package publication, references, operation names,
 dynamic MCP-operation matching and retained implementation bindings. Registering new contract

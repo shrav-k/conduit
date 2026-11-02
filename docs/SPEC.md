@@ -91,8 +91,10 @@ configuration/revision and operation results. The Interface aggregates those sou
 stale observations; it is not another configuration authority. Resource backends own their domain
 data. V0 has no offline grants: retain supervision and outcomes of already-dispatched work,
 but hold new managed requests whose current permission cannot be established. Work with verifiable
-permission can continue; existing stop/revocation rules and delivery checks still apply. Concrete
-storage and production placement remain open. The first experiment uses management and two
+permission can continue; existing stop/revocation rules and delivery checks still apply. V0 publishes
+a minimal typed persistence plugin contract with one bundled implementation for management/executor
+state. Services retain state ownership; Resource domain backends remain independent. Storage engine,
+representation/lifecycle and production placement remain open. The first experiment uses management and two
 independent executors as separate processes on one machine, with controlled connection failures.
 Two-machine validation follows before remote support is claimed; no failure guarantee is yet tested.
 

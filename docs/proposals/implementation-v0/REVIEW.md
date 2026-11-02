@@ -121,7 +121,8 @@ one review queue rather than another decision ledger.
 settles the authorization model, independent grants, dedicated access-management Resource and
 explicit governing targets with live ownership-based matching, and bounded issuance operations.
 Root-directed first launch, owner-authorized initialization and explicit recovery through the root
-Interface are also accepted. Remaining I4 work is storage placement/backend. I5 credential
+Interface are also accepted, as is a minimal published persistence contract with one bundled
+implementation. Remaining I4 work is storage representation/lifecycle and engine. I5 credential
 custody/enrollment and I6 capture defaults add two bundles.
 That is three planned conceptual bundles, beginning with storage, followed
 by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
@@ -133,7 +134,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I4 | Foundational storage | Startup, first authority and explicit root Interface recovery accepted. Next published versus internal persistence contract, then representation/lifecycle and engine. |
+| I4 | Foundational storage | Minimal published persistence contract and one bundled implementation accepted. Next service runtime dependency versus Pool-owned storage Resource, then engine. |
 | I5 | Credential custody | OS-backed Conduit service secrets, native-runtime-owned Agent authentication; no implicit plaintext fallback. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
@@ -416,7 +417,7 @@ implementation and conformance work; no implementation has started.
 
 ## I4 — Local transactional authority
 
-**Status: root-directed first launch, first authority and recovery route accepted; storage remains open.**
+**Status: startup/recovery and minimal public persistence contract accepted; store representation/lifecycle and engine remain open.**
 The runtime can start the root Interface from a locally available definition before registry
 services exist. Its declared graph establishes the system Pool, system management and dedicated
 access-management Resources, and their management connections. Runtime support supplies initial
@@ -438,16 +439,19 @@ retain valid progress, identities, data and outcomes and reconcile uncertain eff
 authorize automatic reinitialization. Exact methods and retained-record layout remain implementation/
 authoring work.
 
-**Next discussion — persistence extension boundary:** recommend a published typed contract implemented
-through the existing plugin machinery, with the implementation needed for initial loading available
-before registry access. This follows the emphasis on authorable contracts; it adds storage-semantics
-and conformance work compared with keeping authority-storage interfaces internal initially. The
-service still owns state transitions and authority. Representation as a Pool-owned Resource,
-dependency lifecycle and the engine remain separate choices. This recommendation is not accepted.
-The current response requests [concrete comparisons](ARCHITECTURE.md#concrete-comparison-internal-storage-and-a-published-persistence-contract):
-grant persistence, interrupted database setup, shared message history and first loading. These hold
-the service-ownership rules constant and distinguish authority-state storage from Resource data;
-the examples introduce no new ruling or experiment scope.
+**Persistence extension is accepted:** publish a minimal typed contract through the plugin machinery
+and start with one bundled implementation. Management/executors retain state-transition and authority
+ownership; Resource domain-data backends remain independent. The implementation needed for initial
+loading must be available before registry access. The [examples](ARCHITECTURE.md#concrete-persistence-examples)
+distinguish grant persistence, database effect recovery and shared message content. This does not
+select an engine, require several implementations or finalize public method/schema names.
+
+**Next discussion — store representation/lifecycle:** recommend loading the persistence plugin as
+a service runtime dependency in v0, with selection, failures and supported recovery visible through
+the Interface. The alternative represents it as a system-Pool-owned Resource reached through
+Conduits. Both use the accepted public contract; the Resource arrangement additionally needs rules
+for starting and administering the dependency that stores its own registry/access records. See the
+[comparison](ARCHITECTURE.md#store-representation-and-lifecycle--proposed). This recommendation is not accepted.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.
@@ -507,37 +511,28 @@ are I7/conformance work.
 
 **Next conceptual choices, in order:**
 
-1. Should authority-state persistence have a published typed plugin contract in v0, or remain
-   internal initially? Ordinary Resource backends remain independently selectable either way.
-2. Settle storage representation/lifecycle and the initial engine. Exact loader/record fields and
+1. Should the selected persistence implementation be a service runtime dependency in v0 or a
+   Pool-owned Resource with its own lifecycle? Both retain the accepted public extension contract.
+2. Select the initial engine. Exact loader/record fields and
    recovery methods remain in I7 or implementation work; they need not become individual rulings.
 
 The proposal's field inventories, identity mapping, decision/evidence contract and candidate
 Experiment 002 cases are not adopted schemas or new experiment scope. It chooses no evaluator,
 token format, public policy DSL or storage engine. Local root-definition loading and graph-directed
-establishment, owner-authorized initialization and the explicit recovery route are accepted; the
-earliest durable progress mechanism and storage selection remain open.
+establishment, owner-authorized initialization, explicit recovery route and minimal published
+persistence contract are accepted; store representation/lifecycle, engine and detailed format remain open.
 
 Then decide how authority storage fits that role. The
 [recovery examples](ARCHITECTURE.md#worked-storage-and-recovery-examples) establish the relevant
-failure cases; the [storage comparison](ARCHITECTURE.md#storage-boundary-under-review) separates
-contract, representation and engine. SQLite and pluggability are not mutually exclusive. No storage
-ruling or detailed recovery algorithm has been accepted. The accepted
+failure cases; the [storage boundary](ARCHITECTURE.md#storage-boundary) separates
+contract, representation and engine. The minimal public contract and one bundled implementation are
+accepted; SQLite and detailed recovery algorithms are not. The accepted
 management/instance-state authority split is unchanged; storage supplies persistence without
-becoming a second owner of policy or instance transitions. Compare three arrangements, which can
-also be combined rather than treated as a closed set of exclusive choices:
-
-1. An internal storage adapter, with public backend plugins deferred.
-2. A published storage contract implemented by a plugin that startup can load independently of
-   the normal object registry and instance setup it supports.
-3. A Pool-owned storage Resource reached through Conduits, with an explicit acyclic bootstrap
-   mechanism and lifecycle rules for this foundational dependency.
-
-The third is possible; it must explain how to reach the records describing the storage Resource
-and its own connection. The second can also be visible through the Interface without requiring
-ordinary instance setup to establish the first store. None requires another object family, a
-process/database per object or moving all Resource data into the authority store. Exact bootstrap
-configuration, storage API and lifecycle restrictions are not settled by the comparison.
+becoming a second owner of policy or instance transitions. Loading the selected plugin as a service
+dependency would avoid requiring a separate storage Resource during foundational startup. A Pool-owned
+Resource could expose the same implementation, with additional acyclic loading and self-administration
+rules. Neither requires another object family, a process/database per object or moving Resource domain
+data into the authority store. Exact startup configuration and public schemas remain open.
 
 **Engine candidate, after that boundary:** SQLite behind each local authority is still a reasonable
 first implementation. In Experiment 002, management could retain templates/registration/policy,
@@ -553,7 +548,7 @@ an internal adapter still needs migrations and conformance tests. No cross-servi
 automatic failover or offline permission grant follows. Services exchange information through their
 contracts; a WAL database is not shared across machines. [WAL constraints](https://sqlite.org/wal.html)
 
-Finish I4 by settling the storage extension/lifecycle boundary and initial implementation. Detailed SQL,
+Finish I4 by settling store representation/lifecycle and the initial engine. Detailed SQL,
 method names and helper organization need not become separate conceptual rulings.
 
 ## I5 — Credential custody and account compatibility

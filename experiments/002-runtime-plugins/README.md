@@ -36,7 +36,10 @@ authority, then establishes ordinary management grants once access management is
 authority cannot silently reopen after an outage. Explicit setup resume and foundational repair
 use the locally loadable root Interface's declared recovery operations, with runtime owner
 verification even when ordinary management access is broken. Valid progress and existing state are
-preserved; uncertain effects require reconciliation. Storage and exact recovery methods remain open.
+preserved; uncertain effects require reconciliation. V0 now includes a minimal published persistence
+plugin contract with one bundled implementation. This proof will use that boundary for its retained
+management/executor state; it does not require several storage engines. Engine, store representation/
+lifecycle, exact methods and fixtures remain open.
 These are design rulings, not implemented fixture behavior or additional test scope.
 
 ## Question

@@ -631,7 +631,8 @@ reader positions under its capability contract. Its executor separately retains 
 fixed definition, confirmed configuration and operation/recovery evidence. The public authority-
 persistence contract applies to that second responsibility. One package may implement both contracts,
 but shared code or an engine does not merge authority, access or retention rules. No Resource per
-message or duplicate canonical transcript is required; observation payload capture remains I6.
+message or duplicate canonical transcript is required; observation payload capture follows the
+accepted explicit recording-policy rules in I6.
 
 A plugin's private recovery information, such as a subscription cursor, also needs a declared
 persistence/recovery contract; helper memory is not implicitly durable. Rebuildable caches differ
@@ -814,8 +815,9 @@ offline grant. Readiness losses affect the dependent capability under existing f
 
 Observability should explain which requirement/version applies, which endpoint supports it and
 why an action is unavailable, without claiming validation proved all runtime behavior. Detailed
-payload capture remains I6; no new full-input logging default is introduced. The proposal does
-not select an expression engine, extra worker processes or an OS sandbox. See the
+payload capture follows declared recording policy; no general full-input logging default is
+introduced. The proposal does not select an expression engine, extra worker processes or an OS
+sandbox. See the
 [contract proposal](CONTRACTS.md#composable-relationship-requirements--proposed-contract).
 
 ### Shared authentication
@@ -973,9 +975,20 @@ journal: the OpenTelemetry SDK deliberately allows bounded queues and dropping s
 pressure. Do not use an exporter acknowledgement as evidence that a configuration was applied.
 [OpenTelemetry SDK][otel]
 
-**I6** settles payload defaults. Irrespective of that choice, persist required recovery inputs or
-report that recovery cannot replay them; keep credentials out of logs; distinguish missing usage
-from zero and overlapping parent/subagent totals. The Interface must expose actual coverage.
+**Accepted initial package:** correlated operation/graph/plugin traces, structured diagnostics and
+errors, a small service-health metric set and optional OpenTelemetry export. Use these to inspect
+operation duration, pending work, reconnects, persistence failures and observation loss through
+the Interface; exact metric names remain authoring work. No external dashboard/backend is required.
+
+The low-volume synthetic experiment records all instrumented operation traces at source and
+explicitly enables bounded fixture-input/output capture. Bounded delivery can still lose diagnostics;
+report buffering/export gaps. Real prompts, documents, tool payloads and helper output require a
+declared recording policy with bounds, scoped references and sensitive-field handling as applicable.
+Message/history content remains governed by its Resource contract. Required authoritative records
+are independent of sampling/export. Persist safely retained inputs needed for promised recovery,
+or report that recovery cannot replay them. Keep credentials out of logs; distinguish missing usage
+from zero and overlapping parent/subagent totals. CPU/token collectors can extend this foundation;
+the Interface must expose actual coverage. Retain captured evidence until explicit purge.
 
 ## 11. Resource limits and failure policy
 

@@ -9,15 +9,15 @@ require authenticated endpoint identity, retained target outcomes and authority-
 These remain [review work](REVIEW.md#i1--independent-execution-and-management); serialization alone
 would not make this a complete distributed protocol.
 
-Status: draft contract design, 2026-11-01. All new field names, namespaces, limits and wire
+Status: draft contract design, 2026-11-02. All new field names, namespaces, limits and wire
 profiles here are proposed. [DESIGN](../../DESIGN.md) supplies accepted semantics;
 [review I3 and I7](REVIEW.md) cover the main extension and authoring choices. Examples are
 explanatory, not files accepted by an existing Conduit executable.
 
 The companion [Policy and Grant contracts](AUTHORIZATION.md) specify the accepted authorization
 model and proposed detailed structure for Agents, Interfaces and other managed callers. Policy and Grant belong in the
-protocol vocabulary beneath the five families; their detailed semantics are being ruled on in I4
-before I7 chooses exact schemas. Requirements describe guarantees, plugins implement operations and
+protocol vocabulary beneath the five families; I4 settles their conceptual semantics and I7 chooses
+exact schemas. Requirements describe guarantees, plugins implement operations and
 checks, and Conduit paths enforce current authority. Neither package installation, graph setup nor
 MCP connectivity grants permission by itself. Use that document as the single detailed proposal
 for authorization inputs, issued records, decisions, delegation and evidence.
@@ -629,7 +629,8 @@ for supported re-establishment rather than claiming transparent replay.
 
 Content records retain their Resource ownership, revisions, derivation/access dependencies and
 permitted provenance. Event views can refer to them without copying full private content into
-every observation stream. **I6** decides what full payloads are retained by default. Exported
+every observation stream. Full tool/model payloads require declared recording policy under the
+accepted I6 capture rules. Exported
 configuration never carries secrets, grants, live handles or readiness as if they were settings.
 
 ## 9. Agent and provider adapters
@@ -685,7 +686,12 @@ delivery. Metric-specific payloads remain extensible, including measurement scop
 limits. Exact common fields and package syntax are I7 work. Optional observations or exporter
 receipts cannot substitute for authoritative operation outcomes and recovery records. Supported
 observation controls, connection changes and fixed-implementation upgrades use existing rules.
-Full tool/model capture defaults remain I6, separately from this extension boundary.
+I6 accepts correlated operation traces, structured diagnostics and a small health metric set, with
+optional OpenTelemetry export. The synthetic experiment enables all instrumented traces at source
+and explicit bounded fixture-input/output capture. Real full-content capture follows declared
+recording policy, with bounds, sensitive-field handling and scoped references as applicable.
+Report diagnostic loss and incomplete coverage; required authoritative evidence is not sampled.
+This selects initial behavior, not exact wire fields, metric names or a mandatory external backend.
 
 Use one application service API behind MCP tools and CLI/TUI actions. The CLI must not edit SQLite
 directly or implement a second permission/effect pipeline. This is one semantic contract, not a

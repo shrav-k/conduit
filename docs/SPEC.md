@@ -286,7 +286,14 @@ Observation uses extensible plugin contracts and authorized Conduits. Begin with
 bundled foundation; add instance-relevant metrics/capture through compatible plugins over time.
 Pool-owned Resources may collect, retain or export observations. The Interface combines sources
 with explicit freshness, coverage and measurement attribution. Optional instrumentation does not
-replace authoritative operation/recovery records; capture defaults remain under I6 review.
+replace authoritative operation/recovery records.
+
+The initial package supplies correlated operation traces, structured diagnostics, a small set of
+service-health metrics and optional OpenTelemetry export. Record all instrumented traces at source for
+the low-volume synthetic experiment, with explicit bounded fixture-input/output capture and visible
+buffering/export loss. Real-workload full content requires declared recording policy; credentials
+stay out of ordinary logs. Message/history content follows its Resource contract. Required operation
+and recovery evidence is unsampled, independent of exporters and retained until explicit purge.
 
 Report uncertainty, stale views and integration gaps. Distinguish usage counts, estimates, unknown
 data and observed zero; avoid overlapping parent/subagent totals. Export failure cannot erase

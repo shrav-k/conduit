@@ -24,8 +24,8 @@ and bundled first-party plugins plus explicit local installation. Detailed mecha
 I4's authority/startup/persistence choices are also settled, including the SQLite bundled engine.
 I5 accepts OS credential custody through a replaceable implementation bundle, initially macOS
 Keychain, and Interface-guided adapter enrollment/unlock. I6 accepts extensible observation plugins
-and Conduits with a lightweight initial bundle. Its content-capture default precedes the final
-contract/template syntax review. Existing
+and Conduits, correlated diagnostics, a small health metric set and explicit content-capture policy.
+I1–I6 are conceptually settled; I7 is the final contract/template syntax review. Existing
 infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing
 their efficiency. The protocol is the durable product; a particular host or storage arrangement
@@ -93,7 +93,7 @@ remains unchanged so reviewers can compare it with the proposed implementation l
 - **Proposed** means an implementation choice recommended here, including crate names, storage
   layouts, wire profiles and numeric limits.
 - **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on; I1–I5 are conceptually settled, and I6–I7 retain the choices in REVIEW.
+  pending until ruled on; I1–I6 are conceptually settled, and I7 retains the choices in REVIEW.
   Routine engineering choices can be adopted with the implementation
   and evidence, without asking a separate question for every field.
 - A new counterexample can revise this proposal. It cannot silently override the current design.

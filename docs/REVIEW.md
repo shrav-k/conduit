@@ -14,17 +14,18 @@ branch until merged. The earlier baseline remains available in Git history at `c
 
 The [implementation proposal](proposals/implementation-v0/README.md) now describes processes,
 contracts, persistence, ownership, crate organization and delivery milestones. Its
-[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I5
-are conceptually settled, and I6–I7 remain for review. Start there for the
+[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I6
+are conceptually settled, and I7 remains for authoring/schema review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** I6 capture defaults, then I7 syntax.
-I6 now accepts observation plugins and authorized Conduits, starting with a lightweight bundle
-and adding instance-relevant capabilities over time. Required operation/recovery evidence remains
-independent of optional metrics, full-content capture and exporters. The initial package's
-content-capture default still needs a ruling.
-The [cloud/platform observability research](research/OBSERVABILITY.md) proposes a concrete initial
-debugging package and richer synthetic-fixture capture; these recommendations remain for I6.
+**Current focus:** I7 contract, package and template syntax.
+I6 accepts a lightweight observation bundle: correlated operation traces, structured diagnostics,
+a small health metric set and optional OpenTelemetry export, investigated through the Interface.
+The synthetic experiment records all instrumented traces at source and explicitly enables bounded
+fixture-input/output capture, with losses visible. Real-workload full content requires declared
+recording policy. Required operation/recovery evidence remains independent of diagnostics/export.
+The [research](research/OBSERVABILITY.md) supports this choice; its other backend, library and wire
+recommendations remain proposals. CPU/token collectors and dashboards can follow.
 Authority, startup/recovery and persistence choices are settled. I5 now accepts OS-backed custody
 for Conduit-retained secrets through a replaceable implementation bundle, initially macOS Keychain,
 with future password-manager/service adapters possible. Native and external custody remain separate;
@@ -74,9 +75,9 @@ requirements and Interface inspection within the existing synthetic fixture. Aut
 normally runs in supervised instance-associated helpers; trusted built-in Rust code may remain
 in-process. Bundled first-party plugins plus explicit local package installation are accepted; a
 marketplace and automatic dependency resolution across languages are deferred. I3's conceptual
-review is complete. I4's persistence and I5's custody/interaction choices are also accepted;
-observation capture is next. Exact helper
-grouping, evidence mechanisms, recovery details and authoring syntax remain open. No implementation
+review is complete. I4's persistence, I5's custody/interaction and I6's observation/capture choices
+are also accepted. Exact helper grouping, evidence mechanisms, recovery details and authoring
+syntax remain open. No implementation
 has started.
 
 I4 now accepts [root-directed first launch](proposals/implementation-v0/ARCHITECTURE.md#first-launch-contract):
@@ -147,8 +148,8 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 | Partial adoption | Standalone implementations supply their own dependencies/guarantees. Managed components retain required ownership, authority and evidence. A standard MCP client does not need a Conduit graph SDK to use a public capability. |
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
-separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-the remaining I6 capture choice; I3's conceptual execution, extension and distribution boundaries are
+separation, shared-policy/instance-state authority and no offline grants are accepted. I6's
+observation/capture choice and I3's conceptual execution, extension and distribution boundaries are
 settled. I2 is complete: native Claude/Codex adapters after the synthetic proof, then Conduit's
 Rust model/tool loop; macOS-first native integration/account validation with a portable core and
 OS adapters. Final contract/template syntax remains I7 work.

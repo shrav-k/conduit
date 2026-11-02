@@ -8,7 +8,8 @@ integration/account validation. I3's conceptual extension, execution and distrib
 settled. I4's authority, startup/recovery and persistence choices are also settled; detailed
 mechanisms and syntax remain open. I5 is conceptually settled: OS-backed custody through replaceable
 implementation bundles and Interface-guided adapter enrollment/unlock. I6 accepts extensible
-observation plugins and Conduits with a lightweight initial bundle; capture defaults and I7 remain below.
+observation plugins and Conduits, a lightweight debugging bundle and explicit content-capture policy.
+I1–I6 are conceptually settled; I7 is the remaining authoring/schema review.
 Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -110,16 +111,14 @@ a marketplace and automatic dependency resolution across languages are deferred.
 review is complete; exact process grouping and package syntax remain implementation/authoring work.
 MCP, code-optional bindings and exact implementation retention are already settled; syntax stays last.
 
-**Review order:** settle remaining conceptual plugin, execution, authority, demonstration,
-persistence, credential and observation questions before detailed syntax. I7's identifiers,
-field names, template bindings, package layout and schema-authoring conventions are deferred to
-the final pass. File fragments and code remain illustrations. No language, process layout or
-transport is selected by the authoring/publication/protocol rulings.
+**Review order:** I1–I6 settle conceptual plugin, execution, authority, demonstration, persistence,
+credential and observation boundaries. I7 now reviews identifiers, field names, template bindings,
+package layout and schema-authoring conventions together. File fragments and code remain
+illustrations until ruled on; a syntax choice does not implicitly select a new process or transport.
 
-I1–I5 are settled at the conceptual level. I6's extension boundary is accepted; next review the
-initial observation package's evidence capture, then the deferred I7
-authoring syntax. Preserve the existing IDs; this remains one review queue rather than another
-decision ledger.
+I1–I6 are settled at the conceptual level. Continue with I7 authoring syntax, using connected
+package, contract and template examples. Preserve the existing IDs; this remains one review queue
+rather than another decision ledger.
 
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
@@ -128,8 +127,8 @@ Root-directed first launch, owner-authorized initialization and explicit recover
 Interface are also accepted, as is a minimal published persistence contract with one bundled
 implementation loaded as a service runtime dependency. SQLite is selected, with separate local
 management/executor databases for the first experiment. A future Pool-owned representation remains
-a design direction. I5 settles custody adapters and Interface-guided enrollment/unlock. I6 capture
-defaults is the remaining conceptual area, followed by the consolidated I7 syntax/example pass.
+a design direction. I5 settles custody adapters and Interface-guided enrollment/unlock. I6 settles
+the lightweight observation package and capture policy. The consolidated I7 syntax/example pass remains.
 Concrete counterexamples may reveal another choice; this is not a fixed count of future questions.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
 Neither implementation nor the runtime experiment has started.
@@ -138,12 +137,11 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I6 | Initial observation package's payload capture | Extensible plugins/Conduits are accepted. Retain required evidence, with full content capture selected by recording policy. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
 and demonstrate those contracts; I4 settles authority/persistence and I5 settles custody/interaction.
-I6 decides capture, then I7 finalizes authoring syntax. Numbers for
+I6 settles observation and capture; I7 now finalizes authoring syntax. Numbers for
 queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
 ## I1 — Independent execution and management
@@ -373,8 +371,8 @@ Typed plugin input/output schemas and Resource configuration contracts remain. T
 relationship requirements and composition; it cannot redefine target operation semantics or claim
 unsupported enforcement. MCP remains the public invocation base. The proposal does not select a
 universal endpoint API, Boolean expression language, constraint solver or OS sandbox. Detailed
-establishment/cleanup remains implementation work; I6–I7's observation and syntax choices remain
-in the queue. I4's persistence and I5's custody/interaction boundaries are settled.
+establishment/cleanup remains implementation work; I7's syntax choices remain in the queue.
+I4's persistence, I5's custody/interaction and I6's observation/capture boundaries are settled.
 
 **Accepted — physical execution of authored code:** locally authored plugin code normally runs
 in supervised child/helper processes associated with the instance whose activity it serves.
@@ -520,7 +518,7 @@ Strict complete-proposal operations may coexist. Retained restrictions belong to
 issuance-only checks do not become live issuer dependencies. Detailed schemas/type-specific checks
 are I7/conformance work.
 
-**Next review:** I6 capture defaults, then the I7 syntax pass.
+**Next review:** the I7 contract, package and template syntax pass.
 Exact loader/record fields, storage settings and recovery methods remain in I7 or implementation
 work; they need not become individual conceptual rulings.
 
@@ -605,53 +603,48 @@ in I7; adapter behavior, challenge recovery and separate-account compatibility s
 
 ## I6 — What observability captures by default
 
-**Accepted extension direction:** use adaptable observation plugins and authorized Conduits,
-beginning with a lightweight bundled implementation and refining capabilities over time. Instance
-plugins can publish supported observations; Pool-owned Resources can collect, retain or export
-them; the Interface presents the combined view. Token usage, CPU utilization and other relevant
-measurements are extensible capabilities rather than a mandatory fixed v0 metric catalog.
-Measurement scope, source and coverage must remain explicit. Existing authoritative state/outcome
-and recovery evidence is still required independently of optional instrumentation.
+**Accepted:** use adaptable observation plugins and authorized Conduits, beginning with a lightweight
+bundled implementation. Instance plugins publish supported observations; Pool-owned Resources can
+collect, retain or export them; the Interface presents the combined investigation view. Observation
+is part of the Interface's core function, independent of whether a frontend is currently attached.
 
-This accepts the extension boundary, not either full-content capture default below. Adding
-observers through supported capabilities does not require altering an instance's fixed definition;
-implementation upgrades continue to follow the agreed replacement rules. No comprehensive metrics
-package or new runtime experiment scope is implied. Exact contracts and syntax remain I7.
+The initial package includes correlated operation/graph/plugin traces, structured diagnostics and
+errors, a small service-health metric set, and optional OpenTelemetry export. The Interface connects
+failures to their actors, instances, access paths, configuration, retained outcomes and supported
+recovery actions. Start with measurements useful for debugging durations, pending work, reconnects,
+persistence failures and observation loss; exact names and fields remain authoring work, not a
+closed metric vocabulary. Token/CPU collectors and external dashboards are extensions, not prerequisites.
 
-**Recommendation:** always retain operation identity, actor/target/path, effect outcomes, coverage
-and the safely retained inputs needed for promised recovery. Retain message/history content under
-its Resource contract. Capture other full tool/model payloads only under an explicit operation/type
-recording policy, with content references, bounds and sensitive-field handling. Show missing,
-truncated or deliberately uncaptured content clearly. Never log credentials by default.
+Always retain authoritative operation identity, actor/target/path, effect outcomes, coverage and
+the safely retained inputs needed for promised recovery. These records are independent of diagnostic
+sampling, buffering and export. Exporter loss cannot erase committed outcomes, and an exporter
+receipt cannot establish that an operation applied. Report missing, stale, truncated or dropped
+observations explicitly; unavailable measurements are not zero.
 
-The [observability research](../../research/OBSERVABILITY.md) makes this recommendation concrete:
-start with correlated operation/graph/plugin diagnostics, structured errors, a small service-health
-set and optional OpenTelemetry export. For the low-volume synthetic experiment, propose recording
-all instrumented operation traces and explicitly enabling bounded fixture-input/output capture.
-Real-workload full content remains governed by declared recording policy. Observation loss is
-visible; required authoritative evidence is not sampled. CPU/token providers and a dashboard are
-extensions, not prerequisites. These are recommendations pending the I6 ruling, not an expansion
-of the accepted experiment or a selected production backend.
+For the low-volume synthetic Experiment 002, record all instrumented operation traces at source
+and explicitly enable bounded fixture-input/output capture. This does not promise lossless delivery:
+report buffering/export gaps. Use fake credential references and known fixture data. For real prompts,
+documents, tool arguments/results and helper output, full-content capture requires a declared
+operation/type recording policy with bounds, scoped content references where appropriate and
+sensitive-field handling. Keep credentials out of ordinary logs. Message/history content retains
+its Resource contract; observation does not create a second mandatory transcript store.
 
-**Example:** the Interface can prove a Linear call was admitted, which Agent/account/path performed
-it and whether application was confirmed. It may have a permitted stored response, an excerpt or
-only a reference depending on the declared policy. A missing full response is not presented as
-complete transcript coverage. If omitted input prevents replay, that limitation is recorded.
+**Example:** the Interface can show that a Linear call was admitted, which Agent/account/path
+performed it and whether application was confirmed. It may expose a permitted stored response,
+an excerpt or only a reference depending on recording policy. A missing full response is not
+complete transcript coverage. If omitted input prevents replay, report that recovery limitation.
 
-**Alternative:** full managed tool/model payload capture by default, with explicit sensitive-field
-exceptions. This improves debugging/transcript reconstruction but retains more private content and
-requires reliable payload classification, size limits and scoped access from the outset.
-
-**Ruling needed:** the initial bundled observation package's content-capture default. Later packages
-can provide richer behavior through the same contracts. Retention-until-explicit-purge for captured evidence remains
-accepted; this decides what is captured, not a new automatic-expiry rule. Interface observability
-remains a first-class delivery requirement under either option.
+Supported observation attachments/settings use the existing connection/control rules; fixed
+definition or implementation changes still require replacement. Retain captured evidence until
+explicit purge under the agreed lifecycle; no automatic-expiry rule or external backend is selected.
+The [research](../../research/OBSERVABILITY.md) supports this package. Its additional backend, library
+and wire recommendations remain proposals. I6 is conceptually closed; I7 settles concrete syntax.
 
 ## I7 — Authoring conventions and multi-plugin graphs
 
-**Deferred to the end of review:** discuss syntax across all contracts and templates together
-after the conceptual questions are settled. Publication with implementations is already accepted;
-the field layouts, identifiers and schema-authoring choices below remain proposals.
+**Current review:** work through one connected authoring example across contracts, packages and
+templates, now that I1–I6 are conceptually settled. Publication with implementations is already
+accepted; the field layouts, identifiers and schema-authoring choices below remain proposals.
 
 **Recommendation:** retain the accepted envelope and propose `conduit/v0alpha1` as its initial
 identifier. Apply group/name/version type references uniformly to the five families. Keep
@@ -668,8 +661,32 @@ the graph/controls and records code selection independently of later template ch
 That is more uniform but adds indirection to every simple template. A Rust-derived public schema
 source of truth is also possible, provided release checks prevent accidental language changes.
 
-**Ruling needed:** choose the authoring arrangement and schema source of truth as a bundle, then
-review amended YAML examples. Parser scalar edge cases, numeric precision limits, schema-default
+**First ruling — contract authority:** recommend the published, language-neutral contract as the
+public source of truth. Schemas can be handwritten or generated, but their released definitions
+and behavioral guarantees are reviewed independently of implementation internals. Rust, scripts
+and external-MCP bindings conform to the same contract. This does not require handwritten schemas
+or a large SDK.
+
+For example, a `set-query-limit` operation could accept this illustrative schema fragment:
+
+```yaml
+type: object
+properties:
+  limit: {type: integer, minimum: 1, maximum: 100}
+required: [limit]
+additionalProperties: false
+```
+
+A Rust handler can call its internal field `batch_size` while the public input remains `limit`.
+Changing the public bound or name requires a deliberate contract change. A Python implementation
+or an MCP binding uses that same public definition. Under the Rust-first alternative, Rust type
+declarations generate the public schema; authors maintain serialization annotations and release
+checks to keep internal refactors from changing the contract. Schema validation alone does not
+define effects, authorization, recovery or lifecycle guarantees; those remain part of the published
+behavioral contract in either approach. This fragment does not settle package layout or schema dialect.
+
+After that ruling, review one package and consuming template together to choose implementation
+bindings, graph references and the common identifiers. Parser scalar edge cases, numeric precision limits, schema-default
 coverage and negotiated worker-feature details are implementation/conformance work; a failing
 example should surface a concrete decision rather than another speculative questionnaire.
 

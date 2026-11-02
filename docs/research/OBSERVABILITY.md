@@ -2,10 +2,12 @@
 
 Research date: **2026-11-02**. Baseline: `f8a9973` on the implementation branch.
 This report compares primary cloud/platform documentation and distributed tracing research.
-Recommendations are **proposed**, not new rulings, dependencies or experiment requirements.
+The initial debugging package and capture policy were subsequently **accepted in
+[I6](../proposals/implementation-v0/REVIEW.md#i6--what-observability-captures-by-default)**:
+correlated diagnostics, a small health set, optional OpenTelemetry export and explicit bounded
+synthetic-fixture capture, independent of required authoritative evidence. Other backend, library,
+wire and testing recommendations below remain proposals; I7 settles concrete contracts and syntax.
 No backend was installed, no cloud account was connected, and no runtime benchmark was performed.
-[I6](../proposals/implementation-v0/REVIEW.md#i6--what-observability-captures-by-default)
-still decides the initial package's capture defaults; I7 settles concrete contracts and syntax.
 
 The recommendation is a **small local debugging package with detailed operation correlation,
 structured diagnostics, a few health measurements, and optional OpenTelemetry export**. Preserve
@@ -114,11 +116,11 @@ Telemetry attributes/metric labels here are not a proposal to restore registry l
 Pool membership. Likewise, an OpenTelemetry “Resource” describes a telemetry source; it is not
 necessarily a Conduit Resource instance. One executor process may host several Conduit instances.
 
-## 4. Proposed initial package
+## 4. Initial package
 
 The package should let us debug the existing synthetic experiment before adding a dashboard or
-comprehensive infrastructure monitoring. This is a concrete I6 recommendation, not a new closed
-vocabulary of operation states or metric kinds.
+comprehensive infrastructure monitoring. I6 accepts this package boundary and capture policy,
+without making the candidate observations below a closed vocabulary of states or metric kinds.
 
 | Include initially | Useful observations | Debugging value |
 | --- | --- | --- |
@@ -287,11 +289,12 @@ new fault cases or extra backends requires its own implementation plan; nothing 
 The accepted extension model already fits these findings. No new object family, centralized runtime,
 mandatory dashboard, automatic telemetry retention expiry or universal metric enum is needed.
 
-I6 can now be ruled on as one concrete package choice: **required durable evidence, detailed correlated
-operation diagnostics, a small health set, and explicit content-capture settings—with richer synthetic
-capture enabled for the experiment**. I recommend it. Actual metric names, field placement, limits,
-export schemas and plugin aliases should be exercised together in I7 rather than becoming another
-long conceptual questionnaire.
+I6 now accepts the package choice: **required durable evidence, detailed correlated operation
+diagnostics, a small health set, and explicit content-capture settings—with bounded synthetic capture
+enabled for the experiment**. Actual metric names, field placement, limits, export schemas and
+plugin aliases should be exercised together in I7 rather than becoming another long conceptual
+questionnaire. This acceptance does not select a backend or every implementation recommendation
+in this research report.
 
 This also complements the existing [Pi telemetry findings](PI_CONNECTORS.md#observation-and-durable-execution)
 and [Rust runtime research](RUST_RUNTIME.md); their pinned observations are historical evidence,

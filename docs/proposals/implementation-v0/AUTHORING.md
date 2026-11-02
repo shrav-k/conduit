@@ -813,8 +813,8 @@ requirements in the existing synthetic fixture is accepted; it does not select a
 catalog or authorize implementation start. I3 and I4 are conceptually complete, including the
 minimal public persistence contract and bundled SQLite implementation loaded as a service runtime
 dependency. I5 accepts OS custody through replaceable implementation bundles and Interface-guided
-adapter enrollment/unlock. Evidence capture is next. Detailed evaluation interfaces, custom recovery
-hooks and syntax remain open.
+adapter enrollment/unlock. I6 settles the initial observation package and capture policy; I7 syntax
+is next. Detailed evaluation interfaces, custom recovery hooks and syntax remain open.
 
 The accepted execution default runs locally authored code in supervised helper processes
 associated with the served instance, retaining supervision/state in its responsible service.

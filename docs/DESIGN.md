@@ -429,9 +429,20 @@ to retained evidence without becoming its sole copy. Preserve applicable content
 handling; pluggable export does not imply putting credentials or every full payload into traces.
 Optional capture, metrics and exporters cannot replace the required authoritative configuration,
 operation outcomes and recovery records. Their failure or detachment does not erase that evidence
-or change state ownership. This extension model does not decide full tool/model content-capture
-defaults. Coverage includes what Conduit manages and what native integrations actually report, with missing
-coverage visible. Specialized domain tracking can be supplied by custom Resources without changing
+or change state ownership. Coverage includes what Conduit manages and what native integrations
+actually report, with missing coverage visible.
+
+The initial observation bundle supplies correlated operation/graph/plugin traces, structured
+diagnostics and a small service-health metric set, with optional OpenTelemetry export. The low-volume
+synthetic experiment records all instrumented operation traces at source and explicitly enables
+bounded fixture-input/output capture; buffering/export gaps remain visible. Real prompts, documents,
+tool payloads and helper output follow declared recording policies, including bounds and handling
+of sensitive fields. Keep credentials out of ordinary logs. Message/history content retains its Resource
+contract, without requiring duplicate full payloads in observations. Authoritative operation/recovery
+evidence remains unsampled and independent of optional diagnostic pipelines. Retention until explicit
+purge remains unchanged.
+
+Specialized domain tracking can be supplied by custom Resources without changing
 this common foundation or introducing a new family. Linear/Jira integration is independent of it.
 
 ### Establishment contracts and instance state

@@ -656,7 +656,8 @@ choice is how a template selects implementations when its graph uses more than o
 
 ### Current discussion: must a template select a primary implementation?
 
-**Pending:** the user requested this distinction before choosing a layout. The earlier A/B examples
+**Pending:** the user requested compatibility and default-resolution examples before deciding
+whether a primary implementation is necessary. The earlier A/B examples
 both assumed a distinguished type implementation; neither was accepted. The [expanded walkthrough](AUTHORING.md#is-a-primary-implementation-necessary)
 compares bundled defaults with explicitly composed behavior and retains the directory examples.
 
@@ -681,6 +682,17 @@ current authority and record exact implementation selections. Matching input sch
 prove runtime/state/recovery compatibility. Conformance tests and runtime checks remain necessary.
 No mandatory primary does not weaken type obligations, change the authoritative service or unfreeze
 instance definitions. This remains a proposal; exact alias maps and export references follow the ruling.
+
+The [compatibility examples](AUTHORING.md#compatibility-what-must-agree) distinguish definition
+checks, runtime verification and conformance evidence. A path on the wrong host, a handler with
+different effects despite the same input schema, or an unconfirmed setting change cannot be treated
+as compatible success. No general compatibility solver or central certification service is proposed.
+The [default examples](AUTHORING.md#defaults-values-behavior-selections-and-complete-recipes) separate
+configuration values, default control/handler selections and complete reusable templates. Existing
+type defaults remain usable, including declared implementations; they resolve into retained bindings
+without making one package globally primary. Explicit invalid selections do not fall back silently.
+The initial convenience mechanism can be complete standard templates, without implicit merging of
+installed packages or another preset family. This explanation is not an accepted new ruling.
 
 **Remaining authoring pass:** use the chosen structure to review one package and consuming template
 with graph/control bindings and published schemas. `conduit/v0alpha1` as the common API identifier,

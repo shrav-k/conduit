@@ -426,18 +426,80 @@ and a setting handler must understand that runtime's configuration and confirmat
 No-primary composition shifts this integration responsibility to the complete recipe and its tests;
 a primary package merely provides a convenient place to ship a tested recipe, not proof of correctness.
 
-Keep simple authoring through existing mechanisms: publish ready-made templates, reusable graph
-operations and supported type defaults. An author can start with a complete directory template,
-change its path, and instantiate it without wiring every handler. If a default needs an implementation,
-its dependency must resolve into the instance's retained bindings. It does not silently make that
-implementation primary for all other behavior. This introduces no template inheritance, implicit
-merging of package defaults, or new preset object family. Exact default-selection syntax remains open.
+#### Compatibility: what must agree
 
-Before execution, Conduit checks required declarations/bindings, known type compatibility, declared
-implementation support and retained selections. It reports missing or conflicting bindings rather
-than inventing a default or choosing an arbitrary installed package. Required schemas still govern
-registration; unavailable code/services are readiness gaps under existing rules. Static checks do
-not prove behavioral compatibility: conformance tests and runtime verification remain necessary.
+Compatibility is not package-name equality or a matching JSON shape. It concerns the selected
+contribution's meaning, inputs, execution context, effects and state/lifecycle obligations.
+
+| Example | Why the apparent match is insufficient | Proposed resolution using existing contracts |
+| --- | --- | --- |
+| Directory establishment returns a path; a checker accepts a string. | A string can name another directory or a path on another host. | Bind the declared directory output, preserving its instance/backing and execution context. The checker must support that access mode; the reference supplies no authority. |
+| A local checker is assigned to host B while the directory is on host A. | `/work/euphony` on B is not the backing on A. | Run the supported check in A's execution context, or select an explicit remote-access implementation/Conduit. Do not treat the local path as portable or silently copy data. |
+| Two handlers both accept `limit: 20`. | One limits query result count; another limits token usage. | Match the intended operation contract and meaning, including units/effects, not just input shape or a similar tool name. |
+| A setting-change handler returns a successful transport response. | It may have accepted work without confirming the setting was applied. | Keep the request pending/uncertain under its contract until application is confirmed; do not update confirmed configuration merely because invocation returned. |
+| A replacement migration helper accepts the same database reference. | Its transaction, retry or private-state assumptions may differ. | Require declared support for the selected runtime/access and recovery contracts, plus integration tests. Preserve uncertain effects; matching schemas is not permission to repeat work. |
+
+Conduit checks different facts at different times:
+
+- **Definition validation:** required schemas/exports, graph bindings and dependencies, declared
+  contract versions/support, and missing or contradictory required behavior. Reject known
+  incompatibilities; do not pretend arbitrary schema implication or behavior can be proved statically.
+- **Preparation/use:** actual identity, runtime compatibility, execution placement, current grants,
+  required capabilities and readiness. A valid definition may still be unable to run. Required
+  guarantees must be established at their declared point; uncertainty is not success.
+- **Conformance/integration tests:** evidence that implementations fulfill their published behavior,
+  including partial failure and recovery. Published declarations remain claims to verify. This
+  proposal requires no central certification service or exhaustive matrix of every package pairing.
+
+A checker that can consume an independently readable directory reference can be broadly reusable.
+A handler that depends on an implementation's private live handle is less portable and must declare
+that dependency. An explicit adapter may bridge contracts where semantics permit, but Conduit does
+not invent one. Even two exports in the same package need correct bindings and current authority.
+
+#### Defaults: values, behavior selections and complete recipes
+
+Keep three existing uses of defaults distinct; this does not introduce three new object kinds:
+
+| Default | Concrete example | What must become explicit on the instance |
+| --- | --- | --- |
+| Configuration value | A search type supplies an initial result limit of 10 when omitted. | The stored value 10, under its versioned configuration semantics. |
+| Supported behavior | A type offers a default `set-query-limit` control, its constraints and a reusable handler binding. | The resolved control definition, selected handler implementation and configuration/confirmation contract. |
+| Ready-made recipe | A published directory template already wires establishment, directory access and project checks. | The resolved graph/runtime/control bindings and selected implementations, alongside the configured path. |
+
+The control default is already accepted: it may include an implementation. The new proposal does
+not strip it from the type contract or force every author to rebind it. A default that names a
+specific handler brings that explicit dependency; it does not make its package the implicit provider
+for every other behavior. Authors can reuse the complete template, edit ordinary fields and create
+instances, without a primary slot or a new composition/preset object. No template inheritance is
+implied by starting from and editing a template draft.
+
+For example, a standard directory template can already contain:
+
+| In the reusable template | In the completed instance definition |
+| --- | --- |
+| Directory type/configuration, with a path chosen before creation | The explicit absolute path and attachment intent |
+| Setup uses filesystem establishment, then project checks | Those resolved graph bindings with their selected implementation identities |
+| Declared directory capability/runtime defaults | Concrete driver/handler bindings; a directory need not have a dedicated process |
+| Applicable default controls selected within allowed constraints | The fixed resolved control surface; later requests can only change supported settings |
+
+Proposed expansion uses the existing draft/default rules: first apply ordinary caller edits to
+the draft, then resolve declared defaults only where allowed, validate the completed behavior and
+retain the resolved configuration. An explicit incompatible handler is an error, not a reason to
+silently select the standard one. A string supplied where an integer is required is invalid, not
+missing. Two competing defaults require an explicit supported choice rather than installation order
+or an implicit merge. Missing schemas still prevent registry writes; missing code/services remain
+readiness gaps, and unresolved required implementation selections block execution.
+
+For v0, common combinations can ship as complete templates and published type defaults. We need
+not add a general-purpose system that discovers and merges installed packages' suggestions. Exact
+selection/override syntax remains I7 work. The Interface should show the effective values, contracts
+and selected bindings before execution; this uses the resolved definition without requiring an
+additional template-history or override-provenance ledger.
+
+Template/default changes affect later instantiations, not existing resolved definitions. Pinning
+Conduit-selected artifacts does not freeze external services or current access rules; those retain
+runtime checks. Replacing fixed handlers/runtime definitions still requires a new instance, while
+supported controls continue to update confirmed configuration under the accepted contract.
 
 The tradeoff is between a required bundle entry point and explicit composition. My revised
 recommendation is **no mandatory primary implementation**, while allowing common combinations to

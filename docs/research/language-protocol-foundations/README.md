@@ -17,6 +17,8 @@ crosses a graph boundary, and how a caller distinguishes confirmed effects from 
 
 Read this synthesis first, then the [worked comparisons](WALKTHROUGHS.md). The
 [source guide](SOURCES.md) identifies versions, sections, primary links and limitations.
+The [format and schema decision brief](FORMATS.md) compares YAML/JSON, JSON Schema, CUE,
+Dhall and interface-definition alternatives before the final foundation ruling.
 [Twenty offline probes](../../../experiments/003-language-probes/README.md) make several parsing/schema pitfalls reproducible.
 The [current review](../../REVIEW.md) remains the only ruling queue.
 

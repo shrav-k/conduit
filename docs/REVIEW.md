@@ -88,6 +88,10 @@ release versions remain independent, with no obligation to maintain old contract
 The next choice is the data-schema basis for configuration, operation inputs/results and requirement
 parameters: JSON Schema 2020-12 with a defined Conduit profile is proposed, not yet accepted. YAML remains
 the authoring format; lifecycle, authorization and other behavioral contracts remain separate semantics.
+The owner requested a final format/schema comparison before settling this foundation. The
+[decision brief](research/language-protocol-foundations/FORMATS.md) recommends constrained YAML
+authoring, equivalent JSON input/interchange, and one JSON Schema 2020-12 data-contract basis.
+This recommendation does not yet approve that bundle or its remaining profile details.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

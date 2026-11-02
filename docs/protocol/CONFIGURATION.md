@@ -132,6 +132,18 @@ open. An annotation does not itself implement validation, authorization or anoth
 guarantee. This authoring-profile rule does not decide how adapters handle external MCP catalogs;
 their compatibility and schema-support behavior remains a separate contract.
 
+### Schema default resolution
+
+When an omitted configuration field has conflicting applicable defaults from composed schemas,
+report the conflict instead of choosing a default by schema order. Resolution requires an
+explicit valid value or a correction to the conflicting defaults. For example, defaults of 10
+and 20 for `limit` do not select a winner; an explicit value of 15 can proceed if it satisfies
+all applicable constraints. Supplying a value does not override any validation constraint.
+
+The accepted omission, null and empty-value rules remain unchanged. Exact default-resolution
+mechanics, including how applicability is determined, remain authoring work; this ruling does
+not add ordered precedence between schema defaults.
+
 ### Implementation selection
 
 **V0 rule:** select Conduit plugin implementations explicitly or through an

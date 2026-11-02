@@ -124,9 +124,10 @@ our scalar, duplicate-key or denial-of-service behavior. [Parser events][yaml-ev
 The accepted foundation uses JSON Schema 2020-12 for data validation with equivalent YAML/JSON
 representations, plus explicit Conduit semantics for defaults, bindings and transitions.
 The remaining pipeline and profile details here are proposed. JSON Schema's `default` is an annotation and does not
-materialize values. Implement that pass ourselves. The next review proposes reporting conflicting
-applicable defaults for an omitted field, requiring an explicit valid value or a contract correction
-rather than selecting by traversal order. Close records explicitly; schemas
+materialize values. Implement that pass ourselves. The accepted default-conflict rule reports
+conflicting applicable defaults for an omitted configuration field, requiring an explicit valid
+value or a correction to the defaults rather than selecting by traversal order. All validation
+constraints still apply; the resolution algorithm remains open. Close records explicitly; schemas
 with composition need correct `unevaluatedProperties` behavior. [Defaults][schema-defaults] ·
 [Object properties][schema-objects]
 

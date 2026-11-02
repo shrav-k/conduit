@@ -25,6 +25,9 @@ without automatic network fetching during validation. Dependency acquisition rem
 Conduit-authored schemas also [reject unrecognized keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance),
 with custom annotations using an explicitly declared mechanism. Its syntax and external MCP
 catalog handling remain open.
+The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
+requires an explicit valid value or corrected defaults when an omitted field has conflicting
+applicable schema defaults. Traversal order cannot select a winner.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

@@ -20,6 +20,8 @@ and reference syntax remain in review.
 Conduit-authored schemas reject unrecognized keywords, including misspelled validation rules.
 Custom annotations require an explicitly declared mechanism; its syntax and external MCP
 schema handling remain separate. See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
+If composed schemas give an omitted configuration field conflicting defaults, provide an explicit
+valid value or correct the defaults. Schema order does not choose a winner; all constraints still apply.
 
 ## From a new capability to an instance
 

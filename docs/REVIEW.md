@@ -101,11 +101,16 @@ reject unrecognized keywords in Conduit-authored schemas and allow custom annota
 an explicitly declared mechanism. The annotation syntax and handling of external MCP catalogs
 remain separate; annotations do not supply enforcement by themselves.
 
-The next ruling concerns conflicting configuration defaults after schema composition. The
-proposed rule materializes an omitted field only when its applicable defaults agree; otherwise
-the caller supplies an explicit valid value or the contract author resolves the conflict.
-Schema traversal order would not choose a winner. Existing validation constraints and the
-accepted distinction between omitted, null and empty values remain in force.
+The [default-conflict rule](protocol/CONFIGURATION.md#schema-default-resolution) is accepted:
+conflicting applicable defaults for an omitted configuration field require an explicit valid
+value or a correction to the defaults. Schema order does not choose a winner, and all applicable
+validation constraints still apply. Exact default-resolution mechanics remain open.
+
+The next ruling concerns `format` in Conduit-authored data schemas: should formats be enforced
+validation requirements, with supported formats defined by the shared profile and unsupported
+formats reported, or remain descriptive annotations? For example, `type: string` with
+`format: date-time` could reject malformed timestamps consistently across Conduit validators.
+The supported formats, extension mechanism and handling of external MCP schemas remain separate.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

@@ -229,8 +229,11 @@ Conduit-retained secrets default to an OS credential-store adapter, initially ma
 published as a custody contract plus implementation bundle through the existing plugin system.
 Later password-manager/service implementations can satisfy that contract. Ordinary configuration
 and operation records retain references; unavailable custody does not silently fall back to plaintext.
-Native Agent authentication and externally managed secrets retain their declared ownership. Exact
-custody schemas, bundle syntax and enrollment/unlock behavior remain for review.
+Native Agent authentication and externally managed secrets retain their declared ownership.
+Enrollment/unlock uses Interface-guided adapter flows: reuse existing authorized access, surface
+required human interaction and retain affected operation progress under its recovery contract.
+Unattended work cannot complete that step until access is available. Passwords/tokens stay out of
+ordinary conversation and logs. Exact custody schemas and bundle syntax remain for review.
 
 ## Connections, filtering and communication
 

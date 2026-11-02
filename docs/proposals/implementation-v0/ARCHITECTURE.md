@@ -842,8 +842,13 @@ Secret-manager capabilities exposed independently remain Pool-owned Resources un
 
 Native Agent authentication remains owned by its native adapter/runtime. Do not copy rotating credentials
 into every Agent private directory or infer subscription eligibility from a successful API call.
-Externally managed secrets keep their declared custody. Exact adapters, bundle/reference schemas
-and first-platform enrollment/unlock experience remain review/implementation work.
+Externally managed secrets keep their declared custody. **Enrollment/unlock is accepted as
+Interface-guided adapter flows:** reuse existing authorized access; otherwise surface required
+human interaction and let the user complete the supported native/provider flow. The instance
+retains affected operation progress under its recovery contract. Unattended execution cannot
+complete that step until access is available; unrelated work can continue. Ordinary conversations
+and logs carry no passwords or tokens. Exact adapter mechanics and bundle/reference schemas remain
+implementation/I7 work; this does not promise recovery of every provider challenge.
 The current Rust Keyring documentation distinguishes simple convenience APIs from applications
 that select specific stores, so choose the store adapter explicitly rather than assuming an older
 generic keyring API. [Credential-store guidance][keyring]
@@ -864,7 +869,8 @@ The same managed capability can be used by another ordinary MCP client through a
 attachment. Client setup must establish its acting identity and selected path; request parameters
 cannot self-assign authority. An Interface frontend need not relay the call. The responsible
 component records attributable outcomes for later Interface inspection. Exact enrollment and
-production authority deployment remain implementation work alongside I5, not a new permission model.
+production authority deployment remain implementation work under the accepted authority and
+credential-interaction boundaries, not a new permission model.
 
 Stopping a managed client binding to an external server releases that binding; it does not kill
 the server or erase its data. A server started under Conduit's custody follows its declared

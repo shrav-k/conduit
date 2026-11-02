@@ -14,15 +14,18 @@ branch until merged. The earlier baseline remains available in Git history at `c
 
 The [implementation proposal](proposals/implementation-v0/README.md) now describes processes,
 contracts, persistence, ownership, crate organization and delivery milestones. Its
-[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I4
-are conceptually settled, and I5–I7 remain for review. Start there for the
+[review queue](proposals/implementation-v0/REVIEW.md) organizes seven implementation areas. I1–I5
+are conceptually settled, and I6–I7 remain for review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
-**Current focus:** I5 enrollment/unlock, then I6 capture defaults and I7 syntax.
+**Current focus:** I6 capture defaults, then I7 syntax.
 Authority, startup/recovery and persistence choices are settled. I5 now accepts OS-backed custody
 for Conduit-retained secrets through a replaceable implementation bundle, initially macOS Keychain,
 with future password-manager/service adapters possible. Native and external custody remain separate;
-there is no silent plaintext fallback. Concrete plugin and
+there is no silent plaintext fallback. Enrollment/unlock uses Interface-guided adapter flows,
+reusing authorized access and surfacing required human interaction while retaining affected
+operation progress. Unattended execution cannot complete that step until access is available;
+recovery follows the operation contract. Concrete plugin and
 template author journeys continue to guide these decisions. The
 [implementation review](proposals/implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors)
 retains collaborative rulings; recommendations have not become defaults. Existing infrastructure
@@ -65,8 +68,8 @@ requirements and Interface inspection within the existing synthetic fixture. Aut
 normally runs in supervised instance-associated helpers; trusted built-in Rust code may remain
 in-process. Bundled first-party plugins plus explicit local package installation are accepted; a
 marketplace and automatic dependency resolution across languages are deferred. I3's conceptual
-review is complete. I4's persistence choices and I5's custody extension are also accepted;
-enrollment/unlock and observation capture are next. Exact helper
+review is complete. I4's persistence and I5's custody/interaction choices are also accepted;
+observation capture is next. Exact helper
 grouping, evidence mechanisms, recovery details and authoring syntax remain open. No implementation
 has started.
 
@@ -139,7 +142,7 @@ is in [plugins and MCP components](DESIGN.md#plugins-and-independently-accessibl
 
 No additional product-level ruling is needed to adopt these consequences. I1's management/execution
 separation, shared-policy/instance-state authority and no offline grants are accepted. Resolve
-the remaining I5–I6 choices; I3's conceptual execution, extension and distribution boundaries are
+the remaining I6 capture choice; I3's conceptual execution, extension and distribution boundaries are
 settled. I2 is complete: native Claude/Codex adapters after the synthetic proof, then Conduit's
 Rust model/tool loop; macOS-first native integration/account validation with a portable core and
 OS adapters. Final contract/template syntax remains I7 work.

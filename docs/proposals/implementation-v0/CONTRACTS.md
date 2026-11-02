@@ -608,6 +608,14 @@ Resource can retain their own custody. The owning authentication Resource's iden
 remains distinct from its storage adapter; installing a bundle or invoking a shared service grants
 no general authority to reveal its upstream secrets.
 
+**Accepted interaction boundary:** the Interface guides the selected adapter's supported
+enrollment/unlock flow. Reuse existing authorized access; required human action becomes a reported
+interaction on the affected operation. The user completes the native/provider flow, and the
+instance retains progress for recovery as supported. Unattended execution cannot complete that
+step until access is available. Reuse existing interaction/recovery contracts rather than adding
+a separate authentication workflow protocol; keep passwords/tokens out of ordinary conversations
+and logs. Exact interaction schemas remain I7 work.
+
 Ordinary typed values may be serialized. Managed handles identify their target, responsible
 execution endpoint, generation and allowed operations; handle access is checked when used.
 Endpoint identity is distinct from a changeable network address. These are proposed handle

@@ -1558,7 +1558,15 @@ a standalone password-manager Resource type, but a package itself is not a Resou
 it grants no access. Implementations must declare supported behavior and limitations; selecting a
 backend cannot imply unsupported write, renewal or recovery capabilities. Existing implementation
 selection/replacement rules apply; a new backend does not silently migrate secrets or reinterpret
-existing references. Exact contracts, package syntax and enrollment/unlock experience remain open.
+existing references. Exact contracts and package syntax remain open.
+
+**Enrollment and unlocking:** authorized setup/control operations use the selected adapter's
+supported flow, with the Interface presenting required interaction. Reuse existing authorized
+access; when human action is needed, the affected operation reports that need and the user
+completes the native/provider flow. Unattended execution cannot complete that step until access
+is available. The instance retains progress, and continuation or re-establishment follows the
+operation's recovery contract. Unrelated work can continue. Passwords and tokens stay outside
+ordinary conversations and logs; the Interface does not take over credential custody.
 
 One authentication Resource can provide supported bindings for several service consumers; tokens,
 audiences and provider grants may differ even when the underlying account is the same. Sharing

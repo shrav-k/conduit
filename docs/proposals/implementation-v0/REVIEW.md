@@ -6,8 +6,8 @@ instance-owned state, no offline grants and the one-machine first proof are **ac
 I1 and I2 are settled, including native adapters before the Rust loop and macOS-first native
 integration/account validation. I3's conceptual extension, execution and distribution choices are
 settled. I4's authority, startup/recovery and persistence choices are also settled; detailed
-mechanisms and syntax remain open. I5 accepts OS-backed custody through a replaceable implementation
-bundle; enrollment/unlock remains open alongside I6–I7's choices below.
+mechanisms and syntax remain open. I5 is conceptually settled: OS-backed custody through replaceable
+implementation bundles and Interface-guided adapter enrollment/unlock. I6–I7 remain below.
 Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -115,9 +115,9 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1–I4 are settled at the conceptual level. I5's custody default and extension boundary are accepted.
-Next review enrollment/unlock and I6's evidence capture, then the deferred I7 authoring syntax. Preserve the existing IDs; this remains
-one review queue rather than another decision ledger.
+I1–I5 are settled at the conceptual level. Next review I6's evidence capture, then the deferred I7
+authoring syntax. Preserve the existing IDs; this remains one review queue rather than another
+decision ledger.
 
 **Progress and remaining review:** the original R1–R7 direction review is complete. I4 already
 settles the authorization model, independent grants, dedicated access-management Resource and
@@ -126,9 +126,9 @@ Root-directed first launch, owner-authorized initialization and explicit recover
 Interface are also accepted, as is a minimal published persistence contract with one bundled
 implementation loaded as a service runtime dependency. SQLite is selected, with separate local
 management/executor databases for the first experiment. A future Pool-owned representation remains
-a design direction. I5 enrollment/unlock and I6 capture defaults are the two remaining
-conceptual bundles, followed by the consolidated I7 syntax/example pass. This is a review plan rather than a fixed count of
-future questions: credential enrollment or capture may reveal a concrete choice that needs splitting.
+a design direction. I5 settles custody adapters and Interface-guided enrollment/unlock. I6 capture
+defaults is the remaining conceptual area, followed by the consolidated I7 syntax/example pass.
+Concrete counterexamples may reveal another choice; this is not a fixed count of future questions.
 Do not turn routine schema fields, internal methods or tuning into additional ruling queues.
 Neither implementation nor the runtime experiment has started.
 
@@ -136,13 +136,12 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I5 | Credential enrollment/unlock | OS-backed custody through implementation bundles is accepted; settle first-platform interaction and unattended-use expectations. |
 | I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
-and demonstrate those contracts; I4 settles authority/persistence and I5–I6 finish custody/capture. I7 finalizes their authoring syntax
-after those conceptual rulings. Numbers for
+and demonstrate those contracts; I4 settles authority/persistence and I5 settles custody/interaction.
+I6 decides capture, then I7 finalizes authoring syntax. Numbers for
 queue sizes, internal helper names and performance tuning need tests, not separate ruling queues.
 
 ## I1 — Independent execution and management
@@ -372,8 +371,8 @@ Typed plugin input/output schemas and Resource configuration contracts remain. T
 relationship requirements and composition; it cannot redefine target operation semantics or claim
 unsupported enforcement. MCP remains the public invocation base. The proposal does not select a
 universal endpoint API, Boolean expression language, constraint solver or OS sandbox. Detailed
-establishment/cleanup remains implementation work; I5–I7's credential, observation and syntax
-choices remain in the queue. I4's persistence boundary and engine are settled.
+establishment/cleanup remains implementation work; I6–I7's observation and syntax choices remain
+in the queue. I4's persistence and I5's custody/interaction boundaries are settled.
 
 **Accepted — physical execution of authored code:** locally authored plugin code normally runs
 in supervised child/helper processes associated with the instance whose activity it serves.
@@ -519,7 +518,7 @@ Strict complete-proposal operations may coexist. Retained restrictions belong to
 issuance-only checks do not become live issuer dependencies. Detailed schemas/type-specific checks
 are I7/conformance work.
 
-**Next review:** I5 enrollment/unlock, then I6 capture defaults and the I7 syntax pass.
+**Next review:** I6 capture defaults, then the I7 syntax pass.
 Exact loader/record fields, storage settings and recovery methods remain in I7 or implementation
 work; they need not become individual conceptual rulings.
 
@@ -591,10 +590,16 @@ Agent histories. This cannot be proved by choosing different directory names alo
 The [custody bundle example](AUTHORING.md#credential-custody-as-an-implementation-bundle) separates
 published support, implementation and authentication ownership without prescribing final syntax.
 
-**Still open:** acceptable first-platform enrollment/unlock experience, including how the Interface
-presents required interaction and what unattended execution can expect. Existing human-interaction
-waits and native-runtime authentication ownership are retained. Exact item/reference and bundle
-schemas belong in I7; this does not introduce another Conduit login.
+**Accepted enrollment/unlock:** the Interface guides the selected adapter's supported flow. Existing
+authorized access is reused. When human action is required, the affected operation reports that
+need through the Interface and the user completes the native/provider flow. Unattended execution
+cannot complete that step until access is available; the instance retains progress and recovery
+follows the operation's contract. Unrelated work can continue. Passwords and tokens remain outside
+ordinary conversations and logs. This reuses existing human-interaction waits and preserves native
+authentication ownership, without introducing another Conduit login.
+
+I5 is closed at the conceptual level. Exact item/reference, interaction and bundle schemas belong
+in I7; adapter behavior, challenge recovery and separate-account compatibility still require tests.
 
 ## I6 — What observability captures by default
 

@@ -373,7 +373,11 @@ installing a package neither migrates secrets nor changes their owner.
 The package contains contracts and implementation bindings, not account credentials. It may also
 export a separate password-manager Resource type for independently exposed capabilities, but that
 is not required merely to supply a custody adapter. Additional backends and final bundle syntax
-are deferred; first-platform enrollment/unlock remains an I5 review question.
+are deferred. Enrollment/unlock uses the accepted Interface-guided adapter flow: an existing
+authorized binding is reused; required human interaction is surfaced through the Interface while
+the instance retains progress. A disconnected/unattended client cannot complete that step until
+access is available, and recovery follows the operation contract. Secret values stay out of
+ordinary conversations and logs.
 
 ### Code-optional MCP integrations
 
@@ -808,8 +812,8 @@ and declared fulfillment duties are also accepted. The combined proof of compose
 requirements in the existing synthetic fixture is accepted; it does not select a permanent core
 catalog or authorize implementation start. I3 and I4 are conceptually complete, including the
 minimal public persistence contract and bundled SQLite implementation loaded as a service runtime
-dependency. I5 accepts OS custody through replaceable implementation bundles; enrollment/unlock
-and evidence capture are next. Detailed evaluation interfaces, custom recovery
+dependency. I5 accepts OS custody through replaceable implementation bundles and Interface-guided
+adapter enrollment/unlock. Evidence capture is next. Detailed evaluation interfaces, custom recovery
 hooks and syntax remain open.
 
 The accepted execution default runs locally authored code in supervised helper processes

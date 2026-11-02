@@ -106,11 +106,16 @@ conflicting applicable defaults for an omitted configuration field require an ex
 value or a correction to the defaults. Schema order does not choose a winner, and all applicable
 validation constraints still apply. Exact default-resolution mechanics remain open.
 
-The next ruling concerns `format` in Conduit-authored data schemas: should formats be enforced
-validation requirements, with supported formats defined by the shared profile and unsupported
-formats reported, or remain descriptive annotations? For example, `type: string` with
-`format: date-time` could reject malformed timestamps consistently across Conduit validators.
-The supported formats, extension mechanism and handling of external MCP schemas remain separate.
+The [format rule](protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted: `format` in
+Conduit-authored schemas is an enforced validation requirement. The shared profile defines
+supported formats and unsupported formats are reported rather than treated as satisfied.
+The supported set and custom-extension mechanism remain open.
+
+The next ruling concerns external provider MCP schemas. The proposed boundary preserves their
+declared dialect's semantics rather than automatically imposing Conduit's stricter authoring
+profile. An unfamiliar descriptive annotation permitted by that dialect would not alone reject
+a tool; an unsupported required validation feature would be reported as a compatibility problem,
+not silently stripped or treated as enforced. Exact adapter handling and conformance cases follow.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

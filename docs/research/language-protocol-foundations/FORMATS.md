@@ -117,8 +117,10 @@ These are parts of making the chosen foundation precise, not reasons to design a
   URLs. MCP itself disables automatic network dereferencing by default.
 - Specify default materialization separately. JSON Schema `default` is an annotation, and
   `readOnly` does not enforce authority. The [validation specification](https://json-schema.org/draft/2020-12/json-schema-validation)
-  also distinguishes format annotation from format assertion. Required Conduit semantics must
-  not depend on a stock validator recognizing invented keywords.
+  also distinguishes format annotation from format assertion. Conduit's subsequent ruling
+  chooses enforced formats for its authored schemas, with the supported set and extension
+  mechanism still to be specified. Required Conduit semantics must not depend on a stock
+  validator recognizing invented keywords or on its default format-checking settings.
 - Define portable number limits and unit/identifier encodings. Unsupported precision must fail
   rather than change a value; schema `integer` describes a mathematical value, not a particular
   YAML or JSON spelling.

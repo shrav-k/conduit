@@ -132,6 +132,13 @@ open. An annotation does not itself implement validation, authorization or anoth
 guarantee. This authoring-profile rule does not decide how adapters handle external MCP catalogs;
 their compatibility and schema-support behavior remains a separate contract.
 
+In Conduit-authored data schemas, `format` is an enforced validation requirement. The shared
+profile defines supported formats; report an unsupported format rather than treating its
+constraint as satisfied. For example, `type: string` with `format: date-time` rejects a malformed
+timestamp. The supported format set, custom-extension mechanism and treatment of external MCP
+schemas remain separate choices. Format validation does not replace explicit field types or
+establish runtime readiness, access authority or successful effects.
+
 ### Schema default resolution
 
 When an omitted configuration field has conflicting applicable defaults from composed schemas,

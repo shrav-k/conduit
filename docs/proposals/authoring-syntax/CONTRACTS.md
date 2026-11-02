@@ -131,6 +131,11 @@ constraints still apply; the resolution algorithm remains open. Close records ex
 with composition need correct `unevaluatedProperties` behavior. [Defaults][schema-defaults] ·
 [Object properties][schema-objects]
 
+**Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
+using the shared profile's supported formats and reporting unsupported ones instead of silently
+accepting them. The supported format set and custom-extension mechanism remain open. External
+provider MCP schemas are a separate review boundary; this does not silently change their dialect.
+
 Proposed interoperability profile: core counters/revisions use strings where large exact values
 matter; plugin numeric fields must declare bounds. Reject values outside the chosen JSON wire
 representation instead of rounding them silently. The parser spike should settle numeric

@@ -49,6 +49,12 @@ backward-compatibility promise. Users can pin a working release/package set; a n
 not support its older configuration, plugins or stores. Migration support, where supplied, must be
 explicit. Coordination of the reference distribution remains under review separately.
 
+**Early delivery priority:** get the protocol and authoring path working. Exact packaging, release
+tooling and coordination should remain lightweight and adaptable; a formal distribution pipeline
+or mixed-version support matrix is not a prerequisite for the first proof. Test and describe the
+working configuration actually used, preserving public boundaries and evidence. No legacy code
+is required solely to support old releases. Minimal release contents remain for discussion.
+
 Keep the [Experiment 002](../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
 compose exported operations with derived/explicit results and recovery, add composed/custom requirements,
 exercise independent service failures and inspect effects through the Interface. It must use public

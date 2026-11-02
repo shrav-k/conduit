@@ -190,7 +190,9 @@ instantiate its templates, grant access or authenticate an account. The first-pa
 groups. No mandatory public marketplace, namespace service or build DSL is needed in v0.
 
 The proposed coordinated application release bundles a schema set, first-party manifests and
-platform worker artifacts; that release arrangement remains under review.
+platform worker artifacts; that release arrangement remains a candidate, not an early delivery gate.
+The first implementation prioritizes a working protocol and authoring proof; exact release tooling
+and component packaging can adapt to that work without requiring legacy compatibility code.
 Some packages contain only declarations/templates; they must not be forced through a native build
 or executable-install step. Installation alone does not contact or authenticate their providers.
 Installing a new release adds artifacts rather than replacing a bound executable in place. A
@@ -331,8 +333,9 @@ Keep documentation responsibilities clear:
 - Research owns source evidence and alternatives, not a competing requirement set.
 - Package docs explain their contracts, capabilities, recovery and limitations using the common format.
 
-Use one concise release compatibility table: host/storage versions, worker-profile support,
-bundled package artifacts and tested native/provider versions. Before a storage migration, create
+Record the configuration actually tested: host/storage versions, worker-profile support,
+package artifacts and tested native/provider versions. A concise inventory is sufficient initially;
+this is not a requirement to test or maintain combinations of old releases. Before a supplied storage migration, create
 a consistent backup and refuse a newer unsupported store. Failed migration does not start partial
 runtime work. Downgrade is explicit restore/reconciliation, not an assumption that old code can
 read new data. Retain implementation artifacts until no retained instance requires them and an

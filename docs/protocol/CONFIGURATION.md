@@ -139,6 +139,12 @@ services or open older state. Upgrading may require revised definitions, replace
 manual migration; migration tooling and continued maintenance of pinned releases are not promised.
 Where migration is provided, its contract must describe changed behavior and supported recovery.
 
+The current implementation need not retain legacy parsers, compatibility adapters, old protocol
+execution paths or storage readers solely to support earlier releases. Retaining an exact artifact
+selected by an existing instance is separate from supporting that artifact in a newer runtime.
+An older working installation may be pinned; its existence does not impose legacy support on the
+current codebase. The existing explicit artifact-cleanup and no-silent-substitution rules still apply.
+
 This does not weaken conformance to the particular published contracts an implementation claims
 to support, permit conflicting definitions to silently replace one contract identity/version, or
 permit a new package installation to substitute an existing instance's retained implementation.

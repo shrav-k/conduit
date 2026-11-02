@@ -1,159 +1,64 @@
-# V0 implementation proposal
+# V0 reference implementation proposal
 
-Status: **proposed for review**, 2026-11-02. No runtime code has been implemented by this packet.
-The [specification](../../SPEC.md) and [design contracts](../../DESIGN.md) remain authoritative.
-This packet explains how to implement them, identifies consequences that need a ruling, and
-proposes a development sequence. It does not silently promote research or fixture syntax into
-accepted protocol.
+Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
+provider experiment has run**. The [design](../../DESIGN.md) supplies accepted semantics. The
+[conceptual review](../../REVIEW.md) is the current discussion; the
+[authoring/syntax packet](../authoring-syntax/README.md) is parked for a future PR.
 
-**Review priority:** plugin and template authoring come first. The user clarified that open
-choices must be ruled on together, not converted into implementation defaults autonomously.
-The initial authoring direction is accepted: keep Conduit support lightweight and prove the
-protocol/structure by authoring plugins; grow helpers from demonstrated needs. Plugins publish
-inspectable contracts with their implementations; MCP is the public plugin protocol base, with
-a small Conduit profile. Code-optional bindings to existing MCP services and independent component
-exposure are accepted. The [design-fit audit](../../REVIEW.md#design-fit-audit-code-optional-plugins-and-independent-mcp-access)
-preserves the existing families, ownership and access rules. I1 accepts management/execution
-separation, shared policy with instance-owned state, no offline grants, and a one-machine
-first proof with management and two independent executor processes. I2 accepts native adapters
-before the owned Rust model/tool loop and macOS-first native integration/account validation;
-I3 accepts endpoint-selected/managed plugins and Conduit contracts composed from reusable typed
-requirements, with a small base vocabulary and author extensions. Its conceptual review is complete,
-including graph-backed operations, requirement composition, supervised instance-associated helpers
-and bundled first-party plugins plus explicit local installation. Detailed mechanisms remain open;
-I4's authority/startup/persistence choices are also settled, including the SQLite bundled engine.
-I5 accepts OS credential custody through a replaceable implementation bundle, initially macOS
-Keychain, and Interface-guided adapter enrollment/unlock. I6 accepts extensible observation plugins
-and Conduits, correlated diagnostics, a small health metric set and explicit content-capture policy.
-I1–I6 are conceptually settled. I7 accepts published, language-neutral contracts as authoritative;
-they may be handwritten or generated, then explicitly reviewed and versioned. Implementations
-conform to those contracts. V0 also accepts composition without a mandatory primary plugin:
-complete templates and declared defaults resolve to compatible retained bindings. I7's remaining
-work is concrete contract/template syntax and layout. Existing
-infrastructure is welcome behind enforced contracts;
-the first implementation should establish the authoring and execution patterns before optimizing
-their efficiency. The protocol is the durable product; a particular host or storage arrangement
-is replaceable.
+The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
+Use existing infrastructure and lightweight support to prove the contracts. A Rust process layout,
+package example or database choice cannot silently define the public model.
 
-## Proposed architecture
+## Reading map
 
-**I1 is accepted for the first implementation.** Separate execution services supervise Conduit-managed Agents and
-Resources, management coordinates configuration/control, and the Interface presents them. Each
-executor can host multiple instances; external MCP services retain their own supervision. This
-supports eventual distributed placement. Management owns templates, registration and shared
-access policy; one designated service owns each instance's resolved definition, confirmed
-configuration/revision and operation results. The Interface aggregates these sources with
-freshness and gaps. The [cloud follow-up](../../research/CLOUD_AUTHORITY.md) supplies the accepted
-authority model's rationale and alternative examples. V0 retains supervision and dispatched
-outcomes, while holding new managed requests whose current permission cannot be established.
-Offline grants are deferred; existing stop/revocation and result-delivery rules remain applicable.
-
-Rust services implement registry authority, instance supervision, authorized capability traffic
-and durable evidence through explicit boundaries. The first proof uses separate management and
-two executor processes on one machine, faulting their connections. Two-machine validation follows
-before remote support is claimed. Detailed persistence mechanisms and production deployment remain
-implementation work. Replaceable frontends attach to an Interface; authored workers and existing
-MCP services fulfill published plugin contracts through retained implementation bindings. Graphs
-can also implement exported typed operations, composing selected operations without new glue code.
-Authored code normally uses supervised instance-associated helpers; trusted built-in Rust code may
-remain in-process. Instance state authority and endpoint ownership are unchanged; exact helper
-grouping remains open. Existing MCP services retain supervision. Code-optional contributions use
-shared adapters or graph composition without a worker per package.
-I4 accepts a minimal published persistence plugin contract with one bundled implementation.
-Services load it as a runtime dependency and retain state ownership; keep a future Pool-owned
-Resource representation viable through the same public contract. SQLite is the initial bundled
-engine, with separate local management/executor databases in the first experiment. This does not
-require distributed state to live in one file or select replication/failover behavior.
-Xerj remains an optional Resource backend; Pi supplies evidence, not a runtime dependency.
-
-Templates remain the complete authoring entry point: typed YAML, finite setup graphs, declared
-runtime behavior and supported controls. Users do not author separate operation-request manifests.
-CLI/API calls produce internal operation records so the system can recover and explain effects.
-Conduit templates compose typed relationship requirements; selected endpoint plugins supply support.
-The proposed runtime resolves definitions, checks bindings and coordinates relevant runtime
-validation/enforcement with attributable Interface evidence. The model is accepted; specific
-extension contracts, algorithms, libraries and the minimal requirement catalog remain under review.
-
-## Reading order
-
-| Document | Purpose |
+| Document | Purpose / authority |
 | --- | --- |
-| [AUTHORING](AUTHORING.md) | Concrete author journeys, the accepted lightweight support direction and illustrative APIs. |
-| [PACKAGE_WALKTHROUGH](PACKAGE_WALKTHROUGH.md) | One illustrative history package traced through contracts, MCP bindings, a complete template, defaults and instance controls; I7 syntax remains open. |
-| [ARCHITECTURE](ARCHITECTURE.md) | Processes, ownership, persistence, scheduling, access, recovery, observability and concrete execution paths. |
-| [CONTRACTS](CONTRACTS.md) | Proposed schemas, plugin/worker contracts, graph interpretation, controls and MCP mappings. |
-| [AUTHORIZATION](AUTHORIZATION.md) | Accepted Policy-as-requirements model, protected grant administration, authority/startup boundaries and proposed detailed enforcement/schema contracts. |
-| [ORGANIZATION](ORGANIZATION.md) | Repository/crate boundaries, dependencies, implementation milestones, validation and maintenance. |
-| [REVIEW](REVIEW.md) | Seven grouped decisions with recommendations, alternatives and specific consequences. |
+| [REVIEW](REVIEW.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
+| [ARCHITECTURE](ARCHITECTURE.md) | Detailed runtime mechanisms and examples; accepted boundaries are marked, other mechanisms remain proposals. |
+| [AUTHORIZATION](AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
+| [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. |
+| [Deferred authoring](../authoring-syntax/README.md) | Contract, plugin/package and template examples to revisit after conceptual closure. |
+| [Collaborator comparison](../COLLABORATOR_REVIEW.md) | PR #1/#2 assessed against the current branch, without adopting or merging them. |
 
-Start with the review's authoring walkthrough, then consult the contracts and architecture. The
-contract document is deliberately more concrete than the accepted design, but every spelling
-introduced there is a proposal. The existing [YAML experiment](../../../experiments/001-shared-access/README.md)
-remains a static draft packet; its latest bindings reflect accepted composition while their exact
-spelling is still under review.
+## Accepted implementation boundaries
 
-## Authority and change rules
+Management owns registration/templates and shared access policy. One designated service owns each
+instance's resolved definition, confirmed settings and outcomes. Executors supervise managed activity;
+Resource backends own domain data; Interfaces combine evidence with freshness/coverage. No offline
+grants are available. Shared logical ownership does not require shared processes or host placement.
 
-- **Accepted** means behavior already in DESIGN; this packet links to it rather than creating
-  a second decision ledger.
-- **Proposed** means an implementation choice recommended here, including crate names, storage
-  layouts, wire profiles and numeric limits.
-- **Review I1–I7** marks choices with product, protocol or compatibility consequences. They are
-  pending until ruled on; I1–I6 are conceptually settled, and I7 retains the choices in REVIEW.
-  Routine engineering choices can be adopted with the implementation
-  and evidence, without asking a separate question for every field.
-- A new counterexample can revise this proposal. It cannot silently override the current design.
-  After approval, fold enduring contract changes into DESIGN and keep implementation details here;
-  replace pending review text with the ruling rather than maintaining parallel histories.
+The first proof runs management and two independent executors on one machine. Authored code normally
+uses supervised instance-associated helpers; existing MCP services keep their supervision. Graphs and
+code-optional packages do not require a worker per contribution. Endpoint instances retain selected
+implementations; Conduits coordinate relationship requirements and participation.
 
-## Scope
+A minimal published persistence contract is loaded as a service dependency with bundled SQLite.
+Conduit-retained secrets use replaceable OS credential custody, initially Keychain. The root Interface
+directs foundational setup/recovery. Observation is extensible and inspectable through the Interface,
+with local authoritative evidence independent of optional exports. These choices are accepted initial
+implementations, not mandatory storage/OS dependencies for every future conforming implementation.
 
-Experiment 002's [combined composition-authoring proof](../../../experiments/002-runtime-plugins/README.md#combined-composition-authoring-proof)
-is accepted within its existing synthetic fixture: graph-backed operations, derived/explicit results
-and recovery, composed/custom requirements and Interface evidence. It does not approve implementation
-start, final syntax or permanent core vocabulary. The helper execution default is accepted separately;
-exact process grouping remains open.
+## Delivery and evidence
 
-The proposed sequence begins with synthetic, fault-injectable execution and an Interface, then real
-Resources and Agent adapters, then the required two-Claude/two-Codex account exercise. Native
-agent supervision and a Conduit-owned model/tool loop have distinct implementation paths. The
-accepted I2 order tests real Agents through native Claude/Codex adapters after the synthetic proof,
-then builds Conduit's Rust model/tool loop. Both remain required goals, alongside the replaceable
-Pi-inspired terminal. Subscription compatibility still requires actual native-adapter evidence;
-native integration/account validation starts on macOS. Keep the Rust core portable and OS
-behavior behind adapters; other platforms need their own integration evidence before support claims.
+Keep the [Experiment 002](../../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
+compose exported operations with derived/explicit results and recovery, add composed/custom requirements,
+exercise independent service failures and inspect effects through the Interface. It must use public
+extension contracts rather than special-case core dispatch. Implementation has not started.
 
-No distributed scheduler, general workflow language, public plugin marketplace, new skill
-framework, generic tracker subsystem, label catalog or mandatory Wasm engine is proposed.
-Independent placement does not require automatic scheduling or federation; their absence must
-not force a single execution lifetime or a central hop for every capability interaction.
-OS isolation remains an explicit execution mode whose support must be demonstrated, not inferred
-from using Rust, workers or MCP.
+Next validate real Agents through native Claude/Codex adapters on macOS, then build the owned Rust
+model/tool loop. The two-Claude/two-Codex subscription goal needs actual account/private-state evidence.
+Two-machine validation is required before claiming remote support. Isolation support requires its own
+tests; native mode remains the accepted default. Pi is a research/frontend reference, Xerj an optional
+Resource backend. Neither is an adopted runtime dependency.
 
-## Research performed for this proposal
+The finer milestones and library selections remain proposals. Complete conceptual closure, then
+review authoring/MCP profiles and conformance fixtures in a later PR before implementation. No root
+model, VM default, Sealmesh dependency, second full runtime or new protocol wire is added by this packet.
 
-The [Rust runtime report](../../research/RUST_RUNTIME.md) pins Xerj and Pi source and compares
-executors, actors, workflow systems and plugin mechanisms. This follow-up also inspected primary
-documentation for subprocess cancellation/reaping, SQLite durability and backup, JSON Schema
-defaults, YAML parser events, MCP transports, credential-store selection and Cargo workspaces.
-The relevant sources are cited beside the resulting recommendations in this packet.
+## Research and maintenance
 
-The [distributed-runtime follow-up](../../research/DISTRIBUTED_RUNTIME.md) adds Tilt,
-Docker/containerd, Kubernetes, Rust control/execution systems and primary distributed-systems
-papers. Together with the cloud follow-up, it informed the accepted execution and authority
-splits and the accepted no-offline-grants v0 rule. Proposed tests and failure guarantees remain
-unvalidated until the implementation demonstrates them.
-
-Documentation and source inspection are not executable validation. The
-[runtime experiment](../../../experiments/002-runtime-plugins/README.md) defines the first
-failure tests. This proposal adds detailed implementation obligations but claims no benchmark,
-provider compatibility, credential isolation or recovery test has already passed.
-
-Its success must also include an independently authored plugin and a reusable template, loaded
-without changing core dispatch code. A demonstration consisting only of hard-coded built-in
-integrations would not establish Conduit's central extension model.
-
-Authoring checks completed for this packet: repository Markdown links/anchors/fences, referenced
-local pinned source paths, fenced YAML syntax and whitespace checks. The YAML check is a syntax
-check using the existing documentation tooling, not proof of a Conduit schema or strict YAML 1.2
-implementation. All proposed runtime and provider acceptance tests remain unexecuted.
+[Research](../../research/README.md) preserves primary-source comparisons, source pins and limits.
+Earlier static YAML/link checks establish only their stated properties, not runtime recovery,
+authorization, provider compatibility or strict-parser conformance. Keep actual results separate from
+expected outcomes. Record a semantic change once in the design and link to it here; avoid restoring
+long duplicated ruling histories. Git retains earlier proposals and discussion examples.

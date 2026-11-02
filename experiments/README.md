@@ -1,5 +1,9 @@
 # Experiments
 
+Current sequence: close the [conceptual review](../docs/REVIEW.md), then return to syntax and
+conformance cases in a later PR. Preserve these draft fixtures and their existing evidence;
+this documentation pass adds no runtime tests or new backend/deployment requirements.
+
 Experiments live outside `docs/`. Each directory keeps its documentation, configuration examples,
 expected outcomes and validation record together. The [specification](../docs/SPEC.md) and
 [design contracts](../docs/DESIGN.md) remain authoritative for accepted behavior.

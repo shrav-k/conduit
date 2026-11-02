@@ -1,7 +1,7 @@
 # Construction, interfaces and runtime interaction
 
 Research synthesis, updated 2026-10-31. The accepted contracts live in
-[DESIGN.md](../DESIGN.md#establishment-contracts-and-instance-state). The
+[DESIGN.md](../design/LIFECYCLE.md#establishment-contracts-and-instance-state). The
 [concrete YAML packet](../../experiments/001-shared-access/README.md) replaces the earlier partial
 Pool/Agent examples. This report preserves the reasoning and source comparisons; it is not
 another schema or review queue.

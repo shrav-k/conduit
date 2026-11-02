@@ -1,13 +1,14 @@
 # Policy and Grant contracts
 
-Status: accepted semantic model with remaining I4 details, 2026-11-01. Policy and Grant are
+Status: accepted semantic model with proposed detailed representations, 2026-11-02. Policy and Grant are
 essential concepts beneath the five object families, for Agents and Interfaces alike.
 Independent policy, recorded participation grants and issuer-independent grant lifetime are
 accepted. Policy is now the authoritative application of reusable requirements, and grant
 administration uses ordinary protected capabilities. This document develops that model without
 selecting exact YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
 the [design](../../DESIGN.md) retains accepted behavior and [I4](REVIEW.md#i4--local-transactional-authority)
-is the ruling queue. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
+summarizes the accepted boundary. [Conceptual review C2](../../REVIEW.md#c2--whose-authority-governs-a-dependent-call)
+tracks the remaining dependent-call authority question; specific syntax is deferred. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
 
 ## 1. Place in the model
 
@@ -132,7 +133,7 @@ further administrative access. Read access to a service alone does not grant adm
 Issuance, changes and revocation all check current authority. A successful issuance records the
 recipient's own grant. That grant does not depend on the issuer's later rights, execution or
 participation. Another currently authorized administrator can revoke it. The accepted initial
-owner authority still needs a startup contract; presenting an arbitrary grant-issuance plugin
+owner authority follows the root Interface setup/recovery contract; presenting an arbitrary grant-issuance plugin
 cannot establish root authority.
 
 **Context support matters:** checking a provider request and checking a proposed grant's permitted

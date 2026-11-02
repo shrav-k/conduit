@@ -361,7 +361,7 @@ proof. Test the selected instance-state authority at these fault boundaries:
 These are planned tests, not observed results. The accepted first experiment runs management
 and two independent executors as separate processes on one machine, with controlled connection
 failures. It need not implement all three authority models or deploy on AWS/GCP/Azure. Two-machine
-validation follows before remote support is claimed. Storage technology remains I4; schema spellings
+validation follows before remote support is claimed. I4 subsequently selected bundled SQLite through the public persistence contract; schema spellings
 and MCP profile fields remain I7.
 
 ## 9. Interface administration and independent policy

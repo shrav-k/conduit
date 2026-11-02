@@ -8,8 +8,8 @@ choices within the [specification](../../docs/SPEC.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
 
 The [implementation proposal](../../docs/proposals/implementation-v0/README.md) expands the host,
-worker, schema and persistence boundaries this spike would exercise. Its review choices remain
-pending; this experiment still contains no executable implementation or measured results.
+worker, schema and persistence boundaries this spike would exercise. Accepted I1–I6 boundaries remain in force; the conceptual closure review precedes a future
+authoring/syntax PR. This experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
 layout below. **I1 accepts separate management/execution services and shared policy with
 instance-owned state, plus no offline grants in v0.** The first proof uses management and two

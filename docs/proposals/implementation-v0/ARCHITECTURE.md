@@ -2,7 +2,7 @@
 
 Status: implementation proposal, 2026-11-01. I1's management/execution separation and shared
 policy with instance-owned state are accepted; v0 has no offline grants. See [review](REVIEW.md)
-for pending choices and [contracts](CONTRACTS.md) for proposed representations. Accepted semantics remain in
+for pending choices and [contracts](../authoring-syntax/CONTRACTS.md) for proposed representations. Accepted semantics remain in
 [DESIGN](../../DESIGN.md).
 
 ## 1. System boundaries
@@ -128,8 +128,8 @@ grant and governing-requirement administration/inspection. The existing system m
 retains registry/template and instance-creation responsibilities. Both may be hosted by the same
 management service and storage implementation; one capability manages many records. This preserves
 unitary responsibilities without a separate process/database per Resource or a central proxy for
-every requirement check. Endpoint implementations retain their enforcement duties. Exact startup,
-schemas and storage remain unruled. Authorization records do not inherit ordinary knowledge-sharing
+every requirement check. Endpoint implementations retain their enforcement duties. Startup/recovery and the initial persistence implementation are accepted; exact schemas and
+storage mechanics remain implementation work. Authorization records do not inherit ordinary knowledge-sharing
 semantics.
 Publishing a policy or installing a plugin cannot confer authority.
 
@@ -213,7 +213,8 @@ The recovery route retains broad owner repair, checked operations, fixed-definit
 rules and backing-data preservation. No automatic default reset, application restart or second
 writable authority follows. Runtime support supplies loading and owner verification; recovery
 behavior is authored through the Interface's declared operations. Exact operations, retained-record
-layout, missing-code recovery and storage engine remain authoring/implementation work.
+layout and missing-code recovery remain authoring/implementation work. SQLite is the accepted
+initial bundled persistence engine.
 
 **Establishment walkthrough:** the local runtime loads the explicitly selected root
 Interface definition and verifies its owner context. The Interface's establishment graph then
@@ -277,7 +278,7 @@ match compatible capabilities/roles and coordinate restrictions and participatio
 providing endpoint-local implementation fragments. Each endpoint owns its local binding state;
 the Conduit retains relationship state and correlated establishment/cleanup outcomes. Endpoint
 ownership does not make a detached binding permanent. See the
-[authoring boundary](AUTHORING.md#endpoint-selected-plugins-and-conduit-matching).
+[authoring boundary](../authoring-syntax/AUTHORING.md#endpoint-selected-plugins-and-conduit-matching).
 
 For example, the Agent's MCP integration manages its local bridge/binding; a Resource's endpoint
 plugin manages the provider-facing binding and shared client. A target configuration change still
@@ -295,7 +296,7 @@ Partial establishment must remain visible; no atomic transaction across endpoint
 The implementation must establish an identifiable, supervised instance context before dispatching
 its setup; a record with incomplete setup need not have an ongoing process. Exact registration/start
 sequencing, helper grouping, cancellation and cleanup mechanics remain open. The
-[family-by-family walkthrough](AUTHORING.md#5-where-the-example-implementations-execute) supplies
+[family-by-family walkthrough](../authoring-syntax/AUTHORING.md#5-where-the-example-implementations-execute) supplies
 the proposed template/instance mapping and lifecycle examples.
 
 The helper default preserves this instance execution boundary. Sharing implementation code need
@@ -818,7 +819,7 @@ why an action is unavailable, without claiming validation proved all runtime beh
 payload capture follows declared recording policy; no general full-input logging default is
 introduced. The proposal does not select an expression engine, extra worker processes or an OS
 sandbox. See the
-[contract proposal](CONTRACTS.md#composable-relationship-requirements--proposed-contract).
+[contract proposal](../authoring-syntax/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
 
 ### Shared authentication
 

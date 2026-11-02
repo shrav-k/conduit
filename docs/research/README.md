@@ -1,5 +1,10 @@
 # Research
 
+Current sequence: the [conceptual review](../REVIEW.md) is the active queue;
+[authoring syntax](../proposals/authoring-syntax/README.md) is parked for a later PR. The
+[collaborator comparison](../proposals/COLLABORATOR_REVIEW.md) reviews two submitted proposals
+without treating their platform claims as newly verified research or adopting their recommendations.
+
 Research supports the [specification](../SPEC.md) and [design contracts](../DESIGN.md).
 It is not an additional set of requirements. The current concrete configuration belongs in
 [experiments](../../experiments/README.md), where proposed syntax and validation evidence are

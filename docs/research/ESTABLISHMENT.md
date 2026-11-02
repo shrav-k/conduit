@@ -1,13 +1,13 @@
 # Establishment, ordering, outputs and recovery
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
 terminology is retained where it describes those systems; proposed syntax below is not a schema.
 
 Research: 2026-10-31. **Source evidence and lifecycle examples; no live provider work.**
-Read [the current construction contract](../DESIGN.md#establishment-contracts-and-instance-state),
+Read [the current construction contract](../design/LIFECYCLE.md#establishment-contracts-and-instance-state),
 then the cases below and the [filesystem comparison](#filesystem-plugins-and-template-examples).
 This report extends [configuration research](CONFIGURATION.md) and the
 [Pi Durable investigation](PI_RUNTIME.md#pi-durable-in-depth).

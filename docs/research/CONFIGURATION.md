@@ -55,13 +55,13 @@ checking/enforcement where required. Keep code execution under the selected inst
 No automatic plugin loading, speculative Resource provisioning or broad new constraint DSL follows
 from a Conduit listing a requirement. Preserve fixed definitions, narrowing-only access and honest
 unknown/unavailable outcomes. Detailed proposed boundaries are in
-[implementation contracts](../proposals/implementation-v0/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
+[implementation contracts](../proposals/authoring-syntax/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
 
 ## Concrete configuration
 
 The current [YAML packet](../../experiments/001-shared-access/README.md) is the single worked
 configuration draft. It replaces earlier partial control and instance examples here. The accepted
-[control contract](../DESIGN.md#template-defined-configuration-changes) distinguishes fixed
+[control contract](../design/LIFECYCLE.md#template-defined-configuration-changes) distinguishes fixed
 definitions, confirmed settings, outstanding requests and observed state. The research below
 explains why those distinctions matter; it does not introduce a separate mutation protocol.
 
@@ -400,7 +400,7 @@ popularity alone.
 ## Proposed template and instance forms
 
 The current envelope, identity and editing contracts are maintained in
-[DESIGN.md](../DESIGN.md#configuration-language). Family/form identify the contract; stable IDs
+[DESIGN.md](../design/CONFIGURATION.md#configuration-language). Family/form identify the contract; stable IDs
 are distinct from names. Templates are reusable; instances retain resolved configuration and
 controls independently of later template edits. Setup graphs run at start, and instances manage
 ongoing behavior. The [walkthrough](../../experiments/001-shared-access/README.md) gives the current graph YAML draft.
@@ -411,7 +411,7 @@ different effects. The complete registered schema and operation contract must va
 
 ## How the families connect
 
-The [current user workflow](../SPEC.md#the-user-workflow) starts in an Interface: author Resource
+The [current user workflow](../SPEC.md#one-user-journey) starts in an Interface: author Resource
 and Agent templates, compose/instantiate Pools, start Agents with Conduits, then observe and
 request supported changes. Resources are created through exactly one owner Pool; their templates
 remain reusable. Conduits carry operations and data, including Resource-to-Resource access.

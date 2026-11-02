@@ -16,6 +16,19 @@ behavior rather than treating separate processes as proof of it. The first proof
 and two independent executors as separate processes on one machine, with controlled connection
 failures; two-machine validation follows before remote support is claimed.
 
+## Review and PR sequence
+
+This branch first closes [conceptual review](../../REVIEW.md) and reconciles the
+[collaborator proposals](../COLLABORATOR_REVIEW.md). It does not settle package-reference syntax.
+A later authoring PR will review contracts, template/package examples, MCP/profile mappings and
+conformance fixtures together. Implementation milestones follow that approved boundary; a detailed
+crate plan is not authorization to start them now.
+
+The actual documentation layout is [SPEC](../../SPEC.md), [DESIGN and topic files](../../DESIGN.md),
+one active [REVIEW](../../REVIEW.md), separate implementation/authoring proposals, and source evidence
+in research. Experiments remain outside docs with their own documentation. The proposed source-tree
+layout below is still a planning example, not a list of directories already created.
+
 ## 1. Repository layout
 
 Use one Cargo workspace and one lockfile for the application, workers and first-party plugins.

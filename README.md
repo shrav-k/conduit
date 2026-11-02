@@ -14,10 +14,13 @@ can expose supported MCP capabilities independently, with an Interface providing
 - [Documentation map](docs/README.md)
 - [Specification](docs/SPEC.md) — the five-family model and core behavior
 - [Design contracts](docs/DESIGN.md) — detailed accepted rules
-- [Review](docs/REVIEW.md) — settled boundaries and remaining schema work
+- [Review](docs/REVIEW.md) — three conceptual closure topics before syntax
 - [Implementation proposal](docs/proposals/implementation-v0/README.md) — architecture, contracts, organization and decisions for review
-- [Concrete YAML walkthrough](experiments/001-shared-access/README.md)
+- [Collaborator proposals](docs/proposals/COLLABORATOR_REVIEW.md) — comparison with the current design
+- [Deferred authoring examples](docs/proposals/authoring-syntax/README.md) — future PR input
+- [Concrete YAML walkthrough](experiments/001-shared-access/README.md) — static, proposed syntax
 - [Research](docs/research/README.md) — evidence, alternatives and source limitations
 
-The current design is on `main`, incorporating the `research/conduits-as-graphs` exploration.
+The reviewed baseline is on `main`; later accepted rulings and this conceptual cleanup remain
+on the implementation branch until merged.
 The earlier design baseline remains available in Git history at `c013f0a`.

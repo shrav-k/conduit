@@ -1,20 +1,24 @@
 # Proposed implementation contracts
 
+**Deferred authoring packet:** preserve these examples for the later syntax/conformance PR.
+The [conceptual review](../../REVIEW.md) is the active queue; [this packet](README.md) changes no accepted rules.
+
 **Placement review:** separate management/execution services and shared policy with instance-owned
 state are accepted. V0 has no offline grants. The first proof uses separate management and two
 executor processes on one machine; remote support requires later two-machine validation.
 References to a host below mean the responsible management
 or execution service, not one combined process. Independent execution and network Conduits
 require authenticated endpoint identity, retained target outcomes and authority-freshness rules.
-These remain [review work](REVIEW.md#i1--independent-execution-and-management); serialization alone
+Their detailed mechanisms remain implementation/conformance work within
+[accepted I1 boundaries](../implementation-v0/REVIEW.md#i1--independent-execution-and-management); serialization alone
 would not make this a complete distributed protocol.
 
 Status: draft contract design, 2026-11-02. All new field names, namespaces, limits and wire
 profiles here are proposed. [DESIGN](../../DESIGN.md) supplies accepted semantics;
-[review I3 and I7](REVIEW.md) cover the main extension and authoring choices. Examples are
+[review I3 and I7](../implementation-v0/REVIEW.md) cover the main extension and authoring choices. Examples are
 explanatory, not files accepted by an existing Conduit executable.
 
-The companion [Policy and Grant contracts](AUTHORIZATION.md) specify the accepted authorization
+The companion [Policy and Grant contracts](../implementation-v0/AUTHORIZATION.md) specify the accepted authorization
 model and proposed detailed structure for Agents, Interfaces and other managed callers. Policy and Grant belong in the
 protocol vocabulary beneath the five families; I4 settles their conceptual semantics and I7 chooses
 exact schemas. Requirements describe guarantees, plugins implement operations and
@@ -26,7 +30,7 @@ for authorization inputs, issued records, decisions, delegation and evidence.
 management and executor state, with one bundled implementation. The owning service still decides
 state transitions and permissions. The contract must support its required checked updates,
 durable progress and reconciliation of uncertain writes; exact methods, schemas and conformance
-fixtures belong to the final authoring pass. The [storage boundary](ARCHITECTURE.md#storage-boundary)
+fixtures belong to the final authoring pass. The [storage boundary](../implementation-v0/ARCHITECTURE.md#storage-boundary)
 uses a service runtime dependency in v0 with SQLite for the first bundled implementation. Separate public semantics
 from engine/hosting details to support a future Pool-owned Resource representation; its migration
 and foundational access/lifecycle rules are deferred. This is not a general database/query API or
@@ -290,7 +294,7 @@ or exactly-once effects. Detailed coordination and custom recovery hooks remain 
 
 **Authoring before hosting:** the manifest/port inventory below is a proposed runtime-facing
 contract, not a requirement that every author manually implement every field or interface.
-The [accepted direction](REVIEW.md#review-priority-plugin-and-template-authors) is lightweight
+The [accepted direction](../implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors) is lightweight
 Conduit support, with real plugins proving the public protocol before investing in a helper
 library. The division between authored and generated metadata and the concrete package/wire
 formats remain open. Persistent drivers need lifecycle behavior; a finite operation need not
@@ -334,7 +338,7 @@ infer semantics from a tool name, HTTP method or an advisory MCP annotation alon
 
 ### Composable relationship requirements — proposed contract
 
-The [accepted design](../../DESIGN.md#composable-relationship-requirements) uses Conduit templates
+The [accepted design](../../design/CONDUITS.md#composable-relationship-requirements) uses Conduit templates
 composed from reusable typed requirements, with a small base vocabulary and author-defined additions.
 **Accepted extension boundary:** each requirement defines reusable, versioned meaning, typed
 parameters and applicability independently of a particular implementation. Multiple endpoint plugins
@@ -358,7 +362,7 @@ and evaluation mechanisms remain open.
 plugin code when endpoints support every constituent. Preserve the original meanings and limits;
 check constituent support rather than treating a bundle's name as proof or a new grant.
 
-**Accepted Policy consolidation:** [Policy names authoritative requirement application](AUTHORIZATION.md#3-policy-as-authoritative-requirement-application).
+**Accepted Policy consolidation:** [Policy names authoritative requirement application](../implementation-v0/AUTHORIZATION.md#3-policy-as-authoritative-requirement-application).
 Grant administration and governing-binding changes are ordinary protected capability operations,
 with recorded grants permitting them and requirements constraining their effects. One plugin can
 implement these uses without separate deployment or duplicated schemas. Concrete-request enforcement

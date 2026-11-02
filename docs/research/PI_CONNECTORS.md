@@ -1,6 +1,6 @@
 # Pi re-review: connectors, context and communication
 
-**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../DESIGN.md#shared-access-and-authentication)
+**Current-design reading note:** [SPEC.md](../SPEC.md) and [DESIGN.md](../design/POOLS.md#shared-access-and-authentication)
 define five template/instance families, Pool-managed shared service authentication and
 Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
 plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
@@ -371,7 +371,7 @@ stale/incompatible definitions withhold affected calls pending refresh/reconcili
 alone need not invalidate tool schemas. Detection depends on integration evidence; a rejected call
 may reveal drift for the first time. Do not silently adapt or replay an uncertain write. Automatic
 first-use/background refresh policies are deferred; current access, credential refresh and transport
-recovery remain separate. See [the accepted activation contract](../DESIGN.md#activation-instructions).
+recovery remain separate. See [the accepted activation contract](../design/AGENT.md#activation-instructions).
 
 Native skill text can be portable while hooks are not. A Claude model in Conduit's runtime
 does not provide Claude Code's plugin API. A Pi-style terminal does not provide Pi's extension
@@ -518,7 +518,7 @@ The accepted Conduit design makes this evidence intrinsic to the Interface's con
 contract, with a durable inspectable local foundation and pluggable export. Managed components
 produce evidence while no frontend is attached; reconnecting frontends inspect the same underlying
 history/state. An external dashboard is optional, and Linear/Jira integration is unrelated to this
-baseline. See [Interface observability](../DESIGN.md#interface-observability).
+baseline. See [Interface observability](../design/MODEL.md#interface-observability).
 
 Durable's existing research remains applicable: persist intent, perform the effect, record
 outcome before claiming completion; use ownership and stale-worker fencing; distinguish input

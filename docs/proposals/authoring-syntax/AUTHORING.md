@@ -1,17 +1,20 @@
 # Plugin and template authoring walkthrough
 
+**Deferred authoring packet:** preserve these examples for the later syntax/conformance PR.
+The [conceptual review](../../REVIEW.md) is the active queue; [this packet](README.md) changes no accepted rules.
+
 Status: authoring examples, 2026-11-02. Lightweight Conduit support with the public protocol and
 extension structure prioritized over a helper library is accepted. Publishing inspectable
 contracts with implementations is also accepted. Published, language-neutral contracts are authoritative;
 authors may handwrite or generate them, then explicitly review and version the released definitions.
 Implementations conform to those contracts. Complete templates without a mandatory primary plugin,
-with compatible bindings and declared defaults, are accepted for v0. Detailed syntax is the current I7 review.
+with compatible bindings and declared defaults, are accepted for v0. Detailed syntax is parked for a future PR after conceptual closure.
 MCP is accepted as the public invocation base with
 a small Conduit profile. Code-optional implementation bindings and independent component access
 are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in
 Rust code may remain in-process. Profile details, SDK, package syntax and exact helper grouping remain open.
 Code is illustrative and has not been executed.
-The [review](REVIEW.md#review-priority-plugin-and-template-authors) records the ruling and remaining
+The [review](../implementation-v0/REVIEW.md#review-priority-plugin-and-template-authors) records the ruling and remaining
 choices; [DESIGN](../../DESIGN.md) supplies the settled semantics.
 
 The objective is an extension an ordinary author can understand and test. A template author
@@ -690,7 +693,7 @@ a small base vocabulary and author extensions. Definitions may themselves compos
 requirements while retaining every constituent's meaning and limits. Detailed publication,
 composition and satisfaction mechanics remain under review. Supervised instance-associated helpers
 are the accepted default for authored code; exact grouping, SDK API and YAML syntax remain open.
-The [concept map](../../DESIGN.md#authoring-concepts-beneath-the-object-families)
+The [concept map](../../design/MODEL.md#authoring-concepts-beneath-the-object-families)
 separates working vocabulary from the five object families; final naming stays open.
 
 ### Plugin, template, graph and instance
@@ -795,7 +798,7 @@ The setup graph does not run anew for every call, and its successful completion 
 authorization. Per-call work, ongoing services and connection participation retain their existing
 operation and instance lifetimes. The Interface exposes their correlated state and outcomes.
 
-The [Policy and Grant contracts](AUTHORIZATION.md) define issuance, current authority and
+The [Policy and Grant contracts](../implementation-v0/AUTHORIZATION.md) define issuance, current authority and
 delegation through the same protected operations. Policy applies existing requirement contracts;
 there is no separate policy rule language or mandatory policy-plugin class. A small plugin author does not need a separate IAM
 server: its contract declares operations/requirement duties, while common runtime integration

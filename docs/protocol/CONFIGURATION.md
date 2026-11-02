@@ -126,6 +126,30 @@ binding fields remain engineering design within this contract; public naming gov
 Service-target and authentication selections continue to follow the existing instance configuration,
 control and stable-reference rules; an implementation binding supplies no implicit access or fallback.
 
+### Release compatibility
+
+Conduit makes **no backward-compatibility promise between releases**. This applies to the
+language/contracts, reference runtime and its component interfaces, packages and persisted formats;
+it is especially important during early iteration and does not automatically change as the project
+matures. Users can retain a known working combination by pinning its versions/artifacts. A future
+compatibility or support commitment would require a separate explicit decision.
+
+A release need not accept earlier configuration, run earlier plugins, interoperate with older
+services or open older state. Upgrading may require revised definitions, replacement instances or
+manual migration; migration tooling and continued maintenance of pinned releases are not promised.
+Where migration is provided, its contract must describe changed behavior and supported recovery.
+
+This does not weaken conformance to the particular published contracts an implementation claims
+to support, permit conflicting definitions to silently replace one contract identity/version, or
+permit a new package installation to substitute an existing instance's retained implementation.
+Unsupported configurations/dependencies remain explicit. Exact identity and version syntax are
+still authoring work; release coordination and tested-distribution contents remain separate choices.
+
+Pinning only a plugin does not establish compatibility with a different host or persisted format;
+users may need to pin the whole working set. Pinning Conduit-controlled artifacts does not freeze
+external services, native-agent binaries or the host environment. Their actual compatibility
+continues to be reported under the existing integration contracts.
+
 ### Object identity
 
 Every registered template and instance has a system-assigned stable ID independent
@@ -368,8 +392,8 @@ preview. Local configuration consistency does not imply atomic rollback of exter
 
 Version the meaning of configuration, including defaults, list composition, reference
 interpretation and transition behavior. Keep concrete input/result/failure examples with
-the contracts so implementations and tools can be checked for agreement. Migration rules
-must expose changed behavior; updating a version string alone is not a migration contract.
+the contracts so implementations and tools can be checked for agreement. Where migration is
+provided, its rules must expose changed behavior; updating a version string alone is not a migration contract.
 Exact version identifiers and compatibility representation are schema work. Any proposed change
 to accepted interpretation or instance-upgrade behavior returns for review.
 

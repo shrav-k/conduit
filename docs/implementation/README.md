@@ -44,6 +44,11 @@ implementations, not mandatory storage/OS dependencies for every future conformi
 
 ## Delivery and evidence
 
+The [release compatibility rule](../protocol/CONFIGURATION.md#release-compatibility) makes no
+backward-compatibility promise. Users can pin a working release/package set; a newer runtime need
+not support its older configuration, plugins or stores. Migration support, where supplied, must be
+explicit. Coordination of the reference distribution remains under review separately.
+
 Keep the [Experiment 002](../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
 compose exported operations with derived/explicit results and recovery, add composed/custom requirements,
 exercise independent service failures and inspect effects through the Interface. It must use public

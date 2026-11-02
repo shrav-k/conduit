@@ -26,6 +26,10 @@ do not silently redefine it. Plugin/template authoring and independently consuma
 central. Test public boundaries without private runtime imports or undeclared local checkouts.
 Distinguish protocol behavior, reference-implementation choices and optional capabilities.
 
+There is [no backward-compatibility promise between releases](docs/protocol/CONFIGURATION.md#release-compatibility).
+Keep the contract a release claims to implement explicit; pinning a working set is the continuity
+mechanism. This does not imply maintenance of old releases or mandatory migration tooling.
+
 Use one current review queue. Record an unresolved question with its affected guarantee, a concrete
 example and the choice needed. Do not reopen settled concepts because older research used different
 names. Separate mechanical moves from semantic edits where practical; repair links and preserve source

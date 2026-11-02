@@ -173,7 +173,9 @@ Resource type.
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;
 it is not an unvalidated catch-all. A changed description does not authorize changing semantics
-under an existing contract version. Migration between versions is explicit and tested.
+under an existing contract version. There is no backward-compatibility or migration-availability
+promise between releases; any migration supplied must be explicit and tested. See the
+[accepted compatibility rule](../protocol/CONFIGURATION.md#release-compatibility).
 
 **Accepted distribution scope:** bundle first-party plugins and support explicit installation of
 locally supplied plugin packages. Defer a marketplace and automatic dependency resolution across
@@ -187,13 +189,15 @@ combinations, with each contribution retaining its typed contract. Installing a 
 instantiate its templates, grant access or authenticate an account. The first-party package may supply several Resource
 groups. No mandatory public marketplace, namespace service or build DSL is needed in v0.
 
-The application release bundles a schema set, first-party manifests and platform worker artifacts.
+The proposed coordinated application release bundles a schema set, first-party manifests and
+platform worker artifacts; that release arrangement remains under review.
 Some packages contain only declarations/templates; they must not be forced through a native build
 or executable-install step. Installation alone does not contact or authenticate their providers.
 Installing a new release adds artifacts rather than replacing a bound executable in place. A
 retained instance still selects its recorded implementation. Host protocol/storage changes need
-compatibility checks even where plugin code is unchanged. Host bug fixes do not pin old bugs;
-they must preserve versioned semantics or explicitly require repair/migration.
+compatibility checks even where plugin code is unchanged. A newer host can drop older contract/store
+support and report the incompatibility. Keeping the prior working host/package set is distinct from
+adopting the update; repair, migration or replacement may be needed and need not be automated.
 
 ## 5. Local state and development artifacts
 

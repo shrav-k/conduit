@@ -146,10 +146,17 @@ the importing template also calls an unrelated repository validator `checks`. Th
 replace the history validator only if the package declares that dependency replaceable. Its
 explicit binding must satisfy the required contract; name coincidence supplies no binding.
 
+An explicitly replaceable dependency may declare a default implementation binding. When the caller
+supplies no replacement, that declared default is selected. A compatible explicit replacement
+takes precedence; an invalid explicit selection reports an error rather than falling back.
+This does not authorize automatic installation or substitution with another available package.
+Existing schema-validation and readiness rules apply when the selected contribution is unavailable.
+The resolved implementation is retained on the instance under the existing fixed-definition rules.
+
 These are definition and implementation-selection rules. Selecting an export or supplying a
 dependency does not establish a live Resource connection, grant permission or change Pool ownership.
 Resolved instance bindings retain the existing implementation-retention and replacement rules.
-Exact import/export fields, dependency-default rules and reference spellings remain authoring work.
+Exact import/export fields, default-binding representation and reference spellings remain authoring work.
 
 ### Distribution and execution
 

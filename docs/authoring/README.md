@@ -44,8 +44,9 @@ The required contracts are detailed in [Resources](../protocol/RESOURCES.md), [P
 Package composition uses [package-local scope and explicit dependency bindings](../protocol/MODEL.md#package-scope-and-public-bindings).
 A package keeps the meaning of its internal names when imported under a caller's alias. Publish
 exports for callers and expose any dependency they may replace explicitly; an unrelated same-named
-plugin in the caller cannot change the package's implementation. Runtime Resource access still
-follows authorized Conduits.
+plugin in the caller cannot change the package's implementation. A replaceable dependency may supply
+a default binding; a valid explicit replacement takes precedence, and an invalid replacement reports
+an error rather than falling back. Runtime Resource access still follows authorized Conduits.
 
 ## Variants the language must support
 

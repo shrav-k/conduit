@@ -298,10 +298,14 @@ This example does not ratify the entire manifest or every contract field at once
 The uniform reference proposal applies to template/resolved-instance implementation references;
 it need not force package-local defaults, endpoint names or native MCP tool names into that same
 namespace. Package-internal references retain their defining scope; callers replace only
-explicitly exposed dependencies. Exact resolution syntax remains part of the authoring review.
+explicitly exposed dependencies. Such dependencies may now declare default implementation bindings:
+the history validator can use its declared standard implementation unless the caller explicitly
+selects a compatible replacement. An invalid replacement reports an error rather than falling back.
+The resolved selection is retained on the instance; this does not install packages or grant access.
+Exact resolution and default-binding syntax remain part of the authoring review.
 
 It exposes concrete follow-up work: package identity/artifact selection, contract schema layout,
-default implementation bindings for replaceable dependencies, nested graph naming details, and how driver/lifecycle and
+default-binding representation, contract-version matching, nested graph naming details, and how driver/lifecycle and
 managed invocation metadata use the Conduit MCP profile. These should be resolved against this
 same package, not by adding a new fictional example for each field. A complete runtime implementation
 also requires the worker, publication tooling and conformance fixtures; none has started here.

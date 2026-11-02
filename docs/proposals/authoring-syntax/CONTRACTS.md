@@ -84,6 +84,9 @@ an authentication operation may come from different packages. Aliases name imple
 not Resources, processes or permission. The map and `{plugin, name}` export reference remain proposals.
 Accepted [package scope](../../protocol/MODEL.md#package-scope-and-public-bindings) keeps internal
 references in their defining package; caller bindings replace only explicitly exposed dependencies.
+Those dependencies may declare default implementation bindings. A valid explicit replacement takes
+precedence; an invalid one reports an error rather than selecting the default. Selection follows
+the existing implementation-retention rules and does not install packages or grant Resource access.
 Do not create a package/module hierarchy in the object registry
 merely to resolve exports. The same rule applies to default bindings when they are resolved.
 

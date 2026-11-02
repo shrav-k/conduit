@@ -11,7 +11,9 @@ Moving these examples does not ratify their names, package layout or scoping rul
 
 The first authoring ruling now accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings).
 Caller-local aliases cannot override a package's internal references; replaceable dependencies must
-be explicitly exposed. The representations below remain proposals within that accepted boundary.
+be explicitly exposed. Those dependencies may supply default implementation bindings, with compatible
+explicit replacements taking precedence and invalid replacements producing errors rather than fallback.
+The representations below remain proposals within that accepted boundary.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

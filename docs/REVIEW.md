@@ -77,11 +77,14 @@ they are not Conduit conformance results. Research recommendations remain in the
 without reopening settled concepts or creating a second question queue.
 
 The [authoring packet](proposals/authoring-syntax/README.md) preserves the examples for review.
-The first authoring ruling accepts [package-local scope and explicit dependency bindings](protocol/MODEL.md#package-scope-and-public-bindings):
+The authoring review accepts [package-local scope and explicit dependency bindings](protocol/MODEL.md#package-scope-and-public-bindings):
 caller aliases do not override package internals, and replacements use explicitly exposed bindings.
-This settles that boundary without accepting `spec.plugins`, `{plugin, name}` or an import/export
-file layout. The next choice is whether a replaceable dependency may provide a default implementation
-binding, so callers need only supply a binding when customizing it. This remains open.
+Replaceable dependencies may declare default implementation bindings. Compatible explicit replacements
+take precedence; invalid selections report errors without fallback. These decisions do not accept
+`spec.plugins`, `{plugin, name}` or an import/export file layout.
+The next choice is whether v0 imports require an export's declared support for the requested contract
+identity and exact version, deferring automatic matching across contract versions. Implementation
+release versions remain independent; this does not require maintaining old contracts. This remains open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

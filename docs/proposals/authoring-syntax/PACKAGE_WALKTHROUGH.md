@@ -54,6 +54,27 @@ digest covers the published contracts, schemas, templates and any bundled worker
 applies if the package has no executable. A package name and `0.1.0` alone do not supply exact
 content identity. The hashing/bundle format is still open. Installation does not run setup.
 
+### Local development and captured artifacts
+
+The accepted development workflow distinguishes direct source tests from managed execution:
+
+1. Edit the history implementation/contracts and run handler tests against the working directory.
+2. Explicitly run a managed test or start. Tooling may validate and capture the selected package
+   contents automatically, retaining an immutable artifact and its digest before execution.
+3. Start Resource A from that artifact. Editing the source afterward leaves A's selected
+   implementation available for subsequent use and restart under its existing contracts.
+4. Test a revision by explicitly selecting its captured artifact for a new Resource B. Inspect
+   both instances through the Interface; existing instances do not silently adopt revised code.
+5. Adopt B through supported connection/lifecycle operations. Reuse of backing history requires
+   the Resource's explicit attachment and lifecycle contract; replacement does not copy it implicitly.
+
+This does not require manual archive assembly or public publication for each local edit. Handler
+test commands, capture commands and exact file inclusion remain unselected. The snapshot contains
+package contents, not credentials, Resource data or the entire host environment. Storage and
+cleanup rules remain open. The workflow is accepted design, not an implemented CLI demonstration.
+
+### Illustrative descriptor
+
 An illustrative `plugin.yaml`:
 
 ```yaml

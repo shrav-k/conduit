@@ -35,6 +35,10 @@ applicable schema defaults. Traversal order cannot select a winner.
 Resolved package artifacts also retain [package identity, release and a content digest](../../protocol/CONFIGURATION.md#implementation-selection),
 covering published declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.
+Managed execution of local packages uses retained immutable snapshots, while direct handler tests
+may use editable source. Explicit managed test/start workflows can capture a revision automatically;
+no manual archive assembly or public publication is required per edit. Included files and cleanup
+remain open, and existing instances do not adopt edited source automatically.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).

@@ -70,6 +70,14 @@ V0 imports require explicit support for their requested contract identity and ex
 the existing compatibility checks. Different plugin releases may implement that same contract;
 cross-version compatibility mappings are deferred.
 
+For local development, edit and run handler tests directly from source, then explicitly test or
+start a managed instance from a captured package revision. Conduit retains an immutable snapshot
+before managed execution, so editing the working directory leaves existing instances' selected
+contents available. New instances can select the revision explicitly; capture does not require
+manual archive assembly or public publication for every edit. Package contents do not include
+credentials, Resource data or a frozen host environment. Snapshot contents and cleanup are still
+being specified; fixed instance-definition rules continue to apply.
+
 ## Variants the language must support
 
 | Author's contribution | Existing material to carry forward |

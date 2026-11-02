@@ -179,6 +179,18 @@ The digest identifies retained content, not publisher trust or externally operat
 code. The hash algorithm, exact bundle boundaries, encoding and storage mechanics remain open.
 This makes package-content identity explicit without adding a backward-compatibility promise.
 
+For managed execution of a locally authored package, retain an immutable snapshot of its
+selected contents before execution. Later edits to the source directory do not change or remove
+the implementation selected by an existing instance. New instances can explicitly select a
+revised artifact. Capture may be handled automatically by an explicit development-test or start
+workflow; authors need not manually assemble or publicly publish an archive for each iteration.
+
+Direct handler tests may run from editable source. Managed integration tests use the captured
+artifact and the ordinary instance contracts. This does not permit live replacement of an
+existing instance's fixed definitions. Snapshots cover package contents, not credentials,
+Resource data or the entire host environment; separately supplied runtimes/dependencies retain
+their declared boundaries. Included-file rules, storage layout and cleanup remain open.
+
 Contract identity/version defines promised configuration and behavior; implementation bindings
 identify the declarations, adapters and any authored code supplying it. Multiple implementations
 can deliberately support the same contract. Code-optional contributions retain their resolved

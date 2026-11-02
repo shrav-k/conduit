@@ -123,11 +123,18 @@ published contracts, graphs, templates and any bundled code, including code-free
 The digest identifies content, not publisher trust or remote service code. Hash algorithms,
 bundle boundaries and concrete fields remain open.
 
-The next ruling concerns locally authored packages during development: should Conduit capture
-the selected package contents in an immutable local snapshot before execution, so later source
-edits leave existing instances' selected contents available? The alternative uses the source
-directory directly, verifies the retained digest and reports unavailability when edits change it.
-Either approach preserves fixed instance bindings; snapshot layout and cleanup remain separate.
+The [local-development rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
+retain immutable selected package contents before managed execution. Direct handler tests can
+use editable source; managed test/start workflows can capture a revision automatically without
+manual archive assembly or public publication on every edit. Existing instances keep their
+selected contents, and new instances may explicitly select a revision. This does not freeze
+credentials, Resource data or the host environment; storage layout and cleanup remain open.
+
+The next ruling concerns snapshot contents: should a package explicitly declare included files
+and directories, potentially using patterns, rather than capture its entire working directory
+by default with ignore rules? The proposed explicit boundary makes package contents reviewable
+and prevents unrelated working files from changing artifact identity. Exact syntax, required
+descriptor handling and symlink behavior remain open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

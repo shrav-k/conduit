@@ -159,7 +159,8 @@ needs a separate baseline per target. Rollback of already-registered objects is 
 Template use produces an ordinary instance draft. Callers edit fields, not a new parameter
 language. Assigning a field replaces that value; editing a child leaves siblings intact. A
 graph-source reference resolves to concrete graph content before execution and is retained in
-the instance definition. No mandatory template snapshot or input/override history is introduced.
+the instance definition. Package-artifact retention does not introduce a separate per-instance
+source-template snapshot or input/override provenance ledger.
 
 Capture implementation bindings from explicit selection or one unambiguous configured default.
 Pin published declarations and Conduit-controlled adapter/code artifacts. Code-optional packages
@@ -338,6 +339,11 @@ Resolved package artifacts retain their declared identity/release and a content 
 published declarations and any bundled code, including packages with no executable. Reusing a
 release label cannot silently change an existing instance's selected definitions. Exact digest
 and bundle formats remain open; separately bound dependencies keep their own identities.
+Managed execution of locally authored packages uses an immutable snapshot retained before
+execution. Direct handler tests can use editable source; an explicit managed test/start can
+capture selected contents automatically. Source edits leave existing instances' selected
+artifacts available. File inclusion, storage layout and cleanup remain open; this is not a
+snapshot of credentials, Resource data or the host environment.
 Registering schemas is not permission to run the package. The proposed manifest/schema bundle
 below illustrates that boundary; detailed syntax and package layout remain I7 work.
 

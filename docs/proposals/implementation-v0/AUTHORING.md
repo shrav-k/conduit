@@ -20,6 +20,10 @@ should implement the behavior their extension adds, without rebuilding the entir
 Real plugins should test these contracts early. Conduit can add reusable helpers as recurring
 needs become clear; the initial implementation does not depend on building that library first.
 
+For a connected publication-to-instance example, see the [history package walkthrough](PACKAGE_WALKTHROUGH.md).
+It includes the package inventory, exported contracts, MCP bindings, consuming template, default
+handler resolution and a later control call. It remains an illustrative design, not a runnable package.
+
 ## The pieces, before choosing an authoring API
 
 | Piece | Concrete meaning in these examples |

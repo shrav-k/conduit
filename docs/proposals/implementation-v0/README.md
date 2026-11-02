@@ -79,6 +79,7 @@ extension contracts, algorithms, libraries and the minimal requirement catalog r
 | Document | Purpose |
 | --- | --- |
 | [AUTHORING](AUTHORING.md) | Concrete author journeys, the accepted lightweight support direction and illustrative APIs. |
+| [PACKAGE_WALKTHROUGH](PACKAGE_WALKTHROUGH.md) | One illustrative history package traced through contracts, MCP bindings, a complete template, defaults and instance controls; I7 syntax remains open. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Processes, ownership, persistence, scheduling, access, recovery, observability and concrete execution paths. |
 | [CONTRACTS](CONTRACTS.md) | Proposed schemas, plugin/worker contracts, graph interpretation, controls and MCP mappings. |
 | [AUTHORIZATION](AUTHORIZATION.md) | Accepted Policy-as-requirements model, protected grant administration, authority/startup boundaries and proposed detailed enforcement/schema contracts. |
@@ -88,7 +89,8 @@ extension contracts, algorithms, libraries and the minimal requirement catalog r
 Start with the review's authoring walkthrough, then consult the contracts and architecture. The
 contract document is deliberately more concrete than the accepted design, but every spelling
 introduced there is a proposal. The existing [YAML experiment](../../../experiments/001-shared-access/README.md)
-remains unchanged so reviewers can compare it with the proposed implementation language.
+remains a static draft packet; its latest bindings reflect accepted composition while their exact
+spelling is still under review.
 
 ## Authority and change rules
 

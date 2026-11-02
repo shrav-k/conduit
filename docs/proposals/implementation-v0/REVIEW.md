@@ -669,6 +669,14 @@ accepted model, including [compatibility](AUTHORING.md#compatibility-what-must-a
 
 ### Next ruling: one plugin map and one export-reference form
 
+**Pending — complete package requested:** the [history package walkthrough](PACKAGE_WALKTHROUGH.md)
+traces a package through published contracts, implementation bindings, setup, runtime, defaults and
+controls. It also surfaces package-local export/default names versus consumer-template aliases.
+The user has not accepted the map/reference syntax, package format or scoping rule.
+The proposed uniform pair concerns template/resolved-instance implementation references. It does
+not make package-local defaults or native MCP tool names part of the consuming template's alias
+namespace; those bindings need explicit scope/resolution of their own.
+
 **Recommendation:** use `spec.plugins` as a map of locally named implementation selections, with
 `{plugin, name}` references wherever a graph operation, runtime driver or control handler selects
 an export. An illustrative template fragment:

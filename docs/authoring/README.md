@@ -19,11 +19,14 @@ are reported; dependencies may be acquired explicitly beforehand. The detailed s
 and reference syntax remain in review.
 Conduit-authored schemas reject unrecognized keywords, including misspelled validation rules.
 Custom annotations require an explicitly declared mechanism; its syntax and external MCP
-schema handling remain separate. See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
+adapter details remain separate. See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
 Declared formats are enforced validation requirements in Conduit-authored schemas, with supported
 formats defined by the shared profile and unsupported formats reported. The format set remains open.
 If composed schemas give an omitted configuration field conflicting defaults, provide an explicit
 valid value or correct the defaults. Schema order does not choose a winner; all constraints still apply.
+Provider MCP schemas retain their declared dialect's semantics. An allowed descriptive annotation
+does not alone reject a tool; unsupported required validation features are reported without
+silently stripping constraints or claiming enforcement.
 
 ## From a new capability to an instance
 

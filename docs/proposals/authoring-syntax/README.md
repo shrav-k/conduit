@@ -23,8 +23,10 @@ The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-res
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.
 Conduit-authored schemas also [reject unrecognized keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance),
-with custom annotations using an explicitly declared mechanism. Its syntax and external MCP
-catalog handling remain open.
+with custom annotations using an explicitly declared mechanism. Its syntax remains open.
+Provider MCP schemas [retain their declared dialect's semantics](../../protocol/CONFIGURATION.md#provider-mcp-schemas);
+allowed descriptive annotations do not alone reject a tool, and unsupported required validation
+features are reported without stripping constraints or claiming enforcement. Adapter details remain open.
 Formats in Conduit-authored schemas are enforced, with the shared profile defining supported
 formats and unsupported ones reported. The supported set and custom-extension mechanism remain open.
 The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)

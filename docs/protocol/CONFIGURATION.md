@@ -129,15 +129,25 @@ declared maps such as `properties` and `$defs` remain governed by those maps' co
 
 Custom annotations use an explicitly declared mechanism, whose exact representation remains
 open. An annotation does not itself implement validation, authorization or another behavioral
-guarantee. This authoring-profile rule does not decide how adapters handle external MCP catalogs;
-their compatibility and schema-support behavior remains a separate contract.
+guarantee. External provider MCP schemas follow the separate boundary below.
 
 In Conduit-authored data schemas, `format` is an enforced validation requirement. The shared
 profile defines supported formats; report an unsupported format rather than treating its
 constraint as satisfied. For example, `type: string` with `format: date-time` rejects a malformed
-timestamp. The supported format set, custom-extension mechanism and treatment of external MCP
-schemas remain separate choices. Format validation does not replace explicit field types or
+timestamp. The supported format set and custom-extension mechanism remain open. Format validation
+does not replace explicit field types or
 establish runtime readiness, access authority or successful effects.
+
+### Provider MCP schemas
+
+Existing provider MCP schemas retain their declared dialect's semantics. Do not automatically
+impose Conduit's stricter authoring profile on them. An unfamiliar descriptive annotation allowed
+by the provider's dialect does not alone reject a tool. Report unsupported required validation
+features without silently removing constraints or claiming they were enforced.
+
+This preserves provider-native schema interpretation while retaining the applicable compatibility,
+authorization and enforcement checks. Exact adapter handling and conformance cases remain open;
+preserving a schema does not by itself demonstrate support for its required semantics.
 
 ### Schema default resolution
 

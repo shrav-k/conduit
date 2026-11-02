@@ -107,7 +107,7 @@ merely to resolve exports. The same rule applies to default bindings when they a
    report missing required definitions without automatic network fetching. Dependencies may be
    acquired explicitly beforehand. No implicit environment/shell expansion occurs during validation.
    Conduit-authored schemas reject unrecognized keywords; custom annotations use an explicitly
-   declared mechanism. The mechanism's syntax and external MCP schema handling remain open.
+   declared mechanism. Its syntax and detailed adapter handling of external MCP schemas remain open.
 5. Validate supplied typed values, graph binding positions, control definitions and dependency
    declarations. Defer required-field checks for declared defaulted fields until materialization.
    A template can leave explicitly declared composition inputs unbound; an instance cannot
@@ -134,7 +134,13 @@ with composition need correct `unevaluatedProperties` behavior. [Defaults][schem
 **Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
 using the shared profile's supported formats and reporting unsupported ones instead of silently
 accepting them. The supported format set and custom-extension mechanism remain open. External
-provider MCP schemas are a separate review boundary; this does not silently change their dialect.
+provider MCP schemas retain their declared dialect's semantics under the accepted boundary below.
+
+**Accepted provider boundary:** do not automatically impose the stricter Conduit authoring profile
+on existing provider MCP schemas. An unfamiliar descriptive annotation permitted by that dialect
+does not alone reject a tool. Report unsupported required validation features without silently
+removing constraints or claiming they were enforced. Exact adapter handling and conformance
+cases remain open; this rule does not establish runtime authority or enforcement support.
 
 Proposed interoperability profile: core counters/revisions use strings where large exact values
 matter; plugin numeric fields must declare bounds. Reject values outside the chosen JSON wire

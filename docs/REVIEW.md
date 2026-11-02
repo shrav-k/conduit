@@ -98,7 +98,7 @@ Explicit acquisition beforehand remains possible, and exact reference syntax is 
 
 The [schema-keyword rule](protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted:
 reject unrecognized keywords in Conduit-authored schemas and allow custom annotations through
-an explicitly declared mechanism. The annotation syntax and handling of external MCP catalogs
+an explicitly declared mechanism. The annotation syntax and detailed adapter handling of external MCP catalogs
 remain separate; annotations do not supply enforcement by themselves.
 
 The [default-conflict rule](protocol/CONFIGURATION.md#schema-default-resolution) is accepted:
@@ -111,11 +111,17 @@ Conduit-authored schemas is an enforced validation requirement. The shared profi
 supported formats and unsupported formats are reported rather than treated as satisfied.
 The supported set and custom-extension mechanism remain open.
 
-The next ruling concerns external provider MCP schemas. The proposed boundary preserves their
-declared dialect's semantics rather than automatically imposing Conduit's stricter authoring
-profile. An unfamiliar descriptive annotation permitted by that dialect would not alone reject
-a tool; an unsupported required validation feature would be reported as a compatibility problem,
-not silently stripped or treated as enforced. Exact adapter handling and conformance cases follow.
+The [provider MCP schema boundary](protocol/CONFIGURATION.md#provider-mcp-schemas) is accepted:
+preserve the declared dialect's semantics without automatically imposing Conduit's stricter
+authoring profile. Allowed descriptive annotations do not alone reject a tool; unsupported
+required validation features are reported without stripping constraints or claiming enforcement.
+Exact adapter handling and conformance cases remain open.
+
+The next ruling moves to package publication: should a resolved package artifact have a content
+digest in addition to its declared package identity/release, covering its published declarations
+and any bundled implementation artifacts, including packages containing only templates or bindings?
+This would make exact-content retention explicit without claiming to pin external service code.
+Digest algorithms, bundle boundaries and concrete fields remain proposals.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

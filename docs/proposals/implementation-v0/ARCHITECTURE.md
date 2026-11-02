@@ -670,6 +670,75 @@ This recommendation is not accepted. Whether the implementation is represented a
 storage Resource, its startup/lifecycle treatment and its first engine follow the extension-boundary
 choice. SQLite remains a candidate, not a selected engine. See [I4](REVIEW.md#i4--local-transactional-authority).
 
+#### Concrete comparison: internal storage and a published persistence contract
+
+These examples answer the request for comparison; they do not accept the proposed public contract,
+select an engine or establish a storage Resource. Hold the engine constant to isolate the choice:
+both an internal adapter and a published plugin could use SQLite in the first implementation.
+
+| Question | Internal adapter initially | Published persistence plugin contract |
+| --- | --- | --- |
+| Who decides whether a grant or instance change is valid? | The responsible Conduit service. | The same responsible service. |
+| Who persists the related records and checks the supplied storage preconditions? | An internal storage implementation. | A selected implementation of the published contract. |
+| How could an outside author add a different backend? | Through core integration work until a public extension exists. | Implement the contract and demonstrate its guarantees through conformance tests; deployment/migration still need explicit support. |
+| What must be standardized now? | Internal semantics sufficient for the chosen implementation and accepted recovery behavior. | The external schemas, commit/precondition guarantees, failure reporting and recovery behavior needed for interchangeable implementations. |
+| Does this select a process or Resource per store? | No. | No; implementation hosting and Resource representation are separate decisions. |
+
+**A grant for shared Linear access.** An authorized Interface connects Agent A with read access to
+Euphony's Linear Resource. Access management validates the issuance and constructs the participation
+grant and required restrictions. It then persists the related access records and issuance outcome.
+With an internal adapter, that storage call stays inside the internal implementation. With a plugin,
+the service sends the same logical commit through the published storage contract. The plugin must
+honor its supplied preconditions and atomicity/durability promises; it does not decide what Linear
+access A deserves. A lost commit reply requires reconciliation of the recorded write/outcome rather
+than assuming failure or issuing another grant. No transaction across independent services follows.
+
+The Interface and Agents still administer grants through the access-management Resource and their
+Conduits. Publishing the persistence contract does not expose raw authority-store writes to them,
+make stored policy into ordinary editable knowledge, or let an arbitrary MCP service become trusted
+authority. The responsible service remains the author of state transitions; its configured storage
+implementation is part of the trusted persistence boundary.
+
+**An interrupted database setup.** Executor A supervises a Pool-owned database Resource. It retains
+the Resource identity/definition and setup progress while the database retains its own tables.
+If migration M commits in the database but its completion is not retained by the executor, either
+storage arrangement recovers the same uncertainty. The database operation's recovery implementation
+checks migration evidence; the authority-store plugin merely supplies the executor's retained
+records and accepts a later confirmed outcome. Changing that plugin neither migrates application
+tables nor proves that M failed. A different executor's state remains independently owned even if
+both use the same plugin package.
+
+**Shared Agent message history.** The history Resource's backend retains messages and independent
+read positions under its capability contract. Its executor separately retains the Resource's fixed
+definition, confirmed configuration and operation/recovery evidence. A public authority-persistence
+contract applies to that second responsibility; a history backend can already be supplied through
+the Resource's own plugin contract under either storage approach. One package could implement both
+contracts, but shared code or an engine does not merge their authority, access or retention rules.
+This adds no Resource per message and does not require a duplicate canonical transcript in the
+executor store. Observation payload capture remains the separate I6 choice.
+
+**The first load after a restart.** The root's definition and enough information to load its retained
+implementation and locate existing state must be available before reading the registry. An internal
+adapter ships that persistence behavior with core; a published plugin makes it an explicitly
+selected implementation. Both must open the intended existing store and reconcile retained setup
+progress. A missing implementation or unreachable store reports a dependency gap rather than an
+empty new system. Exact local descriptor, credential custody and loading syntax remain open.
+
+Representing the store as a **Pool-owned Resource** is an additional modeling choice compatible with
+the published contract. It would make the store's instance and supported administration visible
+through the ordinary object model. It also requires rules for administering a dependency that holds
+the registry/grants needed to reach it; its only startup instructions cannot be inside itself.
+The accepted locally loadable root and explicit owner recovery provide a starting point, not a
+complete storage lifecycle. Visibility through the Interface alone does not require this Resource
+representation.
+
+The immediate ruling is whether outside authors should be able to implement the authority-persistence
+contract in v0. Engine selection, public method names, Resource representation and exact startup
+configuration remain separate. A public contract is recommended for the project's extension goals;
+the internal option reduces the first milestone's protocol surface. A public contract could start
+with one bundled implementation and conformance fixtures, rather than support several engines at
+once; that is a delivery proposal, not added experiment scope. Neither boundary is accepted yet.
+
 ## 5. Graph and runtime execution
 
 Compilation produces a finite DAG of typed operation bindings. Validate cycles, missing ports,

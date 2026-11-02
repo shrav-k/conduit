@@ -444,6 +444,10 @@ before registry access. This follows the emphasis on authorable contracts; it ad
 and conformance work compared with keeping authority-storage interfaces internal initially. The
 service still owns state transitions and authority. Representation as a Pool-owned Resource,
 dependency lifecycle and the engine remain separate choices. This recommendation is not accepted.
+The current response requests [concrete comparisons](ARCHITECTURE.md#concrete-comparison-internal-storage-and-a-published-persistence-contract):
+grant persistence, interrupted database setup, shared message history and first loading. These hold
+the service-ownership rules constant and distinguish authority-state storage from Resource data;
+the examples introduce no new ruling or experiment scope.
 
 **Accepted authority ruling:** policy is independent of any particular Interface. Multiple
 authorized Interfaces can administer it; the owner-operated root has broad default administration.

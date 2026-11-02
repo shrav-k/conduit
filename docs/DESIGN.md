@@ -402,6 +402,22 @@ failure to the affected instance, its configuration and supported controls throu
 Exact event fields and exporter formats are drafting work; an external dashboard/backend is not
 required for the first experiment.
 
+**Extensible observation:** use published plugin contracts and authorized Conduits for observation
+as well as control. Start with a lightweight bundled implementation for the common inspection and
+retained-evidence foundation. Plugins can add instance-relevant observations such as model usage,
+CPU measurements or service health without adding an object family or a fixed universal metric
+catalog. These additions do not all have to ship in v0. A producer publishes supported typed
+observations; a Conduit governs access/delivery; the Interface inspects them. Independently managed
+collectors, history stores and exporters can be Pool-owned Resources, connected by Conduits.
+
+Common correlation, freshness and coverage let the Interface combine sources; metric payloads and
+their meanings belong to their versioned contracts. Report measurement scope and attribution: a
+shared process's CPU usage must not be presented as an exact measurement of one hosted instance.
+Observation alone grants no controls or secret access. Supported settings and new observation
+attachments can be changed under existing control/connection rules; changing fixed definitions
+or implementations still follows replacement rules. A separately attached observer need not
+replace the observed instance when its existing capabilities suffice.
+
 Managed components produce evidence even while no frontend is attached. Retention is independent
 of a frontend's lifetime, and reconnecting frontends inspect the same underlying history/state.
 The Interface is the unified access and interaction surface, not the sole producer of observations
@@ -411,7 +427,10 @@ Report gaps and stale/unknown state; a latest-state view need not replay every i
 Export failure must not erase local committed outcomes. Diagnostic traces and metrics can refer
 to retained evidence without becoming its sole copy. Preserve applicable content access and secret
 handling; pluggable export does not imply putting credentials or every full payload into traces.
-Coverage includes what Conduit manages and what native integrations actually report, with missing
+Optional capture, metrics and exporters cannot replace the required authoritative configuration,
+operation outcomes and recovery records. Their failure or detachment does not erase that evidence
+or change state ownership. This extension model does not decide full tool/model content-capture
+defaults. Coverage includes what Conduit manages and what native integrations actually report, with missing
 coverage visible. Specialized domain tracking can be supplied by custom Resources without changing
 this common foundation or introducing a new family. Linear/Jira integration is independent of it.
 
@@ -1162,7 +1181,8 @@ portable task checkpoints.
 Agent observation participates in the shared [Interface observability](#interface-observability)
 contract; it is not a separate per-frontend logging system.
 
-Attribute available token usage, tool activity, transcripts and subagent observations
+Selected observation plugins expose the available token usage, tool activity, transcripts and
+subagent observations they support; broader instrumentation can be added over time. Attribute these
 to Agent/execution identity. Usage records identify account and reporting source, and
 distinguish reported counts, estimates, unknown data and observed zero. Sum only figures
 known not to overlap; unresolved parent/subagent totals remain separate. Missing telemetry

@@ -932,6 +932,26 @@ confirmed effect, outstanding uncertainty, available diagnostics and supported n
 Sensitive details require their own access; even an inspectable operation need not reveal all
 upstream payloads.
 
+**Accepted extension direction:** observation follows the existing plugin/Conduit model, starting
+with a lightweight bundled package. Instance-selected plugins publish supported observation
+capabilities; authorized Conduits connect them to the Interface or Pool-owned collector/exporter
+Resources. Packages can add metrics, transforms and capture behavior over time without changing
+the five families. Required local operation/recovery evidence stays with its authoritative service;
+an optional observation pipeline is not a prerequisite for committing that evidence.
+
+| Example extension | Source and boundary |
+| --- | --- |
+| Model usage | An Agent adapter publishes available counts and coverage, attributed to execution/account; unknown or overlapping figures remain explicit. |
+| CPU monitoring | A collector uses permitted host/process observation. It declares measurement scope and whether attribution to one instance is possible; shared executors do not imply one process per instance. |
+| Service health | A Resource implementation exposes its supported health observations, or an authorized external observer queries its existing capability. |
+| Retention/export | A Pool-owned Resource consumes permitted observations through a Conduit and provides its declared storage/export behavior. |
+
+These are extension examples, not added v0 deliverables. Connecting a new observer can reuse
+existing producer capabilities without changing that producer's fixed definition. Implementation
+upgrades and unsupported instrumentation changes retain the existing replacement boundary.
+The Interface discovers supported observation contracts and exposes gaps; it does not need a
+custom metric hard-coded into core for every plugin. Exact schemas and frontend rendering remain I7 work.
+
 Use three distinct streams:
 
 | Stream | Delivery/retention behavior |

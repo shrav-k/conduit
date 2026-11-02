@@ -109,6 +109,12 @@ enrollment and credential placement.
   views are projections, not a second writable configuration. Do not assume cross-store transactions. An optional
   diagnostic exporter can be disconnected independently.
 
+The accepted observation extension uses plugin contracts and Conduits, beginning with a lightweight
+bundle. This fixture's existing Interface inspection and optional exporter exercise that boundary;
+token/CPU instrumentation, a comprehensive metrics package and an external dashboard are not added
+requirements. Required local operation/recovery evidence remains independent of optional pipelines.
+The initial package's full-content capture default is still under I6 review.
+
 Resources, actors and connections are logical instances; the fixture must not assume one process
 per object. Pin the tested dependencies and worker artifact identities when the spike is written.
 Keep generated databases, logs and binaries in an explicitly selected temporary directory.

@@ -19,6 +19,10 @@ are conceptually settled, and I6–I7 remain for review. Start there for the
 remaining architecture decisions; these proposals do not reopen or supersede R1–R7.
 
 **Current focus:** I6 capture defaults, then I7 syntax.
+I6 now accepts observation plugins and authorized Conduits, starting with a lightweight bundle
+and adding instance-relevant capabilities over time. Required operation/recovery evidence remains
+independent of optional metrics, full-content capture and exporters. The initial package's
+content-capture default still needs a ruling.
 Authority, startup/recovery and persistence choices are settled. I5 now accepts OS-backed custody
 for Conduit-retained secrets through a replaceable implementation bundle, initially macOS Keychain,
 with future password-manager/service adapters possible. Native and external custody remain separate;

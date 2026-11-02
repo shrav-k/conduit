@@ -7,7 +7,8 @@ I1 and I2 are settled, including native adapters before the Rust loop and macOS-
 integration/account validation. I3's conceptual extension, execution and distribution choices are
 settled. I4's authority, startup/recovery and persistence choices are also settled; detailed
 mechanisms and syntax remain open. I5 is conceptually settled: OS-backed custody through replaceable
-implementation bundles and Interface-guided adapter enrollment/unlock. I6–I7 remain below.
+implementation bundles and Interface-guided adapter enrollment/unlock. I6 accepts extensible
+observation plugins and Conduits with a lightweight initial bundle; capture defaults and I7 remain below.
 Other recommendations remain proposed.
 Read the [architecture](ARCHITECTURE.md) for the connected system and
 [contracts](CONTRACTS.md) for details. This queue concerns implementation boundaries; it does not
@@ -115,7 +116,8 @@ field names, template bindings, package layout and schema-authoring conventions 
 the final pass. File fragments and code remain illustrations. No language, process layout or
 transport is selected by the authoring/publication/protocol rulings.
 
-I1–I5 are settled at the conceptual level. Next review I6's evidence capture, then the deferred I7
+I1–I5 are settled at the conceptual level. I6's extension boundary is accepted; next review the
+initial observation package's evidence capture, then the deferred I7
 authoring syntax. Preserve the existing IDs; this remains one review queue rather than another
 decision ledger.
 
@@ -136,7 +138,7 @@ Neither implementation nor the runtime experiment has started.
 
 | Item | Decision | Recommendation |
 | --- | --- | --- |
-| I6 | Default observability payload capture | Durable metadata/recovery inputs plus explicitly classified content capture; no blanket full payload logging. |
+| I6 | Initial observation package's payload capture | Extensible plugins/Conduits are accepted. Retain required evidence, with full content capture selected by recording policy. |
 | I7 | Concrete authoring/schema conventions — review last | Uniform type fields, owner implementation plus named plugin aliases, reviewed JSON Schema bundles; proposed spellings remain deferred. |
 
 I3 establishes the conceptual extension boundary. Accepted I1 and I2 determine how to execute
@@ -603,6 +605,19 @@ in I7; adapter behavior, challenge recovery and separate-account compatibility s
 
 ## I6 — What observability captures by default
 
+**Accepted extension direction:** use adaptable observation plugins and authorized Conduits,
+beginning with a lightweight bundled implementation and refining capabilities over time. Instance
+plugins can publish supported observations; Pool-owned Resources can collect, retain or export
+them; the Interface presents the combined view. Token usage, CPU utilization and other relevant
+measurements are extensible capabilities rather than a mandatory fixed v0 metric catalog.
+Measurement scope, source and coverage must remain explicit. Existing authoritative state/outcome
+and recovery evidence is still required independently of optional instrumentation.
+
+This accepts the extension boundary, not either full-content capture default below. Adding
+observers through supported capabilities does not require altering an instance's fixed definition;
+implementation upgrades continue to follow the agreed replacement rules. No comprehensive metrics
+package or new runtime experiment scope is implied. Exact contracts and syntax remain I7.
+
 **Recommendation:** always retain operation identity, actor/target/path, effect outcomes, coverage
 and the safely retained inputs needed for promised recovery. Retain message/history content under
 its Resource contract. Capture other full tool/model payloads only under an explicit operation/type
@@ -618,7 +633,8 @@ complete transcript coverage. If omitted input prevents replay, that limitation 
 exceptions. This improves debugging/transcript reconstruction but retains more private content and
 requires reliable payload classification, size limits and scoped access from the outset.
 
-**Ruling needed:** capture default. Retention-until-explicit-purge for captured evidence remains
+**Ruling needed:** the initial bundled observation package's content-capture default. Later packages
+can provide richer behavior through the same contracts. Retention-until-explicit-purge for captured evidence remains
 accepted; this decides what is captured, not a new automatic-expiry rule. Interface observability
 remains a first-class delivery requirement under either option.
 

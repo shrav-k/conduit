@@ -673,6 +673,20 @@ inspection alone cannot satisfy those tests.
 
 ## 10. Interface operations and frontend behavior
 
+**Accepted observation extension:** plugin bundles may publish typed observation capabilities,
+with compatible implementations for producing, collecting or exporting instance-relevant data.
+Use authorized Conduits and the existing MCP inspection/observation mapping; no sixth family or
+separate mandatory telemetry protocol is introduced. Independent collector/storage/export services
+are Pool-owned Resources. Begin with a lightweight bundled foundation rather than a required
+catalog of token, CPU or other metrics.
+
+Contracts describe observation meaning, source/correlation, freshness/coverage and supported
+delivery. Metric-specific payloads remain extensible, including measurement scope and attribution
+limits. Exact common fields and package syntax are I7 work. Optional observations or exporter
+receipts cannot substitute for authoritative operation outcomes and recovery records. Supported
+observation controls, connection changes and fixed-implementation upgrades use existing rules.
+Full tool/model capture defaults remain I6, separately from this extension boundary.
+
 Use one application service API behind MCP tools and CLI/TUI actions. The CLI must not edit SQLite
 directly or implement a second permission/effect pipeline. This is one semantic contract, not a
 requirement for one process or gateway. Independently exposed component capabilities use the

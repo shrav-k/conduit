@@ -23,7 +23,8 @@ including graph-backed operations, requirement composition, supervised instance-
 and bundled first-party plugins plus explicit local installation. Detailed mechanisms remain open;
 I4's authority/startup/persistence choices are also settled, including the SQLite bundled engine.
 I5 accepts OS credential custody through a replaceable implementation bundle, initially macOS
-Keychain, and Interface-guided adapter enrollment/unlock. Evidence capture precedes the final
+Keychain, and Interface-guided adapter enrollment/unlock. I6 accepts extensible observation plugins
+and Conduits with a lightweight initial bundle. Its content-capture default precedes the final
 contract/template syntax review. Existing
 infrastructure is welcome behind enforced contracts;
 the first implementation should establish the authoring and execution patterns before optimizing

@@ -282,6 +282,12 @@ export persists even without a frontend attached. Correlate setup, controls, acc
 messages, tools, failures and available model/subagent usage through actors, instances, operations
 and paths. Frontends inspect the same evidence.
 
+Observation uses extensible plugin contracts and authorized Conduits. Begin with a lightweight
+bundled foundation; add instance-relevant metrics/capture through compatible plugins over time.
+Pool-owned Resources may collect, retain or export observations. The Interface combines sources
+with explicit freshness, coverage and measurement attribution. Optional instrumentation does not
+replace authoritative operation/recovery records; capture defaults remain under I6 review.
+
 Report uncertainty, stale views and integration gaps. Distinguish usage counts, estimates, unknown
 data and observed zero; avoid overlapping parent/subagent totals. Export failure cannot erase
 local committed outcomes. Credentials/payloads follow their own access and retention contracts.

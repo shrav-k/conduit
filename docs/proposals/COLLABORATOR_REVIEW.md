@@ -81,5 +81,8 @@ Remote scheduling and one-VM-per-account/process are not consequences of the fiv
 The [archive](../archive/collaborator-proposals/README.md) retains both submitted proposals, including
 the opaque-runtime proposal and the root-Agent/VM/Sealmesh alternatives, with author and exact source
 revisions. Relevant accepted conformance semantics are integrated into the design; unadopted ideas
-remain visible without becoming requirements. PR comment links will record the communicated review.
-No GitHub merge has been performed.
+remain visible without becoming requirements. Review comments were posted as authorized:
+[PR #1 comment](https://github.com/shrav-k/conduit/pull/1#issuecomment-6585647532) and
+[PR #2 comment](https://github.com/shrav-k/conduit/pull/2#issuecomment-6585648057).
+They explain the accepted conformance boundary, unadopted alternatives and outstanding choices.
+No GitHub merge has been performed; the archival integration is on the implementation branch.

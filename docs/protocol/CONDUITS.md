@@ -328,7 +328,7 @@ participation. Withdrawal and current governing restrictions continue to apply a
 delivery. This keeps recipient work independent of the UI/process that established its access.
 Exact issuance, attribution and revocation representations remain to be drafted.
 
-Selection supports IDs, owning contexts, defined typed fields and path patterns where the
+Selection supports IDs, owning Pools, source Resources, defined typed fields and path patterns where the
 integration supports them. Record classification can narrow knowledge queries under its own
 contract; there is no generic registry-object label selector. Matches within established access
 rules are live. Authorized

@@ -2,8 +2,9 @@
 
 The protocol and language lead this repository. Start with the [overview](OVERVIEW.md), then read
 the [protocol reference](protocol/README.md) or follow the [authoring path](authoring/README.md).
-There is one active [review queue](REVIEW.md). Completed conceptual and implementation rulings remain
-accepted; their review summaries now live in the archive.
+There is one [review entry point](REVIEW.md). The post-migration review is complete; the next phase
+is a concrete authoring/conformance walkthrough. Completed conceptual and implementation rulings
+remain accepted; their earlier review summaries live in the archive.
 
 ## Reading paths
 
@@ -23,7 +24,7 @@ accepted; their review summaries now live in the archive.
 | [protocol/](protocol/README.md) | One active home for detailed accepted contracts. Explicit reference-runtime selections remain qualified. This is a working reference, not a released schema or a claim of tested conformance. |
 | [authoring/](authoring/README.md) | How an original author moves from a contract to an implementation, graph and template. No unapproved syntax or unimplemented installation instructions. |
 | [implementation/](implementation/README.md) | Accepted first-implementation boundaries and marked mechanism proposals. Moving a proposal here does not ratify its candidate crates or libraries. |
-| [REVIEW.md](REVIEW.md) | Remaining decisions and refinements, with later syntax, engineering and explicitly deferred scope separated. |
+| [REVIEW.md](REVIEW.md) | Settled migration/owner decisions and next authoring refinements, with engineering and deferred scope separated. |
 | [proposals/authoring-syntax/](proposals/authoring-syntax/README.md) | Preserved representation alternatives and complete examples for the next syntax/conformance PR. |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and actual probes. Historical recommendations are not an active specification or question queue. |
 | [archive/](archive/README.md) | Closed reviews, transition accounting and attributed collaborator proposals, including dissent. Accepted behavior also stays accessible in the active reference. |

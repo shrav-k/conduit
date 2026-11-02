@@ -4,7 +4,7 @@ Start at [Author with the protocol](../../authoring/README.md) for the accepted 
 Remaining review work is consolidated in [REVIEW](../../REVIEW.md); this packet preserves examples
 for later syntax discussion and adds no second active question queue.
 
-Status: **parked for a future PR**, 2026-11-02. The
+Status: **ready for the next syntax/conformance review; examples remain proposals**, 2026-11-02. The
 [conceptual closure review](../../archive/reviews/CONCEPTUAL.md) is complete. The published-contract and no-primary-plugin
 rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
 Moving these examples does not ratify their names, package layout or scoping rules.
@@ -19,6 +19,9 @@ Moving these examples does not ratify their names, package layout or scoping rul
 These documents include useful conceptual examples, but the [design](../../protocol/README.md) is the source
 of accepted semantics. Earlier question sequences remain in Git rather than another active queue.
 The [implementation proposal](../../implementation/README.md) preserves runtime options separately.
+The [post-migration review](../../REVIEW.md) is complete: lightweight delivery, no backward-compatibility
+promise, contexts as ordinary Resources, Apache-2.0, deferred public naming and owner-led authority
+are recorded. These decisions do not approve the package/export/schema spellings in this packet.
 
 ## Later PR scope
 

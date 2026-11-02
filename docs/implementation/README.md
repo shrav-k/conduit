@@ -7,7 +7,7 @@ The [current review queue](../REVIEW.md) is the only active decision queue; the 
 Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
 provider experiment has run**. The [design](../protocol/README.md) supplies accepted semantics. The
 [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete; the
-[authoring/syntax packet](../proposals/authoring-syntax/README.md) is parked for a future PR.
+[authoring/syntax packet](../proposals/authoring-syntax/README.md) is ready for the next review; its syntax remains proposed.
 
 The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
 Use existing infrastructure and lightweight support to prove the contracts. A Rust process layout,
@@ -43,6 +43,27 @@ with local authoritative evidence independent of optional exports. These choices
 implementations, not mandatory storage/OS dependencies for every future conforming implementation.
 
 ## Delivery and evidence
+
+The [release compatibility rule](../protocol/CONFIGURATION.md#release-compatibility) makes no
+backward-compatibility promise. Users can pin a working release/package set; a newer runtime need
+not support its older configuration, plugins or stores. Migration support, where supplied, must be
+explicit. Strict release coordination is not required for early delivery.
+
+**Early delivery priority:** get the protocol and authoring path working. Exact packaging, release
+tooling and coordination should remain lightweight and adaptable; a formal distribution pipeline
+or mixed-version support matrix is not a prerequisite for the first proof. Test and describe the
+working configuration actually used, preserving public boundaries and evidence. No legacy code
+is required solely to support old releases.
+
+**Initial delivery scope:** language/contracts, a minimal reference implementation and small
+authoring examples with conformance checks, anchored in Experiment 002 below. A reproducible
+working source checkout with a documented build/start path can satisfy early delivery; separate
+installers and elaborate release machinery are not prerequisites. Refine individual package
+contents through the authoring slice rather than declaring a broad standard library now.
+Bundled example/integration packages remain replaceable capabilities; bundling does not make
+them mandatory for every conforming implementation. Declared-capability conformance still governs
+what a client, plugin or runtime claims to implement. This preserves the independent client/plugin
+proof and the later native-account validation sequence.
 
 Keep the [Experiment 002](../../experiments/002-runtime-plugins/README.md) scope: author a plugin,
 compose exported operations with derived/explicit results and recovery, add composed/custom requirements,

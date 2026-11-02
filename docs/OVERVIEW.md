@@ -128,6 +128,9 @@ Memory, search, workspaces, integrations and authentication are Resource capabil
 memory contracts include revisioned records, provenance, bounded scoped search, direct read-only sharing
 and declared source dependencies for derived content. Native service data keeps its provider contracts.
 Resources stay unitary; storage, search and integration remain distinct responsibilities by default.
+Contexts can be ordinary Resources exposing plugin-backed capabilities, using their own data or
+authorized connections to other Resources. There is no additional universal Context layer;
+filtered access alone can use a Conduit without creating another Resource.
 
 The initial communication capability is a Pool-owned append-only shared history with independent
 read positions and current-access checks. It supports explicit participation, bounded catch-up and

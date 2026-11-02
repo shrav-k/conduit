@@ -4,33 +4,53 @@ Updated: 2026-11-02, after the protocol-documentation migration. This is the onl
 The five-family model and completed conceptual/implementation rulings remain accepted in the
 [protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
-There is no identified contradiction requiring us to reopen the overall model. Remaining work falls
-into three broader discussions, publication decisions owned by the project, and the later authoring/
-engineering pass. An open detail in an older report is not automatically another ruling.
+The post-migration review is complete. M1–M3 and the initial owner decisions are settled or explicitly
+deferred below. Early delivery stays lightweight; contexts fit the existing Resource/Pool/Conduit
+model. The next review is the concrete authoring/conformance walkthrough. No syntax was approved by
+closing this review, and an open detail in an older report is not automatically another ruling.
 
-## Discuss before the syntax PR
+## Migration-review rulings
 
-| Topic | What is open | What is already fixed / useful next example |
-| --- | --- | --- |
-| **M1 — Release and compatibility boundary** | Should the first reference distribution be released as a coordinated tested set, while protocol contracts and extension artifacts retain independent identities? What compatibility/support claims accompany a release and its documentation? Delivery channels and version spelling can follow. | One main repository, independent consumption, common package envelope, exact implementation retention, local installation and macOS-first validation are accepted. Compare a runtime update, a separately released package and a remote MCP catalog change. [Existing proposal](archive/reviews/REPOSITORY-2026-11-02.md#5-release-and-delivery-proposal). |
-| **M2 — Thin public proof and supported package boundary** | Which minimal capability contracts and example contributions belong in the first public conformance kit/reference distribution, and which are optional ancillary packages? Define support without turning the candidate Resource catalog into a mandatory standard library. | Declared-capability conformance, independent client/plugin proof and Experiment 002's composition/recovery scope are accepted. Compare a tiny authored operation, a declaration-only MCP binding and a template-only package. Decide the promised surface; leave export names/manifests for syntax. [Conformance](protocol/CONFIGURATION.md#declared-capability-conformance), [planned proof](../experiments/002-runtime-plugins/README.md). |
-| **M3 — Memory content contexts within Pool-owned Resources** | The memory contract retains “task, Pool or personal collection” as examples of a record's owning context. Clarify how those contexts are represented inside a memory Resource and how sharing/derived-source checks refer to them. Is a context domain data managed by that capability, and which ownership/access boundaries must it expose? This is not yet a ruling. | A Resource has exactly one owning Pool; content ownership does not add another Resource owner or object family. Direct live read-only sharing, revision checks, whole-record delivery and source dependencies remain accepted. Walk through a personal note shared into project knowledge, then a derived summary. [Memory contract](protocol/RESOURCES.md). |
-
-M1 and M2 complete the repository/publication framing; M3 is a semantic mapping left visible in the
-existing memory text. None blocks this documentation migration. Resolve them collaboratively before
-using their answers to select public schemas or build a package distribution.
+- **M1 accepted:** no backward-compatibility promises or obligation to maintain legacy compatibility
+  code. Users can pin a working set. Early delivery prioritizes a working protocol; strict release
+  coordination, exact packaging and installers are not prerequisites. Claims about particular
+  contracts and retained implementation identity still apply. See [compatibility](protocol/CONFIGURATION.md#release-compatibility).
+- **M2 accepted direction/scope:** language/contracts, a minimal reference implementation, and small
+  authoring examples with conformance checks using the accepted Experiment 002 scope. Bundled
+  capabilities are replaceable and do not become a universal standard library. A documented working
+  source checkout can suffice initially. Individual package contents and artifacts will be refined
+  with the authoring slice; no detailed catalog or release format was selected. See
+  [initial delivery](implementation/README.md#delivery-and-evidence).
+- **M3 resolved through the existing model:** contexts can be ordinary Resources exposing specific
+  plugin capabilities. A Pool owns the Resource, and Conduits supply its permitted access and
+  dependencies. No universal Context layer or owning-context hierarchy is added. A filtered Conduit
+  suffices when no separate Resource behavior/lifecycle is needed. Record identity, revisions,
+  provenance and sharing remain capability contracts; exposed source records retain their ownership.
+  See [memory and evidence](protocol/RESOURCES.md#retained-memory-and-evidence).
 
 ## Owner decisions before public distribution
 
-- **License and contribution terms.** No repository license was available to carry forward. Select
-  these deliberately; the migration adds no license, CLA or DCO requirement.
-- **Public identities.** Choose the GitHub organization/transfer, package naming authority and any
-  domain before publishing permanent identifiers. Directory names do not decide protocol identities.
-- **Change and release authority.** Identify who approves protocol changes, maintains supported
-  packages and publishes releases. Define the initial support/security contact when distribution begins.
+- **License — accepted:** Apache-2.0 for original Conduit documentation, contracts and reference
+  code. The official [LICENSE](../LICENSE) is included; reproduced third-party material retains its
+  own terms and attribution. No separate CLA or DCO requirement was selected. Any additional
+  contribution procedure remains open if needed; see [license scope](../CONTRIBUTING.md#license-and-attribution).
+- **Public identities — deferred:** keep the current `shrav-k/conduit` repository location while
+  protocol work continues. Organization selection/transfer, domains and permanent package naming
+  remain for the owner to choose later. The accepted one-main-repository direction is unchanged;
+  provisional examples and directory names do not establish permanent protocol identities.
+- **Change and release authority — accepted:** the repository owner retains final authority over
+  protocol direction. Collaborators propose/review changes; merges and releases use existing repository
+  permissions and explicitly appointed maintainers/delegated responsibilities. Existing task
+  authorizations remain valid. No fixed quorum or formal governance process is required initially.
+  See [project ownership](../CONTRIBUTING.md#project-ownership-and-publication). Public support/security
+  contact details and additional contribution procedures are deferred until needed for distribution.
 
 These are project-owner decisions, not reasons to reopen the five families or invent another runtime
 authority model. The [repository proposal](archive/reviews/REPOSITORY-2026-11-02.md) retains options and rationale.
+
+Apache-2.0 was selected for permissive reuse with an explicit, scoped contributor patent grant.
+The [official license text](https://www.apache.org/licenses/LICENSE-2.0.html) was checked on
+2026-11-02. Licensing does not change the no-backward-compatibility rule or select a release process.
 
 ## Refinements to carry into concrete examples
 
@@ -47,8 +67,9 @@ return for a conceptual ruling only if an example exposes a real behavior choice
 
 ## Later authoring and conformance pass
 
-The [authoring packet](proposals/authoring-syntax/README.md) is parked until the discussions above.
-Review four connected batches rather than restarting a long list of isolated questions:
+The [authoring packet](proposals/authoring-syntax/README.md) is ready for the next review after these
+rulings are merged. Its examples remain proposals. Start with one complete package-to-instance
+walkthrough, then review four connected batches rather than restarting a long list of isolated questions:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema dialect, package identity,
    typed contents/dependencies, artifact identity and export/reference scope. A mandatory primary plugin

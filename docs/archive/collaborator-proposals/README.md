@@ -5,6 +5,10 @@ attribution. They are historical arguments, not parallel specifications. Their s
 claims have not been independently revalidated by archiving them. Relative links were relocated;
 proposal prose, examples and dissenting recommendations were retained.
 
+The repository's later Apache-2.0 adoption does not assert a new license grant for these reproduced
+historical submissions. Their original source attribution remains intact; see the
+[license scope](../../../CONTRIBUTING.md#license-and-attribution).
+
 | Proposal | Archived source | Current treatment |
 | --- | --- | --- |
 | PR #1 | [Roadmap](PR-001-roadmap.md) | Protocol/conformance input; Sealmesh, local root Agent and VM defaults remain unadopted candidates. |

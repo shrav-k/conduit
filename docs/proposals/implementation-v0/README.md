@@ -2,7 +2,7 @@
 
 Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
 provider experiment has run**. The [design](../../DESIGN.md) supplies accepted semantics. The
-[conceptual review](../../REVIEW.md) is the current discussion; the
+[conceptual review](../../REVIEW.md) is complete; the
 [authoring/syntax packet](../authoring-syntax/README.md) is parked for a future PR.
 
 The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
@@ -17,7 +17,7 @@ package example or database choice cannot silently define the public model.
 | [ARCHITECTURE](ARCHITECTURE.md) | Detailed runtime mechanisms and examples; accepted boundaries are marked, other mechanisms remain proposals. |
 | [AUTHORIZATION](AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
 | [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. |
-| [Deferred authoring](../authoring-syntax/README.md) | Contract, plugin/package and template examples to revisit after conceptual closure. |
+| [Deferred authoring](../authoring-syntax/README.md) | Contract, plugin/package and template examples for a later PR. |
 | [Collaborator comparison](../COLLABORATOR_REVIEW.md) | PR #1/#2 assessed against the current branch, without adopting or merging them. |
 
 ## Accepted implementation boundaries
@@ -51,7 +51,7 @@ Two-machine validation is required before claiming remote support. Isolation sup
 tests; native mode remains the accepted default. Pi is a research/frontend reference, Xerj an optional
 Resource backend. Neither is an adopted runtime dependency.
 
-The finer milestones and library selections remain proposals. Complete conceptual closure, then
+The finer milestones and library selections remain proposals. Conceptual closure is complete;
 review authoring/MCP profiles and conformance fixtures in a later PR before implementation. No root
 model, VM default, Sealmesh dependency, second full runtime or new protocol wire is added by this packet.
 

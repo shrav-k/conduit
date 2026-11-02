@@ -1,6 +1,6 @@
 # Experiments
 
-Current sequence: close the [conceptual review](../docs/REVIEW.md), then return to syntax and
+Current sequence: the [conceptual review](../docs/REVIEW.md) is complete; return to syntax and
 conformance cases in a later PR. Preserve these draft fixtures and their existing evidence;
 this documentation pass adds no runtime tests or new backend/deployment requirements.
 

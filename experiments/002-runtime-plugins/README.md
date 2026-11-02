@@ -8,8 +8,7 @@ choices within the [specification](../../docs/SPEC.md); it does not replace the
 [shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
 
 The [implementation proposal](../../docs/proposals/implementation-v0/README.md) expands the host,
-worker, schema and persistence boundaries this spike would exercise. Accepted I1–I6 boundaries remain in force; the conceptual closure review precedes a future
-authoring/syntax PR. This experiment still contains no executable implementation or measured results.
+worker, schema and persistence boundaries this spike would exercise. Accepted I1–I6 boundaries remain in force; C1–C3 conceptual closure is complete and concrete authoring/syntax returns in a future PR. This experiment still contains no executable implementation or measured results.
 The [distributed-runtime follow-up](../../docs/research/DISTRIBUTED_RUNTIME.md) revises the proposed
 layout below. **I1 accepts separate management/execution services and shared policy with
 instance-owned state, plus no offline grants in v0.** The first proof uses management and two
@@ -59,6 +58,12 @@ C2 supplies the dependent-call acceptance boundary: a Resource's authorized inte
 not widen the originating caller's permitted effects or returned content. Contrast that with autonomous
 Resource work using its own authority. The contract decides the enforcement without requiring an
 Agent to hold raw access to every backing service. Concrete fixture cases remain to be drafted.
+
+C3 supplies the retirement boundary: stop new work and confirm required instance shutdown duties
+before unregistration. Preserve shared dependencies and operation evidence; an external effect can
+outlive local shutdown. Missing required confirmation keeps retirement incomplete. Exercise these
+cases through the same supported lifecycle contracts, without inferring cancellation or adding a
+universal lifecycle enum. No retirement test has run yet.
 
 ## Question
 

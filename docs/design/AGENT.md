@@ -1,7 +1,7 @@
 # Agent contracts
 
 Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records unresolved cross-cutting questions;
+The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Agents

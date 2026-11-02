@@ -1,7 +1,7 @@
 # Implementation review status
 
 Updated: 2026-11-02. I1–I6 and I7's contract-authority/composition rulings are accepted.
-The [conceptual closure review](../../REVIEW.md) is now the only active decision queue. Specific
+The [conceptual closure review](../../REVIEW.md) is complete, including C1–C3. Specific
 syntax is parked for a later PR; implementation has not started. This summary preserves the
 I1–I7 references without repeating a parallel detailed specification.
 
@@ -105,8 +105,8 @@ The [authoring packet](../authoring-syntax/README.md) preserves the examples for
 
 ## After review
 
-C1 conformance and C2 dependent-call authority are now settled. Close C3 retirement in
-[REVIEW](../../REVIEW.md) together before resuming syntax.
+C1 conformance, C2 dependent-call authority and C3 retirement are settled in
+[REVIEW](../../REVIEW.md). Concrete authoring syntax returns in a later PR.
 Then derive conformance cases and review the authoring packet as one connected contract. Runtime
 mechanisms and milestones in [ORGANIZATION](ORGANIZATION.md) remain implementation proposals within
 accepted boundaries. Do not begin coding or silently reopen settled choices as part of documentation

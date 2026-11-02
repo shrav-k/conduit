@@ -1,7 +1,7 @@
 # Proposed implementation contracts
 
 **Deferred authoring packet:** preserve these examples for the later syntax/conformance PR.
-The [conceptual review](../../REVIEW.md) is the active queue; [this packet](README.md) changes no accepted rules.
+The [conceptual review](../../REVIEW.md) is complete; [this packet](README.md) changes no accepted rules.
 
 **Placement review:** separate management/execution services and shared policy with instance-owned
 state are accepted. V0 has no offline grants. The first proof uses separate management and two

@@ -39,7 +39,7 @@ Resource grants with applicable authenticated-caller restrictions. See the
 | Exclude plugin ABI with all graph behavior | Separate physical ABI/process plumbing from public invocation and execution semantics. Native ABI details need not be standardized; MCP/profile contracts and declared behavior do. |
 | Derive the protocol directly from what Experiment 001 needs | Use 001 as a scenario and 002 for composition/failure coverage. Draft fixture fields are not rulings, and neither fixture alone defines every required semantic boundary. |
 | Start with a parallel fixed JSON-RPC method catalog and local socket wire | MCP is already the accepted public plugin/capability base. First map supported standard mechanisms and the necessary Conduit profile; evaluate any additional transport/method surface in the later authoring PR. No new wire is adopted here. |
-| Use one short family lifecycle and a closed error list | Shared evidence is useful, but setup, runtime readiness, uncertain effects and domain outcomes cannot all be collapsed into one state. C3 will settle minimum guarantees; exact results stay extensible and typed. |
+| Use one short family lifecycle and a closed error list | Shared evidence is useful, but setup, runtime readiness, uncertain effects and domain outcomes cannot all be collapsed into one state. C3 requires confirmation of declared shutdown duties before unregistration while preserving outstanding-effect evidence and shared dependencies; exact results stay extensible and typed. |
 | Every request names its actor | A supplied name is attribution data until authenticated by the appropriate binding. Same-OS-user execution does not grant an Agent root management rights. C2 preserves authenticated caller context and applicable restrictions while Resources use their own dependency grants. |
 | Require two independent full implementations for the first release | C1 selects independently authored client/plugin conformance first and defers a second complete runtime. The initial proof does not establish runtime-to-runtime portability. |
 | No skills | Already no Conduit-owned skills framework. Preserve BYO native skills and explicit Agent activation through permitted Resources. |
@@ -70,7 +70,7 @@ Remote scheduling and one-VM-per-account/process are not consequences of the fiv
 
 ## Integration plan
 
-1. C1 and C2 are settled. Finish C3 using the concrete lifecycle scenario before the final design merge.
+1. C1–C3 are settled and incorporated into the canonical design; the current conceptual review is complete.
 2. Fold only agreed conceptual refinements into the canonical design topics. Preserve source links
    and acknowledge which recommendations remain optional or need validation.
 3. In the later authoring PR, select schemas, MCP/profile mappings, complete package examples and

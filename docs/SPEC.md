@@ -7,7 +7,7 @@ A Rust reference implementation and replaceable frontends will demonstrate that 
 
 Status: conceptual design, 2026-11-02. No runnable implementation exists. The
 [design topics](DESIGN.md#contract-map) hold accepted detailed behavior. The
-[review](REVIEW.md) identifies three remaining conceptual seams; specific authoring syntax is deferred.
+[review](REVIEW.md) records completed conceptual closure; specific authoring syntax is deferred.
 
 ## Five families
 
@@ -88,7 +88,9 @@ and check its inspected revision, with contract-declared safe exceptions.
 Failed setup preserves successful work by default. Explicit retry reuses only valid progress and
 reconciles uncertain effects. A timeout does not prove failure; reconnection is not permission to replay
 a write or start model work. Stop, detachment, unregistration and backing-data purge have distinct effects.
-C3 in the review will close remaining cross-family retirement guarantees without replacing this model.
+Retirement stops new work and permits unregistration only after required shutdown duties are
+confirmed. Preserve shared dependencies and operation evidence; local shutdown does not prove an
+external effect was cancelled. Missing confirmation leaves retirement incomplete.
 
 ## Identity and access
 
@@ -157,7 +159,7 @@ Native execution remains the default; isolated execution is optional or required
 contract and cannot be claimed until demonstrated. Managed access enforcement is not universal native
 host interception. BYO compatible skills remain native, explicitly activated from permitted Resources.
 
-The [review](REVIEW.md) closes conformance scope, dependent-call authority and cross-object lifecycle
-before syntax returns. Remote/multi-user operation, automatic wake, general authored loops, in-place
+The [review](REVIEW.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
+A later PR will review concrete authoring syntax and conformance fixtures. Remote/multi-user operation, automatic wake, general authored loops, in-place
 definition upgrades and a marketplace remain deferred. The [collaborator proposals](proposals/COLLABORATOR_REVIEW.md)
 are evaluated against this model; they do not silently add deployment requirements.

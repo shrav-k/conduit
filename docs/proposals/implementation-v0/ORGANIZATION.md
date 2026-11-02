@@ -18,8 +18,9 @@ failures; two-machine validation follows before remote support is claimed.
 
 ## Review and PR sequence
 
-This branch first closes [conceptual review](../../REVIEW.md) and reconciles the
-[collaborator proposals](../COLLABORATOR_REVIEW.md). It does not settle package-reference syntax.
+The [conceptual review](../../REVIEW.md) is complete, with the
+[collaborator proposals](../COLLABORATOR_REVIEW.md) reconciled and their dissent preserved.
+This does not settle package-reference syntax.
 A later authoring PR will review contracts, template/package examples, MCP/profile mappings and
 conformance fixtures together. Implementation milestones follow that approved boundary; a detailed
 crate plan is not authorization to start them now.

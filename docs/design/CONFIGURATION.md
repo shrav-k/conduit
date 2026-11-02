@@ -1,7 +1,7 @@
 # Configuration and identity
 
 Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records unresolved cross-cutting questions;
+The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Configuration language
@@ -233,8 +233,10 @@ Ordinary Pool deletion does not implicitly retire owned Resources. Ownership tra
 Deleting a Resource registration preserves its backing files, repositories and service data,
 including data created through Conduit. Cleanup or purge requires separate explicit operations
 governed by their own permissions. Agent deletion also requires confirmed execution end
-under the [lifecycle contract](AGENT.md#lifecycle-and-continuity). Further effects of deleting other
-object forms, client disconnection and transient helper-process cleanup remain runtime decisions.
+under the [Agent lifecycle contract](AGENT.md#lifecycle-and-continuity). All instance unregistration
+also follows [confirmed retirement duties](LIFECYCLE.md#retirement-and-unregistration). Type contracts
+define specific disconnection and helper cleanup duties; missing required confirmation blocks
+unregistration.
 An unowned Resource is an ownership inconsistency to resolve, not automatic purge authority.
 The existing retain-until-explicit-purge rule remains; automatic orphan collection is not selected.
 

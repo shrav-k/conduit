@@ -1,6 +1,6 @@
 # Conceptual closure review
 
-Updated: 2026-11-02. **Current work: close the conceptual model together.** Concrete package,
+Updated: 2026-11-02. **The current conceptual review is complete: C1–C3 are accepted.** Concrete package,
 plugin-reference, graph-binding and schema syntax is deferred to a future PR. The latest history
 package example is preserved as a proposal, not adopted syntax. No implementation has started.
 
@@ -11,9 +11,11 @@ features. It does not guarantee that implementation will reveal no further count
 
 ## Next discussion
 
-**C1 and C2 are complete; C3 remains.** Accepted outcomes are marked; the C3 recommendation is
-not a ruling. Work through its concrete scenario, then record the accepted result in the relevant
-design file. Do not restart the entire decision history or turn each schema field into a new question.
+There are no outstanding rulings in this conceptual review. The next discussion belongs to a
+separate authoring/conformance PR: complete contract and template examples, schemas and wire/profile
+bindings, followed by implementation. Existing examples remain proposals until reviewed together.
+Concrete counterexamples can reopen a semantic issue; this is not a claim that every future extension
+or engineering detail is settled.
 
 ### C1 — What does conformance promise?
 
@@ -63,21 +65,16 @@ execution end. Pool deletion requires explicit Resource retirement. A Conduit en
 logical consumer/peer detaches; external effects may outlive that detach. Backing data is preserved
 unless explicitly cleaned up. Incoming references alone do not cause cascading deletion.
 
-**Still to decide:** the minimum common stop/retire/delete guarantee for the remaining families and
-how it coordinates endpoint activity, child setup work and live dependent connections. Which duties
-must be confirmed before unregistration, and which can remain recorded as incomplete or uncertain?
-Provider-specific cancellation and cleanup still belong to their contracts.
+**Accepted:** retirement stops new work, releases the instance's own activity/attachments, and permits
+unregistration only when its contract's required shutdown duties are confirmed. Missing confirmation
+leaves retirement incomplete. Preserve shared dependencies, other instance identities and operation
+evidence. Already-dispatched external effects may outlive local shutdown; no cancellation or rollback
+is inferred. Contracts define the duties without one universal lifecycle enum.
 
-**Example:** retire a Linear Resource while a tool write is in flight and two Agents remain attached.
-Stopping its local bridge does not prove the upstream write was cancelled; neither Agent's own
-execution or the shared authentication Resource should disappear automatically. An Interface whose
-frontend closes is a different case from explicitly retiring the Interface itself.
-
-**Recommendation:** use the existing Agent/Pool rules as the starting point: stop admitting affected
-new work, account for owned activity and outstanding effects, and report incomplete retirement when
-required confirmation is missing. Preserve dependent identities and unrelated/shared capabilities;
-report their unavailable relationship. Define the minimum observable guarantees, while allowing
-capability-specific cancellation/recovery and avoiding a single universal lifecycle enum.
+For example, retiring Linear access preserves the Agents and shared authentication Resource, while
+an in-flight write keeps its recorded or uncertain outcome. Frontend detachment is distinct from
+Interface retirement. The [canonical lifecycle rule](design/LIFECYCLE.md#retirement-and-unregistration)
+applies alongside existing Agent/Pool checks and separate cleanup/purge contracts. C3 is complete.
 
 ## Review outcomes
 
@@ -106,14 +103,15 @@ filtering, recovery or lifecycle guarantees. Independently exposed managed capab
 current access checks, Pool ownership where applicable, fixed implementations and operation evidence.
 An ordinary MCP implementation used outside Conduit supplies only its own declared guarantees.
 No process per plugin, mandatory combined gateway or Interface-only invocation route is required.
-C1 asks how those different compatibility claims should be named and tested, not whether to allow them.
+C1 settles declared-capability conformance and the independent-client/plugin proof; exact profile
+names and fixtures follow in the future authoring PR.
 
 ## Initial experiment
 
 [001](../experiments/001-shared-access/README.md) is a static workflow packet;
 [002](../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
-Neither has executed runtime/provider tests. Keep their existing evidence and scope. After C1–C3,
-translate the accepted clarifications into conformance cases before finalizing syntax. Do not add
+Neither has executed runtime/provider tests. Keep their existing evidence and scope; translate the
+accepted C1–C3 clarifications into conformance cases in the later authoring PR before finalizing syntax. Do not add
 Sealmesh, VMs, a root model, remote deployment or a second full runtime to the experiment silently.
 Native two-Claude/two-Codex account validation remains a separate required goal.
 
@@ -121,7 +119,7 @@ Native two-Claude/two-Codex account validation remains a separate required goal.
 
 | Work | Treatment |
 | --- | --- |
-| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](proposals/authoring-syntax/README.md); review together in a later PR after conceptual closure. |
+| Package maps/aliases, export references, file layout, schema dialect, API identifiers and exact messages | Park in the [authoring proposal](proposals/authoring-syntax/README.md); review together in a later authoring/conformance PR. |
 | Crate organization, worker grouping, queue sizes, retry bounds, storage settings and serialization | Engineering/conformance work within accepted contracts. Bring back only a concrete semantic conflict. |
 | Binding/default name scope, compatibility matching, output/result mapping and typed secret handles | Specify in the authoring pass; tests must preserve fixed bindings, current authority and declared recovery. Syntax cannot decide these accidentally. |
 | Full remote/multi-user support, automatic placement/failover, stronger sandbox drivers | Future extensions with separate deployment evidence. |
@@ -130,8 +128,8 @@ Native two-Claude/two-Codex account validation remains a separate required goal.
 
 ## Closing this pass
 
-Resolve C1–C3 collaboratively, reconcile the collaborator proposals against those results, and
-check that each accepted rule has one canonical home and a concrete acceptance example. This closes
-the current conceptual review, not all possible future design work. The next PR can then select
-syntax and build conformance fixtures from the contracts. Existing examples are inputs to that
-work, never a reason to declare whatever they happen to contain mandatory.
+C1–C3 were resolved collaboratively and incorporated into their canonical design topics. The
+collaborator comparison identifies adopted refinements, adapted suggestions and preserved dissent;
+original contributions are archived with attribution. No conceptual ruling remains in this queue.
+The next PR can select syntax and build conformance fixtures from the contracts. Existing examples
+are inputs to that work, never a reason to declare whatever they happen to contain mandatory.

@@ -1,14 +1,14 @@
 # Plugin and template authoring walkthrough
 
 **Deferred authoring packet:** preserve these examples for the later syntax/conformance PR.
-The [conceptual review](../../REVIEW.md) is the active queue; [this packet](README.md) changes no accepted rules.
+The [conceptual review](../../REVIEW.md) is complete; [this packet](README.md) changes no accepted rules.
 
 Status: authoring examples, 2026-11-02. Lightweight Conduit support with the public protocol and
 extension structure prioritized over a helper library is accepted. Publishing inspectable
 contracts with implementations is also accepted. Published, language-neutral contracts are authoritative;
 authors may handwrite or generate them, then explicitly review and version the released definitions.
 Implementations conform to those contracts. Complete templates without a mandatory primary plugin,
-with compatible bindings and declared defaults, are accepted for v0. Detailed syntax is parked for a future PR after conceptual closure.
+with compatible bindings and declared defaults, are accepted for v0. Conceptual closure is complete; detailed syntax is parked for a future PR.
 MCP is accepted as the public invocation base with
 a small Conduit profile. Code-optional implementation bindings and independent component access
 are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in

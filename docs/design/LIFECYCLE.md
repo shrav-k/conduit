@@ -1,7 +1,7 @@
 # Construction, controls and lifecycle
 
 Part of the accepted [design contracts](../DESIGN.md). Updated: 2026-11-02.
-The [conceptual review](../REVIEW.md) records unresolved cross-cutting questions;
+The [conceptual review](../REVIEW.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Establishment contracts and instance state
@@ -201,3 +201,33 @@ reconnect with a manual option; this is not a universal operation retry policy o
 replay writes/start new model work. Exact graphs, waits, cancellation, retry bounds, live-change
 handlers and recovery compatibility remain in [REVIEW.md](../REVIEW.md).
 
+
+## Retirement and unregistration
+
+Retirement stops admitting ordinary new work to the retiring instance and releases its own activity and
+attachments through its supported lifecycle contract. Allow unregistration only after the contract's
+required shutdown duties are confirmed. Missing or uncertain confirmation leaves retirement
+incomplete and the instance registered for inspection, reconciliation or explicit retry.
+
+The contract defines the duties appropriate to the type, including owned runtime/helper activity,
+setup work and local connection state. This is a minimum observable guarantee, not a universal
+lifecycle enum or a requirement to stop every backing service. Retiring a managed client does not
+imply shutting down an external provider or a shared authentication Resource.
+
+Preserve dependent instance identities, unrelated/shared capabilities and retained operation evidence.
+Affected consumers observe unavailable access rather than being deleted or silently retargeted.
+Already-dispatched external effects can outlive local shutdown; keep their known or uncertain outcomes
+without claiming cancellation or rollback. Local shutdown confirmation does not establish the outcome
+of a remote write. Further cancellation/reconciliation follows that operation's contract and current
+authority; unregistration does not erase evidence or authorize replay.
+
+For example, retiring Linear access releases its local bridge and attachments while preserving its
+Agents and shared authentication Resource. An outstanding provider write remains attributable after
+local shutdown. Closing an Interface frontend is only detachment; explicitly retiring the Interface
+follows its own shutdown duties. A Conduit's logical flow may end before all cleanup is confirmed;
+its unregistration still requires its declared shutdown duties to be fulfilled.
+
+Existing Agent execution-end checks and Pool-owned Resource retirement checks remain in force.
+Backing files, remote service data and retained evidence keep their separate explicit cleanup/purge
+contracts. Incoming references alone do not cascade deletion. This rule does not introduce automatic
+retirement, background garbage collection or permission to bypass an unresolved shutdown duty.

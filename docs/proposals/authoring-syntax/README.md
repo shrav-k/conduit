@@ -1,7 +1,7 @@
 # Deferred authoring and syntax proposal
 
-Status: **parked for a future PR**, 2026-11-02. Complete the
-[conceptual closure review](../../REVIEW.md) first. The published-contract and no-primary-plugin
+Status: **parked for a future PR**, 2026-11-02. The
+[conceptual closure review](../../REVIEW.md) is complete. The published-contract and no-primary-plugin
 rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
 Moving these examples does not ratify their names, package layout or scoping rules.
 

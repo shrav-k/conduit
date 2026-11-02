@@ -1,6 +1,6 @@
 # Research
 
-Current sequence: the [conceptual review](../REVIEW.md) is the active queue;
+Current sequence: the [conceptual review](../REVIEW.md) is complete;
 [authoring syntax](../proposals/authoring-syntax/README.md) is parked for a later PR. The
 [collaborator comparison](../proposals/COLLABORATOR_REVIEW.md) reviews two submitted proposals
 without treating their platform claims as newly verified research or adopting their recommendations.

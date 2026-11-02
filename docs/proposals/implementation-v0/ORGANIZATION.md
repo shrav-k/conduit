@@ -232,6 +232,11 @@ contracts. Extra process hops or conservative serialization are acceptable initi
 validation, ownership, access and honest effect outcomes are not optional efficiency tradeoffs.
 Measure costs after the authoring-to-instance path works; optimization is not its entry gate.
 
+C1's accepted first conformance threshold requires an independently authored client and plugin to
+work with the reference runtime using published contracts/tests. A second full runtime is deferred;
+client/plugin success does not establish portability between runtimes. Fold that authoring evidence
+into the early milestones without treating schema validation alone as behavioral conformance.
+
 Each milestone produces an inspectable vertical slice, not just more abstractions. I2 accepts
 native Claude/Codex adapters after the synthetic proof, followed by the owned Rust model/tool loop.
 Native integration/account validation is macOS-first, with a portable Rust core and OS-specific

@@ -11,10 +11,9 @@ features. It does not guarantee that implementation will reveal no further count
 
 ## Next discussion
 
-There are **three grouped closure topics**. Accepted outcomes are marked; remaining recommendations
-are not rulings. Work
-through one concrete scenario per topic, then record the accepted result in the relevant design
-file. Do not restart the entire decision history or turn each schema field into a new question.
+**C1 and C2 are complete; C3 remains.** Accepted outcomes are marked; the C3 recommendation is
+not a ruling. Work through its concrete scenario, then record the accepted result in the relevant
+design file. Do not restart the entire decision history or turn each schema field into a new question.
 
 ### C1 — What does conformance promise?
 
@@ -29,11 +28,11 @@ lifecycle and recovery semantics. Required executable behavior cannot silently b
 The [canonical contract](design/CONFIGURATION.md#declared-capability-conformance) records this ruling.
 Exact names and syntax remain deferred.
 
-**Remaining C1 choice:** what evidence closes the first conformance milestone? The current
-recommendation is an independently authored client and plugin working against published contracts
-and conformance tests, with a second complete runtime deferred. That would test the extension
-boundary, but would not establish interoperability between two runtimes. The user has not yet ruled
-on that evidence threshold.
+**Accepted evidence threshold:** the first conformance milestone requires an independently authored
+client and plugin working with the reference runtime through published contracts and conformance
+tests. A second complete runtime is deferred. This tests the supported extension surfaces without
+claiming runtime-to-runtime portability. C1 is complete; exact profiles, syntax and fixtures remain
+for the future authoring PR.
 
 **Why now:** collaborator PR #2 makes this choice visible. Its opaque setup/runtime proposal would
 lose the portability we have prioritized. [Comparison and sources](proposals/COLLABORATOR_REVIEW.md).
@@ -45,23 +44,16 @@ narrow access; shared credentials are not caller grants. Resource-to-Resource ca
 Requirements have declared applicability and enforcement duties. Reads and delivery recheck current
 access, and derived knowledge retains declared source-access dependencies.
 
-**Still to decide:** how does an operation that invokes another Resource distinguish work performed
-for a requesting actor from autonomous maintenance? What caller context and restrictions must survive
-that boundary, and which are evaluated against the service's own authority? This is not a question
-about issuer ancestry: the agreed independence of issued grants remains unchanged.
+**Accepted:** a Resource serving an Agent uses its own authorized dependency connections while
+preserving the authenticated originating caller and enforcing applicable restrictions on requested
+effects and returned content. Autonomous work uses the Resource's own authority. Capability contracts
+define the enforcement; callers do not need direct grants to every internal backing service.
 
-**Example:** a search Resource can index an entire corpus, while Agent A may query only Euphony.
-Its storage connection must not turn A's query into permission to retrieve Demo content. Conversely,
-A need not necessarily have a direct Conduit to every internal database merely to use an authorized
-search capability. The same distinction applies to an MCP Resource using shared authentication and
-a graph invoking other operations.
-
-**Recommendation:** make autonomous and caller-mediated execution explicit in capability contracts.
-Authenticate and retain originating-call attribution; require the selected implementations to enforce
-applicable caller/result restrictions alongside the service's own dependency grants. Internal access
-must not widen what the caller can cause or receive. Do not invent a universal token-forwarding
-rule, a mandatory copied identity chain, or require callers to administer hidden backing services.
-Choose the semantic rule with this search example before defining its serialized context fields.
+For example, search may index Euphony and Demo under its own authority, while an Euphony-only Agent
+cannot retrieve Demo through a query. A shared service credential or dependency grant cannot widen
+that caller's permitted effects/results. This does not introduce issuer ancestry, token forwarding
+or a universal serialized identity chain. The [dependent-call contract](design/CONDUITS.md#authority-across-dependent-calls)
+records the boundary. C2 is complete; concrete propagation and checking mechanisms remain authoring work.
 
 ### C3 — What does retirement guarantee across connected objects?
 

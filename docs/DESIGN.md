@@ -62,7 +62,8 @@ The split preserves the existing rules and their heading anchors; Git retains th
 The conceptual audit found three closure topics in [REVIEW](REVIEW.md): conformance scope,
 authority across dependent calls, and lifecycle guarantees across connected objects. These are
 review topics. C1 now accepts [declared-capability conformance](design/CONFIGURATION.md#declared-capability-conformance);
-its evidence threshold and the other topics remain open. Already accepted behavior stays in force.
+and the independent-client/plugin milestone. C2 accepts Resource dependency grants with applicable
+caller restrictions. C3 retirement guarantees remain open. Already accepted behavior stays in force.
 The [collaborator comparison](proposals/COLLABORATOR_REVIEW.md) identifies which proposed changes
 align, which need adaptation and which remain separate future work.
 

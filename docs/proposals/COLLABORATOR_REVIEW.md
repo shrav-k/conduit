@@ -26,8 +26,9 @@ intent and behavior, rather than treating outdated terminology as disagreement w
   parsing, behavior, independent-client/plugin interoperability and actual provider validation.
 
 C1 now accepts declared-capability conformance: limited components can declare supported surfaces,
-while template executors must honor public execution semantics. The initial evidence threshold remains
-open in the
+while template executors must honor public execution semantics. Its first proof requires an independently
+authored client and plugin; a second complete runtime is deferred. C2 now settles dependent calls using
+Resource grants with applicable authenticated-caller restrictions. See the
 [conceptual review](../REVIEW.md#c1--what-does-conformance-promise).
 
 ## What needs adaptation
@@ -39,8 +40,8 @@ open in the
 | Derive the protocol directly from what Experiment 001 needs | Use 001 as a scenario and 002 for composition/failure coverage. Draft fixture fields are not rulings, and neither fixture alone defines every required semantic boundary. |
 | Start with a parallel fixed JSON-RPC method catalog and local socket wire | MCP is already the accepted public plugin/capability base. First map supported standard mechanisms and the necessary Conduit profile; evaluate any additional transport/method surface in the later authoring PR. No new wire is adopted here. |
 | Use one short family lifecycle and a closed error list | Shared evidence is useful, but setup, runtime readiness, uncertain effects and domain outcomes cannot all be collapsed into one state. C3 will settle minimum guarantees; exact results stay extensible and typed. |
-| Every request names its actor | A supplied name is attribution data until authenticated by the appropriate binding. Same-OS-user execution does not grant an Agent root management rights. C2 examines identity and restrictions across dependent calls. |
-| Require two independent full implementations for the first release | Strong potential evidence, with a meaningful delivery cost. C1 should decide whether initial independent clients/plugins plus conformance vectors suffice, and when a second runtime becomes a gate. |
+| Every request names its actor | A supplied name is attribution data until authenticated by the appropriate binding. Same-OS-user execution does not grant an Agent root management rights. C2 preserves authenticated caller context and applicable restrictions while Resources use their own dependency grants. |
+| Require two independent full implementations for the first release | C1 selects independently authored client/plugin conformance first and defers a second complete runtime. The initial proof does not establish runtime-to-runtime portability. |
 | No skills | Already no Conduit-owned skills framework. Preserve BYO native skills and explicit Agent activation through permitted Resources. |
 
 The proposals' `v1`/`v2` labels, identifiers, paths and message names are suggestions, not accepted
@@ -69,7 +70,7 @@ Remote scheduling and one-VM-per-account/process are not consequences of the fiv
 
 ## Integration plan
 
-1. Discuss C1–C3 using the PRs' useful protocol/conformance challenge and the current accepted model.
+1. C1 and C2 are settled. Finish C3 using the concrete lifecycle scenario before the final design merge.
 2. Fold only agreed conceptual refinements into the canonical design topics. Preserve source links
    and acknowledge which recommendations remain optional or need validation.
 3. In the later authoring PR, select schemas, MCP/profile mappings, complete package examples and

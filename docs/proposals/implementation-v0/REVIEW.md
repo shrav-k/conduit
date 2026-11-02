@@ -105,7 +105,8 @@ The [authoring packet](../authoring-syntax/README.md) preserves the examples for
 
 ## After review
 
-Close the three cross-cutting topics in [REVIEW](../../REVIEW.md) together before resuming syntax.
+C1 conformance and C2 dependent-call authority are now settled. Close C3 retirement in
+[REVIEW](../../REVIEW.md) together before resuming syntax.
 Then derive conformance cases and review the authoring packet as one connected contract. Runtime
 mechanisms and milestones in [ORGANIZATION](ORGANIZATION.md) remain implementation proposals within
 accepted boundaries. Do not begin coding or silently reopen settled choices as part of documentation

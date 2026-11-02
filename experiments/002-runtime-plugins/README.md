@@ -46,6 +46,20 @@ experiment. Exact methods, Rust bindings, durability settings and fixtures remai
 authoring work; no storage or recovery behavior has been validated yet.
 These are design rulings, not implemented fixture behavior or additional test scope.
 
+## Conformance milestone
+
+C1 accepts an independently authored client and plugin working with the reference runtime through
+published contracts and conformance tests. This complements the existing composition-authoring proof:
+record which public contracts the client/plugin uses, exercise supported and rejected behavior, and
+avoid private runtime APIs or special-case core dispatch. Exact fixtures follow the authoring PR.
+A second complete runtime is deferred; this experiment cannot claim runtime-to-runtime portability.
+No additional runtime, remote deployment or provider support is inferred from that milestone.
+
+C2 supplies the dependent-call acceptance boundary: a Resource's authorized internal connection must
+not widen the originating caller's permitted effects or returned content. Contrast that with autonomous
+Resource work using its own authority. The contract decides the enforcement without requiring an
+Agent to hold raw access to every backing service. Concrete fixture cases remain to be drafted.
+
 ## Question
 
 Can Rust services coordinate independently owned activity, finite plugin graphs and

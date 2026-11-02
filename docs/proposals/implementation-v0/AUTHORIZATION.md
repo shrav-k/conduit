@@ -8,7 +8,7 @@ administration uses ordinary protected capabilities. This document develops that
 selecting exact YAML/MCP fields, an evaluator, credential format or storage engine. New choices below are proposals;
 the [design](../../DESIGN.md) retains accepted behavior and [I4](REVIEW.md#i4--local-transactional-authority)
 summarizes the accepted boundary. [Conceptual review C2](../../REVIEW.md#c2--whose-authority-governs-a-dependent-call)
-tracks the remaining dependent-call authority question; specific syntax is deferred. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
+records the accepted Resource-grants/caller-restrictions boundary; specific syntax is deferred. [Research](../../research/AUTHORIZATION.md) provides sources and alternatives.
 
 ## 1. Place in the model
 
@@ -50,6 +50,13 @@ Proposed request identity distinctions:
 These distinctions need not become new registry objects or force every call to carry an arbitrary
 identity chain. Exact principal representation, trusted claims and autonomous Interface identity
 remain to be reviewed. No actor can gain more rights by supplying an on-behalf-of claim.
+
+**Accepted dependent calls:** a Resource uses its own authorized dependency connections while
+preserving authenticated originating-caller context and enforcing applicable restrictions on effects
+and returned content. Autonomous work uses the Resource's own authority; using a capability does not
+require the caller to hold direct grants to every backing service. This is not issuer ancestry or
+implicit token forwarding. The [canonical rule](../../design/CONDUITS.md#authority-across-dependent-calls)
+also applies to composed operations; exact supported propagation/enforcement follows the contract.
 
 ## 3. Policy as authoritative requirement application
 

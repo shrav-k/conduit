@@ -344,6 +344,30 @@ is withheld as a whole; narrower content requires an authorized extract. Already
 native context cannot be erased by subsequent checks. Details follow Resource ownership,
 derivation and provenance rules.
 
+### Authority across dependent calls
+
+A Resource serving an Agent or other managed caller may use its own authorized dependency
+connections. Preserve the authenticated originating caller and enforce that caller's applicable
+restrictions on requested effects and returned content alongside the Resource's dependency grants.
+The caller does not need direct access to every internal backing service merely to use an authorized
+capability. Shared credentials and broader internal access cannot widen what that caller may cause
+or receive through the operation.
+
+For example, a search Resource may index both Euphony and Demo under its own authority; an
+Euphony-only Agent cannot use its search connection to retrieve Demo content. A provider-facing
+Resource can use shared authentication without handing its credential or raw backing access to
+the Agent. Current access, source-dependency and delivery checks retain their existing meaning.
+
+Autonomous maintenance, such as scheduled indexing, uses the Resource's own authority. Capability
+contracts distinguish that activity from work serving a caller and define the applicable enforcement
+and evidence. Running caller-requested work asynchronously does not by itself remove its restrictions.
+Plugins must support the necessary checks; an unsupported required check keeps the affected behavior
+unavailable. Authenticated caller context is not a self-asserted argument or automatic token forwarding.
+
+This rule does not create live issuer-ancestry dependencies for independently issued grants, require
+one universal identity-chain format, or authorize a dependency call merely because setup succeeded.
+Exact context propagation and implementation duties are defined by the supported contracts.
+
 ### Protocol and provider compatibility
 
 MCP is the preferred external capability contract. Use standard tools, resources, prompts

@@ -388,4 +388,11 @@ unsupported executable semantics must be reported rather than silently ignored.
 This separates public behavior from reference-implementation choices such as Rust crate layout,
 physical plugin ABI, process grouping or storage engine. MCP/profile compatibility and the agreed
 managed-access/evidence obligations remain applicable to supported surfaces. Exact profile names,
-version negotiation, schema spelling and initial conformance-release evidence remain review work.
+version negotiation and schema spelling remain authoring work.
+
+**First conformance milestone:** require an independently authored client and plugin to work with
+its reference runtime through published contracts and conformance tests. Exercise the public
+extension boundary rather than depending on private implementation knowledge or special core dispatch.
+A second complete runtime is deferred. Passing this milestone supplies evidence for those client/plugin
+surfaces; it does not establish portability between two runtimes, unsupported capabilities, or
+unexecuted provider/platform scenarios. No conformance test has run merely by adopting this scope.

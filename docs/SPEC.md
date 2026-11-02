@@ -44,7 +44,9 @@ recovery or lifecycle guarantee.
 Conformance describes explicitly supported capabilities. A limited client/plugin need not implement
 an entire runtime; a runtime claiming portable template execution must implement its public graph,
 control, lifecycle and recovery semantics. Physical runtime mechanisms remain replaceable. Exact
-profiles and the initial evidence threshold are separate review work.
+profiles remain authoring work. The first conformance milestone uses an independently authored
+client and plugin against the reference runtime and published contracts/tests. A second complete
+runtime is deferred; that initial proof cannot establish runtime-to-runtime portability.
 
 A template supplies typed configuration, its setup graph, declared ongoing behavior and permitted
 controls. It can bind compatible contributions from several plugins without a mandatory primary.
@@ -106,6 +108,11 @@ the selected path must pass; separate paths cannot mix operations and targets in
 Requirements and Pool membership do not grant access. Grant administration checks current authority;
 issued grants do not depend on issuer ancestry or continued activity. Recipient detachment, withdrawal
 and current restrictions govern use. V0 has no offline grants.
+
+Resources serving callers use their own dependency grants while preserving authenticated caller
+context and enforcing applicable restrictions on effects and returned content. Autonomous maintenance
+uses the Resource's own authority. A caller need not receive direct access to internal backing services;
+a broader internal grant cannot widen what the caller can cause or receive.
 
 Endpoint instances select/manage their implementations; Conduits coordinate compatible capabilities,
 requirements and participation. Required setup failures block preparation, optional failures are reported,

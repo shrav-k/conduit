@@ -9,6 +9,11 @@ Status: **ready for the next syntax/conformance review; examples remain proposal
 rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
+Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
+and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).
+WIT/Smithy import boundaries, CWL composition and YANG controls provide concrete alternatives;
+their recommendations do not silently amend this packet or the accepted protocol.
+
 | Document | Preserve it for |
 | --- | --- |
 | [AUTHORIZATION](AUTHORIZATION.md) | Accepted requirements/grants illustrated with unapproved representation and enforcement details, moved here from the runtime packet. |

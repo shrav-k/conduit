@@ -12,8 +12,9 @@ There is no runnable runtime, published package format or implemented SDK yet. S
   representations in [docs/proposals/authoring-syntax/](docs/proposals/authoring-syntax/README.md).
 - Keep runtime mechanisms in [docs/implementation/](docs/implementation/README.md). A library, crate or
   database layout is not automatically part of the public protocol.
-- Put sourced comparisons and actual probes in [docs/research/](docs/research/README.md). Attribute
-  source versions and distinguish inference from observed behavior.
+- Put sourced comparisons and analysis of probe results in [docs/research/](docs/research/README.md).
+  Attribute source versions and distinguish inference from observed behavior; keep runnable probe
+  fixtures and recorded results with their documentation in experiments.
 - Keep [experiments/](experiments/README.md) outside docs with scope, instructions and evidence.
   Expected outcomes must not be presented as passed tests.
 - Preserve completed reviews, attribution and dissent in [docs/archive/](docs/archive/README.md).

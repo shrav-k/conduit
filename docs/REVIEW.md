@@ -6,7 +6,8 @@ The five-family model and completed conceptual/implementation rulings remain acc
 
 The post-migration review is complete. M1–M3 and the initial owner decisions are settled or explicitly
 deferred below. Early delivery stays lightweight; contexts fit the existing Resource/Pool/Conduit
-model. The next review is the concrete authoring/conformance walkthrough. No syntax was approved by
+model. The next review is the concrete authoring/conformance walkthrough, preceded by the requested
+[language/protocol research](research/language-protocol-foundations/README.md). No syntax was approved by
 closing this review, and an open detail in an older report is not automatically another ruling.
 
 ## Migration-review rulings
@@ -67,8 +68,16 @@ return for a conceptual ruling only if an example exposes a real behavior choice
 
 ## Later authoring and conformance pass
 
-The [authoring packet](proposals/authoring-syntax/README.md) is ready for the next review after these
-rulings are merged. Its examples remain proposals. Start with one complete package-to-instance
+The [research comparison](research/language-protocol-foundations/README.md) and
+[worked cases](research/language-protocol-foundations/WALKTHROUGHS.md) now inform this pass.
+They recommend separating contract imports, graph value bindings and authorized live connections;
+they do not decide reference spellings, a new expression language or a runtime dependency.
+Twenty [library probes](../experiments/003-language-probes/README.md) expose validation pitfalls;
+they are not Conduit conformance results. Research recommendations remain in these four batches,
+without reopening settled concepts or creating a second question queue.
+
+The [authoring packet](proposals/authoring-syntax/README.md) preserves the examples for review.
+Start with one complete package-to-instance
 walkthrough, then review four connected batches rather than restarting a long list of isolated questions:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema dialect, package identity,

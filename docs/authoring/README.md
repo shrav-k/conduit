@@ -7,6 +7,8 @@ dispatch. Start from the [overview](../OVERVIEW.md) and [accepted extension mode
 This is a semantic authoring path, not a runnable tutorial. Package files, export references and MCP
 profile fields are still proposals. The [current review](../REVIEW.md) tracks that boundary; the
 [syntax packet](../proposals/authoring-syntax/README.md) preserves concrete examples for the later PR.
+The [language/protocol comparison](../research/language-protocol-foundations/README.md) supplies
+primary references and worked cases for choosing those representations.
 
 ## From a new capability to an instance
 

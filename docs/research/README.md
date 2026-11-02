@@ -1,9 +1,11 @@
 # Research
 
-Current sequence: the [documentation migration](../archive/migrations/2026-11-protocol-framing.md)
-preserves the completed conceptual review and supporting research. Remaining decisions are in the
-[current review queue](../REVIEW.md); [authoring syntax](../proposals/authoring-syntax/README.md)
-returns after that discussion. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
+Current sequence: the migration and post-migration rulings are complete. Before selecting syntax,
+read the new [language/protocol foundations](language-protocol-foundations/README.md) and
+[worked comparisons](language-protocol-foundations/WALKTHROUGHS.md). They compare primary sources
+and record actual library probes without changing accepted semantics. The [current review queue](../REVIEW.md)
+retains the connected authoring/conformance batches; [syntax examples](../proposals/authoring-syntax/README.md)
+remain proposals. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
 records adopted refinements and unadopted arguments from the two merged PRs, without treating
 their external platform claims as newly verified research.
 
@@ -25,6 +27,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
+| [LANGUAGE / PROTOCOL FOUNDATIONS](language-protocol-foundations/README.md) | WIT, Smithy, YANG, TOSCA, CWL and other language/protocol comparisons; package scoping, typed bindings, effects and MCP compatibility. Includes primary-source inventory and links to 20 offline schema/YAML probes. |
 | [ECOSYSTEM_ORGANIZATION](ECOSYSTEM_ORGANIZATION.md) | Source/release/website comparison across Pi, MCP, OpenTelemetry, Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime and uv; evidence behind the repository/documentation migration and still-open distribution proposals. |
 | [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and the lightweight debugging package and capture policy accepted in I6. Backend/library/wire recommendations remain proposals. |
 | [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; accepted shared policy/instance-owned state and independent policy. Later I4 rulings define access management and a public persistence plugin loaded as a service dependency, initially using SQLite. |

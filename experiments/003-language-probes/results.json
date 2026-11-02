@@ -1,0 +1,128 @@
+{
+  "scope": "Library behavior probes; no Conduit implementation or provider execution",
+  "python": "3.13.2",
+  "dependencies": {
+    "jsonschema": "4.25.1",
+    "ruamel.yaml": "0.18.16"
+  },
+  "cases": [
+    {
+      "case": "default annotation does not insert a value",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "closed record rejects misspelled field",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "schema validation does not coerce a string",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "JSON Schema integer accepts integral number 10.0",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "absent optional field is distinct from null",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "empty array is not missing",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "unknown semantic keyword is ignored by stock validator",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "readOnly annotation does not authorize a write",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "format is not checked by default",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "format can be checked explicitly",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "allOf does not reopen a closed base",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "unevaluatedProperties closes the combined shape",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "combined shape still rejects unknown fields",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "allOf intersects bounds rather than overriding",
+      "observed": false,
+      "expected": false
+    },
+    {
+      "case": "YAML 1.2 yes is a string",
+      "observed": "str",
+      "expected": "str"
+    },
+    {
+      "case": "safe YAML loader still accepts anchors and aliases",
+      "observed": {
+        "a": [
+          1
+        ],
+        "b": [
+          1
+        ]
+      },
+      "expected": {
+        "a": [
+          1
+        ],
+        "b": [
+          1
+        ]
+      }
+    },
+    {
+      "case": "safe YAML loader still expands merge keys",
+      "observed": {
+        "limit": 10
+      },
+      "expected": {
+        "limit": 10
+      }
+    },
+    {
+      "case": "safe YAML loader accepts a non-finite scalar",
+      "observed": true,
+      "expected": true
+    },
+    {
+      "case": "safe YAML loader recognizes timestamp beyond Core scalar set",
+      "observed": "date",
+      "expected": "date"
+    },
+    {
+      "case": "this loader rejects duplicate keys",
+      "observed": "rejected",
+      "expected": "rejected"
+    }
+  ]
+}

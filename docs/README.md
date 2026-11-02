@@ -3,7 +3,9 @@
 The protocol and language lead this repository. Start with the [overview](OVERVIEW.md), then read
 the [protocol reference](protocol/README.md) or follow the [authoring path](authoring/README.md).
 There is one [review entry point](REVIEW.md). The post-migration review is complete; the next phase
-is a concrete authoring/conformance walkthrough. Completed conceptual and implementation rulings
+is a concrete authoring/conformance walkthrough, informed first by the
+[language/protocol comparison](research/language-protocol-foundations/README.md).
+Completed conceptual and implementation rulings
 remain accepted; their earlier review summaries live in the archive.
 
 ## Reading paths
@@ -28,7 +30,7 @@ remain accepted; their earlier review summaries live in the archive.
 | [proposals/authoring-syntax/](proposals/authoring-syntax/README.md) | Preserved representation alternatives and complete examples for the next syntax/conformance PR. |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and actual probes. Historical recommendations are not an active specification or question queue. |
 | [archive/](archive/README.md) | Closed reviews, transition accounting and attributed collaborator proposals, including dissent. Accepted behavior also stays accessible in the active reference. |
-| [../experiments/](../experiments/README.md) | Exploratory fixtures, plans and measured evidence outside the documentation tree. Currently static/planned, not runtime results. |
+| [../experiments/](../experiments/README.md) | Exploratory fixtures, plans and measured evidence outside the documentation tree. Includes executed language-library probes; Conduit runtime experiments remain static/planned. |
 
 ## Repository boundaries
 

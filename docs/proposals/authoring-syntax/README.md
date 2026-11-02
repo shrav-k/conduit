@@ -16,7 +16,9 @@ explicit replacements taking precedence and invalid replacements producing error
 V0 imports require explicit support for the requested contract identity and exact version in addition
 to existing compatibility checks; cross-version mappings are deferred. Implementation release versions
 remain independent and no backward-compatibility maintenance obligation is added.
-The representations below remain proposals within that accepted boundary.
+Constrained YAML 1.2, equivalent JSON input/interchange and JSON Schema 2020-12 data contracts
+are also accepted in the [configuration foundation](../../protocol/CONFIGURATION.md#configuration-language).
+The remaining representations and detailed schema profile below are proposals within those boundaries.
 
 Before resuming syntax rulings, read the [language/protocol research](../../research/language-protocol-foundations/README.md)
 and [worked comparisons](../../research/language-protocol-foundations/WALKTHROUGHS.md).
@@ -44,7 +46,7 @@ implementation identities, graph composition, controls and failures. Select synt
 semantics are clear. Keep package identity, template-local aliases, published exports and provider
 MCP method names distinguishable. No mandatory primary implementation is reintroduced.
 
-Choose API/type/capability version identifiers, schema dialect, supported representation rules,
+Choose API/type/capability version identifiers, the detailed schema profile, supported representation rules,
 reference scope and MCP/profile bindings together. Define executable conformance examples from
 accepted behavior, including rejected/unsupported and uncertain cases. Do not let fixture contents
 automatically become protocol requirements. Update Experiment 001's proposed YAML and Experiment

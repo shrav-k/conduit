@@ -435,8 +435,9 @@ supported controls continue to update confirmed configuration under the accepted
 
 The v0 ruling accepts this composition/default boundary. Type-default controls, instance-owned
 runtime management, fixed definitions/implementations and replacement rules remain intact. The
-next authoring choice is the concrete named-plugin map and export-reference form; package identity,
-schema dialect and remaining binding details are still proposals.
+remaining authoring choices include the concrete named-plugin map, export-reference form, package
+identity and binding details. The YAML/JSON and JSON Schema 2020-12 foundation is accepted;
+its detailed profile remains open. The current review queue determines the order of these choices.
 
 ### What the plugin author supplies
 

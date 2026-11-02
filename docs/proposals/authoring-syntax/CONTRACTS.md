@@ -95,7 +95,9 @@ merely to resolve exports. The same rule applies to default bindings when they a
 
 ### Parsing and validation pipeline
 
-1. Apply input byte/document/depth limits and parse a marked YAML event stream.
+1. Apply input byte/document/depth limits and parse YAML or JSON while retaining source locations.
+   YAML may use a marked event stream; the JSON path must also detect duplicate keys and
+   unsupported numeric precision before losing their evidence.
 2. Reject aliases, anchors, custom tags, duplicate keys, non-string keys and nonfinite numbers
    before a generic map conversion could erase their source evidence.
 3. Interpret YAML 1.2 Core scalars. Preserve quoted strings; never convert a string to a number
@@ -115,8 +117,9 @@ merely to resolve exports. The same rule applies to default bindings when they a
 strict Conduit profile still needs a conformance corpus. Selecting that parser does not prove
 our scalar, duplicate-key or denial-of-service behavior. [Parser events][yaml-events]
 
-Use JSON Schema 2020-12 for portable data validation, plus explicitly defined Conduit semantics
-for defaults, bindings and transitions. JSON Schema's `default` is an annotation and does not
+The accepted foundation uses JSON Schema 2020-12 for data validation with equivalent YAML/JSON
+representations, plus explicit Conduit semantics for defaults, bindings and transitions.
+The detailed pipeline and profile here remain proposed. JSON Schema's `default` is an annotation and does not
 materialize values. Implement that pass ourselves; reject contradictory or ambiguous default
 definitions rather than selecting a branch by traversal order. Close records explicitly; schemas
 with composition need correct `unevaluatedProperties` behavior. [Defaults][schema-defaults] ·
@@ -320,8 +323,9 @@ below illustrates that boundary; detailed syntax and package layout remain I7 wo
 and behavioral guarantees; implementations conform to it. Authors may handwrite contracts or
 generate them from code or graph composition, then explicitly review and version the released
 definitions. Internal Rust types do not independently override the contract. Data schemas alone
-do not establish effects, authority, recovery or lifecycle guarantees. This chooses neither a
-schema dialect nor a required SDK/generation tool; provider-native catalogs retain their agreed
+do not establish effects, authority, recovery or lifecycle guarantees. The subsequent foundation
+ruling selects JSON Schema 2020-12 for data contracts without requiring an SDK/generation tool;
+provider-native catalogs retain their agreed
 dynamic boundary behind the integration contract.
 
 **Accepted distribution scope:** bundled first-party plugins and explicit installation of locally

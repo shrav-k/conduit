@@ -3,6 +3,9 @@
 Research date: **2026-11-02**. This is evidence and recommendations for the next authoring review,
 not an amendment to the [accepted protocol](../../protocol/README.md). No package spelling,
 schema dialect, new language dependency or implementation has been selected by this research.
+The subsequent owner ruling accepts the YAML/JSON and JSON Schema 2020-12
+[foundation](../../protocol/CONFIGURATION.md#configuration-language); the remaining research
+recommendations retain their proposed status.
 
 **Recommendation:** retain typed YAML and MCP, and design Conduit's authoring contract around
 explicit imports/exports, typed operation bindings and observable effects. The most useful new

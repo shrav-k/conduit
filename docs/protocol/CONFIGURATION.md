@@ -11,7 +11,18 @@ syntax and implementation examples do not amend these rules.
 
 ## Configuration language
 
-**YAML is the authoring format; typed objects and explicit semantics define the language.**
+**Constrained YAML 1.2 is the human authoring format; JSON is an equivalent input and
+interchange representation.** Both use one JSON-compatible value model and the same typed
+interpretation. JSON Schema 2020-12 is the accepted basis for configuration, operation
+input/result and requirement-parameter data contracts. Schemas themselves may be authored
+as YAML mappings or JSON; authors need not maintain duplicate representations.
+
+Conduit's explicit behavioral contracts define graph execution, default materialization,
+controls, authorization, effects and recovery. Data-schema validation does not establish
+those guarantees. The detailed schema profile, reference-resolution rules, validators and
+canonical byte encoding remain to be specified; this ruling does not accept every proposed
+schema feature or introduce another mandatory configuration language.
+
 The five families and their template/instance forms share identity, reference, composition
 and behavioral contracts across every entry point.
 CLI/API/frontends must interpret the same objects consistently. Future generators can
@@ -75,6 +86,9 @@ mapping keys and finite supported numeric values. Typed schemas enforce field ty
 units without silently converting a string to a number or boolean. Reject duplicate mapping keys
 and unknown fields outside schema-declared open maps. Unsupported numeric range/precision is an
 error, not permission to truncate. Equivalent JSON/YAML inputs have the same typed meaning.
+The JSON input path must likewise reject duplicate keys and unsupported numeric precision
+before parsing loses that information. Presentation differences do not create different
+semantics; source comments and formatting need not survive configuration export.
 
 Omission follows the declared default/optional rule; instances materialize declared defaults.
 Null is an explicit value accepted only where the field permits it, including a blank YAML scalar;

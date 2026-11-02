@@ -85,17 +85,20 @@ take precedence; invalid selections report errors without fallback. These decisi
 V0 imports also require an export's explicit support for the requested contract identity and exact
 version, alongside existing compatibility checks. Cross-version mappings are deferred; implementation
 release versions remain independent, with no obligation to maintain old contracts or compatibility code.
-The next choice is the data-schema basis for configuration, operation inputs/results and requirement
-parameters: JSON Schema 2020-12 with a defined Conduit profile is proposed, not yet accepted. YAML remains
-the authoring format; lifecycle, authorization and other behavioral contracts remain separate semantics.
-The owner requested a final format/schema comparison before settling this foundation. The
-[decision brief](research/language-protocol-foundations/FORMATS.md) recommends constrained YAML
-authoring, equivalent JSON input/interchange, and one JSON Schema 2020-12 data-contract basis.
-This recommendation does not yet approve that bundle or its remaining profile details.
+The [configuration foundation](protocol/CONFIGURATION.md#configuration-language) is accepted:
+constrained YAML 1.2 for human authoring, equivalent JSON input/interchange, and JSON Schema
+2020-12 for data contracts, with one shared value model. Conduit defines lifecycle, authorization
+and other behavioral semantics separately. The [comparison](research/language-protocol-foundations/FORMATS.md)
+retains the rationale; detailed schema features and resolution rules are not yet settled.
+
+The next ruling concerns reusable schema resolution: should validation resolve references only
+from the selected package and its explicitly supplied/declared schema dependencies, with missing
+definitions reported rather than automatically fetched from the network? This is a proposed
+validation boundary, not final reference syntax or a restriction on explicitly acquiring packages.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 
-1. **Identity and publication:** API/type/capability/requirement versions, schema dialect, package identity,
+1. **Identity and publication:** API/type/capability/requirement versions, schema profile, package identity,
    typed contents/dependencies, artifact identity and reference syntax within the accepted package scope. A mandatory primary plugin
    is not part of the model; `spec.plugins` and `{plugin, name}` are still proposals.
 2. **Templates and composition:** contribution/default binding, setup/runtime/control declarations,

@@ -1,9 +1,11 @@
 # Format and schema decision brief
 
 Reviewed **2026-11-02** after the owner requested a final comparison before committing to the
-serialization and data-schema foundation. This is a recommendation, not a new accepted ruling.
-The [current review](../../REVIEW.md) owns the decision; the existing strict
-[YAML interpretation](../../protocol/CONFIGURATION.md#yaml-interpretation) remains accepted.
+serialization and data-schema foundation. The owner subsequently accepted constrained YAML,
+equivalent JSON input/interchange and JSON Schema 2020-12. The accepted
+[configuration foundation](../../protocol/CONFIGURATION.md#configuration-language) records that
+ruling. This brief preserves the comparison; remaining profile recommendations are not accepted
+merely by appearing here. The [current review](../../REVIEW.md) owns the remaining decisions.
 
 ## Recommendation and scope
 

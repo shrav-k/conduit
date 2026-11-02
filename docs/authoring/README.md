@@ -10,6 +10,11 @@ profile fields are still proposals. The [current review](../REVIEW.md) tracks th
 The [language/protocol comparison](../research/language-protocol-foundations/README.md) supplies
 primary references and worked cases for choosing those representations.
 
+Author configuration and data schemas in constrained YAML 1.2 or equivalent JSON. Both use
+one value model; JSON Schema 2020-12 supplies data validation, while Conduit defines execution,
+authority and recovery separately. See the accepted [configuration foundation](../protocol/CONFIGURATION.md#configuration-language).
+The detailed schema profile and reference-resolution rules remain in review.
+
 ## From a new capability to an instance
 
 Consider a small document-search capability used by an Agent. The authoring steps are:

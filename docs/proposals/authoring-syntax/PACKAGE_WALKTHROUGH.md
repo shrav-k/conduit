@@ -119,8 +119,9 @@ hosts, a secret, a permission grant or a live handle copied into authored YAML. 
 placement are checked before use. The worker cannot supply a caller-chosen target identity as proof
 of authority; trusted invocation context comes from the responsible service/authorized connection.
 
-For example, `schemas.json` could include these data definitions. JSON Schema dialect selection
-and final schema organization are still under review; this fragment shows only the data rules.
+For example, `schemas.json` could include these data definitions under the accepted JSON Schema
+2020-12 foundation. YAML is an equivalent authoring representation. The detailed schema profile
+and final organization remain under review; this fragment illustrates proposed data rules.
 
 ```json
 {

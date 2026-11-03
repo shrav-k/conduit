@@ -287,7 +287,7 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
   unchanged. Use separate structured source and pointer fields, checking that output source selection
   establishes the correct dependency and the pointer selects within that source. Exact field names
-  and literal/reference wrappers remain in review; these fixtures do not choose them.
+  and form encoding remain in review; these fixtures do not choose them.
 - Return a schema-valid output that omits an optional endpoint, then explicitly reference that
   missing field for a consumer whose input has a default. Verify a reference-resolution error and
   no consumer dispatch, rather than a substituted null or default. Repeat with a missing array item
@@ -297,7 +297,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Assemble an object and a list explicitly from literals and prior outputs, including a nested
   assembly and a reference-shaped literal subtree. Verify the resulting values and dependencies
   without an assembly plugin, automatic merging or recursive interpretation of literal data.
-  Exact constructor notation remains open.
+  Require an explicit form at each input binding and each assembly child. Reject bare-value bindings;
+  separately accept whole objects/lists as literal payloads without requiring forms for their data
+  members. Verify that plugins receive only resolved values and ordinary configuration stays ordinary
+  data. Exact form keys and encoding remain open.
 - Check undeclared output ports and provable type errors before any fixture steps run. Also wire an integer producer
   allowing 1–100 to an input accepting 1–10: a returned 5 permits dispatch, while 50 blocks the
   receiving step without coercion or clamping. Verify actual input validation even where early

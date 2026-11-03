@@ -241,19 +241,25 @@ Exact input/context notation remains open.
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for
 reference markers. A plugin result retrieved through a reference remains data rather than being
-reinterpreted as graph instructions. Exact notation and literal disambiguation remain open;
-no particular wrapper for every scalar is required by this decision.
+reinterpreted as graph instructions.
+
+**Accepted binding forms:** every supplied graph input binding explicitly selects literal,
+reference, object assembly or list assembly, including field/item bindings inside assemblies.
+Bare-value shorthand is not supported. Literal payloads may be whole objects/lists and are not
+recursively wrapped or interpreted. The forms are authoring instructions; plugins receive resolved
+values. Ordinary configuration and provider payloads remain data. Exact keys and encoding are open.
 
 **Accepted reference structure:** source selection and nested JSON Pointer use separate structured
 fields. For an output reference, the source identifies the step and declared output; the pointer
 selects within that output value. For example, the following illustrates the accepted structure,
-but its field names and literal/reference discrimination are still proposals:
+but its field names and explicit reference-form encoding are still proposals:
 
 ```yaml
-from: output
-node: connect
-port: connection
-path: /endpoint
+reference:
+  from: output
+  node: connect
+  port: connection
+  path: /endpoint
 ```
 
 This selects `endpoint` inside the `connection` output from `connect`, retaining the normal output
@@ -287,9 +293,9 @@ data. This adds no automatic merging, calculations, string manipulation, loops o
 those transformations still use plugin operations. Exact constructor notation remains open.
 
 **Proposed representation:** an inline graph is a mapping of node names to operation bindings.
-Each operation identifies a plugin alias and export. Inputs are literals or bindings recognized
-only in the schema's designated binding positions. The concrete field layout and literal/reference
-notation below are illustrative, not approved syntax.
+Each operation identifies a plugin alias and export. Every supplied input uses an explicit form
+recognized only in the schema's designated binding positions. The concrete field layout and form
+keywords below are illustrative, not approved syntax.
 
 Illustrative syntax, extending the existing fixture rather than approving it:
 
@@ -299,16 +305,16 @@ setup:
     prepare:
       operation: {plugin: consumer, name: consumer.prepare}
       inputs:
-        consumer: {from: self}
+        consumer: {reference: {from: self}}
     establish:
       operation: {plugin: database, name: database.establish}
       inputs:
-        configuration: {from: config}
-        access: {from: output, node: prepare, port: database-access}
+        configuration: {reference: {from: config}}
+        access: {reference: {from: output, node: prepare, port: database-access}}
     migrate:
       operation: {plugin: database, name: database.migrate}
       inputs:
-        runtime: {from: output, node: establish, port: managed-database}
+        runtime: {reference: {from: output, node: establish, port: managed-database}}
       after: [prepare]
 ```
 
@@ -339,6 +345,23 @@ item followed by an item from another output. This structural assembly does not 
 or merge objects, and it does not scan either field's contents for additional references. This
 describes accepted behavior without choosing an `object`, `list`, `literal` or `reference` keyword.
 
+For comparison, the following uses provisional form keys to show a whole literal list and an object
+assembled from a literal and a reference. Each supplied binding has a form, while the literal list's
+items remain ordinary data:
+
+```yaml
+inputs:
+  requiredEntries: {literal: [Cargo.toml, src]}
+  document:
+    object:
+      title: {literal: Review}
+      body: {reference: {from: output, node: read_document, port: text}}
+```
+
+The receiving operation gets the list and assembled document, without these form keys. The example
+assumes a declared `read_document` step and compatible receiving contract; it does not approve the
+single-key encoding over a discriminator-plus-payload encoding.
+
 ### Early and runtime validation
 
 **Accepted validation boundary:** catch provable wiring/type errors before graph execution, then
@@ -368,8 +391,8 @@ under the existing graph/authority rules:
   inclusion prover. Report the limits of what was checked; runtime input validation remains required.
 - Binding kinds include self, config/path and prior node output. Source selection and nested JSON
   Pointer are separate structured fields as accepted above. The complete source-kind set, exact
-  field names and literal/reference discrimination remain proposals. Whether every graph input
-  binding uses an explicit form or bare literals can use a collision escape is still in review.
+  field names and form encoding remain proposals. Explicit forms for every supplied graph input
+  binding are accepted; bare literals with collision escapes are not the selected v0 approach.
 - Runtime-input and control-handler bindings use the same typed machinery. Setup-only operations
   are not automatically exposed as public capability tools.
 - Input acquisition never grants access. A Resource dependency requiring a Conduit must resolve

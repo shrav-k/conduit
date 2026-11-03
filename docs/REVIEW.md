@@ -168,7 +168,7 @@ The [reference-recognition boundary](protocol/LIFECYCLE.md#lifecycle-protocol) i
 references only in explicitly designated binding positions. Literal payloads, ordinary configuration
 and plugin results are not recursively reinterpreted as graph instructions, even when they resemble
 reference notation. Resolving a reference retrieves data, not another instruction to evaluate.
-Exact notation and literal disambiguation remain open.
+Explicit forms now distinguish bindings from literal data; exact form notation remains open.
 
 The [structured-input boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: graphs can
 explicitly assemble object fields and list items from literals, references and nested assemblies
@@ -316,15 +316,21 @@ diagnostic fields remain authoring work.
 Reference structure is accepted: use separate structured fields for source selection and the nested
 JSON Pointer, rather than encoding the whole reference in a string. For example, identify step
 `connect`, its declared output `connection`, and pointer `/endpoint` separately. Exact field names,
-nesting, literal/reference discrimination and constructor notation remain open. Typed source checks,
+nesting, reference-form encoding and constructor notation remain open. Typed source checks,
 output dependencies and missing-value/literal-data rules remain unchanged.
 
-Next, settle explicit binding forms. Recommend that v0 graph input bindings explicitly select a
-literal, reference, object assembly or list assembly form, including within assemblies. This makes
-literal data unambiguous even when it resembles a reference, at the cost of wrapping simple values
-such as 15. This is pending; the alternative permits bare literals alongside marked references and
-constructors, with a literal escape for collisions. Exact keywords remain open. This concerns graph
-authoring positions only, not ordinary configuration, plugin input values or provider payloads.
+Explicit binding forms are accepted: each supplied v0 graph input binding selects a literal,
+reference, object assembly or list assembly form, including field/item bindings inside assemblies.
+There is no bare-value shorthand. A literal can contain an entire ordinary object/list without
+wrapping its contents; resolved references likewise remain data. Plugins receive resolved values.
+Ordinary configuration/provider payloads do not acquire graph wrappers. Exact keywords/encoding remain open.
+
+Next, settle the form encoding. Recommend a binding object with exactly one form key—`literal`,
+`reference`, `object` or `list`—whose value contains that form's payload. For example,
+`{literal: 15}` or `{object: {title: {literal: Review}}}`. This is pending; the alternative uses
+a discriminator plus payload fields, such as `{kind: literal, value: 15}`. Reference payload field
+names remain a separate choice. Both representations must preserve the accepted literal boundary
+and explicit child bindings; neither adds shorthand, merging or expression evaluation.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

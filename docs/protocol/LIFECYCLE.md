@@ -195,8 +195,8 @@ operations receive caller configuration only through declared typed inputs, with
 inheriting the caller's configuration namespace. A template's graph can bind captured configuration
 values into those inputs. Scoped invocation context and explicitly authorized Resource access
 remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
-References use separate structured source and JSON Pointer fields as defined below. Exact field
-names and literal/reference wrappers remain authoring work.
+References use separate structured source and JSON Pointer fields as defined below. Every graph
+input binding explicitly identifies its form; exact field names and form notation remain authoring work.
 
 **Configuration capture:** configuration references within one graph execution use values captured
 when that execution begins. Later steps do not silently reread changed instance settings. For example,
@@ -216,17 +216,25 @@ positions. Literal data, ordinary configuration/provider payloads and values ret
 are not recursively searched for graph instructions. Resolving a reference retrieves its value;
 it does not reinterpret that value as another reference. For example, a storage plugin can receive
 a document containing an example of graph-reference notation without causing the graph engine to
-resolve the example. Actual references still supply their declared dependencies. Exact binding
-notation and literal disambiguation remain open; this does not require one particular wrapper
-around every scalar.
+resolve the example. Actual references still supply their declared dependencies.
+
+**Explicit binding forms:** every supplied v0 graph input binding identifies a literal, reference,
+object assembly or list assembly form, including each field/item binding inside an assembly.
+Bare values are not binding shorthand. A literal form can contain an entire ordinary object or list;
+its contents are data, not more bindings. A reference retrieves data without reinterpreting it.
+Assembly forms explicitly combine their child bindings into the resulting object or list.
+
+This applies at graph authoring positions. Ordinary configuration and provider payloads keep their
+data representation, and plugins receive resolved input values without the authoring forms. Exact
+form keywords and encoding remain open; the accepted rule does not approve the examples' spelling.
 
 **Reference structure:** represent source selection and the nested JSON Pointer in separate
 structured fields, rather than one encoded reference string. For a prior output, identify its step
 and declared output separately from the pointer within that value. For example, select step
 `connect`, output `connection`, and pointer `/endpoint`. The source fields establish the dependency
 and selected output; the pointer selects within it. Source/contract checks, missing-value handling
-and literal-data rules still apply. Exact field names, nesting and literal/reference discrimination
-remain open; this does not approve the proposed examples' spelling or add a compact-string shorthand.
+and literal-data rules still apply. Exact field names, nesting and reference-form encoding remain
+open; this does not approve the proposed examples' spelling or add a compact-string shorthand.
 
 **Nested value selection:** within an explicitly selected graph input, captured configuration value
 or declared output, use [JSON Pointer (RFC 6901)](https://www.rfc-editor.org/rfc/rfc6901.html).

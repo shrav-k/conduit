@@ -77,7 +77,10 @@ Consider a small document-search capability used by an Agent. The authoring step
    References are recognized only in designated binding positions. Literal payloads and plugin results
    remain data even when they resemble reference notation. Within the selected source value, use
    JSON Pointer paths such as `/connection/endpoint` or `/participants/0/name`. Keep source selection
-   and pointer in separate structured fields; exact names and literal/reference wrappers remain open.
+   and pointer in separate structured fields; exact names and form encoding remain open.
+   Every graph input binding explicitly selects literal, reference, object assembly or list assembly,
+   including each field/item binding inside an assembly. A literal can contain a whole object/list
+   with ordinary unwrapped data. Plugins receive resolved values, not authoring forms.
    A missing selected value reports a reference-resolution error and blocks the receiving step,
    even for an optional/defaulted input. An actual null value is checked against the receiving schema.
    Explicitly assemble object fields or list items from literals/references without an extra plugin

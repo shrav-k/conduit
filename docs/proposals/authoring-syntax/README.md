@@ -40,8 +40,10 @@ data rather than being recursively reinterpreted. Explicit object/list assembly 
 references is accepted without a plugin merely to assemble the structure. It adds no automatic merging
 or inline computations. Nested selection within an explicitly chosen input, configuration or output
 value uses standard JSON Pointer paths. Source selection and the pointer use separate structured
-fields, not a compact reference string. Exact field names, nesting, wrappers and literal
-disambiguation remain open; the examples do not approve them.
+fields, not a compact reference string. Every graph input binding explicitly identifies a literal,
+reference, object assembly or list assembly form, including children of assemblies. Literal payloads
+and resolved references remain ordinary data; there is no bare-value binding shorthand. Exact field
+names, nesting and form encoding remain open; the examples do not approve them.
 A missing selected value causes a reference-resolution error and blocks the consuming step, without
 substituting null or applying a default for omitted input. An actual selected null is validated normally.
 Earlier effects and independent eligible branches retain their agreed behavior.

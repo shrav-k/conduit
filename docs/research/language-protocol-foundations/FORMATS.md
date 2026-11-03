@@ -167,14 +167,30 @@ runtime or validator tests were executed in this follow-up; library selection re
 
 ## Number-portability follow-up
 
-Rechecked **2026-11-03**. **Pending recommendation:** v0 Conduit-declared integer configuration,
+Rechecked **2026-11-03**. **Accepted:** v0 Conduit-declared integer configuration,
 inputs and outputs use the inclusive range −9,007,199,254,740,991 to 9,007,199,254,740,991.
 [RFC 8259 section 6](https://www.rfc-editor.org/rfc/rfc8259.html#section-6) identifies this range as
 exactly interoperable among implementations using binary64 numbers. Wider JSON integers can exceed
 an ordinary JavaScript client's exact representation even when a Rust implementation preserves them.
 
-A contract needing a larger exact value could explicitly declare a decimal string and its constraints;
-no implicit numeric-to-string conversion is proposed. The alternative requires precision-preserving
-parsing and representations for a wider shared integer range. This recommendation does not settle
-fractional-number semantics, change provider-native schemas or choose a Rust storage type. The
-existing rule against silent precision loss already applies; no new runtime tests were run here.
+A contract needing a larger exact value can explicitly declare a decimal string and its constraints;
+no implicit numeric-to-string conversion is allowed. This decision does not settle fractional-number
+semantics, change provider-native schemas or choose a Rust storage type. The existing rule against
+silent precision loss already applies; no new runtime tests were run here.
+
+## Fractional-number follow-up
+
+Rechecked **2026-11-03**. **Pending recommendation:** use finite IEEE 754 binary64 semantics for
+ordinary fractional values, with an explicitly declared decimal string or scaled integer when the
+domain needs exact decimals. For example, temperature `0.7` would have the ordinary double-precision
+approximation; a duration could instead declare integer milliseconds when that unit is appropriate.
+This would explicitly allow normal fractional representational rounding, refining the current
+precision rule without changing exact integer limits or authorizing silent overflow/underflow.
+
+[I-JSON section 2.2](https://www.rfc-editor.org/rfc/rfc7493.html#section-2.2) uses binary64 range and
+precision as its interoperability boundary and recommends strings for exact values beyond it.
+This informs the recommendation, but does not select I-JSON wholesale. The alternative is exact
+decimal numeric values with precision-preserving parsers, serializers and client representations.
+Schema comparison/`multipleOf` behavior and round-trip fixtures still need specification and testing;
+choosing binary64 alone would not justify a validator's approximate constraint checks. Provider
+schemas remain separate. No new parser/runtime tests were executed for this proposal.

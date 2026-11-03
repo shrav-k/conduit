@@ -253,12 +253,20 @@ The shared format set is accepted above. The [format-set follow-up](research/lan
 retains the rationale; the decision does not select UUID object IDs, graph-reference notation or
 network access, and no runtime support is claimed by recording it.
 
-Next, settle the portable integer boundary. The [number-portability follow-up](research/language-protocol-foundations/FORMATS.md#number-portability-follow-up)
-recommends restricting Conduit-declared integer configuration, inputs and outputs in v0 to
-−9,007,199,254,740,991 through 9,007,199,254,740,991. A contract needing a larger exact integer could
-explicitly use a decimal string, without automatic conversion. This is pending; the alternative
-supports a wider range through precision-preserving clients. Fractional-number semantics and
-native provider schemas remain separate; this is a public interoperability choice, not a Rust type selection.
+The [portable integer boundary](protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
+Conduit-declared integer configuration, inputs and outputs in v0 use −9,007,199,254,740,991 through
+9,007,199,254,740,991. A contract needing a larger exact integer can explicitly use a decimal string;
+there is no automatic conversion or rounding into range. Core revision/ID encodings, fractional
+semantics and provider-native schemas remain separate. The [number-portability follow-up](research/language-protocol-foundations/FORMATS.md#number-portability-follow-up)
+retains the rationale.
+
+Next, settle fractional-number meaning. The [fractional-number follow-up](research/language-protocol-foundations/FORMATS.md#fractional-number-follow-up)
+recommends finite binary64 (ordinary double-precision) semantics for fractional settings such as
+temperature `0.7`, with explicitly typed strings or scaled integers where exact decimal values are
+needed. This is pending. It would explicitly permit normal fractional representational rounding,
+refining the current precision rule; integer exactness remains required. The alternative preserves
+exact decimal numeric values and requires precision-preserving client handling. Validation and
+serialization details still need conformance cases, and provider-native schemas remain separate.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

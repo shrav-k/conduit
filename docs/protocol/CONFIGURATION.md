@@ -107,6 +107,24 @@ Parser choice, diagnostics and schema-specific numeric/unit limits remain implem
 Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
 not imply atomic deployment, authority or successful setup.
 
+### Numeric interoperability
+
+V0 Conduit-declared integer configuration, inputs and outputs use the inclusive range
+−9,007,199,254,740,991 through 9,007,199,254,740,991. Individual schemas may impose narrower bounds.
+This shared range supports exact exchange with ordinary JavaScript clients as well as Rust;
+it is not permission to round an out-of-range value into an accepted one. Detect violations before
+parsing or serialization loses the original value.
+
+For example, an integer history counter of `9007199254740991` is within the shared range;
+`9007199254740992` is outside it. A capability needing a larger exact counter can explicitly
+declare a string with decimal-digit constraints and define its meaning. Conduit does not
+automatically convert numeric inputs into that string contract.
+
+This rule does not select core revision/ID encodings, fractional-number semantics or a Rust
+storage type. Provider-native schemas retain their separate interpretation below. Unsupported
+numeric precision must still be reported; accepting this integer range does not establish a
+fractional rounding policy.
+
 ### Schema resolution
 
 Validation resolves schema references only from the selected package and its explicitly supplied

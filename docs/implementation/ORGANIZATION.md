@@ -179,6 +179,10 @@ offline, and does not load plugin-defined format validators. Positive and reject
 establish conformance before support claims; a library's defaults or extension hooks must not
 silently determine the public contract. URI validation does not contact the endpoint.
 
+Conduit-declared integer values use the shared ±9,007,199,254,740,991 range. Check raw input and
+declared outputs without rounding an invalid value into range; accepting a wider native Rust integer
+does not expand the public contract. Fractional-number semantics remain under review.
+
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;
 it is not an unvalidated catch-all. A changed description does not authorize changing semantics

@@ -33,6 +33,12 @@ Provider MCP schemas retain their declared dialect's semantics. An allowed descr
 does not alone reject a tool; unsupported required validation features are reported without
 silently stripping constraints or claiming enforcement.
 
+Conduit-declared integer configuration, inputs and outputs use the shared range
+−9,007,199,254,740,991 through 9,007,199,254,740,991, with narrower schema bounds where needed.
+Larger exact values require an explicitly suitable contract, such as a decimal string; no automatic
+conversion or rounding is allowed. Fractional-number semantics remain open. See
+[numeric interoperability](../protocol/CONFIGURATION.md#numeric-interoperability).
+
 ## From a new capability to an instance
 
 Consider a small document-search capability used by an Agent. The authoring steps are:

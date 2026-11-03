@@ -151,10 +151,15 @@ does not alone reject a tool. Report unsupported required validation features wi
 removing constraints or claiming they were enforced. Exact adapter handling and conformance
 cases remain open; this rule does not establish runtime authority or enforcement support.
 
-Proposed interoperability profile: core counters/revisions use strings where large exact values
-matter; plugin numeric fields must declare bounds. Reject values outside the chosen JSON wire
-representation instead of rounding them silently. The parser spike should settle numeric
-canonicalization and schema coverage before promising unrestricted arbitrary precision. Keep
+**Accepted integer boundary:** Conduit-declared integer configuration, inputs and outputs use
+−9,007,199,254,740,991 through 9,007,199,254,740,991, subject to narrower schema bounds. Detect
+out-of-range values before parsing loses precision. A contract needing a larger exact integer
+can explicitly use a decimal string; no automatic conversion is introduced.
+
+Remaining proposed interoperability profile: core counters/revisions use strings where large exact
+values matter; plugin numeric fields declare bounds. Fractional-number meaning remains open. Reject
+values outside the chosen wire representation rather than silently truncating them. The parser spike
+should settle numeric canonicalization and schema coverage before promising unrestricted arbitrary precision. Keep
 field-specific list ordering; comments and mapping order are not configuration identity.
 
 Multi-document input is a client convenience, not an implicit distributed transaction. Proposed

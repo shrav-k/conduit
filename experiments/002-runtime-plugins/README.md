@@ -259,6 +259,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   store and return a malformed descriptor: report the contract error, preserve the actual effect
   and any uncertainty, and reconcile through supported recovery without blind creation replay.
   Check that a valid declared failure result is distinguishable from an invalid output representation.
+- Fail one branch of an explicitly requested graph while an independent branch has another eligible
+  step waiting. Verify that the independent step still runs, a step with an unmet prerequisite stays
+  blocked, and required unfinished setup is not reported complete. Preserve effects/outcomes without
+  retrying the failed branch or rolling anything back. Current authority, coordination and stop rules
+  remain prerequisites for dispatch.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

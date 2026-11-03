@@ -232,6 +232,18 @@ validation success does not itself establish successful effects, readiness or co
 This concerns Conduit-declared outputs. Provider-native schemas retain their
 [existing interpretation](CONFIGURATION.md#provider-mcp-schemas); no new provider schema is imposed.
 
+**Scheduling after failure:** after a setup/change graph step fails, v0 continues scheduling
+independent steps whose own prerequisites remain satisfied. For example, a failed service login
+does not prevent unrelated workspace preparation. Work with unmet prerequisites remains blocked;
+successful independent branches do not make required unfinished setup complete. Current authority,
+readiness, target coordination, scheduling limits, cancellation and mandatory stop rules still apply.
+Authors declare dependencies/gates where later work must wait for earlier work to succeed.
+
+Retain completed and already-dispatched outcomes, effects and uncertainty under their existing
+contracts. Continuing eligible branches neither retries failed work nor rolls back effects. This
+default concerns scheduling within the requested graph; it does not start unrelated Agent turns,
+provision unselected Pool entries or bypass another instance's prerequisites.
+
 For example, database startup reads its directory from configuration, and a migration step receives
 the database handle published by startup. If the directory must be constructed from a base and a
 relative path, a typed plugin operation performs that transformation and startup references its

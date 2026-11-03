@@ -188,12 +188,17 @@ does not establish that creation had no effect or is safe to replay. Producer-ou
 checks remain separate; provider-native schema interpretation is unchanged. Exact result/error
 representation remains open.
 
-The next proposed ruling concerns graph scheduling after a step fails: continue independent branches
-whose own prerequisites remain satisfied, or stop starting new steps across the graph while retaining
-already-dispatched outcomes? Continuing independent branches is recommended. For example, a login
-failure need not stop unrelated workspace preparation. Unmet prerequisites still block affected work,
-required unmet work remains incomplete, and cancellation/authority constraints still apply. This is
-pending; existing partial-work retention does not itself choose the scheduling policy.
+The [graph-failure scheduling rule](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: independent
+branches continue when their own prerequisites remain satisfied. Unmet prerequisites block affected
+work, required unfinished setup remains incomplete, and current authority, coordination, cancellation
+and stop rules still apply. Preserve effects and dispatched outcomes without automatic retry or rollback.
+
+The next proposed ruling concerns an explicit graph-cancel request: stop admitting ordinary graph
+steps and request cancellation of in-flight child operations where their contracts support it, or
+only stop new steps and let active operations finish? The first option is recommended. Continue
+tracking outcomes/uncertainty and performing required cleanup; existing preparation-cancel attachment
+release duties still apply. Cancellation would not itself prove effects stopped or replace instance
+runtime lifecycle contracts. This remains pending; exact propagation and transport mechanics are open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

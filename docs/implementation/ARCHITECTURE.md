@@ -413,7 +413,7 @@ management or execution service, with transaction boundaries limited to its own 
 | --- | --- |
 | Registry/configuration | Shared templates, registration/naming and policy; schema/default resolution and stable references. Route instance configuration reads/changes to their designated authority; label aggregate observations. No provider effects inside registry transactions. |
 | Instance supervisor/state authority | Retain the assigned instance's resolved definition, confirmed configuration/revision and operation results; supervise its executions/drivers and generations; apply lifecycle checks and expose preparation/runtime/connection observations. One service can host many instances. |
-| Graph executor | Check finite dependency graphs and provable wiring/type errors early; validate each step's resolved inputs before dispatch without requiring complete producer-schema inclusion proofs. Schedule ready steps and retain progress. Supply default recovery for graph-backed operations: explicit retry reuses still-valid child results and delegates uncertain effects to child recovery contracts. Detailed nested coordination remains open. |
+| Graph executor | Check finite dependency graphs and provable wiring/type errors early; validate each step's resolved inputs before dispatch without requiring complete producer-schema inclusion proofs. Schedule eligible independent branches after a step fails, preserving unmet prerequisites, authority/stop rules and incomplete required work. Retain progress. Supply default recovery for graph-backed operations: explicit retry reuses still-valid child results and delegates uncertain effects to child recovery contracts. Detailed nested coordination remains open. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
 | Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
 | Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and declared outputs before downstream use. Withhold invalid output while preserving effect evidence/uncertainty and report worker/service/contract failures distinctly. |
@@ -1009,6 +1009,7 @@ effects; store oversized legitimate outputs by reference where their contract su
 | Invalid config / missing schema | Reject write, preserve current object and source file. |
 | Missing code / unavailable dependency | Retain valid registration; report unready operations. |
 | Required preparation failure | Block that consumer's preparation; retain successful partial work. |
+| Graph step failure | Continue independent eligible steps; block unmet prerequisites and report required unfinished setup as incomplete. Current authority, coordination and stop rules still apply. |
 | Dependency lost after readiness | Continue independent work; mark affected operations unavailable. |
 | Worker panic / timeout | Record failure or uncertainty according to evidence; do not infer rollback. |
 | Store unavailable before dispatch | Do not admit new effects that cannot be recorded. |

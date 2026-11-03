@@ -294,6 +294,16 @@ under the existing graph/authority rules:
 ### Scheduling, outputs and lifetime
 
 The scheduler dispatches dependency-ready nodes within global, per-instance and plugin limits.
+**Accepted failure policy:** a failed setup/change step does not stop scheduling independent branches
+whose own prerequisites remain satisfied. Work with unmet prerequisites stays blocked, and required
+unfinished setup is still incomplete. Current authority, readiness, target coordination, cancellation
+and mandatory stop rules remain effective. Preserve dispatched outcomes/effects; do not automatically
+retry failed work or infer rollback. Authors express required ordering/gates through dependencies.
+
+For example, a graph can prepare a workspace independently of logging into a service. A login failure
+blocks service work that needs that login, while the eligible workspace branch continues. This concerns
+the graph's already-requested work, not automatic provisioning of unselected Pool entries or Agent turns.
+
 Plugins handle internal branching/polling; the graph language has no authored loops, conditionals
 or dynamic fan-out. A Pool composition operation can process a finite declared selection and
 return separately tracked child outcomes without exposing an arbitrary loop language.

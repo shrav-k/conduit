@@ -50,6 +50,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    its receiving step without undoing earlier effects.
    Validate each declared output against its producer's contract before downstream use. Withhold
    invalid output and report the contract error while preserving effects/uncertainty for recovery.
+   A failed step blocks work with unmet prerequisites while independent eligible branches continue.
+   Required unfinished setup remains incomplete; this does not retry failed work or undo effects.
    The Resource instance manages ongoing activity; a successful setup graph is not
    a permanent readiness guarantee. An uncertain external effect must be reconciled under its contract.
 4. **Declare a Resource template.** Supply the configuration, setup graph, ongoing behavior and allowed

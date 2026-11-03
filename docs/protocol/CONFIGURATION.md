@@ -510,7 +510,8 @@ Distinguish syntax/schema checks, reference resolution, semantic/transition chec
 environmental probes and effects. A valid object can still have an unresolved reference,
 an unsupported native extension or an expired credential. Error/status reporting must
 identify the relevant object and field, explain the limitation, and preserve unknowns.
-Exact diagnostic codes, stages and partial-failure policy remain open.
+Exact diagnostic codes, stages and remaining operation-specific partial-failure details remain open.
+Graph scheduling after failure follows the accepted [lifecycle rule](LIFECYCLE.md#lifecycle-protocol).
 
 Typed configuration rejects unknown fields for both templates and instances, except within
 maps whose schemas explicitly allow arbitrary keys. For example, `metadata.naem` is an unknown

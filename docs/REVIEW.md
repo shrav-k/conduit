@@ -10,6 +10,32 @@ model. The next review is the concrete authoring/conformance walkthrough, preced
 [language/protocol research](research/language-protocol-foundations/README.md). No syntax was approved by
 closing this review, and an open detail in an older report is not automatically another ruling.
 
+## Future vocabulary PR
+
+**Accepted review boundary:** Interface, Agent, Resource, Pool and Conduit are the settled names.
+All other Conduit-owned terms and field spellings are temporary, including names provisionally
+selected in earlier rulings. Accepted meanings and structures remain intact. Continue logical and
+structural review with consistent working names; vocabulary work must not block it. See the
+[protocol boundary](protocol/MODEL.md#vocabulary-review-boundary).
+
+After the logical/structural questions are resolved, use a separate PR to review the vocabulary
+together, term by term. For each term, show its responsibility, how it differs from nearby concepts,
+and its use in a complete example. Agree on the terms before updating the glossary, documentation,
+schemas and fixtures as a coherent set. External-standard terminology retains its defined meaning;
+existing source examples and archives need not be rewritten as though their historical terms changed.
+
+Carry these observations from the directory walkthrough into that PR:
+
+- `path` currently names both a filesystem location and a pointer selecting nested data.
+- `node` and `port` refer to a graph step and one of its declared outputs, which can suggest host/network meanings.
+- A consumer input and producer output can both be named `directory`, but their names belong to
+  separate contracts; the explicit binding connects them, not name matching.
+- Contract, capability, requirement, policy, grant, operation, graph, plugin and package are working
+  labels for the accepted responsibilities beneath the families, not final vocabulary.
+
+This section records the future PR's scope, not approval of any replacement names or creation of
+that PR now. The reference payload's direct-versus-nested structure remains a separate open choice.
+
 ## Migration-review rulings
 
 - **M1 accepted:** no backward-compatibility promises or obligation to maintain legacy compatibility

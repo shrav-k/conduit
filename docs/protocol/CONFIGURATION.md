@@ -72,6 +72,8 @@ copying an established binding. The export does not resume the source instance's
 
 The shared envelope does not give every kind the same configuration or status fields.
 Exact metadata/status fields, ID encoding and remaining import/export semantics are open.
+Under the [vocabulary boundary](MODEL.md#vocabulary-review-boundary), the envelope's current field
+spellings are also working names. Its accepted roles, ownership and structure remain in force.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
 in the research. In particular, the API group/version, registry storage layout, reference

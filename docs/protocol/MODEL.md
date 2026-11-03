@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -28,13 +28,30 @@ Resource creation/attachment always goes through its owning Pool, including supp
 for Conduits. Templates are reusable across Pools; each resulting Resource instance has one owner.
 Backing data, credentials and process lifetime are distinct from registry identity/ownership.
 
+### Vocabulary review boundary
+
+Only the five main family names—**Interface, Agent, Resource, Pool and Conduit**—are settled.
+All other Conduit-owned terminology and field spellings are working vocabulary, including names
+previously selected while reviewing a structure. Continue using those names consistently so the
+documents and examples remain readable; their behavioral meanings and accepted structural rules
+remain in force. For example, the four explicit binding forms and their one-key encoding remain
+accepted even though the current `literal`, `reference`, `object` and `list` spellings are provisional.
+Vocabulary uncertainty does not block logical or structural review.
+
+A separate future PR will review terms collaboratively, one by one, and then update the glossary,
+protocol text, schemas and examples coherently. Record confusing collisions as they arise, without
+opportunistic renaming or treating understandable example syntax as final vocabulary approval.
+Names defined by external standards retain those standards' meanings. The
+[current review](../REVIEW.md#future-vocabulary-pr) tracks the naming work separately from the
+ongoing walkthroughs; a naming change alone must not silently alter a contract.
+
 ### Authoring concepts beneath the object families
 
 The five families describe the objects Conduit manages. The authoring and extension concepts below
 describe how those objects are defined, connected and operated. They are not competing object
-families or additional independently provisioned things. These divisions and temporary names are
-accepted as our working vocabulary. Names may change after conceptual review; the final naming
-and schema pass should preserve these responsibilities rather than silently change their meaning.
+families or additional independently provisioned things. The divisions are accepted; the names are
+temporary under the [vocabulary boundary](#vocabulary-review-boundary). The future vocabulary PR
+should preserve these responsibilities rather than silently change their meaning.
 
 | Working term | Responsibility | How it composes |
 | --- | --- | --- |

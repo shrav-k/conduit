@@ -10,6 +10,10 @@ profile fields are still proposals. The [current review](../REVIEW.md) tracks th
 The [language/protocol comparison](../research/language-protocol-foundations/README.md) supplies
 primary references and worked cases for choosing those representations.
 
+Only the five object-family names are settled. Other Conduit terms and field spellings remain
+working names under the [vocabulary boundary](../protocol/MODEL.md#vocabulary-review-boundary).
+Review behavior and structure now; a separate future PR will settle a coherent vocabulary together.
+
 Author configuration and data schemas in constrained YAML 1.2 or equivalent JSON. Both use
 one value model; JSON Schema 2020-12 supplies data validation, while Conduit defines execution,
 authority and recovery separately. See the accepted [configuration foundation](../protocol/CONFIGURATION.md#configuration-language).
@@ -172,6 +176,7 @@ variants. Show authored definitions, reference resolution, the resulting instanc
 observes, and at least one rejection or uncertain outcome. Review identity, defaults, contract versions,
 graphs/results, controls and MCP mappings together.
 
-An example may propose a spelling; only a ruling or approved syntax review makes it a contract.
+Examples use working spellings. Semantic and structural rulings remain accepted; final terminology
+will be reviewed separately, including names provisionally selected during earlier syntax review.
 Carry forward failure/recovery cases rather than replacing them with a happy-path sample. Derive
 conformance cases from accepted behavior and keep runtime-specific checks distinguishable.

@@ -229,6 +229,8 @@ data representation, and plugins receive resolved input values without the autho
 
 **Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
 as that key's value. The same encoding applies to child bindings inside assemblies.
+The four forms and this structure are accepted; these key spellings are working names under the
+[vocabulary boundary](MODEL.md#vocabulary-review-boundary), to be settled in the future naming PR.
 
 | Form key | Payload | Resolved value |
 | --- | --- | --- |

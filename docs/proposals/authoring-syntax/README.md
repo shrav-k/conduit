@@ -4,6 +4,11 @@ Start at [Author with the protocol](../../authoring/README.md) for the accepted 
 Remaining review work is consolidated in [REVIEW](../../REVIEW.md); this packet preserves examples
 for later syntax discussion and adds no second active question queue.
 
+The [vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary) now makes all
+Conduit-owned names below the five object families provisional, including earlier selected field
+spellings. Keep using them consistently while reviewing logic and structure; naming has a separate
+future PR and is not a prerequisite for these walkthroughs.
+
 Status: **ready for the next syntax/conformance review; examples remain proposals**, 2026-11-02. The
 [conceptual closure review](../../archive/reviews/CONCEPTUAL.md) is complete. The published-contract and no-primary-plugin
 rulings remain accepted. Templates now use one named dependency map and alias-plus-export references

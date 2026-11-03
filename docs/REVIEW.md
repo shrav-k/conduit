@@ -123,12 +123,16 @@ published contracts, graphs, templates and any bundled code, including code-free
 The digest identifies content, not publisher trust or remote service code. Hash algorithms,
 bundle boundaries and concrete fields remain open.
 
-The [local-development rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
-retain immutable selected package contents before managed execution. Direct handler tests can
-use editable source; managed test/start workflows can capture a revision automatically without
-manual archive assembly or public publication on every edit. Existing instances keep their
-selected contents, and new instances may explicitly select a revision. This does not freeze
-credentials, Resource data or the host environment; storage layout and cleanup remain open.
+The [local-development rule](protocol/CONFIGURATION.md#implementation-selection) is accepted and
+refined: preserve the running instance's code/contracts against source edits, without promising
+later recreation of that implementation. Direct handler tests can use editable source; managed
+test/start workflows can capture contents automatically. Ordinary iteration replaces affected
+instances, with explicit backing-data reuse where supported; keeping both revisions running is
+optional. No permanent executable archive, manual release per edit or selectable multi-build
+catalog is required. A recorded digest identifies content without guaranteeing its future
+availability; missing restart/recovery code is reported without substitution. Retained evidence
+does not itself require retaining executables. This does not freeze credentials, Resource data
+or the host environment; storage layout and cleanup mechanics remain open.
 
 The [package-content rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
 explicitly declare included files/directories, with directory and pattern rules available.
@@ -141,13 +145,10 @@ reported rather than silently copied. Authors may stage shared files, choose a w
 directory or use separate package dependencies. Resource paths and authorized runtime access
 are unaffected; internal symlink representation remains open.
 
-The next ruling concerns local artifact storage during iteration: should distinct content
-digests be allowed to coexist under the same declared package identity/release? The proposal
-keeps existing instances pinned and requires selection of a particular artifact when a name/release
-is ambiguous, using existing explicit-selection/default rules. A capture from explicitly selected
-local source already identifies that artifact. The alternative requires a new release label for
-each different artifact admitted locally. Contract-identity checks remain in force; future public
-registry publication rules are not chosen by this local-development decision.
+The proposed same-name/release multi-artifact catalog is deferred, not accepted as a required
+development workflow. Protecting active execution does not require a historical build-selection
+system. Explicit current-source/package selection, contract checks and no silent substitution
+remain applicable; future public registry publication rules remain separate.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

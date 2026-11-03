@@ -171,6 +171,8 @@ If selection itself remains unresolved, preserve the request as unresolved and b
 the first successful resolution is recorded once and is not recomputed from later defaults.
 Instances normally export explicit resolved selections. An export with unresolved dependencies
 must say so; it must not claim to be a runnable, fully resolved recipe.
+Even a resolved selection records identity, not a guarantee that historical executable contents
+remain available. Export does not make a running instance's private code snapshot installable.
 
 Creation from an exported instance does not clone identity, setup receipts, runtime handles,
 private history or permission grants. For example, an exported directory Resource retaining
@@ -341,8 +343,14 @@ release label cannot silently change an existing instance's selected definitions
 and bundle formats remain open; separately bound dependencies keep their own identities.
 Managed execution of locally authored packages uses an immutable snapshot retained before
 execution. Direct handler tests can use editable source; an explicit managed test/start can
-capture selected contents automatically. Source edits leave existing instances' selected
-artifacts available. Packages explicitly select included files/directories, with directory and
+capture selected contents automatically. Source edits cannot change a running instance's code or
+contracts. Preserving that execution does not require permanent historical artifacts or promise
+later recreation of the old implementation. Development can retire the affected instance and
+replace it from revised source, with explicit backing-data reuse where supported. Old executable
+contents need not be kept solely because evidence records their identity; live activity/recovery
+dependencies and separate evidence-retention rules still apply. Missing selected code is reported
+without substitution. No selectable multi-build catalog is required for this workflow.
+Packages explicitly select included files/directories, with directory and
 pattern rules available rather than default capture of the whole working directory. Unselected
 files are outside the artifact and its digest. One explicit source directory bounds included
 paths and symlink targets; report outside targets rather than silently including them. Authors

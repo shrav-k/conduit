@@ -64,24 +64,32 @@ stage the helper inside, choose a wider source directory with explicit inclusion
 a separate package dependency. Resource paths/runtime access remain separate. Descriptor handling
 and internal symlink representation remain open.
 
-### Local development and captured artifacts
+### Local development and instance replacement
 
 The accepted development workflow distinguishes direct source tests from managed execution:
 
 1. Edit the history implementation/contracts and run handler tests against the working directory.
 2. Explicitly run a managed test or start. Tooling may validate and capture the selected package
    contents automatically, retaining an immutable artifact and its digest before execution.
-3. Start Resource A from that artifact. Editing the source afterward leaves A's selected
-   implementation available for subsequent use and restart under its existing contracts.
-4. Test a revision by explicitly selecting its captured artifact for a new Resource B. Inspect
-   both instances through the Interface; existing instances do not silently adopt revised code.
-5. Adopt B through supported connection/lifecycle operations. Reuse of backing history requires
-   the Resource's explicit attachment and lifecycle contract; replacement does not copy it implicitly.
+3. Start a history Resource using implementation A. Editing the source to B leaves the running
+   Resource's code/contracts unchanged; that does not make A a permanently installable release.
+4. To adopt B, explicitly retire the affected Resource and create a replacement from the edited
+   source. Running A and B side by side is an optional comparison, not ordinary iteration's requirement.
+5. Reestablish intended connections through supported operations. Reuse of backing history requires
+   the Resource's explicit attachment and lifecycle contract; replacement does not copy data or
+   transfer grants implicitly. The Interface reports any incomplete retirement or establishment.
 
-This does not require manual archive assembly or public publication for each local edit. Handler
-test commands, capture commands and exact inclusion syntax remain unselected. The snapshot contains
-package contents, not credentials, Resource data or the entire host environment. Storage and
-cleanup rules remain open. The workflow is accepted design, not an implemented CLI demonstration.
+Once no live activity or unfinished recovery needs A, retirement can release its executable contents
+without purging outcome evidence. Future recreation of A is not guaranteed: a recorded digest or
+exported configuration does not supply missing code. Authors can keep a Git revision or distributable
+artifact separately if they need repeatability; a restart/recovery request with unavailable selected
+code reports that gap rather than substituting B.
+
+This does not require manual archive assembly, public publication or a selectable multi-build catalog
+for each local edit. A development helper could combine retirement and replacement; its commands and
+exact inclusion syntax remain unselected. Captured package contents exclude credentials and Resource
+data and do not freeze the host environment. Storage and cleanup mechanics remain open. The lifecycle
+behavior is accepted design, not an implemented CLI demonstration.
 
 ### Illustrative descriptor
 

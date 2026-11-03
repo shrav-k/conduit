@@ -71,11 +71,14 @@ the existing compatibility checks. Different plugin releases may implement that 
 cross-version compatibility mappings are deferred.
 
 For local development, edit and run handler tests directly from source, then explicitly test or
-start a managed instance from a captured package revision. Conduit retains an immutable snapshot
-before managed execution, so editing the working directory leaves existing instances' selected
-contents available. New instances can select the revision explicitly; capture does not require
-manual archive assembly or public publication for every edit. Package contents do not include
-credentials, Resource data or a frozen host environment. Declare included files, directories or
+start a managed instance from captured package contents. Conduit preserves the running instance's
+code and contracts against later source edits. To adopt edits, retire the affected instance and
+create a replacement, explicitly reusing backing data where supported; running two revisions is
+optional. This does not require a permanent archive or a selectable build catalog. Recreating the
+old implementation later requires its source/artifact to be available under the applicable runtime
+contracts; its recorded identity alone is insufficient. Capture does not require manual archive
+assembly or public publication for every edit. Package contents do not include credentials,
+Resource data or a frozen host environment. Declare included files, directories or
 patterns explicitly; unrelated working files stay outside the captured artifact and its digest.
 Capture uses one explicit source directory; included paths and symlink targets must stay inside
 it. Stage shared files, choose a wider explicit directory or use a separate package dependency

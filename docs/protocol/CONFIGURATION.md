@@ -165,7 +165,7 @@ not add ordered precedence between schema defaults.
 
 **V0 rule:** select Conduit plugin implementations explicitly or through an
 unambiguous configured default. Resolve the exact release/artifact identity before execution and
-retain it for the instance's subsequent starts, operations and recovery. Installing a newer package,
+retain that binding for the instance's starts, operations and recovery. Installing a newer package,
 changing a default or package discovery order must not silently change that binding. Record an
 unresolved requested dependency as unresolved, not as located or verified code.
 
@@ -175,21 +175,35 @@ packages containing only templates or implementation bindings follow the same ru
 release label with changed contents must not silently replace an existing instance's selected
 definitions. Separately bound dependencies retain their own selected identities.
 
-The digest identifies retained content, not publisher trust or externally operated MCP service
+The digest identifies selected content, not publisher trust or externally operated MCP service
 code. The hash algorithm, exact bundle boundaries, encoding and storage mechanics remain open.
 This makes package-content identity explicit without adding a backward-compatibility promise.
 
-For managed execution of a locally authored package, retain an immutable snapshot of its
-selected contents before execution. Later edits to the source directory do not change or remove
-the implementation selected by an existing instance. New instances can explicitly select a
-revised artifact. Capture may be handled automatically by an explicit development-test or start
-workflow; authors need not manually assemble or publicly publish an archive for each iteration.
+For managed execution of a locally authored package, preserve its selected code and contracts
+before execution so source edits cannot change a running instance. This preservation serves the
+instance's execution; it does not require a permanent package archive or make the captured contents
+available for creating other instances. Recreating an old implementation from edited source or an
+exported instance configuration is not guaranteed. Authors may separately retain source revisions
+or distributable artifacts when they want that ability; Git or any particular storage mechanism
+is not required by the protocol.
+
+Ordinary development can retire the affected instance and create a replacement from revised source,
+explicitly reusing backing data where supported. Running both revisions is optional. Capture may be
+handled automatically by an explicit development-test or start workflow; authors need not assemble
+archives, publish releases or manage a catalog of simultaneous builds for each iteration.
+
+Retirement can release executable contents once no live activity or unfinished recovery requires
+them. Retained instance records or outcome evidence alone do not require an executable archive;
+their own retention rules still apply. Restart or recovery must use the recorded implementation
+when available and report unavailability otherwise, never silently adopt revised code. Exact
+cleanup mechanics remain open. A runtime may share or cache retained contents, but local storage
+of multiple selectable artifacts under one package identity/release is not a v0 requirement.
 
 Direct handler tests may run from editable source. Managed integration tests use the captured
 artifact and the ordinary instance contracts. This does not permit live replacement of an
-existing instance's fixed definitions. Snapshots cover package contents, not credentials,
-Resource data or the entire host environment; separately supplied runtimes/dependencies retain
-their declared boundaries. Storage layout and cleanup remain open.
+existing instance's fixed definitions. Captured contents exclude credentials and Resource data
+and do not freeze the host environment; separately supplied runtimes/dependencies retain their
+declared boundaries. Storage layout and cleanup remain open.
 
 Packages explicitly declare which files and directories belong in their captured artifact.
 Directory and pattern rules can select groups of files without listing each one individually;
@@ -215,9 +229,10 @@ configuration can still register while code is missing; report its readiness gap
 Adopting another implementation release/artifact requires a replacement instance in v0, even where
 the new release claims the same contract. Explicit backing-data reuse remains possible under the
 type's create/attach rules; it does not transfer runtime progress, connections or grants implicitly.
-This avoids in-place code migration rules for active work and retained setup progress. It means
-keeping an older implementation available or replacing dependent instances when adopting fixes.
-The retained binding is current executable configuration, not mandatory template-history storage.
+This avoids in-place code migration rules for active work and retained setup progress. Development
+can replace affected instances without keeping the old version available for fresh creation.
+The retained binding identifies executable configuration, not mandatory template-history storage
+or a guarantee that historical executable contents remain available.
 
 This rule applies to Conduit-selected declarations, mappings and plugin/adapter code. It does not
 freeze externally operated services/native tool catalogs or promise control of external native-agent

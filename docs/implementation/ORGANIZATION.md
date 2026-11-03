@@ -195,8 +195,9 @@ The first implementation prioritizes a working protocol and authoring proof; exa
 and component packaging can adapt to that work without requiring legacy compatibility code.
 Some packages contain only declarations/templates; they must not be forced through a native build
 or executable-install step. Installation alone does not contact or authenticate their providers.
-Installing a new release adds artifacts rather than replacing a bound executable in place. A
-retained instance still selects its recorded implementation. Host protocol/storage changes need
+Installing or capturing revised source must not overwrite code used by a running instance. An
+instance's recorded binding still identifies its selected implementation; this does not require
+an archive for future recreation. Host protocol/storage changes need
 compatibility checks even where plugin code is unchanged. A newer host can drop older contract/store
 support and report the incompatibility. Keeping the prior working host/package set is distinct from
 adopting the update; repair, migration or replacement may be needed and need not be automated.
@@ -212,7 +213,7 @@ is not implicitly a registry, and changing the shell directory does not select a
 <service-state>/       # one authority service, not a shared management/executor database
   state.sqlite
   runtime/             # socket, OS-held lock, current host metadata
-  artifacts/           # retained implementation bundles indexed by digest
+  artifacts/           # instance-required contents; digest-indexed storage is a candidate
   payloads/            # committed content references with ownership metadata
   agent-state/<id>/    # private adapter/runtime state, not shared history
   edits/               # recoverable checked-edit baselines
@@ -226,10 +227,14 @@ Treat the entire registry as private user data. Exclude runtime state, accounts 
 payloads from Git. Backups preserve access implications and reference completeness; ordinary
 configuration export is deliberately a different operation.
 
-Development does not bypass implementation pinning. A changed debug binary creates a new artifact
-and replacement test instance, normally in a disposable registry. Do not hot-reload code into an
-existing instance and claim the immutable-definition contract still holds. Record only synthetic
-fixtures in the repository; keep real provider test evidence scrubbed and outside public fixtures.
+Development preserves code/contracts for running work. After editing a plugin, the ordinary workflow
+can retire the affected test instance and create a replacement from the current source, normally in
+a disposable registry. Backing-data reuse follows the type's attachment contract. There is no need
+to keep both versions running or make old private snapshots available as selectable packages. Git can
+retain authored history; it is not a required execution backend. A temporary snapshot or cache is an
+implementation mechanism, not a permanent archive. Do not hot-reload code into an existing instance
+and claim the immutable-definition contract still holds. Record only synthetic fixtures in the
+repository; keep real provider test evidence scrubbed and outside public fixtures.
 
 ## 6. Delivery milestones
 
@@ -338,8 +343,10 @@ package artifacts and tested native/provider versions. A concise inventory is su
 this is not a requirement to test or maintain combinations of old releases. Before a supplied storage migration, create
 a consistent backup and refuse a newer unsupported store. Failed migration does not start partial
 runtime work. Downgrade is explicit restore/reconciliation, not an assumption that old code can
-read new data. Retain implementation artifacts until no retained instance requires them and an
-explicit cleanup authorizes removal.
+read new data. Cleanup must preserve code required by live activity or unfinished recovery. Historical
+instance/evidence records do not alone require retaining executable artifacts. Later recreation is
+not guaranteed; unavailable code must be reported without silently substituting a newer implementation.
+Exact cleanup mechanics remain open under the [accepted development boundary](../protocol/CONFIGURATION.md#implementation-selection).
 
 ## 9. Research and validation limits
 

@@ -80,8 +80,10 @@ of typed operations; output bindings establish dependencies. Provider branching/
 plugins initially. The instance owns ongoing processes, including a runtime started during setup.
 Graph completion, readiness and execution status are separate observations.
 
-Instances retain resolved definitions and exact Conduit-selected implementations. Later template edits
-do not alter them; definition or implementation upgrades require replacement in v0. Named typed controls
+Running instances preserve their selected code and contracts against source edits. Their bindings
+identify exact implementations, without promising an archive for later recreation. Development can
+replace an affected instance from revised source; keeping both versions running is optional.
+Definition or implementation upgrades require replacement in v0. Named typed controls
 can change their permitted settings. The single stored configuration advances only after application
 is confirmed; pending/uncertain requests are recorded separately. Controls normally serialize per target
 and check its inspected revision, with contract-declared safe exceptions.

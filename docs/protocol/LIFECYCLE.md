@@ -131,6 +131,9 @@ rules remain live. Provider catalogs retain dynamic discovery, with explicit exp
 R5. In-place definition upgrades are deferred.
 R6 also retains exact Conduit-selected implementations and requires replacement instances for their
 upgrades. A new instance does not automatically acquire the old one's bindings, private context or permissions.
+Preserving code/contracts for running work does not promise later recreation of that implementation.
+The [implementation-selection rules](CONFIGURATION.md#implementation-selection) distinguish retained
+bindings and evidence from executable availability; missing code is reported without substitution.
 R1 confirms that this applies to Interface administration as well as Agent requests. Broad
 administrative authority does not introduce an in-place definition-upgrade mechanism. The
 Interface can revise templates, create replacement instances and explicitly reconnect consumers.

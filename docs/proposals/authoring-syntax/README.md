@@ -37,8 +37,12 @@ covering published declarations and any bundled code, including template-only pa
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.
 Managed execution of local packages uses retained immutable snapshots, while direct handler tests
 may use editable source. Explicit managed test/start workflows can capture a revision automatically;
-no manual archive assembly or public publication is required per edit. Included files/directories
-are explicitly declared, with directory/pattern rules available; capture does not default to the
+the running instance preserves its code/contracts, without promising later recreation of that revision.
+Ordinary development can replace affected instances instead of maintaining two active versions.
+No permanent archive, selectable build catalog, manual archive assembly or public publication is
+required per edit. Missing selected code blocks affected restart/recovery rather than being replaced
+silently. Included files/directories are explicitly declared, with directory/pattern rules available;
+capture does not default to the
 whole working directory. Captured paths and symlink targets must remain within one explicit
 source directory; outside targets produce an error rather than implicit inclusion. Exact
 inclusion syntax, internal symlink representation and cleanup remain open, and existing instances

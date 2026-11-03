@@ -505,7 +505,10 @@ an already committed outcome. This adapts Pi's separation of durable mutation an
 
 For large retained payloads, stage and sync immutable content before committing its reference.
 Handle abandoned staging files as explicit cleanup candidates; never automatically purge Resource
-data. A backup includes both the consistent database snapshot and referenced payloads/artifacts.
+data. A backup includes the consistent database snapshot and the available payloads/artifacts within
+its declared scope, reporting missing dependencies. Historical executable contents need not remain
+available merely because records reference them; neither those records nor a backup promises recreation
+of every past instance.
 Use SQLite's backup facilities rather than copying a live database file without coordinating its
 WAL. Restore into a stopped registry, validate it and explicitly reconcile external executions;
 restoring records does not recreate their side effects. [SQLite backup][sqlite-backup]

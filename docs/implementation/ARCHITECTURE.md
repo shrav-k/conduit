@@ -729,7 +729,11 @@ The common adapter can invoke a compatible existing operation; metadata alone ca
 for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
-is already satisfied; it must not blindly repeat a create operation. An explicit retry of an
+is already satisfied; it must not blindly repeat a create operation. Configuration references within
+a graph execution use the values captured when it begins; later steps cannot silently switch to
+newly confirmed instance settings. A later execution captures then-current settings. Current authority,
+dependency validity and control-application revision checks still apply; captured values do not
+establish current runtime state or create another mutable configuration map. An explicit retry of an
 incomplete start uses the same progress lineage and only reuses results whose inputs, implementation,
 backing and current prerequisites remain valid. Changed confirmed configuration invalidates
 affected results under declared read sets, conservatively all relevant steps when unknown.

@@ -293,6 +293,13 @@ under the existing graph/authority rules:
 
 ### Scheduling, outputs and lifetime
 
+**Accepted configuration capture:** configuration references use values captured at the beginning
+of that graph execution, rather than rereading settings separately for later steps. A later execution
+captures then-current settings. These are execution inputs, not another mutable instance configuration
+map or proof of current runtime state. Authority, dependency validity and revision checks when applying
+controls remain current. Retry/recovery must revalidate retained results; capture does not make stale
+progress reusable. Exact capture/storage representation and recovery mechanics remain proposed.
+
 The scheduler dispatches dependency-ready nodes within global, per-instance and plugin limits.
 **Accepted failure policy:** a failed setup/change step does not stop scheduling independent branches
 whose own prerequisites remain satisfied. Work with unmet prerequisites stays blocked, and required

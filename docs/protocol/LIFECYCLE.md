@@ -188,6 +188,19 @@ evaluate string interpolation, shell syntax or an expression language. Reusable 
 operations still receive their declared typed inputs under the ordinary operation contract.
 Exact reference syntax remains authoring work.
 
+**Configuration capture:** configuration references within one graph execution use values captured
+when that execution begins. Later steps do not silently reread changed instance settings. For example,
+two steps referencing a search limit receive 10 even if a supported control confirms a change to 15
+between them; a later execution captures 15. The captured values are execution inputs, while
+`spec.config` remains the instance's single stored configuration map.
+
+Capture does not establish current runtime state or freeze authority, dependency validity or
+configuration revision checks when applying a control. These checks remain current under their
+contracts, and may block work even when its captured inputs are schema-valid. Retry/recovery still
+revalidates retained results against relevant inputs and prerequisites; capture does not justify
+reusing stale results, bypassing access changes or blindly repeating effects. Exact capture/storage
+representation and recovery mechanics remain open.
+
 **Reference recognition:** the graph recognizes references only in explicitly designated binding
 positions. Literal data, ordinary configuration/provider payloads and values returned by plugins
 are not recursively searched for graph instructions. Resolving a reference retrieves its value;

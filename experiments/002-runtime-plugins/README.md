@@ -241,6 +241,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   typed transformation implemented by the authored plugin, then consume its output in a later step
   with the dependency implied by that binding. Graph bindings must not evaluate inline expressions
   or interpolate expression-looking strings; ordinary input schemas still validate the values.
+- Have two graph steps reference a configurable limit initially set to 10. Between them, use a
+  supported control to confirm 15 where the fixture permits that concurrency. Both steps receive 10;
+  a later execution receives 15. Verify separately that captured inputs do not bypass current access,
+  dependency validity or a control's revision conflict, and that recovery revalidates retained results.
+  The Interface must distinguish captured execution inputs from current confirmed instance settings.
 - Pass a literal document containing reference-shaped data to a fixture operation, then pass the
   same content via an explicit reference to another operation's output. Preserve the data in both
   cases: only actual graph bindings establish dependencies, and reference resolution does not

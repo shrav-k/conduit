@@ -41,6 +41,8 @@ Consider a small document-search capability used by an Agent. The authoring step
 3. **Compose setup.** A finite dependency graph can establish access and prepare search. Output bindings
    imply dependencies. Supply literals or typed references to configuration/earlier outputs as inputs;
    use plugin operations for calculations and transformations, with no inline binding expressions in v0.
+   Configuration references use values captured when the graph execution begins; later executions
+   capture current settings. Authority, dependency validity and control revision checks remain current.
    References are recognized only in designated binding positions. Literal payloads and plugin results
    remain data even when they resemble reference notation; exact notation remains open.
    Explicitly assemble object fields or list items from literals/references without an extra plugin

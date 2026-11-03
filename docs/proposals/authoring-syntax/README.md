@@ -26,6 +26,9 @@ recognized only in designated binding positions; literal payloads and resolved p
 data rather than being recursively reinterpreted. Explicit object/list assembly from literals and
 references is accepted without a plugin merely to assemble the structure. It adds no automatic merging
 or inline computations. Exact syntax and literal disambiguation remain open; the examples do not approve them.
+Configuration references use values captured when each graph execution begins. Later executions use
+then-current settings; capture does not freeze permissions, dependency validity or control revision
+checks. Retry/recovery must still revalidate retained results. Exact representation remains open.
 The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block

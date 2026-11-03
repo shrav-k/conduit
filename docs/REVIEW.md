@@ -200,11 +200,18 @@ attachment-release duties still apply; an already-started runtime follows its in
 A request is not proof of stopped work, rollback or completed cleanup. Exact propagation and
 transport mechanics remain open.
 
-The next proposed ruling concerns configuration references within one graph execution: use values
-captured when that execution begins, or read current settings separately for each step? Capturing
-one configuration is recommended to avoid silently mixing settings across steps. Current authority,
-dependency validity and control-application revision checks would remain live. This is pending;
-retry/recovery still must revalidate retained results against their relevant inputs and prerequisites.
+The [configuration-capture rule](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: configuration
+references within one graph execution use values captured when it begins. Later executions capture
+the then-current settings. The instance still has one stored configuration map; captured inputs do
+not establish current runtime state. Authority, dependency validity and control-application revision
+checks remain current, and retry/recovery must revalidate retained results. Exact representation and
+recovery mechanics remain open.
+
+The next proposed ruling concerns reusable graph-backed operations: should they receive caller
+configuration through declared typed inputs rather than implicitly inherit the caller's configuration
+namespace? Explicit inputs are recommended: a template graph passes its captured limit to a reusable
+operation's declared `limit` input. Scoped invocation context and explicitly authorized Resource
+access remain separate. This is pending; exact input/context syntax remains open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

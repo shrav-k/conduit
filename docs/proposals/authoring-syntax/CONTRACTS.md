@@ -191,6 +191,14 @@ does not infer identity from a name and create duplicates.
 earlier outputs. Calculations and transformations belong in plugin operations; inline expressions
 in graph bindings are deferred. Output references retain their existing dependency meaning.
 
+**Accepted reusable-operation scope:** a reusable graph-backed operation receives caller configuration
+only through declared typed inputs. It does not implicitly inherit the caller's configuration namespace.
+For example, a template binds its captured search limit to the operation's `limit` input; the operation's
+internal graph reads that input. Scoped invocation context and explicitly authorized Resource access
+remain available under their contracts. The template-local setup example below can reference its own
+configuration, but extracting it into a reusable operation requires explicit configuration inputs.
+Exact input/context notation remains open.
+
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for
 reference markers. A plugin result retrieved through a reference remains data rather than being

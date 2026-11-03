@@ -29,6 +29,9 @@ or inline computations. Exact syntax and literal disambiguation remain open; the
 Configuration references use values captured when each graph execution begins. Later executions use
 then-current settings; capture does not freeze permissions, dependency validity or control revision
 checks. Retry/recovery must still revalidate retained results. Exact representation remains open.
+Reusable graph-backed operations receive caller configuration through declared typed inputs, without
+implicit configuration inheritance. Scoped invocation context and authorized Resource access retain
+their own contracts; exact input/context notation remains open.
 The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block

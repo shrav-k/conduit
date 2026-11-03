@@ -207,11 +207,17 @@ not establish current runtime state. Authority, dependency validity and control-
 checks remain current, and retry/recovery must revalidate retained results. Exact representation and
 recovery mechanics remain open.
 
-The next proposed ruling concerns reusable graph-backed operations: should they receive caller
-configuration through declared typed inputs rather than implicitly inherit the caller's configuration
-namespace? Explicit inputs are recommended: a template graph passes its captured limit to a reusable
-operation's declared `limit` input. Scoped invocation context and explicitly authorized Resource
-access remain separate. This is pending; exact input/context syntax remains open.
+The [reusable-operation input boundary](protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+is accepted: caller configuration is supplied through declared typed inputs, with no implicit
+inheritance of the caller's configuration namespace. A template graph passes its captured limit
+into the reusable operation's `limit` input. Scoped invocation context and explicitly authorized
+Resource access remain available under their contracts. Exact input/context syntax remains open.
+
+Next, return to the [complete package walkthrough](proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md).
+The proposed ruling is one explicit package entry document declaring public exports and dependencies,
+with definitions inline or referenced in package-local files, rather than automatically discovering
+exports from conventional files. This is recommended but pending; the filename, field names and
+reference syntax remain open. Provider-native dynamic catalogs remain separate from package exports.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

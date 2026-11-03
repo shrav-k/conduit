@@ -299,6 +299,11 @@ attachment intent must be explicit. The user need not rewrite the graph or manuf
 The example passes configuration to establishment and its output to the managed runtime. V0 graph
 inputs use literals and typed references; a calculated setup input would come from another plugin
 operation rather than an inline expression. The displayed reference notation remains illustrative.
+If establishment is implemented by a reusable graph, the explicit `configuration` input supplies
+the values that graph may read from the caller. It cannot implicitly read other fields from the
+enclosing Resource's configuration. A narrower reusable operation could instead declare a `limit`
+input: this template could pass its captured `readLimit`, while another template uses a differently
+named setting. Scoped invocation context and authorized Resource access retain their own contracts.
 An authored graph can also assemble a message object from a literal title and an earlier step's
 body output, or assemble list items explicitly, without another plugin merely to build the structure.
 This is explicit assembly, not automatic merging or string interpolation; constructor syntax remains open.

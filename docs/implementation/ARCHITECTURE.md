@@ -728,6 +728,11 @@ For an MCP-backed node, dispatch still uses the selected contract and authorized
 The common adapter can invoke a compatible existing operation; metadata alone cannot substitute
 for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
+Bind caller configuration into a reusable graph-backed operation's declared inputs; do not inject
+the enclosing instance's configuration namespace into that operation. Keep scoped invocation context
+and explicitly authorized Resource access available through their contracts. Validate declared input
+bindings under the same early and runtime checks used for other operations.
+
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
 is already satisfied; it must not blindly repeat a create operation. Configuration references within
 a graph execution use the values captured when it begins; later steps cannot silently switch to

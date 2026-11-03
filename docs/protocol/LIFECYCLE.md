@@ -185,7 +185,10 @@ supported; interaction waits and valid-progress recovery do not require authored
 step outputs. Calculations and transformations are implemented by plugin operations, not inline
 expressions in graph bindings. References select declared values/fields; they do not implicitly
 evaluate string interpolation, shell syntax or an expression language. Reusable graph-backed
-operations still receive their declared typed inputs under the ordinary operation contract.
+operations receive caller configuration only through declared typed inputs, without implicitly
+inheriting the caller's configuration namespace. A template's graph can bind captured configuration
+values into those inputs. Scoped invocation context and explicitly authorized Resource access
+remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
 Exact reference syntax remains authoring work.
 
 **Configuration capture:** configuration references within one graph execution use values captured

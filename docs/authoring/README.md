@@ -43,6 +43,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    use plugin operations for calculations and transformations, with no inline binding expressions in v0.
    Configuration references use values captured when the graph execution begins; later executions
    capture current settings. Authority, dependency validity and control revision checks remain current.
+   Pass caller configuration into reusable graph-backed operations through their declared inputs;
+   those operations do not implicitly inherit the caller's configuration namespace.
    References are recognized only in designated binding positions. Literal payloads and plugin results
    remain data even when they resemble reference notation; exact notation remains open.
    Explicitly assemble object fields or list items from literals/references without an extra plugin

@@ -111,6 +111,12 @@ The exported contract describes inputs, outputs and applicable behavior; interna
 values and call selected operations. V0 graph inputs use literals, typed references and explicit
 object/list assembly; calculations and other transformations use plugin operations, with inline
 binding expressions deferred under the [graph-input boundary](LIFECYCLE.md#lifecycle-protocol).
+Reusable graph-backed operations receive caller configuration through their declared typed inputs;
+they do not implicitly inherit the caller's configuration namespace. A template can pass its captured
+search limit into an indexing operation's `limit` input, while another template supplies that input
+from a differently named setting. Internal nodes use the declared operation inputs. Scoped invocation
+context, such as identity and operation tracking, and explicitly authorized Resource access remain
+available under their contracts. Exact input/context notation remains authoring work.
 Composition preserves existing authority, endpoint selection,
 implementation retention and instance-owned runtime rules. It does not automatically make several
 external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;

@@ -162,11 +162,17 @@ calculations and transformations; inline expressions in bindings are deferred. O
 imply dependencies as already agreed. Exact reference syntax remains open, and branching/loops
 still remain inside plugins initially.
 
-The next proposed ruling concerns recognition of references: restrict binding interpretation to
-explicitly declared binding positions, leaving ordinary configuration/provider payloads as literal
-data, or recognize binding markers recursively inside arbitrary input objects with escaping rules?
-The first option is recommended. The [graph proposal](proposals/authoring-syntax/CONTRACTS.md#4-graph-language)
-illustrates the distinction; neither recognition rules nor literal/reference notation is accepted yet.
+The [reference-recognition boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: recognize
+references only in explicitly designated binding positions. Literal payloads, ordinary configuration
+and plugin results are not recursively reinterpreted as graph instructions, even when they resemble
+reference notation. Resolving a reference retrieves data, not another instruction to evaluate.
+Exact notation and literal disambiguation remain open.
+
+The next proposed ruling concerns structured inputs: allow explicit object/list assembly combining
+literals and references without a plugin merely to assemble the structure, or require such mixed
+values to be produced by plugin operations? The first option is recommended; calculations and
+transformations would still remain in operations. This does not authorize recursive scanning of
+literal payloads, inline expressions, loops, automatic merging or final constructor syntax.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

@@ -186,7 +186,16 @@ step outputs. Calculations and transformations are implemented by plugin operati
 expressions in graph bindings. References select declared values/fields; they do not implicitly
 evaluate string interpolation, shell syntax or an expression language. Reusable graph-backed
 operations still receive their declared typed inputs under the ordinary operation contract.
-Exact reference syntax and recognition positions remain authoring work.
+Exact reference syntax remains authoring work.
+
+**Reference recognition:** the graph recognizes references only in explicitly designated binding
+positions. Literal data, ordinary configuration/provider payloads and values returned by plugins
+are not recursively searched for graph instructions. Resolving a reference retrieves its value;
+it does not reinterpret that value as another reference. For example, a storage plugin can receive
+a document containing an example of graph-reference notation without causing the graph engine to
+resolve the example. Actual references still supply their declared dependencies. Exact binding
+notation, literal disambiguation and structured/nested input assembly remain open; this does not
+require one particular wrapper around every scalar or forbid explicitly authored nested bindings.
 
 For example, database startup reads its directory from configuration, and a migration step receives
 the database handle published by startup. If the directory must be constructed from a base and a

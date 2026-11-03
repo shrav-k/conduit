@@ -21,8 +21,10 @@ are also accepted in the [configuration foundation](../../protocol/CONFIGURATION
 The remaining representations and detailed schema profile below are proposals within those boundaries.
 The [graph-input boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is also accepted: v0 inputs
 use literals and typed references to configuration or earlier outputs, while plugin operations
-perform calculations and transformations. Inline binding expressions are deferred. Exact reference
-syntax and recognition positions remain open; the graph examples do not approve them.
+perform calculations and transformations. Inline binding expressions are deferred. References are
+recognized only in designated binding positions; literal payloads and resolved plugin results remain
+data rather than being recursively reinterpreted. Exact syntax, literal disambiguation and nested
+input assembly remain open; the graph examples do not approve them.
 The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.

@@ -241,6 +241,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   typed transformation implemented by the authored plugin, then consume its output in a later step
   with the dependency implied by that binding. Graph bindings must not evaluate inline expressions
   or interpolate expression-looking strings; ordinary input schemas still validate the values.
+- Pass a literal document containing reference-shaped data to a fixture operation, then pass the
+  same content via an explicit reference to another operation's output. Preserve the data in both
+  cases: only actual graph bindings establish dependencies, and reference resolution does not
+  recursively interpret the retrieved payload. Concrete literal/reference syntax remains open.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

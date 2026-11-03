@@ -299,6 +299,9 @@ attachment intent must be explicit. The user need not rewrite the graph or manuf
 The example passes configuration to establishment and its output to the managed runtime. V0 graph
 inputs use literals and typed references; a calculated setup input would come from another plugin
 operation rather than an inline expression. The displayed reference notation remains illustrative.
+Reference recognition is confined to designated graph binding positions. A history message may
+contain an example of reference notation as literal content; neither posting nor reading that
+content causes the graph engine to interpret it as instructions or additional dependencies.
 Package installation, template registration, Resource creation, setup and consumer connection are
 distinct effects even if an Interface offers an explicit action combining some of them.
 

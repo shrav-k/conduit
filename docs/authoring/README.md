@@ -22,10 +22,11 @@ Reuse standard descriptive annotations where applicable. Additional custom tooli
 dedicated map of namespaced entries; they do not implement validation, permissions or runtime behavior.
 The map keyword, namespace syntax, value schemas and external MCP adapter details remain open.
 See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
-Declared formats are enforced validation requirements in Conduit-authored schemas, with supported
-standard formats defined by the shared profile and unsupported formats reported. V0 defers
-plugin-defined format validators; the exact standard set remains open. Custom declarative constraints
-can use supported keywords/reusable schemas, while operations and requirement checks remain extensible.
+Declared formats are enforced validation requirements in Conduit-authored schemas. V0 selects all
+19 JSON Schema 2020-12 standard formats, with offline syntactic checks and conformance tests before
+support claims. Unsupported formats are reported; plugin-defined validators are deferred. Custom
+declarative constraints can use supported keywords/reusable schemas, while operations and requirement
+checks remain extensible.
 If composed schemas give an omitted configuration field conflicting defaults, provide an explicit
 valid value or correct the defaults. Schema order does not choose a winner; all constraints still apply.
 Provider MCP schemas retain their declared dialect's semantics. An allowed descriptive annotation

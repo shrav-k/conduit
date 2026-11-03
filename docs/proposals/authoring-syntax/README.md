@@ -71,10 +71,11 @@ permissions or runtime behavior; the map keyword, namespace syntax and value sch
 Provider MCP schemas [retain their declared dialect's semantics](../../protocol/CONFIGURATION.md#provider-mcp-schemas);
 allowed descriptive annotations do not alone reject a tool, and unsupported required validation
 features are reported without stripping constraints or claiming enforcement. Adapter details remain open.
-Formats in Conduit-authored schemas are enforced, with the shared profile defining supported
-standard formats and unsupported ones reported. V0 defers plugin-defined format validators; the exact
-standard set remains open. Supported keywords/reusable schemas can still describe custom constraints,
-and operations, Resource contracts and requirement checks remain extensible.
+Formats in Conduit-authored schemas are enforced. V0 selects all 19 JSON Schema 2020-12 standard
+formats with offline syntactic checks and conformance tests before support claims. Unsupported
+formats are reported; plugin-defined validators are deferred. Supported keywords/reusable schemas
+can still describe custom constraints, and operations, Resource contracts and requirement checks
+remain extensible.
 The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
 requires an explicit valid value or corrected defaults when an omitted field has conflicting
 applicable schema defaults. Traversal order cannot select a winner.

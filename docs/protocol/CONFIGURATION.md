@@ -140,14 +140,26 @@ dedicated extension mechanism remain errors. The map keyword, namespace syntax a
 schemas remain open; illustrative `annotations` and `example.ui` spellings are not selected syntax.
 External provider MCP schemas follow the separate boundary below.
 
-In Conduit-authored data schemas, `format` is an enforced validation requirement. The shared
-profile publishes the shared set of supported standard formats; report an unsupported format rather
-than treating its constraint as satisfied. V0 defers plugin-defined format validators so authored-schema
-validation can run before plugin code starts. The exact standard-format set remains open; this does
-not select every standard format merely by excluding custom ones.
+In Conduit-authored data schemas, `format` is an enforced validation requirement. V0 selects all 19
+standard formats defined in [JSON Schema 2020-12 section 7.3](https://json-schema.org/draft/2020-12/json-schema-validation#section-7.3),
+using their standard meanings and offline syntactic checks:
 
-For example, a selected `date-time` format can validate a timestamp, while a project-specific identifier
-can use ordinary string constraints and a reusable schema instead of registering `format: workspace-id`.
+| Area | Formats |
+| --- | --- |
+| Time | `date-time`, `date`, `time`, `duration` |
+| Email and hostnames | `email`, `idn-email`, `hostname`, `idn-hostname` |
+| IP addresses | `ipv4`, `ipv6` |
+| Identifiers/references | `uri`, `uri-reference`, `iri`, `iri-reference`, `uuid` |
+| Templates, pointers and expressions | `uri-template`, `json-pointer`, `relative-json-pointer`, `regex` |
+
+Conformance tests must establish support before an implementation claims it. Report unsupported
+formats rather than treating their constraints as satisfied. V0 defers plugin-defined format
+validators so authored-schema validation can run before plugin code starts.
+
+For example, `date-time` validates timestamp syntax and `uri` validates a URI without contacting
+its endpoint. These checks do not establish reachability or existence. Supporting `uuid` or
+`json-pointer` does not select Conduit's object-ID encoding or graph-reference notation. A project-specific
+identifier can use ordinary string constraints and a reusable schema instead of registering `format: workspace-id`.
 Custom operations, Resource contracts and requirement checks remain extensible. Format validation
 does not replace explicit field types or establish runtime readiness, access authority or successful
 effects. Provider MCP schemas retain the separate interpretation below; any future custom-format

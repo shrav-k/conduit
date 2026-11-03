@@ -139,9 +139,10 @@ with composition need correct `unevaluatedProperties` behavior. [Defaults][schem
 
 **Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
 using the shared profile's supported formats and reporting unsupported ones instead of silently
-accepting them. V0 uses a shared published set of standard formats and defers plugin-defined format
-validators; the exact standard set remains open. Custom constraints can still use supported schema
-keywords/references, with operations and requirement checks retaining their extension contracts.
+accepting them. V0 selects all 19 JSON Schema 2020-12 standard formats, using their standard meanings
+and offline syntactic checks, with conformance tests before support claims. Plugin-defined format
+validators remain deferred. Custom constraints can still use supported schema keywords/references,
+with operations and requirement checks retaining their extension contracts.
 External provider MCP schemas retain their declared dialect's semantics under the boundary below.
 
 **Accepted provider boundary:** do not automatically impose the stricter Conduit authoring profile

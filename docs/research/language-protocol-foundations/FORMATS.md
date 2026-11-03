@@ -13,9 +13,10 @@ in Conduit-authored contracts. A subsequent ruling selects one dedicated map of 
 descriptive annotations, reusing standard descriptive annotations where applicable. Its keyword,
 namespace syntax and detailed value schemas remain open; custom hints do not implement validation,
 authorization or runtime behavior.
-V0 subsequently selects a shared published standard-format set and defers plugin-defined format
-validators. The precise set remains a proposal below; custom operations and requirement checks
-remain extensible, and provider MCP schemas retain their dialect semantics.
+V0 subsequently selects all 19 JSON Schema 2020-12 standard formats and defers plugin-defined format
+validators. Offline syntactic checks and conformance tests before support claims are accepted;
+custom operations and requirement checks remain extensible, and provider MCP schemas retain their
+dialect semantics.
 
 ## Recommendation and scope
 
@@ -125,7 +126,7 @@ These are parts of making the chosen foundation precise, not reasons to design a
   `readOnly` does not enforce authority. The [validation specification](https://json-schema.org/draft/2020-12/json-schema-validation)
   also distinguishes format annotation from format assertion. Conduit's subsequent ruling
   chooses enforced standard formats for its authored schemas, deferring plugin-defined format
-  validators in v0. The supported standard set remains open. Required Conduit semantics must not depend on a stock
+  validators in v0. All 19 standard formats are selected. Required Conduit semantics must not depend on a stock
   validator recognizing invented keywords or on its default format-checking settings.
 - Define portable number limits and unit/identifier encodings. Unsupported precision must fail
   rather than change a value; schema `integer` describes a mathematical value, not a particular
@@ -142,7 +143,7 @@ add response hashes to the earlier retrieval manifest.
 
 ## Standard-format set follow-up
 
-Rechecked **2026-11-03**. **Recommendation, not an accepted set:** support all 19 formats defined in
+Rechecked **2026-11-03**. **Accepted:** support all 19 formats defined in
 [JSON Schema 2020-12 section 7.3](https://json-schema.org/draft/2020-12/json-schema-validation#section-7.3):
 
 | Area | Formats |
@@ -155,11 +156,25 @@ Rechecked **2026-11-03**. **Recommendation, not an accepted set:** support all 1
 
 The standard [Format-Assertion requirements](https://json-schema.org/draft/2020-12/json-schema-validation#section-7.2.2)
 cover the full set and require syntactic checks; they do not establish endpoint reachability or entity
-existence. A smaller profile cannot claim full support for that vocabulary. Recommend offline checks
-against the referenced standards, with conformance fixtures before claiming support. Supporting a
-format does not choose Conduit's object-ID encoding or graph-reference syntax.
+existence. The accepted set uses offline checks against the referenced standards, with conformance
+fixtures before claiming support. Supporting a format does not choose Conduit's object-ID encoding
+or graph-reference syntax.
 
 The candidate Rust [jsonschema documentation](https://docs.rs/jsonschema/latest/jsonschema/#note-on-format-keyword)
 documents enabling format checks and an `idna` feature for internationalized email/hostnames.
-These are implementation leads, not evidence that Conduit implements the proposed set. No new
+These are implementation leads, not evidence that Conduit implements the accepted set. No new
 runtime or validator tests were executed in this follow-up; library selection remains separate.
+
+## Number-portability follow-up
+
+Rechecked **2026-11-03**. **Pending recommendation:** v0 Conduit-declared integer configuration,
+inputs and outputs use the inclusive range −9,007,199,254,740,991 to 9,007,199,254,740,991.
+[RFC 8259 section 6](https://www.rfc-editor.org/rfc/rfc8259.html#section-6) identifies this range as
+exactly interoperable among implementations using binary64 numbers. Wider JSON integers can exceed
+an ordinary JavaScript client's exact representation even when a Rust implementation preserves them.
+
+A contract needing a larger exact value could explicitly declare a decimal string and its constraints;
+no implicit numeric-to-string conversion is proposed. The alternative requires precision-preserving
+parsing and representations for a wider shared integer range. This recommendation does not settle
+fractional-number semantics, change provider-native schemas or choose a Rust storage type. The
+existing rule against silent precision loss already applies; no new runtime tests were run here.

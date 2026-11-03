@@ -108,10 +108,10 @@ value or a correction to the defaults. Schema order does not choose a winner, an
 validation constraints still apply. Exact default-resolution mechanics remain open.
 
 The [format rule](protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted: `format` in
-Conduit-authored schemas is an enforced validation requirement. The shared profile defines
-supported standard formats and unsupported formats are reported rather than treated as satisfied.
-V0 defers plugin-defined format validators. The exact standard set remains open; custom operations,
-Resource contracts and requirement checks remain extensible.
+Conduit-authored schemas is an enforced validation requirement. V0 selects all 19 standard formats
+defined in JSON Schema 2020-12, with offline syntactic checks and conformance tests before support
+claims. Unsupported formats are reported; plugin-defined validators are deferred. Custom operations,
+Resource contracts and requirement checks remain extensible. Provider MCP dialect semantics remain unchanged.
 
 The [provider MCP schema boundary](protocol/CONFIGURATION.md#provider-mcp-schemas) is accepted:
 preserve the declared dialect's semantics without automatically imposing Conduit's stricter
@@ -249,11 +249,16 @@ The v0 format-extension boundary is accepted: use a shared published set of stan
 deferring plugin-defined validators. Schema authors can still express custom declarative constraints
 through supported keywords and reusable schemas; provider MCP dialect semantics are unchanged.
 
-Next, choose the shared format set. The [format-set follow-up](research/language-protocol-foundations/FORMATS.md#standard-format-set-follow-up)
-recommends all 19 formats defined in JSON Schema 2020-12, with offline syntactic validation, rather
-than a smaller Conduit-specific subset. This is pending. A subset must not claim full support for
-the standard Format-Assertion vocabulary; conformance evidence is required for whichever set is
-selected. This choice does not select UUID object IDs, graph reference notation or network access.
+The shared format set is accepted above. The [format-set follow-up](research/language-protocol-foundations/FORMATS.md#standard-format-set-follow-up)
+retains the rationale; the decision does not select UUID object IDs, graph-reference notation or
+network access, and no runtime support is claimed by recording it.
+
+Next, settle the portable integer boundary. The [number-portability follow-up](research/language-protocol-foundations/FORMATS.md#number-portability-follow-up)
+recommends restricting Conduit-declared integer configuration, inputs and outputs in v0 to
+−9,007,199,254,740,991 through 9,007,199,254,740,991. A contract needing a larger exact integer could
+explicitly use a decimal string, without automatic conversion. This is pending; the alternative
+supports a wider range through precision-preserving clients. Fractional-number semantics and
+native provider schemas remain separate; this is a public interoperability choice, not a Rust type selection.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

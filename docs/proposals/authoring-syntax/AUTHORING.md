@@ -653,6 +653,176 @@ the adapter must enforce it or leave that binding unavailable; it cannot quietly
 Existing protocol servers and authored operations are compatible extension paths. A compatible
 MCP implementation can fulfill a published contribution without new plugin-specific code.
 
+### Guided authenticated MCP walkthrough
+
+Walkthrough date: 2026-11-03. This follows the directory example using the same accepted behavior
+and provisional vocabulary. Consider a Linear-style issue service for the Euphony domain. Assume
+the selected integration supports the intended shared authentication and restrictions. No real
+account, endpoint, tool name or provider compatibility has been tested here. Operation/output
+names and the reference fragment below are illustrative, not additional syntax rulings.
+
+**Intended outcome:** a review Agent can read permitted Euphony issues, and a development Agent
+can perform permitted updates, using a shared service login. Their model/subscription accounts,
+private state and Conduit identities remain separate. The service login is not their Claude/Codex
+subscription. Pool membership and shared provider login do not give the two Agents identical access.
+
+```mermaid
+flowchart LR
+    A[Review Agent] -->|Conduit: permitted reads| M[MCP Resource]
+    B[Development Agent] -->|Conduit: permitted reads and updates| M
+    M -->|Authentication Conduit| H[Authentication Resource]
+    M --> S[External MCP service]
+    subgraph P[Euphony Pool owns]
+      M
+      H
+    end
+```
+
+This diagram shows logical relationships, not one process or socket for each object/edge. Endpoint
+plugins manage their local behavior; Conduits coordinate the relationships and their requirements.
+
+**What is authored:** the authentication template selects supported login/refresh behavior and
+credential custody. The service template selects its MCP integration, target configuration,
+required authentication connection, setup graph and runtime/control behavior. The Pool offers
+named entries and binds the service's declared authentication dependency to an explicitly
+provisioned or selected existing authentication Resource. Agent templates select their compatible
+endpoint behavior and starting Conduits; additional connections may be established explicitly.
+The Conduit definitions compose the required endpoint behavior and permitted restrictions. Issued
+participation grants and governing requirements supply actual authority separately.
+
+**First, request the intended Pool composition.** Listing `auth` and `issues` entries alone starts
+nothing. An Interface can explicitly request provisioning both, or provisioning the service with
+an existing authentication Resource. Resolved instance IDs identify the chosen relationship; the
+entry name is not an implicit singleton or an instruction to choose whichever account is logged in.
+Repeated use of the declared template can establish a separate composition with different targets.
+
+The authentication Resource's setup operation reuses a verified usable login when its contract
+supports that. Otherwise it reports required human interaction. The Interface presents the selected
+adapter/provider's supported enrollment or unlock flow. Login secrets remain in their supported
+custody; ordinary YAML, conversations and outcome logs do not become token storage. The operation
+retains its progress and continues or recovers under its declared contract after interaction.
+Required service preparation waits for usable prerequisites; an independently ready directory
+Resource in the same Pool can remain usable. No authored polling loop is needed in the graph.
+
+**Then, prepare the MCP Resource through its declared dependency.** Its enclosing instance supplies
+the consumer endpoint for the authentication Conduit. Pool composition supplies the concrete target;
+authorized connection establishment supplies participation. A graph value or package name cannot
+substitute for any of these. The service's integration operation can use the declared connection
+through its supported scoped invocation context; this example does not add a new graph-reference
+source kind or permit ambient account discovery.
+
+Introduce the producer contracts before their wiring:
+
+| Selected operation | Inputs and declared dependency | Named successful output | Responsibility |
+| --- | --- | --- | --- |
+| `service-auth.resolve` | Explicit service configuration; the required authorized authentication connection | `authentication`: a protected service binding | Request the correct supported identity/audience/credential arrangement from the authentication Resource, preserving that Resource's ownership. |
+| `mcp.start` | Service configuration and the prepared authentication binding | `connection`: a reference to the instance-managed client | Request startup of the already-declared runtime and report a usable result only under its readiness contract. The setup helper does not take permanent ownership of the client. |
+| `mcp.inspect` | Service configuration and the managed connection reference | `service`: observed service/catalog information | Establish the required compatibility/target facts the integration can actually verify. Discovery does not issue grants or permanently authorize calls. |
+
+These are contributions selected for this MCP Resource, not newly registered Resource instances
+for each operation. `service-auth.resolve` accesses the existing authentication Resource through
+its Conduit; it does not implement an unrelated second login owner. Selected implementations and
+their published contracts must agree on binding validity, execution context and supported behavior.
+
+The operation names in the first column belong to the selected integration package. The graph step
+names and output selectors below are separate names. This fragment uses the candidate flat layout
+solely to expose value flow:
+
+```yaml
+setup:
+  nodes:
+    obtain-authentication:
+      operation: {plugin: integration, name: service-auth.resolve}
+      inputs:
+        configuration: {reference: {from: config, path: ""}}
+    connect:
+      operation: {plugin: integration, name: mcp.start}
+      inputs:
+        configuration: {reference: {from: config, path: ""}}
+        authentication:
+          reference:
+            from: output
+            node: obtain-authentication
+            port: authentication
+            path: ""
+    inspect:
+      operation: {plugin: integration, name: mcp.inspect}
+      inputs:
+        configuration: {reference: {from: config, path: ""}}
+        connection:
+          reference:
+            from: output
+            node: connect
+            port: connection
+            path: ""
+```
+
+The service template must also supply its type, exact implementation selections, configuration,
+declared authentication connection and ongoing runtime/control bindings. This is the setup
+fragment, not a self-sufficient installable template. The runtime has already been declared by
+the template when `mcp.start` requests its start; that operation does not synthesize an arbitrary
+runtime definition. The required inspect step gates successful preparation in this example, while
+the instance owns any started client even if the later inspection fails.
+
+`port: authentication` selects the output declared by `service-auth.resolve`; `path: ""` selects
+that complete value. Its protection and validity come from its contract and authorized handling,
+not from the output's spelling. Similarly, the `connection` result points to runtime state owned by
+the MCP instance; it is not the live socket copied into YAML. Output/input validation still applies.
+Protected results require contract-appropriate handling and inspection; retaining progress must
+not turn a secret into an ordinary trace field. Exact protected-reference serialization remains open.
+
+Captured configuration gives all three steps a consistent setup input. It does not freeze credential
+expiry, granted access or transport readiness. A recorded binding may need verification or recovery
+before reuse. The operation contracts define that behavior; a matching JSON schema alone cannot
+prove the binding is still usable. A later supported refresh can preserve the selected identity
+without changing the graph or silently choosing a different account.
+
+**Now connect the Agents.** Each authorized attachment receives its own recorded grant, and its
+selected path applies all relevant requirements. The review Agent may discover permitted read tools;
+the development Agent may discover a broader permitted set. Provider-native catalogs remain dynamic
+under their integration contract. Discovery is a view; dispatch must enforce the applicable rules.
+If the selected integration cannot enforce an essential workspace/operation restriction, that
+restricted behavior cannot be presented as available merely because the tool name was hidden.
+
+A native Agent's MCP adapter may register a Conduit-managed endpoint exposing the permitted provider
+tools. The MCP Resource then invokes the upstream service using its supported shared binding. A
+Conduit-owned Agent runtime can mediate internally. Sharing authentication does not require one
+shared socket, a universal gateway or a generic replacement tool. Agent callers authenticate to
+Conduit separately; the provider credential is not passed to each Agent as its Conduit identity.
+
+For an issue update, retain the initiating Agent and chosen participation, verify current access
+and the supported request/response restrictions, invoke the provider, and record the actual result
+or uncertainty. The service Resource uses its own authorized authentication dependency while
+preserving the caller's applicable restrictions. The provider may attribute the action to the shared
+service account; Conduit must not claim per-Agent provider attribution it cannot establish. The
+setup graph does not run for every tool call, and successful setup does not replace per-use checks.
+
+**Ongoing behavior and failures:**
+
+| Situation | Behavior under the existing contracts |
+| --- | --- |
+| Login needs user interaction | Retain the affected operation's progress, surface the adapter flow through the Interface and wait for usable access; unrelated eligible work can continue. |
+| Custody is locked or authentication cannot be verified | Report the dependency problem; block affected work that requires the unavailable binding. Do not fall back to plaintext or another account. |
+| Compatible refresh is supported for the same identity | The authentication Resource owns refresh; service clients use the supported updated binding. Cached setup output is not proof of current validity. |
+| Client starts but required target/compatibility inspection fails | Keep runtime ownership and evidence; preparation remains incomplete. Inspection, explicit retry and stop follow the instance's contracts. |
+| Transport drops after successful setup | Bounded reconnect on the same selected path/identity is the accepted MCP default where supported, with a manual option. It does not replay uncertain writes or rerun setup indiscriminately. |
+| A write response is lost | Retain an uncertain outcome; reconcile or repeat only when the operation's recovery guarantees make that safe. Transport reconnection alone does not establish whether the write happened. |
+| Current permission cannot be verified | Hold new affected managed requests; no offline grant is implied. Already-dispatched operations remain supervised and their actual outcomes retained. |
+| One Agent detaches or its grant is revoked | Detachment releases its participation; revocation blocks its affected access. Preserve other participants and shared Resources. Neither proves cancellation of an already-dispatched provider effect. |
+| Shared service login is revoked | Report the affected shared dependency. Agents can continue independent permitted work; renewal/replacement needs the supported explicit flow when required. |
+
+The Interface combines authentication progress, service-client state, Conduit participation,
+enforcement coverage and attributable operation outcomes. These remain owned by their responsible
+services; the view must identify unknown/stale information and redact protected contents. The
+authentication Resource remains distinct from the custody adapter and from the Agent's model account.
+
+**What this tests:** setup graphs can remain finite while plugins handle provider-specific
+interaction and instances manage continuing refresh/transport. The difficult contract is the
+meaning, validity and permitted use of prepared results, not an additional loop or reference-string
+syntax. The subsequent database case should test effects and recovery when setup changes durable
+data. Still-open binding/descriptor representation, runtime-start/readiness wiring and adapter
+recovery details remain in the existing review; this example does not decide them by illustration.
+
 ### Credential custody as an implementation bundle
 
 The accepted default uses the existing package model to publish a minimal custody contract and

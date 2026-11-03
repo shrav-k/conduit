@@ -36,6 +36,17 @@ Carry these observations from the directory walkthrough into that PR:
 This section records the future PR's scope, not approval of any replacement names or creation of
 that PR now. The reference payload's direct-versus-nested structure remains a separate open choice.
 
+## Behavior and structure merge checkpoint
+
+The owner requests a PR merged to `main` once this behavior/structure review is complete.
+Continue the directory, authenticated MCP and database walkthroughs, resolve the open structural
+choices and any behavioral questions they surface together, and keep remaining implementation
+details or deliberately deferred work explicit. Do not infer a ruling from an illustrative example
+or merge while required behavioral/structural decisions remain unresolved. The separate vocabulary
+PR is not a prerequisite for this merge; use consistent working names in this review's result.
+Prepare the PR from the resulting coherent documentation, verify its checks and merge under this
+authorization once that checkpoint is met. This does not authorize starting runtime implementation.
+
 ## Migration-review rulings
 
 - **M1 accepted:** no backward-compatibility promises or obligation to maintain legacy compatibility
@@ -376,6 +387,14 @@ now traces configuration, plugin/graph bindings, Pool-owned instantiation, subse
 failure/retry. It is an illustrative recipe with a required setup-time layout check, not an executed
 deployment or a new ruling. Discuss its authoring burden and distinctions before the authenticated
 MCP and database cases; the reference payload layout remains open.
+
+The second [guided authenticated MCP walkthrough](proposals/authoring-syntax/AUTHORING.md#guided-authenticated-mcp-walkthrough)
+now traces Pool composition, a shared authentication Resource, a service Resource's setup outputs,
+separately authorized Agent attachments and ongoing refresh/reconnect. It introduces the producer
+contracts before the reference fragment and distinguishes graph results from usable credentials
+and current permission. This is an assumed compatible integration, not verified Linear support or
+a runtime test. The database/migration case follows; no new behavior or field layout is approved
+by this walkthrough.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

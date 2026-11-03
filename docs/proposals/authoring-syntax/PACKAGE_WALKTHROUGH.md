@@ -299,6 +299,9 @@ attachment intent must be explicit. The user need not rewrite the graph or manuf
 The example passes configuration to establishment and its output to the managed runtime. V0 graph
 inputs use literals and typed references; a calculated setup input would come from another plugin
 operation rather than an inline expression. The displayed reference notation remains illustrative.
+An authored graph can also assemble a message object from a literal title and an earlier step's
+body output, or assemble list items explicitly, without another plugin merely to build the structure.
+This is explicit assembly, not automatic merging or string interpolation; constructor syntax remains open.
 Reference recognition is confined to designated graph binding positions. A history message may
 contain an example of reference notation as literal content; neither posting nor reading that
 content causes the graph engine to interpret it as instructions or additional dependencies.

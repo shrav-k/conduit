@@ -168,11 +168,19 @@ and plugin results are not recursively reinterpreted as graph instructions, even
 reference notation. Resolving a reference retrieves data, not another instruction to evaluate.
 Exact notation and literal disambiguation remain open.
 
-The next proposed ruling concerns structured inputs: allow explicit object/list assembly combining
-literals and references without a plugin merely to assemble the structure, or require such mixed
-values to be produced by plugin operations? The first option is recommended; calculations and
-transformations would still remain in operations. This does not authorize recursive scanning of
-literal payloads, inline expressions, loops, automatic merging or final constructor syntax.
+The [structured-input boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: graphs can
+explicitly assemble object fields and list items from literals, references and nested assemblies
+without a plugin merely to build that structure. Output references still imply dependencies; literal
+payloads remain data. Calculations and other transformations remain plugin operations. No automatic
+merging, string manipulation, loops or inline expressions are introduced; constructor syntax is open.
+
+The next proposed ruling concerns validation: reject known wiring/type errors before execution,
+then validate each step's resolved inputs before dispatch without requiring a static proof that
+every possible upstream output satisfies the receiving schema. The alternative requires that
+proof for every binding. The first option is recommended: a producer permitting integers 1–100
+can feed a consumer requiring 1–10, with 5 accepted and 50 rejected before the consumer runs.
+Required schemas and validation features must still be available/supported. This remains proposed;
+exact checking algorithms and diagnostics are later authoring/conformance work.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

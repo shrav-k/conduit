@@ -23,8 +23,9 @@ The [graph-input boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is al
 use literals and typed references to configuration or earlier outputs, while plugin operations
 perform calculations and transformations. Inline binding expressions are deferred. References are
 recognized only in designated binding positions; literal payloads and resolved plugin results remain
-data rather than being recursively reinterpreted. Exact syntax, literal disambiguation and nested
-input assembly remain open; the graph examples do not approve them.
+data rather than being recursively reinterpreted. Explicit object/list assembly from literals and
+references is accepted without a plugin merely to assemble the structure. It adds no automatic merging
+or inline computations. Exact syntax and literal disambiguation remain open; the examples do not approve them.
 The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.

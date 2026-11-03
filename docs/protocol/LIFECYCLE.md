@@ -194,8 +194,16 @@ are not recursively searched for graph instructions. Resolving a reference retri
 it does not reinterpret that value as another reference. For example, a storage plugin can receive
 a document containing an example of graph-reference notation without causing the graph engine to
 resolve the example. Actual references still supply their declared dependencies. Exact binding
-notation, literal disambiguation and structured/nested input assembly remain open; this does not
-require one particular wrapper around every scalar or forbid explicitly authored nested bindings.
+notation and literal disambiguation remain open; this does not require one particular wrapper
+around every scalar.
+
+**Structured inputs:** graphs may explicitly assemble objects and lists from literals, references
+and nested assemblies, without a plugin merely to build that structure. Each declared field or
+list item supplies a value; output references contribute their normal execution dependencies. For example,
+a document can combine the literal title `Review` with a body taken from an earlier step's output.
+Literal subtrees and resolved output values remain data under the recognition rule above. Assembly
+does not add automatic merging, arithmetic, string manipulation, loops or inline expressions;
+calculations and other transformations still use plugin operations. Exact constructor syntax remains open.
 
 For example, database startup reads its directory from configuration, and a migration step receives
 the database handle published by startup. If the directory must be constructed from a base and a

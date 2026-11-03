@@ -194,8 +194,14 @@ in graph bindings are deferred. Output references retain their existing dependen
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for
 reference markers. A plugin result retrieved through a reference remains data rather than being
-reinterpreted as graph instructions. Exact notation, literal disambiguation and structured/nested
-input assembly remain open; no particular wrapper for every scalar is required by this decision.
+reinterpreted as graph instructions. Exact notation and literal disambiguation remain open;
+no particular wrapper for every scalar is required by this decision.
+
+**Accepted assembly boundary:** graphs may explicitly assemble object fields and list items from
+literals, references and nested assemblies. A plugin is not required merely to build that structure.
+Output references retain their normal dependency semantics, and literal subtrees/resolved values remain
+data. This adds no automatic merging, calculations, string manipulation, loops or inline expressions;
+those transformations still use plugin operations. Exact constructor notation remains open.
 
 **Proposed representation:** an inline graph is a mapping of node names to operation bindings.
 Each operation identifies a plugin alias and export. Inputs are literals or bindings recognized
@@ -243,6 +249,12 @@ If an earlier operation returns that document and the graph explicitly reference
 output binding creates a dependency on that operation, but the document's contents do not create
 further graph dependencies. These field names are illustrative; the rule applies to the eventual
 reference notation. Exact syntax for declaring the literal document is still open.
+
+To assemble a document, the graph can declare its `title` field as the literal `Review` and its
+`body` field as a reference to `read_document`'s text output. A list can similarly declare a literal
+item followed by an item from another output. This structural assembly does not concatenate strings
+or merge objects, and it does not scan either field's contents for additional references. This
+describes accepted behavior without choosing an `object`, `list`, `literal` or `reference` keyword.
 
 ### Compile-time rules
 

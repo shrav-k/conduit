@@ -43,6 +43,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    use plugin operations for calculations and transformations, with no inline binding expressions in v0.
    References are recognized only in designated binding positions. Literal payloads and plugin results
    remain data even when they resemble reference notation; exact notation remains open.
+   Explicitly assemble object fields or list items from literals/references without an extra plugin
+   just to build the structure. This does not introduce automatic merging or inline calculations.
    The Resource instance manages ongoing activity; a successful setup graph is not
    a permanent readiness guarantee. An uncertain external effect must be reconciled under its contract.
 4. **Declare a Resource template.** Supply the configuration, setup graph, ongoing behavior and allowed

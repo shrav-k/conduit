@@ -245,6 +245,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   same content via an explicit reference to another operation's output. Preserve the data in both
   cases: only actual graph bindings establish dependencies, and reference resolution does not
   recursively interpret the retrieved payload. Concrete literal/reference syntax remains open.
+- Assemble an object and a list explicitly from literals and prior outputs, including a nested
+  assembly and a reference-shaped literal subtree. Verify the resulting values and dependencies
+  without an assembly plugin, automatic merging or recursive interpretation of literal data.
+  Exact constructor notation remains open.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

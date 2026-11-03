@@ -345,6 +345,12 @@ the accepted rules. Review authoring costs, transformation granularity and failu
 field layout. This is research guidance, not a new ruling or an automatic reopening of accepted
 contracts. Identify any proposed revision explicitly; the protocol reference remains authoritative.
 
+The first [guided directory walkthrough](proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
+now traces configuration, plugin/graph bindings, Pool-owned instantiation, subsequent Agent access and
+failure/retry. It is an illustrative recipe with a required setup-time layout check, not an executed
+deployment or a new ruling. Discuss its authoring burden and distinctions before the authenticated
+MCP and database cases; the reference payload layout remains open.
+
 Continue the complete package-to-instance walkthrough through four connected batches:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema profile, package identity,

@@ -285,6 +285,10 @@ access/copy/mount capability; it cannot treat this path as its own local directo
 
 ### Worked comparison: two plugins in one directory template
 
+The [guided directory walkthrough](#guided-directory-walkthrough) below follows this recipe from
+authoring through Pool provisioning, failure/retry and Agent access. It starts the complete-example
+review requested after the [graph-authoring audit](../../research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
+
 **Accepted v0 model:** a template supplies a complete recipe using compatible contributions from
 one or several plugins, with no mandatory primary implementation. Complete standard templates and
 declared type defaults provide convenience. The named dependency map and alias-plus-export reference
@@ -329,16 +333,16 @@ setup:
     attach:
       operation: {plugin: filesystem, name: directory.establish}
       inputs:
-        configuration: {reference: {from: config}}
+        configuration: {reference: {from: config, path: ""}}
     check:
       operation: {plugin: checks, name: verify-layout}
       inputs:
-        directory: {reference: {from: output, node: attach, port: directory}}
+        directory: {reference: {from: output, node: attach, port: directory, path: ""}}
         requiredEntries: {literal: [Cargo.toml, src]}
 runtime:
   driver: {plugin: filesystem, name: directory.managed}
   inputs:
-    directory: {reference: {from: output, node: attach, port: directory}}
+    directory: {reference: {from: output, node: attach, port: directory, path: ""}}
 controls: {use: type-defaults}
 ```
 
@@ -361,6 +365,129 @@ that participation/prepared view, not the Pool's Resource or backing directory. 
 invoke their resolved handlers; they do not rerun setup checks unless their graph declares it.
 Changing fixed bindings or implementation selections still requires replacement in v0. A descriptor
 or package alias supplies no permission and cannot replace a Resource dependency through a Conduit.
+
+#### Guided directory walkthrough
+
+Walkthrough date: 2026-11-03. This is a hypothetical recipe, not a performed deployment. The path,
+packages and export names are examples; no directory or Resource is created by this document.
+The accepted binding forms are used with candidate flat reference fields. Using them here does not
+settle the flat/nested ruling, source-kind set, runtime-input encoding or package manifest syntax.
+Every displayed pointer is explicit, leaving omitted-path behavior open.
+
+**Intended outcome:** an Euphony Pool owns a directory Resource backed by an existing folder. Setup
+must verify that the folder contains `Cargo.toml` and `src`. Authorized Agents can subsequently
+connect to that Resource. For this recipe the layout check is required setup, not a perpetual
+guarantee that the files will remain present. This is an example-specific choice, not a new
+requirement for every directory Resource.
+
+The full registry template uses the ordinary `kind: Resource`, `form: template` envelope and a
+name such as `project-directory`; its `spec` is the fragment above. The selected type contract
+supplies the configuration and capability obligations. Its compatible plugin contributions must
+be supplied explicitly or through declared defaults before execution; a type name alone does not
+select arbitrary installed code.
+
+| What the author supplies | Role in this example |
+| --- | --- |
+| Filesystem package's published contracts and implementation | Establish the configured folder and provide the ongoing directory capability and lifecycle. |
+| Checks package's published operation and implementation | Inspect required entries through the supported directory access contract; report findings and outcome. |
+| Resource template | Select compatible contributions, initial configuration, setup wiring and runtime/control bindings. |
+| Pool's explicit template entry | Make this recipe available for authorized provisioning into that Pool; listing it starts nothing. |
+| Agent/Conduit definitions | Supply compatible endpoint behavior and authorized participation for subsequent Agent access. |
+
+Neither plugin selection nor an output reference is a grant. Setup executes with its authorized
+instance/operation context; the checker must support the directory's actual execution placement
+and access mode. This example assumes the supported local execution context, not implicit access
+to the same path on another machine.
+
+**First, author configuration and wiring.** `spec.config` contains ordinary values. The
+`configuration` binding passes its captured value to `directory.establish`. The operation receives
+the following data, without graph wrappers:
+
+```yaml
+configuration:
+  path: /work/euphony
+  establish: attach
+```
+
+It verifies the existing folder under its contract and publishes its declared `directory` output.
+Conduit validates that output before making it available. The output's actual descriptor schema is
+defined by the operation/capability contract; this walkthrough does not equate it to an unrestricted
+host path or invent its stable-ID encoding.
+
+```mermaid
+flowchart LR
+    C[Captured configuration] --> A[Attach existing directory]
+    A -->|directory output| V[Verify required entries]
+```
+
+The checker receives that directory value and the ordinary list `[Cargo.toml, src]`. The literal
+wrapper applies once to the complete static list. No wrapper is needed around each filename and
+no separate operation is needed to construct this list. The output reference creates the ordering;
+swapping node positions in the YAML would not let the checker run first. An empty pointer selects
+the whole declared output. Selecting a nested member instead would use its pointer, provided the
+consumer contract actually accepts that member's type and meaning.
+
+The template also selects `directory.managed` for ongoing behavior. Its input identifies the same
+directory. The required check gates successful setup/readiness for this recipe; merely having a
+directory descriptor does not satisfy that check. This does not select an additional runtime-start
+field or require a daemon per directory. A runtime can be instance-managed during setup under the
+accepted contract, but its existence is separate from successful required preparation.
+
+**Then, explicitly instantiate through the Pool.** The Interface selects the Pool's entry and
+requests provisioning/setup. It can offer these as one deliberate action while reporting the
+distinct outcomes. Registration, instance creation and setup are not the same event.
+
+| Item | Result in this example |
+| --- | --- |
+| Source template | `project-directory` remains reusable. |
+| Resource instance | A new object, for example `project-directory-7f3a`, owned by the selected Pool instance. |
+| Instance definition | Retains the resolved setup graph, runtime/control bindings and selected implementation content. |
+| Stored configuration | Includes the absolute path and explicit attachment intent; declared defaults are materialized. |
+| Observed state | Records the actual attachment/check outcomes and current capability readiness separately from configuration. |
+| Backing data | The existing directory and its changing files; no copy or filesystem snapshot is implied. |
+
+Editing the template afterward changes future instances, not this instance's fixed definition.
+The exact metadata/status serialization remains open. An inspection view can report the facts above;
+configuration export must not turn reported readiness, access grants or live descriptors into
+authorable settings. A new instance from an exported configuration still goes through its Pool and
+its own establishment checks.
+
+**Finally, connect an Agent.** An authorized Conduit connects an Agent's supported filesystem
+endpoint to the Resource. Its endpoint plugins prepare the permitted exposure, such as an Agent-local
+symlink. A second Agent may have its own Conduit/participation and prepared path to the same Resource.
+Those links are preparation state, not new folder Resources or copied files. Closing one participation
+releases that view while preserving the other Agent's access, the Resource and backing data.
+A symlink alone does not enforce read-only access or isolate concurrent writers; those guarantees
+require implementations and execution modes that actually support them.
+
+**Follow failures through the same recipe.** These descriptions are outcomes for inspection, not
+a proposed universal status enumeration:
+
+| Situation | What follows |
+| --- | --- |
+| Required schema/export is unavailable or wiring is provably invalid | Definition/execution validation reports the gap before dispatch; selecting a name does not supply missing code. Missing runtimes remain distinct from accepting schema-valid configuration. |
+| `/work/euphony` does not exist | Attach fails; no directory is silently created, and the checker has no successful prerequisite. |
+| Attachment succeeds but `Cargo.toml` is missing | Required setup remains incomplete. Keep attachment evidence and the folder; report the missing entry. |
+| An authorized person or operation adds the missing file, then requests retry | Continue the same invocation using only still-valid recorded progress; rerun/recover the failed check as its contract permits. Do not claim continuous checking or automatic retry. |
+| Establishment returns a malformed directory descriptor | Withhold the invalid output, block its consumers and retain effect evidence. Do not infer that establishment had no effects. |
+| A helper response is lost | Report the unconfirmed outcome and reconcile under its recovery contract before unsafe repetition. A pure read check can declare safe repetition; folder creation has different obligations. |
+| A required file is removed after successful setup | Previous check evidence describes the earlier check. This recipe has not declared continuous layout monitoring; subsequent access/readiness follows its supported runtime contract. |
+
+Changing `establish: attach` to `create` in a template draft changes the establishment behavior
+without changing the graph wiring, if that operation's contract supports both. A fresh creation
+conflicts with an existing path. An empty new folder will still fail this recipe's layout check:
+creating a directory does not initialize a Rust project. That variant would need an explicit
+population operation before checking, or a deliberately different check. If creation happened but its response was lost, later path existence
+alone cannot prove which attempt created it; reconcile before repeating or adopting it. No automatic
+backing-data deletion follows failure or retirement.
+
+**What this case tells us about the language:** it needs no inline expression and no operation just
+to assemble static data. The binding forms have a small visible cost here; the naming distinction
+between a package alias/export and a graph node/output needs explanation. The remaining flat/nested
+choice changes how that selector is written, not the data or dependencies. Neither result should be
+generalized to authenticated MCP setup or database/migration recovery before walking those cases.
+Questions about continuous rechecking, runtime gating notation and descriptor interoperability stay
+in the existing review; this example does not add automatic monitoring or accept new syntax.
 
 #### Compatibility: what must agree
 

@@ -110,8 +110,10 @@ merely to resolve exports. The same rule applies to default bindings when they a
    resolve from the selected package and its explicitly supplied or declared schema dependencies;
    report missing required definitions without automatic network fetching. Dependencies may be
    acquired explicitly beforehand. No implicit environment/shell expansion occurs during validation.
-   Conduit-authored schemas reject unrecognized keywords; custom annotations use an explicitly
-   declared mechanism. Its syntax and detailed adapter handling of external MCP schemas remain open.
+   Conduit-authored schemas reject unrecognized keywords. Reuse standard descriptive annotations;
+   additional custom metadata uses one dedicated namespaced map. These optional tooling hints do
+   not implement validation, authority or runtime behavior. The map keyword, namespace syntax,
+   value schemas and detailed adapter handling of external MCP schemas remain open.
 5. Validate supplied typed values, graph binding positions, control definitions and dependency
    declarations. Defer required-field checks for declared defaulted fields until materialization.
    A template can leave explicitly declared composition inputs unbound; an instance cannot

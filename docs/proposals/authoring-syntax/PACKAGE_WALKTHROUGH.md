@@ -239,6 +239,24 @@ For this example, `readLimit` is the default page size, and an explicitly reques
 remain within the capability's 1–100 range and any narrower applicable restrictions. This gives
 the illustrative control a precise effect; it does not settle every Resource's pagination policy.
 
+Standard `title` and `description` annotations can document the `limit` field. A frontend may also
+want a slider grouped under search settings. The accepted custom-metadata mechanism is a dedicated
+namespaced map; the following extension block illustrates its shape without choosing its keyword
+or namespace syntax:
+
+```yaml
+annotations:
+  example.ui:
+    widget: slider
+    group: Search settings
+```
+
+Another frontend can use a numeric input. In either case, the schema still validates the 1–100
+range, grants/requirements govern who may invoke the control, and the handler contract governs
+application and confirmation. Custom descriptive annotations do not implement those guarantees.
+Unknown schema keywords outside the extension mechanism still report errors. Detailed annotation
+value schemas remain open.
+
 The capability's remaining typed methods have these meanings; exact wire fields stay open:
 
 | Method | Request and result | Required behavior |

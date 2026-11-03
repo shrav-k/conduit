@@ -127,9 +127,18 @@ silently accepting them as annotations. For example, `minimun: 1` must report an
 of losing the intended `minimum` constraint. This checks schema-keyword positions; names inside
 declared maps such as `properties` and `$defs` remain governed by those maps' contracts.
 
-Custom annotations use an explicitly declared mechanism, whose exact representation remains
-open. An annotation does not itself implement validation, authorization or another behavioral
-guarantee. External provider MCP schemas follow the separate boundary below.
+Use standard descriptive schema annotations such as `title`, `description` and `examples` where
+they fit. Additional custom descriptive metadata uses one dedicated annotations map with namespaced
+entries. For example, a frontend can supply a slider/grouping hint for a query-limit field, while a
+documentation tool supplies a section hint under its own namespace. A frontend may use an ordinary
+numeric input when it does not support the slider hint; the field's declared validation still applies.
+
+Custom annotations do not implement validation, authorization or runtime behavior. A limit of 1–100
+belongs in the input schema; permission to change it belongs in grants/governing requirements; how
+the change is applied belongs in the control/handler contract. Unknown schema keywords outside the
+dedicated extension mechanism remain errors. The map keyword, namespace syntax and detailed value
+schemas remain open; illustrative `annotations` and `example.ui` spellings are not selected syntax.
+External provider MCP schemas follow the separate boundary below.
 
 In Conduit-authored data schemas, `format` is an enforced validation requirement. The shared
 profile defines supported formats; report an unsupported format rather than treating its

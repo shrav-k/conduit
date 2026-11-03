@@ -9,7 +9,10 @@ merely by appearing here. The [current review](../../REVIEW.md) owns the remaini
 The subsequent [schema-resolution ruling](../../protocol/CONFIGURATION.md#schema-resolution)
 also accepts supplied/declared schema dependencies with no automatic fetching during validation.
 The owner also accepted [rejecting unrecognized schema keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance)
-in Conduit-authored contracts, with an explicit custom-annotation mechanism still to be specified.
+in Conduit-authored contracts. A subsequent ruling selects one dedicated map of namespaced custom
+descriptive annotations, reusing standard descriptive annotations where applicable. Its keyword,
+namespace syntax and detailed value schemas remain open; custom hints do not implement validation,
+authorization or runtime behavior.
 
 ## Recommendation and scope
 

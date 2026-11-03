@@ -170,6 +170,11 @@ test that agreement. Plugin packages supply schemas under exact contract identit
 layout and generation tooling remain I7 work. Host compilation need not enumerate every future
 Resource type.
 
+The accepted authored-schema profile rejects unknown keywords while providing one dedicated map
+for namespaced custom descriptive annotations. Reuse standard descriptive annotations where they
+fit; custom tooling hints do not implement validation, authority or runtime behavior. The map keyword,
+namespace syntax and value schemas remain open. Provider MCP schemas retain their own dialect rules.
+
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;
 it is not an unvalidated catch-all. A changed description does not authorize changing semantics

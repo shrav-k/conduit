@@ -191,6 +191,7 @@ proves a production standalone deployment.
 | Case | Fault or action | Required observation |
 | --- | --- | --- |
 | Contract checking | Missing schema, wrong input type, unsupported restriction or missing implementation | Reject invalid configuration or report unready execution as appropriate. Never drop a filter or substitute code. |
+| Descriptive schema annotations | Add a namespaced slider hint to a limit schema; inspect with tooling that supports it and tooling that does not | Both retain the same 1–100 validation and control/authority behavior; unsupported presentation hints need not affect a numeric editor. A misspelled schema keyword outside the annotation map still fails acceptance. Exact map notation/value schemas remain open. |
 | Active implementation preservation | Start with A, edit local plugin code/contracts to B and invoke the running instance again | Running work still uses A. Editing source does not replace its implementation or require publishing A as a reusable package. |
 | Exact implementation on restart | Start with A, make B available, then restart the original instance | Original remains bound to A or reports A unavailable. It never silently adopts B. |
 | Development replacement | Retire the A instance and create a replacement from revised source B, reusing fixture backing data explicitly | B is selected through normal contracts; both versions need not run together. No implicit grant transfer or backing-data deletion. Historical outcome records do not require a selectable build archive. |

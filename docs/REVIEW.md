@@ -97,9 +97,10 @@ report missing required definitions without automatic network fetching during va
 Explicit acquisition beforehand remains possible, and exact reference syntax is open.
 
 The [schema-keyword rule](protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted:
-reject unrecognized keywords in Conduit-authored schemas and allow custom annotations through
-an explicitly declared mechanism. The annotation syntax and detailed adapter handling of external MCP catalogs
-remain separate; annotations do not supply enforcement by themselves.
+reject unrecognized keywords in Conduit-authored schemas. Reuse standard descriptive annotations
+where applicable, with additional custom metadata in one dedicated map of namespaced entries.
+Custom annotations supply optional tooling hints, not validation, authority or runtime behavior.
+The map keyword, namespace syntax, value schemas and external MCP adapter details remain open.
 
 The [default-conflict rule](protocol/CONFIGURATION.md#schema-default-resolution) is accepted:
 conflicting applicable defaults for an omitted configuration field require an explicit valid
@@ -239,11 +240,16 @@ selecting an alias plus a public export name. There is no primary alias; each us
 kind and contract. Package-internal scope and retained implementation identities remain unchanged.
 `spec.plugins`, `{plugin, name}` and other concrete field spellings are still proposals.
 
-Next, resolve the custom schema-annotation mechanism left open under strict keyword validation:
-one dedicated map of namespaced descriptive annotations, or individually declared annotation
-keywords? The dedicated map is recommended for optional tooling metadata, keeping validation and
-behavioral rules in their declared contracts. This remains pending; the map keyword, namespace
-syntax and detailed value schemas are open. Provider-native schema semantics remain separate.
+The dedicated custom-annotation map is accepted under the schema-keyword rule above. Presentation
+and documentation hints do not change validation, grants or control behavior. Exact spelling and
+value schemas remain open; provider-native schema semantics are unchanged.
+
+Next, settle the v0 custom-format boundary: limit Conduit-authored `format` declarations to the shared
+published set of standard formats, or support plugin-defined format validators from the outset?
+The shared set is recommended initially to keep authored-schema validation independent of arbitrary
+plugin validator code. This is pending; the exact standard-format set and future extension mechanism
+remain open. Declarative custom constraints can still use supported schema keywords/references,
+and provider MCP schemas retain their own dialect semantics.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

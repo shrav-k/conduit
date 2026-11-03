@@ -65,7 +65,9 @@ The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-res
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.
 Conduit-authored schemas also [reject unrecognized keywords](../../protocol/CONFIGURATION.md#schema-keyword-acceptance),
-with custom annotations using an explicitly declared mechanism. Its syntax remains open.
+with additional custom descriptive annotations in one dedicated map of namespaced entries.
+Reuse standard descriptive annotations where applicable. Custom hints do not implement validation,
+permissions or runtime behavior; the map keyword, namespace syntax and value schemas remain open.
 Provider MCP schemas [retain their declared dialect's semantics](../../protocol/CONFIGURATION.md#provider-mcp-schemas);
 allowed descriptive annotations do not alone reject a tool, and unsupported required validation
 features are reported without stripping constraints or claiming enforcement. Adapter details remain open.

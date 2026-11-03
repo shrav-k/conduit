@@ -18,8 +18,10 @@ dependencies, without automatic network fetching during validation. Missing requ
 are reported; dependencies may be acquired explicitly beforehand. The detailed schema profile
 and reference syntax remain in review.
 Conduit-authored schemas reject unrecognized keywords, including misspelled validation rules.
-Custom annotations require an explicitly declared mechanism; its syntax and external MCP
-adapter details remain separate. See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
+Reuse standard descriptive annotations where applicable. Additional custom tooling hints use one
+dedicated map of namespaced entries; they do not implement validation, permissions or runtime behavior.
+The map keyword, namespace syntax, value schemas and external MCP adapter details remain open.
+See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
 Declared formats are enforced validation requirements in Conduit-authored schemas, with supported
 formats defined by the shared profile and unsupported formats reported. The format set remains open.
 If composed schemas give an omitted configuration field conflicting defaults, provide an explicit

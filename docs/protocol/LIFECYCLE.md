@@ -244,6 +244,19 @@ contracts. Continuing eligible branches neither retries failed work nor rolls ba
 default concerns scheduling within the requested graph; it does not start unrelated Agent turns,
 provision unselected Pool entries or bypass another instance's prerequisites.
 
+**Explicit graph cancellation:** when an authorized caller cancels a graph, stop starting ordinary
+steps and request cancellation of its in-flight child operations where their contracts support it.
+Continue tracking actual outcomes, effects and uncertainty, and perform required contract-defined
+cleanup. Unsupported cancellation or missing confirmation must remain visible; the request alone
+does not establish that work stopped, effects were undone or cleanup completed.
+
+For example, cancellation can ask an active download to stop while an already-created database
+remains governed by its instance lifecycle. Cancelling preparation still detaches the attachments
+retained by that preparation under the [connection rules](CONDUITS.md#conduits),
+preserving other consumers and backing Resources. Graph cancellation does not itself retire an
+instance or authorize arbitrary cleanup, rollback or replay. Exact propagation and transport
+mechanics remain open within this boundary.
+
 For example, database startup reads its directory from configuration, and a migration step receives
 the database handle published by startup. If the directory must be constructed from a base and a
 relative path, a typed plugin operation performs that transformation and startup references its
@@ -276,7 +289,7 @@ Required connection failures block initial preparation, optional ones report and
 successful partial attachments are retained for retry. After successful setup, consumers normally
 continue independent work when a dependency is unavailable. The selected MCP example uses bounded
 reconnect with a manual option; this is not a universal operation retry policy or permission to
-replay writes/start new model work. Exact graphs, waits, cancellation, retry bounds, live-change
+replay writes/start new model work. Exact graphs, waits, cancellation mechanics, retry bounds, live-change
 handlers and recovery compatibility remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples).
 
 

@@ -39,6 +39,9 @@ After a setup/change graph step fails, independent steps continue when their own
 current authority remain satisfied. Unmet prerequisites block affected work, required unfinished
 setup remains incomplete, and cancellation/stop rules still apply. No automatic retry or rollback
 follows. Detailed scheduling mechanics remain open within this accepted policy.
+Explicit graph cancellation stops new ordinary steps and requests supported cancellation of
+in-flight children. Track actual outcomes and required cleanup; cancellation does not prove effects
+stopped or replace instance lifecycle rules. Exact propagation/transport mechanics remain open.
 The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.

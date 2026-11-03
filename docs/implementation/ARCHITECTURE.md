@@ -738,10 +738,13 @@ A node requesting runtime startup goes through the instance supervisor. The proc
 owned before the node receives a usable runtime handle. Subsequent migration/initialization nodes
 can use that handle. Successful node completion never transfers lifetime ownership to the graph.
 
-Graph failure blocks dependent steps and records partial progress. Independent work already
-accepted follows its contract; retain managed runtimes and successful attachments by default.
-Explicit cancellation requests cooperative stop, reports unresolved effects and performs only
-declared cleanup. There is no inferred rollback or reverse-topological deletion of backing data.
+Graph failure blocks unmet prerequisites and records partial progress while independent eligible
+steps continue; retain managed runtimes and successful attachments by default. Explicit graph
+cancellation stops new ordinary steps and requests cancellation of in-flight children where their
+contracts support it. Continue tracking their actual outcomes and perform required cleanup, including
+preparation's attachment-release duties. Report unsupported or unconfirmed cancellation; the request
+does not establish that effects stopped. Instance-owned runtimes remain governed by their lifecycle
+contracts. There is no inferred rollback or reverse-topological deletion of backing data.
 
 Human-interaction waits release worker compute and retain a recoverable interaction reference.
 If a plugin cannot recover a challenge, recovery reports that fact and requests a supported new
@@ -1010,6 +1013,7 @@ effects; store oversized legitimate outputs by reference where their contract su
 | Missing code / unavailable dependency | Retain valid registration; report unready operations. |
 | Required preparation failure | Block that consumer's preparation; retain successful partial work. |
 | Graph step failure | Continue independent eligible steps; block unmet prerequisites and report required unfinished setup as incomplete. Current authority, coordination and stop rules still apply. |
+| Explicit graph cancellation | Stop new ordinary steps; request supported child cancellation. Track actual outcomes and required cleanup without claiming rollback or retiring instance-owned runtimes implicitly. |
 | Dependency lost after readiness | Continue independent work; mark affected operations unavailable. |
 | Worker panic / timeout | Record failure or uncertainty according to evidence; do not infer rollback. |
 | Store unavailable before dispatch | Do not admit new effects that cannot be recorded. |

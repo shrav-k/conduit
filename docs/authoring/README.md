@@ -52,6 +52,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    invalid output and report the contract error while preserving effects/uncertainty for recovery.
    A failed step blocks work with unmet prerequisites while independent eligible branches continue.
    Required unfinished setup remains incomplete; this does not retry failed work or undo effects.
+   Explicit graph cancellation stops new ordinary steps and requests supported cancellation of
+   in-flight children; keep tracking outcomes and perform required cleanup without implying rollback.
    The Resource instance manages ongoing activity; a successful setup graph is not
    a permanent readiness guarantee. An uncertain external effect must be reconciled under its contract.
 4. **Declare a Resource template.** Supply the configuration, setup graph, ongoing behavior and allowed

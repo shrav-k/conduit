@@ -193,12 +193,18 @@ branches continue when their own prerequisites remain satisfied. Unmet prerequis
 work, required unfinished setup remains incomplete, and current authority, coordination, cancellation
 and stop rules still apply. Preserve effects and dispatched outcomes without automatic retry or rollback.
 
-The next proposed ruling concerns an explicit graph-cancel request: stop admitting ordinary graph
-steps and request cancellation of in-flight child operations where their contracts support it, or
-only stop new steps and let active operations finish? The first option is recommended. Continue
-tracking outcomes/uncertainty and performing required cleanup; existing preparation-cancel attachment
-release duties still apply. Cancellation would not itself prove effects stopped or replace instance
-runtime lifecycle contracts. This remains pending; exact propagation and transport mechanics are open.
+The [explicit graph-cancellation rule](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: stop
+starting ordinary steps and request cancellation of in-flight child operations where supported.
+Track actual outcomes, effects and uncertainty, and perform required cleanup. Preparation's existing
+attachment-release duties still apply; an already-started runtime follows its instance lifecycle.
+A request is not proof of stopped work, rollback or completed cleanup. Exact propagation and
+transport mechanics remain open.
+
+The next proposed ruling concerns configuration references within one graph execution: use values
+captured when that execution begins, or read current settings separately for each step? Capturing
+one configuration is recommended to avoid silently mixing settings across steps. Current authority,
+dependency validity and control-application revision checks would remain live. This is pending;
+retry/recovery still must revalidate retained results against their relevant inputs and prerequisites.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

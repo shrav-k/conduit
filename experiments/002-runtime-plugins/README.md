@@ -264,6 +264,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   blocked, and required unfinished setup is not reported complete. Preserve effects/outcomes without
   retrying the failed branch or rolling anything back. Current authority, coordination and stop rules
   remain prerequisites for dispatch.
+- Cancel a graph with a pending ordinary step, a cancellable active child and an active child whose
+  contract does not support cancellation. Verify that no new ordinary step starts, supported child
+  cancellation is requested, and actual child outcomes remain tracked. Lose a cancellation response
+  to prove the Interface does not claim confirmed stopping. Perform required preparation attachment
+  cleanup while preserving other consumers and an already-started instance-owned fixture runtime;
+  report incomplete cleanup rather than inferring rollback or automatically retiring that runtime.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

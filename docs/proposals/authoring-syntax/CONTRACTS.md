@@ -304,6 +304,13 @@ For example, a graph can prepare a workspace independently of logging into a ser
 blocks service work that needs that login, while the eligible workspace branch continues. This concerns
 the graph's already-requested work, not automatic provisioning of unselected Pool entries or Agent turns.
 
+**Accepted cancellation policy:** an authorized explicit graph cancellation stops new ordinary
+steps and requests cancellation of in-flight child operations where supported by their contracts.
+Keep tracking actual outcomes/effects and performing required cleanup, including preparation's
+attachment-release duties. Report unsupported or unconfirmed cancellation without inferring that
+effects stopped or were undone. Instance-owned runtimes retain their lifecycle contracts; cancelling
+a graph does not itself retire them. Exact propagation and transport mechanics remain proposed.
+
 Plugins handle internal branching/polling; the graph language has no authored loops, conditionals
 or dynamic fan-out. A Pool composition operation can process a finite declared selection and
 return separately tracked child outcomes without exposing an arbitrary loop language.

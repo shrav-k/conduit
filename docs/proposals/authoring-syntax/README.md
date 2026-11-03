@@ -88,7 +88,9 @@ scaled-integer contracts. Core revision/ID encodings and detailed conformance fi
 The accepted [batch boundary](../../protocol/CONFIGURATION.md#batch-configuration-submissions) supports
 multi-object submissions through ordinary checked writes, with per-object outcomes and retained
 partial successes. Explicit intent and preconditions remain required; no atomicity or automatic setup
-is implied. Batch notation, prevalidation, ordering and failure scheduling remain proposals.
+is implied. Complete parsing and schema validation precede all writes; an invalid entry or missing
+required schema prevents them. Current authority and state checks still apply at each write.
+Batch notation, ordering and failure scheduling remain proposals.
 Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
 covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.

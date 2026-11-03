@@ -377,9 +377,14 @@ template together through individual checked registry writes. If history registr
 the Agent name conflicts, history remains registered and the Interface reports both outcomes. Each
 entry still requires explicit create/update intent and any applicable update preconditions.
 
+Before writing either template, Conduit parses the complete batch and validates both against their
+required schemas. If the Agent template has an unknown field, neither template is registered.
+Passing this check does not reserve the Agent's name: a later write conflict can still produce the
+partial outcome above, with current authority and revision checks at each write.
+
 This registers definitions; it does not instantiate the Pool, create a history Resource or launch
-an Agent. Neither the package descriptor nor a batch implies an atomic deployment. Whole-batch
-prevalidation, application order, failure scheduling and concrete batch notation remain unselected.
+an Agent. Neither the package descriptor nor a batch implies an atomic deployment. Application
+order, write-failure scheduling and concrete batch notation remain unselected.
 
 ## 6. Follow the names through one invocation
 

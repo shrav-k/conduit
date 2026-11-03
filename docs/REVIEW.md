@@ -272,16 +272,22 @@ The [batch submission boundary](protocol/CONFIGURATION.md#batch-configuration-su
 v0 supports multi-object configuration submissions as a convenience over ordinary checked writes,
 with per-object outcomes and retained partial successes. No atomic batch guarantee or rollback is
 implied. Explicit create/update intent, update preconditions, Pool ownership and instance-control
-rules remain mandatory; registration starts no runtime. Prevalidation, ordering, failure scheduling
-and exact YAML/JSON representation remain open.
+rules remain mandatory; registration starts no runtime. Ordering, failure scheduling and exact
+YAML/JSON representation remain open.
 
-Next, settle batch prevalidation. Recommend parsing the complete submission and validating every
-entry against its required schemas before any registry writes. An unknown field in the last entry
-would then prevent all writes, with diagnostics identifying the invalid entry. This is pending; the
-alternative validates entries individually as they are applied. Successful prevalidation would not
-reserve names or revisions, freeze permissions, or guarantee later writes: current authorization,
-identity/version and other state-dependent checks still apply at each write, with partial outcomes
-reported under the accepted batch rule. Exact checks, ordering and failure scheduling remain separate.
+Whole-batch prevalidation is accepted: parse the complete submission and validate every entry against
+its required schemas before any registry writes. A malformed/schema-invalid entry or unavailable
+required schema prevents all writes, with diagnostics identifying the problem. Passing this check
+does not reserve names or revisions, freeze permissions, or guarantee later writes: current
+authorization, identity/version and other state-dependent checks still apply at each write, with
+partial outcomes reported under the accepted batch rule.
+
+Next, settle application order. Recommend applying batch entries sequentially in their submitted
+order, without inferring a dependency order or running writes in parallel. An author could put the
+history Resource-template registration before a Pool template referring to it. This is pending; the
+alternative derives an order from object references. Reference checks and per-write preconditions
+still apply. Whether a failed or uncertain write prevents later entries from being attempted remains
+a separate ruling; accepting order would not select automatic retries or rollback.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

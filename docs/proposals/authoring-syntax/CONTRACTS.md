@@ -172,9 +172,13 @@ individual checked registry writes, with per-object outcomes and retained partia
 Each entry has explicit create/update intent and applicable preconditions; there is no atomic batch
 guarantee, inferred rollback or automatic setup. An update needs its own target's baseline.
 
-**Still proposed:** validate the complete batch before writing, then apply entries in declared order.
-Prevalidation, ordering, failure scheduling and YAML/JSON batch notation have not been selected.
-Whole-batch validation would not eliminate state-dependent checks at each write.
+**Accepted prevalidation:** parse the complete submission and validate every entry against its
+required schemas before any registry writes. Parsing/schema failures or missing required schemas
+prevent all writes. Passing this check does not reserve names/revisions or freeze authority;
+state-dependent checks still apply at each write and can produce partial outcomes.
+
+**Still proposed:** apply entries sequentially in submitted order. Ordering, failure scheduling and
+YAML/JSON batch notation have not been selected.
 
 ## 3. Templates, instances and bindings
 

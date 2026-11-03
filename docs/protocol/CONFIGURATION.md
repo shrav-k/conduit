@@ -521,8 +521,19 @@ Batching does not authorize generic edits to running instance definitions, bypas
 through a Pool, provision Resources or start runtimes. Registration and subsequent setup remain
 separate actions.
 
-Prevalidation, application order, scheduling after failures, and the YAML/JSON representation remain
-open. Accepting batching does not approve the proposal's specific validation or ordering algorithm.
+Parse the complete submission and validate every entry against its required schemas before any
+registry writes. If parsing fails, a required schema is unavailable, or an entry fails schema
+validation, write none of the entries and report the problem with its available location/entry
+context. For example, an unknown field in the Agent template prevents registration of both it and
+the otherwise-valid history template.
+
+Passing this prevalidation does not reserve names or revisions, freeze permissions, or guarantee
+later writes. Current authorization, identity/version preconditions and other state-dependent checks
+still apply at each write; later conflicts can leave the accepted partial outcomes described above.
+Registration remains separate from runtime readiness and setup.
+
+Application order, scheduling after write failures, and the YAML/JSON representation remain open.
+The prevalidation decision does not select those behaviors or provide an atomic batch guarantee.
 
 ### Objects, representations and contracts
 

@@ -108,7 +108,9 @@ plugin can export several operations, and a template-local graph need not become
 No special composite-plugin family or mandatory packaging unit is introduced.
 
 The exported contract describes inputs, outputs and applicable behavior; internal nodes bind those
-values and call selected operations. Composition preserves existing authority, endpoint selection,
+values and call selected operations. V0 graph inputs use literals and typed references; calculations
+and transformations use plugin operations, with inline binding expressions deferred under the
+[graph-input boundary](LIFECYCLE.md#lifecycle-protocol). Composition preserves existing authority, endpoint selection,
 implementation retention and instance-owned runtime rules. It does not automatically make several
 external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;
 nesting does not introduce authored recursion or loops. Exact graph-call/binding syntax, publication

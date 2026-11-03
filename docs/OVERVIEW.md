@@ -76,8 +76,9 @@ is distinct from the calling Agent's authorization and from its model subscripti
 ## Construction, controls and recovery
 
 Registration performs no provisioning or model work. Explicit establishment executes a finite graph
-of typed operations; output bindings establish dependencies. Provider branching/polling remains in
-plugins initially. The instance owns ongoing processes, including a runtime started during setup.
+of typed operations; output bindings establish dependencies. Inputs are literals or typed references;
+calculations, transformations and provider branching/polling remain in plugins initially. The instance
+owns ongoing processes, including a runtime started during setup.
 Graph completion, readiness and execution status are separate observations.
 
 Running instances preserve their selected code and contracts against source edits. In edit mode,

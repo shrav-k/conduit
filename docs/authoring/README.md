@@ -39,7 +39,9 @@ Consider a small document-search capability used by an Agent. The authoring step
    an existing MCP service, graph-backed operations or a combination. Lightweight handlers are supported
    as the initial author experience; a large SDK and a mandatory primary implementation are not required.
 3. **Compose setup.** A finite dependency graph can establish access and prepare search. Output bindings
-   imply dependencies. The Resource instance manages ongoing activity; a successful setup graph is not
+   imply dependencies. Supply literals or typed references to configuration/earlier outputs as inputs;
+   use plugin operations for calculations and transformations, with no inline binding expressions in v0.
+   The Resource instance manages ongoing activity; a successful setup graph is not
    a permanent readiness guarantee. An uncertain external effect must be reconciled under its contract.
 4. **Declare a Resource template.** Supply the configuration, setup graph, ongoing behavior and allowed
    controls needed to establish repeated instances. Instances retain resolved definitions and exact

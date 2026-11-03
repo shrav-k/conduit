@@ -237,6 +237,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.
+- Exercise literal inputs, configuration references and prior-output references. Include a small
+  typed transformation implemented by the authored plugin, then consume its output in a later step
+  with the dependency implied by that binding. Graph bindings must not evaluate inline expressions
+  or interpolate expression-looking strings; ordinary input schemas still validate the values.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

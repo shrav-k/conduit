@@ -187,9 +187,15 @@ does not infer identity from a name and create duplicates.
 
 ## 4. Graph language
 
-An inline graph is a mapping of node names to operation bindings. Each operation identifies a
-plugin alias and export. Inputs are literals or bindings recognized only in declared binding
-positions. Ordinary provider JSON is not recursively interpreted as graph instructions.
+**Accepted input boundary:** v0 inputs use literal values and typed references to configuration or
+earlier outputs. Calculations and transformations belong in plugin operations; inline expressions
+in graph bindings are deferred. Output references retain their existing dependency meaning. This
+does not choose the exact binding syntax or where binding markers are recognized.
+
+**Proposed representation:** an inline graph is a mapping of node names to operation bindings.
+Each operation identifies a plugin alias and export. Inputs are literals or bindings recognized
+only in declared binding positions. Ordinary provider JSON is not recursively interpreted as
+graph instructions. Binding positions and literal/reference disambiguation remain under review.
 
 Illustrative syntax, extending the existing fixture rather than approving it:
 
@@ -218,6 +224,12 @@ from the responsible execution service for that declared instance-owned runtime.
 may be independent of management; it is not an untracked daemon owned by a setup node. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
+
+If an input needs a calculated value, add a typed plugin operation and bind its output instead
+of evaluating an expression inside `inputs`. For example, a path-building operation can consume
+configuration values and publish the directory for `database.establish`. Its normal operation
+contract supplies input/output validation and any applicable effects/recovery semantics. This
+example does not standardize a core path plugin or select additional YAML fields.
 
 ### Compile-time rules
 

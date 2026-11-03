@@ -296,6 +296,9 @@ their own authorized connections to the history capability.
 
 A user normally edits `backingKey` and supported initial settings. For reuse of an existing backing,
 attachment intent must be explicit. The user need not rewrite the graph or manufacture a handler.
+The example passes configuration to establishment and its output to the managed runtime. V0 graph
+inputs use literals and typed references; a calculated setup input would come from another plugin
+operation rather than an inline expression. The displayed reference notation remains illustrative.
 Package installation, template registration, Resource creation, setup and consumer connection are
 distinct effects even if an Interface offers an explicit action combining some of them.
 

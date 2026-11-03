@@ -156,12 +156,17 @@ versioned releases. Different edit-mode captures do not become multiple released
 version. Protecting active execution does not require an archive of every development build.
 Contract checks and no silent substitution remain applicable; public registry mechanics remain open.
 
-The next proposed ruling returns to template graphs: should v0 inputs use literals and typed
-references to configuration or earlier outputs, leaving calculations/transformations to plugin
-operations, or also support a bounded inline expression language? The first option is recommended;
-the [graph proposal](proposals/authoring-syntax/CONTRACTS.md#4-graph-language) supplies an example.
-This boundary and exact reference syntax remain unaccepted. It does not reopen the accepted rule
-that authored graphs are finite DAGs with branching/loops inside plugins initially.
+The [graph-input boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: v0 inputs use
+literals and typed references to configuration or earlier outputs. Plugin operations perform
+calculations and transformations; inline expressions in bindings are deferred. Output bindings
+imply dependencies as already agreed. Exact reference syntax remains open, and branching/loops
+still remain inside plugins initially.
+
+The next proposed ruling concerns recognition of references: restrict binding interpretation to
+explicitly declared binding positions, leaving ordinary configuration/provider payloads as literal
+data, or recognize binding markers recursively inside arbitrary input objects with escaping rules?
+The first option is recommended. The [graph proposal](proposals/authoring-syntax/CONTRACTS.md#4-graph-language)
+illustrates the distinction; neither recognition rules nor literal/reference notation is accepted yet.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

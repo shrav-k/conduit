@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -180,6 +180,20 @@ Output bindings imply dependencies; explicit prerequisites cover ordering withou
 loops and provider-specific procedure remain inside plugins initially. User-authored conditions,
 iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
 supported; interaction waits and valid-progress recovery do not require authored loops.
+
+**Graph inputs:** v0 inputs use literal values and typed references to configuration or earlier
+step outputs. Calculations and transformations are implemented by plugin operations, not inline
+expressions in graph bindings. References select declared values/fields; they do not implicitly
+evaluate string interpolation, shell syntax or an expression language. Reusable graph-backed
+operations still receive their declared typed inputs under the ordinary operation contract.
+Exact reference syntax and recognition positions remain authoring work.
+
+For example, database startup reads its directory from configuration, and a migration step receives
+the database handle published by startup. If the directory must be constructed from a base and a
+relative path, a typed plugin operation performs that transformation and startup references its
+output. That binding supplies the dependency. Such operations use the existing plugin contracts,
+including validation, effects and recovery where applicable; they add no new object family or
+implicit access. Plugins may implement internal calculations and branching as already agreed.
 
 For example, authenticate → connect → initialize remains visible composition, while the
 authentication plugin handles an existing-login check, challenges and provider polling. The

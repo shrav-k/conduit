@@ -986,6 +986,160 @@ service make it the authority for the Resource's entire lifecycle. Those hosting
 implementation choices within I1's authority boundaries and I3's helper execution default.
 Distribution supports bundled plugins and explicit local installation; package syntax remains I7 work.
 
+### Guided database and migration walkthrough
+
+Walkthrough date: 2026-11-03. This is the third authoring example, following directory attachment
+and authenticated MCP access. Assume a compatible database implementation with published startup,
+migration, inspection and recovery contracts. No database has been started or migrated here, and
+no named database engine's transaction behavior is assumed. All supporting names remain provisional.
+
+**Intended outcome:** the Euphony Pool owns a database Resource. An explicit setup request establishes
+its backing, starts its declared runtime, applies a selected migration and verifies the expected
+schema. Ordinary consumer access requires successful initial preparation. Supported diagnostic or
+repair operations can have their own authorized availability during incomplete setup.
+
+The Resource template selects its type and implementation contributions, explicit backing
+creation/attachment intent, database settings, intended schema/migration inputs, setup graph and
+ongoing runtime/control behavior. The selected driver remains fixed with the instance definition;
+supported configuration changes retain their existing control/revision rules. Backing storage is
+part of this database's declared lifecycle unless separately modeled as another Resource. Any
+access to separately managed Resources still requires the declared authorized Conduits.
+
+| Setup operation | Required inputs | Named successful output | What completion establishes |
+| --- | --- | --- | --- |
+| Prepare backing | Captured backing configuration and explicit creation/attachment intent | `storage`: a backing descriptor | The intended backing was established or verified under its contract; an existing target is not silently adopted by a fresh create. |
+| Start database | Prepared backing and captured runtime settings | `database`: a reference to the instance-managed service | The declared runtime is available for the supported setup operations. This is not proof that migrations are applied. |
+| Apply migration | Database reference and selected migration inputs | `migration`: confirmed application evidence | The implementation can confirm the specified change under its effect/recovery contract. A failed or uncertain outcome does not become successful evidence. |
+| Verify schema | Database reference and expected schema, after required migration success | `verification`: observed schema evidence | The required schema checks passed at the reported time. This is not a permanent guarantee about all later data changes. |
+
+```mermaid
+flowchart LR
+    P[Prepare backing] -->|storage| S[Start instance-managed database]
+    S -->|database| M[Apply migration]
+    S -->|database| V[Verify expected schema]
+    M -.->|required successful completion| V
+```
+
+**Data dependencies and ordering are different.** The verification operation needs the database
+reference produced by startup, not necessarily the migration's evidence payload. Referencing startup
+alone would permit verification too early. The graph must also require migration success. This
+illustrates our accepted explicit prerequisite mechanism when no value is passed; mapping order
+does not establish the prerequisite.
+
+For example, this fragment uses `after` as candidate notation for that required-success gate:
+
+```yaml
+verify:
+  operation: {plugin: database, name: schema.verify}
+  after: [migrate]
+  inputs:
+    database:
+      reference:
+        from: output
+        node: start
+        port: database
+        path: ""
+    expectedSchema:
+      reference: {from: config, path: /expectedSchema}
+```
+
+The author named the earlier nodes `start` and `migrate`; the startup operation's contract declares
+the `database` output. The receiving operation's input also happens to be called `database`.
+The empty pointer selects the whole output; `/expectedSchema` selects the configured expected
+schema. The spelling and representation of the prerequisite remain proposals. A terminal failure
+or a schema-valid failure payload cannot satisfy this example's required-success gate. This does
+not select one universal outcome enum or reinterpret every ordering field as having this spelling.
+
+**Successful setup has several separate facts.** The Pool owns one registered Resource; its
+backing exists; its responsible service manages the runtime; required migration and verification
+have succeeded. The finite setup invocation can finish while the database continues running.
+An Agent's later Conduit uses the Resource's supported capability and current permissions. It does
+not rerun initialization for every query or receive an automatically broader database credential.
+Runtime readiness, schema evidence and logical consumer participation remain separately observable.
+
+**A known migration failure does not remove the database.** If startup succeeded but migration
+reports failure, keep the running database managed by default, retain the backing and the actual
+effect evidence, and block verification's unmet prerequisite. Report setup as incomplete. The
+plugin may establish that a failure left data unchanged, that some effects occurred, or that the
+extent is unknown; the graph cannot infer rollback from the word "failed." Explicit stop and
+supported diagnostic/repair operations remain distinct actions.
+
+Independent work still follows the accepted scheduling rule. At the Pool composition level,
+provisioning a workspace Resource can proceed independently of provisioning this database Resource.
+A failed database migration need not prevent the workspace from becoming usable. The database's
+own dependent verification remains blocked. This example does not put unrelated workspace ownership
+inside the database Resource or treat the Pool composition as an atomic transaction.
+
+**A lost response is different from a confirmed failure.** Consider this sequence:
+
+1. Conduit dispatches the migration under a recorded operation identity.
+2. The database applies a change.
+3. The helper or connection fails before Conduit records a confirmed result.
+
+The stored progress establishes that migration was dispatched and its outcome is unconfirmed. A
+working connection after reconnect does not tell Conduit whether the migration happened. The
+service's authority store and the database's domain effects are not assumed to share a transaction.
+No additional client confirmation can manufacture that missing evidence.
+
+On an explicit retry of the same unchanged setup invocation:
+
+- Verify retained backing/runtime results and their current prerequisites before reusing them.
+- Reconcile the migration under its own contract before repeating effects. A compatible plugin
+  might use a durable migration receipt tied to the intended backing and migration content, an
+  application-specific check, or a supported transaction/recovery mechanism. These are examples,
+  not a mandated migration-ledger format or an automatic exactly-once guarantee.
+- If adequate evidence confirms the intended migration, retain the confirmed result and allow
+  verification to proceed. If safe repetition or continuation is established, perform only what
+  the contract permits. If evidence is insufficient, retain uncertainty and report the gap.
+
+Checking only that a table exists may be inadequate: it might predate the attempt or reflect only
+part of the intended change. Plugins may implement conservative recovery that reports uncertainty;
+graph composition cannot improve that into a guarantee the constituent implementation lacks.
+Likewise, multiple Resources pointing at one backing do not gain safe concurrent migration merely
+from having separate instance IDs. A database integration must state the coordination/exclusive-use
+guarantees it needs and can enforce. No new universal lock service is selected here.
+
+**Cancellation, restart and changed definitions retain their existing distinctions.** Cancelling
+setup stops new ordinary steps and requests supported cancellation of active operations. It does
+not prove the database stopped, a migration was undone or backing data was deleted. Already-started
+runtime activity remains supervised until its lifecycle contract establishes otherwise; required
+attachment cleanup still applies. Explicit Resource retirement follows its shutdown duties, with
+backing-data cleanup separately authorized.
+
+A new start of the same instance runs its setup contract and may verify work already satisfied.
+It is not permission to initialize existing backing again. Retry of an incomplete invocation uses
+its captured inputs and valid retained progress. Any confirmed configuration changes must be
+accounted for by the established invalidation/recovery rules before old results are reused.
+
+Changing migration implementation code or the fixed graph requires a replacement instance in v0,
+not editing a recorded attempt and calling it a retry. A replacement may explicitly attach retained
+backing where supported, but must first account for prior uncertain effects and required retirement
+duties. Reusing the folder/database does not prove that a prior write did or did not complete.
+
+**What the Interface should make distinguishable:**
+
+| Fact | Example during a lost migration response |
+| --- | --- |
+| Resource/backing identity | The same registered database Resource and its established backing remain known. |
+| Runtime | Database process confirmed running, or its current state explicitly unknown. |
+| Setup progress | Backing and startup confirmed; migration dispatched with outcome unconfirmed. |
+| Next dependent work | Schema verification has not run because its required prerequisite is unmet. |
+| Independent work | A separately provisioned workspace may be ready. |
+| Available next actions | Supported inspection, reconciliation/retry, cancellation or stop, subject to current authority. |
+
+These are distinguishable observations, not a proposed universal lifecycle enum. State freshness
+and unknowns must remain visible, and permission checks cannot be bypassed using captured setup
+configuration. No offline grant or automatic retry is introduced by the recovery example.
+
+**Assessment across the three walkthroughs:** finite graphs, explicit data bindings and ordinary
+plugin operations can express the examples without authored loops or an expression language.
+That is evidence about these examples, not general proof of ergonomic sufficiency. Required
+ordering without data, runtime ownership from startup, output validity and domain-specific recovery
+matter more than the temporary vocabulary. The exact declaration linking a setup operation to its
+predeclared managed runtime, prerequisite representation, reference payload structure and protected
+result representation still need the existing structural review. Merely showing candidate YAML
+does not close those questions or authorize the merge checkpoint.
+
 ## 5. Where the example implementations execute
 
 **Accepted:** endpoint templates select their plugins; endpoint instances manage implementations

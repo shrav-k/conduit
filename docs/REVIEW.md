@@ -393,8 +393,22 @@ now traces Pool composition, a shared authentication Resource, a service Resourc
 separately authorized Agent attachments and ongoing refresh/reconnect. It introduces the producer
 contracts before the reference fragment and distinguishes graph results from usable credentials
 and current permission. This is an assumed compatible integration, not verified Linear support or
-a runtime test. The database/migration case follows; no new behavior or field layout is approved
-by this walkthrough.
+a runtime test; no new behavior or field layout is approved by this walkthrough.
+
+The third [guided database/migration walkthrough](proposals/authoring-syntax/AUTHORING.md#guided-database-and-migration-walkthrough)
+now covers instance-managed startup, an explicit migration-success prerequisite for verification,
+retained runtime/backing after failure, unknown effects, valid-progress retry and independent Pool
+work. The candidate ordering field is illustrative. No database was started, and no automatic
+rollback, replay or transaction across domain and authority stores is assumed. These examples
+support the current graph boundary but do not approve unresolved syntax or close the merge checkpoint.
+
+The next structural discussion should use these worked cases to connect the template's declared
+runtime with the setup operation that requests its startup, including prepared inputs and readiness
+outputs. The accepted responsibility boundary remains: the instance owns runtime activity from
+startup, and a later setup failure can leave it running. Then settle the remaining reference source/
+selection and prerequisite representation as a coherent example, with protected-result validity
+made explicit under its contract. Keep final vocabulary in its separate PR. These are concrete
+instances of the existing authoring seams, not a new object family or a fresh conceptual review.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

@@ -244,6 +244,19 @@ reference markers. A plugin result retrieved through a reference remains data ra
 reinterpreted as graph instructions. Exact notation and literal disambiguation remain open;
 no particular wrapper for every scalar is required by this decision.
 
+**Accepted nested selection:** use JSON Pointer within an explicitly selected input, configuration
+or output value, following the [lifecycle contract](../../protocol/LIFECYCLE.md#lifecycle-protocol).
+The pointer does not identify the source or choose the reference wrapper's fields. For example:
+
+| Selected source value | Pointer | Selected value |
+| --- | --- | --- |
+| `{"connection":{"endpoint":"https://example.test/mcp"}}` | `/connection/endpoint` | `"https://example.test/mcp"` |
+| `{"participants":[{"name":"reviewer"}]}` | `/participants/0/name` | `"reviewer"` |
+| `{"a/b":{"~key":15}}` | `/a~1b/~0key` | `15` |
+
+These examples approve nested paths only. A literal string containing one of these paths is still
+literal data. Handling a pointer that cannot select a value remains in review.
+
 **Accepted assembly boundary:** graphs may explicitly assemble object fields and list items from
 literals, references and nested assemblies. A plugin is not required merely to build that structure.
 Output references retain their normal dependency semantics, and literal subtrees/resolved values remain

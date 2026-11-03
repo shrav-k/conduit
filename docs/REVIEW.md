@@ -299,13 +299,20 @@ the same `reviewer` template can launch multiple independent Agent instances wit
 private state and lifecycles. Sharing a source template does not make those instances duplicate targets.
 Batch notation and detailed conflict diagnostics remain open.
 
-Next, settle nested value selection in typed graph references. Recommend standard
-[JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901.html) paths within the explicitly selected source
-value: `/connection/endpoint` selects a nested field and `/participants/0/name` selects a field in
-the first array item. This is pending; a list of path segments is the alternative. The source selector,
-reference wrapper and exact field names remain separate, as do application-level missing-value
-diagnostics. This selects data paths, not object identities, Resource access or automatic evaluation
-of strings in literal payloads; registration batches still require complete supplied definitions.
+Nested value selection is accepted: use standard
+[JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901.html) paths within an explicitly selected graph
+input, configuration or output value. `/connection/endpoint` selects a field and
+`/participants/0/name` selects a field in the first array item. The source selector, reference wrapper
+and exact field names remain open. This does not select object identities, authorize Resource access
+or evaluate literal strings; registration batches still require complete supplied definitions.
+
+Next, settle unresolved selections. Recommend reporting a reference-resolution error and withholding
+the consuming step when a pointer has no target, rather than silently substituting null or treating
+the input as omitted to obtain a default. For example, `/connection/endpoint` cannot supply an
+endpoint if the selected output has no such member. An existing null value remains a selected value
+subject to the receiving schema. This handling is pending; the alternative treats a missing selection
+as omitted input under declared default/optional-field rules. Existing independent-branch and
+effect-preservation rules remain unchanged. Exact diagnostic fields remain authoring work.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

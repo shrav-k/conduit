@@ -195,7 +195,8 @@ operations receive caller configuration only through declared typed inputs, with
 inheriting the caller's configuration namespace. A template's graph can bind captured configuration
 values into those inputs. Scoped invocation context and explicitly authorized Resource access
 remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
-Exact reference syntax remains authoring work.
+Source selection, reference wrappers and their field names remain authoring work; nested selection
+uses JSON Pointer as defined below.
 
 **Configuration capture:** configuration references within one graph execution use values captured
 when that execution begins. Later steps do not silently reread changed instance settings. For example,
@@ -218,6 +219,17 @@ a document containing an example of graph-reference notation without causing the
 resolve the example. Actual references still supply their declared dependencies. Exact binding
 notation and literal disambiguation remain open; this does not require one particular wrapper
 around every scalar.
+
+**Nested value selection:** within an explicitly selected graph input, captured configuration value
+or declared output, use [JSON Pointer (RFC 6901)](https://www.rfc-editor.org/rfc/rfc6901.html).
+For example, `/connection/endpoint` selects a field and `/participants/0/name` selects a field in
+the first array item. The empty pointer selects the whole source value; `/` selects its empty-name
+member. Standard token escaping applies: `~1` represents `/`, and `~0` represents `~`.
+
+This selects data within the chosen source, not the source itself, a registry object or a Resource
+access path. Literal strings remain data under the recognition rule above. Source/wrapper notation
+and application-level handling of unresolved values remain open; accepting JSON Pointer does not
+introduce expressions, wildcard selection or automatic reference evaluation.
 
 **Structured inputs:** graphs may explicitly assemble objects and lists from literals, references
 and nested assemblies, without a plugin merely to build that structure. Each declared field or

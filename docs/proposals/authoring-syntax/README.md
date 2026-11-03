@@ -38,7 +38,9 @@ perform calculations and transformations. Inline binding expressions are deferre
 recognized only in designated binding positions; literal payloads and resolved plugin results remain
 data rather than being recursively reinterpreted. Explicit object/list assembly from literals and
 references is accepted without a plugin merely to assemble the structure. It adds no automatic merging
-or inline computations. Exact syntax and literal disambiguation remain open; the examples do not approve them.
+or inline computations. Nested selection within an explicitly chosen input, configuration or output
+value uses standard JSON Pointer paths. Source selectors, wrappers and literal disambiguation remain
+open; the examples do not approve them.
 Configuration references use values captured when each graph execution begins. Later executions use
 then-current settings; capture does not freeze permissions, dependency validity or control revision
 checks. Retry/recovery must still revalidate retained results. Exact representation remains open.

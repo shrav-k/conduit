@@ -75,7 +75,9 @@ Consider a small document-search capability used by an Agent. The authoring step
    Pass caller configuration into reusable graph-backed operations through their declared inputs;
    those operations do not implicitly inherit the caller's configuration namespace.
    References are recognized only in designated binding positions. Literal payloads and plugin results
-   remain data even when they resemble reference notation; exact notation remains open.
+   remain data even when they resemble reference notation. Within the selected source value, use
+   JSON Pointer paths such as `/connection/endpoint` or `/participants/0/name`; source selectors
+   and wrapper fields remain open.
    Explicitly assemble object fields or list items from literals/references without an extra plugin
    just to build the structure. This does not introduce automatic merging or inline calculations.
    Catch provable wiring/type errors early, then validate each step's resolved inputs before dispatch.

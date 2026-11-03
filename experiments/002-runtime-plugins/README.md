@@ -282,6 +282,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   same content via an explicit reference to another operation's output. Preserve the data in both
   cases: only actual graph bindings establish dependencies, and reference resolution does not
   recursively interpret the retrieved payload. Concrete literal/reference syntax remains open.
+- Exercise JSON Pointer selection within explicitly chosen input, captured configuration and output
+  values: nested members, array indices, escaped member names, the empty pointer and an empty-name
+  member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
+  unchanged. Follow the accepted nested-selection contract; source/wrapper notation and handling of
+  unresolved selections remain in review, so these fixtures do not choose those semantics.
 - Assemble an object and a list explicitly from literals and prior outputs, including a nested
   assembly and a reference-shaped literal subtree. Verify the resulting values and dependencies
   without an assembly plugin, automatic merging or recursive interpretation of literal data.

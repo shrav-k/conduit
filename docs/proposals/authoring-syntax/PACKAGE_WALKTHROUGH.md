@@ -351,7 +351,10 @@ If establishment is implemented by a reusable graph, the explicit `configuration
 the values that graph may read from the caller. It cannot implicitly read other fields from the
 enclosing Resource's configuration. A narrower reusable operation could instead declare a `limit`
 input: this template could pass its captured `readLimit`, while another template uses a differently
-named setting. Scoped invocation context and authorized Resource access retain their own contracts.
+named setting. Selecting that field within the captured configuration uses the accepted JSON Pointer
+`/readLimit`; selecting `/backingKey` instead retrieves the backing key. The source selector and
+surrounding reference fields remain illustrative, and strings in history content are not interpreted
+as pointers. Scoped invocation context and authorized Resource access retain their own contracts.
 An authored graph can also assemble a message object from a literal title and an earlier step's
 body output, or assemble list items explicitly, without another plugin merely to build the structure.
 This is explicit assembly, not automatic merging or string interpolation; constructor syntax remains open.

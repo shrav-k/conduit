@@ -118,21 +118,25 @@ required validation features are reported without stripping constraints or claim
 Exact adapter handling and conformance cases remain open.
 
 The [package-artifact rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
-resolved artifacts retain a content digest alongside package identity and release, covering
-published contracts, graphs, templates and any bundled code, including code-free packages.
+resolved artifacts retain a content digest alongside package identity and, when released, release
+identity, covering contracts, graphs, templates and any bundled code, including code-free packages.
 The digest identifies content, not publisher trust or remote service code. Hash algorithms,
 bundle boundaries and concrete fields remain open.
 
-The [local-development rule](protocol/CONFIGURATION.md#implementation-selection) is accepted and
-refined: preserve the running instance's code/contracts against source edits, without promising
-later recreation of that implementation. Direct handler tests can use editable source; managed
-test/start workflows can capture contents automatically. Ordinary iteration replaces affected
+The [edit-mode/release boundary](protocol/CONFIGURATION.md#implementation-selection) is accepted:
+deliberately preserving an implementation for later selection requires an explicit versioned release,
+which can remain local. A release fixes its contents independently of running instances; changed
+contents require a new release version. Otherwise authors work in edit mode, preserving the running
+instance's code/contracts against source edits without archiving every revision. A source commit,
+draft version field or test capture alone does not release a package. Direct handler tests can use
+editable source; managed test/start workflows can capture contents automatically. Ordinary iteration replaces affected
 instances, with explicit backing-data reuse where supported; keeping both revisions running is
-optional. No permanent executable archive, manual release per edit or selectable multi-build
-catalog is required. A recorded digest identifies content without guaranteeing its future
+optional. No archive of every edit, manual release per edit or selectable development-build
+catalog is required. An edit-mode digest identifies content without guaranteeing its future
 availability; missing restart/recovery code is reported without substitution. Retained evidence
-does not itself require retaining executables. This does not freeze credentials, Resource data
-or the host environment; storage layout and cleanup mechanics remain open.
+does not itself require retaining executables. Instance retirement does not delete a preserved
+release. This does not freeze credentials, Resource data or the host environment. Exact release
+commands, storage and removal mechanics remain open.
 
 The [package-content rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
 explicitly declare included files/directories, with directory and pattern rules available.
@@ -145,10 +149,10 @@ reported rather than silently copied. Authors may stage shared files, choose a w
 directory or use separate package dependencies. Resource paths and authorized runtime access
 are unaffected; internal symlink representation remains open.
 
-The proposed same-name/release multi-artifact catalog is deferred, not accepted as a required
-development workflow. Protecting active execution does not require a historical build-selection
-system. Explicit current-source/package selection, contract checks and no silent substitution
-remain applicable; future public registry publication rules remain separate.
+The proposed same-name/release multi-artifact catalog is superseded by edit mode plus deliberate
+versioned releases. Different edit-mode captures do not become multiple released contents under one
+version. Protecting active execution does not require an archive of every development build.
+Contract checks and no silent substitution remain applicable; public registry mechanics remain open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

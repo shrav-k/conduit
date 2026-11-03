@@ -49,7 +49,7 @@ Keep the following values distinct in Rust types and wire records:
 | API version | Proposed `conduit/v0alpha1` | Interpretation of the common object envelope. This is a protocol group, not a DNS or ownership claim. |
 | Type/capability version | Exact group/name/version tuple | Configuration or capability semantics, separate from implementation release. |
 | Implementation identity | Published contract/binding identity, retained adapter/artifact identities and external service binding where applicable | Conduit-controlled definitions/code are pinned; endpoint identity and observed provider versions do not prove exact hosted code. |
-| Package artifact | Accepted package identity/release plus content digest; exact fields and digest format open | Covers published contracts, graphs, templates and any bundled code, including code-free packages; not publisher trust or remote service code. |
+| Package artifact | Accepted package identity and content digest, plus release identity when released; exact fields and digest format open | Edit-mode captures preserve running work; versioned releases deliberately preserve fixed contents. Covers contracts, graphs, templates and any bundled code, including code-free packages; not publisher trust or remote service code. |
 | Storage schema version | Implementation-managed format revision | Interpretation/migration of the selected backend's persisted state; distinct from the public persistence contract and object protocol versions. |
 | Observation cursor | Opaque scoped cursor | Where a client resumes reading; not permission or proof it understood earlier content. |
 
@@ -337,10 +337,12 @@ contracts; a comprehensive SDK is not required before the first plugins can be a
 Conduit can validate against them without executing plugin code. Bindings can use authored code,
 an existing local/remote MCP service, a graph of selected operations, or a combination. A reusable
 graph may implement an exported typed operation, including for invocation from another graph.
-Resolved package artifacts retain their declared identity/release and a content digest covering
-published declarations and any bundled code, including packages with no executable. Reusing a
-release label cannot silently change an existing instance's selected definitions. Exact digest
-and bundle formats remain open; separately bound dependencies keep their own identities.
+Resolved package artifacts retain package identity and a content digest covering declarations and
+any bundled code, including packages with no executable. Deliberate preservation requires a versioned
+release with fixed contents, retained independently of running instances; changed contents need a
+new release version. Releases may remain local. Edit-mode captures record the selected contents
+without becoming preserved releases, even if a draft contains a version field. Release metadata,
+commands, digest and bundle formats remain open; separately bound dependencies keep their own identities.
 Managed execution of locally authored packages uses an immutable snapshot retained before
 execution. Direct handler tests can use editable source; an explicit managed test/start can
 capture selected contents automatically. Source edits cannot change a running instance's code or
@@ -378,7 +380,7 @@ proposals; exact implementation retention and replacement rules still apply.
 
 | Manifest concern | Required information when applicable |
 | --- | --- |
-| Package/bindings | Package identity/release and content digest, contract identity, implementation or service dependencies and compatible profile; executable entry and platform where code is supplied. The package digest covers declarations as well as bundled code; code-free packages also retain it. |
+| Package/bindings | Package identity and content digest, release identity when released, contract identity, implementation or service dependencies and compatible profile; executable entry and platform where code is supplied. The package digest covers declarations as well as bundled code; code-free packages also retain it. |
 | Contracts | Provided type/capability/filter versions and exact schema bundle identity. Conflicting definitions of the same contract cannot overwrite one another. |
 | Operations | Export name, input/output schemas, effect/recovery information, cancellation/interaction support and output validity. Graph-backed exports use the same operation contract; graph-call/value-binding and recovery details remain open. |
 | Drivers | Managed runtime exports, prepared inputs, inspect/start/stop/reconnect support and enforcement coverage. |

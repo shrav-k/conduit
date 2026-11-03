@@ -66,7 +66,8 @@ and internal symlink representation remain open.
 
 ### Local development and instance replacement
 
-The accepted development workflow distinguishes direct source tests from managed execution:
+The accepted development workflow starts in edit mode and distinguishes direct source tests from
+managed execution. A draft version field does not itself publish or preserve a release:
 
 1. Edit the history implementation/contracts and run handler tests against the working directory.
 2. Explicitly run a managed test or start. Tooling may validate and capture the selected package
@@ -79,16 +80,24 @@ The accepted development workflow distinguishes direct source tests from managed
    the Resource's explicit attachment and lifecycle contract; replacement does not copy data or
    transfer grants implicitly. The Interface reports any incomplete retirement or establishment.
 
-Once no live activity or unfinished recovery needs A, retirement can release its executable contents
-without purging outcome evidence. Future recreation of A is not guaranteed: a recorded digest or
-exported configuration does not supply missing code. Authors can keep a Git revision or distributable
-artifact separately if they need repeatability; a restart/recovery request with unavailable selected
-code reports that gap rather than substituting B.
+Once no live activity or unfinished recovery needs A, retirement can release its private executable
+contents without purging outcome evidence. Future recreation of A is not guaranteed: a recorded digest or
+exported configuration does not supply missing code. A restart/recovery request with unavailable
+selected code reports that gap rather than substituting B.
+
+To preserve a chosen implementation, explicitly version and release it. For example, release
+`example.history` version `0.1.0` locally, then continue editing source. New instances can still
+select the preserved `0.1.0` contents while development uses the edited source. Releasing those
+changes requires a new version, such as `0.1.1`; the existing release is unchanged. Retiring its
+instances does not remove the release. A local release needs no public registry, and these version
+labels are examples, not a prescribed version format. Git can support release storage, but a source
+commit or test capture alone does not request release preservation. Future runtime compatibility
+and exact reproduction of external services/data remain outside this content-preservation boundary.
 
 This does not require manual archive assembly, public publication or a selectable multi-build catalog
-for each local edit. A development helper could combine retirement and replacement; its commands and
-exact inclusion syntax remain unselected. Captured package contents exclude credentials and Resource
-data and do not freeze the host environment. Storage and cleanup mechanics remain open. The lifecycle
+for each local edit. A development helper could combine retirement and replacement. Development/release
+commands and exact inclusion syntax remain unselected. Captured package contents exclude credentials
+and Resource data and do not freeze the host environment. Storage and cleanup mechanics remain open. The lifecycle
 behavior is accepted design, not an implemented CLI demonstration.
 
 ### Illustrative descriptor

@@ -80,9 +80,10 @@ of typed operations; output bindings establish dependencies. Provider branching/
 plugins initially. The instance owns ongoing processes, including a runtime started during setup.
 Graph completion, readiness and execution status are separate observations.
 
-Running instances preserve their selected code and contracts against source edits. Their bindings
-identify exact implementations, without promising an archive for later recreation. Development can
-replace an affected instance from revised source; keeping both versions running is optional.
+Running instances preserve their selected code and contracts against source edits. In edit mode,
+development replaces affected instances without archiving every revision. Deliberate preservation
+for later selection requires a versioned release, which can remain local. Releases retain fixed
+contents independently of running instances, without promising compatibility with future runtimes.
 Definition or implementation upgrades require replacement in v0. Named typed controls
 can change their permitted settings. The single stored configuration advances only after application
 is confirmed; pending/uncertain requests are recorded separately. Controls normally serialize per target

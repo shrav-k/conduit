@@ -197,7 +197,10 @@ Some packages contain only declarations/templates; they must not be forced throu
 or executable-install step. Installation alone does not contact or authenticate their providers.
 Installing or capturing revised source must not overwrite code used by a running instance. An
 instance's recorded binding still identifies its selected implementation; this does not require
-an archive for future recreation. Host protocol/storage changes need
+an archive of edit-mode revisions for future recreation. Deliberate preservation uses an explicit
+versioned release, which may be local. Released contents remain fixed and survive instance retirement;
+editing them requires another release version. Release storage/removal mechanics remain open.
+Host protocol/storage changes need
 compatibility checks even where plugin code is unchanged. A newer host can drop older contract/store
 support and report the incompatibility. Keeping the prior working host/package set is distinct from
 adopting the update; repair, migration or replacement may be needed and need not be automated.
@@ -231,8 +234,10 @@ Development preserves code/contracts for running work. After editing a plugin, t
 can retire the affected test instance and create a replacement from the current source, normally in
 a disposable registry. Backing-data reuse follows the type's attachment contract. There is no need
 to keep both versions running or make old private snapshots available as selectable packages. Git can
-retain authored history; it is not a required execution backend. A temporary snapshot or cache is an
-implementation mechanism, not a permanent archive. Do not hot-reload code into an existing instance
+retain authored history or support release storage; it is not a required execution backend. A temporary
+edit-mode snapshot or cache is an execution mechanism, not a release. Version and release a selected
+implementation to preserve it independently of its instances; no public marketplace is needed.
+Do not hot-reload code into an existing instance
 and claim the immutable-definition contract still holds. Record only synthetic fixtures in the
 repository; keep real provider test evidence scrubbed and outside public fixtures.
 
@@ -344,8 +349,9 @@ this is not a requirement to test or maintain combinations of old releases. Befo
 a consistent backup and refuse a newer unsupported store. Failed migration does not start partial
 runtime work. Downgrade is explicit restore/reconciliation, not an assumption that old code can
 read new data. Cleanup must preserve code required by live activity or unfinished recovery. Historical
-instance/evidence records do not alone require retaining executable artifacts. Later recreation is
-not guaranteed; unavailable code must be reported without silently substituting a newer implementation.
+instance/evidence records do not alone require retaining edit-mode executable artifacts. Separately
+preserved releases follow their own removal rules, not instance retirement. Later recreation from
+unreleased source is not guaranteed; unavailable code must be reported without substituting a newer implementation.
 Exact cleanup mechanics remain open under the [accepted development boundary](../protocol/CONFIGURATION.md#implementation-selection).
 
 ## 9. Research and validation limits

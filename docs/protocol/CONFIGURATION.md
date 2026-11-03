@@ -164,40 +164,56 @@ not add ordered precedence between schema defaults.
 ### Implementation selection
 
 **V0 rule:** select Conduit plugin implementations explicitly or through an
-unambiguous configured default. Resolve the exact release/artifact identity before execution and
-retain that binding for the instance's starts, operations and recovery. Installing a newer package,
+unambiguous configured default. Resolve the exact selected contents before execution, including
+release identity when using a released package. Retain that binding for the instance's starts,
+operations and recovery. Installing a newer package,
 changing a default or package discovery order must not silently change that binding. Record an
 unresolved requested dependency as unresolved, not as located or verified code.
 
-A resolved package artifact records a content digest alongside its declared package identity
-and release. Coverage includes its published contracts, graphs, templates and any bundled code;
-packages containing only templates or implementation bindings follow the same rule. Reusing a
-release label with changed contents must not silently replace an existing instance's selected
-definitions. Separately bound dependencies retain their own selected identities.
+A resolved package artifact records its package identity and content digest, plus its versioned
+release identity when released. Coverage includes its contracts, graphs, templates and any bundled
+code; packages containing only templates or implementation bindings follow the same rule.
+Separately bound dependencies retain their own selected identities.
 
 The digest identifies selected content, not publisher trust or externally operated MCP service
 code. The hash algorithm, exact bundle boundaries, encoding and storage mechanics remain open.
 This makes package-content identity explicit without adding a backward-compatibility promise.
 
+Local authoring distinguishes **edit mode** from a **versioned release**:
+
+- In edit mode, authors change source and explicitly create replacement instances from the selected
+  current contents. No release is needed for each edit, and earlier edits are not preserved for
+  future creation merely because an instance used them.
+- To preserve an implementation for later selection, authors explicitly version and release it.
+  A release fixes and preserves its selected package contents independently of any running instance.
+  Editing source does not change that release; changed contents remain development work until
+  released under a new version. A release can be local; public hosting or a marketplace is not required.
+
+A working-directory capture or a version string in a draft is not itself a release. Source control
+can support authoring and release storage, but a source commit alone does not request Conduit release
+preservation. Exact release commands, metadata, storage and removal mechanics remain open. These
+are authoring/distribution distinctions, not permission to mutate a running instance's definitions.
+
 For managed execution of a locally authored package, preserve its selected code and contracts
 before execution so source edits cannot change a running instance. This preservation serves the
 instance's execution; it does not require a permanent package archive or make the captured contents
 available for creating other instances. Recreating an old implementation from edited source or an
-exported instance configuration is not guaranteed. Authors may separately retain source revisions
-or distributable artifacts when they want that ability; Git or any particular storage mechanism
-is not required by the protocol.
+exported instance configuration is not guaranteed. Preserved versioned releases provide the explicit
+route to selecting old implementations again; Git or any particular storage mechanism is not
+required by the protocol.
 
 Ordinary development can retire the affected instance and create a replacement from revised source,
 explicitly reusing backing data where supported. Running both revisions is optional. Capture may be
 handled automatically by an explicit development-test or start workflow; authors need not assemble
 archives, publish releases or manage a catalog of simultaneous builds for each iteration.
 
-Retirement can release executable contents once no live activity or unfinished recovery requires
-them. Retained instance records or outcome evidence alone do not require an executable archive;
+Retirement can release an edit-mode instance's private executable contents once no live activity or
+unfinished recovery requires them. It does not remove an independently preserved versioned release.
+Retained instance records or outcome evidence alone do not require an executable archive;
 their own retention rules still apply. Restart or recovery must use the recorded implementation
 when available and report unavailability otherwise, never silently adopt revised code. Exact
-cleanup mechanics remain open. A runtime may share or cache retained contents, but local storage
-of multiple selectable artifacts under one package identity/release is not a v0 requirement.
+cleanup mechanics remain open. A runtime may share or cache captured contents without exposing
+edit-mode build history as selectable releases.
 
 Direct handler tests may run from editable source. Managed integration tests use the captured
 artifact and the ordinary instance contracts. This does not permit live replacement of an

@@ -32,15 +32,17 @@ formats and unsupported ones reported. The supported set and custom-extension me
 The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
 requires an explicit valid value or corrected defaults when an omitted field has conflicting
 applicable schema defaults. Traversal order cannot select a winner.
-Resolved package artifacts also retain [package identity, release and a content digest](../../protocol/CONFIGURATION.md#implementation-selection),
-covering published declarations and any bundled code, including template-only packages. Digest
+Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
+covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.
 Managed execution of local packages uses retained immutable snapshots, while direct handler tests
 may use editable source. Explicit managed test/start workflows can capture a revision automatically;
-the running instance preserves its code/contracts, without promising later recreation of that revision.
-Ordinary development can replace affected instances instead of maintaining two active versions.
-No permanent archive, selectable build catalog, manual archive assembly or public publication is
-required per edit. Missing selected code blocks affected restart/recovery rather than being replaced
+the running instance preserves its code/contracts without archiving every edit-mode revision.
+Deliberate preservation requires a versioned release, which can remain local and retains fixed
+contents independently of its instances. Changed released contents require a new version; draft
+version fields or test captures alone are not releases. Ordinary development replaces affected
+instances without requiring two active versions or publication per edit. Missing selected code
+blocks affected restart/recovery rather than being replaced
 silently. Included files/directories are explicitly declared, with directory/pattern rules available;
 capture does not default to the
 whole working directory. Captured paths and symlink targets must remain within one explicit

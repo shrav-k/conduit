@@ -51,8 +51,9 @@ Consider a small document-search capability used by an Agent. The authoring step
    implementations satisfy its declared requirements; Resource dependency grants do not erase caller
    restrictions. The Interface exposes progress, applied configuration, failures and coverage limitations.
 7. **Publish and prove it.** A common package envelope can carry contracts, implementation bindings and
-   templates, or templates alone. Resolved artifacts retain package identity, release and a content
-   digest covering their declarations and any bundled code. Installing one does not instantiate objects, authenticate a provider or
+   templates, or templates alone. Resolved artifacts retain package identity and a content digest,
+   plus release identity when released, covering their declarations and any bundled code.
+   Installing one does not instantiate objects, authenticate a provider or
    grant access. Test success, rejected access and uncertainty/recovery through public contracts.
    Internal unit tests alone do not establish interoperability.
 
@@ -70,14 +71,17 @@ V0 imports require explicit support for their requested contract identity and ex
 the existing compatibility checks. Different plugin releases may implement that same contract;
 cross-version compatibility mappings are deferred.
 
-For local development, edit and run handler tests directly from source, then explicitly test or
+In **edit mode**, edit and run handler tests directly from source, then explicitly test or
 start a managed instance from captured package contents. Conduit preserves the running instance's
 code and contracts against later source edits. To adopt edits, retire the affected instance and
 create a replacement, explicitly reusing backing data where supported; running two revisions is
-optional. This does not require a permanent archive or a selectable build catalog. Recreating the
-old implementation later requires its source/artifact to be available under the applicable runtime
-contracts; its recorded identity alone is insufficient. Capture does not require manual archive
-assembly or public publication for every edit. Package contents do not include credentials,
+optional. Earlier edits are not automatically preserved for future creation. To preserve an
+implementation, explicitly version and release it; a local release suffices. Released contents
+remain fixed independently of running instances, and changing them requires a new release version.
+A source commit, draft version field or managed-test capture does not itself release the package.
+Release commands and storage remain open. Retiring an edit-mode instance can release its private
+contents; it does not delete a preserved release. Capture does not require manual archive assembly
+or public publication for every edit. Package contents do not include credentials,
 Resource data or a frozen host environment. Declare included files, directories or
 patterns explicitly; unrelated working files stay outside the captured artifact and its digest.
 Capture uses one explicit source directory; included paths and symlink targets must stay inside

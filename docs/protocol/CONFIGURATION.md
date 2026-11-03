@@ -511,6 +511,18 @@ V0 supports submitting several object definitions together as a convenience over
 registry writes. Return per-object outcomes and preserve successful writes when another entry fails;
 there is no atomic batch guarantee or inferred rollback of earlier registrations/updates.
 
+A registration batch uses a constrained form of the existing finite, acyclic operation graph. Each
+node invokes an ordinary checked registry create/update with a complete supplied authored definition
+and its applicable preconditions. Complete definitions follow the existing omission/default rules;
+this does not require filling every optional template field. Execution outputs do not construct or
+modify later definitions in a v0 registration batch. General operation graphs retain their existing
+output-binding capabilities.
+
+Authors declare prerequisite edges explicitly. File position does not establish order, and ordinary
+references inside object definitions do not automatically become graph edges. Independent eligible
+nodes may run concurrently, subject to authority, target coordination and execution limits. Parallel
+eligibility does not require an implementation to execute every independent write simultaneously.
+
 For example, a history Resource-template registration can succeed while an Agent-template registration
 encounters a name conflict. The history template remains registered and both outcomes are reported.
 An incomplete batch must not be presented as complete success; existing operation tracking and
@@ -521,19 +533,28 @@ Batching does not authorize generic edits to running instance definitions, bypas
 through a Pool, provision Resources or start runtimes. Registration and subsequent setup remain
 separate actions.
 
-Parse the complete submission and validate every entry against its required schemas before any
-registry writes. If parsing fails, a required schema is unavailable, or an entry fails schema
-validation, write none of the entries and report the problem with its available location/entry
+Parse the complete submission, validate its graph structure, and validate every supplied definition
+against its required schemas before any registry writes. If parsing fails, a required schema is
+unavailable, or an entry fails schema validation, write none of the entries and report the problem
+with its available location/entry
 context. For example, an unknown field in the Agent template prevents registration of both it and
-the otherwise-valid history template.
+the otherwise-valid history template. A cycle or invalid prerequisite also blocks execution before writes.
 
 Passing this prevalidation does not reserve names or revisions, freeze permissions, or guarantee
 later writes. Current authorization, identity/version preconditions and other state-dependent checks
 still apply at each write; later conflicts can leave the accepted partial outcomes described above.
 Registration remains separate from runtime readiness and setup.
 
-Application order, scheduling after write failures, and the YAML/JSON representation remain open.
-The prevalidation decision does not select those behaviors or provide an atomic batch guarantee.
+Use the shared [graph scheduling, cancellation and recovery contracts](LIFECYCLE.md#lifecycle-protocol).
+An unsatisfied prerequisite blocks its dependent writes; independent eligible branches may continue.
+Preserve completed results and uncertainty, and reuse only valid progress on an explicit retry of
+the same invocation. Cancellation, partial failure and recovery do not imply rollback, automatic
+retry or runtime teardown. For example, failed history-template registration blocks a dependent
+Pool-template registration while an unrelated reviewer-template registration can proceed.
+
+This is a graph invocation through existing management capabilities, not another object family or
+a replacement for an instance's setup graph. It does not edit fixed instance definitions. Concrete
+batch notation and handling of competing writes within a batch remain open.
 
 ### Objects, representations and contracts
 

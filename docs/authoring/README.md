@@ -46,7 +46,10 @@ entry retains its create/update intent and applicable preconditions, with per-ob
 successful writes preserved if another fails. This does not provide an atomic batch or start setup.
 Parse and schema-validate the complete batch before any writes; an invalid entry prevents all writes.
 Passing validation does not reserve names or freeze permission/revision checks at each write.
-Ordering, write-failure scheduling and batch notation remain open; see
+Use explicit prerequisites in a finite graph of checked writes with complete supplied definitions.
+Independent nodes may run concurrently; shared graph failure, cancellation and recovery rules apply.
+Earlier node outputs do not generate later definitions in this v0 batch form, and file order does
+not imply dependencies. Batch notation and competing-write handling remain open; see
 [batch submissions](../protocol/CONFIGURATION.md#batch-configuration-submissions).
 
 ## From a new capability to an instance

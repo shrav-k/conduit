@@ -90,7 +90,10 @@ multi-object submissions through ordinary checked writes, with per-object outcom
 partial successes. Explicit intent and preconditions remain required; no atomicity or automatic setup
 is implied. Complete parsing and schema validation precede all writes; an invalid entry or missing
 required schema prevents them. Current authority and state checks still apply at each write.
-Batch notation, ordering and failure scheduling remain proposals.
+Registration batches use finite graphs with complete supplied definitions and explicit prerequisites;
+independent eligible writes may run concurrently. Shared graph failure, cancellation and recovery
+semantics apply. File order does not supply dependencies and outputs do not construct later batch
+definitions. Batch notation and competing-write handling remain open.
 Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
 covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.

@@ -382,9 +382,25 @@ required schemas. If the Agent template has an unknown field, neither template i
 Passing this check does not reserve the Agent's name: a later write conflict can still produce the
 partial outcome above, with current authority and revision checks at each write.
 
+Add a complete supplied Pool template referring to the history template, with an explicit
+registration prerequisite:
+
+```mermaid
+flowchart LR
+    H[Register history Resource template] --> P[Register Pool template]
+    A[Register reviewer Agent template]
+```
+
+History and Reviewer are independently eligible; Pool waits for History. File position does not
+establish order, and the Pool's ordinary Resource reference does not itself create the graph edge.
+All three definitions and graph structure are validated before writes; the Pool definition is
+supplied up front, not generated from History's result. If History fails, Pool remains blocked
+while Reviewer may proceed. Shared graph cancellation and valid-progress recovery rules apply,
+without rollback or blind replay. Concurrency remains subject to current checks and execution limits.
+
 This registers definitions; it does not instantiate the Pool, create a history Resource or launch
-an Agent. Neither the package descriptor nor a batch implies an atomic deployment. Application
-order, write-failure scheduling and concrete batch notation remain unselected.
+an Agent. Neither the package descriptor nor a batch implies an atomic deployment. Concrete batch
+notation and handling of competing writes remain unselected.
 
 ## 6. Follow the names through one invocation
 

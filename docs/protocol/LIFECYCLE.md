@@ -181,6 +181,12 @@ loops and provider-specific procedure remain inside plugins initially. User-auth
 iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
 supported; interaction waits and valid-progress recovery do not require authored loops.
 
+[Registration batches](CONFIGURATION.md#batch-configuration-submissions) use a constrained form of
+this graph contract: complete supplied definitions, explicit prerequisites and ordinary checked
+registry writes. They reuse scheduling, outcome, cancellation and valid-progress recovery semantics;
+their definitions are validated before writes and are not generated from earlier node outputs.
+General setup/change graphs retain their output-bound inputs and per-step input validation.
+
 **Graph inputs:** v0 inputs use literal values and typed references to configuration or earlier
 step outputs. Calculations and transformations are implemented by plugin operations, not inline
 expressions in graph bindings. References select declared values/fields; they do not implicitly

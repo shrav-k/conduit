@@ -160,6 +160,13 @@ identity, ownership, graph and recovery semantics ourselves. Do not import a gen
 durable-workflow framework until a concrete boundary benefits enough to justify its lifecycle
 and deployment assumptions.
 
+Registration batches should reuse the graph coordinator under their constrained public contract:
+complete supplied definitions and explicit prerequisite edges, with validation before any registry
+writes. Do not add a separate list-order execution engine. Independent writes are eligible for
+parallelism under current authority and target coordination; shared graph outcomes, cancellation
+and valid-progress recovery still apply. This does not imply a transaction across authority services
+or runtime startup from registration.
+
 ## 4. Schema and package organization
 
 **Accepted source of truth:** published, language-neutral contracts, including typed schemas and

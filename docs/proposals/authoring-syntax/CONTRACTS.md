@@ -177,8 +177,15 @@ required schemas before any registry writes. Parsing/schema failures or missing 
 prevent all writes. Passing this check does not reserve names/revisions or freeze authority;
 state-dependent checks still apply at each write and can produce partial outcomes.
 
-**Still proposed:** apply entries sequentially in submitted order. Ordering, failure scheduling and
-YAML/JSON batch notation have not been selected.
+**Accepted graph structure:** registration batches use the existing finite, acyclic operation-graph
+contract, constrained to complete supplied definitions and ordinary checked registry writes.
+Explicit prerequisites determine order; file position and ordinary object references do not supply
+implicit edges. Independent nodes may execute concurrently under target coordination and current
+authority. Shared graph failure, cancellation, outcomes and valid-progress recovery semantics apply.
+Validate the graph and all definitions before any writes. Earlier node outputs cannot generate or
+modify later definitions in this v0 batch form; general operation graphs keep their existing dataflow.
+This replaces the unaccepted sequential-order proposal. Concrete batch notation and competing-write
+handling remain open; no new object family or separate workflow language is introduced.
 
 ## 3. Templates, instances and bindings
 

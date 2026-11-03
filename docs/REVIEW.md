@@ -272,8 +272,7 @@ The [batch submission boundary](protocol/CONFIGURATION.md#batch-configuration-su
 v0 supports multi-object configuration submissions as a convenience over ordinary checked writes,
 with per-object outcomes and retained partial successes. No atomic batch guarantee or rollback is
 implied. Explicit create/update intent, update preconditions, Pool ownership and instance-control
-rules remain mandatory; registration starts no runtime. Ordering, failure scheduling and exact
-YAML/JSON representation remain open.
+rules remain mandatory; registration starts no runtime. Exact YAML/JSON representation remains open.
 
 Whole-batch prevalidation is accepted: parse the complete submission and validate every entry against
 its required schemas before any registry writes. A malformed/schema-invalid entry or unavailable
@@ -282,12 +281,22 @@ does not reserve names or revisions, freeze permissions, or guarantee later writ
 authorization, identity/version and other state-dependent checks still apply at each write, with
 partial outcomes reported under the accepted batch rule.
 
-Next, settle application order. Recommend applying batch entries sequentially in their submitted
-order, without inferring a dependency order or running writes in parallel. An author could put the
-history Resource-template registration before a Pool template referring to it. This is pending; the
-alternative derives an order from object references. Reference checks and per-write preconditions
-still apply. Whether a failed or uncertain write prevents later entries from being attempted remains
-a separate ruling; accepting order would not select automatic retries or rollback.
+The batch-graph boundary is accepted: registration batches use the existing finite dependency-graph
+semantics with complete supplied definitions, explicit prerequisites and ordinary checked writes.
+File order does not schedule work, and registry references do not implicitly generate graph edges.
+Independent nodes are eligible for parallelism under current checks and coordination. Shared graph
+failure, cancellation, outcome and valid-progress recovery rules apply. All definitions and graph
+structure are validated before writes; earlier outputs cannot generate later definitions in this
+v0 batch form. General operation graphs retain their existing dataflow capabilities. This replaces
+the unaccepted sequential-order recommendation and settles batch scheduling through the shared
+graph rules; it introduces neither a new object family nor an atomic batch.
+
+Next, settle competing writes within a batch. Recommend allowing at most one create/update per
+target object: two updates to the same template ID, or two creates for the same kind/name, would
+be rejected before writes. Authors combine edits into one checked replacement or use separate
+submissions. This is pending; the alternative permits repeated targets when explicitly ordered and
+each operation has valid independent preconditions. Unrelated concurrent clients remain governed
+by current per-write checks. Exact conflict detection and batch syntax remain open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

@@ -285,8 +285,13 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Exercise JSON Pointer selection within explicitly chosen input, captured configuration and output
   values: nested members, array indices, escaped member names, the empty pointer and an empty-name
   member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
-  unchanged. Follow the accepted nested-selection contract; source/wrapper notation and handling of
-  unresolved selections remain in review, so these fixtures do not choose those semantics.
+  unchanged. Source/wrapper notation remains in review; these fixtures do not choose it.
+- Return a schema-valid output that omits an optional endpoint, then explicitly reference that
+  missing field for a consumer whose input has a default. Verify a reference-resolution error and
+  no consumer dispatch, rather than a substituted null or default. Repeat with a missing array item
+  and an optional receiving field. Separately select an actual null value and test both accepting and
+  rejecting receiving schemas. Preserve earlier effects/outcomes and allow independent eligible
+  branches to continue. Genuinely omitted inputs retain their declared default/validation rules.
 - Assemble an object and a list explicitly from literals and prior outputs, including a nested
   assembly and a reference-shaped literal subtree. Verify the resulting values and dependencies
   without an assembly plugin, automatic merging or recursive interpretation of literal data.

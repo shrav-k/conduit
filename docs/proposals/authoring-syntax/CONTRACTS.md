@@ -255,7 +255,15 @@ The pointer does not identify the source or choose the reference wrapper's field
 | `{"a/b":{"~key":15}}` | `/a~1b/~0key` | `15` |
 
 These examples approve nested paths only. A literal string containing one of these paths is still
-literal data. Handling a pointer that cannot select a value remains in review.
+literal data.
+
+**Accepted missing-selection handling:** when a pointer selects no value, report a reference-resolution
+error and prevent the consuming step from running. Do not turn the failed binding into null or an
+omitted input that receives a default. For example, `{"connection":{}}` may be valid under a producer
+schema that makes `endpoint` optional, but `/connection/endpoint` cannot resolve against it.
+With `{"connection":{"endpoint":null}}`, the same pointer selects null, which is accepted only if
+the receiving schema permits it. Earlier effects and independent eligible branches retain their
+existing rules. Diagnostic field names remain open.
 
 **Accepted assembly boundary:** graphs may explicitly assemble object fields and list items from
 literals, references and nested assemblies. A plugin is not required merely to build that structure.

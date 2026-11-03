@@ -41,6 +41,9 @@ references is accepted without a plugin merely to assemble the structure. It add
 or inline computations. Nested selection within an explicitly chosen input, configuration or output
 value uses standard JSON Pointer paths. Source selectors, wrappers and literal disambiguation remain
 open; the examples do not approve them.
+A missing selected value causes a reference-resolution error and blocks the consuming step, without
+substituting null or applying a default for omitted input. An actual selected null is validated normally.
+Earlier effects and independent eligible branches retain their agreed behavior.
 Configuration references use values captured when each graph execution begins. Later executions use
 then-current settings; capture does not freeze permissions, dependency validity or control revision
 checks. Retry/recovery must still revalidate retained results. Exact representation remains open.

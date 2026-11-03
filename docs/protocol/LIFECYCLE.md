@@ -228,8 +228,21 @@ member. Standard token escaping applies: `~1` represents `/`, and `~0` represent
 
 This selects data within the chosen source, not the source itself, a registry object or a Resource
 access path. Literal strings remain data under the recognition rule above. Source/wrapper notation
-and application-level handling of unresolved values remain open; accepting JSON Pointer does not
-introduce expressions, wildcard selection or automatic reference evaluation.
+remains open; accepting JSON Pointer does not introduce expressions, wildcard selection or automatic
+reference evaluation.
+
+**Missing referenced values:** report a reference-resolution error and prevent the consuming step
+from running when a graph reference's pointer selects no value. Do not substitute null or treat the
+input as omitted to obtain a default, even if the receiving field is optional or defaulted. For
+example, a schema-valid output may omit an optional `endpoint` member, but a binding selecting
+`/connection/endpoint` still fails if that member is absent. An actual selected null value is data
+and must satisfy the receiving schema; null does not mean the selection is missing.
+
+Catch provable errors early and unresolved selections when inputs are resolved, under the existing
+input-validation boundary. Preserve earlier effects, outcomes and uncertainty; independent branches
+whose prerequisites remain satisfied continue under the normal scheduling rules. This handling does
+not change declared defaults for genuinely omitted configuration/input fields. Exact diagnostic
+fields remain authoring work.
 
 **Structured inputs:** graphs may explicitly assemble objects and lists from literals, references
 and nested assemblies, without a plugin merely to build that structure. Each declared field or

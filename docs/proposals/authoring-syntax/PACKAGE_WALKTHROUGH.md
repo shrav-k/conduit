@@ -355,6 +355,10 @@ named setting. Selecting that field within the captured configuration uses the a
 `/readLimit`; selecting `/backingKey` instead retrieves the backing key. The source selector and
 surrounding reference fields remain illustrative, and strings in history content are not interpreted
 as pointers. Scoped invocation context and authorized Resource access retain their own contracts.
+If a bound field is absent, report a reference-resolution error and do not run the receiving step;
+an optional/defaulted input does not excuse a failed explicit reference. A selected null value instead
+undergoes the receiving schema's normal validation. Earlier effects remain recorded and independent
+eligible work can continue.
 An authored graph can also assemble a message object from a literal title and an earlier step's
 body output, or assemble list items explicitly, without another plugin merely to build the structure.
 This is explicit assembly, not automatic merging or string interpolation; constructor syntax remains open.

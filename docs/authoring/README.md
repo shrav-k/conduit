@@ -78,6 +78,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    remain data even when they resemble reference notation. Within the selected source value, use
    JSON Pointer paths such as `/connection/endpoint` or `/participants/0/name`; source selectors
    and wrapper fields remain open.
+   A missing selected value reports a reference-resolution error and blocks the receiving step,
+   even for an optional/defaulted input. An actual null value is checked against the receiving schema.
    Explicitly assemble object fields or list items from literals/references without an extra plugin
    just to build the structure. This does not introduce automatic merging or inline calculations.
    Catch provable wiring/type errors early, then validate each step's resolved inputs before dispatch.

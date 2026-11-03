@@ -306,13 +306,19 @@ input, configuration or output value. `/connection/endpoint` selects a field and
 and exact field names remain open. This does not select object identities, authorize Resource access
 or evaluate literal strings; registration batches still require complete supplied definitions.
 
-Next, settle unresolved selections. Recommend reporting a reference-resolution error and withholding
-the consuming step when a pointer has no target, rather than silently substituting null or treating
-the input as omitted to obtain a default. For example, `/connection/endpoint` cannot supply an
-endpoint if the selected output has no such member. An existing null value remains a selected value
-subject to the receiving schema. This handling is pending; the alternative treats a missing selection
-as omitted input under declared default/optional-field rules. Existing independent-branch and
-effect-preservation rules remain unchanged. Exact diagnostic fields remain authoring work.
+Missing-selection handling is accepted: report a reference-resolution error and prevent the consuming
+step from running when its pointer selects no value. Do not substitute null or treat the bound input
+as omitted to obtain a default, including for optional receiving fields. An existing null value is
+selected data subject to the receiving schema. Earlier effects and independent eligible branches
+retain their agreed behavior; declared defaults for genuinely omitted fields are unchanged. Exact
+diagnostic fields remain authoring work.
+
+Next, settle reference structure. Recommend separate structured fields for source selection and the
+nested JSON Pointer, instead of combining both into one encoded string. For example, a binding can
+identify the output of step `connect`, select its declared `connection` output, and use `/endpoint`
+within that value. This is pending; the alternative defines a compact string grammar for the whole
+reference. Exact field names, the literal/reference wrapper and constructor notation remain separate.
+Either representation must preserve typed source checks, output dependencies and literal-data handling.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

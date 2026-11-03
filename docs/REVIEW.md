@@ -168,13 +168,14 @@ The [reference-recognition boundary](protocol/LIFECYCLE.md#lifecycle-protocol) i
 references only in explicitly designated binding positions. Literal payloads, ordinary configuration
 and plugin results are not recursively reinterpreted as graph instructions, even when they resemble
 reference notation. Resolving a reference retrieves data, not another instruction to evaluate.
-Explicit forms now distinguish bindings from literal data; exact form notation remains open.
+The accepted single-key forms now distinguish bindings from literal data; reference payload fields remain open.
 
 The [structured-input boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: graphs can
 explicitly assemble object fields and list items from literals, references and nested assemblies
 without a plugin merely to build that structure. Output references still imply dependencies; literal
 payloads remain data. Calculations and other transformations remain plugin operations. No automatic
-merging, string manipulation, loops or inline expressions are introduced; constructor syntax is open.
+merging, string manipulation, loops or inline expressions are introduced. Assembly encoding now uses
+the accepted `object` and `list` form keys below.
 
 The [input-validation boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch provable
 wiring/type errors before execution, then validate each step's resolved inputs before dispatch.
@@ -302,8 +303,8 @@ Batch notation and detailed conflict diagnostics remain open.
 Nested value selection is accepted: use standard
 [JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901.html) paths within an explicitly selected graph
 input, configuration or output value. `/connection/endpoint` selects a field and
-`/participants/0/name` selects a field in the first array item. Exact source-field names and the reference
-wrapper remain open. This does not select object identities, authorize Resource access
+`/participants/0/name` selects a field in the first array item. Exact reference payload fields remain
+open. This does not select object identities, authorize Resource access
 or evaluate literal strings; registration batches still require complete supplied definitions.
 
 Missing-selection handling is accepted: report a reference-resolution error and prevent the consuming
@@ -315,22 +316,29 @@ diagnostic fields remain authoring work.
 
 Reference structure is accepted: use separate structured fields for source selection and the nested
 JSON Pointer, rather than encoding the whole reference in a string. For example, identify step
-`connect`, its declared output `connection`, and pointer `/endpoint` separately. Exact field names,
-nesting, reference-form encoding and constructor notation remain open. Typed source checks,
+`connect`, its declared output `connection`, and pointer `/endpoint` separately. Exact field names
+and nesting inside the `reference` payload remain open. Typed source checks,
 output dependencies and missing-value/literal-data rules remain unchanged.
 
 Explicit binding forms are accepted: each supplied v0 graph input binding selects a literal,
 reference, object assembly or list assembly form, including field/item bindings inside assemblies.
 There is no bare-value shorthand. A literal can contain an entire ordinary object/list without
 wrapping its contents; resolved references likewise remain data. Plugins receive resolved values.
-Ordinary configuration/provider payloads do not acquire graph wrappers. Exact keywords/encoding remain open.
+Ordinary configuration/provider payloads do not acquire graph wrappers.
 
-Next, settle the form encoding. Recommend a binding object with exactly one form key—`literal`,
+Form encoding is accepted: a binding object has exactly one form key—`literal`,
 `reference`, `object` or `list`—whose value contains that form's payload. For example,
-`{literal: 15}` or `{object: {title: {literal: Review}}}`. This is pending; the alternative uses
-a discriminator plus payload fields, such as `{kind: literal, value: 15}`. Reference payload field
-names remain a separate choice. Both representations must preserve the accepted literal boundary
-and explicit child bindings; neither adds shorthand, merging or expression evaluation.
+`{literal: 15}` or `{object: {title: {literal: Review}}}`. Object assembly contains a map of child
+bindings; list assembly contains a list of child bindings. Bindings with zero, multiple or unknown
+form keys and malformed payloads are errors; empty assemblies and literal payloads containing form-like keys
+retain their ordinary meanings. This adds no shorthand, merging or expression evaluation.
+
+Next, settle reference payload layout. Recommend direct fields under `reference`: `from` identifies
+the source, `path` carries its JSON Pointer, and `node`/`port` select a prior step's declared output.
+For example, `{reference: {from: output, node: connect, port: connection, path: /endpoint}}`.
+This is pending; the alternative nests the source selector in its own object beside the path.
+The complete source-kind set, invocation-context access and omitted-path behavior remain separate;
+this question selects layout and field names without extending available authority or value sources.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

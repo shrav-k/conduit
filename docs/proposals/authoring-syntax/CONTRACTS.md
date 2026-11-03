@@ -247,12 +247,19 @@ reinterpreted as graph instructions.
 reference, object assembly or list assembly, including field/item bindings inside assemblies.
 Bare-value shorthand is not supported. Literal payloads may be whole objects/lists and are not
 recursively wrapped or interpreted. The forms are authoring instructions; plugins receive resolved
-values. Ordinary configuration and provider payloads remain data. Exact keys and encoding are open.
+values. Ordinary configuration and provider payloads remain data.
+
+**Accepted form encoding:** every binding object contains exactly one of `literal`, `reference`,
+`object` or `list`, with that form's payload as its value. `object` takes a map of child bindings;
+`list` takes a list of child bindings. Reject empty binding objects, multiple/unknown form keys and
+malformed payloads. Empty assemblies are `{object: {}}` and `{list: []}`; a literal object containing
+these keys remains data. The [lifecycle contract](../../protocol/LIFECYCLE.md#lifecycle-protocol)
+defines the encoding. Fields inside the `reference` payload are still proposals.
 
 **Accepted reference structure:** source selection and nested JSON Pointer use separate structured
 fields. For an output reference, the source identifies the step and declared output; the pointer
-selects within that output value. For example, the following illustrates the accepted structure,
-but its field names and explicit reference-form encoding are still proposals:
+selects within that output value. For example, the following uses the accepted `reference` form,
+but the fields inside it are still proposals:
 
 ```yaml
 reference:
@@ -267,7 +274,7 @@ dependency and missing-value checks. It does not introduce a compact-string refe
 
 **Accepted nested selection:** use JSON Pointer within an explicitly selected input, configuration
 or output value, following the [lifecycle contract](../../protocol/LIFECYCLE.md#lifecycle-protocol).
-The pointer does not identify the source or choose the reference wrapper's fields. For example:
+The pointer does not identify the source or choose the reference payload's fields. For example:
 
 | Selected source value | Pointer | Selected value |
 | --- | --- | --- |
@@ -290,12 +297,13 @@ existing rules. Diagnostic field names remain open.
 literals, references and nested assemblies. A plugin is not required merely to build that structure.
 Output references retain their normal dependency semantics, and literal subtrees/resolved values remain
 data. This adds no automatic merging, calculations, string manipulation, loops or inline expressions;
-those transformations still use plugin operations. Exact constructor notation remains open.
+those transformations still use plugin operations. The `object` and `list` form encoding is accepted;
+reference payload fields remain open.
 
 **Proposed representation:** an inline graph is a mapping of node names to operation bindings.
 Each operation identifies a plugin alias and export. Every supplied input uses an explicit form
-recognized only in the schema's designated binding positions. The concrete field layout and form
-keywords below are illustrative, not approved syntax.
+recognized only in the schema's designated binding positions. Form keys are accepted; the surrounding
+graph layout, implementation selectors and reference payload fields below remain illustrative.
 
 Illustrative syntax, extending the existing fixture rather than approving it:
 
@@ -337,15 +345,14 @@ as literal document content, it is passed unchanged instead of creating a depend
 If an earlier operation returns that document and the graph explicitly references its output, the
 output binding creates a dependency on that operation, but the document's contents do not create
 further graph dependencies. These field names are illustrative; the rule applies to the eventual
-reference notation. Exact syntax for declaring the literal document is still open.
+reference payload notation. Supply the document under the accepted `literal` form key.
 
 To assemble a document, the graph can declare its `title` field as the literal `Review` and its
 `body` field as a reference to `read_document`'s text output. A list can similarly declare a literal
 item followed by an item from another output. This structural assembly does not concatenate strings
-or merge objects, and it does not scan either field's contents for additional references. This
-describes accepted behavior without choosing an `object`, `list`, `literal` or `reference` keyword.
+or merge objects, and it does not scan either field's contents for additional references.
 
-For comparison, the following uses provisional form keys to show a whole literal list and an object
+For comparison, the following uses accepted form keys to show a whole literal list and an object
 assembled from a literal and a reference. Each supplied binding has a form, while the literal list's
 items remain ordinary data:
 
@@ -359,8 +366,8 @@ inputs:
 ```
 
 The receiving operation gets the list and assembled document, without these form keys. The example
-assumes a declared `read_document` step and compatible receiving contract; it does not approve the
-single-key encoding over a discriminator-plus-payload encoding.
+assumes a declared `read_document` step and compatible receiving contract. The `inputs` container
+and the fields inside `reference` remain proposed; the binding form encoding is accepted.
 
 ### Early and runtime validation
 
@@ -391,8 +398,8 @@ under the existing graph/authority rules:
   inclusion prover. Report the limits of what was checked; runtime input validation remains required.
 - Binding kinds include self, config/path and prior node output. Source selection and nested JSON
   Pointer are separate structured fields as accepted above. The complete source-kind set, exact
-  field names and form encoding remain proposals. Explicit forms for every supplied graph input
-  binding are accepted; bare literals with collision escapes are not the selected v0 approach.
+  fields and nesting inside `reference` remain proposals. Single-key forms for every supplied graph
+  input binding are accepted; bare literals with collision escapes are not the selected v0 approach.
 - Runtime-input and control-handler bindings use the same typed machinery. Setup-only operations
   are not automatically exposed as public capability tools.
 - Input acquisition never grants access. A Resource dependency requiring a Conduit must resolve

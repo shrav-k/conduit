@@ -281,13 +281,14 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Pass a literal document containing reference-shaped data to a fixture operation, then pass the
   same content via an explicit reference to another operation's output. Preserve the data in both
   cases: only actual graph bindings establish dependencies, and reference resolution does not
-  recursively interpret the retrieved payload. Concrete literal/reference syntax remains open.
+  recursively interpret the retrieved payload. Use the accepted `literal`/`reference` form keys;
+  reference payload fields remain open.
 - Exercise JSON Pointer selection within explicitly chosen input, captured configuration and output
   values: nested members, array indices, escaped member names, the empty pointer and an empty-name
   member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
   unchanged. Use separate structured source and pointer fields, checking that output source selection
-  establishes the correct dependency and the pointer selects within that source. Exact field names
-  and form encoding remain in review; these fixtures do not choose them.
+  establishes the correct dependency and the pointer selects within that source. Exact fields and
+  nesting inside `reference` remain in review; these fixtures do not choose them.
 - Return a schema-valid output that omits an optional endpoint, then explicitly reference that
   missing field for a consumer whose input has a default. Verify a reference-resolution error and
   no consumer dispatch, rather than a substituted null or default. Repeat with a missing array item
@@ -300,7 +301,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   Require an explicit form at each input binding and each assembly child. Reject bare-value bindings;
   separately accept whole objects/lists as literal payloads without requiring forms for their data
   members. Verify that plugins receive only resolved values and ordinary configuration stays ordinary
-  data. Exact form keys and encoding remain open.
+  data. Require exactly one of `literal`, `reference`, `object` or `list` as the binding key, with its
+  payload as the value. Reject empty binding objects, multiple form keys, unknown keys, and incorrect
+  object/list payload shapes. Include empty assemblies and a literal payload containing all four
+  form names to verify that the restriction applies to binding objects, not arbitrary data.
 - Check undeclared output ports and provable type errors before any fixture steps run. Also wire an integer producer
   allowing 1–100 to an input accepting 1–10: a returned 5 permits dispatch, while 50 blocks the
   receiving step without coercion or clamping. Verify actual input validation even where early

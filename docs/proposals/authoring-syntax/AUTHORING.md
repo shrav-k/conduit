@@ -14,8 +14,8 @@ a small Conduit profile. Code-optional implementation bindings and independent c
 are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in
 Rust code may remain in-process. Profile details, SDK, package syntax and exact helper grouping remain open.
 Code is illustrative and has not been executed.
-Graph examples reflect the accepted explicit binding forms. Their `literal`/`reference` keys and
-source fields are proposed encodings, also used provisionally for runtime inputs below. Plain
+Graph examples use the accepted single-key binding forms, including `literal` and `reference`.
+Reference payload fields remain proposed, as does reusing graph bindings for runtime inputs below. Plain
 configuration and resolved values delivered to plugins do not use those authoring wrappers.
 The [review](../../archive/reviews/IMPLEMENTATION.md#review-priority-plugin-and-template-authors) records the ruling and remaining
 choices; [DESIGN](../../protocol/README.md) supplies the settled semantics.

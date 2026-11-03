@@ -196,7 +196,7 @@ inheriting the caller's configuration namespace. A template's graph can bind cap
 values into those inputs. Scoped invocation context and explicitly authorized Resource access
 remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
 References use separate structured source and JSON Pointer fields as defined below. Every graph
-input binding explicitly identifies its form; exact field names and form notation remain authoring work.
+input binding uses exactly one accepted form key; fields inside `reference` remain authoring work.
 
 **Configuration capture:** configuration references within one graph execution use values captured
 when that execution begins. Later steps do not silently reread changed instance settings. For example,
@@ -225,16 +225,31 @@ its contents are data, not more bindings. A reference retrieves data without rei
 Assembly forms explicitly combine their child bindings into the resulting object or list.
 
 This applies at graph authoring positions. Ordinary configuration and provider payloads keep their
-data representation, and plugins receive resolved input values without the authoring forms. Exact
-form keywords and encoding remain open; the accepted rule does not approve the examples' spelling.
+data representation, and plugins receive resolved input values without the authoring forms.
+
+**Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
+as that key's value. The same encoding applies to child bindings inside assemblies.
+
+| Form key | Payload | Resolved value |
+| --- | --- | --- |
+| `literal` | An ordinary value allowed by the data profile | The payload unchanged, including whole objects/lists |
+| `reference` | A structured source selection and nested JSON Pointer | The selected value; payload field names remain open |
+| `object` | A string-keyed map of child bindings | An object with those keys and resolved child values |
+| `list` | An ordered list of child bindings | A list of resolved child values in the same order |
+
+For example, `{literal: 15}` supplies 15, `{object: {title: {literal: Review}}}` constructs a document,
+and `{list: [{literal: first}, {literal: second}]}` constructs a list. Empty assemblies use
+`{object: {}}` and `{list: []}`. Reject an empty binding object, multiple form keys, unknown binding
+keys or a malformed form payload. `{literal: {reference: example}}` is valid literal data under this
+encoding; its inner key does not select a graph form. Receiving schemas still validate resolved values.
 
 **Reference structure:** represent source selection and the nested JSON Pointer in separate
 structured fields, rather than one encoded reference string. For a prior output, identify its step
 and declared output separately from the pointer within that value. For example, select step
 `connect`, output `connection`, and pointer `/endpoint`. The source fields establish the dependency
 and selected output; the pointer selects within it. Source/contract checks, missing-value handling
-and literal-data rules still apply. Exact field names, nesting and reference-form encoding remain
-open; this does not approve the proposed examples' spelling or add a compact-string shorthand.
+and literal-data rules still apply. Exact fields and nesting inside the accepted `reference` form
+remain open; this does not approve the proposed payload spelling or add a compact-string shorthand.
 
 **Nested value selection:** within an explicitly selected graph input, captured configuration value
 or declared output, use [JSON Pointer (RFC 6901)](https://www.rfc-editor.org/rfc/rfc6901.html).
@@ -243,8 +258,8 @@ the first array item. The empty pointer selects the whole source value; `/` sele
 member. Standard token escaping applies: `~1` represents `/`, and `~0` represents `~`.
 
 This selects data within the chosen source, not the source itself, a registry object or a Resource
-access path. Literal strings remain data under the recognition rule above. Exact source-field and
-wrapper notation remains open; accepting JSON Pointer does not introduce expressions, wildcard
+access path. Literal strings remain data under the recognition rule above. Exact reference payload
+fields remain open; accepting JSON Pointer does not introduce expressions, wildcard
 selection or automatic reference evaluation.
 
 **Missing referenced values:** report a reference-resolution error and prevent the consuming step
@@ -266,7 +281,8 @@ list item supplies a value; output references contribute their normal execution 
 a document can combine the literal title `Review` with a body taken from an earlier step's output.
 Literal subtrees and resolved output values remain data under the recognition rule above. Assembly
 does not add automatic merging, arithmetic, string manipulation, loops or inline expressions;
-calculations and other transformations still use plugin operations. Exact constructor syntax remains open.
+calculations and other transformations still use plugin operations. Assemblies use the `object` and
+`list` encoding above; fields inside reference payloads remain open.
 
 **Input validation:** catch provable graph wiring/type errors before execution, including known
 invalid references and literal inputs. V0 does not require a static proof that every possible

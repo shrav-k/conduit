@@ -347,8 +347,9 @@ attachment intent must be explicit. The user need not rewrite the graph or manuf
 The example passes configuration to establishment and its output to the managed runtime. V0 graph
 inputs use literals and typed references; a calculated setup input would come from another plugin
 operation rather than an inline expression. Every graph input binding explicitly identifies its
-form; the displayed `reference` key and its fields remain illustrative. The example uses the same
-proposed binding notation for runtime inputs. Ordinary `spec.config` values stay unwrapped.
+form using exactly one of the accepted keys. The displayed `reference` key is accepted, while its
+payload fields remain illustrative. Reusing graph binding notation for runtime inputs remains a
+proposal in this example. Ordinary `spec.config` values stay unwrapped.
 If establishment is implemented by a reusable graph, the explicit `configuration` input supplies
 the values that graph may read from the caller. It cannot implicitly read other fields from the
 enclosing Resource's configuration. A narrower reusable operation could instead declare a `limit`
@@ -356,7 +357,7 @@ input: this template could pass its captured `readLimit`, while another template
 named setting. Selecting that field within the captured configuration uses the accepted JSON Pointer
 `/readLimit`; selecting `/backingKey` instead retrieves the backing key. Source selection and pointer
 use separate structured fields; for example, `{reference: {from: config, path: /readLimit}}` illustrates
-this structure without approving those field names or the form encoding. Strings in history
+this structure without approving the fields inside the accepted `reference` form. Strings in history
 content are not interpreted as pointers. Scoped invocation context and authorized Resource access
 retain their own contracts.
 If a bound field is absent, report a reference-resolution error and do not run the receiving step;
@@ -367,7 +368,8 @@ An authored graph can also assemble a message object from a literal title and an
 body output, or assemble list items explicitly, without another plugin merely to build the structure.
 Each field/item in an assembly is an explicit binding; a whole object/list supplied as a literal
 instead retains its ordinary data structure. This is explicit assembly, not automatic merging or
-string interpolation; constructor syntax remains open.
+string interpolation. Assemblies use the accepted `object` and `list` form keys; reference payload
+fields remain open.
 Graph checking catches provable wiring/type errors early, while each step validates its resolved
 inputs before dispatch. A broader producer schema does not alone forbid a binding when actual
 values can satisfy the receiving contract; invalid actual values block the receiving step without

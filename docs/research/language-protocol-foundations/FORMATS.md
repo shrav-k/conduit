@@ -101,7 +101,9 @@ The [YAML 1.2.2 specification](https://yaml.org/spec/1.2.2/#103-core-schema) des
 resolution; its term “schema” concerns how YAML values are interpreted, separately from JSON
 Schema's validation vocabulary. Our accepted restrictions remove non-string keys, non-finite
 numbers, aliases, merge behavior and custom tags. Comments and multiline strings remain.
-Duplicate keys and unsupported numeric precision must be rejected before values are lost.
+Duplicate keys and violations of the accepted numeric profile must be detected before parsing
+loses their evidence. Ordinary fractional values now permit the binary64 rounding described below;
+integer precision remains exact.
 The JSON input path needs the same protections: ordinary JSON parsers can also collapse duplicate
 keys or round numbers. [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259.html) describes these
 interoperability limits.
@@ -128,9 +130,9 @@ These are parts of making the chosen foundation precise, not reasons to design a
   chooses enforced standard formats for its authored schemas, deferring plugin-defined format
   validators in v0. All 19 standard formats are selected. Required Conduit semantics must not depend on a stock
   validator recognizing invented keywords or on its default format-checking settings.
-- Define portable number limits and unit/identifier encodings. Unsupported precision must fail
-  rather than change a value; schema `integer` describes a mathematical value, not a particular
-  YAML or JSON spelling.
+- Apply the accepted integer/binary64 profile below and refine unit/identifier encodings and
+  conformance cases. Unsupported ranges remain errors; schema `integer` describes a mathematical
+  value, not a particular YAML or JSON spelling. Fractional rounding does not relax integer checks.
 - Test the chosen parser and validator against positive and rejection fixtures, including
   composition, defaults, references and cross-client interpretation. Preserve useful source
   locations for author diagnostics.
@@ -174,23 +176,23 @@ exactly interoperable among implementations using binary64 numbers. Wider JSON i
 an ordinary JavaScript client's exact representation even when a Rust implementation preserves them.
 
 A contract needing a larger exact value can explicitly declare a decimal string and its constraints;
-no implicit numeric-to-string conversion is allowed. This decision does not settle fractional-number
-semantics, change provider-native schemas or choose a Rust storage type. The existing rule against
-silent precision loss already applies; no new runtime tests were run here.
+no implicit numeric-to-string conversion is allowed. This decision does not change provider-native
+schemas or choose a Rust storage type. Fractional meaning is accepted separately below; integer
+precision must remain exact. No new runtime tests were run here.
 
 ## Fractional-number follow-up
 
-Rechecked **2026-11-03**. **Pending recommendation:** use finite IEEE 754 binary64 semantics for
+Rechecked **2026-11-03**. **Accepted:** use finite IEEE 754 binary64 semantics for
 ordinary fractional values, with an explicitly declared decimal string or scaled integer when the
-domain needs exact decimals. For example, temperature `0.7` would have the ordinary double-precision
-approximation; a duration could instead declare integer milliseconds when that unit is appropriate.
-This would explicitly allow normal fractional representational rounding, refining the current
+domain needs exact decimals. For example, temperature `0.7` has the ordinary double-precision
+approximation; a duration can instead declare integer milliseconds when that unit is appropriate.
+This explicitly allows normal fractional representational rounding, refining the earlier
 precision rule without changing exact integer limits or authorizing silent overflow/underflow.
 
 [I-JSON section 2.2](https://www.rfc-editor.org/rfc/rfc7493.html#section-2.2) uses binary64 range and
 precision as its interoperability boundary and recommends strings for exact values beyond it.
-This informs the recommendation, but does not select I-JSON wholesale. The alternative is exact
-decimal numeric values with precision-preserving parsers, serializers and client representations.
+This informs the accepted boundary, but does not select I-JSON wholesale. Exact decimal numeric
+values throughout would instead require precision-preserving client handling; that alternative was not selected.
 Schema comparison/`multipleOf` behavior and round-trip fixtures still need specification and testing;
 choosing binary64 alone would not justify a validator's approximate constraint checks. Provider
-schemas remain separate. No new parser/runtime tests were executed for this proposal.
+schemas remain separate. No new parser/runtime tests were executed for this ruling.

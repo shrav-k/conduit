@@ -256,17 +256,26 @@ network access, and no runtime support is claimed by recording it.
 The [portable integer boundary](protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
 Conduit-declared integer configuration, inputs and outputs in v0 use −9,007,199,254,740,991 through
 9,007,199,254,740,991. A contract needing a larger exact integer can explicitly use a decimal string;
-there is no automatic conversion or rounding into range. Core revision/ID encodings, fractional
-semantics and provider-native schemas remain separate. The [number-portability follow-up](research/language-protocol-foundations/FORMATS.md#number-portability-follow-up)
+there is no automatic conversion or rounding into range. Core revision/ID encodings and
+provider-native schemas remain separate. The [number-portability follow-up](research/language-protocol-foundations/FORMATS.md#number-portability-follow-up)
 retains the rationale.
 
-Next, settle fractional-number meaning. The [fractional-number follow-up](research/language-protocol-foundations/FORMATS.md#fractional-number-follow-up)
-recommends finite binary64 (ordinary double-precision) semantics for fractional settings such as
-temperature `0.7`, with explicitly typed strings or scaled integers where exact decimal values are
-needed. This is pending. It would explicitly permit normal fractional representational rounding,
-refining the current precision rule; integer exactness remains required. The alternative preserves
-exact decimal numeric values and requires precision-preserving client handling. Validation and
-serialization details still need conformance cases, and provider-native schemas remain separate.
+The [fractional-number boundary](protocol/CONFIGURATION.md#numeric-interoperability) is accepted:
+ordinary fractional configuration, inputs and outputs use finite binary64 (double-precision)
+semantics, including normal representational rounding. Exact decimal quantities use explicit
+decimal-string or scaled-integer contracts; integer limits remain strict. This refines the earlier
+blanket precision wording. The [follow-up](research/language-protocol-foundations/FORMATS.md#fractional-number-follow-up)
+retains the rationale; detailed validation/serialization fixtures remain engineering and conformance
+work, with any newly exposed public behavior choice returned for review.
+
+Next, settle whether v0 offers multi-object configuration submissions as a convenience over ordinary
+checked registry writes. The existing [submission proposal](proposals/authoring-syntax/CONTRACTS.md#parsing-and-validation-pipeline)
+motivates supporting them with per-object outcomes and retained partial successes, without an atomic
+batch guarantee. For example, a successful history Resource-template registration remains if a later
+Agent-template registration encounters a name conflict. This is pending; the alternative exposes
+single-object submissions initially. Explicit create/update intent, update preconditions, Pool
+ownership and instance-control rules remain mandatory. Batch prevalidation, ordering, failure
+scheduling and exact YAML/JSON representation would follow separately.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

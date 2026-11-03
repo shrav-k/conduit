@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -84,10 +84,11 @@ individually authored YAML file.
 **V0 profile:** use YAML 1.2 Core scalar interpretation, restricted to string
 mapping keys and finite supported numeric values. Typed schemas enforce field types, ranges and
 units without silently converting a string to a number or boolean. Reject duplicate mapping keys
-and unknown fields outside schema-declared open maps. Unsupported numeric range/precision is an
-error, not permission to truncate. Equivalent JSON/YAML inputs have the same typed meaning.
-The JSON input path must likewise reject duplicate keys and unsupported numeric precision
-before parsing loses that information. Presentation differences do not create different
+and unknown fields outside schema-declared open maps. Numeric values follow the shared integer and
+fractional rules below: integer precision loss and unsupported ranges are errors; ordinary fractional
+values permit the declared binary64 rounding. Equivalent JSON/YAML inputs have the same typed meaning.
+The JSON input path must likewise reject duplicate keys and numeric violations before parsing
+loses the evidence needed to check them. Presentation differences do not create different
 semantics; source comments and formatting need not survive configuration export.
 
 Omission follows the declared default/optional rule; instances materialize declared defaults.
@@ -120,10 +121,18 @@ For example, an integer history counter of `9007199254740991` is within the shar
 declare a string with decimal-digit constraints and define its meaning. Conduit does not
 automatically convert numeric inputs into that string contract.
 
-This rule does not select core revision/ID encodings, fractional-number semantics or a Rust
-storage type. Provider-native schemas retain their separate interpretation below. Unsupported
-numeric precision must still be reported; accepting this integer range does not establish a
-fractional rounding policy.
+Ordinary fractional configuration, inputs and outputs use finite IEEE 754 binary64
+(double-precision) semantics in v0. For example, temperature `0.7` uses its normal floating-point
+approximation. A contract requiring exact decimal quantities uses an explicit decimal string or
+scaled integer, such as a duration in integer milliseconds, with its units and meaning declared.
+Conduit does not silently convert between these contracts.
+
+This explicitly permits normal fractional representational rounding, refining the earlier blanket
+precision rule. Integer exactness and limits remain strict; the choice does not authorize rounding
+to bypass an integer contract or silently replacing an out-of-range value with zero or infinity.
+Core revision/ID encodings and storage types remain separate. Provider-native schemas retain their
+own interpretation. Detailed comparison, `multipleOf` and round-trip conformance cases still need
+specification; choosing binary64 does not itself validate an implementation's constraint checks.
 
 ### Schema resolution
 

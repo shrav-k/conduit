@@ -101,7 +101,7 @@ merely to resolve exports. The same rule applies to default bindings when they a
 
 1. Apply input byte/document/depth limits and parse YAML or JSON while retaining source locations.
    YAML may use a marked event stream; the JSON path must also detect duplicate keys and
-   unsupported numeric precision before losing their evidence.
+   numeric violations before losing their evidence, using the accepted integer/fractional profile.
 2. Reject aliases, anchors, custom tags, duplicate keys, non-string keys and nonfinite numbers
    before a generic map conversion could erase their source evidence.
 3. Interpret YAML 1.2 Core scalars. Preserve quoted strings; never convert a string to a number
@@ -156,10 +156,15 @@ cases remain open; this rule does not establish runtime authority or enforcement
 out-of-range values before parsing loses precision. A contract needing a larger exact integer
 can explicitly use a decimal string; no automatic conversion is introduced.
 
+**Accepted fractional boundary:** ordinary fractional configuration, inputs and outputs use finite
+IEEE 754 binary64 semantics, including normal representational rounding. Exact decimal quantities
+use explicitly declared decimal-string or scaled-integer contracts. This refines the earlier blanket
+precision rule while preserving exact integer checks and provider-native schema semantics.
+
 Remaining proposed interoperability profile: core counters/revisions use strings where large exact
-values matter; plugin numeric fields declare bounds. Fractional-number meaning remains open. Reject
-values outside the chosen wire representation rather than silently truncating them. The parser spike
-should settle numeric canonicalization and schema coverage before promising unrestricted arbitrary precision. Keep
+values matter; plugin numeric fields declare bounds. Apply the accepted numeric interpretation and
+report unsupported ranges rather than silently substituting zero or infinity. The parser spike should
+settle canonicalization and constraint/round-trip conformance; unrestricted decimal precision is not promised. Keep
 field-specific list ordering; comments and mapping order are not configuration identity.
 
 Multi-document input is a client convenience, not an implicit distributed transaction. Proposed

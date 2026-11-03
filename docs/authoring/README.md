@@ -35,8 +35,10 @@ silently stripping constraints or claiming enforcement.
 
 Conduit-declared integer configuration, inputs and outputs use the shared range
 −9,007,199,254,740,991 through 9,007,199,254,740,991, with narrower schema bounds where needed.
-Larger exact values require an explicitly suitable contract, such as a decimal string; no automatic
-conversion or rounding is allowed. Fractional-number semantics remain open. See
+Larger exact values require an explicitly suitable contract, such as a decimal string; integer
+rounding or automatic conversion is forbidden. Ordinary fractional values use finite double precision,
+including normal representational rounding. Exact decimals use an explicit decimal-string or
+scaled-integer contract, with its units and meaning declared. See
 [numeric interoperability](../protocol/CONFIGURATION.md#numeric-interoperability).
 
 ## From a new capability to an instance

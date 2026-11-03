@@ -181,7 +181,10 @@ silently determine the public contract. URI validation does not contact the endp
 
 Conduit-declared integer values use the shared ±9,007,199,254,740,991 range. Check raw input and
 declared outputs without rounding an invalid value into range; accepting a wider native Rust integer
-does not expand the public contract. Fractional-number semantics remain under review.
+does not expand the public contract. Ordinary fractional values use finite binary64 semantics,
+including normal representational rounding; exact decimals require an explicitly suitable contract.
+Test equivalent YAML/JSON interpretation and serialization without relaxing integer checks or
+substituting approximate schema comparisons for the declared constraints.
 
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;

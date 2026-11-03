@@ -82,7 +82,9 @@ applicable schema defaults. Traversal order cannot select a winner.
 The accepted [integer range](../../protocol/CONFIGURATION.md#numeric-interoperability) is
 −9,007,199,254,740,991 through 9,007,199,254,740,991 for Conduit-declared configuration, inputs
 and outputs. Larger exact values can use an explicitly string-typed contract; implicit conversion
-and rounding into range are forbidden. Fractional semantics and core revision/ID encodings remain open.
+and rounding into range are forbidden. Ordinary fractional values use finite binary64 semantics,
+including normal representational rounding. Exact decimals use explicit decimal-string or
+scaled-integer contracts. Core revision/ID encodings and detailed conformance fixtures remain open.
 Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
 covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.

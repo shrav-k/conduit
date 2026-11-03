@@ -85,6 +85,10 @@ and outputs. Larger exact values can use an explicitly string-typed contract; im
 and rounding into range are forbidden. Ordinary fractional values use finite binary64 semantics,
 including normal representational rounding. Exact decimals use explicit decimal-string or
 scaled-integer contracts. Core revision/ID encodings and detailed conformance fixtures remain open.
+The accepted [batch boundary](../../protocol/CONFIGURATION.md#batch-configuration-submissions) supports
+multi-object submissions through ordinary checked writes, with per-object outcomes and retained
+partial successes. Explicit intent and preconditions remain required; no atomicity or automatic setup
+is implied. Batch notation, prevalidation, ordering and failure scheduling remain proposals.
 Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
 covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.

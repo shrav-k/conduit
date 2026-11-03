@@ -268,14 +268,20 @@ blanket precision wording. The [follow-up](research/language-protocol-foundation
 retains the rationale; detailed validation/serialization fixtures remain engineering and conformance
 work, with any newly exposed public behavior choice returned for review.
 
-Next, settle whether v0 offers multi-object configuration submissions as a convenience over ordinary
-checked registry writes. The existing [submission proposal](proposals/authoring-syntax/CONTRACTS.md#parsing-and-validation-pipeline)
-motivates supporting them with per-object outcomes and retained partial successes, without an atomic
-batch guarantee. For example, a successful history Resource-template registration remains if a later
-Agent-template registration encounters a name conflict. This is pending; the alternative exposes
-single-object submissions initially. Explicit create/update intent, update preconditions, Pool
-ownership and instance-control rules remain mandatory. Batch prevalidation, ordering, failure
-scheduling and exact YAML/JSON representation would follow separately.
+The [batch submission boundary](protocol/CONFIGURATION.md#batch-configuration-submissions) is accepted:
+v0 supports multi-object configuration submissions as a convenience over ordinary checked writes,
+with per-object outcomes and retained partial successes. No atomic batch guarantee or rollback is
+implied. Explicit create/update intent, update preconditions, Pool ownership and instance-control
+rules remain mandatory; registration starts no runtime. Prevalidation, ordering, failure scheduling
+and exact YAML/JSON representation remain open.
+
+Next, settle batch prevalidation. Recommend parsing the complete submission and validating every
+entry against its required schemas before any registry writes. An unknown field in the last entry
+would then prevent all writes, with diagnostics identifying the invalid entry. This is pending; the
+alternative validates entries individually as they are applied. Successful prevalidation would not
+reserve names or revisions, freeze permissions, or guarantee later writes: current authorization,
+identity/version and other state-dependent checks still apply at each write, with partial outcomes
+reported under the accepted batch rule. Exact checks, ordering and failure scheduling remain separate.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

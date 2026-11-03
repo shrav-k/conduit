@@ -167,10 +167,14 @@ report unsupported ranges rather than silently substituting zero or infinity. Th
 settle canonicalization and constraint/round-trip conformance; unrestricted decimal precision is not promised. Keep
 field-specific list ordering; comments and mapping order are not configuration identity.
 
-Multi-document input is a client convenience, not an implicit distributed transaction. Proposed
-v0 behavior validates the batch first, then explicitly creates documents in order with individual
-outcomes; partial registration is reported and no setup starts automatically. An update batch
-needs a separate baseline per target. Rollback of already-registered objects is never inferred.
+**Accepted batch boundary:** v0 supports multiple object definitions in one submission through
+individual checked registry writes, with per-object outcomes and retained partial successes.
+Each entry has explicit create/update intent and applicable preconditions; there is no atomic batch
+guarantee, inferred rollback or automatic setup. An update needs its own target's baseline.
+
+**Still proposed:** validate the complete batch before writing, then apply entries in declared order.
+Prevalidation, ordering, failure scheduling and YAML/JSON batch notation have not been selected.
+Whole-batch validation would not eliminate state-dependent checks at each write.
 
 ## 3. Templates, instances and bindings
 

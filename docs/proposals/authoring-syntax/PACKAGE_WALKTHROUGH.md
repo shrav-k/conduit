@@ -370,6 +370,17 @@ content causes the graph engine to interpret it as instructions or additional de
 Package installation, template registration, Resource creation, setup and consumer connection are
 distinct effects even if an Interface offers an explicit action combining some of them.
 
+### Registering related templates together
+
+The accepted batch boundary lets an author submit the history Resource template and an Agent
+template together through individual checked registry writes. If history registration succeeds but
+the Agent name conflicts, history remains registered and the Interface reports both outcomes. Each
+entry still requires explicit create/update intent and any applicable update preconditions.
+
+This registers definitions; it does not instantiate the Pool, create a history Resource or launch
+an Agent. Neither the package descriptor nor a batch implies an atomic deployment. Whole-batch
+prevalidation, application order, failure scheduling and concrete batch notation remain unselected.
+
 ## 6. Follow the names through one invocation
 
 | Name | Scope | Resolution |

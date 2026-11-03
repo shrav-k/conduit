@@ -41,6 +41,12 @@ including normal representational rounding. Exact decimals use an explicit decim
 scaled-integer contract, with its units and meaning declared. See
 [numeric interoperability](../protocol/CONFIGURATION.md#numeric-interoperability).
 
+V0 can submit several object definitions together through ordinary checked registry writes. Each
+entry retains its create/update intent and applicable preconditions, with per-object outcomes and
+successful writes preserved if another fails. This does not provide an atomic batch or start setup.
+Prevalidation, ordering and batch notation remain open; see
+[batch submissions](../protocol/CONFIGURATION.md#batch-configuration-submissions).
+
 ## From a new capability to an instance
 
 Consider a small document-search capability used by an Agent. The authoring steps are:

@@ -105,8 +105,8 @@ work; script-based plugins remain supported. This profile governs Conduit's conf
 not the contents/formats of opaque native files supplied through Resources.
 
 Parser choice, diagnostics and schema-specific numeric/unit limits remain implementation work.
-Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
-not imply atomic deployment, authority or successful setup.
+Multiple-object submissions use the batch contract below; parsing YAML does not imply atomic
+deployment, authority or successful setup.
 
 ### Numeric interoperability
 
@@ -428,8 +428,8 @@ access rules still apply when the registry configuration changes.
 Configuration submissions explicitly select create or update intent. Creation reports a
 conflict if that qualified name already exists. Updating a missing target reports a conflict
 instead of creating it. Neither operation silently switches intent based on name matches;
-exact commands and batch handling remain open. Creating Resource instances must go through
-a Pool operation; a generic registry write cannot bypass the owner requirement. Registering
+exact commands remain open and batches follow the contract below. Creating Resource instances must
+go through a Pool operation; a generic registry write cannot bypass the owner requirement. Registering
 a template is distinct from provisioning instances or launching execution.
 
 A v0 template update replaces the complete authored configuration, including `spec` and editable
@@ -504,6 +504,25 @@ checked replacement. This cannot reconstruct missing edit history. An existing s
 still requires reconciliation; it must not be silently replaced with the current version.
 Exact request fields, baseline storage format/lifecycle and remaining creation/import/export
 details remain open.
+
+### Batch configuration submissions
+
+V0 supports submitting several object definitions together as a convenience over individual checked
+registry writes. Return per-object outcomes and preserve successful writes when another entry fails;
+there is no atomic batch guarantee or inferred rollback of earlier registrations/updates.
+
+For example, a history Resource-template registration can succeed while an Agent-template registration
+encounters a name conflict. The history template remains registered and both outcomes are reported.
+An incomplete batch must not be presented as complete success; existing operation tracking and
+uncertain-outcome rules still apply.
+
+Each entry retains explicit create/update intent and its applicable identity/version preconditions.
+Batching does not authorize generic edits to running instance definitions, bypass Resource creation
+through a Pool, provision Resources or start runtimes. Registration and subsequent setup remain
+separate actions.
+
+Prevalidation, application order, scheduling after failures, and the YAML/JSON representation remain
+open. Accepting batching does not approve the proposal's specific validation or ordering algorithm.
 
 ### Objects, representations and contracts
 

@@ -306,6 +306,11 @@ Graph checking catches provable wiring/type errors early, while each step valida
 inputs before dispatch. A broader producer schema does not alone forbid a binding when actual
 values can satisfy the receiving contract; invalid actual values block the receiving step without
 undoing earlier effects. This does not weaken the exact-contract-version rule for imported implementations.
+Validate declared outputs against their producer's contract before downstream use as well. If
+`history.establish` creates its store but returns an invalid descriptor, withhold that output and
+record the contract error without treating the store as absent or blindly repeating creation.
+Preserve effect evidence and uncertainty for supported recovery; downstream input checks still apply
+to valid published outputs.
 Reference recognition is confined to designated graph binding positions. A history message may
 contain an example of reference notation as literal content; neither posting nor reading that
 content causes the graph engine to interpret it as instructions or additional dependencies.

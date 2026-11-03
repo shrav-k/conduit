@@ -416,7 +416,7 @@ management or execution service, with transaction boundaries limited to its own 
 | Graph executor | Check finite dependency graphs and provable wiring/type errors early; validate each step's resolved inputs before dispatch without requiring complete producer-schema inclusion proofs. Schedule ready steps and retain progress. Supply default recovery for graph-backed operations: explicit retry reuses still-valid child results and delegates uncertain effects to child recovery contracts. Detailed nested coordination remains open. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
 | Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
-| Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and report worker/service failures distinctly. |
+| Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and declared outputs before downstream use. Withhold invalid output while preserving effect evidence/uncertainty and report worker/service/contract failures distinctly. |
 | Evidence service | Retain outcomes at their authoritative source; expose snapshots/catch-up and aggregate for the Interface with freshness/gaps. |
 | Artifact/credential services | Supply verified implementation artifacts and protected credential references through narrowly defined host facilities. |
 

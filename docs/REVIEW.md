@@ -181,12 +181,19 @@ A producer permitting integers 1–100 can feed a consumer requiring 1–10, wit
 rejected before the receiving step runs. Required schema support remains mandatory; rejection does
 not undo earlier effects. Exact checking algorithms and diagnostics remain open.
 
-The next proposed ruling concerns declared plugin outputs: validate an output against its producer's
-contract before making it available to downstream steps, withholding invalid output while recording
-the contract error and any effects/uncertainty, or rely only on each downstream input check? The first
-option is recommended. A directory-creation operation may have created the directory even if its
-returned descriptor is malformed; withholding that descriptor must not imply rollback or safe replay.
-This is pending and concerns Conduit-declared outputs, not imposing new schemas on provider-native tools.
+The [output-validation boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: validate each
+declared plugin output against its producer's contract before downstream use. Withhold invalid
+output and report a contract error while preserving effects and uncertainty. A malformed descriptor
+does not establish that creation had no effect or is safe to replay. Producer-output and receiving-input
+checks remain separate; provider-native schema interpretation is unchanged. Exact result/error
+representation remains open.
+
+The next proposed ruling concerns graph scheduling after a step fails: continue independent branches
+whose own prerequisites remain satisfied, or stop starting new steps across the graph while retaining
+already-dispatched outcomes? Continuing independent branches is recommended. For example, a login
+failure need not stop unrelated workspace preparation. Unmet prerequisites still block affected work,
+required unmet work remains incomplete, and cancellation/authority constraints still apply. This is
+pending; existing partial-work retention does not itself choose the scheduling policy.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

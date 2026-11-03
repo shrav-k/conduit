@@ -219,6 +219,19 @@ A resolved value of 5 can proceed; 50 is rejected before the receiving step runs
 or silently narrowing the value. This rejection does not undo earlier steps or establish that
 they had no effects; their outcomes and recovery obligations remain recorded under existing rules.
 
+**Output validation:** validate each declared plugin output against its producer's output contract
+before making it available to downstream steps. Withhold invalid output and report a contract error,
+preserving available effect evidence and uncertainty. A receiving input's acceptance cannot substitute
+for this producer-side check; valid producer output still undergoes the receiving step's input check.
+
+For example, a directory-creation operation can create the directory and then return a malformed
+descriptor. Do not expose that descriptor as usable output, claim that nothing happened, infer
+rollback or blindly repeat creation. Retain the outcome/effect evidence and use the operation's
+recovery contract. A schema-valid declared failure result remains a valid result representation;
+validation success does not itself establish successful effects, readiness or continued availability.
+This concerns Conduit-declared outputs. Provider-native schemas retain their
+[existing interpretation](CONFIGURATION.md#provider-mcp-schemas); no new provider schema is imposed.
+
 For example, database startup reads its directory from configuration, and a migration step receives
 the database handle published by startup. If the directory must be constructed from a base and a
 relative path, a typed plugin operation performs that transformation and startup references its

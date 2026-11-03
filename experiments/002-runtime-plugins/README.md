@@ -254,6 +254,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   receiving step without coercion or clamping. Verify actual input validation even where early
   compatibility checks pass; preserve prior effects/outcomes when a later step's input is rejected.
   This demonstrates runtime value checking without requiring full schema-inclusion proofs.
+- Return an output that violates its producer contract even though a downstream input would accept
+  it. Verify that producer validation withholds it before downstream dispatch. Also create a fixture
+  store and return a malformed descriptor: report the contract error, preserve the actual effect
+  and any uncertainty, and reconcile through supported recovery without blind creation replay.
+  Check that a valid declared failure result is distinguishable from an invalid output representation.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

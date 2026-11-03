@@ -48,6 +48,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    Catch provable wiring/type errors early, then validate each step's resolved inputs before dispatch.
    A binding need not prove that every possible producer value fits; an invalid actual value blocks
    its receiving step without undoing earlier effects.
+   Validate each declared output against its producer's contract before downstream use. Withhold
+   invalid output and report the contract error while preserving effects/uncertainty for recovery.
    The Resource instance manages ongoing activity; a successful setup graph is not
    a permanent readiness guarantee. An uncertain external effect must be reconciled under its contract.
 4. **Declare a Resource template.** Supply the configuration, setup graph, ongoing behavior and allowed

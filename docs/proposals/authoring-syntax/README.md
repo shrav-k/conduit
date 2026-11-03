@@ -31,6 +31,10 @@ provable wiring/type errors early and validate actual resolved inputs before eac
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block
 the receiving step, with prior effects/evidence preserved. Required schema support remains mandatory;
 checking algorithms and diagnostics remain open.
+Declared plugin outputs are also validated against their producer's contract before downstream use.
+Invalid output is withheld with a contract error, preserving effects/uncertainty rather than claiming
+rollback or safe replay. Downstream input checks remain separate, and provider-native schema semantics
+are unchanged. This is accepted behavior; exact error/result notation remains open.
 The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.

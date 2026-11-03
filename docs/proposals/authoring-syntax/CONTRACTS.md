@@ -256,7 +256,7 @@ item followed by an item from another output. This structural assembly does not 
 or merge objects, and it does not scan either field's contents for additional references. This
 describes accepted behavior without choosing an `object`, `list`, `literal` or `reference` keyword.
 
-### Early and runtime input validation
+### Early and runtime validation
 
 **Accepted validation boundary:** catch provable wiring/type errors before graph execution, then
 validate each step's actual resolved inputs before dispatch. V0 does not demand a proof that every
@@ -266,6 +266,15 @@ coerce or clamp an invalid value. Required schemas and validation features must 
 the absence of a static inclusion proof is not permission to omit actual validation. Earlier
 effects/evidence are preserved, and rejection does not imply graph rollback. Concrete checking
 algorithms and diagnostic coverage remain open.
+
+**Accepted output boundary:** validate each declared plugin output against its producer's contract
+before making it available to downstream steps. Withhold invalid output and report a contract error,
+preserving effects and uncertainty under the operation's recovery contract. A malformed directory
+descriptor does not prove that directory creation failed or had no effect. No rollback or automatic
+safe replay follows. A consumer's broader input schema cannot excuse a producer-contract violation;
+producer validation and receiving-input validation are independent checks. A declared failure result
+can be schema-valid without establishing domain success or readiness. Provider-native schemas retain
+their own interpretation; this does not impose a new output schema on an external MCP tool.
 
 The following representation/checking details remain proposals except where accepted above or
 under the existing graph/authority rules:
@@ -290,7 +299,9 @@ or dynamic fan-out. A Pool composition operation can process a finite declared s
 return separately tracked child outcomes without exposing an arbitrary loop language.
 
 Each output declares type, publication condition and validity rules. Durable descriptors and
-live handles differ. A ready output can refer to an instance-owned runtime that has started
+live handles differ. Apply producer-output validation before the output becomes available; schema
+validity does not replace its publication or lifetime requirements. A ready output can refer to an
+instance-owned runtime that has started
 before setup completes; the instance driver owns its continuing availability. A finishing setup
 worker must not become the permanent source of liveness truth.
 

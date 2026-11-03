@@ -244,6 +244,21 @@ reference markers. A plugin result retrieved through a reference remains data ra
 reinterpreted as graph instructions. Exact notation and literal disambiguation remain open;
 no particular wrapper for every scalar is required by this decision.
 
+**Accepted reference structure:** source selection and nested JSON Pointer use separate structured
+fields. For an output reference, the source identifies the step and declared output; the pointer
+selects within that output value. For example, the following illustrates the accepted structure,
+but its field names and literal/reference discrimination are still proposals:
+
+```yaml
+from: output
+node: connect
+port: connection
+path: /endpoint
+```
+
+This selects `endpoint` inside the `connection` output from `connect`, retaining the normal output
+dependency and missing-value checks. It does not introduce a compact-string reference grammar.
+
 **Accepted nested selection:** use JSON Pointer within an explicitly selected input, configuration
 or output value, following the [lifecycle contract](../../protocol/LIFECYCLE.md#lifecycle-protocol).
 The pointer does not identify the source or choose the reference wrapper's fields. For example:
@@ -351,9 +366,10 @@ under the existing graph/authority rules:
 - Dependency edges come from output bindings plus `after`, not mapping order.
 - Early checking rejects known structural/type errors without requiring a general JSON Schema
   inclusion prover. Report the limits of what was checked; runtime input validation remains required.
-- Binding kinds include self, config/path and prior node output. Config paths are typed paths,
-  not shell expressions. An explicit literal wrapper is available where a literal object could
-  otherwise be ambiguous with a binding marker.
+- Binding kinds include self, config/path and prior node output. Source selection and nested JSON
+  Pointer are separate structured fields as accepted above. The complete source-kind set, exact
+  field names and literal/reference discrimination remain proposals. Whether every graph input
+  binding uses an explicit form or bare literals can use a collision escape is still in review.
 - Runtime-input and control-handler bindings use the same typed machinery. Setup-only operations
   are not automatically exposed as public capability tools.
 - Input acquisition never grants access. A Resource dependency requiring a Conduit must resolve

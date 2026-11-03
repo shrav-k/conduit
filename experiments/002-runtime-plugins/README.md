@@ -285,7 +285,9 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Exercise JSON Pointer selection within explicitly chosen input, captured configuration and output
   values: nested members, array indices, escaped member names, the empty pointer and an empty-name
   member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
-  unchanged. Source/wrapper notation remains in review; these fixtures do not choose it.
+  unchanged. Use separate structured source and pointer fields, checking that output source selection
+  establishes the correct dependency and the pointer selects within that source. Exact field names
+  and literal/reference wrappers remain in review; these fixtures do not choose them.
 - Return a schema-valid output that omits an optional endpoint, then explicitly reference that
   missing field for a consumer whose input has a default. Verify a reference-resolution error and
   no consumer dispatch, rather than a substituted null or default. Repeat with a missing array item

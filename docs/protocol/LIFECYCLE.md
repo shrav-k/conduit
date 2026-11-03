@@ -195,8 +195,8 @@ operations receive caller configuration only through declared typed inputs, with
 inheriting the caller's configuration namespace. A template's graph can bind captured configuration
 values into those inputs. Scoped invocation context and explicitly authorized Resource access
 remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
-Source selection, reference wrappers and their field names remain authoring work; nested selection
-uses JSON Pointer as defined below.
+References use separate structured source and JSON Pointer fields as defined below. Exact field
+names and literal/reference wrappers remain authoring work.
 
 **Configuration capture:** configuration references within one graph execution use values captured
 when that execution begins. Later steps do not silently reread changed instance settings. For example,
@@ -220,6 +220,14 @@ resolve the example. Actual references still supply their declared dependencies.
 notation and literal disambiguation remain open; this does not require one particular wrapper
 around every scalar.
 
+**Reference structure:** represent source selection and the nested JSON Pointer in separate
+structured fields, rather than one encoded reference string. For a prior output, identify its step
+and declared output separately from the pointer within that value. For example, select step
+`connect`, output `connection`, and pointer `/endpoint`. The source fields establish the dependency
+and selected output; the pointer selects within it. Source/contract checks, missing-value handling
+and literal-data rules still apply. Exact field names, nesting and literal/reference discrimination
+remain open; this does not approve the proposed examples' spelling or add a compact-string shorthand.
+
 **Nested value selection:** within an explicitly selected graph input, captured configuration value
 or declared output, use [JSON Pointer (RFC 6901)](https://www.rfc-editor.org/rfc/rfc6901.html).
 For example, `/connection/endpoint` selects a field and `/participants/0/name` selects a field in
@@ -227,9 +235,9 @@ the first array item. The empty pointer selects the whole source value; `/` sele
 member. Standard token escaping applies: `~1` represents `/`, and `~0` represents `~`.
 
 This selects data within the chosen source, not the source itself, a registry object or a Resource
-access path. Literal strings remain data under the recognition rule above. Source/wrapper notation
-remains open; accepting JSON Pointer does not introduce expressions, wildcard selection or automatic
-reference evaluation.
+access path. Literal strings remain data under the recognition rule above. Exact source-field and
+wrapper notation remains open; accepting JSON Pointer does not introduce expressions, wildcard
+selection or automatic reference evaluation.
 
 **Missing referenced values:** report a reference-resolution error and prevent the consuming step
 from running when a graph reference's pointer selects no value. Do not substitute null or treat the

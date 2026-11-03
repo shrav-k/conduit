@@ -76,8 +76,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    those operations do not implicitly inherit the caller's configuration namespace.
    References are recognized only in designated binding positions. Literal payloads and plugin results
    remain data even when they resemble reference notation. Within the selected source value, use
-   JSON Pointer paths such as `/connection/endpoint` or `/participants/0/name`; source selectors
-   and wrapper fields remain open.
+   JSON Pointer paths such as `/connection/endpoint` or `/participants/0/name`. Keep source selection
+   and pointer in separate structured fields; exact names and literal/reference wrappers remain open.
    A missing selected value reports a reference-resolution error and blocks the receiving step,
    even for an optional/defaulted input. An actual null value is checked against the receiving schema.
    Explicitly assemble object fields or list items from literals/references without an extra plugin

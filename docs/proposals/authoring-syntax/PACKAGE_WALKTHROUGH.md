@@ -352,9 +352,11 @@ the values that graph may read from the caller. It cannot implicitly read other 
 enclosing Resource's configuration. A narrower reusable operation could instead declare a `limit`
 input: this template could pass its captured `readLimit`, while another template uses a differently
 named setting. Selecting that field within the captured configuration uses the accepted JSON Pointer
-`/readLimit`; selecting `/backingKey` instead retrieves the backing key. The source selector and
-surrounding reference fields remain illustrative, and strings in history content are not interpreted
-as pointers. Scoped invocation context and authorized Resource access retain their own contracts.
+`/readLimit`; selecting `/backingKey` instead retrieves the backing key. Source selection and pointer
+use separate structured fields; for example, `{from: config, path: /readLimit}` illustrates this
+structure without approving those field names or the literal/reference wrapper. Strings in history
+content are not interpreted as pointers. Scoped invocation context and authorized Resource access
+retain their own contracts.
 If a bound field is absent, report a reference-resolution error and do not run the receiving step;
 an optional/defaulted input does not excuse a failed explicit reference. A selected null value instead
 undergoes the receiving schema's normal validation. Earlier effects remain recorded and independent

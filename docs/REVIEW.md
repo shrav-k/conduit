@@ -302,8 +302,8 @@ Batch notation and detailed conflict diagnostics remain open.
 Nested value selection is accepted: use standard
 [JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901.html) paths within an explicitly selected graph
 input, configuration or output value. `/connection/endpoint` selects a field and
-`/participants/0/name` selects a field in the first array item. The source selector, reference wrapper
-and exact field names remain open. This does not select object identities, authorize Resource access
+`/participants/0/name` selects a field in the first array item. Exact source-field names and the reference
+wrapper remain open. This does not select object identities, authorize Resource access
 or evaluate literal strings; registration batches still require complete supplied definitions.
 
 Missing-selection handling is accepted: report a reference-resolution error and prevent the consuming
@@ -313,12 +313,18 @@ selected data subject to the receiving schema. Earlier effects and independent e
 retain their agreed behavior; declared defaults for genuinely omitted fields are unchanged. Exact
 diagnostic fields remain authoring work.
 
-Next, settle reference structure. Recommend separate structured fields for source selection and the
-nested JSON Pointer, instead of combining both into one encoded string. For example, a binding can
-identify the output of step `connect`, select its declared `connection` output, and use `/endpoint`
-within that value. This is pending; the alternative defines a compact string grammar for the whole
-reference. Exact field names, the literal/reference wrapper and constructor notation remain separate.
-Either representation must preserve typed source checks, output dependencies and literal-data handling.
+Reference structure is accepted: use separate structured fields for source selection and the nested
+JSON Pointer, rather than encoding the whole reference in a string. For example, identify step
+`connect`, its declared output `connection`, and pointer `/endpoint` separately. Exact field names,
+nesting, literal/reference discrimination and constructor notation remain open. Typed source checks,
+output dependencies and missing-value/literal-data rules remain unchanged.
+
+Next, settle explicit binding forms. Recommend that v0 graph input bindings explicitly select a
+literal, reference, object assembly or list assembly form, including within assemblies. This makes
+literal data unambiguous even when it resembles a reference, at the cost of wrapping simple values
+such as 15. This is pending; the alternative permits bare literals alongside marked references and
+constructors, with a literal escape for collisions. Exact keywords remain open. This concerns graph
+authoring positions only, not ordinary configuration, plugin input values or provider payloads.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

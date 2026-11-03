@@ -85,14 +85,18 @@ contents without purging outcome evidence. Future recreation of A is not guarant
 exported configuration does not supply missing code. A restart/recovery request with unavailable
 selected code reports that gap rather than substituting B.
 
-To preserve a chosen implementation, explicitly version and release it. For example, release
-`example.history` version `0.1.0` locally, then continue editing source. New instances can still
-select the preserved `0.1.0` contents while development uses the edited source. Releasing those
-changes requires a new version, such as `0.1.1`; the existing release is unchanged. Retiring its
-instances does not remove the release. A local release needs no public registry, and these version
-labels are examples, not a prescribed version format. Git can support release storage, but a source
-commit or test capture alone does not request release preservation. Future runtime compatibility
-and exact reproduction of external services/data remain outside this content-preservation boundary.
+To preserve a chosen implementation, explicitly version and publish it. For example, publish
+`example.history` version `0.1.0` as fixed package contents through a public or private distribution
+source, then continue editing. New instances can select that release and verify its digest while
+development uses the edited source. Publishing those changes requires a new version, such as `0.1.1`;
+the existing release is unchanged. Retiring its instances does not remove the release. These version
+labels are examples, not a prescribed format. A Git commit or test capture alone does not publish
+a usable package. A declaration-only package may need only released source; this compiled worker
+example must also supply its executable artifact or an explicitly supported build arrangement.
+No build mechanism is selected here. Conduit resolves and verifies the package without necessarily
+providing the hosting/publishing system. A separate local-only release facility is unselected.
+Future runtime compatibility and exact reproduction of external services/data remain outside this
+content-preservation boundary.
 
 This does not require manual archive assembly, public publication or a selectable multi-build catalog
 for each local edit. A development helper could combine retirement and replacement. Development/release

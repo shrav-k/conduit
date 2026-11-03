@@ -76,11 +76,13 @@ start a managed instance from captured package contents. Conduit preserves the r
 code and contracts against later source edits. To adopt edits, retire the affected instance and
 create a replacement, explicitly reusing backing data where supported; running two revisions is
 optional. Earlier edits are not automatically preserved for future creation. To preserve an
-implementation, explicitly version and release it; a local release suffices. Released contents
-remain fixed independently of running instances, and changing them requires a new release version.
+implementation, explicitly version and publish a fixed package through a public or private
+distribution source. Its digest identifies the released contents independently of running instances;
+publishing changed contents requires a new version. Conduit need not provide hosting or publishing.
 A source commit, draft version field or managed-test capture does not itself release the package.
-Release commands and storage remain open. Retiring an edit-mode instance can release its private
-contents; it does not delete a preserved release. Capture does not require manual archive assembly
+Publication/acquisition mechanisms remain open; a local-only release facility is not selected.
+Retiring an edit-mode instance can release its private contents; it does not delete a preserved
+release. Capture does not require manual archive assembly
 or public publication for every edit. Package contents do not include credentials,
 Resource data or a frozen host environment. Declare included files, directories or
 patterns explicitly; unrelated working files stay outside the captured artifact and its digest.

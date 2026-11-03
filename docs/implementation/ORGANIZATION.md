@@ -198,8 +198,11 @@ or executable-install step. Installation alone does not contact or authenticate 
 Installing or capturing revised source must not overwrite code used by a running instance. An
 instance's recorded binding still identifies its selected implementation; this does not require
 an archive of edit-mode revisions for future recreation. Deliberate preservation uses an explicit
-versioned release, which may be local. Released contents remain fixed and survive instance retirement;
-editing them requires another release version. Release storage/removal mechanics remain open.
+versioned publication of fixed contents through a public or private distribution source. Conduit
+resolves and verifies the selected package; it need not own publishing, hosting or release storage.
+Released contents remain fixed independently of instance retirement; publishing changes requires
+another version. Publication/acquisition and removal mechanics remain open, and a separate local-only
+release facility is not selected.
 Host protocol/storage changes need
 compatibility checks even where plugin code is unchanged. A newer host can drop older contract/store
 support and report the incompatibility. Keeping the prior working host/package set is distinct from
@@ -234,9 +237,10 @@ Development preserves code/contracts for running work. After editing a plugin, t
 can retire the affected test instance and create a replacement from the current source, normally in
 a disposable registry. Backing-data reuse follows the type's attachment contract. There is no need
 to keep both versions running or make old private snapshots available as selectable packages. Git can
-retain authored history or support release storage; it is not a required execution backend. A temporary
+retain authored history or support release publication; it is not a required execution backend. A temporary
 edit-mode snapshot or cache is an execution mechanism, not a release. Version and release a selected
-implementation to preserve it independently of its instances; no public marketplace is needed.
+implementation through a public or private distribution source to preserve it independently of its
+instances; no Conduit-operated marketplace is required.
 Do not hot-reload code into an existing instance
 and claim the immutable-definition contract still holds. Record only synthetic fixtures in the
 repository; keep real provider test evidence scrubbed and outside public fixtures.

@@ -340,8 +340,10 @@ graph may implement an exported typed operation, including for invocation from a
 Resolved package artifacts retain package identity and a content digest covering declarations and
 any bundled code, including packages with no executable. Deliberate preservation requires a versioned
 release with fixed contents, retained independently of running instances; changed contents need a
-new release version. Releases may remain local. Edit-mode captures record the selected contents
-without becoming preserved releases, even if a draft contains a version field. Release metadata,
+new release version. Release means intentional publication through a defined public or private
+distribution source; it does not require Conduit-owned hosting or publishing. Distribution mechanics
+remain open, and a separate local-only release facility is not selected. Edit-mode captures record
+the selected contents without becoming preserved releases, even if a draft contains a version field. Release metadata,
 commands, digest and bundle formats remain open; separately bound dependencies keep their own identities.
 Managed execution of locally authored packages uses an immutable snapshot retained before
 execution. Direct handler tests can use editable source; an explicit managed test/start can

@@ -1,6 +1,6 @@
 # Current review
 
-Updated: 2026-11-02, after the protocol-documentation migration. This is the only active review queue.
+Updated: 2026-11-03, after the protocol-documentation migration. This is the only active review queue.
 The five-family model and completed conceptual/implementation rulings remain accepted in the
 [protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
@@ -124,19 +124,21 @@ The digest identifies content, not publisher trust or remote service code. Hash 
 bundle boundaries and concrete fields remain open.
 
 The [edit-mode/release boundary](protocol/CONFIGURATION.md#implementation-selection) is accepted:
-deliberately preserving an implementation for later selection requires an explicit versioned release,
-which can remain local. A release fixes its contents independently of running instances; changed
-contents require a new release version. Otherwise authors work in edit mode, preserving the running
-instance's code/contracts against source edits without archiving every revision. A source commit,
+deliberately preserving an implementation for later selection requires intentional versioned
+publication of fixed package contents, identified by a digest and retrievable from a public or
+private distribution source. Conduit resolves/verifies/executes the package without necessarily
+owning publication or hosting. A separate local-only release facility is not selected. Changed
+published contents require a new release version. Otherwise authors work in edit mode, preserving
+the running instance's code/contracts against source edits without archiving every revision. A source commit,
 draft version field or test capture alone does not release a package. Direct handler tests can use
-editable source; managed test/start workflows can capture contents automatically. Ordinary iteration replaces affected
-instances, with explicit backing-data reuse where supported; keeping both revisions running is
+editable source; managed test/start workflows can capture contents automatically. Ordinary iteration
+replaces affected instances, with explicit backing-data reuse where supported; keeping both revisions running is
 optional. No archive of every edit, manual release per edit or selectable development-build
 catalog is required. An edit-mode digest identifies content without guaranteeing its future
 availability; missing restart/recovery code is reported without substitution. Retained evidence
 does not itself require retaining executables. Instance retirement does not delete a preserved
-release. This does not freeze credentials, Resource data or the host environment. Exact release
-commands, storage and removal mechanics remain open.
+release. This does not freeze credentials, Resource data or the host environment. Exact
+publication/acquisition mechanisms, metadata, storage and removal mechanics remain open.
 
 The [package-content rule](protocol/CONFIGURATION.md#implementation-selection) is accepted:
 explicitly declare included files/directories, with directory and pattern rules available.
@@ -153,6 +155,13 @@ The proposed same-name/release multi-artifact catalog is superseded by edit mode
 versioned releases. Different edit-mode captures do not become multiple released contents under one
 version. Protecting active execution does not require an archive of every development build.
 Contract checks and no silent substitution remain applicable; public registry mechanics remain open.
+
+The next proposed ruling returns to template graphs: should v0 inputs use literals and typed
+references to configuration or earlier outputs, leaving calculations/transformations to plugin
+operations, or also support a bounded inline expression language? The first option is recommended;
+the [graph proposal](proposals/authoring-syntax/CONTRACTS.md#4-graph-language) supplies an example.
+This boundary and exact reference syntax remain unaccepted. It does not reopen the accepted rule
+that authored graphs are finite DAGs with branching/loops inside plugins initially.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

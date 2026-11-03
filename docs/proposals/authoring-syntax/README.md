@@ -38,8 +38,9 @@ algorithms, bundle boundaries and concrete fields remain open; this does not est
 Managed execution of local packages uses retained immutable snapshots, while direct handler tests
 may use editable source. Explicit managed test/start workflows can capture a revision automatically;
 the running instance preserves its code/contracts without archiving every edit-mode revision.
-Deliberate preservation requires a versioned release, which can remain local and retains fixed
-contents independently of its instances. Changed released contents require a new version; draft
+Deliberate preservation requires a versioned publication of fixed package contents through a public
+or private distribution source. Conduit need not host or publish releases; the mechanism remains open,
+and a local-only release facility is not selected. Changed released contents require a new version; draft
 version fields or test captures alone are not releases. Ordinary development replaces affected
 instances without requiring two active versions or publication per edit. Missing selected code
 blocks affected restart/recovery rather than being replaced

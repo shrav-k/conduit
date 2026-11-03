@@ -184,15 +184,23 @@ Local authoring distinguishes **edit mode** from a **versioned release**:
 - In edit mode, authors change source and explicitly create replacement instances from the selected
   current contents. No release is needed for each edit, and earlier edits are not preserved for
   future creation merely because an instance used them.
-- To preserve an implementation for later selection, authors explicitly version and release it.
-  A release fixes and preserves its selected package contents independently of any running instance.
-  Editing source does not change that release; changed contents remain development work until
-  released under a new version. A release can be local; public hosting or a marketplace is not required.
+- To preserve an implementation for later selection, authors explicitly version and publish it.
+  A release is an intentional, versioned publication of fixed package contents, identified by a
+  content digest and retrievable from a defined distribution source. That source may be public or
+  private. Editing source does not change the release; publishing changed contents requires a new
+  version. A release is independent of the instances that use it.
 
 A working-directory capture or a version string in a draft is not itself a release. Source control
-can support authoring and release storage, but a source commit alone does not request Conduit release
-preservation. Exact release commands, metadata, storage and removal mechanics remain open. These
-are authoring/distribution distinctions, not permission to mutate a running instance's definitions.
+can support authoring and publication, but a source commit alone is not publication of a usable
+package. Declaration-only packages may be fully represented by their released source; authored code
+also needs the executable artifact or an explicitly supported build arrangement its binding requires.
+No particular build arrangement is selected by this boundary.
+
+Conduit resolves selected packages, verifies their identity and executes them under their contracts.
+It need not operate the publisher, hosting service or release store; existing distribution mechanisms
+may supply those roles. Exact publication/acquisition commands, metadata, storage and removal
+mechanics remain open. A separate local-only release facility is not selected. These are
+authoring/distribution distinctions, not permission to mutate running instance definitions.
 
 For managed execution of a locally authored package, preserve its selected code and contracts
 before execution so source edits cannot change a running instance. This preservation serves the

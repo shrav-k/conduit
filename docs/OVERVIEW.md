@@ -82,8 +82,9 @@ Graph completion, readiness and execution status are separate observations.
 
 Running instances preserve their selected code and contracts against source edits. In edit mode,
 development replaces affected instances without archiving every revision. Deliberate preservation
-for later selection requires a versioned release, which can remain local. Releases retain fixed
-contents independently of running instances, without promising compatibility with future runtimes.
+for later selection requires a versioned publication of fixed package contents through a public or
+private distribution source. Conduit need not host releases. Release identity is independent of
+running instances and does not promise compatibility with future runtimes.
 Definition or implementation upgrades require replacement in v0. Named typed controls
 can change their permitted settings. The single stored configuration advances only after application
 is confirmed; pending/uncertain requests are recorded separately. Controls normally serialize per target

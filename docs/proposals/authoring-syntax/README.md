@@ -6,7 +6,9 @@ for later syntax discussion and adds no second active question queue.
 
 Status: **ready for the next syntax/conformance review; examples remain proposals**, 2026-11-02. The
 [conceptual closure review](../../archive/reviews/CONCEPTUAL.md) is complete. The published-contract and no-primary-plugin
-rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
+rulings remain accepted. Templates now use one named dependency map and alias-plus-export references
+for setup, runtime and controls, with kind/contract checks and no primary alias. The specific
+`spec.plugins` / `{plugin, name}` spellings remain proposals.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
 The accepted package entry boundary uses one explicit document declaring exports and dependencies,

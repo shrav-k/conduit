@@ -191,6 +191,9 @@ expected kind and contract after selecting one export. Internal names and regist
 Resolve explicit re-exports through declared dependencies while preserving the originating definition,
 contract and internal reference scope, along with resolved dependency identities. A local public alias
 does not require a wrapper, change behavior or grant access; the same export validation still applies.
+Resolve template implementation selections through one named dependency map and alias-plus-export
+references for setup, runtime and controls. Check each use's expected kind/contract; there is no primary
+alias. Keep package-internal scope and resolved identities intact. Concrete field names remain open.
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.

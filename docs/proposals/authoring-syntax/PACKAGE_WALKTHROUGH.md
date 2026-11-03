@@ -1,8 +1,8 @@
 # Complete package walkthrough: retained message history
 
 Status: **illustrative package design for authoring review**, 2026-11-03. Package-local scope,
-explicit dependency bindings and one explicit package entry document are accepted; the alias-map
-syntax and concrete file layout remain unaccepted.
+explicit dependency bindings, one explicit package entry document and a template's named dependency
+map with alias-plus-export references are accepted. Concrete field names and file layout remain open.
 [Conceptual closure](../../archive/reviews/CONCEPTUAL.md) is complete.
 This follows the accepted [design](../../protocol/README.md) and reuses the history Resource from
 [Experiment 001](../../../experiments/001-shared-access/README.md). It is a complete walkthrough
@@ -400,10 +400,11 @@ Stop does not purge message history; closing one consumer's Conduit does not del
 
 ## 8. What remains open after this example
 
-Package-local scope and explicit dependency bindings are now accepted. Template-local
-`spec.plugins` aliases and `{plugin, name}` export references remain proposed spellings.
+Package-local scope and explicit dependency bindings are accepted. Templates select implementations
+in one named map and use alias-plus-export references for setup, runtime and controls, with no primary
+alias and kind/contract checks at each use. `spec.plugins` and `{plugin, name}` remain proposed spellings.
 This example does not ratify the entire manifest or every contract field at once.
-The uniform reference proposal applies to template/resolved-instance implementation references;
+The accepted uniform reference pattern applies to template/resolved-instance implementation references;
 it need not force package-local defaults, endpoint names or native MCP tool names into that same
 namespace. Package-internal references retain their defining scope; callers replace only
 explicitly exposed dependencies. Such dependencies may now declare default implementation bindings:

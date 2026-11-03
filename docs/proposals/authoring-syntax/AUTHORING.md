@@ -284,8 +284,9 @@ access/copy/mount capability; it cannot treat this path as its own local directo
 
 **Accepted v0 model:** a template supplies a complete recipe using compatible contributions from
 one or several plugins, with no mandatory primary implementation. Complete standard templates and
-declared type defaults provide convenience. Concrete `plugins` and `{plugin, name}` syntax below
-is the next I7 proposal; these fragments have not been executed.
+declared type defaults provide convenience. The named dependency map and alias-plus-export reference
+pattern are accepted for setup, runtime and controls, with kind/contract checks and no primary alias.
+Concrete `plugins` and `{plugin, name}` spellings below remain proposals; these fragments have not been executed.
 
 An Euphony Pool provisions one Resource from a directory template. Setup attaches the existing
 `/work/euphony` directory and then checks for `Cargo.toml` and `src`. The resulting instance exposes
@@ -435,7 +436,7 @@ supported controls continue to update confirmed configuration under the accepted
 
 The v0 ruling accepts this composition/default boundary. Type-default controls, instance-owned
 runtime management, fixed definitions/implementations and replacement rules remain intact. The
-remaining authoring choices include the concrete named-plugin map, export-reference form, package
+remaining authoring choices include the dependency-map field name, exact export-reference notation, package
 identity and binding details. The YAML/JSON and JSON Schema 2020-12 foundation is accepted;
 its detailed profile remains open. The current review queue determines the order of these choices.
 

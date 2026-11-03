@@ -233,11 +233,17 @@ copying or wrapping it. Preserve the original definition, contract, internal ref
 resolved dependency identities. Export-name uniqueness and kind/contract checks still apply; the
 alias adds no behavior or access. Exact declaration and resolution notation remain open.
 
-Next, revisit the previously deferred template implementation-selection structure: one named set
-of implementation dependencies, with setup operations, runtime drivers and control handlers selecting
-an alias plus a public export name, or repeated full selections at each use? The shared named set is
-recommended, with no primary alias and kind/contract checks at each reference. This remains pending;
-`spec.plugins`, `{plugin, name}` and the other concrete field spellings are still proposals.
+The [template implementation-selection structure](protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+is accepted: one named dependency map, with setup operations, runtime drivers and control handlers
+selecting an alias plus a public export name. There is no primary alias; each use checks the expected
+kind and contract. Package-internal scope and retained implementation identities remain unchanged.
+`spec.plugins`, `{plugin, name}` and other concrete field spellings are still proposals.
+
+Next, resolve the custom schema-annotation mechanism left open under strict keyword validation:
+one dedicated map of namespaced descriptive annotations, or individually declared annotation
+keywords? The dedicated map is recommended for optional tooling metadata, keeping validation and
+behavioral rules in their declared contracts. This remains pending; the map keyword, namespace
+syntax and detailed value schemas are open. Provider-native schema semantics remain separate.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

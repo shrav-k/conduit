@@ -248,6 +248,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   wrapper, retains the contract and resolved dependency identities, and uses the original internal
   reference scope even when the starter declares a same-named private helper. Check the re-export
   against public-name uniqueness and expected kind/contract rules; it grants no additional access.
+- Select the history implementation once under a template-local alias, then reference its distinct
+  setup operation, runtime driver and control handler exports. Include a second implementation for
+  an independent check, without a primary alias. Verify each reference's kind/contract and retained
+  selection; a missing alias or wrong-kind export must not trigger fallback or implicit lookup.
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.

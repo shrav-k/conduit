@@ -95,6 +95,15 @@ identity, access and readiness are verified at their required points. Conformanc
 behavioral evidence; matching schemas or package names alone do not establish compatibility.
 This preserves instance-owned state/runtime responsibility and fixed-definition replacement rules.
 
+**Template implementation selections:** templates select implementations in one named dependency
+map. Setup operations, runtime drivers and control handlers refer to a dependency alias plus a
+public export name, with the expected kind and contract checked at each use. No alias is primary.
+For example, `messages` selects the history package; setup selects `messages` plus
+`history.establish`, while the runtime selects `messages` plus `history.managed`. Aliases identify
+implementation selections, not Resource instances, processes or access grants. Package-internal
+references retain their defining scope, and resolved implementations remain subject to the existing
+retention/replacement rules. Exact map fields and reference notation remain open.
+
 There are two distinct forms of composition. Requirements combine obligations; graphs combine
 actions and their dependencies. A graph may establish prerequisites for a requirement, but
 successfully finishing setup does not prove that every later request satisfies it. Conversely, a

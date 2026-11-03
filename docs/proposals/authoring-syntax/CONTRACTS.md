@@ -65,9 +65,11 @@ The common envelope remains `apiVersion`, `kind`, `form`, `metadata`, `spec`. No
 configuration export omits system fields and grants. Checked writes carry preconditions separately.
 
 **Accepted composition:** templates require complete compatible bindings, not a primary plugin.
-The table proposes a uniform named `plugins` map for those bindings; the field name and common
-export-reference syntax remain unaccepted authoring proposals. Declared type defaults can still supply handlers
-and other supported behavior, resolving their selected implementations explicitly on the instance.
+Templates select implementations in one named dependency map; setup steps, runtime drivers and
+control handlers use a dependency alias plus public export name, with kind/contract checks at each
+use. The table's `plugins` field and the concrete export-reference notation remain proposals.
+Declared type defaults can still supply handlers and other supported behavior, resolving their
+selected implementations explicitly on the instance.
 
 | Field | Responsibility |
 | --- | --- |
@@ -80,9 +82,10 @@ and other supported behavior, resolving their selected implementations explicitl
 | `conduits` | Consumer requirements and explicit open/join selections. |
 | `owner` | Resource-instance owning Pool, established by Pool-authorized creation rather than self-asserted by YAML. |
 
-The proposed `plugins` map can hold one implementation or several. A filesystem operation and
+The named map can hold one implementation or several. A filesystem operation and
 an authentication operation may come from different packages. Aliases name implementation bindings,
-not Resources, processes or permission. The map and `{plugin, name}` export reference remain proposals.
+not Resources, processes or permission. The `plugins` and `{plugin, name}` spellings remain proposals;
+the named-map and alias-plus-export structure is accepted, without a primary alias.
 Accepted [package scope](../../protocol/MODEL.md#package-scope-and-public-bindings) keeps internal
 references in their defining package; caller bindings replace only explicitly exposed dependencies.
 Those dependencies may declare default implementation bindings. A valid explicit replacement takes

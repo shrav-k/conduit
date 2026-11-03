@@ -38,6 +38,9 @@ Consider a small document-search capability used by an Agent. The authoring step
 2. **Bind an implementation.** A plugin publishes inspectable contracts and bindings to authored code,
    an existing MCP service, graph-backed operations or a combination. Lightweight handlers are supported
    as the initial author experience; a large SDK and a mandatory primary implementation are not required.
+   A template selects implementations in a named dependency map. Setup steps, runtime drivers and
+   controls use an alias plus public export name, checking the expected kind and contract at each use.
+   Exact field names remain open; aliases do not identify Resources or grant access.
 3. **Compose setup.** A finite dependency graph can establish access and prepare search. Output bindings
    imply dependencies. Supply literals or typed references to configuration/earlier outputs as inputs;
    use plugin operations for calculations and transformations, with no inline binding expressions in v0.

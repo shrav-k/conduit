@@ -26,6 +26,11 @@ recognized only in designated binding positions; literal payloads and resolved p
 data rather than being recursively reinterpreted. Explicit object/list assembly from literals and
 references is accepted without a plugin merely to assemble the structure. It adds no automatic merging
 or inline computations. Exact syntax and literal disambiguation remain open; the examples do not approve them.
+The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
+provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
+V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block
+the receiving step, with prior effects/evidence preserved. Required schema support remains mandatory;
+checking algorithms and diagnostics remain open.
 The accepted [schema-resolution rule](../../protocol/CONFIGURATION.md#schema-resolution) uses
 the selected package and supplied/declared schema dependencies, reporting missing definitions
 without automatic network fetching during validation. Dependency acquisition remains explicit.

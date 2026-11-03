@@ -249,6 +249,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   assembly and a reference-shaped literal subtree. Verify the resulting values and dependencies
   without an assembly plugin, automatic merging or recursive interpretation of literal data.
   Exact constructor notation remains open.
+- Check undeclared output ports and provable type errors before any fixture steps run. Also wire an integer producer
+  allowing 1–100 to an input accepting 1–10: a returned 5 permits dispatch, while 50 blocks the
+  receiving step without coercion or clamping. Verify actual input validation even where early
+  compatibility checks pass; preserve prior effects/outcomes when a later step's input is rejected.
+  This demonstrates runtime value checking without requiring full schema-inclusion proofs.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child

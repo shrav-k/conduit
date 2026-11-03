@@ -45,6 +45,9 @@ Consider a small document-search capability used by an Agent. The authoring step
    remain data even when they resemble reference notation; exact notation remains open.
    Explicitly assemble object fields or list items from literals/references without an extra plugin
    just to build the structure. This does not introduce automatic merging or inline calculations.
+   Catch provable wiring/type errors early, then validate each step's resolved inputs before dispatch.
+   A binding need not prove that every possible producer value fits; an invalid actual value blocks
+   its receiving step without undoing earlier effects.
    The Resource instance manages ongoing activity; a successful setup graph is not
    a permanent readiness guarantee. An uncertain external effect must be reconciled under its contract.
 4. **Declare a Resource template.** Supply the configuration, setup graph, ongoing behavior and allowed

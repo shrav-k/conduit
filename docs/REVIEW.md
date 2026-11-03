@@ -174,13 +174,19 @@ without a plugin merely to build that structure. Output references still imply d
 payloads remain data. Calculations and other transformations remain plugin operations. No automatic
 merging, string manipulation, loops or inline expressions are introduced; constructor syntax is open.
 
-The next proposed ruling concerns validation: reject known wiring/type errors before execution,
-then validate each step's resolved inputs before dispatch without requiring a static proof that
-every possible upstream output satisfies the receiving schema. The alternative requires that
-proof for every binding. The first option is recommended: a producer permitting integers 1–100
-can feed a consumer requiring 1–10, with 5 accepted and 50 rejected before the consumer runs.
-Required schemas and validation features must still be available/supported. This remains proposed;
-exact checking algorithms and diagnostics are later authoring/conformance work.
+The [input-validation boundary](protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch provable
+wiring/type errors before execution, then validate each step's resolved inputs before dispatch.
+No static proof that every possible upstream output satisfies the receiving schema is required.
+A producer permitting integers 1–100 can feed a consumer requiring 1–10, with 5 accepted and 50
+rejected before the receiving step runs. Required schema support remains mandatory; rejection does
+not undo earlier effects. Exact checking algorithms and diagnostics remain open.
+
+The next proposed ruling concerns declared plugin outputs: validate an output against its producer's
+contract before making it available to downstream steps, withholding invalid output while recording
+the contract error and any effects/uncertainty, or rely only on each downstream input check? The first
+option is recommended. A directory-creation operation may have created the directory even if its
+returned descriptor is malformed; withholding that descriptor must not imply rollback or safe replay.
+This is pending and concerns Conduit-declared outputs, not imposing new schemas on provider-native tools.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

@@ -205,6 +205,20 @@ Literal subtrees and resolved output values remain data under the recognition ru
 does not add automatic merging, arithmetic, string manipulation, loops or inline expressions;
 calculations and other transformations still use plugin operations. Exact constructor syntax remains open.
 
+**Input validation:** catch provable graph wiring/type errors before execution, including known
+invalid references and literal inputs. V0 does not require a static proof that every possible
+producer output satisfies the receiving input schema. Required schemas and their validation
+features must still be available and supported; lack of such a proof does not waive validation.
+Resolve and assemble each step's inputs, then validate the actual values against its input contract
+before dispatch. Reject invalid inputs without invoking that step. Early checks do not replace
+runtime validation, current authority or readiness checks. Exact checking algorithms and diagnostic
+coverage remain authoring/conformance work.
+
+For example, an output declared as an integer from 1–100 may feed an input accepting 1–10.
+A resolved value of 5 can proceed; 50 is rejected before the receiving step runs, without coercion
+or silently narrowing the value. This rejection does not undo earlier steps or establish that
+they had no effects; their outcomes and recovery obligations remain recorded under existing rules.
+
 For example, database startup reads its directory from configuration, and a migration step receives
 the database handle published by startup. If the directory must be constructed from a base and a
 relative path, a typed plugin operation performs that transformation and startup references its

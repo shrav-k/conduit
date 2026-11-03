@@ -302,6 +302,10 @@ operation rather than an inline expression. The displayed reference notation rem
 An authored graph can also assemble a message object from a literal title and an earlier step's
 body output, or assemble list items explicitly, without another plugin merely to build the structure.
 This is explicit assembly, not automatic merging or string interpolation; constructor syntax remains open.
+Graph checking catches provable wiring/type errors early, while each step validates its resolved
+inputs before dispatch. A broader producer schema does not alone forbid a binding when actual
+values can satisfy the receiving contract; invalid actual values block the receiving step without
+undoing earlier effects. This does not weaken the exact-contract-version rule for imported implementations.
 Reference recognition is confined to designated graph binding positions. A history message may
 contain an example of reference notation as literal content; neither posting nor reading that
 content causes the graph engine to interpret it as instructions or additional dependencies.

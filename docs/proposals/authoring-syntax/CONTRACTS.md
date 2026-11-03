@@ -256,12 +256,24 @@ item followed by an item from another output. This structural assembly does not 
 or merge objects, and it does not scan either field's contents for additional references. This
 describes accepted behavior without choosing an `object`, `list`, `literal` or `reference` keyword.
 
-### Compile-time rules
+### Early and runtime input validation
+
+**Accepted validation boundary:** catch provable wiring/type errors before graph execution, then
+validate each step's actual resolved inputs before dispatch. V0 does not demand a proof that every
+possible producer value meets the receiving schema. For example, an integer output permitting
+1–100 can feed an integer input accepting 1–10: 5 passes and 50 blocks the receiving step. Do not
+coerce or clamp an invalid value. Required schemas and validation features must be supported;
+the absence of a static inclusion proof is not permission to omit actual validation. Earlier
+effects/evidence are preserved, and rejection does not imply graph rollback. Concrete checking
+algorithms and diagnostic coverage remain open.
+
+The following representation/checking details remain proposals except where accepted above or
+under the existing graph/authority rules:
 
 - Unique node names; finite acyclic dependency graph; every output/input path exists in a contract.
 - Dependency edges come from output bindings plus `after`, not mapping order.
-- The compiler can reject structurally incompatible types. It cannot prove arbitrary JSON Schema
-  implication; runtime input validation is still required, and uncertain compatibility is reported.
+- Early checking rejects known structural/type errors without requiring a general JSON Schema
+  inclusion prover. Report the limits of what was checked; runtime input validation remains required.
 - Binding kinds include self, config/path and prior node output. Config paths are typed paths,
   not shell expressions. An explicit literal wrapper is available where a literal object could
   otherwise be ambiguous with a binding marker.

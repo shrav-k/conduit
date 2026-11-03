@@ -23,7 +23,9 @@ dedicated map of namespaced entries; they do not implement validation, permissio
 The map keyword, namespace syntax, value schemas and external MCP adapter details remain open.
 See [schema keyword acceptance](../protocol/CONFIGURATION.md#schema-keyword-acceptance).
 Declared formats are enforced validation requirements in Conduit-authored schemas, with supported
-formats defined by the shared profile and unsupported formats reported. The format set remains open.
+standard formats defined by the shared profile and unsupported formats reported. V0 defers
+plugin-defined format validators; the exact standard set remains open. Custom declarative constraints
+can use supported keywords/reusable schemas, while operations and requirement checks remain extensible.
 If composed schemas give an omitted configuration field conflicting defaults, provide an explicit
 valid value or correct the defaults. Schema order does not choose a winner; all constraints still apply.
 Provider MCP schemas retain their declared dialect's semantics. An allowed descriptive annotation

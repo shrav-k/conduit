@@ -174,6 +174,9 @@ The accepted authored-schema profile rejects unknown keywords while providing on
 for namespaced custom descriptive annotations. Reuse standard descriptive annotations where they
 fit; custom tooling hints do not implement validation, authority or runtime behavior. The map keyword,
 namespace syntax and value schemas remain open. Provider MCP schemas retain their own dialect rules.
+V0 authored-schema format validation uses a shared published standard-format set and does not load
+plugin-defined format validators. The exact set still needs a ruling and conformance evidence; a
+library's defaults or extension hooks must not silently determine the public contract.
 
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;

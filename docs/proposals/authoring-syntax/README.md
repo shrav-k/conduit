@@ -72,7 +72,9 @@ Provider MCP schemas [retain their declared dialect's semantics](../../protocol/
 allowed descriptive annotations do not alone reject a tool, and unsupported required validation
 features are reported without stripping constraints or claiming enforcement. Adapter details remain open.
 Formats in Conduit-authored schemas are enforced, with the shared profile defining supported
-formats and unsupported ones reported. The supported set and custom-extension mechanism remain open.
+standard formats and unsupported ones reported. V0 defers plugin-defined format validators; the exact
+standard set remains open. Supported keywords/reusable schemas can still describe custom constraints,
+and operations, Resource contracts and requirement checks remain extensible.
 The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
 requires an explicit valid value or corrected defaults when an omitted field has conflicting
 applicable schema defaults. Traversal order cannot select a winner.

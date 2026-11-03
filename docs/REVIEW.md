@@ -109,8 +109,9 @@ validation constraints still apply. Exact default-resolution mechanics remain op
 
 The [format rule](protocol/CONFIGURATION.md#schema-keyword-acceptance) is accepted: `format` in
 Conduit-authored schemas is an enforced validation requirement. The shared profile defines
-supported formats and unsupported formats are reported rather than treated as satisfied.
-The supported set and custom-extension mechanism remain open.
+supported standard formats and unsupported formats are reported rather than treated as satisfied.
+V0 defers plugin-defined format validators. The exact standard set remains open; custom operations,
+Resource contracts and requirement checks remain extensible.
 
 The [provider MCP schema boundary](protocol/CONFIGURATION.md#provider-mcp-schemas) is accepted:
 preserve the declared dialect's semantics without automatically imposing Conduit's stricter
@@ -244,12 +245,15 @@ The dedicated custom-annotation map is accepted under the schema-keyword rule ab
 and documentation hints do not change validation, grants or control behavior. Exact spelling and
 value schemas remain open; provider-native schema semantics are unchanged.
 
-Next, settle the v0 custom-format boundary: limit Conduit-authored `format` declarations to the shared
-published set of standard formats, or support plugin-defined format validators from the outset?
-The shared set is recommended initially to keep authored-schema validation independent of arbitrary
-plugin validator code. This is pending; the exact standard-format set and future extension mechanism
-remain open. Declarative custom constraints can still use supported schema keywords/references,
-and provider MCP schemas retain their own dialect semantics.
+The v0 format-extension boundary is accepted: use a shared published set of standard formats,
+deferring plugin-defined validators. Schema authors can still express custom declarative constraints
+through supported keywords and reusable schemas; provider MCP dialect semantics are unchanged.
+
+Next, choose the shared format set. The [format-set follow-up](research/language-protocol-foundations/FORMATS.md#standard-format-set-follow-up)
+recommends all 19 formats defined in JSON Schema 2020-12, with offline syntactic validation, rather
+than a smaller Conduit-specific subset. This is pending. A subset must not claim full support for
+the standard Format-Assertion vocabulary; conformance evidence is required for whichever set is
+selected. This choice does not select UUID object IDs, graph reference notation or network access.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

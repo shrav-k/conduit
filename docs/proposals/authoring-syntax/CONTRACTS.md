@@ -139,8 +139,10 @@ with composition need correct `unevaluatedProperties` behavior. [Defaults][schem
 
 **Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
 using the shared profile's supported formats and reporting unsupported ones instead of silently
-accepting them. The supported format set and custom-extension mechanism remain open. External
-provider MCP schemas retain their declared dialect's semantics under the accepted boundary below.
+accepting them. V0 uses a shared published set of standard formats and defers plugin-defined format
+validators; the exact standard set remains open. Custom constraints can still use supported schema
+keywords/references, with operations and requirement checks retaining their extension contracts.
+External provider MCP schemas retain their declared dialect's semantics under the boundary below.
 
 **Accepted provider boundary:** do not automatically impose the stricter Conduit authoring profile
 on existing provider MCP schemas. An unfamiliar descriptive annotation permitted by that dialect

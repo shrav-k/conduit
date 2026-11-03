@@ -141,11 +141,17 @@ schemas remain open; illustrative `annotations` and `example.ui` spellings are n
 External provider MCP schemas follow the separate boundary below.
 
 In Conduit-authored data schemas, `format` is an enforced validation requirement. The shared
-profile defines supported formats; report an unsupported format rather than treating its
-constraint as satisfied. For example, `type: string` with `format: date-time` rejects a malformed
-timestamp. The supported format set and custom-extension mechanism remain open. Format validation
-does not replace explicit field types or
-establish runtime readiness, access authority or successful effects.
+profile publishes the shared set of supported standard formats; report an unsupported format rather
+than treating its constraint as satisfied. V0 defers plugin-defined format validators so authored-schema
+validation can run before plugin code starts. The exact standard-format set remains open; this does
+not select every standard format merely by excluding custom ones.
+
+For example, a selected `date-time` format can validate a timestamp, while a project-specific identifier
+can use ordinary string constraints and a reusable schema instead of registering `format: workspace-id`.
+Custom operations, Resource contracts and requirement checks remain extensible. Format validation
+does not replace explicit field types or establish runtime readiness, access authority or successful
+effects. Provider MCP schemas retain the separate interpretation below; any future custom-format
+extension needs an explicit contract.
 
 ### Provider MCP schemas
 

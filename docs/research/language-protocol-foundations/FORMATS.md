@@ -13,6 +13,9 @@ in Conduit-authored contracts. A subsequent ruling selects one dedicated map of 
 descriptive annotations, reusing standard descriptive annotations where applicable. Its keyword,
 namespace syntax and detailed value schemas remain open; custom hints do not implement validation,
 authorization or runtime behavior.
+V0 subsequently selects a shared published standard-format set and defers plugin-defined format
+validators. The precise set remains a proposal below; custom operations and requirement checks
+remain extensible, and provider MCP schemas retain their dialect semantics.
 
 ## Recommendation and scope
 
@@ -121,8 +124,8 @@ These are parts of making the chosen foundation precise, not reasons to design a
 - Specify default materialization separately. JSON Schema `default` is an annotation, and
   `readOnly` does not enforce authority. The [validation specification](https://json-schema.org/draft/2020-12/json-schema-validation)
   also distinguishes format annotation from format assertion. Conduit's subsequent ruling
-  chooses enforced formats for its authored schemas, with the supported set and extension
-  mechanism still to be specified. Required Conduit semantics must not depend on a stock
+  chooses enforced standard formats for its authored schemas, deferring plugin-defined format
+  validators in v0. The supported standard set remains open. Required Conduit semantics must not depend on a stock
   validator recognizing invented keywords or on its default format-checking settings.
 - Define portable number limits and unit/identifier encodings. Unsupported precision must fail
   rather than change a value; schema `integer` describes a mathematical value, not a particular
@@ -136,3 +139,27 @@ several of these traps. They remain Python library observations, not evidence th
 Conduit runtime or arbitrary client conforms. No additional runtime implementation was tested in
 this comparison. Sources were rechecked through official web documentation; this brief does not
 add response hashes to the earlier retrieval manifest.
+
+## Standard-format set follow-up
+
+Rechecked **2026-11-03**. **Recommendation, not an accepted set:** support all 19 formats defined in
+[JSON Schema 2020-12 section 7.3](https://json-schema.org/draft/2020-12/json-schema-validation#section-7.3):
+
+| Area | Formats |
+| --- | --- |
+| Time | `date-time`, `date`, `time`, `duration` |
+| Email and hostnames | `email`, `idn-email`, `hostname`, `idn-hostname` |
+| IP addresses | `ipv4`, `ipv6` |
+| Identifiers/references | `uri`, `uri-reference`, `iri`, `iri-reference`, `uuid` |
+| Templates, pointers and expressions | `uri-template`, `json-pointer`, `relative-json-pointer`, `regex` |
+
+The standard [Format-Assertion requirements](https://json-schema.org/draft/2020-12/json-schema-validation#section-7.2.2)
+cover the full set and require syntactic checks; they do not establish endpoint reachability or entity
+existence. A smaller profile cannot claim full support for that vocabulary. Recommend offline checks
+against the referenced standards, with conformance fixtures before claiming support. Supporting a
+format does not choose Conduit's object-ID encoding or graph-reference syntax.
+
+The candidate Rust [jsonschema documentation](https://docs.rs/jsonschema/latest/jsonschema/#note-on-format-keyword)
+documents enabling format checks and an `idna` feature for internationalized email/hostnames.
+These are implementation leads, not evidence that Conduit implements the proposed set. No new
+runtime or validator tests were executed in this follow-up; library selection remains separate.

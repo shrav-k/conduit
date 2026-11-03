@@ -410,6 +410,16 @@ selection and prerequisite representation as a coherent example, with protected-
 made explicit under its contract. Keep final vocabulary in its separate PR. These are concrete
 instances of the existing authoring seams, not a new object family or a fresh conceptual review.
 
+The owner requested database/cloud research before choosing that runtime binding. The
+[comparative report](research/RUNTIME_ESTABLISHMENT.md) examines Compose, Kubernetes,
+CloudNativePG, AWS, Google Cloud SQL, Azure, Nomad and Flyway. It recommends ordinary typed
+operations explicitly bound to the instance's declared runtime, comparing dedicated lifecycle
+nodes and startup driven by available inputs. This recommendation is not yet accepted. Distinguish
+request acceptance, usability for setup, successful application preparation and current availability;
+avoid a readiness condition that waits for a migration which itself needs the startup output.
+These are contract guarantees to explain, not a new universal status enum. Exact target/reference
+syntax, runtime declaration cardinality and start/wait operation granularity remain open.
+
 Continue the complete package-to-instance walkthrough through four connected batches:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema profile, package identity,

@@ -14,6 +14,11 @@ is the 2026-11-03 follow-up requested before continuing individual syntax ruling
 recent choices with Kubernetes, CWL, Tekton, Argo, Compose and related contracts, including costs
 and reasons to revisit choices if worked examples expose problems. The reference layout stays open.
 
+The subsequent [runtime establishment comparison](RUNTIME_ESTABLISHMENT.md) examines how setup
+addresses an instance's declared runtime using Compose, Kubernetes, CloudNativePG, AWS, Google
+Cloud SQL, Azure, Nomad and Flyway. It compares explicit lifecycle nodes, typed operations with
+runtime bindings and input-driven startup. Its recommendation remains pending owner review.
+
 Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
 It is not an additional set of requirements. The current concrete configuration belongs in
 [experiments](../../experiments/README.md), where proposed syntax and validation evidence are
@@ -41,6 +46,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |
 | [CONSTRUCTION](CONSTRUCTION.md) | The concise rationale for template/plugin/graph/runtime boundaries and their source evidence. |
 | [ESTABLISHMENT](ESTABLISHMENT.md) | Detailed account, database, credential and filesystem setup/recovery cases. |
+| [RUNTIME_ESTABLISHMENT](RUNTIME_ESTABLISHMENT.md) | Fresh database/cloud comparison of graph-to-runtime binding, setup readiness, operation progress and recovery; three authoring alternatives and a pending recommendation. |
 | [RESOURCES](RESOURCES.md) | Unitary responsibilities, type groups, capabilities and an open candidate catalog. |
 | [CONDUITS](CONDUITS.md) | Access scenarios, shared authentication, filtering and messaging/network protocol comparisons. |
 | [PI_CONNECTORS](PI_CONNECTORS.md) | Provider inventory, account/context boundaries, activation, MCP, Chord and telemetry. |

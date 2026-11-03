@@ -993,6 +993,10 @@ and authenticated MCP access. Assume a compatible database implementation with p
 migration, inspection and recovery contracts. No database has been started or migrated here, and
 no named database engine's transaction behavior is assumed. All supporting names remain provisional.
 
+The follow-up [database/cloud comparison](../../research/RUNTIME_ESTABLISHMENT.md) examines
+how the startup operation addresses the declared runtime and what its readiness output promises.
+It compares alternative authoring structures; its recommendation is pending, not implied by this example.
+
 **Intended outcome:** the Euphony Pool owns a database Resource. An explicit setup request establishes
 its backing, starts its declared runtime, applies a selected migration and verifies the expected
 schema. Ordinary consumer access requires successful initial preparation. Supported diagnostic or

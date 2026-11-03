@@ -291,12 +291,21 @@ v0 batch form. General operation graphs retain their existing dataflow capabilit
 the unaccepted sequential-order recommendation and settles batch scheduling through the shared
 graph rules; it introduces neither a new object family nor an atomic batch.
 
-Next, settle competing writes within a batch. Recommend allowing at most one create/update per
-target object: two updates to the same template ID, or two creates for the same kind/name, would
-be rejected before writes. Authors combine edits into one checked replacement or use separate
-submissions. This is pending; the alternative permits repeated targets when explicitly ordered and
-each operation has valid independent preconditions. Unrelated concurrent clients remain governed
-by current per-write checks. Exact conflict detection and batch syntax remain open.
+The one-write-per-object rule is accepted for registration batches: reject two updates targeting
+the same stable ID or two creates for the same kind/name before any writes, even if explicitly
+ordered. Combine edits into one replacement or use separate submissions. This does not restrict
+general operation graphs or separate clients' checked writes. It also does not limit instantiation:
+the same `reviewer` template can launch multiple independent Agent instances with distinct identities,
+private state and lifecycles. Sharing a source template does not make those instances duplicate targets.
+Batch notation and detailed conflict diagnostics remain open.
+
+Next, settle nested value selection in typed graph references. Recommend standard
+[JSON Pointer](https://www.rfc-editor.org/rfc/rfc6901.html) paths within the explicitly selected source
+value: `/connection/endpoint` selects a nested field and `/participants/0/name` selects a field in
+the first array item. This is pending; a list of path segments is the alternative. The source selector,
+reference wrapper and exact field names remain separate, as do application-level missing-value
+diagnostics. This selects data paths, not object identities, Resource access or automatic evaluation
+of strings in literal payloads; registration batches still require complete supplied definitions.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

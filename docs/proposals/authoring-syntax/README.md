@@ -93,7 +93,9 @@ required schema prevents them. Current authority and state checks still apply at
 Registration batches use finite graphs with complete supplied definitions and explicit prerequisites;
 independent eligible writes may run concurrently. Shared graph failure, cancellation and recovery
 semantics apply. File order does not supply dependencies and outputs do not construct later batch
-definitions. Batch notation and competing-write handling remain open.
+definitions. Only one write per target object is allowed in a batch; duplicate update IDs or create
+kind/name pairs are rejected before writes even if ordered. Multiple distinct instances from one
+template remain supported. Batch notation and detailed conflict diagnostics remain open.
 Resolved package artifacts retain [package identity and a content digest, plus release identity when released](../../protocol/CONFIGURATION.md#implementation-selection),
 covering declarations and any bundled code, including template-only packages. Digest
 algorithms, bundle boundaries and concrete fields remain open; this does not establish publisher trust.

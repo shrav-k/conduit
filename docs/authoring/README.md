@@ -49,7 +49,9 @@ Passing validation does not reserve names or freeze permission/revision checks a
 Use explicit prerequisites in a finite graph of checked writes with complete supplied definitions.
 Independent nodes may run concurrently; shared graph failure, cancellation and recovery rules apply.
 Earlier node outputs do not generate later definitions in this v0 batch form, and file order does
-not imply dependencies. Batch notation and competing-write handling remain open; see
+not imply dependencies. A batch permits only one write per target object: duplicate update IDs or
+create kind/name pairs are rejected before writes, even if ordered. This does not limit how many
+independent Agents can be launched from one template. Batch notation remains open; see
 [batch submissions](../protocol/CONFIGURATION.md#batch-configuration-submissions).
 
 ## From a new capability to an instance

@@ -529,6 +529,17 @@ An incomplete batch must not be presented as complete success; existing operatio
 uncertain-outcome rules still apply.
 
 Each entry retains explicit create/update intent and its applicable identity/version preconditions.
+Allow at most one write to a target object within a registration batch. Before any writes, reject
+two updates targeting the same stable object ID or two creates targeting the same kind/name, even
+when those nodes are explicitly ordered. Combine edits into one complete checked replacement or
+submit them separately. Separate clients remain subject to the existing per-write concurrency checks;
+this restriction does not limit general operation graphs.
+
+This is a limit on writes to the same registry object, not on instantiating a template. A `reviewer`
+Agent template can produce many distinct instances, such as `reviewer-7f3a` and `reviewer-9c2b`.
+Each has its own identity and follows its creation/start contract; sharing a source template does
+not make the instances duplicate targets or consume the template. Registration itself starts no runtime.
+
 Batching does not authorize generic edits to running instance definitions, bypass Resource creation
 through a Pool, provision Resources or start runtimes. Registration and subsequent setup remain
 separate actions.
@@ -536,9 +547,9 @@ separate actions.
 Parse the complete submission, validate its graph structure, and validate every supplied definition
 against its required schemas before any registry writes. If parsing fails, a required schema is
 unavailable, or an entry fails schema validation, write none of the entries and report the problem
-with its available location/entry
-context. For example, an unknown field in the Agent template prevents registration of both it and
-the otherwise-valid history template. A cycle or invalid prerequisite also blocks execution before writes.
+with its available location/entry context. For example, an unknown field in the Agent template
+prevents registration of both it and the otherwise-valid history template. A cycle or invalid
+prerequisite also blocks execution before writes.
 
 Passing this prevalidation does not reserve names or revisions, freeze permissions, or guarantee
 later writes. Current authorization, identity/version preconditions and other state-dependent checks
@@ -554,7 +565,7 @@ Pool-template registration while an unrelated reviewer-template registration can
 
 This is a graph invocation through existing management capabilities, not another object family or
 a replacement for an instance's setup graph. It does not edit fixed instance definitions. Concrete
-batch notation and handling of competing writes within a batch remain open.
+batch notation and detailed conflict diagnostics remain open.
 
 ### Objects, representations and contracts
 

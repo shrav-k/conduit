@@ -184,8 +184,14 @@ implicit edges. Independent nodes may execute concurrently under target coordina
 authority. Shared graph failure, cancellation, outcomes and valid-progress recovery semantics apply.
 Validate the graph and all definitions before any writes. Earlier node outputs cannot generate or
 modify later definitions in this v0 batch form; general operation graphs keep their existing dataflow.
-This replaces the unaccepted sequential-order proposal. Concrete batch notation and competing-write
-handling remain open; no new object family or separate workflow language is introduced.
+This replaces the unaccepted sequential-order proposal; no new object family or separate workflow
+language is introduced.
+
+**Accepted target uniqueness:** allow only one write per object within a registration batch. Reject
+duplicate update targets by stable ID and duplicate create targets by kind/name before any writes,
+even when explicitly ordered. This does not limit general operation graphs, separate submissions,
+or how many distinct instances can be created/launched from the same template. Template reuse is
+not a duplicate target. Concrete batch notation and detailed conflict diagnostics remain open.
 
 ## 3. Templates, instances and bindings
 

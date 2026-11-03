@@ -400,7 +400,17 @@ without rollback or blind replay. Concurrency remains subject to current checks 
 
 This registers definitions; it does not instantiate the Pool, create a history Resource or launch
 an Agent. Neither the package descriptor nor a batch implies an atomic deployment. Concrete batch
-notation and handling of competing writes remain unselected.
+notation remains unselected.
+
+Each registration batch permits one write per target object. Two updates to the `reviewer` template's
+stable ID must be combined into one replacement or submitted separately; adding an ordering edge
+does not make the duplicate valid. Two creates using the same kind/name are also rejected before
+any writes.
+
+The template remains reusable: after registering `reviewer` once, explicit instance-creation
+and launch operations can establish `reviewer-7f3a`, `reviewer-9c2b` and more Agents. Each instance
+has its own identity, private state and lifecycle. Those operations create distinct objects rather
+than repeatedly writing the template; registration does not implicitly launch any of them.
 
 ## 6. Follow the names through one invocation
 

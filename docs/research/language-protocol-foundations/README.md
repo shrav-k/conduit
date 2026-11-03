@@ -1,5 +1,9 @@
 # Language and protocol foundations
 
+Follow-up, 2026-11-03: [graph authoring comparison and decision audit](GRAPH_AUTHORING_REVIEW.md)
+rechecks Kubernetes, workflow systems and the recent binding/graph rulings. It separates strong
+semantic precedents from syntax preferences and authoring costs; it changes no accepted decision.
+
 Research date: **2026-11-02**. This is evidence and recommendations for the next authoring review,
 not an amendment to the [accepted protocol](../../protocol/README.md). No package spelling,
 schema dialect, new language dependency or implementation has been selected by this research.

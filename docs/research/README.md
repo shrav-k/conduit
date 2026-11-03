@@ -9,6 +9,11 @@ remain proposals. The [collaborator comparison](../archive/collaborator-proposal
 records adopted refinements and unadopted arguments from the two merged PRs, without treating
 their external platform claims as newly verified research.
 
+The [graph authoring decision audit](language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md)
+is the 2026-11-03 follow-up requested before continuing individual syntax rulings. It compares
+recent choices with Kubernetes, CWL, Tekton, Argo, Compose and related contracts, including costs
+and reasons to revisit choices if worked examples expose problems. The reference layout stays open.
+
 Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
 It is not an additional set of requirements. The current concrete configuration belongs in
 [experiments](../../experiments/README.md), where proposed syntax and validation evidence are

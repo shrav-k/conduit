@@ -333,12 +333,17 @@ bindings; list assembly contains a list of child bindings. Bindings with zero, m
 form keys and malformed payloads are errors; empty assemblies and literal payloads containing form-like keys
 retain their ordinary meanings. This adds no shorthand, merging or expression evaluation.
 
-Next, settle reference payload layout. Recommend direct fields under `reference`: `from` identifies
-the source, `path` carries its JSON Pointer, and `node`/`port` select a prior step's declared output.
-For example, `{reference: {from: output, node: connect, port: connection, path: /endpoint}}`.
-This is pending; the alternative nests the source selector in its own object beside the path.
-The complete source-kind set, invocation-context access and omitted-path behavior remain separate;
-this question selects layout and field names without extending available authority or value sources.
+Reference payload layout is still pending; the owner requested examples and then comparative research,
+not acceptance. One candidate has direct `from`, `path`, `node` and `port` fields under `reference`;
+the other groups the source selector beside the path. The complete source-kind set, invocation-context
+access and omitted-path behavior are also open.
+
+Before further individual syntax rulings, discuss the requested
+[graph authoring comparison and decision audit](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
+It recommends checking complete directory, authenticated MCP and database setup examples against
+the accepted rules. Review authoring costs, transformation granularity and failure behavior alongside
+field layout. This is research guidance, not a new ruling or an automatic reopening of accepted
+contracts. Identify any proposed revision explicitly; the protocol reference remains authoritative.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

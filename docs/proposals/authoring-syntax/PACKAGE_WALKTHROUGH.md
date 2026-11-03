@@ -153,6 +153,12 @@ templates:
   shared-history: templates/shared-history.yaml
 ```
 
+All public export names in this package must be unique across contribution kinds. Although this
+illustrative layout puts templates in a separate section, its public `shared-history` name cannot
+also name an operation or driver export. Moving the definition to a separate file does not avoid
+that collision. References still check the expected kind and contract; this rule does not select
+the final field layout or change internal contract names.
+
 `worker` is package-local endpoint configuration. It is not a template plugin alias or another
 object instance. Under the accepted [scope rule](../../protocol/MODEL.md#package-scope-and-public-bindings),
 an unrelated `worker` alias in an importing template cannot change this internal reference.
@@ -350,7 +356,7 @@ Thus the setup reference follows:
 ```
 
 The `name` in `{plugin, name}` is a package export name, not necessarily an MCP tool name.
-The same reference shape selects the driver or control handler, but the expected export kind and
+In this proposal, the same reference shape selects the driver or control handler, but the expected export kind and
 execution contract differ. A worker endpoint need not be exposed directly to Agents. Public
 capability/control calls still pass through authorized Conduits and the target's coordination rules.
 The Interface presents outcomes; it does not become the only process that may issue requests.

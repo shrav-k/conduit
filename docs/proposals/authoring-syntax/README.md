@@ -13,6 +13,9 @@ The accepted package entry boundary uses one explicit document declaring exports
 with inline or package-local referenced definitions. It may be handwritten or generated; inspection
 does not execute plugin code or infer exports from directory layout. Provider-native catalogs remain
 dynamic. Concrete filenames, fields and reference notation in this packet remain proposals.
+Public export names are unique across contribution kinds within a package, regardless of file layout.
+Resolution still checks the expected kind and contract. Internal names, contract identities and
+registry object names retain their own rules; exact name grammar remains open.
 
 The first authoring ruling now accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings).
 Caller-local aliases cannot override a package's internal references; replaceable dependencies must

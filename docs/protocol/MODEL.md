@@ -159,6 +159,14 @@ that need bindings. Callers can supply replacements only through dependency bind
 explicitly exposes, subject to the required contract compatibility. Internal names do not become
 caller-configurable merely because the package is imported.
 
+Public export names are unique across all contribution kinds within a package. Selecting a package
+and export name identifies one contribution; resolution still checks its expected kind and contract.
+For example, a package can export the template `shared-history` and operation `establish`, but cannot
+also export an operation named `shared-history`. Reject that collision rather than choosing by kind
+or declaration order. This applies across inline and referenced definitions and regardless of their
+file layout. Internal definition names, contract identities and registry object names retain their
+separate rules. Exact name grammar and reference notation remain open.
+
 For example, a history package's internal `checks` helper still selects its history validator when
 the importing template also calls an unrelated repository validator `checks`. The caller may
 replace the history validator only if the package declares that dependency replaceable. Its

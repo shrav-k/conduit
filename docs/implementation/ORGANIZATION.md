@@ -185,6 +185,9 @@ Each package has one explicit entry document declaring exports and dependencies,
 inline or referenced in package-local files. Load that declared surface without executing plugin
 code or inferring exports from directory conventions; merely packaging a file does not export it.
 The document can be handwritten or generated, and its concrete filename/fields remain open.
+Validate public export-name uniqueness across contribution kinds and inline/referenced definitions
+before execution. Do not resolve a collision by kind or load order; references still check the
+expected kind and contract after selecting one export. Internal names and registry naming are separate.
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.

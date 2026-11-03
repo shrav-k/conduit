@@ -423,6 +423,12 @@ exports from directory layout. Including a file in the artifact does not make it
 Provider-native tool catalogs remain dynamic under their integration contracts. The filename, field
 layout, reference notation and archive format below remain proposals.
 
+**Accepted export naming:** public export names are unique across contribution kinds within each
+package, whether definitions are inline or referenced from files. Reject collisions without selecting
+by kind or declaration order. A resolved export must still satisfy the caller's expected kind and
+contract. Internal definition names, contract identities and registry object names remain separate;
+exact name grammar and reference notation are open.
+
 **Authoring before hosting:** the manifest/port inventory below is a proposed runtime-facing
 contract, not a requirement that every author manually implement every field or interface.
 The [accepted direction](../../archive/reviews/IMPLEMENTATION.md#review-priority-plugin-and-template-authors) is lightweight

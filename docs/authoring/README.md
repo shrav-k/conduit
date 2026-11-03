@@ -73,6 +73,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    templates, or templates alone. One explicit entry document declares public exports and dependencies;
    definitions may be inline or referenced in package-local files. Authors may write or generate it.
    Inspect declarations without executing plugin code; file inclusion alone does not export definitions.
+   Public export names must be unique across contribution kinds within the package; references still
+   check the expected kind and contract. File layout does not separate these export names.
    Resolved artifacts retain package identity and a content digest,
    plus release identity when released, covering their declarations and any bundled code.
    Installing one does not instantiate objects, authenticate a provider or

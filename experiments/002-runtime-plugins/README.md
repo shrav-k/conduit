@@ -239,6 +239,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   same declared contracts without starting plugin code. Include a definition file with no export
   declaration and verify that it is not exposed merely because it is packaged or conventionally named.
   These variants can have different artifact digests; this checks their declared public surface.
+- Declare an operation and a template with the same public export name, including a variant split
+  across referenced files. Reject the collision before plugin execution rather than choosing by
+  kind or load order. With distinct names, verify that selecting a template where an operation is
+  required still reports a kind mismatch. Internal definition names remain a separate concern.
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.

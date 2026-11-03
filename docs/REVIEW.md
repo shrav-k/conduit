@@ -221,11 +221,17 @@ dynamic. Filenames, fields and reference syntax remain open. The
 [complete package walkthrough](proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md) illustrates both
 single-file and multi-file declarations.
 
-The next proposed ruling concerns public export names: unique across contribution kinds within a
-package, or unique only within each kind? One package-wide public namespace is recommended, with
-the expected contribution kind still checked when resolving an export. This is pending; internal
-definition names, registry object naming and contract identities remain separate, and exact syntax
-is open.
+The [public export-name rule](protocol/MODEL.md#package-scope-and-public-bindings) is accepted:
+names are unique across contribution kinds within a package, including inline and referenced
+definitions. Selecting the package and export name identifies one contribution; resolution still
+checks its expected kind and contract. Internal names, contract identities and registry object
+naming remain separate. Exact name grammar and reference notation remain open.
+
+The next proposed ruling concerns explicit re-exports: may a package expose a declared dependency's
+public export under its own public name without copying or wrapping the definition? This is
+recommended for curated plugin/template collections, preserving the originating definition's scope,
+contract and resolved dependency identities. Such an alias would not adapt behavior or grant access.
+This is pending; exact declaration and resolution syntax remain open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

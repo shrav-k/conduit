@@ -429,6 +429,12 @@ by kind or declaration order. A resolved export must still satisfy the caller's 
 contract. Internal definition names, contract identities and registry object names remain separate;
 exact name grammar and reference notation are open.
 
+**Accepted re-exports:** a package may explicitly expose a declared dependency's public contribution
+under its own export name without copying or wrapping it. The original definition, contract, internal
+reference scope and resolved dependency identities remain intact. The alias adds no behavior or access;
+ordinary export-name uniqueness and kind/contract checks apply. Exact declaration and resolution syntax
+remain open.
+
 **Authoring before hosting:** the manifest/port inventory below is a proposed runtime-facing
 contract, not a requirement that every author manually implement every field or interface.
 The [accepted direction](../../archive/reviews/IMPLEMENTATION.md#review-priority-plugin-and-template-authors) is lightweight

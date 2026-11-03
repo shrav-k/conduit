@@ -167,6 +167,23 @@ this manifest does not require one process per export, package or Resource. The 
 represents a lifecycle/capability contract, not a single ordinary MCP tool invocation. Its adapter
 uses the named methods as appropriate. Exact lifecycle wire/profile details remain open.
 
+### Re-exporting through a starter package
+
+An Euphony starter package can declare this history package as a dependency and explicitly re-export
+its public `shared-history` template as `conversation-history`. The selection is conceptually:
+
+```text
+Euphony starter package: conversation-history
+  → declared history dependency: shared-history
+  → original Resource template and its defining scope
+```
+
+No copied template or wrapper operation is required. Internal references still resolve in their
+original scope, and resolved dependency identities remain retained. The new export name does not
+change the template's contract or confer permission to instantiate it or access history. Ordinary
+export-name uniqueness and kind/contract checks remain in force. This illustrates accepted re-export
+semantics without selecting manifest fields or reference notation.
+
 ## 3. What the published contracts must say
 
 The following is the full contract inventory for the example. Tables express semantics without

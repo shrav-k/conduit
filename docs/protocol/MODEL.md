@@ -167,6 +167,14 @@ or declaration order. This applies across inline and referenced definitions and 
 file layout. Internal definition names, contract identities and registry object names retain their
 separate rules. Exact name grammar and reference notation remain open.
 
+A package may explicitly re-export a declared dependency's public contribution under its own public
+export name, without copying the definition or introducing a wrapper. For example, an Euphony starter
+package can expose a history package's `shared-history` template as `conversation-history`. The alias
+preserves the original definition, contract and internal reference scope; resolved dependencies retain
+their identities. Re-exporting does not adapt behavior, rebind private dependencies or grant access.
+Package-wide export-name uniqueness and the usual kind/contract checks still apply. Exact declaration
+and resolution notation remain open.
+
 For example, a history package's internal `checks` helper still selects its history validator when
 the importing template also calls an unrelated repository validator `checks`. The caller may
 replace the history validator only if the package declares that dependency replaceable. Its

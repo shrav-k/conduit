@@ -188,6 +188,9 @@ The document can be handwritten or generated, and its concrete filename/fields r
 Validate public export-name uniqueness across contribution kinds and inline/referenced definitions
 before execution. Do not resolve a collision by kind or load order; references still check the
 expected kind and contract after selecting one export. Internal names and registry naming are separate.
+Resolve explicit re-exports through declared dependencies while preserving the originating definition,
+contract and internal reference scope, along with resolved dependency identities. A local public alias
+does not require a wrapper, change behavior or grant access; the same export validation still applies.
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.

@@ -227,11 +227,17 @@ definitions. Selecting the package and export name identifies one contribution; 
 checks its expected kind and contract. Internal names, contract identities and registry object
 naming remain separate. Exact name grammar and reference notation remain open.
 
-The next proposed ruling concerns explicit re-exports: may a package expose a declared dependency's
-public export under its own public name without copying or wrapping the definition? This is
-recommended for curated plugin/template collections, preserving the originating definition's scope,
-contract and resolved dependency identities. Such an alias would not adapt behavior or grant access.
-This is pending; exact declaration and resolution syntax remain open.
+The [explicit re-export rule](protocol/MODEL.md#package-scope-and-public-bindings) is accepted:
+a package may expose a declared dependency's public contribution under its own export name without
+copying or wrapping it. Preserve the original definition, contract, internal reference scope and
+resolved dependency identities. Export-name uniqueness and kind/contract checks still apply; the
+alias adds no behavior or access. Exact declaration and resolution notation remain open.
+
+Next, revisit the previously deferred template implementation-selection structure: one named set
+of implementation dependencies, with setup operations, runtime drivers and control handlers selecting
+an alias plus a public export name, or repeated full selections at each use? The shared named set is
+recommended, with no primary alias and kind/contract checks at each reference. This remains pending;
+`spec.plugins`, `{plugin, name}` and the other concrete field spellings are still proposals.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

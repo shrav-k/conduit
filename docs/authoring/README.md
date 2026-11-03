@@ -75,6 +75,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    Inspect declarations without executing plugin code; file inclusion alone does not export definitions.
    Public export names must be unique across contribution kinds within the package; references still
    check the expected kind and contract. File layout does not separate these export names.
+   Collections can explicitly re-export a declared dependency's public contribution under a local
+   export name, preserving its original definition, contract, internal scope and resolved dependencies.
    Resolved artifacts retain package identity and a content digest,
    plus release identity when released, covering their declarations and any bundled code.
    Installing one does not instantiate objects, authenticate a provider or

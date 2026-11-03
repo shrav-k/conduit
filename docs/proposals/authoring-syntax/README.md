@@ -16,6 +16,9 @@ dynamic. Concrete filenames, fields and reference notation in this packet remain
 Public export names are unique across contribution kinds within a package, regardless of file layout.
 Resolution still checks the expected kind and contract. Internal names, contract identities and
 registry object names retain their own rules; exact name grammar remains open.
+Packages may explicitly re-export a declared dependency's public contribution under their own export
+name without copying or wrapping it. Preserve the original definition, contract, internal scope and
+resolved dependency identities; the alias adds no behavior or access. Exact notation remains open.
 
 The first authoring ruling now accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings).
 Caller-local aliases cannot override a package's internal references; replaceable dependencies must

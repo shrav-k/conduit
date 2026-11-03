@@ -243,6 +243,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   across referenced files. Reject the collision before plugin execution rather than choosing by
   kind or load order. With distinct names, verify that selecting a template where an operation is
   required still reports a kind mismatch. Internal definition names remain a separate concern.
+- Add a starter package that explicitly re-exports a dependency's public template under a different
+  name. Verify that it resolves to the original definition without copied template content or a
+  wrapper, retains the contract and resolved dependency identities, and uses the original internal
+  reference scope even when the starter declares a same-named private helper. Check the re-export
+  against public-name uniqueness and expected kind/contract rules; it grants no additional access.
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.

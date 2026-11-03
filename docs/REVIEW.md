@@ -213,11 +213,19 @@ inheritance of the caller's configuration namespace. A template graph passes its
 into the reusable operation's `limit` input. Scoped invocation context and explicitly authorized
 Resource access remain available under their contracts. Exact input/context syntax remains open.
 
-Next, return to the [complete package walkthrough](proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md).
-The proposed ruling is one explicit package entry document declaring public exports and dependencies,
-with definitions inline or referenced in package-local files, rather than automatically discovering
-exports from conventional files. This is recommended but pending; the filename, field names and
-reference syntax remain open. Provider-native dynamic catalogs remain separate from package exports.
+The [package entry-document rule](protocol/MODEL.md#authoring-concepts-beneath-the-object-families)
+is accepted: one explicit entry document declares public exports and dependencies, with definitions
+inline or referenced in package-local files. It may be handwritten or generated; inspecting it
+requires no plugin execution or directory-based export discovery. Provider-native catalogs remain
+dynamic. Filenames, fields and reference syntax remain open. The
+[complete package walkthrough](proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md) illustrates both
+single-file and multi-file declarations.
+
+The next proposed ruling concerns public export names: unique across contribution kinds within a
+package, or unique only within each kind? One package-wide public namespace is recommended, with
+the expected contribution kind still checked when resolving an export. This is pending; internal
+definition names, registry object naming and contract identities remain separate, and exact syntax
+is open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

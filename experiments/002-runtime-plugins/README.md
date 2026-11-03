@@ -234,6 +234,11 @@ composition together using the existing fake service, two synthetic consumers an
 authorities. The accepted process layout includes the authored-code helper default above. Exact
 syntax, permanent core vocabulary and helper grouping remain separate choices:
 
+- Author a package with one explicit entry document declaring exports/dependencies. Exercise inline
+  definitions and an equivalent version referencing package-local files; inspection resolves the
+  same declared contracts without starting plugin code. Include a definition file with no export
+  declaration and verify that it is not exposed merely because it is packaged or conventionally named.
+  These variants can have different artifact digests; this checks their declared public surface.
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.

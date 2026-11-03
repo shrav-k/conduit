@@ -9,6 +9,11 @@ Status: **ready for the next syntax/conformance review; examples remain proposal
 rulings remain accepted; the most recent `spec.plugins` / `{plugin, name}` proposal was not accepted.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
+The accepted package entry boundary uses one explicit document declaring exports and dependencies,
+with inline or package-local referenced definitions. It may be handwritten or generated; inspection
+does not execute plugin code or infer exports from directory layout. Provider-native catalogs remain
+dynamic. Concrete filenames, fields and reference notation in this packet remain proposals.
+
 The first authoring ruling now accepts [package-local scope and explicit dependency bindings](../../protocol/MODEL.md#package-scope-and-public-bindings).
 Caller-local aliases cannot override a package's internal references; replaceable dependencies must
 be explicitly exposed. Those dependencies may supply default implementation bindings, with compatible

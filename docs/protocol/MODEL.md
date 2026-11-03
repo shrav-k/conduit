@@ -55,6 +55,15 @@ services or grant access. The common envelope does not require an identical sour
 bundled dependency copies or a new general-purpose package manager. Exact fields, dependency references
 and archive layout remain authoring work; automatic dependency resolution stays deferred.
 
+**Package entry document:** each package has one explicit entry document declaring its public
+exports and dependencies. Definitions can be inline or referenced in package-local files, so a
+small package can keep its declarations together while a larger one separates contracts, graphs
+and templates. The entry document may be handwritten or generated. Tools inspect the declared
+surface without executing plugin code or inferring exports from directory layout; merely including
+a file in an artifact does not export its definitions. Provider-native tool catalogs remain dynamic
+under their integration contracts. Filenames, fields, reference notation and archive layout remain
+open; existing package capture and supplied-dependency rules still apply.
+
 Policy and Grant are essential protocol concepts for Agents and Interfaces, alongside the other
 concepts here. Their authorization contracts must apply consistently to managed capability use,
 controls and delegation, rather than only to Interface administration. Conduit paths and their

@@ -1,7 +1,8 @@
 # Complete package walkthrough: retained message history
 
-Status: **illustrative package design for authoring review**, 2026-11-02. Package-local scope and
-explicit dependency bindings are accepted; the alias-map syntax remains unaccepted.
+Status: **illustrative package design for authoring review**, 2026-11-03. Package-local scope,
+explicit dependency bindings and one explicit package entry document are accepted; the alias-map
+syntax and concrete file layout remain unaccepted.
 [Conceptual closure](../../archive/reviews/CONCEPTUAL.md) is complete.
 This follows the accepted [design](../../protocol/README.md) and reuses the history Resource from
 [Experiment 001](../../../experiments/001-shared-access/README.md). It is a complete walkthrough
@@ -34,11 +35,17 @@ agreement on input shapes would not prove compatibility with the backing, runtim
 
 ## 2. The published package
 
-A distributable release could contain:
+A package has one explicit entry document declaring its public exports and dependencies. A small
+package can inline its contracts, graphs, templates and bindings there; any executable remains an
+implementation artifact. A larger package can reference separate package-local definition files.
+Either form may be handwritten or generated and inspected without executing plugin code. A file's
+presence alone does not export its contents, and provider-native catalogs remain dynamic.
+
+The following multi-file release illustrates the second form; `plugin.yaml` is a proposed filename:
 
 ```text
 example-history/
-  plugin.yaml                 package identity, contracts and implementation bindings
+  plugin.yaml                 entry document: identity, exports, dependencies and definition references
   contracts.yaml              type, operation, runtime and capability definitions
   schemas.json                shared data schemas referenced by those definitions
   templates/

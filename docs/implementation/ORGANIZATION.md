@@ -181,6 +181,10 @@ promise between releases; any migration supplied must be explicit and tested. Se
 locally supplied plugin packages. Defer a marketplace and automatic dependency resolution across
 programming languages. The layouts below are proposed mechanics within that scope.
 
+Each package has one explicit entry document declaring exports and dependencies, with definitions
+inline or referenced in package-local files. Load that declared surface without executing plugin
+code or inferring exports from directory conventions; merely packaging a file does not export it.
+The document can be handwritten or generated, and its concrete filename/fields remain open.
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.

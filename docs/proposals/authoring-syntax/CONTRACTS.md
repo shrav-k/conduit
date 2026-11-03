@@ -416,6 +416,13 @@ or exactly-once effects. Detailed coordination and custom recovery hooks remain 
 
 ## 5. Plugin package and runtime contracts
 
+**Accepted entry-document boundary:** one explicit package entry document declares public exports
+and dependencies. Definitions may be inline or referenced in package-local files; the document may
+be handwritten or generated. Tools inspect this surface without executing plugin code or discovering
+exports from directory layout. Including a file in the artifact does not make its definitions public.
+Provider-native tool catalogs remain dynamic under their integration contracts. The filename, field
+layout, reference notation and archive format below remain proposals.
+
 **Authoring before hosting:** the manifest/port inventory below is a proposed runtime-facing
 contract, not a requirement that every author manually implement every field or interface.
 The [accepted direction](../../archive/reviews/IMPLEMENTATION.md#review-priority-plugin-and-template-authors) is lightweight

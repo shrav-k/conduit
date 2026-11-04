@@ -482,14 +482,21 @@ rule without treating configuration revisions as operation or observation identi
 Ordinary MCP-client access itself is already accepted in the model; exact enrollment/transport
 mechanics remain refinements rather than another approval of that interoperability direction.
 
-Next, make setup success requirements explicit. The recommendation makes setup steps required by
-default while allowing genuinely nonessential steps to be marked optional: a required migration
-must succeed, while failure of optional diagnostics can be reported without itself preventing setup
-success. Actual dependencies and mandatory type/access requirements still apply; marking a step
-optional cannot supply a missing result or waive required enforcement. The alternative requires
-every declared setup step to succeed in v0, putting nonessential work in separate follow-up
-operations. This setup-gating choice remains pending; it does not change independent scheduling,
-output validity, retained effects or lifecycle cleanup. Exact notation remains open.
+**Setup success requirements are accepted:** steps are required by default, with explicit optionality
+for nonessential steps. Required migration failure blocks successful setup; optional diagnostics
+failure remains visible without itself blocking success. Actual dependencies and mandatory type/access
+requirements still apply. Optionality cannot supply missing results or waive enforcement/validation.
+Independent scheduling, output validity, retained effects and lifecycle cleanup remain unchanged.
+Exact notation remains open.
+
+Next, settle the remaining ordering-trigger scope for v0. The recommendation permits ordinary
+authored prerequisites on successful completion, alongside accepted output-publication dependencies,
+and defers additional `on failure` or `after any completion` triggers. Required cleanup and recovery
+remain responsibilities of operation/instance contracts, including when ordinary graph work cannot
+continue. The alternative adds explicit failure/completion-triggered nodes now, extending authored
+control flow and requiring their cancellation, input and result semantics. This choice remains
+pending; it must not make cleanup contingent on a failed operation reporting success. These trigger
+names are illustrative, and neither option adds loops or automatic rollback.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

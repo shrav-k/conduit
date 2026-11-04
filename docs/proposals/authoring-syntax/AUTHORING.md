@@ -1035,6 +1035,16 @@ shutdown duties. The two declarations need not mean two processes, and the allow
 create another primary Agent execution. This variant is accepted structurally; exact declaration
 fields and collection syntax remain proposals. The walkthrough below shows the database path.
 
+**Required and optional setup:** the backing, database startup, migration and schema-verification
+steps below are required by default. A nonessential diagnostics-establishment step may be explicitly
+optional. If it fails while all required work succeeds, report that failure without making it alone
+prevent successful setup. Retain any effects and perform its applicable lifecycle duties.
+
+Optionality does not remove dependency edges. If schema verification actually needs an output from
+diagnostics, verification cannot proceed without that valid output, and setup remains incomplete.
+Mandatory type or access guarantees cannot be made optional by a template. The rule is accepted;
+no new YAML field spelling is selected by this example.
+
 | Setup operation | Required inputs | Named successful output | What completion establishes |
 | --- | --- | --- | --- |
 | Prepare backing | Captured backing configuration and explicit creation/attachment intent | `storage`: a backing descriptor | The intended backing was established or verified under its contract; an existing target is not silently adopted by a fresh create. |

@@ -25,6 +25,11 @@ Controls confirming unchanged stored configuration retain its revision while rec
 invocation and effects. Applicable checks and declared handler behavior still run; matching values
 do not justify skipping work or substituting a cached result for a new execution.
 
+Setup steps are required by default, with explicit optionality for nonessential work. Optional
+failure is reported without itself blocking setup success; actual dependencies, validation and
+mandatory type/access requirements still apply. Scheduling, retained effects and lifecycle duties
+remain unchanged. Exact step notation remains open.
+
 The accepted package entry boundary uses one explicit document declaring exports and dependencies,
 with inline or package-local referenced definitions. It may be handwritten or generated; inspection
 does not execute plugin code or infer exports from directory layout. Provider-native catalogs remain

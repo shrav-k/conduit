@@ -206,6 +206,18 @@ loops and provider-specific procedure remain inside plugins initially. User-auth
 iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
 supported; interaction waits and valid-progress recovery do not require authored loops.
 
+**Setup success requirements:** setup steps are required by default; a template may explicitly
+mark nonessential steps optional. A required migration must succeed for successful setup, while
+failure of optional diagnostics is reported without itself preventing setup success. Optionality
+does not erase failures, uncertainty or effects, and does not change independent scheduling or
+required lifecycle cleanup.
+
+Actual dependencies still apply. If a required step needs an optional step's output or successful
+completion, that prerequisite must be satisfied. Optionality cannot manufacture a missing value,
+waive a mandatory type/access requirement or bypass definition/input/output validation. Coupled
+requirements remain governed by their contracts. This rule concerns setup success, separately
+from the already accepted required/optional connection rule; exact step notation remains open.
+
 **Ordering prerequisites:** an explicit prerequisite that passes no data normally requires the
 predecessor to complete successfully under its operation contract. A failed or uncertain outcome
 does not satisfy it; merely finishing, returning a response or producing a schema-valid failure

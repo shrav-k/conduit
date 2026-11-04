@@ -743,6 +743,12 @@ it merely because an invocation returned or its failure payload passed schema va
 does not change declared output-readiness dependencies, their validity checks, independent eligible
 work or required lifecycle cleanup. Exact prerequisite notation remains authoring work.
 
+Treat setup steps as required by default, with explicit optionality for nonessential steps. Preserve
+an optional step's failure/effect evidence without making that failure alone block setup success.
+Continue enforcing actual dependencies: a required consumer still needs its declared inputs and
+prerequisites even when their producer is optional. Mandatory type/access requirements and validation
+cannot be waived through optionality. Keep scheduling and lifecycle duties under their existing contracts.
+
 Bind caller configuration into a reusable graph-backed operation's declared inputs; do not inject
 the enclosing instance's configuration namespace into that operation. Keep scoped invocation context
 and explicitly authorized Resource access available through their contracts. Validate declared input

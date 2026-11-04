@@ -501,13 +501,20 @@ Plugins handle internal branching/polling; the graph language has no authored lo
 or dynamic fan-out. A Pool composition operation can process a finite declared selection and
 return separately tracked child outcomes without exposing an arbitrary loop language.
 
-**Pending setup-success default:** the recommendation treats setup steps as required unless
-explicitly optional. Optional failure would remain visible without itself preventing successful
-setup, while missing inputs, required downstream work and mandatory type/access requirements
-still govern the result. The alternative requires every declared setup step in v0 and runs
-nonessential work separately. This is distinct from the accepted required/optional connection
-rule and does not alter independent scheduling, output validity or lifecycle duties. Exact step
-notation and setup-result representation remain open.
+**Accepted setup-success default:** setup steps are required unless explicitly optional. Optional
+failure remains visible without itself preventing successful setup. Missing inputs, required
+downstream work and mandatory type/access requirements still govern the result; optionality
+does not weaken validation or manufacture outputs. This is distinct from the accepted required/optional
+connection rule and does not alter independent scheduling, output validity, retained effects or
+lifecycle duties. Exact step notation and setup-result representation remain open.
+
+**Pending additional ordering triggers:** the recommendation defers authored `on failure` and
+`after any completion` triggers in v0, retaining successful-completion prerequisites and declared
+output-publication dependencies. Operation/instance contracts still perform their required cleanup
+and support recovery even when ordinary graph work is blocked or cancelled. The alternative adds
+failure/completion-triggered nodes, whose input availability, cancellation and outcome semantics
+would need definition. Neither option makes lifecycle cleanup wait for ordinary-step success or
+implies automatic rollback. Trigger spellings are illustrative.
 
 Each output declares type, publication condition and validity rules. Durable descriptors and
 live handles differ. Apply producer-output validation before the output becomes available; schema

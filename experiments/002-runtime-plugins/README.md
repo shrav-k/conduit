@@ -272,6 +272,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   dependency/ordering constraints without requiring one fixed schedule for independent work.
   Reject duplicate step keys before execution. Reuse the same local names in two distinct graphs
   and verify that they do not alias or expose each other's internal steps.
+- Place a migration-success prerequisite on a verification step alongside its operation and inputs.
+  Verification also consumes startup's database output. Require both dependencies, without a separate
+  authored edge collection or duplicate prerequisites for data bindings. Reorder the step map and
+  preserve those constraints; an unrelated step may still run independently. Reject missing predecessor
+  names and cycles formed by combining explicit prerequisites with output-implied dependencies.
+  Failed or uncertain migration must not release verification. Field spelling remains provisional.
 - Invoke the same reusable graph-backed operation from two templates with differently named
   configuration fields, explicitly binding each to its declared `limit` input. Verify that the graph
   receives the supplied value without inheriting either caller's configuration namespace. Include an

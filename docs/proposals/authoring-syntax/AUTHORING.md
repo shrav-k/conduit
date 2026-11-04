@@ -1066,7 +1066,9 @@ alone would permit verification too early. The graph must also require migration
 illustrates the accepted default for explicit ordering without data: require the earlier operation's
 successful completion under its contract. Mapping order does not establish the prerequisite.
 
-For example, this fragment uses `after` as candidate notation for that required-success gate:
+Declare the prerequisite on the waiting step alongside its operation and inputs. For example,
+this fragment uses the provisional name `after` for that required-success gate; its placement on
+`verify` is accepted. No separate graph-wide edge declaration is needed.
 
 The enclosing graph's step collection is a map. `verify` below is its local key; the referenced
 `start` and `migrate` are other keys in that same graph. Each key is unique locally, and moving an
@@ -1091,7 +1093,9 @@ verify:
 The author named the earlier nodes `start` and `migrate`; the startup operation's contract declares
 the `database` output. The receiving operation's input also happens to be called `database`.
 The empty pointer, which may also be omitted, selects the whole output; `/expectedSchema` selects
-the configured expected schema. The spelling and representation of the prerequisite remain proposals.
+the configured expected schema. The prerequisite's field spelling remains provisional. Its placement
+on the dependent step and use of the predecessor's local name are accepted. Output-implied and
+explicit dependencies are checked together for missing steps and cycles.
 A failed or uncertain outcome, including a schema-valid failure payload, cannot satisfy this
 required-success gate. This does not select one universal outcome enum or reinterpret every ordering
 field as having this spelling.

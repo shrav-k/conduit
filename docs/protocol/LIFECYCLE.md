@@ -236,10 +236,17 @@ payload is insufficient. For example, schema verification can use the database o
 while separately requiring migration success. Current authority, input validity and other applicable
 prerequisites still govern dispatch.
 
+Declare these prerequisites on the dependent step alongside its operation and input bindings,
+using the predecessor's local step name. For example, `verify` names `migrate` as a prerequisite;
+the graph does not maintain a separate authored edge collection for that relationship. Output
+bindings still imply their own dependencies without a duplicate prerequisite declaration.
+Validate the combined dependency graph, including cycle and missing-step checks. Placement adds
+no execution order between independent steps and does not expose another graph's internal steps.
+
 This rule does not change dependencies on declared output publication or their validity/lifetime
 rules. Independent eligible branches may continue, and required lifecycle cleanup retains its own
 contract. Reusing a previously successful step on retry still requires valid progress. No automatic
-retry, rollback or authored branching follows; exact prerequisite notation remains open.
+retry, rollback or authored branching follows; final prerequisite field names remain open.
 
 V0 defers additional authored `on failure` and `after any completion` triggers. Operation and
 instance contracts still perform required cleanup and support recovery when ordinary graph work

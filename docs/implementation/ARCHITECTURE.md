@@ -742,12 +742,15 @@ keys before dispatch. Resolve step references and prerequisites in their graph's
 map order as an execution sequence or let equal names in different graphs alias the same step.
 Ordering constraints come from dependencies, alongside current checks and scheduling limits.
 The step-map structure does not expose called graphs' private nodes or choose final field names.
+Read explicit success prerequisites from the dependent step beside its operation and inputs,
+resolving predecessor names within that graph. Combine these edges with output-implied dependencies
+for validation and scheduling; do not require authors to duplicate them in a separate edge collection.
 
 V0 explicit ordering prerequisites without data require the predecessor's successful
 completion under its contract. Failure or uncertainty keeps that dependency unmet. Do not satisfy
 it merely because an invocation returned or its failure payload passed schema validation. This
 does not change declared output-readiness dependencies, their validity checks, independent eligible
-work or required lifecycle cleanup. Exact prerequisite notation remains authoring work.
+work or required lifecycle cleanup. Final prerequisite field names remain authoring work.
 Do not implement authored failure/completion-triggered nodes in v0. Required operation/instance
 cleanup and supported recovery still run under their contracts when ordinary graph work is blocked
 or cancelled; they must not depend on a failed predecessor satisfying a success prerequisite.

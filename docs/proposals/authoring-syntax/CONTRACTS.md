@@ -414,11 +414,17 @@ execution service, which may be independent of management. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
 
+**Accepted prerequisite placement:** declare explicit success prerequisites within the dependent
+step beside its operation and inputs, selecting predecessor steps by their local names. A separate
+graph-wide authored edge collection is not used. The example's placement is accepted; `after`
+remains provisional vocabulary. Output references contribute their dependencies automatically;
+the combined graph must still pass cycle and missing-step checks.
+
 **Accepted v0 prerequisite rule:** an explicit ordering prerequisite that passes no data
 requires successful completion under the predecessor's operation contract. A failed or uncertain
 migration keeps verification blocked; mere completion or a schema-valid failure result does not
 satisfy the gate. Dependencies on declared output publication, independent work and required
-lifecycle cleanup retain their existing rules. Exact notation remains open; additional authored
+lifecycle cleanup retain their existing rules. Final field names remain open; additional authored
 failure/completion triggers are deferred in v0 as specified below.
 
 If an input needs a calculated value, add a typed plugin operation and bind its output instead

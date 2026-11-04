@@ -54,6 +54,10 @@ remain independent and no backward-compatibility maintenance obligation is added
 Constrained YAML 1.2, equivalent JSON input/interchange and JSON Schema 2020-12 data contracts
 are also accepted in the [configuration foundation](../../protocol/CONFIGURATION.md#configuration-language).
 The remaining representations and detailed schema profile below are proposals within those boundaries.
+Explicit success prerequisites belong on the dependent step beside its operation and inputs,
+referencing predecessor step names in the same graph. Output bindings still imply dependencies;
+the combined graph retains cycle/missing-step checks and independent scheduling. No separate authored
+edge collection is required. Placement is accepted; supporting field names remain provisional.
 The [graph-input boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is also accepted: v0 inputs
 use literals and typed references to configuration or earlier outputs, while plugin operations
 perform calculations and transformations. Inline binding expressions are deferred. References are

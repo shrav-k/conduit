@@ -533,12 +533,19 @@ values, explicit nulls and failed reference selections do not acquire fallback d
 satisfy its schema. Conflicting applicable defaults require explicit resolution. Provider-native
 MCP schemas retain their separate semantics; detailed default applicability remains open.
 
-Next, settle placement of explicit success prerequisites. The recommendation declares them on the
-dependent step alongside its operation and inputs: verification names migration as a prerequisite.
-The alternative keeps a separate graph-wide edge collection linking migration to verification.
-This remains pending. Either representation retains the same successful-completion rule, output-
-implied dependencies, cycle checks and independent scheduling; neither adds new trigger behavior.
-Final field names remain for the vocabulary PR.
+**Prerequisite placement is accepted:** declare explicit success prerequisites on the dependent
+step beside its operation and inputs, using predecessor names local to that graph. Verification
+names migration; a separate authored graph-wide edge collection is not used. Output references
+still imply their own dependencies without duplicate declarations. Validate the combined graph
+for missing steps and cycles, retaining successful-completion checks and independent scheduling.
+This introduces no additional trigger behavior. Final field names remain for the vocabulary PR.
+
+Next, settle the collection of named runtime declarations. The recommendation uses a map keyed by
+names unique within the instance definition, such as `database` and `diagnostics`, with each entry
+holding its runtime declaration. The alternative uses a list with a name field in every entry.
+This remains pending: named targets and multiple runtimes are accepted, but their collection layout
+is not. Both retain instance ownership and explicit startup; neither document order nor presence in
+the collection starts a runtime. Driver/input field spelling remains separate.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

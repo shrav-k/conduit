@@ -364,6 +364,21 @@ establish whole-graph success, broaden reference scope or publish other internal
 shares value-binding machinery; it does not settle domain-error/outcome mapping or the surrounding
 output-contract layout. Consumers receive the resolved values, not authoring wrappers.
 
+**Public-output requirements:** each declared public graph output is required for successful graph
+completion unless explicitly optional. A required output must be produced under its contract;
+an unfulfilled required output prevents successful completion even when the contributing steps
+have succeeded. For example, the database output can be required while a diagnostic report is
+explicitly optional. Absence of that optional report is reported with the known reason or explicit
+uncertainty, without that absence alone preventing graph success.
+
+This concerns whole named outputs, separately from optional fields inside a value's schema and
+from required/optional steps. An optional step does not automatically make its public output
+optional. Values that are produced still require validation, permitted exposure and satisfied
+publication/validity conditions. Optionality does not fabricate a value, substitute null, suppress
+binding errors or let a consumer use an absent result; normal reference/dependency rules apply.
+Outstanding work, effect evidence and mandatory contract obligations remain tracked under their
+existing rules. This does not require success outputs to be fabricated for a failed graph.
+
 **Public-output prerequisites:** a public graph output may declare successful-completion
 prerequisites separately from its value binding. Declare them on that output using local step names
 and the same success semantics as step prerequisites. For example, the public database output can

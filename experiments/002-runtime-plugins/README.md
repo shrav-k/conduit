@@ -374,6 +374,13 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   source scope, publication/validity and permitted exposure; do not expose unrelated internal values
   or declare whole-graph success from output availability alone. Reject malformed bindings and
   invalid public values while retaining earlier effects and operation evidence.
+- Declare a required database output and an explicitly optional diagnostic-report output. Fail optional
+  diagnostics and report the absent report's reason without that absence alone preventing success.
+  Repeat with the report required by omission of optionality: the optional producer step must not
+  waive that output obligation. Missing a required database output also prevents success. Verify
+  that optional values still undergo validation and access checks, absent outputs become neither null
+  nor fabricated data, and a consumer needing the absent result remains subject to normal binding
+  rules. Preserve outstanding work and effect evidence independently of output presence.
 - Bind a public database output to startup's service reference and declare verification as an
   explicit success prerequisite on that output. Withhold it while verification is unfinished,
   failed or uncertain, even though authorized setup steps can use the startup result. After confirmed

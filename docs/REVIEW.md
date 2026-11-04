@@ -569,13 +569,22 @@ it. Public-output availability, permitted partial control confirmation, actual d
 type/access obligations retain their rules. Optionality does not abandon outstanding activity, erase
 effects or report still-running work as finished. Result schemas and field names remain separate.
 
-Next, settle whether public graph outputs can be optional as whole named outputs. The recommendation
-makes declared outputs required for successful completion unless explicitly optional. For example,
-the database output is required, while a diagnostic report may be absent with its reason reported.
-The alternative makes every declared output mandatory and represents optional information inside
-a result value's schema. This remains pending. Either retains value validation and access, missing-
-reference errors, per-output publication conditions and effect evidence. Optional steps do not
-automatically make their public outputs optional; exact output-contract notation remains open.
+**Public-output requirements are accepted:** declared public graph outputs are required for successful
+completion unless explicitly optional. A required database output must be produced under its contract;
+an optional diagnostic report may be absent with its known reason or uncertainty reported. Optional
+steps do not automatically make their public outputs optional. This concerns whole named outputs,
+not optional members inside a value. Validation, access, reference/dependency checks, publication
+conditions, effects and outstanding work retain their rules. Absence produces no fabricated value
+or null. Exact output-contract notation remains open.
+
+Next, settle whether a named graph dataflow output has one fixed value per producing attempt.
+The recommendation keeps its published value immutable for that attempt; changing service state
+or availability is inspected through the instance/capability rather than replacing the graph value.
+Later attempts can produce separately identified results, and redelivery of the same recorded value
+is not a new value or an exactly-once transport guarantee. The alternative allows replacement values
+within one attempt, requiring revision and consumer-reaction semantics. This remains pending and
+concerns both step outputs and public graph outputs, not an instance's live state or supported
+streaming/observation capabilities. Existing validity and recovery rules still apply.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

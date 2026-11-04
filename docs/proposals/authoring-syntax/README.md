@@ -75,6 +75,10 @@ uses exactly one key: `literal`, `reference`, `object` or `list`, with its paylo
 Declared public graph output values reuse those same four forms and source/scope rules. Publication,
 validity, output validation, sensitivity and access still apply; assembly does not establish overall
 success or expose other internal outputs. Output-contract layout and domain-error mapping remain open.
+Named public outputs are required for successful graph completion unless explicitly optional.
+An optional output may be absent with its reason or uncertainty reported; an optional producer step
+does not automatically make its output optional. Present values still require validation and access,
+and absent values do not become null or bypass consumer reference/dependency checks.
 Public outputs may also declare successful-completion prerequisites using local step names, separate
 from their value bindings. A database output may use startup's reference but wait for verification
 success, without a forwarding operation. Failed or uncertain prerequisites withhold that output;

@@ -1426,6 +1426,18 @@ permitted exposure. It neither exposes the rest of the graph's internal values n
 migration or setup as a whole succeeded. Calculations, provider work and error/outcome interpretation
 remain governed by their existing operation contracts.
 
+**Accepted required/optional outputs:** declare the public database result required, which is the
+default, and a separate `diagnosticReport` output explicitly optional. If optional diagnostics fail,
+the report can remain absent with the reason visible; that absence alone does not prevent successful
+graph completion. If the report had remained required, marking its producing step optional would
+not remove the output obligation. Missing the required database result likewise prevents success.
+
+An absent report is not a fabricated null or an empty report. Any value actually produced must
+satisfy its schema and publication/access conditions, and a consumer selecting an absent output
+still faces the existing reference/dependency rules. Ongoing diagnostic work and uncertain effects
+retain their own recorded state. These are named-output requirements, separately from optional
+fields inside the assembled database value above; exact declaration syntax remains open.
+
 **Accepted publication prerequisite:** the public database output may name `verify` as a
 successful-completion prerequisite while continuing to use `start`'s database reference in its value
 binding above. Startup supplying the reference is not enough to release this output: schema

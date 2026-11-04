@@ -603,6 +603,15 @@ confirm whole-operation success, broaden scope or publish other internal outputs
 transformations remain plugin operations. Domain-error mapping, output-contract layout and vocabulary
 remain open; consumers receive resolved values rather than authoring forms.
 
+**Accepted public-output requirements:** declared public outputs are required for successful graph
+completion unless explicitly optional. Missing a required output prevents success; an optional
+diagnostic report may be absent with its known reason or uncertainty reported. Optional step
+classification does not propagate automatically to output declarations. This concerns whole named
+outputs, not optional schema members inside a returned value. Present values still require validation,
+publication conditions, validity and access checks. Optionality neither supplies null nor hides
+binding errors or bypasses a consumer's dependency on the missing value. Preserve effects and
+outstanding work; exact declaration fields remain open.
+
 **Accepted public-output prerequisites:** each public output may name local steps whose successful
 completion is required before it is published, independently of the steps supplying its value.
 Place these prerequisites on the output declaration and reuse the step-prerequisite success rule.

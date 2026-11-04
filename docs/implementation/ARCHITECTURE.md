@@ -818,6 +818,13 @@ and apply their publication, validity and exposure contracts. Assembly does not 
 intermediate values, bypass sensitivity/custody or establish whole-operation success. Consumers
 receive resolved values; domain outcome mapping and output-contract layout remain authoring work.
 
+Treat public graph outputs as required for successful completion unless explicitly optional.
+Check fulfillment under each output's contract separately from required-step success; an optional
+producer step does not make its exposed result optional. Record optional-output absence and its
+known cause or uncertainty without synthesizing null or another value. Preserve validation failures,
+unmet dependencies, current access checks, effects and outstanding activity. Do not let a consumer
+read an absent result or infer that optionality waived any mandatory contract obligation.
+
 Resolve explicit success prerequisites on public output declarations against the graph's local
 steps. Combine them with the output's value dependencies and publication conditions when deciding
 whether it can be exposed. Reuse the same successful-completion check as dependent steps: failed or

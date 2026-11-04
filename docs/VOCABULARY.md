@@ -112,3 +112,8 @@ field names may change; an external wire contract must not be renamed accidental
 
 No replacement vocabulary has been accepted in this map yet. The
 [audit record](archive/migrations/2026-11-vocabulary-audit.md) records its initial coverage and preservation checks.
+
+The [naming research packet](research/vocabulary/README.md) supplies sourced precedents,
+[candidates for every topic](research/vocabulary/CANDIDATES.md) and
+[complete examples](research/vocabulary/WALKTHROUGHS.md). Its recommendations remain proposals;
+record accepted choices here through the procedure above, not in a parallel research decision ledger.

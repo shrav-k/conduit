@@ -19,6 +19,11 @@ accepted meanings, worked examples and affected surfaces; the IDs are not protoc
 Review distinctions before names. Preserve external-standard terminology, historical source language
 and attributed dissent. No replacement name is selected by this audit.
 
+The [naming research](research/vocabulary/README.md) now supplies cross-system precedents,
+alternatives for all 37 topics and walkthroughs. Its proposed discussion order begins with package,
+contract and plugin/implementation boundaries, then execution and relationships. This is preparation
+for owner rulings; it adopts no names, adds no object families and reopens no accepted behavior.
+
 After a ruling, update canonical text and active examples together, retain stable anchors, record the
 old/new spelling in the map, and run the documentation checks. Naming must not silently change behavior.
 

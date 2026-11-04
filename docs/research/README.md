@@ -5,6 +5,10 @@ and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve
 and library probes that informed it. Research does not change accepted semantics. The
 [current review](../REVIEW.md) and [vocabulary map](../VOCABULARY.md) organize remaining naming and
 representation work; [syntax examples](../proposals/authoring-syntax/README.md) remain provisional.
+The [vocabulary research](vocabulary/README.md) compares naming across orchestration, contract,
+workflow, networking, messaging, authorization, observability and agent systems. It includes candidate
+language for all 37 stable vocabulary topics and worked examples; none of its recommendations adopts
+a name or changes accepted behavior.
 Keep source-system terms and dated recommendations intact when Conduit names change. The
 [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
 records adopted refinements and unadopted arguments from the two merged PRs, without treating
@@ -44,6 +48,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
+| [VOCABULARY](vocabulary/README.md) | Primary-source naming comparisons, candidate tradeoffs, light conduit/pool imagery and complete walkthroughs; linked to V01–V37 without selecting final terms. |
 | [LANGUAGE / PROTOCOL FOUNDATIONS](language-protocol-foundations/README.md) | WIT, Smithy, YANG, TOSCA, CWL and other language/protocol comparisons; package scoping, typed bindings, effects and MCP compatibility. Includes primary-source inventory and links to 20 offline schema/YAML probes. |
 | [ECOSYSTEM_ORGANIZATION](ECOSYSTEM_ORGANIZATION.md) | Source/release/website comparison across Pi, MCP, OpenTelemetry, Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime and uv; evidence behind the repository/documentation migration and still-open distribution proposals. |
 | [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and the lightweight debugging package and capture policy accepted in I6. Backend/library/wire recommendations remain proposals. |

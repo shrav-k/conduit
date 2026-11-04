@@ -517,13 +517,22 @@ whole payload. This supplies no ambient caller configuration, runtime metadata o
 Validation, scope and missing-selection rules still apply; source field names and input-contract
 representation remain open.
 
-Next, settle what the runtime-target source yields. The recommendation selects one named declared
-runtime and yields a typed target reference that the responsible service resolves against the
-instance-owned definition. Prepared settings remain explicit operation inputs. The alternative
-yields the structured runtime declaration itself for the operation to consume, still subject to
-owner/identity and authority checks. This remains pending; neither option grants access, starts the
-runtime by selection or permits definition edits. Reference fields and inspection capabilities
-remain separate; the recommendation does not presume a universal opaque wire format.
+**Runtime-target value is accepted:** the source selects one named declared runtime and yields a
+typed target reference that the responsible service resolves against the instance-owned definition.
+Prepared settings remain explicit operation inputs. The structured declaration itself is not
+supplied as target data. Owner/identity, contract and current authority checks still apply; selection
+grants no access, starts nothing and permits no definition edits. Reference fields and inspection
+capabilities remain separate; this does not prescribe one opaque wire format or prohibit authorized
+definition inspection. The target remains distinct from the usable service result produced by startup.
+
+Next, settle preparation of Conduit-authored operation inputs. The recommendation has Conduit
+materialize unambiguous declared defaults for genuinely omitted input fields, then validate the
+complete payload before dispatch or exposing it to a graph's input source. For example, an omitted
+`limit` with a declared default of 10 would be visible as 10 to both graph and code implementations.
+The alternative preserves omission and leaves default application to implementations. This remains
+pending: instance-configuration default materialization is already accepted, but does not by itself
+settle operation-input preparation. Explicit invalid/null values and failed reference selections
+would not acquire fallback defaults, and provider-native MCP schemas retain their separate semantics.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

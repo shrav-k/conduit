@@ -1117,18 +1117,21 @@ promised condition is confirmed. Those references are not interchangeable, and n
 access by itself.
 
 The startup operation declares the target in its typed input contract alongside prepared storage.
-Conceptually, `start-database(target = declared database runtime, storage = prepared storage)`
-receives both through ordinary graph bindings. A reusable setup operation declares its own target
-input and explicitly passes it to its startup child. This is composition through existing inputs;
-the alternative separate runtime-context binding was not selected.
+Conceptually, `start-database(target = reference to named database runtime, storage = prepared storage)`
+receives both through ordinary graph bindings. The runtime-target source yields that typed reference;
+the responsible service resolves it against the instance-owned definition. The graph does not pass
+the whole runtime declaration as target data. A reusable setup operation declares its own target
+input and explicitly passes it to its startup child. Prepared settings remain explicit inputs;
+the target does not permit replacing the fixed definition. This is composition through existing
+inputs; the alternative separate runtime-context binding was not selected.
 
 Authenticated caller identity and authority remain trusted invocation context, not user-supplied
 inputs. The runtime resolves the target within the actual invocation's permitted boundary.
 Passing a declaration reference does not start it; startup remains the explicit operation.
-Exact value representation and protected-reference transport remain open.
+Exact value representation, authorized definition inspection and protected-reference transport remain open.
 
-For the MCP case the same rule applies: the startup operation receives the declared MCP
-runtime plus its prepared authentication binding. The authentication binding does not become raw
+For the MCP case the same rule applies: the startup operation receives a target reference to the
+named MCP runtime plus its prepared authentication binding. The authentication binding does not become raw
 credentials in ordinary YAML. An operation with no runtime target, such as a pure layout check,
 does not need one added. These conceptual names do not settle the reference or input-field spelling.
 

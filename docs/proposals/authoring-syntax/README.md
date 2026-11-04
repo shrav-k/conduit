@@ -92,10 +92,13 @@ snapshot nor credentials, and passing an ID does not establish caller identity o
 Exact metadata fields and input/context notation remain open.
 
 Setup requests instance-managed startup through ordinary typed operations explicitly bound to
-declared runtimes. The runtime target is a declared typed input, explicitly forwarded through
-reusable compositions. The instance owns ongoing activity from startup, and published results
+declared runtimes. The runtime-target source selects one named runtime and yields a typed reference
+that its responsible service resolves against the instance-owned definition. The target is a declared
+typed input, explicitly forwarded through reusable compositions; prepared settings remain separate
+explicit inputs. The instance owns ongoing activity from startup, and published results
 establish their contract's guarantees. Caller identity and authority remain trusted context;
-target selection grants no access. Exact target-reference encoding remains open.
+target selection grants no access, starts nothing and permits no definition edits. Exact target-reference
+encoding and inspection remain open.
 An instance may declare multiple named managed runtimes when its type supports them, each explicitly
 targeted and instance-owned. Existing lifecycle contracts govern their behavior; the allowance adds
 neither a process-per-declaration rule nor another primary Agent execution. Declaration layout remains open.

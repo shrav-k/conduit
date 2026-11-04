@@ -819,8 +819,12 @@ than a completed application schema. Operation acceptance and current runtime ob
 distinct. Do not add special graph lifecycle instructions or input-triggered automatic startup as
 an implementation shortcut. The explicit runtime target is a declared typed operation input using
 normal graph bindings. Reusable graph-backed operations receive and forward it explicitly; caller
-identity and authority remain trusted invocation context. Validate the target under its contract
-and current permissions before use. Exact reference encoding and transport remain under
+identity and authority remain trusted invocation context. The runtime-target source selects one
+named declaration and returns a typed target reference. Resolve it at the responsible service
+against the instance-owned definition, checking owner scope, identity, contract and current
+permissions before use. Do not accept a caller-supplied replacement definition as target data;
+prepared settings remain explicit inputs under the operation contract. Selection alone starts no
+runtime and establishes no usable-service result. Exact reference encoding, inspection and transport remain under
 [authoring review](../REVIEW.md); this acceptance does not select a wire format or new runtime family.
 
 Graph failure blocks unmet prerequisites and records partial progress while independent eligible

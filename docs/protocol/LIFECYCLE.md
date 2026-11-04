@@ -273,7 +273,7 @@ configuration, earlier step outputs, declared runtime targets and typed invocati
 | Declared graph inputs | The complete declared input payload of that graph invocation; the optional JSON Pointer selects within it. |
 | Captured instance configuration | Configuration available to the owning template's graph, captured for the execution. Reusable operations receive caller settings through explicit inputs. |
 | Earlier step outputs | Declared published results, subject to producer/consumer validation and continued validity. Earlier means the dependency relation, not YAML mapping order. |
-| Declared runtime targets | Explicit references to the owning instance's declared runtime behavior. Reusable operations receive and forward targets through typed inputs. |
+| Declared runtime targets | Select one named runtime and yield a typed target reference, resolved by the responsible service against the instance-owned definition. Reusable operations receive and forward targets through typed inputs. |
 | Invocation metadata | Only the runtime's declared, typed, read-only metadata surface. |
 
 Other data access, such as reading a file, a Resource record or current service state, uses explicit
@@ -512,10 +512,17 @@ runtime target and prepared storage, then publishes a usable database result und
 The declaration reference identifies what to establish; it does not establish startup or substitute
 for that later result. Operations that need no runtime target require no such input.
 
+The runtime-target source selects one named runtime and yields a typed target reference rather
+than supplying the structured runtime declaration as target data. The responsible service resolves
+that reference against the owning instance's retained definition. Prepared settings remain explicit
+operation inputs; selecting a target neither changes its fixed definition nor starts its runtime.
+Authorized inspection can expose definition details under its own contract. This does not require
+one universal opaque representation for target references.
+
 Authenticated caller identity and authority remain trusted invocation context. Supplying a target
 does not grant access or let the caller forge that context; resolution and invocation still enforce
 current authority and the target's contract. This choice fixes target placement, while reference
-encoding, runtime selection fields and protected-reference transport remain authoring work.
+encoding, runtime selection fields, inspection and protected-reference transport remain authoring work.
 
 **Managed references:** Conduit-declared live service and protected authentication bindings share
 a typed managed-reference contract for ownership, resolution and validity. The owning implementation

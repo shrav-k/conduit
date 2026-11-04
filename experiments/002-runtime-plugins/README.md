@@ -282,6 +282,14 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   the complete payload, with no separate input-name selector. Test both step-input and public-output
   bindings. Missing members still error and receiving schemas still apply; no caller settings or
   invocation metadata are implicitly added to the input payload.
+- Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
+  Select the database runtime through the runtime-target source and forward its typed target reference
+  through a reusable graph input to startup. Verify that the responsible service resolves the intended
+  instance-owned definition, with prepared settings passed explicitly. Check unknown targets and
+  incompatible or unauthorized references before effects. Selection alone must not start either
+  runtime; a supplied replacement definition cannot substitute for the target. Distinguish the target
+  reference from the later usable service result, whose publication follows the startup contract.
+  Reference encoding remains provisional; this is planned coverage, not a claim of implementation.
 - Exercise literal inputs, configuration references and prior-output references. Include a small
   typed transformation implemented by the authored plugin, then consume its output in a later step
   with the dependency implied by that binding. Graph bindings must not evaluate inline expressions

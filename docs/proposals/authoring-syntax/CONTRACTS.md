@@ -273,7 +273,7 @@ provisional.
 | Declared graph inputs | A reusable operation's complete input payload, with a pointer selecting its supplied query limit | Its published input contract. |
 | Captured instance configuration | A template setup graph's configured directory | Captured for that execution; caller configuration enters reusable operations through declared inputs. |
 | Earlier step outputs | The directory produced by attachment | Declared publication, validation and continued validity rules. |
-| Declared runtime targets | The owning instance's database runtime to start | Explicit typed target bindings; reusable operations receive and forward targets as inputs. |
+| Declared runtime targets | A typed target reference selecting the owning instance's named database runtime | The responsible service resolves its definition; reusable operations receive and forward targets as inputs. |
 | Invocation metadata | The owning instance ID supplied by the runtime | Only the declared typed, read-only surface; no authority from passing an ID. |
 
 Reading a file, a Resource record or current service state remains an explicit authorized operation
@@ -288,13 +288,13 @@ selects the whole payload. Existing missing-selection and validation rules still
 caller settings, metadata or authority enter the source; reusable operations still receive declared
 typed inputs. Exact selector fields and input-contract representation remain open.
 
-**Pending runtime-target value:** the recommendation selects one named declaration and returns a
+**Accepted runtime-target value:** the source selects one named declaration and returns a
 typed target reference, resolved by the responsible service against the owning instance's runtime
-definition. The operation receives its prepared settings through declared inputs. The alternative
-supplies the structured declaration itself, with the same owner/identity, contract and authority
-checks. Neither approach starts a runtime through selection or permits changing its fixed definition.
-Reference fields and supported inspection remain open; a typed reference need not imply one opaque
-wire representation.
+definition. It does not supply the structured declaration itself as target data. The operation
+receives its prepared settings through declared inputs. Owner/identity, contract and current
+authority checks still apply; selection neither starts the runtime nor permits changing its fixed
+definition. Reference fields and supported inspection remain open; a typed reference need not imply
+one opaque wire representation or prohibit authorized definition inspection.
 
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for

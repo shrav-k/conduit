@@ -372,7 +372,8 @@ Walkthrough date: 2026-11-03. This is a hypothetical recipe, not a performed dep
 packages and export names are examples; no directory or Resource is created by this document.
 The accepted binding forms are used with candidate flat reference fields. Using them here does not
 settle the flat/nested ruling, source-kind set, runtime-input encoding or package manifest syntax.
-Every displayed pointer is explicit, leaving omitted-path behavior open.
+The displayed pointers are explicit. Under the accepted omission rule, an empty pointer can be
+omitted to select the same whole source value; source selection remains explicit.
 
 **Intended outcome:** an Euphony Pool owns a directory Resource backed by an existing folder. Setup
 must verify that the folder contains `Cargo.toml` and `src`. Authorized Agents can subsequently
@@ -423,8 +424,8 @@ flowchart LR
 The checker receives that directory value and the ordinary list `[Cargo.toml, src]`. The literal
 wrapper applies once to the complete static list. No wrapper is needed around each filename and
 no separate operation is needed to construct this list. The output reference creates the ordering;
-swapping node positions in the YAML would not let the checker run first. An empty pointer selects
-the whole declared output. Selecting a nested member instead would use its pointer, provided the
+swapping node positions in the YAML would not let the checker run first. An empty or omitted pointer
+selects the whole declared output. Selecting a nested member instead would use its pointer, provided the
 consumer contract actually accepts that member's type and meaning.
 
 The template also selects `directory.managed` for ongoing behavior. Its input identifies the same
@@ -1051,8 +1052,8 @@ verify:
 
 The author named the earlier nodes `start` and `migrate`; the startup operation's contract declares
 the `database` output. The receiving operation's input also happens to be called `database`.
-The empty pointer selects the whole output; `/expectedSchema` selects the configured expected
-schema. The spelling and representation of the prerequisite remain proposals. A terminal failure
+The empty pointer, which may also be omitted, selects the whole output; `/expectedSchema` selects
+the configured expected schema. The spelling and representation of the prerequisite remain proposals. A terminal failure
 or a schema-valid failure payload cannot satisfy this example's required-success gate. This does
 not select one universal outcome enum or reinterpret every ordering field as having this spelling.
 

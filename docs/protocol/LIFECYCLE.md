@@ -259,6 +259,14 @@ For example, `/connection/endpoint` selects a field and `/participants/0/name` s
 the first array item. The empty pointer selects the whole source value; `/` selects its empty-name
 member. Standard token escaping applies: `~1` represents `/`, and `~0` represents `~`.
 
+**Omitted nested pointer:** omitting the pointer selects the whole explicitly chosen source value,
+equivalent to supplying the empty JSON Pointer. Source selection remains explicit; omission does
+not infer a source, bypass source validation or turn an unavailable value into a default. For example,
+selecting step `connect` and its `connection` output without a nested pointer passes that whole
+output; `/endpoint` selects its endpoint member if present and exposed by the output contract.
+Missing sources or selected members still produce reference-resolution errors. This semantic
+default does not select the reference payload's final field names or nesting.
+
 This selects data within the chosen source, not the source itself, a registry object or a Resource
 access path. Literal strings remain data under the recognition rule above. Exact reference payload
 fields remain open; accepting JSON Pointer does not introduce expressions, wildcard

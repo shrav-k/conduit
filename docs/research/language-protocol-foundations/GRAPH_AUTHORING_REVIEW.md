@@ -153,7 +153,9 @@ inputs:
 This is a favorable case for the accepted forms: the static list needs one wrapper, not a wrapper
 per filename. The remaining usability questions are whether the error identifies `attach` and
 `directory` clearly, and whether authors understand the empty pointer as the whole selected value.
-This example supplies the pointer explicitly and does not settle omitted-path behavior.
+This example supplies the pointer explicitly. A subsequent owner ruling allows omission to select
+the whole explicitly chosen source, equivalent to an empty JSON Pointer; it does not infer the
+source or suppress missing-value errors. The reference payload layout remains open.
 
 ### 2. Authenticated MCP setup
 

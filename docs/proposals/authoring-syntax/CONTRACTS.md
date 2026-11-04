@@ -285,13 +285,12 @@ The pointer does not identify the source or choose the reference payload's field
 These examples approve nested paths only. A literal string containing one of these paths is still
 literal data.
 
-**Pending omission rule:** consider allowing an omitted nested pointer to select the whole
-explicitly chosen source, equivalent to supplying the empty JSON Pointer. For example, selecting
-startup's `database` output without a nested path would pass that whole output; selecting
-`/endpoint` would pass its endpoint member where the output contract exposes one. The alternative
-requires an explicit pointer on every reference, including the empty pointer. Source selection
-remains explicit and missing-member errors remain unchanged. This is a proposal, not an accepted
-default; the examples above do not resolve it.
+**Accepted omission rule:** omitting the nested pointer selects the whole explicitly chosen source,
+equivalent to supplying the empty JSON Pointer. For example, selecting startup's `database` output
+without a nested path passes that whole output; selecting `/endpoint` passes its endpoint member
+where present and exposed by the output contract. Source selection remains explicit, and missing
+sources or selected members still error. Pointer omission does not omit the operation's input or
+invoke that input's default. Field names and flat-versus-nested reference layout remain proposals.
 
 **Accepted missing-selection handling:** when a pointer selects no value, report a reference-resolution
 error and prevent the consuming step from running. Do not turn the failed binding into null or an

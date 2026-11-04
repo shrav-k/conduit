@@ -351,6 +351,11 @@ selected data subject to the receiving schema. Earlier effects and independent e
 retain their agreed behavior; declared defaults for genuinely omitted fields are unchanged. Exact
 diagnostic fields remain authoring work.
 
+Pointer omission is accepted: an omitted nested pointer selects the whole explicitly chosen source,
+equivalent to the empty JSON Pointer. The source itself remains explicit and must resolve. This
+neither omits the receiving input nor applies its default; missing sources or selected members
+retain their existing error behavior. Reference field names and nesting remain open.
+
 Reference structure is accepted: use separate structured fields for source selection and the nested
 JSON Pointer, rather than encoding the whole reference in a string. For example, identify step
 `connect`, its declared output `connection`, and pointer `/endpoint` separately. Exact field names
@@ -372,8 +377,8 @@ retain their ordinary meanings. This adds no shorthand, merging or expression ev
 
 Reference payload layout is still pending; the owner requested examples and then comparative research,
 not acceptance. One candidate has direct `from`, `path`, `node` and `port` fields under `reference`;
-the other groups the source selector beside the path. The complete source-kind set, invocation-context
-access and omitted-path behavior are also open.
+the other groups the source selector beside the path. The complete source-kind set and invocation-context
+access are also open; pointer omission now has the accepted whole-value meaning described above.
 
 Before further individual syntax rulings, discuss the requested
 [graph authoring comparison and decision audit](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
@@ -416,10 +421,12 @@ prepared storage; migration later uses its usable database result. A declaration
 neither startup nor authority. Authenticated caller identity and authority remain trusted invocation
 context, with current checks at resolution/use. Reference encoding and protected transport stay open.
 
-Next, return to reference selection: decide whether omitting the nested pointer selects the whole
-explicitly chosen source (equivalent to an empty pointer), or every reference must supply a pointer,
-including an empty one. The first is recommended but not yet accepted. Source selection stays
-explicit; missing sources or selected members still error. This does not settle source field names.
+Next, return to the reference payload layout: keep the source-selection fields directly beside the
+optional pointer, or group them in a nested source object beside that pointer. The
+[comparison](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md#the-pending-flat-versus-nested-ruling)
+modestly recommends direct fields for the current small selectors. Both can enforce the same typed
+alternatives and failure rules. This structural choice remains pending; it would not finalize the
+supporting field names, change access or create an independently reusable source-selector object.
 
 Then settle the remaining reference source/layout and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax, runtime

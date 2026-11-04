@@ -733,6 +733,11 @@ the enclosing instance's configuration namespace into that operation. Keep scope
 and explicitly authorized Resource access available through their contracts. Validate declared input
 bindings under the same early and runtime checks used for other operations.
 
+Resolve references against their explicitly selected sources. An omitted nested pointer selects
+the whole source, equivalent to the empty JSON Pointer; it does not omit the receiving input or
+invoke its default. Missing sources or selected members still block that consuming step under the
+reference-resolution contract. Exact source-selector fields and nesting remain authoring work.
+
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
 is already satisfied; it must not blindly repeat a create operation. Configuration references within
 a graph execution use the values captured when it begins; later steps cannot silently switch to

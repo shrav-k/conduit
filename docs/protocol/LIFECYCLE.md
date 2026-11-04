@@ -211,6 +211,24 @@ remain available under their contracts; see [reusable composition](MODEL.md#auth
 References use separate structured source and JSON Pointer fields as defined below. Every graph
 input binding uses exactly one accepted form key; fields inside `reference` remain authoring work.
 
+**V0 reference sources:** the supported categories are declared graph inputs, captured instance
+configuration, earlier step outputs, declared runtime targets and typed invocation metadata.
+
+| Source | Value and scope |
+| --- | --- |
+| Declared graph inputs | Values supplied under that graph-backed operation's input contract. |
+| Captured instance configuration | Configuration available to the owning template's graph, captured for the execution. Reusable operations receive caller settings through explicit inputs. |
+| Earlier step outputs | Declared published results, subject to producer/consumer validation and continued validity. Earlier means the dependency relation, not YAML mapping order. |
+| Declared runtime targets | Explicit references to the owning instance's declared runtime behavior. Reusable operations receive and forward targets through typed inputs. |
+| Invocation metadata | Only the runtime's declared, typed, read-only metadata surface. |
+
+Other data access, such as reading a file, a Resource record or current service state, uses explicit
+authorized operations whose results can feed later steps. Arbitrary plugin-defined reference
+resolvers are deferred in v0; this does not restrict authoring new operations or capabilities.
+The source set introduces no implicit parent configuration, unrestricted `self` snapshot, live
+registry lookup or authority through a reference. Source names, selector fields, metadata contents
+and protected-reference transport remain authoring work.
+
 **Graph-visible invocation metadata:** graphs may reference explicitly declared, typed, read-only
 metadata supplied by the runtime under its invocation contract. For example, setup can pass its
 owning instance ID to an operation that tags a created service for later reconciliation, without
@@ -277,7 +295,7 @@ and declared output separately from the pointer within that value. For example, 
 and selected output; the pointer selects within it. Source-selection fields sit directly inside
 the `reference` payload alongside its optional pointer, without an additional nested source object.
 This direct-field layout is accepted. Source/contract checks, missing-value handling and literal-data
-rules still apply. Supporting field names and the complete source-kind set remain open; this does
+rules still apply. Supporting field names and exact source selectors remain open; this does
 not approve final payload spellings, add a compact-string shorthand or create a reusable source object.
 
 **Nested value selection:** within an explicitly selected graph input, captured configuration value

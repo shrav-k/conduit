@@ -380,8 +380,8 @@ retain their ordinary meanings. This adds no shorthand, merging or expression ev
 
 Reference payload layout is accepted after the comparative research and walkthroughs: use direct
 source-selection fields beside the optional pointer. Names such as `from`, `path`, `node` and
-`port` remain working vocabulary. The complete source-kind set and exact metadata fields/encoding
-remain open; typed invocation metadata access and pointer omission are accepted as described below.
+`port` remain working vocabulary. Exact source selectors and metadata fields/encoding remain open;
+the five-category v0 source inventory, typed metadata access and pointer omission are accepted below.
 
 Use the requested
 [graph authoring comparison and decision audit](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
@@ -395,7 +395,7 @@ now traces configuration, plugin/graph bindings, Pool-owned instantiation, subse
 failure/retry. It is an illustrative recipe with a required setup-time layout check, not an executed
 deployment or a new ruling. Its authoring costs and distinctions can be compared with the authenticated
 MCP and database cases. The direct-field reference layout is now accepted; the example does not
-settle the remaining source inventory or vocabulary.
+settle the remaining selector encoding or vocabulary.
 
 The second [guided authenticated MCP walkthrough](proposals/authoring-syntax/AUTHORING.md#guided-authenticated-mcp-walkthrough)
 now traces Pool composition, a shared authentication Resource, a service Resource's setup outputs,
@@ -441,15 +441,22 @@ for recovery. No operation solely to retrieve that ID is required. This does not
 instance, ambient environment or credentials. Supplied IDs cannot replace authenticated caller
 context or confer access. Exact metadata fields, scope and source encoding remain open.
 
-Next, consolidate the v0 reference-source inventory: declared graph inputs, captured instance
-configuration, earlier step outputs, declared runtime targets and typed invocation metadata. The
-pending recommendation uses these categories initially and obtains other data through explicit
-authorized operations, deferring arbitrary plugin-defined reference resolvers. Reusable operations
-still receive caller configuration and runtime targets through declared inputs; these source
-categories would not introduce implicit inheritance or live registry reads. This scope choice is
-pending, and does not finalize source field names or metadata contents.
+**V0 reference-source inventory is accepted:** declared graph inputs, captured instance configuration,
+earlier step outputs, declared runtime targets and typed invocation metadata. Other data access uses
+explicit authorized operations; arbitrary plugin-defined reference resolvers are deferred. Reusable
+operations still receive caller configuration and runtime targets through declared inputs. No
+implicit inheritance or live registry reads follow. Source names, selectors and metadata contents
+remain open.
 
-Then settle the remaining reference sources and prerequisite representation as a coherent example,
+Next, decide runtime declaration cardinality: allow several named managed runtimes within one
+instance when its type supports them, or require one declaration whose implementation coordinates
+all ongoing behavior. The pending recommendation permits several, such as a database service plus
+an optional diagnostics helper. Each startup operation targets its intended declaration explicitly.
+This would not require a process per declaration, create new object families, allow extra primary
+Agent executions or change endpoint ownership of connection-specific activity. Exact lifecycle
+coordination and syntax remain separate; the multiple-runtime allowance is not yet accepted.
+
+Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax, runtime
 declaration cardinality and start/wait operation granularity remain open. Keep final vocabulary
 in its separate PR. These are concrete instances of the existing authoring seams, not a new

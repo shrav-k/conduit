@@ -371,7 +371,8 @@ or package alias supplies no permission and cannot replace a Resource dependency
 Walkthrough date: 2026-11-03. This is a hypothetical recipe, not a performed deployment. The path,
 packages and export names are examples; no directory or Resource is created by this document.
 The accepted binding forms use the accepted direct-field reference layout with temporary names.
-This does not settle the complete source-kind set, runtime-target encoding or package manifest syntax.
+The five v0 source categories are accepted; exact source selectors, runtime-target encoding and
+package manifest syntax remain open.
 The displayed pointers are explicit. Under the accepted omission rule, an empty pointer can be
 omitted to select the same whole source value; source selection remains explicit.
 

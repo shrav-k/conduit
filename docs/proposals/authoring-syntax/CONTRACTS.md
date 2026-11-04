@@ -82,6 +82,19 @@ selected implementations explicitly on the instance.
 | `conduits` | Consumer requirements and explicit open/join selections. |
 | `owner` | Resource-instance owning Pool, established by Pool-authorized creation rather than self-asserted by YAML. |
 
+**Pending runtime cardinality:** should an instance be able to declare several named managed
+runtimes when its type supports them? For example, one database Resource could use a database
+driver and an optional diagnostics helper from separate contributions, each with an explicit
+startup target. The recommendation permits this without requiring a wrapper driver solely to
+combine them. The alternative allows one runtime declaration whose implementation coordinates
+all ongoing behavior internally. The table's singular `runtime` spelling does not decide this.
+
+This choice concerns declared managed behavior, not one process per declaration. An instance would
+still own its components; Resource responsibilities, Pool ownership and endpoint ownership of
+connection-specific activity remain unchanged. It would not permit a second primary Agent execution.
+Existing setup and type-specific lifecycle contracts govern readiness and stopping; the cardinality
+choice would not create a blanket failure policy. This allowance and its exact representation remain pending.
+
 The named map can hold one implementation or several. A filesystem operation and
 an authentication operation may come from different packages. Aliases name implementation bindings,
 not Resources, processes or permission. The `plugins` and `{plugin, name}` spellings remain proposals;
@@ -249,12 +262,12 @@ Runtime targets still use their declared typed
 inputs, reusable operations still receive caller configuration explicitly, and live Resource reads
 still use their authorized capabilities. Referenced IDs become ordinary data for their consumer;
 they cannot replace the runtime's authenticated actor or authority checks. Exact available fields,
-declaration/versioning, scope and reference encoding remain open. The older `self` example below
-is a placeholder, not approval to expose the whole instance.
+declaration/versioning, scope and reference encoding remain open. There is no unrestricted `self`
+source; the example below selects an explicitly assumed metadata field instead.
 
-**Pending source inventory:** use the following categories for v0 graph references. The individual
-behaviors follow accepted contracts; making this the initial supported set and deferring arbitrary
-plugin-defined source resolvers remains a pending scope decision. Category names are provisional.
+**Accepted v0 source inventory:** use the following five categories for graph references.
+Arbitrary plugin-defined source resolvers are deferred; category names and exact selectors remain
+provisional.
 
 | Value source | Example | Scope |
 | --- | --- | --- |
@@ -264,8 +277,8 @@ plugin-defined source resolvers remains a pending scope decision. Category names
 | Declared runtime targets | The owning instance's database runtime to start | Explicit typed target bindings; reusable operations receive and forward targets as inputs. |
 | Invocation metadata | The owning instance ID supplied by the runtime | Only the declared typed, read-only surface; no authority from passing an ID. |
 
-Under this recommendation, reading a file, a Resource record or current service state remains an
-explicit authorized operation whose output can feed later steps. References would not acquire
+Reading a file, a Resource record or current service state remains an explicit authorized operation
+whose output can feed later steps. References do not acquire
 plugin-defined external-fetch behavior. This keeps extension work in operations and capabilities
 initially; further source forms could be reviewed later. Exact selectors and source schemas remain open.
 
@@ -352,10 +365,11 @@ setup:
     prepare:
       operation: {plugin: consumer, name: consumer.prepare}
       inputs:
-        consumer: {reference: {from: self}}
+        instanceId: {reference: {from: metadata, path: /instanceId}}
     establish:
       operation: {plugin: database, name: database.establish}
       inputs:
+        target: {reference: {from: runtime, name: database}}
         configuration: {reference: {from: config}}
         access: {reference: {from: output, node: prepare, port: database-access}}
     migrate:
@@ -366,10 +380,12 @@ setup:
 ```
 
 This fragment assumes the enclosing definition supplies `consumer`/`database` implementations,
-typed configuration and the managed runtime declaration. `database.establish` requests startup
-from the responsible execution service for that declared instance-owned runtime. The accepted
-boundary requires that target as a declared typed input using ordinary graph bindings. This partial
-fragment omits that input's provisional name and reference encoding, which remain under review.
+typed configuration and a managed runtime declaration provisionally named `database`. It assumes
+the runtime's metadata contract exposes an `instanceId` field and `consumer.prepare` accepts that
+ID as data; this selects neither a standard metadata schema nor an authorization mechanism.
+`database.establish` receives its declared runtime target through an ordinary typed input and
+requests startup from the responsible execution service. The `metadata`/`runtime` source spellings,
+the runtime-name selector and input names are illustrative, not final syntax.
 Reusable graph-backed operations receive and forward the input explicitly. The declaration reference
 and the usable database output are distinct. The runtime remains supervised by its responsible
 execution service, which may be independent of management. The output
@@ -446,9 +462,9 @@ under the existing graph/authority rules:
 - Dependency edges come from output bindings plus `after`, not mapping order.
 - Early checking rejects known structural/type errors without requiring a general JSON Schema
   inclusion prover. Report the limits of what was checked; runtime input validation remains required.
-- Candidate sources include self, config/path and prior node output. Source selection and nested JSON
-  Pointer use direct fields inside `reference` as accepted above. The complete source-kind set and
-  exact field names remain proposals. Single-key forms for every supplied graph
+- The five source categories above are accepted; source names and exact selectors remain proposals.
+  Source selection and nested JSON Pointer use direct fields inside `reference` as accepted above.
+  Single-key forms for every supplied graph
   input binding are accepted; bare literals with collision escapes are not the selected v0 approach.
 - Runtime-input and control-handler bindings use the same typed machinery. Setup-only operations
   are not automatically exposed as public capability tools.

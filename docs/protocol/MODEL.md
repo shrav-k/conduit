@@ -155,6 +155,10 @@ available under their contracts. Graphs may reference the runtime's explicitly d
 read-only invocation metadata, without exposing the whole instance or treating supplied IDs as
 authenticated identity or permission. Exact metadata fields and input/context notation remain
 authoring work under the [lifecycle contract](LIFECYCLE.md#lifecycle-protocol).
+V0 references select declared inputs, captured instance configuration, earlier step outputs,
+declared runtime targets or typed invocation metadata. Other data access uses explicit authorized
+operations; arbitrary plugin-defined reference resolvers are deferred. This preserves the explicit
+input boundaries of reusable operations.
 Composition preserves existing authority, endpoint selection,
 implementation retention and instance-owned runtime rules. It does not automatically make several
 external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;

@@ -14,7 +14,9 @@ is the 2026-11-03 follow-up requested before continuing individual syntax ruling
 recent choices with Kubernetes, CWL, Tekton, Argo, Compose and related contracts, including costs
 and reasons to revisit choices if worked examples expose problems. Subsequent owner rulings accept
 direct reference fields and whole-value selection when the nested pointer is omitted. Supporting
-field names and the complete reference-source inventory remain open.
+field names and source selectors remain open. The owner also accepted the five v0 source categories:
+declared inputs, captured configuration, earlier outputs, declared runtime targets and typed
+invocation metadata, with other data access through explicit operations.
 
 The subsequent [runtime establishment comparison](RUNTIME_ESTABLISHMENT.md) examines how setup
 addresses an instance's declared runtime using Compose, Kubernetes, CloudNativePG, AWS, Google

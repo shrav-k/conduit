@@ -159,7 +159,8 @@ per filename. The remaining usability questions are whether the error identifies
 This example supplies the pointer explicitly. A subsequent owner ruling allows omission to select
 the whole explicitly chosen source, equivalent to an empty JSON Pointer; it does not infer the
 source or suppress missing-value errors. A later owner ruling also accepts direct reference fields;
-supporting field names and the complete source-kind inventory remain open.
+supporting field names and exact selectors remain open. The five-category v0 source inventory
+is now accepted in the lifecycle contract; arbitrary plugin-defined reference resolvers are deferred.
 
 ### 2. Authenticated MCP setup
 
@@ -206,8 +207,8 @@ than approving another field name in isolation.
 
 ## What to keep open, and how to continue
 
-The owner has now selected the direct-field reference layout after the worked cases. The remaining
-source inventory and exact vocabulary still need review. Do not revise accepted forms or failure
+The owner has now selected the direct-field reference layout and five-category v0 source inventory
+after the worked cases. Exact selectors and vocabulary still need review. Do not revise accepted forms or failure
 behavior by inference from research. Continue evaluating the complete cases with five questions:
 
 1. Can an author explain each value's source without understanding the executor implementation?

@@ -292,7 +292,8 @@ prepared inputs and output validity before choosing their field names. The owner
 declared typed input for the runtime target, reusing ordinary graph binding and composition instead
 of adding a separate runtime-context binding. Caller identity/authority remain trusted context.
 The direct-field reference layout and whole-value pointer-omission behavior were also subsequently
-accepted. The remaining source inventory, target encoding, prerequisite semantics/spelling and final
-vocabulary remain open. This report
+accepted. Later rulings accept typed invocation metadata, the five-category v0 reference-source set
+and successful completion as the default ordering prerequisite without data. Target/selector encoding,
+runtime declaration cardinality, prerequisite notation and final vocabulary remain open. This report
 does not close the [behavior/structure merge checkpoint](../REVIEW.md#behavior-and-structure-merge-checkpoint)
 or authorize runtime implementation.

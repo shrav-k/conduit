@@ -51,8 +51,10 @@ and resolved references remain ordinary data; there is no bare-value binding sho
 uses exactly one key: `literal`, `reference`, `object` or `list`, with its payload underneath.
 Object/list assembly payloads contain child bindings. The accepted reference layout puts source
 fields directly beside the optional pointer, without a nested source object. Omitting the pointer
-selects the whole explicitly chosen source, equivalent to an empty pointer. Supporting field names
-and the complete source-kind inventory remain open.
+selects the whole explicitly chosen source, equivalent to an empty pointer. The accepted v0 sources
+are declared graph inputs, captured instance configuration, earlier step outputs, declared runtime
+targets and typed invocation metadata. Other data access uses explicit authorized operations;
+arbitrary plugin-defined reference resolvers are deferred. Source names and exact selectors remain open.
 A missing selected value causes a reference-resolution error and blocks the consuming step, without
 substituting null or applying a default for omitted input. An actual selected null is validated normally.
 Earlier effects and independent eligible branches retain their agreed behavior.

@@ -749,8 +749,12 @@ Resolve references against their explicitly selected sources. An omitted nested 
 the whole source, equivalent to the empty JSON Pointer; it does not omit the receiving input or
 invoke its default. Missing sources or selected members still block that consuming step under the
 reference-resolution contract. Source-selection fields and the optional pointer sit directly inside
-the reference payload, without a nested source object. Field names and the complete source-kind
-inventory remain authoring work.
+the reference payload, without a nested source object. V0 source categories are declared graph
+inputs, captured instance configuration, earlier step outputs, declared runtime targets and typed
+invocation metadata. Enforce their scope boundaries; reusable operations receive caller settings
+and runtime targets explicitly. External data reads use authorized operations and their outputs;
+do not add arbitrary plugin-defined reference resolvers in v0. Field names and selectors remain
+authoring work.
 
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
 is already satisfied; it must not blindly repeat a create operation. Configuration references within

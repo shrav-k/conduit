@@ -291,6 +291,8 @@ structural boundary. Next, work through the database and MCP examples to resolve
 prepared inputs and output validity before choosing their field names. The owner also selected a
 declared typed input for the runtime target, reusing ordinary graph binding and composition instead
 of adding a separate runtime-context binding. Caller identity/authority remain trusted context.
-The reference payload layout, prerequisite spelling and final vocabulary remain open. This report
+The direct-field reference layout and whole-value pointer-omission behavior were also subsequently
+accepted. The remaining source inventory, target encoding, prerequisite semantics/spelling and final
+vocabulary remain open. This report
 does not close the [behavior/structure merge checkpoint](../REVIEW.md#behavior-and-structure-merge-checkpoint)
 or authorize runtime implementation.

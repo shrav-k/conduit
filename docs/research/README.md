@@ -12,7 +12,9 @@ their external platform claims as newly verified research.
 The [graph authoring decision audit](language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md)
 is the 2026-11-03 follow-up requested before continuing individual syntax rulings. It compares
 recent choices with Kubernetes, CWL, Tekton, Argo, Compose and related contracts, including costs
-and reasons to revisit choices if worked examples expose problems. The reference layout stays open.
+and reasons to revisit choices if worked examples expose problems. Subsequent owner rulings accept
+direct reference fields and whole-value selection when the nested pointer is omitted. Supporting
+field names and the complete reference-source inventory remain open.
 
 The subsequent [runtime establishment comparison](RUNTIME_ESTABLISHMENT.md) examines how setup
 addresses an instance's declared runtime using Compose, Kubernetes, CloudNativePG, AWS, Google

@@ -49,8 +49,10 @@ fields, not a compact reference string. Every graph input binding explicitly ide
 reference, object assembly or list assembly form, including children of assemblies. Literal payloads
 and resolved references remain ordinary data; there is no bare-value binding shorthand. Each binding
 uses exactly one key: `literal`, `reference`, `object` or `list`, with its payload underneath.
-Object/list assembly payloads contain child bindings. Exact fields and nesting inside `reference`
-remain open; the examples do not approve them.
+Object/list assembly payloads contain child bindings. The accepted reference layout puts source
+fields directly beside the optional pointer, without a nested source object. Omitting the pointer
+selects the whole explicitly chosen source, equivalent to an empty pointer. Supporting field names
+and the complete source-kind inventory remain open.
 A missing selected value causes a reference-resolution error and blocks the consuming step, without
 substituting null or applying a default for omitted input. An actual selected null is validated normally.
 Earlier effects and independent eligible branches retain their agreed behavior.
@@ -60,6 +62,12 @@ checks. Retry/recovery must still revalidate retained results. Exact representat
 Reusable graph-backed operations receive caller configuration through declared typed inputs, without
 implicit configuration inheritance. Scoped invocation context and authorized Resource access retain
 their own contracts; exact input/context notation remains open.
+
+Setup requests instance-managed startup through ordinary typed operations explicitly bound to
+declared runtimes. The runtime target is a declared typed input, explicitly forwarded through
+reusable compositions. The instance owns ongoing activity from startup, and published results
+establish their contract's guarantees. Caller identity and authority remain trusted context;
+target selection grants no access. Exact target-reference encoding remains open.
 The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block

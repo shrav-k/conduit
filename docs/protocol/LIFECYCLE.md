@@ -249,9 +249,11 @@ encoding; its inner key does not select a graph form. Receiving schemas still va
 structured fields, rather than one encoded reference string. For a prior output, identify its step
 and declared output separately from the pointer within that value. For example, select step
 `connect`, output `connection`, and pointer `/endpoint`. The source fields establish the dependency
-and selected output; the pointer selects within it. Source/contract checks, missing-value handling
-and literal-data rules still apply. Exact fields and nesting inside the accepted `reference` form
-remain open; this does not approve the proposed payload spelling or add a compact-string shorthand.
+and selected output; the pointer selects within it. Source-selection fields sit directly inside
+the `reference` payload alongside its optional pointer, without an additional nested source object.
+This direct-field layout is accepted. Source/contract checks, missing-value handling and literal-data
+rules still apply. Supporting field names and the complete source-kind set remain open; this does
+not approve final payload spellings, add a compact-string shorthand or create a reusable source object.
 
 **Nested value selection:** within an explicitly selected graph input, captured configuration value
 or declared output, use [JSON Pointer (RFC 6901)](https://www.rfc-editor.org/rfc/rfc6901.html).
@@ -265,7 +267,7 @@ not infer a source, bypass source validation or turn an unavailable value into a
 selecting step `connect` and its `connection` output without a nested pointer passes that whole
 output; `/endpoint` selects its endpoint member if present and exposed by the output contract.
 Missing sources or selected members still produce reference-resolution errors. This semantic
-default does not select the reference payload's final field names or nesting.
+default does not select the reference payload's final field names.
 
 This selects data within the chosen source, not the source itself, a registry object or a Resource
 access path. Literal strings remain data under the recognition rule above. Exact reference payload

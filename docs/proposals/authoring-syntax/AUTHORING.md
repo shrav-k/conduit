@@ -370,8 +370,8 @@ or package alias supplies no permission and cannot replace a Resource dependency
 
 Walkthrough date: 2026-11-03. This is a hypothetical recipe, not a performed deployment. The path,
 packages and export names are examples; no directory or Resource is created by this document.
-The accepted binding forms are used with candidate flat reference fields. Using them here does not
-settle the flat/nested ruling, source-kind set, runtime-input encoding or package manifest syntax.
+The accepted binding forms use the accepted direct-field reference layout with temporary names.
+This does not settle the complete source-kind set, runtime-target encoding or package manifest syntax.
 The displayed pointers are explicit. Under the accepted omission rule, an empty pointer can be
 omitted to select the same whole source value; source selection remains explicit.
 
@@ -484,9 +484,10 @@ backing-data deletion follows failure or retirement.
 
 **What this case tells us about the language:** it needs no inline expression and no operation just
 to assemble static data. The binding forms have a small visible cost here; the naming distinction
-between a package alias/export and a graph node/output needs explanation. The remaining flat/nested
-choice changes how that selector is written, not the data or dependencies. Neither result should be
-generalized to authenticated MCP setup or database/migration recovery before walking those cases.
+between a package alias/export and a graph node/output needs explanation. The accepted direct-field
+layout places the selector beside the optional pointer without changing data or dependencies.
+These findings should not be generalized to authenticated MCP setup or database/migration recovery
+before walking those cases.
 Questions about continuous rechecking, runtime gating notation and descriptor interoperability stay
 in the existing review; this example does not add automatic monitoring or accept new syntax.
 
@@ -726,7 +727,7 @@ its Conduit; it does not implement an unrelated second login owner. Selected imp
 their published contracts must agree on binding validity, execution context and supported behavior.
 
 The operation names in the first column belong to the selected integration package. The graph step
-names and output selectors below are separate names. This fragment uses the candidate flat layout
+names and output selectors below are separate names. This fragment uses the accepted direct-field layout
 solely to expose value flow:
 
 ```yaml
@@ -1164,8 +1165,8 @@ configuration. No offline grant or automatic retry is introduced by the recovery
 plugin operations can express the examples without authored loops or an expression language.
 That is evidence about these examples, not general proof of ergonomic sufficiency. Required
 ordering without data, runtime ownership from startup, output validity and domain-specific recovery
-matter more than the temporary vocabulary. The exact declaration linking a setup operation to its
-predeclared managed runtime, prerequisite representation, reference payload structure and protected
+matter more than the temporary vocabulary. The exact encoding of the typed input linking setup to its
+predeclared managed runtime, prerequisite representation, remaining reference sources and protected
 result representation still need the existing structural review. Merely showing candidate YAML
 does not close those questions or authorize the merge checkpoint.
 

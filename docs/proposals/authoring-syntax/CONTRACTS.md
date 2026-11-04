@@ -257,9 +257,9 @@ these keys remains data. The [lifecycle contract](../../protocol/LIFECYCLE.md#li
 defines the encoding. Fields inside the `reference` payload are still proposals.
 
 **Accepted reference structure:** source selection and nested JSON Pointer use separate structured
-fields. For an output reference, the source identifies the step and declared output; the pointer
-selects within that output value. For example, the following uses the accepted `reference` form,
-but the fields inside it are still proposals:
+fields directly inside the `reference` payload, without a nested source object. For an output
+reference, the source identifies the step and declared output; the pointer selects within that
+output value. The following uses the accepted direct-field layout with provisional field names:
 
 ```yaml
 reference:
@@ -290,7 +290,8 @@ equivalent to supplying the empty JSON Pointer. For example, selecting startup's
 without a nested path passes that whole output; selecting `/endpoint` passes its endpoint member
 where present and exposed by the output contract. Source selection remains explicit, and missing
 sources or selected members still error. Pointer omission does not omit the operation's input or
-invoke that input's default. Field names and flat-versus-nested reference layout remain proposals.
+invoke that input's default. The direct-field reference layout is accepted; field names remain
+provisional.
 
 **Accepted missing-selection handling:** when a pointer selects no value, report a reference-resolution
 error and prevent the consuming step from running. Do not turn the failed binding into null or an
@@ -343,6 +344,13 @@ and the usable database output are distinct. The runtime remains supervised by i
 execution service, which may be independent of management. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
+
+**Pending prerequisite default:** the database walkthrough explicitly needs migration success
+before verification. Consider making successful completion the default for an ordering prerequisite
+that passes no data; the alternative only waits for the predecessor to finish. The first would
+keep verification blocked after migration failure. This default is not yet accepted and does not
+change dependencies on declared output publication, independent work or required lifecycle cleanup.
+Exact notation and any additional trigger conditions remain separate authoring questions.
 
 If an input needs a calculated value, add a typed plugin operation and bind its output instead
 of evaluating an expression inside `inputs`. For example, a path-building operation can consume
@@ -407,9 +415,9 @@ under the existing graph/authority rules:
 - Dependency edges come from output bindings plus `after`, not mapping order.
 - Early checking rejects known structural/type errors without requiring a general JSON Schema
   inclusion prover. Report the limits of what was checked; runtime input validation remains required.
-- Binding kinds include self, config/path and prior node output. Source selection and nested JSON
-  Pointer are separate structured fields as accepted above. The complete source-kind set, exact
-  fields and nesting inside `reference` remain proposals. Single-key forms for every supplied graph
+- Candidate sources include self, config/path and prior node output. Source selection and nested JSON
+  Pointer use direct fields inside `reference` as accepted above. The complete source-kind set and
+  exact field names remain proposals. Single-key forms for every supplied graph
   input binding are accepted; bare literals with collision escapes are not the selected v0 approach.
 - Runtime-input and control-handler bindings use the same typed machinery. Setup-only operations
   are not automatically exposed as public capability tools.

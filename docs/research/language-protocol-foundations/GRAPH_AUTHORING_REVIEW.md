@@ -1,9 +1,10 @@
 # Graph authoring: comparison and decision audit
 
 Researched 2026-11-03, following the request to step back from individual syntax rulings.
-This is evidence and recommendations, not an amendment to accepted contracts. The direct versus
-nested `reference` payload is still unaccepted. Previously accepted choices remain in force unless
-the owner revises them. See the [current review](../../REVIEW.md) and
+This records evidence and recommendations, with subsequent owner rulings identified explicitly.
+The owner accepted the direct-field `reference` layout after the walkthroughs; supporting names
+remain provisional. Previously accepted choices remain in force unless the owner revises them.
+See the [current review](../../REVIEW.md) and
 [lifecycle contract](../../protocol/LIFECYCLE.md#lifecycle-protocol).
 
 Scope: the recent configuration, binding, graph and recovery decisions. This is not a fresh audit
@@ -51,10 +52,11 @@ No inspected system provides a universal canonical syntax for Conduit's combined
 graph, authorization and plugin model. Kubernetes supplies useful API patterns; CWL, Tekton and
 workflow engines are closer comparisons for graph inputs and outputs.
 
-## The pending flat-versus-nested ruling
+## Reference layout decision
 
 Suppose `connect` publishes a declared output `connection` whose value has an `endpoint` member.
-These are equivalent candidate references; neither payload layout is accepted:
+These equivalent candidates were compared. The owner selected A's structure; the field spellings
+remain provisional in both examples:
 
 ```yaml
 # A: direct fields
@@ -92,10 +94,11 @@ one matching alternative; meaningful required/closed-field rules are still neede
 or absence of a `source` object does not itself determine validation quality.
 [JSON Schema combination](https://json-schema.org/understanding-json-schema/reference/combining)
 
-**Recommendation: retain a modest preference for A**, because our current sources are small and
-we have no accepted independently reusable source-selector object. B is reasonable if worked
-templates expose a real need for that grouping. Kubernetes' nested source types do not prove B
-is necessary here. Do not approve A merely because earlier examples already use it.
+**Accepted choice: A.** The recommendation favored its shorter layout because our current source
+selectors are small and there is no accepted independently reusable source-selector object.
+B offers visible grouping, but is not the selected authoring structure. Kubernetes' nested source
+types do not establish that B is necessary here; earlier examples using A were not themselves
+approval. Both layouts can express the same validation and execution behavior.
 
 The names deserve a separate readability check: `node` means a graph step; `port` means a declared
 output, not a host or TCP port. `step`/`output` might be easier for new authors. This is a vocabulary
@@ -155,7 +158,8 @@ per filename. The remaining usability questions are whether the error identifies
 `directory` clearly, and whether authors understand the empty pointer as the whole selected value.
 This example supplies the pointer explicitly. A subsequent owner ruling allows omission to select
 the whole explicitly chosen source, equivalent to an empty JSON Pointer; it does not infer the
-source or suppress missing-value errors. The reference payload layout remains open.
+source or suppress missing-value errors. A later owner ruling also accepts direct reference fields;
+supporting field names and the complete source-kind inventory remain open.
 
 ### 2. Authenticated MCP setup
 
@@ -202,9 +206,9 @@ than approving another field name in isolation.
 
 ## What to keep open, and how to continue
 
-Keep the reference layout open. Do not revise accepted forms or failure behavior by inference from
-this research. My recommended next discussion is a complete pass through the three cases above,
-with five questions for each:
+The owner has now selected the direct-field reference layout after the worked cases. The remaining
+source inventory and exact vocabulary still need review. Do not revise accepted forms or failure
+behavior by inference from research. Continue evaluating the complete cases with five questions:
 
 1. Can an author explain each value's source without understanding the executor implementation?
 2. Does the template need an operation solely for trivial data shaping? How many, and why?

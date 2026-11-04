@@ -34,7 +34,8 @@ Carry these observations from the directory walkthrough into that PR:
   labels for the accepted responsibilities beneath the families, not final vocabulary.
 
 This section records the future PR's scope, not approval of any replacement names or creation of
-that PR now. The reference payload's direct-versus-nested structure remains a separate open choice.
+that PR now. The reference payload's direct-field structure is accepted separately; its supporting
+field names still belong in this vocabulary review.
 
 ## Behavior and structure merge checkpoint
 
@@ -354,12 +355,14 @@ diagnostic fields remain authoring work.
 Pointer omission is accepted: an omitted nested pointer selects the whole explicitly chosen source,
 equivalent to the empty JSON Pointer. The source itself remains explicit and must resolve. This
 neither omits the receiving input nor applies its default; missing sources or selected members
-retain their existing error behavior. Reference field names and nesting remain open.
+retain their existing error behavior. Reference field names remain open; the direct-field layout
+is accepted below.
 
 Reference structure is accepted: use separate structured fields for source selection and the nested
 JSON Pointer, rather than encoding the whole reference in a string. For example, identify step
 `connect`, its declared output `connection`, and pointer `/endpoint` separately. Exact field names
-and nesting inside the `reference` payload remain open. Typed source checks,
+remain provisional. Source-selection fields sit directly inside `reference` beside its optional
+pointer, without a nested source object. Typed source checks,
 output dependencies and missing-value/literal-data rules remain unchanged.
 
 Explicit binding forms are accepted: each supplied v0 graph input binding selects a literal,
@@ -375,12 +378,12 @@ bindings; list assembly contains a list of child bindings. Bindings with zero, m
 form keys and malformed payloads are errors; empty assemblies and literal payloads containing form-like keys
 retain their ordinary meanings. This adds no shorthand, merging or expression evaluation.
 
-Reference payload layout is still pending; the owner requested examples and then comparative research,
-not acceptance. One candidate has direct `from`, `path`, `node` and `port` fields under `reference`;
-the other groups the source selector beside the path. The complete source-kind set and invocation-context
-access are also open; pointer omission now has the accepted whole-value meaning described above.
+Reference payload layout is accepted after the comparative research and walkthroughs: use direct
+source-selection fields beside the optional pointer. Names such as `from`, `path`, `node` and
+`port` remain working vocabulary. The complete source-kind set and invocation-context access
+remain open; pointer omission has the accepted whole-value meaning described above.
 
-Before further individual syntax rulings, discuss the requested
+Use the requested
 [graph authoring comparison and decision audit](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
 It recommends checking complete directory, authenticated MCP and database setup examples against
 the accepted rules. Review authoring costs, transformation granularity and failure behavior alongside
@@ -390,8 +393,9 @@ contracts. Identify any proposed revision explicitly; the protocol reference rem
 The first [guided directory walkthrough](proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
 now traces configuration, plugin/graph bindings, Pool-owned instantiation, subsequent Agent access and
 failure/retry. It is an illustrative recipe with a required setup-time layout check, not an executed
-deployment or a new ruling. Discuss its authoring burden and distinctions before the authenticated
-MCP and database cases; the reference payload layout remains open.
+deployment or a new ruling. Its authoring costs and distinctions can be compared with the authenticated
+MCP and database cases. The direct-field reference layout is now accepted; the example does not
+settle the remaining source inventory or vocabulary.
 
 The second [guided authenticated MCP walkthrough](proposals/authoring-syntax/AUTHORING.md#guided-authenticated-mcp-walkthrough)
 now traces Pool composition, a shared authentication Resource, a service Resource's setup outputs,
@@ -421,14 +425,17 @@ prepared storage; migration later uses its usable database result. A declaration
 neither startup nor authority. Authenticated caller identity and authority remain trusted invocation
 context, with current checks at resolution/use. Reference encoding and protected transport stay open.
 
-Next, return to the reference payload layout: keep the source-selection fields directly beside the
-optional pointer, or group them in a nested source object beside that pointer. The
-[comparison](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md#the-pending-flat-versus-nested-ruling)
-modestly recommends direct fields for the current small selectors. Both can enforce the same typed
-alternatives and failure rules. This structural choice remains pending; it would not finalize the
-supporting field names, change access or create an independently reusable source-selector object.
+The [reference comparison](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md#reference-layout-decision)
+preserves the direct-versus-grouped tradeoffs behind the accepted layout. No change to access,
+dependencies, validation or pointer behavior follows from that placement.
 
-Then settle the remaining reference source/layout and prerequisite representation as a coherent example,
+Next, settle the default meaning of explicit ordering without data: require the predecessor's
+successful completion, or allow a dependent step once the predecessor merely finishes. The
+database example needs migration success before schema verification. Successful completion is
+recommended but this general default has not yet been accepted. This does not change declared
+output-publication dependencies, independent-branch scheduling or required lifecycle cleanup.
+
+Then settle the remaining reference sources and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax, runtime
 declaration cardinality and start/wait operation granularity remain open. Keep final vocabulary
 in its separate PR. These are concrete instances of the existing authoring seams, not a new

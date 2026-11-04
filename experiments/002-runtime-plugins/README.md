@@ -487,6 +487,14 @@ upstream MCP service needs no Conduit argument wrapper and receives no automatic
 managed context. Graphs must see only their declared read-only metadata surface. These are planned
 wire/conformance cases; exact profile keys and executable fixtures remain to be authored.
 
+Exercise a deferred fake-service operation using an ordinary MCP client without Tasks support:
+receive an acceptance reference, inspect progress, then retrieve the recorded outcome without a
+second dispatch. Verify that initial acceptance is not reported as completed success and that
+inspection after an access change applies current restrictions. When an optional task/progress
+mapping is exercised, correlate it to the same operation and evidence. Also retain a directly
+completing operation to show that the baseline does not force all calls to defer. These are planned
+tests, not evidence that a wire implementation or arbitrary MCP client already supports them.
+
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should
 decide whether a Wasm lane buys enough to justify another runtime; it is not a prerequisite for

@@ -1018,8 +1018,10 @@ operation simply because it appears in `tools/list`. Workers should expose contr
 through a documented resource/manifest surface; ordinary operations can use tools. Avoid custom
 JSON-RPC methods until a concrete missing standard facility justifies them.
 
-For a Conduit-aware worker, the proposed handshake verifies package/artifact identity, profile
-version and descriptors against the retained binding before admitting work. An ordinary upstream
+For a Conduit-aware worker, verify package/artifact identity and applicable descriptors against the
+retained binding, alongside profile compatibility, before admitting work. The earlier handshake
+proposal does not settle whether profile information travels per request or through an explicitly
+referenced prior agreement; that choice remains under review. An ordinary upstream
 MCP server is negotiated through its adapter; it is not required to attest to a Conduit artifact
 or implement the management profile. Record the compatibility evidence actually available.
 The responsible service uses a bounded authenticated channel and
@@ -1093,11 +1095,20 @@ do not automatically receive this context. Graph-visible metadata is only the de
 surface, not unrestricted access to the wire metadata map. Exact keys, fields and negotiation remain
 open. The interaction mappings below remain proposals where not separately accepted.
 
+**Accepted deferred-work baseline:** provide a retained operation reference and authorized
+inspection through ordinary MCP tools. A client can start an index build, receive acceptance and
+later inspect its progress or outcome without implementing MCP Tasks. It must still understand the
+published interaction contract. Optional task/progress extensions map to the same managed work;
+they do not replace operation identity, effect evidence or domain recovery. No duplicate dispatch
+follows from exposing another view. Synchronous completion remains available, and acceptance never
+stands for completed success. Tool/result names and extension encoding remain open; this adds no
+Agent job-submission capability.
+
 | Interaction | Preferred representation and fallback |
 | --- | --- |
 | Discover/invoke a supported control | A named typed MCP tool with structured result. Provider tools retain native names/schemas where compatible. |
 | Inspect operation/instance | MCP resources or typed inspection tools with current, authorized content and revision/cursor. |
-| Long operation | Negotiated standard task/progress facilities where supported; otherwise an explicit retained operation reference plus inspect operation. Acceptance is not represented as completed success. |
+| Long operation | Accepted baseline: a retained operation reference plus authorized inspection through ordinary MCP tools. Negotiated task/progress extensions may expose the same work; acceptance is not completed success. |
 | Additional human input | Supported elicitation/input mechanisms; otherwise a retained interaction surfaced by the Interface. No waiting forever on a disconnected frontend. |
 | Observe changes | Negotiated subscriptions/notifications plus durable catch-up; otherwise bounded polling from a cursor. |
 | Cancel/reconcile | Authorized supported follow-up operations. Transport cancellation alone is not proof the effect stopped. |

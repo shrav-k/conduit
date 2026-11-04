@@ -34,6 +34,11 @@ their domain input schemas remain intact. The responsible service establishes or
 context; supplied metadata cannot grant authority. Plain upstream MCP services remain adapter-backed.
 Exact profile fields and negotiation remain open.
 
+Deferred managed work has an ordinary-MCP-tool baseline: acceptance returns a retained operation
+reference, and authorized inspection retrieves progress/outcomes. Negotiated task/progress extensions
+may expose the same operation without duplicate dispatch. Clients still need the published inspection
+contract; acceptance is not completion. Exact tool names and result encoding remain open.
+
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,
 pending work or uncertainty separate. Coupled settings may require whole-change confirmation.

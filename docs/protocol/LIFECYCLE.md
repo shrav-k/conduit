@@ -123,6 +123,19 @@ provider. Graph-visible metadata retains its explicitly declared, typed, read-on
 than exposing the entire request metadata map. Exact profile keys, context fields and negotiation
 remain authoring work; this does not add a wrapper to every plugin input contract.
 
+**Deferred-work baseline:** expose deferred managed work through ordinary MCP tools that return
+a retained operation reference and permit authorized inspection of progress and the eventual
+outcome. For example, starting an index build can return an acceptance reference, which the client
+uses to inspect that same operation later. Acceptance is not successful completion, and an
+operation reference supplies no grant. Clients must understand the published inspection contract;
+ordinary MCP transport support alone does not supply that behavior.
+
+Negotiated task/progress extensions may expose the same work, but are not required for this
+baseline. Their handles do not replace Conduit's operation identity, effect evidence or recovery
+contract, and an additional presentation must not dispatch duplicate work. Finite operations may
+still return their completed result directly. This adds neither Agent job submission nor a universal
+domain-state enum. Exact tool names, result encoding and extension mapping remain authoring work.
+
 Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in

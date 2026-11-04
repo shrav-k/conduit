@@ -665,17 +665,26 @@ without implementing this profile or automatically receiving managed context. Gr
 metadata keeps its declared read-only boundary. Exact profile keys, context fields and negotiation
 remain separate. See the [MCP research follow-up](research/language-protocol-foundations/README.md#6-mcp-supplies-interaction-not-all-of-conduits-semantics).
 
-Next, settle the minimum client interaction for deferred managed work. The recommendation provides
-a retained operation reference and authorized inspection through ordinary MCP tools as a baseline;
-negotiated task/progress extensions may expose the same work without becoming mandatory. For example,
-an Interface starts an index build, receives an acceptance reference, and later inspects progress or
-the outcome. A tool-capable client still needs to understand the published inspection contract;
-transport compatibility alone does not supply that behavior. The alternative requires the MCP Tasks
-extension for deferred work and reports unsupported capability when it is unavailable. This remains
-pending. It does not add Agent job submission, require every finite call to return early, treat
-acceptance as successful completion, grant access through a reference, or replace domain recovery
-and retained evidence with a transport task handle. Exact result/tool names and profile mapping remain
-separate.
+**Deferred-work baseline is accepted:** ordinary MCP tools return a retained operation reference
+and provide authorized inspection of progress and outcomes. An Interface can start an index build,
+receive acceptance and inspect it later without Tasks support. Clients still need the published
+inspection contract. Negotiated task/progress extensions may expose that same work without becoming
+mandatory or dispatching it again. Finite calls may complete directly; acceptance is not completed
+success, and a reference grants no authority. Domain recovery and retained evidence remain separate
+from transport handles. This adds no Agent job-submission capability. Exact tool/result names and
+extension mapping remain authoring work.
+
+Next, settle Conduit-profile negotiation scope. The recommendation makes each managed request
+identify its profile revision and required features, without requiring a separate prior profile
+agreement. For example, inspecting an index build over a new connection supplies the same operation
+reference plus the request's profile information; the receiving service checks required support
+before performing the requested behavior. Clients/adapters supply this protocol metadata, not a
+new user-authored manifest. Discovery may be cached, but neither cached discovery nor metadata
+confers authority or permits dropping required semantics. The alternative establishes a reusable
+negotiation agreement and explicitly references it on subsequent requests. This remains pending.
+It concerns profile compatibility, not removal of instance/operation state, authentication, selected
+artifact checks or the applicable MCP transport/version requirements. Exact profile identifiers,
+feature fields and discovery encoding remain open; plain upstream services still use their adapter.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

@@ -251,6 +251,17 @@ and capability metadata, discovery is explicit, and cross-call state uses explic
 Do not equate an MCP connection with a Conduit instance or logical participation.
 [MCP changelog](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
 
+**Profile-negotiation follow-up, 2026-11-04:** the same revision supplies protocol/capability
+metadata per request and uses explicit identifiers for state that spans requests. A connection is
+not the identity of a task or conversation. This supports a proposed Conduit mapping in which each
+managed request names its profile revision and required features; no separate negotiated agreement
+is required first. The alternative could retain an explicit agreement referenced on each request,
+rather than infer it from the connection. This is a Conduit design choice, not a claim that MCP
+specifies our profile. Neither arrangement removes operation records or current authorization and
+artifact checks. The per-request recommendation remains pending owner review; it does not select
+metadata field names, require a new discovery round trip per invocation, or allow silently dropping
+required semantics. [MCP statelessness](https://modelcontextprotocol.io/specification/2026-07-28/basic/index#statelessness)
+
 Tool discovery can reflect request authorization; tool output schemas use JSON Schema 2020-12.
 This supports familiar provider-native tools plus filtered managed access. An author-supplied
 caller ID or tool annotation is not authenticated authority. Conduit's adapter/profile must bind
@@ -270,22 +281,23 @@ remain open. [MCP metadata](https://modelcontextprotocol.io/specification/2026-0
 [tool invocation](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#calling-tools)
 
 MCP's Tasks extension offers task handles, polling, updates and cancellation for deferred results.
-It is a candidate transport mapping for long-running operations, not automatically the definition
-of Conduit recovery or proof that a remote effect was cancelled. Its support must be explicit;
-clients without it need a declared supported interaction path or an explicit unsupported outcome.
-Choosing a mapping does not add Agent job submission to the first communication experiment.
+It is an optional candidate mapping for long-running operations, not automatically the definition
+of Conduit recovery or proof that a remote effect was cancelled. Its support must be explicit.
+The subsequent owner ruling retains ordinary MCP tools for acceptance and inspection as the
+baseline, including when Tasks is unavailable. Choosing a mapping does not add Agent job submission
+to the first communication experiment.
 [Tasks extension](https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html)
 
 **Deferred-work follow-up, 2026-11-04:** this extension negotiates support explicitly and provides
 server-created task handles with retrieval, update and cancellation methods. It also declares task
 retention through a lifetime field. These are useful interaction mechanisms, but selecting them does
-not establish Conduit's effect recovery or evidence-retention guarantees. Our proposed baseline is a
+not establish Conduit's effect recovery or evidence-retention guarantees. The accepted baseline is a
 managed operation reference plus authorized inspection through ordinary MCP tools, with optional
 extension mapping to the same work. An index-build request can report acceptance and later expose
 its progress/result without requiring every client to implement Tasks. Such a client must still
 understand the published operation/inspection contract; this is not automatic usability by every
-MCP client. The alternative makes Tasks mandatory for deferred work. This remains a recommendation
-for owner review, without selecting tool names, result encoding or new Agent job-submission scope.
+MCP client. The owner selected this over mandatory Tasks support for deferred work. Tool names,
+result encoding and optional extension mapping remain open; no new Agent job-submission scope follows.
 [Tasks negotiation and model](https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html#capability-negotiation)
 
 OpenAPI and AsyncAPI help separate an operation/message description from its protocol binding.

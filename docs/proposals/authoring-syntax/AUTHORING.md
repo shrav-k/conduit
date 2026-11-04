@@ -139,6 +139,23 @@ its adapter without a mandatory Conduit wrapper or automatic forwarding of manag
 Graph-visible metadata remains explicitly declared and read-only. Exact profile keys and context
 fields are not selected by this example, and this is not an executable wire fixture.
 
+### Following deferred work
+
+**Accepted:** ordinary MCP tools provide the baseline for deferred managed operations. For example:
+
+1. The Interface invokes an index-build capability through its authorized Conduit.
+2. The managed endpoint accepts the work and returns a retained operation reference.
+3. The Interface invokes the published inspection tool with that reference, receiving permitted
+   progress, available results or an explicit unresolved outcome.
+4. Later inspection can retrieve the recorded outcome without starting another build.
+
+The initial reply confirms acceptance, not that the index is ready. Each inspection requires
+current access; knowing the reference is insufficient. The client needs the published inspection
+contract, but does not need MCP Tasks support merely to follow the work. An optional Tasks mapping
+can expose the same operation without another dispatch. A quick checksum operation can still return
+its result directly. These steps do not prescribe tool names or wire fields, add Agent work jobs,
+or replace the indexing operation's recovery and effect-evidence contract.
+
 ### What a template sees
 
 The template need not change between A and B. For example, a setup graph could fingerprint text

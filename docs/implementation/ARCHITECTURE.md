@@ -802,6 +802,14 @@ forward managed metadata to a plain provider MCP service, or expose the whole wi
 graphs. Their typed read-only metadata surface remains separately declared. Exact profile fields
 and negotiation remain authoring work.
 
+Implement the deferred-work baseline with ordinary MCP tools for acceptance and authorized
+inspection by retained operation reference. Keep the reference correlated with the responsible
+service's operation records, rather than treating a transport request or optional task handle as
+its only identity. Optional task/progress mappings expose the same work without redispatching it.
+Inspection rechecks current access and distinguishes acceptance, progress, confirmed outcomes and
+uncertainty under the operation's contract. Do not require task-extension support for the baseline
+or force directly completing operations to return early. Exact tool/result encoding remains open.
+
 For Conduit-authored operation invocations, resolve supplied bindings, materialize unambiguous
 applicable defaults for genuinely omitted fields, then validate the prepared payload before dispatch.
 Use the same preparation boundary for code and graph implementations, including child invocations;

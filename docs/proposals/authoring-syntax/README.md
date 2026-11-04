@@ -178,6 +178,9 @@ remain extensible.
 The accepted [default-conflict rule](../../protocol/CONFIGURATION.md#schema-default-resolution)
 requires an explicit valid value or corrected defaults when an omitted field has conflicting
 applicable schema defaults. Traversal order cannot select a winner.
+An omitted optional object without its own applicable default stays absent; child-property defaults
+do not create it. Authors may explicitly default the parent. This applies to instance configuration
+and Conduit-authored operation inputs, retaining validation and template omission preservation.
 The accepted [integer range](../../protocol/CONFIGURATION.md#numeric-interoperability) is
 −9,007,199,254,740,991 through 9,007,199,254,740,991 for Conduit-declared configuration, inputs
 and outputs. Larger exact values can use an explicitly string-typed contract; implicit conversion

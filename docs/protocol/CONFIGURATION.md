@@ -219,9 +219,19 @@ the prepared payload. The same no-order-based-conflict rule applies; explicit va
 references do not receive fallback defaults. See [operation input preparation](LIFECYCLE.md#lifecycle-protocol).
 Provider-native MCP inputs retain their separate schema semantics.
 
-The accepted omission, null and empty-value rules remain unchanged. Exact default-resolution
-mechanics, including how applicability is determined, remain authoring work; this ruling does
-not add ordered precedence between schema defaults.
+**Omitted optional objects:** an omitted optional object stays absent when it has no applicable
+default of its own. Defaults on its child properties do not create that object. For example, if
+`retry` is optional with no default, a default of 5 on `retry.delaySeconds` does not synthesize
+`retry: {delaySeconds: 5}`. An author can declare a default on `retry` itself when that presence is
+intended; that default remains subject to conflict and validation rules.
+
+Apply this boundary during instance-configuration materialization and Conduit-authored operation-input
+preparation, including nested invocations. Template authoring still preserves omissions. Required-field
+validation is unchanged; child defaults cannot excuse a required parent that remains absent. Explicit
+nulls and failed references retain their existing rules rather than becoming omitted objects.
+
+Other default-resolution mechanics, including the remaining applicability rules, remain authoring
+work. This adds no ordered precedence between schema defaults or change to provider-native semantics.
 
 ### Implementation selection
 

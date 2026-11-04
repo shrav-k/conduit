@@ -780,6 +780,12 @@ without dispatching the affected operation. Do not convert failed reference reso
 or inject these defaults into provider-native MCP inputs. Keep default applicability explicit in
 the schema-profile implementation; its detailed algorithm remains authoring work.
 
+In configuration and operation-input preparation, preserve the absence of an optional object with no
+applicable default of its own. Child defaults must not synthesize it. A declared whole-object default
+can establish the object, subject to conflict resolution and validation. Keep required-field checks,
+template omission preservation, explicit-null semantics and missing-reference errors intact. Apply
+the same boundary in child invocations; other default-applicability mechanics remain authoring work.
+
 Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
 surface. A graph can reference facts such as its owning instance ID without a helper invocation
 solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or

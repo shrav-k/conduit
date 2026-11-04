@@ -296,6 +296,13 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   and invalid materialized values. A reference selecting a missing upstream member must still block
   invocation even if the receiving field has a default. Retain earlier effects and verify that the
   adapter does not automatically impose this default preparation on provider-native MCP inputs.
+- Omit an optional `retry` object that has no default of its own but whose `delaySeconds` property
+  defaults to 5. Verify absence is preserved in instance configuration and in prepared code/graph
+  inputs, including child invocations. A graph reference to the absent `/retry` still fails rather
+  than receiving a synthesized object. Repeat with a declared parent default of `{delaySeconds: 5}`
+  and verify materialization subject to normal validation/conflict checks. Preserve authored template
+  omissions; a required parent still absent after preparation fails validation. Explicit nulls and
+  provider-native MCP schemas retain their separate rules.
 - Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
   Use a map keyed by the local names, reject duplicate keys, and verify that reordering entries has
   no execution meaning. Give a second instance the same local names without aliasing runtime identities.

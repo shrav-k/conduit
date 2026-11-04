@@ -1349,6 +1349,18 @@ null is checked as null. A failed binding that tries to select a missing upstrea
 blocks invocation; it is not converted to omission. This preparation concerns Conduit-authored
 operations; provider-native MCP schemas keep their separate semantics.
 
+**Accepted optional-object defaulting:** suppose this operation also permits a `retry` object,
+which has no default of its own, and its `delaySeconds` property declares a default of 5. Omitting
+`retry` leaves it absent from the prepared payload; the child default does not create the section.
+Code and graph implementations receive the same absence. A graph reference selecting `/retry`
+therefore still reports a missing value under the existing reference rule.
+
+If the author instead declares a default of `{delaySeconds: 5}` on the `retry` property itself,
+omission can materialize that whole-object default, subject to validation and the default-conflict
+rule. This also applies when materializing instance configuration. Templates preserve their authored
+omissions; required-field checks and provider-native MCP semantics remain unchanged. Defaulting
+inside an explicitly supplied object is a separate applicability detail.
+
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish
 that composite operation just as it publishes an operation backed by code or an MCP service. The

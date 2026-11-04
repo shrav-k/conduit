@@ -595,14 +595,23 @@ Existing result-contract derivation, publication/validity and fixed-value semant
 without requiring inherited contract information to be repeated. Final field spellings and remaining
 contract-field encoding stay open. The database walkthrough now shows the grouped structure.
 
-Next, refine default applicability for an omitted optional object. The recommendation is to leave
-that object absent when it has no default of its own, even if its child properties declare defaults.
-For example, an optional `retry` object with a child delay default of 5 does not become
-`retry: {delaySeconds: 5}` merely because the child has a default. An author can explicitly default
-the object when that presence is intended. The alternative synthesizes the missing object from
-descendant defaults. This remains pending for Conduit configuration/input preparation; it does not
-change provider-native schemas, template omission preservation, or required-field validation.
-Other default-applicability details remain separate.
+**Omitted optional-object defaulting is accepted:** leave the object absent when it has no applicable
+default of its own, even if its child properties declare defaults. An optional `retry` object does
+not become `retry: {delaySeconds: 5}` merely because the child defaults to 5. An author can explicitly
+default the parent when that presence is intended, subject to the existing conflict and validation
+rules. Apply this during instance configuration and Conduit-authored operation-input preparation,
+including child invocations. Provider-native schemas, template omission preservation, required-field
+validation, explicit nulls and failed references retain their rules. Other applicability details
+remain separate.
+
+Next, settle defaulting within an explicitly supplied object, including an empty object. The
+recommendation applies unambiguous applicable child defaults to omitted properties: supplying
+`retry: {}` would produce `retry: {delaySeconds: 5}` when that child default is declared. Supplied
+child values remain unchanged and must validate. The alternative treats a supplied object as
+complete and suppresses defaults beneath it. This remains pending. Acceptance would clarify the
+earlier empty-collection wording: the supplied object is not omitted or replaced by a whole-object
+fallback, but omitted children may be defaulted. It would not introduce inheritance/merging with
+older configuration, fill empty lists, or change the just-accepted absent-parent rule.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

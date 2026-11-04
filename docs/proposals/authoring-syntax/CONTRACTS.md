@@ -77,23 +77,22 @@ selected implementations explicitly on the instance.
 | `plugins` | Named selected implementation dependencies for graph, handler and driver exports. No entry is implicitly primary. |
 | `config` | The one stored configuration map: initial materialized values, then confirmed control changes. |
 | `setup` | Inline finite graph or explicit graph-source reference in a template; resolved graph in the instance. |
-| `runtime` | Instance-owned driver declaration and typed prepared-input bindings. |
+| `runtime` | Named instance-owned driver declarations and typed prepared-input bindings; exact collection layout remains open. |
 | `controls` | Type-default selection/narrowing in a template; fixed resolved controls in an instance. |
 | `conduits` | Consumer requirements and explicit open/join selections. |
 | `owner` | Resource-instance owning Pool, established by Pool-authorized creation rather than self-asserted by YAML. |
 
-**Pending runtime cardinality:** should an instance be able to declare several named managed
-runtimes when its type supports them? For example, one database Resource could use a database
-driver and an optional diagnostics helper from separate contributions, each with an explicit
-startup target. The recommendation permits this without requiring a wrapper driver solely to
-combine them. The alternative allows one runtime declaration whose implementation coordinates
-all ongoing behavior internally. The table's singular `runtime` spelling does not decide this.
+**Accepted runtime cardinality:** an instance may declare several named managed runtimes when its
+type supports them. For example, one database Resource can use a database driver and an optional
+diagnostics helper from separate contributions, each with an explicit startup target. A wrapper
+driver solely to combine them is not required. The table's singular `runtime` spelling is provisional;
+the collection layout and supporting vocabulary remain open.
 
-This choice concerns declared managed behavior, not one process per declaration. An instance would
-still own its components; Resource responsibilities, Pool ownership and endpoint ownership of
-connection-specific activity remain unchanged. It would not permit a second primary Agent execution.
-Existing setup and type-specific lifecycle contracts govern readiness and stopping; the cardinality
-choice would not create a blanket failure policy. This allowance and its exact representation remain pending.
+This concerns declared managed behavior, not one process per declaration. The instance owns its
+components; Resource responsibilities, Pool ownership and endpoint ownership of connection-specific
+activity remain unchanged. It does not permit a second primary Agent execution. Existing setup,
+control and retirement contracts govern readiness, failure handling and stopping; cardinality does
+not create a blanket failure policy.
 
 The named map can hold one implementation or several. A filesystem operation and
 an authentication operation may come from different packages. Aliases name implementation bindings,
@@ -970,10 +969,21 @@ step until access is available. Reuse existing interaction/recovery contracts ra
 a separate authentication workflow protocol; keep passwords/tokens out of ordinary conversations
 and logs. Exact interaction schemas remain I7 work.
 
-Ordinary typed values may be serialized. Managed handles identify their target, responsible
-execution endpoint, generation and allowed operations; handle access is checked when used.
-Endpoint identity is distinct from a changeable network address. These are proposed handle
-semantics, not new YAML keys or a sixth object family. Their serialized inspection form contains no live credential or assumption that the old process still exists.
+**Pending managed-reference boundary:** ordinary typed values can carry inspectable data such as
+a prepared storage descriptor. A live database or protected authentication binding instead needs
+ownership, resolution and validity semantics. The current recommendation is a shared typed contract
+for these Conduit-declared references, with the owning implementation retaining actual live objects
+and credentials. The alternative leaves representations to individual capability contracts, which
+can share compatible definitions or use adapters. Neither approach makes possession a grant or
+uses past publication as evidence of current availability.
+
+Target identity, responsible endpoint and generation are candidate reference details, not accepted
+fields. Exact schemas, transport and resolution remain open; a shared contract would not require
+a central broker, another object family or a new graph binding form. These are operation values,
+distinct from the graph's `reference` expression that selects such a value. Native provider MCP
+schemas retain their own semantics. Inspection/recording must follow the value's sensitivity rules;
+a reference is not automatically safe to log, and its stored form cannot establish that an old
+process still exists.
 
 Secret inputs are explicit references or interaction channels whose custody remains with their
 owning authentication capability. The type/operation schema identifies sensitive fields and

@@ -772,6 +772,13 @@ through the instance supervisor. The process/client is owned before the node rec
 runtime handle. Subsequent migration/initialization nodes can use that handle under its validity
 and access contract. Successful node completion never transfers lifetime ownership to the graph.
 
+Support multiple named runtime declarations within an instance when its type allows them. Resolve
+each operation's explicit target to its intended declaration, retaining supervision and lifecycle
+responsibility under that instance. A database driver and diagnostics helper may use different
+plugin contributions without requiring a wrapper solely to combine them. Process grouping remains
+an implementation choice; this does not permit another primary Agent execution. Apply the existing
+setup, control and retirement contracts rather than inferring a failure policy from declaration count.
+
 The startup result must establish its declared guarantee, such as usability for migration rather
 than a completed application schema. Operation acceptance and current runtime observations remain
 distinct. Do not add special graph lifecycle instructions or input-triggered automatic startup as

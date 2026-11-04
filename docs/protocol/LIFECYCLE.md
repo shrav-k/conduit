@@ -418,6 +418,15 @@ This reuses operation composition, validation and recovery rather than introduci
 lifecycle node kinds or automatic startup merely because input values become available.
 Registration still starts nothing.
 
+**Multiple managed runtimes:** an instance may declare several named managed runtimes when its
+type supports them. For example, a database Resource can declare a database driver and an optional
+diagnostics helper supplied by different contributions. Operations explicitly select their intended
+runtime targets; all components remain under the owning instance's lifecycle and supervision.
+Existing setup, control and retirement contracts determine preparation requirements, failure
+handling and shutdown duties. Cardinality alone adds no blanket failure or readiness policy.
+This permits neither an additional primary Agent execution nor a change in Resource/Pool or
+endpoint ownership. A declaration does not imply a separate operating-system process.
+
 **Runtime target inputs:** an operation receives its declared runtime target as an explicit typed
 input through the ordinary graph binding machinery. A reusable graph-backed operation declares
 that input and explicitly passes it to the child operations that need it; the target is not supplied
@@ -442,8 +451,9 @@ An explicit runtime binding does not grant authority, expose internal setup oper
 arbitrary returned process ID a managed runtime. Graph completion does not end continuing runtime
 activity. No Runtime object family, mandatory primary plugin or process per instance follows;
 an attachment type can require no persistent process, and a cloud provider retains supervision of
-its own service. Exact target-binding representation, prepared-input layout, runtime declaration
-cardinality and start/wait operation granularity remain authoring work. The
+its own service. Exact target-binding representation, prepared-input layout and named-runtime
+declaration syntax remain authoring work. Start/wait operation granularity must make each
+operation's guarantees explicit under the existing contracts. The
 [database/cloud comparison](../research/RUNTIME_ESTABLISHMENT.md) records the alternatives and rationale.
 
 Required setup failure normally retains an already-started managed runtime for inspection and

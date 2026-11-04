@@ -1014,6 +1014,21 @@ supported configuration changes retain their existing control/revision rules. Ba
 part of this database's declared lifecycle unless separately modeled as another Resource. Any
 access to separately managed Resources still requires the declared authorized Conduits.
 
+**Multiple-runtime variant:** if this Resource type supports diagnostics alongside its database,
+the template can declare both managed runtimes explicitly:
+
+| Illustrative runtime name | Selected behavior | Setup target |
+| --- | --- | --- |
+| `database` | The database driver from a database contribution. | The database-start operation receives this declaration. |
+| `diagnostics` | An optional diagnostics helper from another contribution. | Its establishment operation receives this declaration and any explicitly required inputs. |
+
+Both belong to the same Resource instance. The type and setup contracts define whether diagnostics
+needs the database first, what it promises and how failures affect usable capabilities; declaration
+count alone decides none of those behaviors. Retirement must satisfy the instance's applicable
+shutdown duties. The two declarations need not mean two processes, and the allowance does not
+create another primary Agent execution. This variant is accepted structurally; exact declaration
+fields and collection syntax remain proposals. The walkthrough below shows the database path.
+
 | Setup operation | Required inputs | Named successful output | What completion establishes |
 | --- | --- | --- | --- |
 | Prepare backing | Captured backing configuration and explicit creation/attachment intent | `storage`: a backing descriptor | The intended backing was established or verified under its contract; an existing target is not silently adopted by a fresh create. |

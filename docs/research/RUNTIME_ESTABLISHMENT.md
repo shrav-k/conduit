@@ -207,9 +207,9 @@ goal: small authored contributions that can be composed into larger behaviors.
 
 This choice does not introduce a Runtime object family, a mandatory primary plugin,
 one operating-system process per instance, a universal lifecycle enum or an arbitrary command
-that becomes managed simply by returning a PID. It does not resolve runtime declaration naming,
-one-versus-multiple declarations, reference field spelling or whether start-and-wait is one
-operation or a reusable composition of several operations.
+that becomes managed simply by returning a PID. A subsequent ruling permits multiple named runtime
+declarations when the instance's type supports them. Declaration layout and reference field spelling
+remain open; start/wait granularity must state each operation's guarantees under the existing contracts.
 
 ## How B would work in the examples
 
@@ -293,7 +293,9 @@ declared typed input for the runtime target, reusing ordinary graph binding and 
 of adding a separate runtime-context binding. Caller identity/authority remain trusted context.
 The direct-field reference layout and whole-value pointer-omission behavior were also subsequently
 accepted. Later rulings accept typed invocation metadata, the five-category v0 reference-source set
-and successful completion as the default ordering prerequisite without data. Target/selector encoding,
-runtime declaration cardinality, prerequisite notation and final vocabulary remain open. This report
+and successful completion as the default ordering prerequisite without data. Multiple named runtime
+declarations are now accepted when the type supports them, with explicit targets and instance-owned
+supervision. This does not add another primary Agent execution or a process-per-declaration rule.
+Target/selector encoding, declaration layout, prerequisite notation and final vocabulary remain open. This report
 does not close the [behavior/structure merge checkpoint](../REVIEW.md#behavior-and-structure-merge-checkpoint)
 or authorize runtime implementation.

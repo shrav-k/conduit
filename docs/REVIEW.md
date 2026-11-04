@@ -448,17 +448,28 @@ operations still receive caller configuration and runtime targets through declar
 implicit inheritance or live registry reads follow. Source names, selectors and metadata contents
 remain open.
 
-Next, decide runtime declaration cardinality: allow several named managed runtimes within one
-instance when its type supports them, or require one declaration whose implementation coordinates
-all ongoing behavior. The pending recommendation permits several, such as a database service plus
-an optional diagnostics helper. Each startup operation targets its intended declaration explicitly.
-This would not require a process per declaration, create new object families, allow extra primary
-Agent executions or change endpoint ownership of connection-specific activity. Exact lifecycle
-coordination and syntax remain separate; the multiple-runtime allowance is not yet accepted.
+**Multiple named runtimes are accepted:** an instance may declare several when its type supports
+them, such as a database service plus an optional diagnostics helper. Each startup operation targets
+its intended declaration explicitly. Components remain instance-owned; this does not require a
+process per declaration, create new object families, allow extra primary Agent executions or change
+endpoint ownership of connection-specific activity. Existing setup, control and retirement contracts
+govern their behavior. The number of declarations does not introduce a new global failure policy;
+exact declaration syntax and contract-specific coordination remain authoring work.
+
+Next, decide whether Conduit-declared live service and authentication bindings share a typed
+managed-reference contract, or leave their representation to individual capability contracts.
+The recommendation shares ownership, resolution and validity semantics while leaving actual live
+objects/credentials with their owning implementation. Possession does not grant access; current
+authority and contract-specific lifetime checks still apply. The alternative can also support
+interoperability through compatible capability contracts, but may repeat common semantics or need
+adapters between differing representations. This concerns values passed between operations, not
+the graph's `reference` authoring form. It does not select wire fields, require a central broker,
+add a source category or reinterpret native provider MCP schemas. This boundary remains pending.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
-with protected-result validity explicit under its contract. Exact target/reference syntax, runtime
-declaration cardinality and start/wait operation granularity remain open. Keep final vocabulary
+with protected-result validity explicit under its contract. Exact target/reference syntax and
+named-runtime declaration layout remain open. Start/wait operation granularity follows each
+operation's declared guarantees rather than a newly imposed universal split. Keep final vocabulary
 in its separate PR. These are concrete instances of the existing authoring seams, not a new
 conceptual review; the behavior/structure merge checkpoint remains open.
 

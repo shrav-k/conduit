@@ -73,6 +73,9 @@ declared runtimes. The runtime target is a declared typed input, explicitly forw
 reusable compositions. The instance owns ongoing activity from startup, and published results
 establish their contract's guarantees. Caller identity and authority remain trusted context;
 target selection grants no access. Exact target-reference encoding remains open.
+An instance may declare multiple named managed runtimes when its type supports them, each explicitly
+targeted and instance-owned. Existing lifecycle contracts govern their behavior; the allowance adds
+neither a process-per-declaration rule nor another primary Agent execution. Declaration layout remains open.
 The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block

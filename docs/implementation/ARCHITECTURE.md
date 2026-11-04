@@ -838,6 +838,15 @@ or wait for unrelated steps. Continue validating the value and its current permi
 honor any stronger declared publication condition. Persist and expose output availability separately
 from overall graph outcome and instance preparation, including while other work remains incomplete.
 
+Associate each published step/public output value with its named output and producing attempt.
+Keep that value fixed: permit redelivery of the recorded result, but report conflicting publication
+as a contract error without overwriting the value already supplied downstream. Preserve associated
+effects and uncertainty. Later attempts retain separate result provenance; this is neither an
+exactly-once transport guarantee nor permission to replay work. Recovery must still validate retained
+results and prerequisites before reuse. Keep live availability and state under instance supervision,
+with current validity/access checks at their declared points. Progress and observation contracts
+remain separate from fixed graph values; identifier and comparison encodings remain to be specified.
+
 A node requesting runtime startup is an ordinary typed operation explicitly bound to the instance's
 declared runtime. It supplies prepared inputs through the selected compatible contract and goes
 through the instance supervisor. The process/client is owned before the node receives a usable

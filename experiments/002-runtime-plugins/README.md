@@ -392,6 +392,14 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   diagnostics or whole-graph success. Verify that the Interface still reports unfinished graph work
   and the instance's actual preparation state. Add a stronger declared publication condition and
   require it to hold; invalidated values or revoked exposure access must still prevent publication.
+- Publish a valid service reference from a step and a public graph output, then redeliver each
+  recorded value under its original producing attempt. Permit redelivery without claiming exactly-once
+  transport. Try publishing a different value for the same output/attempt: require a contract error,
+  preserve the original value and retain any effects/uncertainty. Change the service's availability
+  separately and verify that an unchanged reference does not bypass current validity or access checks.
+  Where recovery supports a later producing attempt, record its result separately without rewriting
+  earlier evidence or automatically replaying effects. Retained-progress reuse must still validate
+  prerequisites; progress/observation updates must not mutate the published graph value.
 - Compose two reusable starting requirements in a named definition and use it in Conduit templates.
   Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
   core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.

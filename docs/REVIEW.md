@@ -577,14 +577,23 @@ not optional members inside a value. Validation, access, reference/dependency ch
 conditions, effects and outstanding work retain their rules. Absence produces no fabricated value
 or null. Exact output-contract notation remains open.
 
-Next, settle whether a named graph dataflow output has one fixed value per producing attempt.
-The recommendation keeps its published value immutable for that attempt; changing service state
-or availability is inspected through the instance/capability rather than replacing the graph value.
-Later attempts can produce separately identified results, and redelivery of the same recorded value
-is not a new value or an exactly-once transport guarantee. The alternative allows replacement values
-within one attempt, requiring revision and consumer-reaction semantics. This remains pending and
-concerns both step outputs and public graph outputs, not an instance's live state or supported
-streaming/observation capabilities. Existing validity and recovery rules still apply.
+**Published value stability is accepted:** each named step output and public graph output retains
+one fixed published value per producing attempt. Redelivery of that recorded value is permitted;
+conflicting publication reports a contract error without replacing the value supplied downstream,
+while preserving effects and uncertainty. A later attempt can publish a separately identified result
+without rewriting earlier evidence. This does not promise exactly-once transport or authorize retry
+or effect replay. Live Resource state, availability, access and progress/streaming observations retain
+their own contracts; a fixed reference is not proof of current usability. Existing validity and
+recovery checks still apply. Attempt identifiers and comparison encoding remain open.
+
+Next, settle the public-output declaration structure. The recommendation is a map keyed by names
+unique within that graph's public outputs, with each entry grouping its value binding and applicable
+output-specific declarations, such as optionality and success prerequisites. For example, the
+database entry binds startup's reference and requires verification success; a separate diagnostic
+report entry is explicitly optional. The alternative keeps the value bindings and output conditions
+in separate maps joined by name. This remains pending. It does not change derived result contracts,
+publication/validity semantics or the fixed-value rule, require repeating inherited contract
+information, or select final field spellings. Map order would not schedule work or publication.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

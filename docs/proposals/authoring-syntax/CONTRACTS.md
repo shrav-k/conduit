@@ -569,6 +569,17 @@ instance-owned runtime that has started
 before setup completes; the instance driver owns its continuing availability. A finishing setup
 worker must not become the permanent source of liveness truth.
 
+**Accepted value stability:** a named step output or public graph output publishes one fixed value
+per producing attempt. Redelivering the recorded value is allowed; a conflicting value for that
+same output/attempt is a contract error, not an update to data already supplied downstream. Retain
+effect evidence and uncertainty. A later attempt may publish a separately identified result;
+earlier evidence remains intact. This does not promise exactly-once delivery, start another attempt
+or bypass valid-progress recovery. Attempt encoding and value-comparison mechanics remain open.
+
+The published value is distinct from the current state or availability of a Resource it identifies.
+Instances retain ongoing management; progress, observations and supported streams keep their own
+contracts. A fixed reference grants no access and does not make an expired or unavailable value usable.
+
 If readiness depends on a live input, check that input at dispatch/use under its contract. A
 ready value becoming unavailable does not rewrite completed history. Dependent operations may
 need reconciliation or retry; they cannot assume the last serialized value is still usable.

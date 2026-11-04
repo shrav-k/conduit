@@ -1458,6 +1458,19 @@ The Interface can show the available output alongside unfinished or failed work;
 does not itself mark setup complete or the Resource prepared. If the reference has become unusable
 or current access does not permit exposure, verification's earlier success cannot bypass those checks.
 
+**Accepted value stability:** after `start` publishes its database reference, that named output
+retains the same value for that producing attempt. The public graph output likewise retains its
+published value for its producing attempt. If the database disconnects, the instance reports the
+changed availability; the graph does not replace its reference with a different value or null.
+Consumers must still satisfy current validity and access checks before use.
+
+Redelivering the recorded reference is permitted and does not establish exactly-once transport.
+Trying to replace it with another value in the same attempt reports a contract error while preserving
+effects and evidence. If supported recovery requires a later producing attempt, its result is recorded
+with that attempt, leaving the earlier publication intact. This does not initiate retry or make the
+old result reusable without validation. Changing progress and observations remain separate from these
+fixed graph values; exact attempt and reference encodings remain open.
+
 **Accepted recovery default:** a published graph-backed operation reuses graph recovery without
 requiring a bespoke handler merely for composition. Explicit retry of this unchanged invocation
 reuses still-valid startup progress and delegates the uncertain migration effects to its recovery

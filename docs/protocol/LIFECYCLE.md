@@ -403,6 +403,20 @@ owning instance prepared. Those outcomes and lifecycle requirements remain separ
 An unavailable or invalid value, unmet prerequisite or denied access still prevents publication;
 earlier verification cannot substitute for current checks required by the output's contract.
 
+**Published value stability:** each named step output and public graph output has one fixed
+published value per producing attempt. Redelivery of that recorded value is permitted; publishing
+a different value under the same output and attempt must report a contract error rather than
+replace the value already supplied to consumers. Preserve any effects and uncertainty associated
+with the conflicting publication. This is a dataflow rule, not an exactly-once transport guarantee.
+
+A later producing attempt can publish a separately identified result without rewriting the earlier
+attempt's evidence. Recovery still checks whether retained results and their prerequisites remain
+valid; this rule neither starts a retry nor authorizes replaying effects. A fixed database reference
+does not freeze the database, its current availability or access. The responsible instance reports
+ongoing state, and the output's validity and current-use checks remain mandatory. Progress,
+observations and supported streams use their own contracts rather than replacing graph values.
+Exact attempt identifiers and value-comparison encoding remain implementation/authoring work.
+
 **Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
 as that key's value. The same encoding applies to child bindings inside assemblies.
 The four forms and this structure are accepted; these key spellings are working names under the

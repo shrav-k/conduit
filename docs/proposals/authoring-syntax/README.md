@@ -86,6 +86,10 @@ the remaining publication, validity, validation and access conditions still appl
 An output becomes eligible once its own bindings, prerequisites and declared conditions are satisfied,
 without implicitly waiting for unrelated work or whole-graph success. Stronger declared conditions
 still apply. Output availability does not mark the graph complete or its owning instance prepared.
+Named step and public graph outputs retain one fixed published value per producing attempt.
+Redelivery is permitted; a conflicting publication cannot replace it. Later attempts retain distinct
+result provenance. Live Resource state, output validity, access and progress/observation contracts
+remain separate; this does not promise exactly-once delivery or authorize replay.
 Object/list assembly payloads contain child bindings. The accepted reference layout puts source
 fields directly beside the optional pointer, without a nested source object. Omitting the pointer
 selects the whole explicitly chosen source, equivalent to an empty pointer. The accepted v0 sources

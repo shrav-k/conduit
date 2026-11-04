@@ -181,6 +181,19 @@ loops and provider-specific procedure remain inside plugins initially. User-auth
 iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
 supported; interaction waits and valid-progress recovery do not require authored loops.
 
+**Ordering prerequisites:** an explicit prerequisite that passes no data normally requires the
+predecessor to complete successfully under its operation contract. A failed or uncertain outcome
+does not satisfy it; merely finishing, returning a response or producing a schema-valid failure
+payload is insufficient. For example, schema verification can use the database output from startup
+while separately requiring migration success. Current authority, input validity and other applicable
+prerequisites still govern dispatch.
+
+This default does not change dependencies on declared output publication or their validity/lifetime
+rules. Independent eligible branches may continue, and required lifecycle cleanup retains its own
+contract. Reusing a previously successful step on retry still requires valid progress. No automatic
+retry, rollback or authored branching follows; exact prerequisite notation and any additional
+trigger conditions remain separate from this accepted default.
+
 [Registration batches](CONFIGURATION.md#batch-configuration-submissions) use a constrained form of
 this graph contract: complete supplied definitions, explicit prerequisites and ordinary checked
 registry writes. They reuse scheduling, outcome, cancellation and valid-progress recovery semantics;

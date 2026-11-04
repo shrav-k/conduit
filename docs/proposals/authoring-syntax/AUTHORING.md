@@ -1031,8 +1031,8 @@ flowchart LR
 **Data dependencies and ordering are different.** The verification operation needs the database
 reference produced by startup, not necessarily the migration's evidence payload. Referencing startup
 alone would permit verification too early. The graph must also require migration success. This
-illustrates our accepted explicit prerequisite mechanism when no value is passed; mapping order
-does not establish the prerequisite.
+illustrates the accepted default for explicit ordering without data: require the earlier operation's
+successful completion under its contract. Mapping order does not establish the prerequisite.
 
 For example, this fragment uses `after` as candidate notation for that required-success gate:
 
@@ -1054,9 +1054,10 @@ verify:
 The author named the earlier nodes `start` and `migrate`; the startup operation's contract declares
 the `database` output. The receiving operation's input also happens to be called `database`.
 The empty pointer, which may also be omitted, selects the whole output; `/expectedSchema` selects
-the configured expected schema. The spelling and representation of the prerequisite remain proposals. A terminal failure
-or a schema-valid failure payload cannot satisfy this example's required-success gate. This does
-not select one universal outcome enum or reinterpret every ordering field as having this spelling.
+the configured expected schema. The spelling and representation of the prerequisite remain proposals.
+A failed or uncertain outcome, including a schema-valid failure payload, cannot satisfy this
+required-success gate. This does not select one universal outcome enum or reinterpret every ordering
+field as having this spelling.
 
 **Successful setup has several separate facts.** The Pool owns one registered Resource; its
 backing exists; its responsible service manages the runtime; required migration and verification

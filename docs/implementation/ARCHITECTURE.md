@@ -728,6 +728,12 @@ For an MCP-backed node, dispatch still uses the selected contract and authorized
 The common adapter can invoke a compatible existing operation; metadata alone cannot substitute
 for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
+Explicit ordering prerequisites without data default to requiring the predecessor's successful
+completion under its contract. Failure or uncertainty keeps that dependency unmet. Do not satisfy
+it merely because an invocation returned or its failure payload passed schema validation. This
+does not change declared output-readiness dependencies, their validity checks, independent eligible
+work or required lifecycle cleanup. Exact prerequisite notation remains authoring work.
+
 Bind caller configuration into a reusable graph-backed operation's declared inputs; do not inject
 the enclosing instance's configuration namespace into that operation. Keep scoped invocation context
 and explicitly authorized Resource access available through their contracts. Validate declared input

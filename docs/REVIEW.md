@@ -429,11 +429,19 @@ The [reference comparison](research/language-protocol-foundations/GRAPH_AUTHORIN
 preserves the direct-versus-grouped tradeoffs behind the accepted layout. No change to access,
 dependencies, validation or pointer behavior follows from that placement.
 
-Next, settle the default meaning of explicit ordering without data: require the predecessor's
-successful completion, or allow a dependent step once the predecessor merely finishes. The
-database example needs migration success before schema verification. Successful completion is
-recommended but this general default has not yet been accepted. This does not change declared
-output-publication dependencies, independent-branch scheduling or required lifecycle cleanup.
+**Ordering prerequisite default is accepted:** explicit ordering without data normally requires
+the predecessor's successful completion under its operation contract. Failure or uncertainty does
+not release the dependent step. The database example requires migration success before verification;
+mere completion or a schema-valid failure payload is insufficient. Declared output-publication
+dependencies, independent branches and required lifecycle cleanup retain their existing rules.
+
+Next, clarify graph-visible invocation metadata as part of the remaining reference-source inventory.
+For example, a setup graph could supply its owning instance ID to an operation that tags a created
+service for recovery. The pending recommendation permits references to explicitly declared, typed,
+read-only runtime-supplied metadata, without exposing the whole instance or ambient environment.
+The alternative keeps such metadata available to implementations and uses a plugin operation when
+a graph needs a value. Neither option permits user-supplied identity to replace authenticated
+caller context or grants access through a reference. Exact fields and source encoding remain open.
 
 Then settle the remaining reference sources and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax, runtime

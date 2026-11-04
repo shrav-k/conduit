@@ -238,6 +238,21 @@ remain available under their contracts. The template-local setup example below c
 configuration, but extracting it into a reusable operation requires explicit configuration inputs.
 Exact input/context notation remains open.
 
+**Pending graph-visible invocation metadata:** one option lets graphs reference an explicitly
+declared, typed, read-only metadata surface supplied by the runtime. For example, a setup graph
+could pass its owning instance ID to a plugin that tags a created service for later reconciliation.
+The graph would not need an operation solely to retrieve that ID. The alternative keeps this
+metadata in implementation context and uses an operation to publish any value needed by the graph.
+
+The first is recommended, not accepted. Its scope would be declared invocation facts, not an
+unrestricted snapshot of instance configuration/status, ambient environment or credentials. Missing
+required metadata would be reported, not fabricated. Runtime targets still use their declared typed
+inputs, reusable operations still receive caller configuration explicitly, and live Resource reads
+still use their authorized capabilities. Referenced IDs become ordinary data for their consumer;
+they cannot replace the runtime's authenticated actor or authority checks. Exact available fields,
+declaration/versioning, scope and reference encoding remain open. The older `self` example below
+is a placeholder, not approval to expose the whole instance.
+
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for
 reference markers. A plugin result retrieved through a reference remains data rather than being
@@ -345,12 +360,12 @@ execution service, which may be independent of management. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
 
-**Pending prerequisite default:** the database walkthrough explicitly needs migration success
-before verification. Consider making successful completion the default for an ordering prerequisite
-that passes no data; the alternative only waits for the predecessor to finish. The first would
-keep verification blocked after migration failure. This default is not yet accepted and does not
-change dependencies on declared output publication, independent work or required lifecycle cleanup.
-Exact notation and any additional trigger conditions remain separate authoring questions.
+**Accepted prerequisite default:** an explicit ordering prerequisite that passes no data normally
+requires successful completion under the predecessor's operation contract. A failed or uncertain
+migration keeps verification blocked; mere completion or a schema-valid failure result does not
+satisfy the gate. Dependencies on declared output publication, independent work and required
+lifecycle cleanup retain their existing rules. Exact notation and any additional trigger conditions
+remain separate from this default.
 
 If an input needs a calculated value, add a typed plugin operation and bind its output instead
 of evaluating an expression inside `inputs`. For example, a path-building operation can consume

@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-04.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -67,6 +67,22 @@ declared default controls, including reusable schemas and implementations. They 
 surface or explicitly select other supported controls. The instance retains the resolved surface;
 a plugin update does not silently add controls. Type defaults are distinct from every internal
 plugin operation and from the dynamic provider-native catalogs exposed by integration capabilities.
+
+**Partial confirmation:** a control may explicitly support confirming only part of a requested
+configuration change. Store the confirmed permitted changes when the complete resulting stored
+configuration satisfies the schema and control constraints. Retain failure, pending work and
+uncertainty for the remaining effects separately; confirming a subset does not establish success
+for the entire request. A setting whose application is uncertain keeps its last confirmed stored
+value without being presented as known current.
+
+For example, a search control can confirm a query-limit change from 10 to 15 while a timeout
+change from 30 to 60 seconds remains uncertain. If its contract supports that partial result,
+store the limit of 15 and retain 30 as the last confirmed timeout, with the uncertainty visible.
+Controls with coupled settings can require confirmation of the whole change. The shared rule
+does not infer independence between arbitrary fields, allow invalid configuration or imply
+rollback. Current authority, revision checks and coordination still apply. If confirmed external
+effects cannot produce a valid stored configuration, preserve their evidence and report the
+unresolved or out-of-contract state rather than claiming that nothing changed.
 
 Frontends may present ordinary field editing and invoke the corresponding control through an
 authorized Conduit. The interaction does not require a separate user-authored operation manifest

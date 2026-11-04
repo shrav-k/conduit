@@ -932,17 +932,23 @@ can rewrite a running instance's fixed definition.
 
 The handler returns a proposed confirmed result with evidence, not unrestricted permission to
 write arbitrary JSON. The host validates the complete resulting config against the fixed schema
-and control constraints. If application cannot be confirmed, leave stored values unchanged and
-record uncertainty. The Interface must not label those last-confirmed values as known current.
+and control constraints. Leave values whose application cannot be confirmed unchanged in storage
+and record uncertainty. The Interface must not label those last-confirmed values as known current.
 
-**Pending partial-confirmation boundary:** a control may request several settings whose provider
-effects are not atomic. The recommendation permits a contract to confirm and record only a subset
-of the requested changes, provided the complete resulting stored configuration is valid. Other
-effects retain their reported failure or uncertainty; neither the control as a whole nor remaining
-old settings become confirmed current merely because one part succeeded. The alternative keeps
-all stored values unchanged until the whole requested change is confirmed, with partial effects
-reported separately. This distinction remains under review; it does not waive allowed paths,
-revision checks, authority or coordination, or promise that arbitrary field subsets are independent.
+**Accepted partial confirmation:** a control may explicitly support confirming and recording only
+a subset of the requested changes, provided the complete resulting stored configuration is valid.
+Other effects retain their reported failure, pending work or uncertainty; neither the control as a
+whole nor remaining old settings become confirmed current merely because one part succeeded.
+Coupled settings can require whole-change confirmation. This does not waive allowed paths,
+revision checks, authority or coordination, infer independence between arbitrary fields, or promise
+rollback. Preserve effect evidence if it cannot produce a valid configuration under these rules.
+
+**Pending unchanged-control revision rule:** the recommendation retains the configuration revision
+when a control confirms unchanged stored settings, while recording its invocation and any external
+effects. Declared checks/effects still apply; comparison is not permission to skip the handler or
+return an earlier result as a new execution. The alternative advances that revision on every
+confirmed application. The analogous unchanged registry-write rule is already accepted; extending
+it to controls remains under review.
 
 A waiting change retains its coordination semantics. If safe parallel control domains are added,
 they need declared disjoint read/write dependencies and transaction checks; merely using different

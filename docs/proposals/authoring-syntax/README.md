@@ -16,6 +16,12 @@ for setup, runtime and controls, with kind/contract checks and no primary alias.
 `spec.plugins` / `{plugin, name}` spellings remain proposals.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
+Controls may explicitly support partial confirmation: record confirmed permitted settings only
+when the complete resulting stored configuration is valid, and keep remaining effects' failure,
+pending work or uncertainty separate. Coupled settings may require whole-change confirmation.
+This does not imply rollback, generic field independence or that last-confirmed values are still
+active. Exact result representation remains open.
+
 The accepted package entry boundary uses one explicit document declaring exports and dependencies,
 with inline or package-local referenced definitions. It may be handwritten or generated; inspection
 does not execute plugin code or infer exports from directory layout. Provider-native catalogs remain

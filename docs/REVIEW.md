@@ -98,7 +98,7 @@ return for a conceptual ruling only if an example exposes a real behavior choice
 
 | Seam | Preserve while refining | Source |
 | --- | --- | --- |
-| Controls spanning multiple settings/effects | Last confirmed configuration, explicit uncertainty, revision checks and target coordination. No implied atomicity/rollback; specify what each handler can confirm after partial external effects. | [Configuration updates](protocol/CONFIGURATION.md#configuration-updates), [controls](protocol/LIFECYCLE.md). |
+| Controls spanning multiple settings/effects | Declared partial confirmation is accepted, subject to validation of the complete resulting stored configuration. Retain uncertainty, revision checks and target coordination; coupled settings may require whole-change confirmation. No implied atomicity/rollback. | [Configuration updates](protocol/CONFIGURATION.md#configuration-updates), [controls](protocol/LIFECYCLE.md). |
 | Composite results, cancellation and recovery | Deliberate public outputs, retained effects/evidence, valid child progress, retirement duties and other participants. Custom recovery hooks/evidence formats remain unselected. | [Composition](protocol/MODEL.md#authoring-concepts-beneath-the-object-families), [retirement](protocol/LIFECYCLE.md#retirement-and-unregistration). |
 | Connection/composite readiness | Required preparation gates, independent later work, per-consumer participation and ready Pool Resources are distinct. Describe observable partial state without one universal lifecycle enum. | [Pools](protocol/POOLS.md), [Conduits](protocol/CONDUITS.md). |
 | Independent MCP access and client enrollment | Familiar provider tools plus current authority, caller identity and evidence. A directly accessible component still needs verifiable authority; no offline grants or bypass is implied. | [Independent components](protocol/MODEL.md#plugins-and-independently-accessible-mcp-components). |
@@ -465,15 +465,23 @@ do not establish current availability. This concerns operation values, not the g
 authoring form. It selects no wire fields, central broker or new source category and does not
 reinterpret native provider MCP schemas. Exact representation and resolution mechanisms remain open.
 
-Next, work through the existing multi-setting-control seam: may a control explicitly support
-confirming a subset of its requested changes, advancing those stored settings even when another
-part fails or remains uncertain? The recommendation allows this only under the control's declared
-contract, with the complete resulting configuration validated and evidence retained for the rest.
-For example, a confirmed query-limit change can be recorded while a timeout change is unresolved;
-the last confirmed timeout is not presented as known current. The alternative withholds all stored
-configuration changes until the entire requested change is confirmed, while reporting partial
-external effects separately. Neither choice implies rollback. This ruling remains pending; existing
-authority, revision and coordination rules still constrain any supported implementation.
+**Declared partial confirmation is accepted:** a control can confirm a subset of its requested
+changes when its contract supports that result and the complete resulting stored configuration is
+valid. Record the confirmed settings and retain the remaining effects' failure, pending work or
+uncertainty separately. A confirmed query-limit change can therefore be recorded while a timeout
+change is unresolved; its last confirmed timeout is not presented as known current. Coupled settings
+may require whole-change confirmation. This neither infers independence between arbitrary fields
+nor promises rollback; current authority, revision checks and coordination still apply.
+
+Next, decide whether a control that confirms unchanged stored configuration retains its configuration
+revision, as an unchanged checked registry write already does. The recommendation retains it while
+recording the invocation and any effects separately: requesting a query limit already set to 15
+could verify or refresh the provider without invalidating another client's configuration baseline.
+All declared checks/effects still run; unchanged values do not turn the invocation into a cached
+success. The alternative advances the configuration revision for every confirmed control application.
+This control-specific revision rule remains pending and does not decide operation or observation IDs.
+Ordinary MCP-client access itself is already accepted in the model; exact enrollment/transport
+mechanics remain refinements rather than another approval of that interoperability direction.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

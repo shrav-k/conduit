@@ -827,6 +827,13 @@ A handler reports the applied configuration changes and evidence; the host verif
 constraints, revision and generation before committing. Plugins cannot rewrite setup graphs,
 control definitions or implementation bindings through a configuration result.
 
+Accept a confirmed subset of a control's requested changes only when its declared contract supports
+partial confirmation and the complete resulting stored configuration is valid. Record remaining
+effects' failure, pending work or uncertainty separately; retaining an old value does not establish
+that it is still active. Coupled fields may require whole-change confirmation. A partial result
+does not release applicable coordination or justify rollback, invalid state or replay of effects.
+If reported effects cannot yield a valid configuration, preserve evidence for supported reconciliation.
+
 No-op controls still perform their declared checks/effects. If they confirm unchanged stored
 settings, the proposed default preserves the configuration revision and records the outcome.
 A plugin can report external work even where configuration is unchanged. Reconciliation may

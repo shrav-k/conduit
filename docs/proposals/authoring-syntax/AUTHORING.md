@@ -1192,13 +1192,38 @@ These are distinguishable observations, not a proposed universal lifecycle enum.
 and unknowns must remain visible, and permission checks cannot be bypassed using captured setup
 configuration. No offline grant or automatic retry is introduced by the recovery example.
 
-**Assessment across the three walkthroughs:** finite graphs, explicit data bindings and ordinary
+### A control that partially applies
+
+Consider a separate search Resource with a query limit of 10 and a timeout of 30 seconds. Its
+declared control permits changing both settings and explicitly supports partial confirmation.
+An authorized caller requests a limit of 15 and a timeout of 60 using the inspected revision.
+
+| Requested change | Handler evidence | Stored setting and reported state |
+| --- | --- | --- |
+| Query limit: 10 → 15 | Application of 15 is confirmed. | Record 15 if the complete resulting configuration is valid. |
+| Timeout: 30 → 60 seconds | The provider response is lost; application is unconfirmed. | Keep 30 as the last confirmed setting and report that the current timeout is uncertain. |
+
+This is a permitted partial confirmation, not confirmation of the entire request. The instance
+retains the operation's outstanding uncertainty and applicable coordination. Reconciliation uses
+the control's supported recovery contract; the lost response does not authorize blind repetition.
+The Interface shows both the stored settings and uncertainty rather than claiming that the runtime
+is certainly using the combination 15/30. A configuration export likewise does not certify readiness
+or current runtime state.
+
+The contract can require related settings to be confirmed together. If a subset would violate a
+cross-field constraint, do not store that invalid configuration. Preserve any reported effects and
+use supported reconciliation; rejection of the stored result does not undo external changes.
+This example adds no generic field-patch interface or universal partial-failure enum. Exact result
+fields remain authoring work.
+
+**Assessment across the three setup walkthroughs:** finite graphs, explicit data bindings and ordinary
 plugin operations can express the examples without authored loops or an expression language.
 That is evidence about these examples, not general proof of ergonomic sufficiency. Required
 ordering without data, runtime ownership from startup, output validity and domain-specific recovery
 matter more than the temporary vocabulary. The exact encoding of the typed input linking setup to its
-predeclared managed runtime, prerequisite representation, remaining reference sources and protected
-result representation still need the existing structural review. Merely showing candidate YAML
+predeclared managed runtime, prerequisite representation and protected-result representation still
+need refinement; the five source categories and shared managed-reference boundary are now accepted.
+Merely showing candidate YAML
 does not close those questions or authorize the merge checkpoint.
 
 ## 5. Where the example implementations execute

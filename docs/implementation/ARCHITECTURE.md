@@ -763,6 +763,15 @@ the enclosing instance's configuration namespace into that operation. Keep scope
 and explicitly authorized Resource access available through their contracts. Validate declared input
 bindings under the same early and runtime checks used for other operations.
 
+For Conduit-authored operation invocations, resolve supplied bindings, materialize unambiguous
+applicable defaults for genuinely omitted fields, then validate the prepared payload before dispatch.
+Use the same preparation boundary for code and graph implementations, including child invocations;
+the graph-input source exposes that prepared payload. Explicit nulls remain values subject to the
+schema. Reject invalid explicit or prepared values, unresolved default conflicts and broken references
+without dispatching the affected operation. Do not convert failed reference resolution into omission
+or inject these defaults into provider-native MCP inputs. Keep default applicability explicit in
+the schema-profile implementation; its detailed algorithm remains authoring work.
+
 Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
 surface. A graph can reference facts such as its owning instance ID without a helper invocation
 solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or

@@ -282,6 +282,13 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   the complete payload, with no separate input-name selector. Test both step-input and public-output
   bindings. Missing members still error and receiving schemas still apply; no caller settings or
   invocation metadata are implicitly added to the input payload.
+- Invoke code and graph implementations of a Conduit-authored operation with an omitted `limit`
+  whose declared default is 10. Require both to receive the same validated payload containing 10,
+  with `/limit` available to the graph. Repeat through a child invocation with its own input contract.
+  Check explicit valid overrides, invalid values, permitted and forbidden nulls, conflicting defaults
+  and invalid materialized values. A reference selecting a missing upstream member must still block
+  invocation even if the receiving field has a default. Retain earlier effects and verify that the
+  adapter does not automatically impose this default preparation on provider-native MCP inputs.
 - Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
   Select the database runtime through the runtime-target source and forward its typed target reference
   through a reusable graph input to startup. Verify that the responsible service resolves the intended

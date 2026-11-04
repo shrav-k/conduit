@@ -109,6 +109,10 @@ a stored reference does not prove current availability. This concerns operation 
 from graph reference notation; exact fields and transport remain open.
 The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
+For Conduit-authored operations, prepare unambiguous declared defaults for omitted input fields
+before that validation and invocation. Code and graph implementations receive the same prepared
+payload, and the graph-input source exposes it. Explicit invalid/null values and broken references
+do not receive fallback defaults; provider-native MCP inputs retain their own semantics.
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block
 the receiving step, with prior effects/evidence preserved. Required schema support remains mandatory;
 checking algorithms and diagnostics remain open.

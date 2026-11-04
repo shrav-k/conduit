@@ -288,6 +288,10 @@ selects the whole payload. Existing missing-selection and validation rules still
 caller settings, metadata or authority enter the source; reusable operations still receive declared
 typed inputs. Exact selector fields and input-contract representation remain open.
 
+The source sees the prepared operation-input payload: Conduit applies unambiguous declared defaults
+to omitted input fields and validates the result before entering the graph, under the accepted
+preparation rule below. An omitted `limit` defaulted to 10 is therefore selectable as `/limit`.
+
 **Accepted runtime-target value:** the source selects one named declaration and returns a
 typed target reference, resolved by the responsible service against the owning instance's runtime
 definition. It does not supply the structured declaration itself as target data. The operation
@@ -456,13 +460,23 @@ and the fields inside `reference` remain proposed; the binding form encoding is 
 ### Early and runtime validation
 
 **Accepted validation boundary:** catch provable wiring/type errors before graph execution, then
-validate each step's actual resolved inputs before dispatch. V0 does not demand a proof that every
-possible producer value meets the receiving schema. For example, an integer output permitting
+prepare defaults and validate each step's actual resolved inputs before dispatch. V0 does not demand
+a proof that every possible producer value meets the receiving schema. For example, an integer output permitting
 1–100 can feed an integer input accepting 1–10: 5 passes and 50 blocks the receiving step. Do not
 coerce or clamp an invalid value. Required schemas and validation features must be supported;
 the absence of a static inclusion proof is not permission to omit actual validation. Earlier
 effects/evidence are preserved, and rejection does not imply graph rollback. Concrete checking
 algorithms and diagnostic coverage remain open.
+
+**Accepted operation-input preparation:** Conduit materializes unambiguous applicable declared
+defaults for genuinely omitted fields, then validates the prepared input payload before invoking
+Conduit-authored code or graph operations. Both implementations receive those values; graph input
+references select within that prepared payload. Child invocations follow the same rule under their
+own input contracts. Invalid explicit values, explicit nulls and failed reference selections are
+not replaced by defaults; null must be permitted by the schema. Conflicting applicable defaults
+require explicit resolution, and invalid prepared inputs prevent invocation. Earlier effects remain
+recorded. Detailed default applicability remains open; provider-native MCP schema semantics are
+preserved without automatically applying Conduit input-default rules.
 
 **Accepted output boundary:** validate each declared plugin output against its producer's contract
 before making it available to downstream steps. Withhold invalid output and report a contract error,

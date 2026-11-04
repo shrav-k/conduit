@@ -289,6 +289,11 @@ a separate input-name selector. The optional JSON Pointer selects within it. For
 the empty pointer selects the complete payload. Missing selections still error, and receiving
 schemas validate selected values normally.
 
+For Conduit-authored operations, this payload is the prepared input after declared defaults have
+been materialized and validation has passed. If the caller omits `limit` and its applicable default
+is 10, the graph can select `/limit` and receive 10, just as a code implementation receives that
+prepared field. The preparation boundary below applies before entering the graph.
+
 This exposes only that invocation's declared inputs. It neither inherits caller configuration nor
 adds invocation metadata or authority to the payload. Reusable graphs still receive caller settings
 and runtime targets through explicit typed inputs. Source field names and input-contract
@@ -420,15 +425,29 @@ calculations and other transformations still use plugin operations. Assemblies u
 invalid references and literal inputs. V0 does not require a static proof that every possible
 producer output satisfies the receiving input schema. Required schemas and their validation
 features must still be available and supported; lack of such a proof does not waive validation.
-Resolve and assemble each step's inputs, then validate the actual values against its input contract
-before dispatch. Reject invalid inputs without invoking that step. Early checks do not replace
-runtime validation, current authority or readiness checks. Exact checking algorithms and diagnostic
-coverage remain authoring/conformance work.
+Resolve and assemble each step's inputs, prepare declared defaults as below, then validate the actual
+payload against its input contract before dispatch. Reject invalid inputs without invoking that step.
+Early checks do not replace runtime validation, current authority or readiness checks. Exact checking
+algorithms and diagnostic coverage remain authoring/conformance work.
 
 For example, an output declared as an integer from 1–100 may feed an input accepting 1–10.
 A resolved value of 5 can proceed; 50 is rejected before the receiving step runs, without coercion
 or silently narrowing the value. This rejection does not undo earlier steps or establish that
 they had no effects; their outcomes and recovery obligations remain recorded under existing rules.
+
+**Operation-input defaults:** Conduit materializes unambiguous applicable declared defaults for
+genuinely omitted fields in Conduit-authored operation inputs, then validates the prepared payload
+before invocation. Code and graph-backed implementations receive the same prepared values; the
+graph-input source exposes that payload. This applies at the invocation boundary, including child
+operations, without implicit inheritance of caller configuration.
+
+Defaults do not replace explicit values, coerce invalid values or recover failed reference bindings.
+An explicit null remains null and must satisfy the receiving schema. Conflicting applicable defaults
+must be resolved explicitly; no schema-order winner is selected. An invalid prepared payload blocks
+invocation, preserving earlier effects and their evidence. Detailed default applicability and
+resolution algorithms remain authoring work. Provider-native MCP schemas retain their separate
+[interpretation](CONFIGURATION.md#provider-mcp-schemas); this rule does not automatically inject
+Conduit defaults into provider inputs.
 
 **Output validation:** validate each declared plugin output against its producer's output contract
 before making it available to downstream steps. Withhold invalid output and report a contract error,

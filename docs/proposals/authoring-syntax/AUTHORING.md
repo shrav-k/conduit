@@ -1312,6 +1312,15 @@ is no additional input-name selector. The receiving contract still validates the
 and a missing member is an error. Neither the caller's configuration nor trusted runtime metadata
 is implicitly part of this payload. The same source rule applies to declared public output bindings.
 
+**Defaults before invocation:** if this operation declares `limit` with a default of 10 and the
+caller supplies only `options: {timeout: 30}`, Conduit prepares
+`{limit: 10, options: {timeout: 30}}`, validates it, and then invokes the implementation. A graph
+can select `/limit`; a code implementation receives the same field. Neither needs its own fallback
+for this declared default. An explicit `limit: "ten"` fails an integer contract, while an explicit
+null is checked as null. A failed binding that tries to select a missing upstream value still
+blocks invocation; it is not converted to omission. This preparation concerns Conduit-authored
+operations; provider-native MCP schemas keep their separate semantics.
+
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish
 that composite operation just as it publishes an operation backed by code or an MCP service. The

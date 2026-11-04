@@ -525,21 +525,27 @@ grants no access, starts nothing and permits no definition edits. Reference fiel
 capabilities remain separate; this does not prescribe one opaque wire format or prohibit authorized
 definition inspection. The target remains distinct from the usable service result produced by startup.
 
-Next, settle preparation of Conduit-authored operation inputs. The recommendation has Conduit
-materialize unambiguous declared defaults for genuinely omitted input fields, then validate the
-complete payload before dispatch or exposing it to a graph's input source. For example, an omitted
-`limit` with a declared default of 10 would be visible as 10 to both graph and code implementations.
-The alternative preserves omission and leaves default application to implementations. This remains
-pending: instance-configuration default materialization is already accepted, but does not by itself
-settle operation-input preparation. Explicit invalid/null values and failed reference selections
-would not acquire fallback defaults, and provider-native MCP schemas retain their separate semantics.
+**Operation-input defaults are accepted:** Conduit materializes unambiguous applicable declared
+defaults for genuinely omitted inputs, then validates the prepared payload before invoking code
+or a graph. The graph-input source sees that payload: an omitted `limit` defaulted to 10 is visible
+as 10. Child invocations use the same preparation rule under their own contracts. Explicit invalid
+values, explicit nulls and failed reference selections do not acquire fallback defaults; null must
+satisfy its schema. Conflicting applicable defaults require explicit resolution. Provider-native
+MCP schemas retain their separate semantics; detailed default applicability remains open.
 
-Then settle remaining source selectors and prerequisite representation as a coherent example,
-with protected-result validity explicit under its contract. Exact target/reference syntax and
-named-runtime declaration layout remain open. Start/wait operation granularity follows each
-operation's declared guarantees rather than a newly imposed universal split. Keep final vocabulary
-in its separate PR. These are concrete instances of the existing authoring seams, not a new
-conceptual review; the behavior/structure merge checkpoint remains open.
+Next, settle placement of explicit success prerequisites. The recommendation declares them on the
+dependent step alongside its operation and inputs: verification names migration as a prerequisite.
+The alternative keeps a separate graph-wide edge collection linking migration to verification.
+This remains pending. Either representation retains the same successful-completion rule, output-
+implied dependencies, cycle checks and independent scheduling; neither adds new trigger behavior.
+Final field names remain for the vocabulary PR.
+
+The accepted source inventory, input root, named runtime-target value and output-selection behavior
+need no further ruling merely to rename their fields. Finish the remaining graph structure in a
+coherent example, with protected-result validity explicit under its contract. Exact target-reference
+encoding and named-runtime declaration layout remain open. Start/wait operation granularity follows
+each operation's declared guarantees rather than a universal split. These are concrete authoring
+seams, not a new conceptual review; the behavior/structure merge checkpoint remains open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

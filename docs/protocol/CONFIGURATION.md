@@ -213,6 +213,12 @@ explicit valid value or a correction to the conflicting defaults. For example, d
 and 20 for `limit` do not select a winner; an explicit value of 15 can proceed if it satisfies
 all applicable constraints. Supplying a value does not override any validation constraint.
 
+Conduit also prepares declared defaults for omitted inputs to Conduit-authored operations before
+validating and invoking either code or a graph implementation. A reusable graph's input source sees
+the prepared payload. The same no-order-based-conflict rule applies; explicit values and failed
+references do not receive fallback defaults. See [operation input preparation](LIFECYCLE.md#lifecycle-protocol).
+Provider-native MCP inputs retain their separate schema semantics.
+
 The accepted omission, null and empty-value rules remain unchanged. Exact default-resolution
 mechanics, including how applicability is determined, remain authoring work; this ruling does
 not add ordered precedence between schema defaults.

@@ -1723,6 +1723,42 @@ They implement the reusable requirement meanings, not a list of user-authored te
 Native MCP discovery remains dynamic; this does not require copying every provider tool schema
 into the Conduit definition or replacing familiar tool names with a generic wrapper.
 
+**Accepted composition parameter wiring:** consider a reusable `review-access` requirement whose
+declared parameters are supplied as:
+
+```yaml
+workspace: euphony
+maxResults: 10
+```
+
+It composes existing requirement contracts with these values:
+
+| Constituent requirement | Parameter construction | Result in this use |
+| --- | --- | --- |
+| Workspace restriction | Reference the composition's `workspace` parameter. | Restrict the target to Euphony under that contract. |
+| Result limit | Reference `maxResults` and assemble the constituent's parameter object. | Supply a limit of 10. |
+| Operation restriction | Supply literal permitted operation identifiers, using a literal list or explicit list assembly. | Permit only the read operations defined by the selected contract. |
+
+For the result-limit constituent, an illustrative binding is:
+
+```yaml
+object:
+  limit:
+    reference: {from: parameters, path: /maxResults}
+```
+
+This resolves to `{limit: 10}`, assuming that is the constituent's declared parameter shape. The
+four binding forms are shared with graph value construction; the `parameters` source spelling and
+reference fields remain provisional. Names of caller parameters need not match the child's field
+names: the explicit binding connects them. The containing constituent collection is not selected by
+this fragment.
+
+References are limited to the composition's declared parameter payload. No graph step outputs,
+runtime targets, invocation metadata or caller configuration are implicitly available. Assembling
+parameters needs no plugin but still requires typed validation; each constituent's support and
+runtime enforcement remain mandatory. An Agent's grant remains separately required. This describes
+reusable obligations, not a graph that executes operations or proves those obligations fulfilled.
+
 | Author task | What is authored | What need not change |
 | --- | --- | --- |
 | Restrict an existing relationship | Compose known requirements with values and selected endpoints in a Conduit template. | Plugin code and core dispatch, where selected endpoints already support the constraints. |

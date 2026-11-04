@@ -136,6 +136,14 @@ storage mechanics remain implementation work. Authorization records do not inher
 semantics.
 Publishing a policy or installing a plugin cannot confer authority.
 
+Requirement composition reuses the literal/reference/object/list value-binding machinery with a
+restricted source scope: only the composition's declared parameter payload is referenceable.
+At concrete use, resolve and validate constituent parameters without running a plugin merely for forwarding
+or assembly. Keep literal payloads as data. Do not expose graph step outputs, runtime targets,
+invocation metadata or ambient caller configuration through these bindings. Preserve the resolved
+constituent contracts and their existing support, authority and enforcement checks; construction
+is not fulfillment, and sharing the binding machinery does not create an executable graph.
+
 Ordinary managed access now requires a recorded grant on its selected participation, including
 the root's broad management access. Policy governs issuance/current use without a grantless
 alternative; authorized connection setup can establish one grant for many requests. Grant

@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-04.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -112,7 +112,21 @@ limit, then be reused by several Conduit templates. Every constituent retains it
 support is checked against the constituents rather than inferred from the bundle's name. No new
 plugin code is needed when the selected endpoints support every part. New behavioral meanings still
 need suitable implementation support. Publication does not install endpoint code, change fixed
-definitions or grant access. Composition syntax and parameter binding remain open.
+definitions or grant access. Remaining composition declaration fields and vocabulary remain open.
+
+**Composition parameter bindings:** reusable requirement compositions pass values to their
+constituents using the literal, reference, object assembly and list assembly forms also used by
+graphs. References within this composition are scoped to its declared parameter payload. For
+example, `review-access` forwards `workspace` to a workspace restriction and `maxResults` to a result
+limit, while supplying a literal operation restriction. No plugin is needed merely to forward or
+assemble those values. Literal payloads remain data, and the constituent's typed parameters still
+require validation.
+
+This shares value construction, not executable graph behavior. It imports no step-output, runtime
+target or invocation-metadata sources, nor ambient caller configuration. Each constituent retains
+its meaning, support requirements and enforcement duties; assembling parameters proves neither
+fulfillment nor authority. Responsible implementations still check applicable current facts.
+Reference-source spellings and composition declaration fields remain provisional.
 
 Each requirement has a reusable, versioned definition of its meaning, typed parameters and
 applicability, independent of any single implementation. Multiple endpoint plugins can implement
@@ -151,8 +165,8 @@ Requirements cannot create permission grants or override baseline identity, owne
 rules. Registration still performs no provider effects; observed readiness remains distinct from
 valid configuration. Detailed satisfaction/evidence and failure rules require implementation review.
 
-The concrete core catalog, publication syntax, support-matching details, parameter bindings,
-version identifiers, satisfaction evidence and enforcement-binding representation remain open. The
+The concrete core catalog, publication syntax, support-matching details, remaining parameter-binding
+fields, version identifiers, satisfaction evidence and enforcement-binding representation remain open. The
 [implementation review](../archive/reviews/IMPLEMENTATION.md#i3--plugin-execution-and-distribution)
 tracks those choices; accepting the compositional model does not select an expression language,
 a universal solver or a worker topology. Experiment 002 separately records the accepted authoring proof.

@@ -631,15 +631,23 @@ schema. An integer constrained to 1–100 cannot declare 0 as its default even i
 replace full prepared-payload validation. Conflicting otherwise-valid defaults retain their separate
 explicit-resolution rule, and provider-native schema semantics remain unchanged.
 
-Next, settle parameter wiring inside reusable requirement compositions. The recommendation reuses
-the literal/reference/object/list binding forms, with references scoped to the composition's declared
-parameter payload. For example, `review-access` passes its `workspace` parameter to a workspace
-restriction and `maxResults` to a result limit, while supplying a literal operation restriction.
-This needs no plugin merely to forward or assemble values. The alternative defines separate
-requirement-specific parameter-mapping notation. This remains pending: shared value construction
-would not make requirements executable graphs, import graph-only sources or ambient caller
-configuration, supply authority, or change constituent validation/enforcement. Exact supporting
-names and declaration fields remain vocabulary/authoring work.
+**Requirement-composition parameter wiring is accepted:** reuse literal/reference/object/list
+binding forms, with references scoped to the composition's declared parameter payload. `review-access`
+can forward `workspace` and `maxResults` to their respective restrictions and supply a literal
+operation restriction. No plugin is needed merely to forward or assemble values. Literal payloads
+remain data and constituent parameters still validate. Shared value construction does not make
+requirements executable graphs, import graph-only sources or ambient caller configuration, supply
+authority, or replace constituent support and current enforcement. Supporting names and the
+containing declaration structure remain authoring/vocabulary work.
+
+Next, settle the constituent collection inside a reusable requirement composition. The recommendation
+uses a map keyed by locally unique names, with each entry selecting a requirement contract and its
+parameter binding. For example, `workspace`, `operations` and `resultLimit` identify the parts of
+`review-access`. The alternative uses a list identified by position. This remains pending. Local names
+would support diagnostics/evidence without being contract identities or new runtime objects. The same
+requirement contract could appear in multiple entries with different parameters; ordering would not
+sequence enforcement or change the rule that every applicable constituent must hold. Container/field
+spellings and the exact contract-reference syntax remain separate.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

@@ -16,6 +16,13 @@ for setup, runtime and controls, with kind/contract checks and no primary alias.
 `spec.plugins` / `{plugin, name}` spellings remain proposals.
 Moving these examples does not ratify their names, package layout or scoping rules.
 
+Reusable requirement compositions use the literal/reference/object/list binding forms to pass
+typed parameters to constituents. References are scoped to the composition's declared parameter
+payload, without graph execution sources or ambient caller configuration. No forwarding/assembly
+plugin is needed; constituent validation, support, current authority and enforcement remain separate.
+This shares value construction without making requirements executable graphs. Supporting names and
+the containing declaration structure remain open.
+
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,
 pending work or uncertainty separate. Coupled settings may require whole-change confirmation.

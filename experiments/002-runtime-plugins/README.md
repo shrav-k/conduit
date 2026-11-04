@@ -433,6 +433,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Compose two reusable starting requirements in a named definition and use it in Conduit templates.
   Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
   core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.
+- Wire constituent requirement parameters with all four binding forms. Forward declared workspace
+  and result-limit parameters, assemble child parameter objects/lists and retain literal payloads
+  as data. Verify the resolved child values and schema validation without a forwarding plugin.
+  Reject references to graph-only sources or ambient caller configuration. Parameter construction
+  must neither issue grants nor prove fulfillment; inspect actual constituent enforcement with
+  current facts, including denied requests after a relevant restriction changes.
 - Publish one custom requirement outside core modules, with typed parameters, declared fulfillment
   duties and implementation support selected in the endpoint template. Allowed regions on a fake
   deployment operation is a candidate; this makes no claim about real cloud or CLI interception.

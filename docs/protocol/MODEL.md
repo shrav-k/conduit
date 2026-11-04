@@ -129,6 +129,12 @@ supply the behavior for both, without collapsing declaration, execution and owne
 An operation can also be invoked directly through its supported surface; ordinary tool calls do
 not need a new authored graph merely to be callable.
 
+Reusable requirement compositions share graphs' literal/reference/object/list value-building forms,
+with references scoped to the composition's declared parameter payload. This forwards or assembles
+typed constituent parameters without plugin glue, ambient configuration or graph execution sources.
+The shared notation does not change the distinction between obligations and actions or replace
+validation, current authority and constituent enforcement.
+
 A Conduit uses both forms: its contract composes relationship requirements and its procedures
 coordinate establishment through selected endpoint capabilities. Its instance represents the live
 relationship. It is neither the universal name for any graph nor the package that supplies endpoint

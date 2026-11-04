@@ -850,6 +850,17 @@ and evaluation mechanisms remain open.
 plugin code when endpoints support every constituent. Preserve the original meanings and limits;
 check constituent support rather than treating a bundle's name as proof or a new grant.
 
+**Accepted parameter wiring:** reuse literal/reference/object/list bindings to supply constituent
+requirement parameters, with references scoped to the composition's declared parameter payload.
+For example, forward `workspace` and `maxResults` to their respective restrictions and construct
+an operation restriction from literals. No forwarding/assembly plugin is required. Literal payloads
+remain data; resolved parameters still validate against the constituent contract.
+
+The binding forms do not turn requirements into executable graphs or import step outputs, runtime
+targets, invocation metadata or ambient caller configuration. Parameter construction does not
+establish fulfillment, support or authority. Existing individual enforcement and current-fact checks
+remain. Source names and the containing composition declaration structure remain authoring work.
+
 **Accepted Policy consolidation:** [Policy names authoritative requirement application](AUTHORIZATION.md#3-policy-as-authoritative-requirement-application).
 Grant administration and governing-binding changes are ordinary protected capability operations,
 with recorded grants permitting them and requirements constraining their effects. One plugin can
@@ -887,7 +898,7 @@ names. Matching a name, JSON shape or similarly named field is not sufficient ev
 | Implementation support | Accepted: publish supported requirement versions, endpoint roles and known limitations; check before establishment, then verify applicable runtime facts. Exact declaration/matching syntax remains open. |
 | Satisfaction | Proposed detail: describe evidence/checks, preconditions and guarantees sufficient for a particular requirement. |
 | Runtime responsibility | Accepted: definitions declare when guarantees must hold and applicable endpoint-role duties; established Conduits record responsible selected implementations. Detailed evidence/evaluation interfaces remain open. |
-| Composition | Accepted: definitions compose existing requirements with individual enforcement; known-conflict or combined-effect checks are optional. Detailed diagnostics, optimizations and parameter bindings remain open. |
+| Composition | Accepted: definitions compose existing requirements with individual enforcement; literal/reference/object/list bindings draw from declared composition parameters. Known-conflict or combined-effect checks are optional. Detailed diagnostics, optimizations and declaration fields remain open. |
 | Lifecycle | Describe when evidence must be refreshed and what unavailable support means for the affected behavior. No universal closed domain-state enum is selected. |
 
 These are conceptual responsibilities, not mandatory fields for every tiny extension. A derived

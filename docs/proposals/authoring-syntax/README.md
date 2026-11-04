@@ -46,6 +46,11 @@ An authorized Interface attachment can rediscover a wait after the original fron
 contracts determine whether its challenge is usable or a new interaction is needed. Retention does
 not expose credentials, extend validity or prove completion. Exact presentation and fields remain open.
 
+Retained observation feeds define ordering and resume cursors within each declared source. The
+Interface combines feeds and known causal links without promising a global order or inferring it
+from timestamps. This does not make every metric a lossless history. Exact cursor encoding and
+snapshot/catch-up and delivery mechanics remain open.
+
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,
 pending work or uncertainty separate. Coupled settings may require whole-change confirmation.

@@ -103,13 +103,27 @@ Kubernetes watch clients must also handle unavailable retained versions, includi
 resumability is a declared service guarantee rather than proof that history remains available
 indefinitely. [Kubernetes resource versions](https://kubernetes.io/docs/reference/using-api/api-concepts/#410-gone-responses)
 
-For Conduit, we recommend source-scoped order and resume cursors for retained observation feeds.
+For Conduit, the owner accepted source-scoped order and resume cursors for retained observation feeds.
 The Interface can combine feeds and follow explicit causal links without treating clock order as
 a global commit order. A source feed is a declared contract boundary, not necessarily an entire
 executor or a single instance. The alternative is a globally sequenced feed, which simplifies one
-ordered view but introduces coordination across independent sources. This remains pending owner
-review. It does not require a Kafka backend, a lossless metric stream, or cross-source comparison of
+ordered view but introduces coordination across independent sources; it was not selected. The ruling
+does not require a Kafka backend, a lossless metric stream, or cross-source comparison of
 cursor values; exact cursor encoding, snapshot/catch-up behavior and delivery guarantees remain open.
+
+**Snapshot handoff follow-up, 2026-11-04:** Kubernetes pairs a get/list result with a resource version
+that can start a watch of subsequent changes. If the needed historical version is unavailable, the
+client handles the gap and obtains fresh state. This supplies a concrete precedent for avoiding
+missed updates between reading state and beginning observation.
+[Kubernetes list/watch](https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes)
+
+We recommend that Conduit's managed state-tracking capability similarly pair a source snapshot with
+a resume position. A change during the handoff must be available through catch-up, or inability to
+establish continuity must be explicit. The alternative is independent snapshots and feeds, with
+client refreshes repairing missed state. This remains pending owner review. It does not import
+Kubernetes' retention window, change Conduit's explicit-purge rules, require a global snapshot or
+promise exactly-once delivery. Sources offering weaker/native observations should expose that
+coverage instead of claiming this guarantee. Cursor encoding, pagination and transport remain open.
 
 ### MCP needs message-level propagation
 

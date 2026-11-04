@@ -543,6 +543,17 @@ The Interface is the unified access and interaction surface, not the sole produc
 or a requirement for an always-running UI. A dropped observation stream does not cancel Agent work.
 Report gaps and stale/unknown state; a latest-state view need not replay every intermediate update.
 
+**Observation ordering:** retained observation feeds define ordering and resume cursors within
+each declared source. The Interface combines sources without promising one global event order.
+Preserve each feed's order and known causal links; timestamps alone do not establish cross-source
+causality or a global commit order. For example, two executors can independently report a database
+becoming ready and an Agent starting without those reports establishing which preceded the other.
+
+A source feed is a declared observation boundary, not automatically one process or one object.
+This does not require sampled metrics or latest-state observations to provide lossless histories,
+move authoritative state into the Interface, or grant access through a cursor. Exact cursor encoding,
+snapshot/catch-up mechanics and delivery guarantees remain authoring work.
+
 Export failure must not erase local committed outcomes. Diagnostic traces and metrics can refer
 to retained evidence without becoming its sole copy. Preserve applicable content access and secret
 handling; pluggable export does not imply putting credentials or every full payload into traces.

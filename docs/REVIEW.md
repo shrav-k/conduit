@@ -692,17 +692,26 @@ transfer identity, expose credentials, prove completion or guarantee arbitrary s
 recovery. Current authority and sensitivity rules still apply. Exact interaction schemas, MCP
 presentation and expiry/replacement mechanics remain authoring work.
 
-Next, settle the ordering boundary for retained observation feeds. The recommendation scopes order
-and resume cursors to each declared source feed, while the Interface combines sources without
-promising a global event order. For example, executor A reports a database becoming ready while
-executor B reports an Agent starting: preserve each source's order and any explicit causal links,
-but timestamps alone do not establish which event caused or preceded the other. The alternative
-requires one globally sequenced observation feed, adding coordination between independent sources.
-This remains pending. A source feed is a declared observation boundary, not automatically a process
-or object. This does not force sampled metrics/latest-state observations into a lossless history,
-change authoritative state ownership, or supply permissions through a cursor. Exact cursor encoding,
-snapshot/catch-up mechanics and delivery guarantees remain open. See the
+**Observation ordering is accepted:** retained feeds scope ordering and resume cursors to each
+declared source. The Interface combines feeds without a global event-order guarantee, preserving
+local order and known causal links rather than inferring causality from timestamps. A source feed
+is a declared observation boundary, not automatically a process or object. Sampled metrics and
+latest-state views need not become lossless histories; authoritative state ownership and current
+access remain unchanged. Exact cursor encoding, snapshot/catch-up mechanics and delivery guarantees
+remain open. See the
 [observation research follow-up](research/OBSERVABILITY.md#identity-and-causality).
+
+Next, settle the snapshot-to-feed handoff for managed state observation. The recommendation pairs
+a source's state snapshot with a resume position from which its subsequent retained changes can be
+retrieved, without silently missing updates between the snapshot and starting the feed. For example,
+a Resource becoming ready in that interval must appear in the catch-up or the source must report
+that continuity cannot be established. If the position cannot be resumed, report the gap/need for a
+fresh snapshot rather than silently starting at the latest position. The alternative keeps snapshots
+and feeds independent and relies on client refreshes to repair missed state. This remains pending.
+It defines a source's claimed state-tracking capability, not a global snapshot, a lossless metric
+contract, an exactly-once delivery promise or new permission to expire retained data. Weaker/native
+observation sources must expose their coverage limits. Exact cursor encoding, pagination and transport
+remain authoring work.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

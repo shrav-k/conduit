@@ -509,6 +509,13 @@ that requires a supported new interaction. Rediscovery must not report completio
 or expose credential material. Recheck authority before inspection/response. The fixture does not
 establish real provider challenge recovery or continuation of arbitrary suspended plugin code.
 
+Expose two declared retained observation feeds and interleave their deliveries. Verify local order
+and separate resume positions while the Interface combines the views without claiming a global
+sequence. Include skewed/equal timestamps and explicit causal links: preserve the actual links,
+but do not infer additional causality from display order. Current read permissions still apply.
+Source boundaries need not equal process/object boundaries, and a separate sampled metric stream
+must not acquire a lossless-history claim. Exact cursor and delivery fixtures remain to be authored.
+
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should
 decide whether a Wasm lane buys enough to justify another runtime; it is not a prerequisite for

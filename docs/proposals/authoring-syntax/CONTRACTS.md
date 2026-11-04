@@ -1121,13 +1121,20 @@ transfer provider identity or substitute for evidence that the requested action 
 current authority and credential custody; do not promise arbitrary suspended-code recovery. Exact
 interaction fields, MCP presentation and expiry/replacement mechanics remain open.
 
+**Accepted observation ordering:** retained feeds scope order and resume cursors to each declared
+source. The Interface combines feeds without a global ordering guarantee, preserving local order
+and explicit causal links rather than inferring causality from timestamps. Source scope is a
+declared observation boundary, not automatically a process or object. Cursors grant no access,
+and sampled metrics/latest-state views need not become lossless histories. Exact cursor encoding,
+snapshot/catch-up behavior and delivery guarantees remain open.
+
 | Interaction | Preferred representation and fallback |
 | --- | --- |
 | Discover/invoke a supported control | A named typed MCP tool with structured result. Provider tools retain native names/schemas where compatible. |
 | Inspect operation/instance | MCP resources or typed inspection tools with current, authorized content and revision/cursor. |
 | Long operation | Accepted baseline: a retained operation reference plus authorized inspection through ordinary MCP tools. Negotiated task/progress extensions may expose the same work; acceptance is not completed success. |
 | Additional human input | Accepted lifetime: the operation retains its interaction reference and safe pending state, rediscoverable by authorized Interface attachments. Supported elicitation/input presentation and adapter challenge recovery remain distinct. |
-| Observe changes | Negotiated subscriptions/notifications plus durable catch-up; otherwise bounded polling from a cursor. |
+| Observe changes | Accepted: order and resume within each declared retained-feed source, without global ordering. Subscriptions, polling and snapshot/catch-up mechanics remain proposed. |
 | Cancel/reconcile | Authorized supported follow-up operations. Transport cancellation alone is not proof the effect stopped. |
 
 An operation URI is a reference, not a bearer grant. Standard MCP request IDs, task IDs and

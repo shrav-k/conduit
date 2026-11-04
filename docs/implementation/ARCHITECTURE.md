@@ -1207,9 +1207,15 @@ Use three distinct streams:
 | Live observations | Snapshot plus cursor/generation, with freshness/coverage; dropping intermediate observations cannot erase an operation result. |
 | Diagnostic traces/metrics | Bounded, optionally sampled/exported; explicit exporter failures and dropped-observation counts where known. |
 
-The Interface subscribes to committed events and can catch up after disconnect. Independent
-sources need source/generation cursors and freshness; do not invent a global order from wall clocks.
-The following snapshot/cursor discipline applies within a source; a combined view exposes gaps.
+**Accepted ordering boundary:** retained observation feeds provide ordering and resume cursors
+within each declared source. The Interface combines these feeds without a global sequence guarantee;
+preserve local ordering and known causal links without deriving causality from wall clocks. The
+source boundary is declared by the observation contract, not imposed per executor/process/object.
+Keep current access checks and authoritative state ownership intact; sampled diagnostics and
+latest-state observations do not acquire a lossless-history guarantee from this rule.
+
+The proposed snapshot/cursor discipline below applies within a source; concrete encoding,
+snapshot/catch-up behavior and delivery guarantees remain authoring work. A combined view exposes gaps.
 To avoid the snapshot/subscribe race, return a snapshot with its high-water cursor, then deliver
 later events.
 If the cursor is purged or unavailable, return a scoped gap and require a new snapshot. Slow

@@ -183,6 +183,23 @@ Displaying the wait or retaining its reference does not complete the unlock. It 
 an expired challenge alive, move a login to a different identity, expose credentials or guarantee
 that arbitrary suspended code can resume. Exact interaction fields and MCP presentation remain open.
 
+### Combining independent observation feeds
+
+**Accepted:** ordering and resume positions belong to each declared retained observation source.
+For example, two executors can expose these independently ordered feeds:
+
+| Source | Local order |
+| --- | --- |
+| Executor A's declared operation feed | Database starting → database ready. |
+| Executor B's declared operation feed | Agent started → review requested. |
+
+The Interface can present both feeds and retain their separate resume cursors. This alone does
+not establish whether the database became ready before the Agent started. Explicit causal links
+can establish relationships; merely sorting timestamps cannot supply that guarantee. Source scope
+belongs to the observation contract rather than requiring a feed per process or object. This
+does not turn every CPU sample into retained history or make a cursor an access grant. Exact cursor
+encoding, snapshot/catch-up mechanics and delivery guarantees remain open.
+
 ### What a template sees
 
 The template need not change between A and B. For example, a setup graph could fingerprint text

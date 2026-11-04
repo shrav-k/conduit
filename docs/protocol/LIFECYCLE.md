@@ -530,6 +530,16 @@ handling and shutdown duties. Cardinality alone adds no blanket failure or readi
 This permits neither an additional primary Agent execution nor a change in Resource/Pool or
 endpoint ownership. A declaration does not imply a separate operating-system process.
 
+**Runtime collection:** declare managed runtimes in a map keyed by names unique within the instance
+definition. Each value contains that named runtime's declaration. For example, `database` and
+`diagnostics` select two entries; duplicate keys are rejected under the configuration profile.
+Runtime-target references select these local names, not list positions. Separate instances can
+reuse the same names without sharing runtime identity or authority.
+
+Map order has no execution meaning. Declaring an entry starts nothing; setup operations still request
+instance-managed startup explicitly. The map does not imply one process per entry or an additional
+primary Agent execution. Container, driver and prepared-input field names remain authoring work.
+
 **Runtime target inputs:** an operation receives its declared runtime target as an explicit typed
 input through the ordinary graph binding machinery. A reusable graph-backed operation declares
 that input and explicitly passes it to the child operations that need it; the target is not supplied

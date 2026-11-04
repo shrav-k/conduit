@@ -296,6 +296,8 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   invocation even if the receiving field has a default. Retain earlier effects and verify that the
   adapter does not automatically impose this default preparation on provider-native MCP inputs.
 - Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
+  Use a map keyed by the local names, reject duplicate keys, and verify that reordering entries has
+  no execution meaning. Give a second instance the same local names without aliasing runtime identities.
   Select the database runtime through the runtime-target source and forward its typed target reference
   through a reusable graph input to startup. Verify that the responsible service resolves the intended
   instance-owned definition, with prepared settings passed explicitly. Check unknown targets and

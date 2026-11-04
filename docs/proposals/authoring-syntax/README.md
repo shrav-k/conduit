@@ -105,7 +105,10 @@ target selection grants no access, starts nothing and permits no definition edit
 encoding and inspection remain open.
 An instance may declare multiple named managed runtimes when its type supports them, each explicitly
 targeted and instance-owned. Existing lifecycle contracts govern their behavior; the allowance adds
-neither a process-per-declaration rule nor another primary Agent execution. Declaration layout remains open.
+neither a process-per-declaration rule nor another primary Agent execution. Runtime declarations form
+a map keyed by names unique within the instance definition; each entry contains its declaration.
+Duplicate keys are errors. Map order has no execution meaning, and registration starts nothing.
+Container and driver/input field names remain open.
 Conduit-declared live service and protected authentication bindings share a typed managed-reference
 contract for ownership, resolution and validity. Capability-specific behavior and lifetime remain
 explicit; actual live objects/credentials stay with their owner. Possession grants no access, and

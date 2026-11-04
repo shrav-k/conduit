@@ -826,6 +826,12 @@ plugin contributions without requiring a wrapper solely to combine them. Process
 an implementation choice; this does not permit another primary Agent execution. Apply the existing
 setup, control and retirement contracts rather than inferring a failure policy from declaration count.
 
+Read runtime declarations from a map keyed by names unique within the instance definition. Reject
+duplicate keys and resolve targets by those local names, not positions. Identical local names in
+different instances do not alias their runtime identities. Map order does not schedule startup;
+merely loading or registering the declarations starts no runtime. Driver/input field encoding remains
+authoring work, while physical process grouping remains an implementation choice.
+
 The startup result must establish its declared guarantee, such as usability for migration rather
 than a completed application schema. Operation acceptance and current runtime observations remain
 distinct. Do not add special graph lifecycle instructions or input-triggered automatic startup as

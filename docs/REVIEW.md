@@ -540,17 +540,25 @@ still imply their own dependencies without duplicate declarations. Validate the 
 for missing steps and cycles, retaining successful-completion checks and independent scheduling.
 This introduces no additional trigger behavior. Final field names remain for the vocabulary PR.
 
-Next, settle the collection of named runtime declarations. The recommendation uses a map keyed by
-names unique within the instance definition, such as `database` and `diagnostics`, with each entry
-holding its runtime declaration. The alternative uses a list with a name field in every entry.
-This remains pending: named targets and multiple runtimes are accepted, but their collection layout
-is not. Both retain instance ownership and explicit startup; neither document order nor presence in
-the collection starts a runtime. Driver/input field spelling remains separate.
+**Runtime collection is accepted:** use a map keyed by names unique within the instance definition,
+such as `database` and `diagnostics`, with each entry holding its declaration. Runtime-target references
+select the local name, not a list position; duplicate keys are errors. Other instances may reuse the
+same local names without sharing identities or authority. Map order has no execution meaning and
+declaration alone starts nothing. Instance ownership, explicit startup and existing lifecycle rules
+remain unchanged; driver/input fields and vocabulary remain separate.
+
+Next, settle how a public graph output expresses a successful-completion gate independent of its
+value bindings. The recommendation lets that output name prerequisite steps using the same success
+semantics as step prerequisites: a public ready-database output binds startup's database reference
+but waits for schema verification to succeed. The alternative requires an explicit operation to
+perform that gate and republish the value. This remains pending. Either must preserve declared
+publication conditions, current validity, output validation and access; neither makes the whole
+graph successful or turns verification evidence into a permanent availability guarantee.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a
 coherent example, with protected-result validity explicit under its contract. Exact target-reference
-encoding and named-runtime declaration layout remain open. Start/wait operation granularity follows
+encoding and the contents of each runtime declaration remain open. Start/wait operation granularity follows
 each operation's declared guarantees rather than a universal split. These are concrete authoring
 seams, not a new conceptual review; the behavior/structure merge checkpoint remains open.
 

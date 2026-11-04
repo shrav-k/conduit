@@ -1025,15 +1025,33 @@ the template can declare both managed runtimes explicitly:
 
 | Illustrative runtime name | Selected behavior | Setup target |
 | --- | --- | --- |
-| `database` | The database driver from a database contribution. | The database-start operation receives this declaration. |
-| `diagnostics` | An optional diagnostics helper from another contribution. | Its establishment operation receives this declaration and any explicitly required inputs. |
+| `database` | The database driver from a database contribution. | The database-start operation receives a typed target reference to this declaration. |
+| `diagnostics` | An optional diagnostics helper from another contribution. | Its establishment operation receives the corresponding target reference and any explicitly required inputs. |
+
+The declarations form a map keyed by names unique within this instance definition. An illustrative
+fragment is:
+
+```yaml
+runtime:
+  database:
+    driver: {plugin: database, name: database.managed}
+  diagnostics:
+    driver: {plugin: diagnostics, name: diagnostics.managed}
+```
+
+This assumes compatible implementation dependencies locally aliased `database` and `diagnostics`.
+Those aliases and the runtime keys belong to separate naming scopes; their equal spelling here
+does not connect them implicitly. The map structure is accepted; `runtime`, `driver` and the export
+reference fields remain provisional. Selecting the runtime target `database` resolves that entry.
+Duplicate runtime keys are errors, while another instance may independently use the same names.
+Reordering entries starts nothing and supplies no execution order.
 
 Both belong to the same Resource instance. The type and setup contracts define whether diagnostics
 needs the database first, what it promises and how failures affect usable capabilities; declaration
 count alone decides none of those behaviors. Retirement must satisfy the instance's applicable
 shutdown duties. The two declarations need not mean two processes, and the allowance does not
-create another primary Agent execution. This variant is accepted structurally; exact declaration
-fields and collection syntax remain proposals. The walkthrough below shows the database path.
+create another primary Agent execution. The declaration fields remain proposals within the accepted
+map structure. The walkthrough below shows the database path.
 
 **Required and optional setup:** the backing, database startup, migration and schema-verification
 steps below are required by default. A nonessential diagnostics-establishment step may be explicitly

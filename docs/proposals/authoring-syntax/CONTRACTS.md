@@ -77,7 +77,7 @@ selected implementations explicitly on the instance.
 | `plugins` | Named selected implementation dependencies for graph, handler and driver exports. No entry is implicitly primary. |
 | `config` | The one stored configuration map: initial materialized values, then confirmed control changes. |
 | `setup` | Inline finite graph or explicit graph-source reference in a template; resolved graph in the instance. |
-| `runtime` | Named instance-owned driver declarations and typed prepared-input bindings; exact collection layout remains open. |
+| `runtime` | A map keyed by instance-local runtime names, with a declaration per entry; driver/prepared-input fields remain proposed. |
 | `controls` | Type-default selection/narrowing in a template; fixed resolved controls in an instance. |
 | `conduits` | Consumer requirements and explicit open/join selections. |
 | `owner` | Resource-instance owning Pool, established by Pool-authorized creation rather than self-asserted by YAML. |
@@ -85,8 +85,13 @@ selected implementations explicitly on the instance.
 **Accepted runtime cardinality:** an instance may declare several named managed runtimes when its
 type supports them. For example, one database Resource can use a database driver and an optional
 diagnostics helper from separate contributions, each with an explicit startup target. A wrapper
-driver solely to combine them is not required. The table's singular `runtime` spelling is provisional;
-the collection layout and supporting vocabulary remain open.
+driver solely to combine them is not required. The table's singular `runtime` spelling is provisional.
+
+**Accepted runtime collection:** use a map keyed by names unique within the instance definition,
+with each entry holding its declaration. Runtime-target selection uses that local key, not a list
+position. Reject duplicate keys. Reordering entries does not order startup or other work; declaration
+alone starts nothing. Another instance can reuse those local names without sharing its runtimes.
+Driver/input fields and supporting vocabulary remain open.
 
 This concerns declared managed behavior, not one process per declaration. The instance owns its
 components; Resource responsibilities, Pool ownership and endpoint ownership of connection-specific
@@ -94,7 +99,7 @@ activity remain unchanged. It does not permit a second primary Agent execution. 
 control and retirement contracts govern readiness, failure handling and stopping; cardinality does
 not create a blanket failure policy.
 
-The named map can hold one implementation or several. A filesystem operation and
+The implementation-dependency map can hold one implementation or several. A filesystem operation and
 an authentication operation may come from different packages. Aliases name implementation bindings,
 not Resources, processes or permission. The `plugins` and `{plugin, name}` spellings remain proposals;
 the named-map and alias-plus-export structure is accepted, without a primary alias.

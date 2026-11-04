@@ -73,7 +73,7 @@ selected implementations explicitly on the instance.
 
 | Field | Responsibility |
 | --- | --- |
-| `type` | Exact group/name/version contract; uniform across the five families in this proposal. |
+| `type` | One versioned type contract for each template/instance, accepted across all five families. Resource group/name/version separation is accepted; concrete catalogs, grouping for other families and field spellings remain provisional. |
 | `plugins` | Named selected implementation dependencies for graph, handler and driver exports. No entry is implicitly primary. |
 | `config` | The one stored configuration map: initial materialized values, then confirmed control changes. |
 | `setup` | Inline finite graph or explicit graph-source reference in a template; resolved graph in the instance. |

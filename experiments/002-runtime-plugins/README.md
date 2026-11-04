@@ -523,6 +523,14 @@ without silently advancing to the latest position or claiming no changes occurre
 read authority. This tests a source-level handoff, not global snapshots, exactly-once delivery or
 permission to expire retained evidence. A weaker/native fixture must report its coverage limits.
 
+Before claiming object-definition validation, cover versioned type selection across all five
+families using the paper definitions in Experiment 001. Reject an unavailable required type schema
+before registry writes and preserve family invariants even when a type or plugin attempts to relax
+them. Validate a type fulfilled by multiple compatible contributions without a primary plugin;
+do not confuse its contract version with a package release or common object version. These are
+planned contract checks, not a requirement for five additional production integrations or approval
+of the examples' type names and grouping.
+
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should
 decide whether a Wasm lane buys enough to justify another runtime; it is not a prerequisite for

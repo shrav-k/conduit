@@ -39,11 +39,27 @@ field names still belong in this vocabulary review.
 
 ## Behavior and structure merge checkpoint
 
+**Review complete; ready for the authorized documentation PR.** The accepted type-contract ruling
+closes the last explicitly pending behavior choice. The directory, authenticated MCP, database
+and shared-history examples now preserve the accepted boundaries, and Experiment 001's stale
+binding/runtime notation has been migrated explicitly. No runtime implementation or conformance
+claim follows from this checkpoint.
+
+| Review area | Settled boundary | Work carried forward |
+| --- | --- | --- |
+| Packages and types | Published contracts; scoped dependencies/re-exports; one type per template/instance across all five families; no primary plugin. | Concrete manifests, identifiers, schema files and package capture/release tooling. |
+| Graphs and lifecycle | Explicit typed value flow, finite dependencies, named instance-owned runtimes, ordinary startup operations, defined publication/default/recovery/cancellation behavior. | Executable schemas, driver/wire details and implementation algorithms, checked against these guarantees. |
+| Access, controls and observation | Recorded participation grants, composed requirements, checked controls, current authority, retained operation/interaction state and source-scoped observation continuity. | Domain contracts and wire encodings; optional capabilities must declare their own guarantees. |
+| Evidence | Updated paper fixtures and planned independent client/plugin checks; research probes retain their limited claims. | Implement and execute conformance fixtures later; static checks are not runtime evidence. |
+
+Permanent supporting vocabulary remains a separate owner review. A concrete implementation or
+schema counterexample that changes an accepted guarantee must return for a ruling; this closure
+does not preapprove every illustrative field or promote older research recommendations to decisions.
+
 The owner requests a PR merged to `main` once this behavior/structure review is complete.
-Continue the directory, authenticated MCP and database walkthroughs, resolve the open structural
-choices and any behavioral questions they surface together, and keep remaining implementation
-details or deliberately deferred work explicit. Do not infer a ruling from an illustrative example
-or merge while required behavioral/structural decisions remain unresolved. The separate vocabulary
+The directory, authenticated MCP and database walkthroughs have supplied the structural rulings
+recorded below; remaining implementation details and deliberately deferred work stay explicit.
+Do not infer a new ruling from an illustrative example. The separate vocabulary
 PR is not a prerequisite for this merge; use consistent working names in this review's result.
 Prepare the PR from the resulting coherent documentation, verify its checks and merge under this
 authorization once that checkpoint is met. This does not authorize starting runtime implementation.
@@ -710,26 +726,26 @@ lossless metric history or exactly-once delivery promise. Weaker/native sources 
 current access and explicit-purge rules remain unchanged. Exact cursor encoding, pagination and
 transport remain authoring work.
 
-Next, resolve the type-contract scope that the older walkthrough still marks as a proposal.
-The recommendation extends the Resource model to templates/instances in all five families: each
+**Type-contract scope is accepted:** extend the Resource model to templates/instances in all five families: each
 selects one versioned type contract for its specialized configuration and supported behavior. For
 example, a Resource selects a local-directory type, while an Agent selects a native-agent type.
 The family still supplies its fundamental role and invariants; the type cannot override ownership,
 authority or fixed-definition rules. Multiple plugin contributions can fulfill the selected type,
-without a primary implementation. The alternative keeps separate type selection for Resources
-and uses the common family schemas directly for other families, with plugin contracts validating
-their extension fields. This remains pending. It chooses a shared structural model, not final type
-names, grouping, field spellings, a type catalog or another object family. See the still-proposed
-uniform `spec.type` in the [Experiment 001 contract guide](../experiments/001-shared-access/CONTRACTS.md#draft-syntax).
+without a primary implementation. Type-contract versions remain independent of the common object
+contract and implementation releases. This chooses a shared structural model, not final type
+names, grouping for the other families, field spellings, a type catalog or another object family.
+See the [Experiment 001 contract guide](../experiments/001-shared-access/CONTRACTS.md#draft-syntax).
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
-need no further ruling merely to rename their fields. Carry these into the remaining composition
-walkthrough, with protected-result validity explicit under its contract. Exact target-reference
+need no further ruling merely to rename their fields. The composition walkthrough preserves these
+boundaries, with protected-result validity explicit under its contract. Exact target-reference
 encoding and the contents of each runtime declaration remain open. Start/wait operation granularity follows
 each operation's declared guarantees rather than a universal split. These are concrete authoring
-seams, not a new conceptual review; the behavior/structure merge checkpoint remains open.
+seams for concrete schemas and implementation, not unresolved conceptual review or blockers to
+the behavior/structure documentation merge.
 
-Continue the complete package-to-instance walkthrough through four connected batches:
+The package-to-instance review covered four connected batches, which also organize the later
+schema and conformance implementation work:
 
 1. **Identity and publication:** API/type/capability/requirement versions, schema profile, package identity,
    typed contents/dependencies, artifact identity and reference syntax within the accepted package scope. A mandatory primary plugin
@@ -740,13 +756,18 @@ Continue the complete package-to-instance walkthrough through four connected bat
    caller/participation, protected handles, grant/requirement evidence, control outcomes, lifecycle progress
    and observation coverage. Preserve extensibility rather than force a closed enum.
 4. **Conformance and fixtures:** capability claims, independently consumable tests, rejection, partial
-   failure and uncertain-effect cases; revise Experiment 001 YAML and Experiment 002 fixtures explicitly.
+   failure and uncertain-effect cases; the paper examples and planned fixtures now reflect accepted behavior.
 
-**Walkthrough audit:** Experiment 001 still contains older illustrative binding markers (`from: self`),
-path-segment lists and a singular runtime declaration. Migrate those explicitly to the accepted
-binding forms/source boundaries, JSON Pointer paths and named runtime collection; do not ask for
-those rulings again. Its uniform type selection remains the separate pending structural choice
-above. Updating these paper fixtures will not constitute executing the runtime or passing conformance.
+**Walkthrough migration:** Experiment 001 now uses explicit binding forms, JSON Pointer selection,
+captured configuration, declared identity metadata in place of unrestricted `self`, and a named
+runtime collection. Its uniform type selection follows the accepted ruling above. The Pool's
+composition payload is explicitly literal data interpreted by its operation contract; it is not
+another graph reference resolver. The guide also distinguishes normal Interface management from
+the root's foundational setup/recovery and includes the accepted source snapshot/feed handoff.
+Experiment 001 and the history package walkthrough now pass prepared inputs through explicit
+startup operations selecting named runtime targets, removing the older implicit runtime-input
+wiring. Their fictional shared startup operation illustrates existing semantics, not a new core export.
+These paper-fixture changes do not constitute runtime execution or passed conformance.
 
 ## Implementation details, not new conceptual rulings
 

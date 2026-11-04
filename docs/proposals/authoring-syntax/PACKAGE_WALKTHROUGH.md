@@ -319,6 +319,9 @@ spec:
     messages:
       package: example.history
       release: 0.1.0
+    lifecycle:
+      package: example.lifecycle
+      release: 0.1.0
   config:
     establish: create
     backingKey: euphony-exchange
@@ -326,13 +329,22 @@ spec:
   setup:
     nodes:
       establish:
+        required: true
         operation: {plugin: messages, name: history.establish}
         inputs:
           configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: lifecycle, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: history}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              store: {reference: {from: output, node: establish, port: store}}
   runtime:
-    driver: {plugin: messages, name: history.managed}
-    inputs:
-      store: {reference: {from: output, node: establish, port: store}}
+    history:
+      driver: {plugin: messages, name: history.managed}
   controls: {use: type-defaults}
   conduits: {}
 ```
@@ -344,12 +356,21 @@ their own authorized connections to the history capability.
 
 A user normally edits `backingKey` and supported initial settings. For reuse of an existing backing,
 attachment intent must be explicit. The user need not rewrite the graph or manufacture a handler.
-The example passes configuration to establishment and its output to the managed runtime. V0 graph
+The example passes configuration to establishment, then explicitly supplies the resulting store
+to an ordinary startup operation alongside the named runtime target. The responsible service
+resolves the driver, validates its prepared inputs and manages startup and continuing activity.
+`example.lifecycle` is a fictional dependency offering that reusable operation, not a required
+core package or a primary implementation. A type-specific startup operation could fulfill the
+same boundary. Publishing this example would require selecting and supplying that dependency's
+contract/implementation under the accepted dependency rules.
+
+V0 graph
 inputs use literals and typed references; a calculated setup input would come from another plugin
 operation rather than an inline expression. Every graph input binding explicitly identifies its
 form using exactly one of the accepted keys. The displayed `reference` key is accepted, while its
-payload fields remain illustrative. Reusing graph binding notation for runtime inputs remains a
-proposal in this example. Ordinary `spec.config` values stay unwrapped.
+payload fields remain illustrative. There is no second binding evaluator hidden in the runtime
+declaration; all value flow shown here uses graph operation inputs. Ordinary `spec.config` values
+stay unwrapped. `history` is a local runtime name, not a package alias or another Resource.
 If establishment is implemented by a reusable graph, the explicit `configuration` input supplies
 the values that graph may read from the caller. It cannot implicitly read other fields from the
 enclosing Resource's configuration. A narrower reusable operation could instead declare a `limit`

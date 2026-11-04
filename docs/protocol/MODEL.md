@@ -101,6 +101,15 @@ instances realize that definition with identity, state and managed activity. The
 authoring and the managed object model; it is not merely a graph. Ongoing services remain under
 instance management rather than belonging to a finite setup node.
 
+**Type contracts across the five families:** every template and instance selects one versioned type
+contract for its specialized configuration and supported behavior. Interface, Agent, Resource, Pool
+and Conduit still define fundamental roles and invariants; a selected type cannot override ownership,
+authority or fixed-definition rules. For example, a Resource can select a local-directory type and
+an Agent a native-agent type. Type-contract versions are independent of the common object contract
+and implementation releases. Types add no object family and do not select a mandatory primary plugin.
+The shared model is accepted; concrete catalogs, identifiers, grouping for the other families and
+field spellings remain authoring work.
+
 **V0 composition:** no primary plugin is required. A complete template binds the selected type's
 required behavior to compatible contributions from one or several plugins, including setup,
 ongoing runtime/capability behavior and supported controls. Convenience comes from complete standard

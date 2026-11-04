@@ -20,8 +20,20 @@ The fixture's imaginary executable-backed package is one supported implementatio
 requirement that every plugin contain code. Code-optional MCP bindings and independent component
 access are covered by [experiment 002](../002-runtime-plugins/README.md). V0 accepts composition
 without a primary plugin. The examples now use a proposed `plugins` map and explicit `{plugin, name}`
-export references so their bindings match that model. Those spellings remain the next I7 ruling;
-updating the example does not ratify syntax.
+export references so their bindings match that model. Those spellings remain provisional for the
+separate vocabulary review; updating the example does not ratify permanent names. All five families
+select one versioned type contract, without allowing a type to override its family's invariants.
+
+The graph bindings now use explicit forms, structured sources and JSON Pointer selection. Configuration
+references read the execution's captured settings; instance identity comes only from the fixture's
+declared metadata surface. Runtime declarations form a named map. The sole name `service` in each
+example is arbitrary and does not establish a primary runtime or implementation. See the
+[binding guide](CONTRACTS.md#graph-binding-notation) for these boundaries.
+
+Setup explicitly invokes the fictional `runtime.start` operation with that runtime target and its
+prepared inputs. Output bindings supply dependencies; declarations do not consume setup results or
+start themselves implicitly. Once started, the instance manages continuing activity, including if
+another required setup step fails. The Pool runtime can start independently of child provisioning.
 
 ```mermaid
 flowchart LR
@@ -45,8 +57,11 @@ observation paths. Resource ownership does not mean the Pool relays every reques
 ## 1. Start from the Interface
 
 The local-owner Interface observes and controls the same system. Its normal management connection
-reaches a Pool-owned management Resource. The initial bootstrap establishes those objects before
-normal operations can use them; the packet does not invent a recursive bootstrap procedure.
+reaches a Pool-owned management Resource. The locally loadable root Interface directs foundational
+setup and exposes declared recovery operations, with runtime verification of the local owner when
+ordinary management is broken. This packet assumes that setup has established the system Pool,
+management and access-management Resources; it illustrates the normal path, not the complete root
+recipe. See the [foundational boundary](CONTRACTS.md#bootstrap-boundary).
 
 Opening CLI, terminal and test frontends attaches to this one Interface. They inspect common local
 evidence rather than keeping separate per-frontend logs. No frontend needs to remain open for
@@ -81,15 +96,18 @@ separate authored operation manifest or ordering for every Resource.
 
 ```yaml
 items:
-  auth:
-    provision: {entry: auth}
-  issues:
-    provision: {entry: issues}
-    bind:
-      authentication: {item: auth}
+  literal:
+    auth:
+      provision: {entry: auth}
+    issues:
+      provision: {entry: issues}
+      bind:
+        authentication: {item: auth}
 ```
 
-The full graph also selects checkout and exchange. It resolves these results:
+The `literal` wrapper supplies ordinary data to `pool.compose`; `item: auth` is interpreted by that
+operation's composition contract, not by the graph reference resolver. The full graph also selects
+checkout and exchange. It resolves these results:
 
 | Selected item | Resource instance | Owner | Result |
 | --- | --- | --- | --- |
@@ -107,12 +125,13 @@ If the same authentication Resource already exists, edit the creation draft to u
 
 ```yaml
 items:
-  auth:
-    existing: {kind: Resource, form: instance, name: service-authentication-0001}
-  issues:
-    provision: {entry: issues, name: issue-service-0002}
-    bind:
-      authentication: {item: auth}
+  literal:
+    auth:
+      existing: {kind: Resource, form: instance, name: service-authentication-0001}
+    issues:
+      provision: {entry: issues, name: issue-service-0002}
+      bind:
+        authentication: {item: auth}
 ```
 
 This fragment replaces the entire `items` value if assigned as a whole; it does not implicitly
@@ -183,7 +202,8 @@ status:
   setup:
     complete: true
   runtime:
-    available: true
+    service:
+      available: true
   observation:
     source: fixture-runtime
     coverage: synthetic
@@ -241,6 +261,13 @@ was delivered without proving model comprehension. Observation continues without
 An exporter can fail without losing committed local outcomes. No external tracker/dashboard is
 required; a custom tracking Resource could later consume permitted evidence.
 
+Managed state inspection pairs each source snapshot with a resume position for its retained changes.
+If a Resource becomes ready while a frontend opens the feed, catch-up covers that change or reports
+a continuity gap and need for fresh state. Each source retains its own order and cursor; the Interface
+preserves known causal links without claiming a global order. Sampled/native observations disclose
+weaker coverage. Closing a frontend also leaves an operation's safe human-interaction wait
+rediscoverable; the adapter decides whether its challenge remains usable.
+
 ## Acceptance plan
 
 These are expected outcomes, not executed runtime tests.
@@ -267,7 +294,8 @@ following relationships are readable together:
 - `entries` offers templates; the setup graph selects explicit provisioning or existing use.
 - `conduits` declares required capabilities and selected targets; Pool binding fills reusable
   Resource dependencies, and the enclosing object supplies its identity.
-- `setup` prepares; `runtime` owns continuing behavior; `controls` defines supported changes.
+- `setup` prepares; named `runtime` declarations specify instance-owned continuing behavior;
+  `controls` defines supported changes.
 - Inspection combines definition and observations without making observations authorable.
 
 Implementation selection, common API names, capability negotiation, management bootstrap/repair
@@ -275,6 +303,22 @@ and full status/event schemas still need engineering definitions. The exact type
 here are not automatically approved. No new top-level family or change to settled behavior is
 needed by this example. If a concrete counterexample requires one, bring that behavior back to
 review rather than silently extending the fixture.
+
+## Validation update — 2026-11-04
+
+Migrated the paper fixtures to the accepted explicit binding forms, JSON Pointer selectors,
+captured configuration and declared identity metadata. All five families select versioned types.
+Named runtime declarations are started through ordinary typed operations with explicit prepared
+inputs, including the history package walkthrough. These replace older implicit runtime-input
+wiring; they add no new core package requirement or production provider behavior.
+
+Static Ruby Psych checks covered eight templates and two instances, 34 operation/driver/handler
+references, 59 bindings, ten named runtimes, 23 steps and twelve implied dependency edges. Checked
+known fixture ports/config pointers/runtime targets, acyclicity, and matching retained
+type/plugin/setup/runtime definitions between shown instances and their templates. Nine YAML fences
+in this walkthrough, its contract guide and the package walkthrough also parsed. No duplicate keys,
+anchors/aliases, explicit tags or merge keys were found. These are data/consistency checks, not
+YAML 1.2 conformance, a Conduit compiler or executed lifecycle/provider tests.
 
 ## Validation update — 2026-11-02
 
@@ -284,7 +328,8 @@ instances, checked 24 operation/driver/handler references against declared alias
 dependency acyclicity, and confirmed instance plugin/setup/runtime bindings match their templates.
 Duplicate keys, aliases/anchors, explicit tags and merge keys were absent. These are Ruby Psych
 data/consistency checks, not a Conduit compiler, runtime test or YAML 1.2 conformance claim. The
-alias/export spelling is still under I7 review.
+alias/export spelling was still under I7 review at that point; its structure is now accepted and
+its names remain provisional for the vocabulary pass.
 
 ## Validation record — 2026-10-31
 

@@ -9,12 +9,19 @@ Conduit-owned names below the five object families provisional, including earlie
 spellings. Keep using them consistently while reviewing logic and structure; naming has a separate
 future PR and is not a prerequisite for these walkthroughs.
 
-Status: **ready for the next syntax/conformance review; examples remain proposals**, 2026-11-02. The
+Status: **behavior/structure review complete; concrete schemas and supporting vocabulary remain proposals**,
+2026-11-04. The [current review](../../REVIEW.md#behavior-and-structure-merge-checkpoint) records the
+merge boundary and follow-up work; closure does not approve every illustrative field. The
 [conceptual closure review](../../archive/reviews/CONCEPTUAL.md) is complete. The published-contract and no-primary-plugin
 rulings remain accepted. Templates now use one named dependency map and alias-plus-export references
 for setup, runtime and controls, with kind/contract checks and no primary alias. The specific
 `spec.plugins` / `{plugin, name}` spellings remain proposals.
 Moving these examples does not ratify their names, package layout or scoping rules.
+
+All five families now select one versioned type contract for specialized configuration and supported
+behavior, while preserving their family invariants. Multiple compatible plugin contributions can
+fulfill that type without a primary implementation. This extends the accepted Resource model;
+the example catalogs, grouping for other families and field spellings remain provisional.
 
 Reusable requirement compositions use the literal/reference/object/list binding forms to pass
 typed parameters to constituents. References are scoped to the composition's declared parameter

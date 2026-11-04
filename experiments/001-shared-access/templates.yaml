@@ -14,14 +14,23 @@ spec:
   setup:
     nodes:
       establish:
+        required: true
         operation: {plugin: fixture, name: route.establish}
         inputs:
-          instance: {from: self}
-          configuration: {from: config}
+          instanceId: {reference: {from: metadata, path: /instanceId}}
+          configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              binding: {reference: {from: output, node: establish, port: binding}}
   runtime:
-    driver: {plugin: fixture, name: route.managed}
-    inputs:
-      binding: {from: output, node: establish, port: binding}
+    service:
+      driver: {plugin: fixture, name: route.managed}
   controls: {use: type-defaults}
   conduits: {}
 ---
@@ -40,13 +49,22 @@ spec:
   setup:
     nodes:
       directory:
+        required: true
         operation: {plugin: fixture, name: directory.establish}
         inputs:
-          configuration: {from: config}
+          configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              directory: {reference: {from: output, node: directory, port: directory}}
   runtime:
-    driver: {plugin: fixture, name: directory.managed}
-    inputs:
-      directory: {from: output, node: directory, port: directory}
+    service:
+      driver: {plugin: fixture, name: directory.managed}
   controls: {use: type-defaults}
   conduits: {}
 ---
@@ -65,13 +83,22 @@ spec:
   setup:
     nodes:
       authenticate:
+        required: true
         operation: {plugin: fixture, name: auth.establish}
         inputs:
-          configuration: {from: config}
+          configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              binding: {reference: {from: output, node: authenticate, port: binding}}
   runtime:
-    driver: {plugin: fixture, name: auth.managed}
-    inputs:
-      binding: {from: output, node: authenticate, port: binding}
+    service:
+      driver: {plugin: fixture, name: auth.managed}
   controls: {use: type-defaults}
   conduits: {}
 ---
@@ -102,18 +129,28 @@ spec:
   setup:
     nodes:
       prepare:
+        required: true
         operation: {plugin: fixture, name: consumer.prepare}
         inputs:
-          consumer: {from: self}
+          consumerId: {reference: {from: metadata, path: /instanceId}}
       client:
+        required: true
         operation: {plugin: fixture, name: mcp.prepare}
         inputs:
-          configuration: {from: config}
-          authentication: {from: output, node: prepare, port: authentication}
+          configuration: {reference: {from: config}}
+          authentication: {reference: {from: output, node: prepare, port: authentication}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              preparedClient: {reference: {from: output, node: client, port: client}}
   runtime:
-    driver: {plugin: fixture, name: mcp.managed}
-    inputs:
-      preparedClient: {from: output, node: client, port: client}
+    service:
+      driver: {plugin: fixture, name: mcp.managed}
   controls: {use: type-defaults}
 ---
 apiVersion: conduit.local/v0alpha1
@@ -132,13 +169,22 @@ spec:
   setup:
     nodes:
       history:
+        required: true
         operation: {plugin: fixture, name: history.establish}
         inputs:
-          configuration: {from: config}
+          configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              store: {reference: {from: output, node: history, port: store}}
   runtime:
-    driver: {plugin: fixture, name: history.managed}
-    inputs:
-      store: {from: output, node: history, port: store}
+    service:
+      driver: {plugin: fixture, name: history.managed}
   controls:
     use: type-defaults
     constraints:
@@ -168,22 +214,33 @@ spec:
   setup:
     nodes:
       establish-selected:
+        required: true
         operation: {plugin: fixture, name: pool.compose}
         inputs:
-          owner: {from: self}
-          entries: {from: config, path: [entries]}
+          ownerId: {reference: {from: metadata, path: /instanceId}}
+          entries: {reference: {from: config, path: /entries}}
           items:
-            checkout:
-              provision: {entry: checkout}
-            auth:
-              provision: {entry: auth}
-            issues:
-              provision: {entry: issues}
-              bind:
-                authentication: {item: auth}
-            exchange:
-              provision: {entry: exchange}
-  runtime: {driver: {plugin: fixture, name: pool.managed}, inputs: {}}
+            literal:
+              checkout:
+                provision: {entry: checkout}
+              auth:
+                provision: {entry: auth}
+              issues:
+                provision: {entry: issues}
+                bind:
+                  authentication: {item: auth}
+              exchange:
+                provision: {entry: exchange}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared: {literal: {}}
+  runtime:
+    service:
+      driver: {plugin: fixture, name: pool.managed}
   controls: {use: type-defaults}
   conduits: {}
 ---
@@ -242,23 +299,34 @@ spec:
   setup:
     nodes:
       login:
+        required: true
         operation: {plugin: fixture, name: agent.authenticate}
         inputs:
-          account: {from: config, path: [account]}
+          account: {reference: {from: config, path: /account}}
       prepare:
+        required: true
         operation: {plugin: fixture, name: consumer.prepare}
         inputs:
-          consumer: {from: self}
+          consumerId: {reference: {from: metadata, path: /instanceId}}
       activate:
+        required: true
         operation: {plugin: fixture, name: agent.activate}
         inputs:
-          identity: {from: output, node: login, port: identity}
-          access: {from: output, node: prepare, port: connections}
-          rules: {from: config, path: [activation]}
+          identity: {reference: {from: output, node: login, port: identity}}
+          access: {reference: {from: output, node: prepare, port: connections}}
+          rules: {reference: {from: config, path: /activation}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              environment: {reference: {from: output, node: activate, port: environment}}
   runtime:
-    driver: {plugin: fixture, name: agent.managed}
-    inputs:
-      environment: {from: output, node: activate, port: environment}
+    service:
+      driver: {plugin: fixture, name: agent.managed}
   controls: {use: type-defaults}
 ---
 apiVersion: conduit.local/v0alpha1
@@ -285,11 +353,20 @@ spec:
   setup:
     nodes:
       prepare:
+        required: true
         operation: {plugin: fixture, name: consumer.prepare}
         inputs:
-          consumer: {from: self}
+          consumerId: {reference: {from: metadata, path: /instanceId}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              connections: {reference: {from: output, node: prepare, port: connections}}
   runtime:
-    driver: {plugin: fixture, name: interface.managed}
-    inputs:
-      connections: {from: output, node: prepare, port: connections}
+    service:
+      driver: {plugin: fixture, name: interface.managed}
   controls: {use: type-defaults}

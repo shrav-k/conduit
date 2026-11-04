@@ -30,16 +30,18 @@ emit this model; they cannot bypass its validation or authority rules.
 
 Each object uses its family as `kind` and a top-level `form` beside it to identify a template
 or instance. Form is a structural distinction, not an observed lifecycle state: instantiation
-creates a separate object rather than changing the template's form. Family and form jointly
-determine how to interpret `spec`. The common authoring envelope is:
+creates a separate object rather than changing the template's form. Family and form determine the
+common `spec` contract; every template and instance also selects one versioned type contract for
+specialized configuration and supported behavior. Type contracts must preserve their family's
+invariants and can be fulfilled by multiple compatible plugin contributions. The common authoring envelope is:
 
 | Field | Meaning |
 | --- | --- |
-| `apiVersion` | The common object contract version. A Resource's selected type contract has its own separate schema version. |
+| `apiVersion` | The common object contract version. Each family's selected type contract has its own separate schema version. |
 | `kind` | The family: `Interface`, `Agent`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
 | `form` | The template/instance distinction, at the top level alongside `kind`. |
 | `metadata` | Author-editable naming and system-owned identity/version information, with ownership defined per field. No generic object-label map in v0. |
-| `spec` | Configuration defined by the family and form's contract. |
+| `spec` | Configuration governed by the family/form contract and the selected type contract. |
 
 Metadata ownership is defined per field: authors control naming within their
 permissions, while Conduit assigns and maintains identity/version information. Placing a

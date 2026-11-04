@@ -17,13 +17,22 @@ spec:
   setup:
     nodes:
       history:
+        required: true
         operation: {plugin: fixture, name: history.establish}
         inputs:
-          configuration: {from: config}
+          configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              store: {reference: {from: output, node: history, port: store}}
   runtime:
-    driver: {plugin: fixture, name: history.managed}
-    inputs:
-      store: {from: output, node: history, port: store}
+    service:
+      driver: {plugin: fixture, name: history.managed}
   controls:
     set-read-limit:
       input:
@@ -57,13 +66,22 @@ spec:
   setup:
     nodes:
       establish:
+        required: true
         operation: {plugin: fixture, name: route.establish}
         inputs:
-          instance: {from: self}
-          configuration: {from: config}
+          instanceId: {reference: {from: metadata, path: /instanceId}}
+          configuration: {reference: {from: config}}
+      start:
+        required: true
+        operation: {plugin: fixture, name: runtime.start}
+        inputs:
+          target: {reference: {from: runtime, name: service}}
+          configuration: {reference: {from: config}}
+          prepared:
+            object:
+              binding: {reference: {from: output, node: establish, port: binding}}
   runtime:
-    driver: {plugin: fixture, name: route.managed}
-    inputs:
-      binding: {from: output, node: establish, port: binding}
+    service:
+      driver: {plugin: fixture, name: route.managed}
   controls: {}
   conduits: {}

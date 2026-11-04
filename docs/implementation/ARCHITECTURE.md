@@ -737,6 +737,12 @@ For an MCP-backed node, dispatch still uses the selected contract and authorized
 The common adapter can invoke a compatible existing operation; metadata alone cannot substitute
 for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
+Read the step collection as a map of locally unique names to operation bindings. Reject duplicate
+keys before dispatch. Resolve step references and prerequisites in their graph's scope; do not use
+map order as an execution sequence or let equal names in different graphs alias the same step.
+Ordering constraints come from dependencies, alongside current checks and scheduling limits.
+The step-map structure does not expose called graphs' private nodes or choose final field names.
+
 V0 explicit ordering prerequisites without data require the predecessor's successful
 completion under its contract. Failure or uncertainty keeps that dependency unmet. Do not satisfy
 it merely because an invocation returned or its failure payload passed schema validation. This

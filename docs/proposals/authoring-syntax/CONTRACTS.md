@@ -351,13 +351,14 @@ data. This adds no automatic merging, calculations, string manipulation, loops o
 those transformations still use plugin operations. The `object` and `list` form encoding is accepted;
 reference payload fields remain open.
 
-**Pending step collection:** the recommendation represents an inline graph's steps as a map of
-locally unique names to operation bindings. The alternative is a list of step records with explicit
-unique names. Both use dependencies rather than document order for execution. This structure has
-not yet been accepted; the example below uses the proposed map. Each operation identifies a plugin
-alias and export. Every supplied input uses an explicit form
-recognized only in the schema's designated binding positions. Form keys are accepted; the surrounding
-graph layout, implementation selectors and reference payload fields below remain illustrative.
+**Accepted step collection:** a graph's steps form a map of locally unique names to operation
+bindings. Duplicate keys are rejected; different graphs can reuse local names without sharing steps
+or exposing internal nodes to callers. Dependencies supply ordering constraints rather than document
+order. Current dispatch checks and scheduling limits still apply. The example below uses that map
+structure with provisional container/field names. Each operation identifies a plugin alias and export.
+Every supplied input uses an explicit form recognized only in the schema's designated binding
+positions. Form keys and the step-map structure are accepted; other graph layout, implementation
+selectors and reference payload spellings below remain illustrative.
 
 Illustrative syntax, extending the existing fixture rather than approving it:
 
@@ -549,6 +550,14 @@ domain result instead. Account for composed success/failure modes, preserve rele
 uncertainty and scoped evidence, and do not automatically export internal outputs. Detailed
 algorithms, mapping syntax and recovery coordination below remain proposed. Keep domain results
 open-ended rather than introducing a universal enumeration of business failures.
+
+**Pending public-value binding forms:** the recommendation reuses the accepted `literal`, `reference`,
+`object` and `list` forms for each declared public output's value, with the same source/scope rules as
+input bindings. A graph could publish a database reference with a literal label using object assembly.
+The alternative restricts public bindings to forwarding child outputs and uses operations to construct
+other public values. Both retain declared publication conditions, validity, producer validation and
+permitted exposure. A public value does not by itself confirm whole-operation success or publish other
+internal outputs. This choice does not settle domain-error mapping, output-contract layout or vocabulary.
 
 Distinguish three concerns within the existing operation contract and evidence system:
 

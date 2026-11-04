@@ -72,7 +72,9 @@ Consider a small document-search capability used by an Agent. The authoring step
    controls use an alias plus public export name, checking the expected kind and contract at each use.
    Exact field names remain open; aliases do not identify Resources or grant access.
 3. **Compose setup.** A finite dependency graph can establish access and prepare search. Output bindings
-   imply dependencies. Supply literals or typed references to configuration/earlier outputs as inputs;
+   imply dependencies. Declare steps in a map keyed by locally unique names; document order does not
+   determine execution. Different graphs can reuse local names without exposing their internal steps.
+   Supply literals or typed references to configuration/earlier outputs as inputs;
    use plugin operations for calculations and transformations, with no inline binding expressions in v0.
    Configuration references use values captured when the graph execution begins; later executions
    capture current settings. Authority, dependency validity and control revision checks remain current.

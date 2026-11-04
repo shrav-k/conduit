@@ -496,13 +496,21 @@ recovery remain responsibilities of operation/instance contracts even when ordin
 cannot continue. They do not depend on a failed operation reporting success. This preserves the
 initial plugin-owned branching/error-handling boundary without automatic rollback; names are illustrative.
 
-Next, decide the graph-step collection structure. The recommendation uses a map of locally named
-steps, with names unique within the graph and ordering constraints determined by dependencies,
-without execution meaning in document order. Current dispatch checks and scheduling limits still apply.
-The alternative uses a list of step records, each carrying an explicit unique name, with the same
-dependency semantics. For example, `prepare`, `start`, `migrate` and `verify` are authored step names,
-not plugin exports or runtime declarations. This remains pending; it selects collection structure,
-not final container names, an ordered execution list or new visibility into a called graph's internals.
+**Graph-step collection is accepted:** use a map keyed by names unique within the graph, with each
+entry containing an operation binding. Dependencies determine ordering constraints; document order
+has no execution meaning. Current dispatch checks and scheduling limits still apply. Step names are
+distinct from plugin export names and runtime declarations. Different graphs may reuse local names;
+this grants no new visibility into a called graph's internals. Container names and supporting
+vocabulary remain open.
+
+Next, decide how declared public graph outputs bind their values. The recommendation reuses the
+four input-binding forms—literal, reference, object assembly and list assembly—under the graph's
+existing source/scope rules. For example, a graph could publish an object combining a literal label
+with a database reference from startup. The alternative only forwards selected child outputs,
+requiring an operation to construct other public values. Publication conditions, validity, output
+validation, access and sensitivity still apply; assembling a public value does not confirm overall
+success or export other internal outputs. This remains pending and does not settle error/outcome
+mapping, output-contract layout or final field names.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

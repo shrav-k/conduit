@@ -268,6 +268,10 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.
+- Declare steps in a map keyed by locally unique names. Reorder entries and verify unchanged
+  dependency/ordering constraints without requiring one fixed schedule for independent work.
+  Reject duplicate step keys before execution. Reuse the same local names in two distinct graphs
+  and verify that they do not alias or expose each other's internal steps.
 - Invoke the same reusable graph-backed operation from two templates with differently named
   configuration fields, explicitly binding each to its declared `limit` input. Verify that the graph
   receives the supplied value without inheriting either caller's configuration namespace. Include an
@@ -291,8 +295,9 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   values: nested members, array indices, escaped member names, the empty pointer and an empty-name
   member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
   unchanged. Use separate structured source and pointer fields, checking that output source selection
-  establishes the correct dependency and the pointer selects within that source. Exact fields and
-  nesting inside `reference` remain in review; these fixtures do not choose them.
+  establishes the correct dependency and the pointer selects within that source. Source selectors
+  sit directly beside the optional pointer inside `reference`, as accepted; exact field spellings
+  remain provisional. Omitting the pointer selects the whole explicitly chosen source.
 - Return a schema-valid output that omits an optional endpoint, then explicitly reference that
   missing field for a consumer whose input has a default. Verify a reference-resolution error and
   no consumer dispatch, rather than a substituted null or default. Repeat with a missing array item

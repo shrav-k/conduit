@@ -206,6 +206,17 @@ loops and provider-specific procedure remain inside plugins initially. User-auth
 iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
 supported; interaction waits and valid-progress recovery do not require authored loops.
 
+**Step collection:** a graph declares its steps as a map keyed by names unique within that graph.
+Each entry contains one operation binding. References and explicit prerequisites select those local
+names; they do not select list positions. For example, `prepare`, `start`, `migrate` and `verify`
+identify steps, separately from their selected plugin exports or runtime declarations. Duplicate
+keys are errors under the configuration profile. Different graphs may reuse local names without
+creating a shared step or exposing a called graph's internals.
+
+Document order has no execution meaning. Dependencies supply ordering constraints, while actual
+dispatch remains subject to current authority, readiness, coordination and scheduling limits.
+This fixes the step collection structure; container names and supporting vocabulary remain open.
+
 **Setup success requirements:** setup steps are required by default; a template may explicitly
 mark nonessential steps optional. A required migration must succeed for successful setup, while
 failure of optional diagnostics is reported without itself preventing setup success. Optionality

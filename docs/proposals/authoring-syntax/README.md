@@ -29,6 +29,9 @@ Setup steps are required by default, with explicit optionality for nonessential 
 failure is reported without itself blocking setup success; actual dependencies, validation and
 mandatory type/access requirements still apply. Scheduling, retained effects and lifecycle duties
 remain unchanged. Exact step notation remains open.
+Graph steps form a map keyed by locally unique names. Dependencies supply ordering constraints;
+document order has no execution meaning. Different graphs may reuse local names without sharing
+steps or exposing called graphs' internals. Container names remain provisional.
 
 The accepted package entry boundary uses one explicit document declaring exports and dependencies,
 with inline or package-local referenced definitions. It may be handwritten or generated; inspection

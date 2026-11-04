@@ -1068,6 +1068,11 @@ successful completion under its contract. Mapping order does not establish the p
 
 For example, this fragment uses `after` as candidate notation for that required-success gate:
 
+The enclosing graph's step collection is a map. `verify` below is its local key; the referenced
+`start` and `migrate` are other keys in that same graph. Each key is unique locally, and moving an
+entry earlier in the document does not change the dependencies. Another graph can independently
+use those names. This map structure is accepted; its container and supporting fields remain provisional.
+
 ```yaml
 verify:
   operation: {plugin: database, name: schema.verify}

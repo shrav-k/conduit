@@ -328,8 +328,11 @@ setup:
 
 This fragment assumes the enclosing definition supplies `consumer`/`database` implementations,
 typed configuration and the managed runtime declaration. `database.establish` requests startup
-from the responsible execution service for that declared instance-owned runtime. Its process
-may be independent of management; it is not an untracked daemon owned by a setup node. The output
+from the responsible execution service for that declared instance-owned runtime. The accepted
+boundary requires an explicit binding to that declaration; this partial fragment omits its spelling
+while typed-input versus invocation-context placement is under review. The declaration reference
+and the usable database output are distinct. The runtime remains supervised by its responsible
+execution service, which may be independent of management. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
 

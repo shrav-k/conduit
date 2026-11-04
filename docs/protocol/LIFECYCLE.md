@@ -357,9 +357,28 @@ instance start; plugins may verify already-satisfied work. This does not authori
 uncertain effects.
 
 Templates declare ongoing runtime behavior, using type defaults; graphs supply prepared inputs.
-A graph may request instance-managed runtime startup during setup, such as starting a database
-before migrations. Instances own ongoing processes/availability from startup; setup plugins do
-not remain permanent supervisors. Graph completion and ongoing readiness are separate facts.
+A graph requests instance-managed startup through an ordinary typed plugin operation explicitly
+bound to the instance's declared runtime, such as starting a database before migrations. The
+operation supplies prepared inputs through its compatible contract; the instance's responsible
+service owns ongoing activity from startup. Setup plugins do not remain permanent supervisors.
+This reuses operation composition, validation and recovery rather than introducing special
+lifecycle node kinds or automatic startup merely because input values become available.
+Registration still starts nothing.
+
+The startup operation's contract defines the guarantees of its published results. Request
+acceptance, usability for subsequent setup, completed application preparation and current runtime
+availability remain distinguishable. For example, a database usable for migration is not evidence
+that its application schema is ready. Startup cannot wait for a condition whose establishment
+requires a later step that is itself waiting for startup's output. These are contract-specific
+guarantees, not a universal readiness enum or permanent availability promise.
+
+An explicit runtime binding does not grant authority, expose internal setup operations or make an
+arbitrary returned process ID a managed runtime. Graph completion does not end continuing runtime
+activity. No Runtime object family, mandatory primary plugin or process per instance follows;
+an attachment type can require no persistent process, and a cloud provider retains supervision of
+its own service. Exact target-binding representation, prepared-input layout, runtime declaration
+cardinality and start/wait operation granularity remain authoring work. The
+[database/cloud comparison](../research/RUNTIME_ESTABLISHMENT.md) records the alternatives and rationale.
 
 Required setup failure normally retains an already-started managed runtime for inspection and
 explicit retry/stop. Retry of unchanged setup continues from still-valid recorded progress under

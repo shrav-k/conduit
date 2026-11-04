@@ -743,9 +743,17 @@ incomplete start uses the same progress lineage and only reuses results whose in
 backing and current prerequisites remain valid. Changed confirmed configuration invalidates
 affected results under declared read sets, conservatively all relevant steps when unknown.
 
-A node requesting runtime startup goes through the instance supervisor. The process/client is
-owned before the node receives a usable runtime handle. Subsequent migration/initialization nodes
-can use that handle. Successful node completion never transfers lifetime ownership to the graph.
+A node requesting runtime startup is an ordinary typed operation explicitly bound to the instance's
+declared runtime. It supplies prepared inputs through the selected compatible contract and goes
+through the instance supervisor. The process/client is owned before the node receives a usable
+runtime handle. Subsequent migration/initialization nodes can use that handle under its validity
+and access contract. Successful node completion never transfers lifetime ownership to the graph.
+
+The startup result must establish its declared guarantee, such as usability for migration rather
+than a completed application schema. Operation acceptance and current runtime observations remain
+distinct. Do not add special graph lifecycle instructions or input-triggered automatic startup as
+an implementation shortcut. Exact target placement in typed inputs versus invocation context remains
+under [authoring review](../REVIEW.md); this acceptance does not select a wire format or new runtime family.
 
 Graph failure blocks unmet prerequisites and records partial progress while independent eligible
 steps continue; retain managed runtimes and successful attachments by default. Explicit graph

@@ -3,7 +3,10 @@
 Research date: 2026-11-03. This follows the [directory, MCP and database walkthroughs](../proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
 and the [graph authoring audit](language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
 The owner requested comparative database/cloud research before resolving the next structural question.
-This report recommends an approach; it does not accept a ruling or change the protocol.
+The owner subsequently accepted approach B: ordinary typed operations explicitly bound to declared
+instance runtimes, publishing results with defined guarantees. The
+[lifecycle contract](../protocol/LIFECYCLE.md#lifecycle-protocol) records that ruling. This report
+preserves its reasoning and alternatives; remaining representation choices are still proposals.
 All Conduit supporting vocabulary and example names remain provisional.
 
 ## The question and existing boundary
@@ -23,9 +26,10 @@ The [accepted lifecycle contracts](../protocol/LIFECYCLE.md) already establish t
 - Finite dependency graphs compose typed operations; provider-specific branching and polling
   remain within implementations. Definitions do not change silently on existing instances.
 
-The unresolved part is the authored connection between the runtime declaration and the startup
-operation. A graph output named `database` does not by itself explain which runtime was started,
-what readiness was checked or who now manages it. Neither a PID nor a provider operation ID is
+The accepted connection is an explicit binding between the runtime declaration and an ordinary
+startup operation; its precise representation remains open. A graph output named `database`
+does not by itself explain which runtime was started, what readiness was checked or who now
+manages it. Neither a PID nor a provider operation ID is
 automatically a usable, authorized database connection.
 
 ## Evidence and limits
@@ -178,7 +182,8 @@ claim that a successful check remains true after a subsequent outage.
 ## Three authoring approaches
 
 The following are Conduit design alternatives inferred from the comparison. No source platform
-selects these exact options for us, and none is accepted by this report.
+selects these exact options for us. The owner selected B after discussing this report; A and C
+remain comparisons rather than additional accepted v0 authoring surfaces.
 In every option, registration alone starts nothing; this concerns an explicitly requested setup.
 
 | Approach | How it would express the example | Advantages | Costs |
@@ -192,12 +197,12 @@ do not require supporting all three authoring surfaces initially. Hiding the run
 an operation's implicit “current instance” context is another convenience, but makes composition
 and compatibility less inspectable. It should not be mistaken for an explicit typed binding.
 
-**Recommendation for discussion: B.** Keep the graph composed of typed operations and make the
+**Accepted direction: B.** Keep the graph composed of typed operations and make the
 runtime they operate on explicit. Let the selected implementation handle provider details while
 the instance's responsible service retains ongoing ownership. This favors our protocol's primary
 goal: small authored contributions that can be composed into larger behaviors.
 
-This recommendation does not introduce a Runtime object family, a mandatory primary plugin,
+This choice does not introduce a Runtime object family, a mandatory primary plugin,
 one operating-system process per instance, a universal lifecycle enum or an arbitrary command
 that becomes managed simply by returning a PID. It does not resolve runtime declaration naming,
 one-versus-multiple declarations, reference field spelling or whether start-and-wait is one
@@ -278,9 +283,11 @@ No accepted decision needs to be reversed merely because cloud platforms use dif
 vocabularies or declarative controllers. The strongest refinement is to make the runtime target
 and promised startup guarantee visible in the authoring contract.
 
-The next owner decision is whether ordinary typed operations explicitly bound to declared runtimes
-are the right structural boundary. If accepted, work through the database and MCP examples to
-resolve target selection, prepared inputs and output validity before choosing their field names.
+The owner accepted ordinary typed operations explicitly bound to declared runtimes as the
+structural boundary. Next, work through the database and MCP examples to resolve target selection,
+prepared inputs and output validity before choosing their field names. The immediate placement
+choice is a declared typed operation input versus a separately declared invocation-context binding;
+both retain ordinary operation nodes and explicit targeting.
 The reference payload layout, prerequisite spelling and final vocabulary remain open. This report
 does not close the [behavior/structure merge checkpoint](../REVIEW.md#behavior-and-structure-merge-checkpoint)
 or authorize runtime implementation.

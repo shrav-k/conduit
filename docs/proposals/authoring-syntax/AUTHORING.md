@@ -995,7 +995,8 @@ no named database engine's transaction behavior is assumed. All supporting names
 
 The follow-up [database/cloud comparison](../../research/RUNTIME_ESTABLISHMENT.md) examines
 how the startup operation addresses the declared runtime and what its readiness output promises.
-It compares alternative authoring structures; its recommendation is pending, not implied by this example.
+The owner accepted ordinary typed operations explicitly bound to the instance's declared runtime.
+The comparison preserves the alternatives; target-binding syntax and placement remain under review.
 
 **Intended outcome:** the Euphony Pool owns a database Resource. An explicit setup request establishes
 its backing, starts its declared runtime, applies a selected migration and verifies the expected
@@ -1012,7 +1013,7 @@ access to separately managed Resources still requires the declared authorized Co
 | Setup operation | Required inputs | Named successful output | What completion establishes |
 | --- | --- | --- | --- |
 | Prepare backing | Captured backing configuration and explicit creation/attachment intent | `storage`: a backing descriptor | The intended backing was established or verified under its contract; an existing target is not silently adopted by a fresh create. |
-| Start database | Prepared backing and captured runtime settings | `database`: a reference to the instance-managed service | The declared runtime is available for the supported setup operations. This is not proof that migrations are applied. |
+| Start database | Explicit binding to the declared runtime, prepared backing and captured runtime settings | `database`: a reference to the instance-managed service | The declared runtime is available for the supported setup operations. This is not proof that migrations are applied. |
 | Apply migration | Database reference and selected migration inputs | `migration`: confirmed application evidence | The implementation can confirm the specified change under its effect/recovery contract. A failed or uncertain outcome does not become successful evidence. |
 | Verify schema | Database reference and expected schema, after required migration success | `verification`: observed schema evidence | The required schema checks passed at the reported time. This is not a permanent guarantee about all later data changes. |
 
@@ -1060,6 +1061,31 @@ have succeeded. The finite setup invocation can finish while the database contin
 An Agent's later Conduit uses the Resource's supported capability and current permissions. It does
 not rerun initialization for every query or receive an automatically broader database credential.
 Runtime readiness, schema evidence and logical consumer participation remain separately observable.
+
+**Next structural choice: how a reusable operation receives its runtime target.** The template's
+runtime declaration exists before its database starts. Selecting that declaration identifies the
+behavior to establish; the live database result is produced only after the startup contract's
+promised condition is confirmed. Those references are not interchangeable, and neither grants
+access by itself.
+
+Both of the following use ordinary typed operation nodes and the instance's responsible service:
+
+| Placement under review | Illustrative invocation, not proposed field syntax | Authoring consequence |
+| --- | --- | --- |
+| Declared typed input | `start-database(target = declared database runtime, storage = prepared storage)` | The reusable operation declares both dependencies in its input contract. A graph-backed wrapper explicitly forwards the target to its startup child. |
+| Separately declared invocation context | Invoke `start-database(storage = prepared storage)` with its runtime target explicitly bound in invocation context. | Ordinary inputs stay focused on task data; operations and wrappers also declare and bind their runtime-context requirement. |
+
+The first is recommended for this target because it reuses explicit typed input composition.
+The second can keep runtime addressing separate from ordinary data, but needs a parallel context
+binding contract. This choice does not move authenticated caller identity or authority into
+user-supplied inputs. The runtime must resolve the target within the actual invocation's permitted
+boundary in either approach. Passing a declaration reference does not start it; startup remains
+the explicit operation. Exact value representation and protected-reference transport remain open.
+
+For the MCP case the same comparison applies: the startup operation needs the declared MCP
+runtime plus its prepared authentication binding. The authentication binding does not become raw
+credentials in ordinary YAML. An operation with no runtime target, such as a pure layout check,
+does not need one added. This is a pending placement choice, not an additional accepted contract.
 
 **A known migration failure does not remove the database.** If startup succeeded but migration
 reports failure, keep the running database managed by default, retain the backing and the actual

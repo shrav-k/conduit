@@ -402,23 +402,25 @@ work. The candidate ordering field is illustrative. No database was started, and
 rollback, replay or transaction across domain and authority stores is assumed. These examples
 support the current graph boundary but do not approve unresolved syntax or close the merge checkpoint.
 
-The next structural discussion should use these worked cases to connect the template's declared
-runtime with the setup operation that requests its startup, including prepared inputs and readiness
-outputs. The accepted responsibility boundary remains: the instance owns runtime activity from
-startup, and a later setup failure can leave it running. Then settle the remaining reference source/
-selection and prerequisite representation as a coherent example, with protected-result validity
-made explicit under its contract. Keep final vocabulary in its separate PR. These are concrete
-instances of the existing authoring seams, not a new object family or a fresh conceptual review.
+**Runtime binding is accepted:** setup uses ordinary typed operations explicitly bound to the
+instance's declared runtime, with prepared inputs and results carrying defined guarantees.
+The instance owns ongoing activity from startup; later setup failure can leave it running.
+The [database/cloud comparison](research/RUNTIME_ESTABLISHMENT.md) records the alternatives and
+rationale. Request acceptance, usability for setup, successful application preparation and current
+availability remain distinct; no universal status enum or new object family is introduced.
 
-The owner requested database/cloud research before choosing that runtime binding. The
-[comparative report](research/RUNTIME_ESTABLISHMENT.md) examines Compose, Kubernetes,
-CloudNativePG, AWS, Google Cloud SQL, Azure, Nomad and Flyway. It recommends ordinary typed
-operations explicitly bound to the instance's declared runtime, comparing dedicated lifecycle
-nodes and startup driven by available inputs. This recommendation is not yet accepted. Distinguish
-request acceptance, usability for setup, successful application preparation and current availability;
-avoid a readiness condition that waits for a migration which itself needs the startup output.
-These are contract guarantees to explain, not a new universal status enum. Exact target/reference
-syntax, runtime declaration cardinality and start/wait operation granularity remain open.
+Next, use the worked database case to decide how that explicit target travels into a reusable
+operation: a declared typed input using ordinary binding machinery, or a separately declared
+invocation-context binding. For example, database startup needs its runtime target and prepared
+storage; migration later uses the live database result. A reference to a runtime declaration is
+not evidence that it has started or an authorization grant. Both options preserve ordinary typed
+operation nodes and instance ownership. This input-versus-context placement remains open.
+
+Then settle reference source/selection and prerequisite representation as a coherent example,
+with protected-result validity explicit under its contract. Exact target/reference syntax, runtime
+declaration cardinality and start/wait operation granularity remain open. Keep final vocabulary
+in its separate PR. These are concrete instances of the existing authoring seams, not a new
+conceptual review; the behavior/structure merge checkpoint remains open.
 
 Continue the complete package-to-instance walkthrough through four connected batches:
 

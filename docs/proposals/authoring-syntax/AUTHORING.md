@@ -1091,6 +1091,13 @@ A failed or uncertain outcome, including a schema-valid failure payload, cannot 
 required-success gate. This does not select one universal outcome enum or reinterpret every ordering
 field as having this spelling.
 
+V0 does not add an authored failure-triggered branch to this graph. If migration fails, verification
+stays blocked; the migration implementation still fulfills its declared cleanup/recovery duties,
+such as releasing a migration lock where its contract supports and requires that action. Required
+cleanup cannot be wired solely after successful migration. The instance retains supervision and
+effect evidence, with explicit recovery following the existing contract. `On failure` and `after
+any completion` authoring triggers are deferred, while plugin-internal error handling remains available.
+
 **Successful setup has several separate facts.** The Pool owns one registered Resource; its
 backing exists; its responsible service manages the runtime; required migration and verification
 have succeeded. The finite setup invocation can finish while the database continues running.

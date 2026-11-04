@@ -489,14 +489,20 @@ requirements still apply. Optionality cannot supply missing results or waive enf
 Independent scheduling, output validity, retained effects and lifecycle cleanup remain unchanged.
 Exact notation remains open.
 
-Next, settle the remaining ordering-trigger scope for v0. The recommendation permits ordinary
-authored prerequisites on successful completion, alongside accepted output-publication dependencies,
-and defers additional `on failure` or `after any completion` triggers. Required cleanup and recovery
-remain responsibilities of operation/instance contracts, including when ordinary graph work cannot
-continue. The alternative adds explicit failure/completion-triggered nodes now, extending authored
-control flow and requiring their cancellation, input and result semantics. This choice remains
-pending; it must not make cleanup contingent on a failed operation reporting success. These trigger
-names are illustrative, and neither option adds loops or automatic rollback.
+**V0 ordering-trigger scope is accepted:** authored prerequisites without data require successful
+completion; declared output-publication dependencies remain supported. Additional authored
+`on failure` and `after any completion` triggers are deferred. Required cleanup and supported
+recovery remain responsibilities of operation/instance contracts even when ordinary graph work
+cannot continue. They do not depend on a failed operation reporting success. This preserves the
+initial plugin-owned branching/error-handling boundary without automatic rollback; names are illustrative.
+
+Next, decide the graph-step collection structure. The recommendation uses a map of locally named
+steps, with names unique within the graph and ordering constraints determined by dependencies,
+without execution meaning in document order. Current dispatch checks and scheduling limits still apply.
+The alternative uses a list of step records, each carrying an explicit unique name, with the same
+dependency semantics. For example, `prepare`, `start`, `migrate` and `verify` are authored step names,
+not plugin exports or runtime declarations. This remains pending; it selects collection structure,
+not final container names, an ordered execution list or new visibility into a called graph's internals.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

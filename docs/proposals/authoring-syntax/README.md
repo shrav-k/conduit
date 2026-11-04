@@ -104,9 +104,11 @@ Declared plugin outputs are also validated against their producer's contract bef
 Invalid output is withheld with a contract error, preserving effects/uncertainty rather than claiming
 rollback or safe replay. Downstream input checks remain separate, and provider-native schema semantics
 are unchanged. This is accepted behavior; exact error/result notation remains open.
-Explicit ordering prerequisites without data normally require successful completion under the earlier
+V0 explicit ordering prerequisites without data require successful completion under the earlier
 operation's contract. Failure or uncertainty does not satisfy them. Output-publication dependencies
 and required lifecycle cleanup retain their own rules; prerequisite notation remains provisional.
+Additional authored failure/completion triggers are deferred. Plugins and instance lifecycle contracts
+still fulfill required cleanup and supported recovery when ordinary graph work is blocked or cancelled.
 After a setup/change graph step fails, independent steps continue when their own prerequisites and
 current authority remain satisfied. Unmet prerequisites block affected work, required unfinished
 setup remains incomplete, and cancellation/stop rules still apply. No automatic retry or rollback

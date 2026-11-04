@@ -218,18 +218,24 @@ waive a mandatory type/access requirement or bypass definition/input/output vali
 requirements remain governed by their contracts. This rule concerns setup success, separately
 from the already accepted required/optional connection rule; exact step notation remains open.
 
-**Ordering prerequisites:** an explicit prerequisite that passes no data normally requires the
+**Ordering prerequisites:** in v0, an explicit prerequisite that passes no data requires the
 predecessor to complete successfully under its operation contract. A failed or uncertain outcome
 does not satisfy it; merely finishing, returning a response or producing a schema-valid failure
 payload is insufficient. For example, schema verification can use the database output from startup
 while separately requiring migration success. Current authority, input validity and other applicable
 prerequisites still govern dispatch.
 
-This default does not change dependencies on declared output publication or their validity/lifetime
+This rule does not change dependencies on declared output publication or their validity/lifetime
 rules. Independent eligible branches may continue, and required lifecycle cleanup retains its own
 contract. Reusing a previously successful step on retry still requires valid progress. No automatic
-retry, rollback or authored branching follows; exact prerequisite notation and any additional
-trigger conditions remain separate from this accepted default.
+retry, rollback or authored branching follows; exact prerequisite notation remains open.
+
+V0 defers additional authored `on failure` and `after any completion` triggers. Operation and
+instance contracts still perform required cleanup and support recovery when ordinary graph work
+is blocked or cancelled. For example, migration failure blocks schema verification, while the
+migration implementation remains responsible for its declared lock-release or recovery duties.
+Cleanup must not depend on a failed operation reporting success. These illustrative trigger names
+do not introduce syntax; provider-specific error handling remains inside plugins initially.
 
 [Registration batches](CONFIGURATION.md#batch-configuration-submissions) use a constrained form of
 this graph contract: complete supplied definitions, explicit prerequisites and ordinary checked

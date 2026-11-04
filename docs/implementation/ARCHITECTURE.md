@@ -737,11 +737,14 @@ For an MCP-backed node, dispatch still uses the selected contract and authorized
 The common adapter can invoke a compatible existing operation; metadata alone cannot substitute
 for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
-Explicit ordering prerequisites without data default to requiring the predecessor's successful
+V0 explicit ordering prerequisites without data require the predecessor's successful
 completion under its contract. Failure or uncertainty keeps that dependency unmet. Do not satisfy
 it merely because an invocation returned or its failure payload passed schema validation. This
 does not change declared output-readiness dependencies, their validity checks, independent eligible
 work or required lifecycle cleanup. Exact prerequisite notation remains authoring work.
+Do not implement authored failure/completion-triggered nodes in v0. Required operation/instance
+cleanup and supported recovery still run under their contracts when ordinary graph work is blocked
+or cancelled; they must not depend on a failed predecessor satisfying a success prerequisite.
 
 Treat setup steps as required by default, with explicit optionality for nonessential steps. Preserve
 an optional step's failure/effect evidence without making that failure alone block setup success.

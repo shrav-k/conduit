@@ -351,8 +351,11 @@ data. This adds no automatic merging, calculations, string manipulation, loops o
 those transformations still use plugin operations. The `object` and `list` form encoding is accepted;
 reference payload fields remain open.
 
-**Proposed representation:** an inline graph is a mapping of node names to operation bindings.
-Each operation identifies a plugin alias and export. Every supplied input uses an explicit form
+**Pending step collection:** the recommendation represents an inline graph's steps as a map of
+locally unique names to operation bindings. The alternative is a list of step records with explicit
+unique names. Both use dependencies rather than document order for execution. This structure has
+not yet been accepted; the example below uses the proposed map. Each operation identifies a plugin
+alias and export. Every supplied input uses an explicit form
 recognized only in the schema's designated binding positions. Form keys are accepted; the surrounding
 graph layout, implementation selectors and reference payload fields below remain illustrative.
 
@@ -391,12 +394,12 @@ execution service, which may be independent of management. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering
 without a value edge. These export names are fictional.
 
-**Accepted prerequisite default:** an explicit ordering prerequisite that passes no data normally
+**Accepted v0 prerequisite rule:** an explicit ordering prerequisite that passes no data
 requires successful completion under the predecessor's operation contract. A failed or uncertain
 migration keeps verification blocked; mere completion or a schema-valid failure result does not
 satisfy the gate. Dependencies on declared output publication, independent work and required
-lifecycle cleanup retain their existing rules. Exact notation and any additional trigger conditions
-remain separate from this default.
+lifecycle cleanup retain their existing rules. Exact notation remains open; additional authored
+failure/completion triggers are deferred in v0 as specified below.
 
 If an input needs a calculated value, add a typed plugin operation and bind its output instead
 of evaluating an expression inside `inputs`. For example, a path-building operation can consume
@@ -508,13 +511,12 @@ does not weaken validation or manufacture outputs. This is distinct from the acc
 connection rule and does not alter independent scheduling, output validity, retained effects or
 lifecycle duties. Exact step notation and setup-result representation remain open.
 
-**Pending additional ordering triggers:** the recommendation defers authored `on failure` and
+**Accepted v0 trigger scope:** defer authored `on failure` and
 `after any completion` triggers in v0, retaining successful-completion prerequisites and declared
 output-publication dependencies. Operation/instance contracts still perform their required cleanup
-and support recovery even when ordinary graph work is blocked or cancelled. The alternative adds
-failure/completion-triggered nodes, whose input availability, cancellation and outcome semantics
-would need definition. Neither option makes lifecycle cleanup wait for ordinary-step success or
-implies automatic rollback. Trigger spellings are illustrative.
+and support recovery even when ordinary graph work is blocked or cancelled. Cleanup does not wait
+for ordinary-step success, and this does not imply automatic rollback. Provider-specific error
+handling remains inside plugins initially. Trigger spellings are illustrative, not accepted fields.
 
 Each output declares type, publication condition and validity rules. Durable descriptors and
 live handles differ. Apply producer-output validation before the output becomes available; schema

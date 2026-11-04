@@ -793,6 +793,13 @@ or fill empty lists. Prepare receiving input values separately from retained pro
 default materialization cannot rewrite an output's fixed value. Apply this consistently to instance
 configuration and Conduit-authored operation inputs; template and provider-native boundaries remain.
 
+At configuration/input schema acceptance, report branch-dependent defaults as unsupported in v0.
+Preserve conditional/alternative validation and ordinary default materialization outside those
+branches. Do not silently ignore unsupported declarations or try defaults to select a validating
+branch; an explicit payload does not bypass the schema-acceptance check. Retain the composed-default
+conflict rule and provider-native semantics. The profile must specify restricted keyword paths and
+diagnostics consistently; this does not add executable graph branching.
+
 Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
 surface. A graph can reference facts such as its owning instance ID without a helper invocation
 solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or

@@ -613,17 +613,24 @@ a whole-object default, but omitted children can be defaulted. Do not merge old 
 fill empty lists. The absent-parent rule, template omission preservation and provider-native
 semantics remain intact. Preparing receiving inputs also preserves fixed producer output values.
 
-Next, settle whether v0 materializes defaults whose applicability depends on a conditional or
-alternative schema branch. The recommendation is to defer that behavior and report unsupported
-branch-local defaults when accepting the schema, while retaining conditional/alternative validation.
-For example, local/remote variants can validate different timeout requirements, with their templates
-supplying the timeout explicitly or a common default declared outside the alternatives. The
-alternative supports conditional defaults now and needs selection/ambiguity/reevaluation rules.
-This remains pending; it does not remove ordinary defaults, explicit values or the accepted conflict
-rule for composed defaults. The [source comparison](research/language-protocol-foundations/FORMATS.md#default-materialization-follow-up)
-distinguishes JSON Schema validation from Conduit's value insertion and Kubernetes' stricter profile.
-This concerns schema defaulting, not authored graph branching; the exact restricted keyword paths
-and diagnostics would follow the selected boundary.
+**V0 conditional-default scope is accepted:** defer defaults whose applicability depends on a
+conditional or alternative schema branch. Reject unsupported branch-local defaults when accepting
+Conduit-authored configuration/input schemas, while retaining conditional/alternative validation.
+Local/remote variants can validate different timeout requirements, with templates supplying the
+timeout explicitly or a common default declared outside the alternatives. Explicit payloads do
+not bypass unsupported schema declarations. Ordinary defaults and composed-default conflict rules
+remain, with no trial insertion to select a branch. The
+[source comparison](research/language-protocol-foundations/FORMATS.md#default-materialization-follow-up)
+retains the rationale. This concerns schema defaulting, not authored graph branching or provider-native
+schema semantics; exact restricted keyword paths and diagnostics remain profile work.
+
+Next, settle early rejection of invalid default values. The recommendation rejects a declared
+default that is provably invalid against its own schema after applicable supported default
+preparation, when accepting that schema. For example, an integer constrained to 1–100 cannot
+declare 0 as its default even if one caller supplies 15. The alternative accepts the declaration
+and reports invalidity only when materialization actually uses it. This remains pending. It would
+not require proving validity in every future composition or remove full prepared-payload validation;
+the accepted resolution of conflicting otherwise-valid defaults remains separate.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

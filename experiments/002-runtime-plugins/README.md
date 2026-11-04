@@ -310,6 +310,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   settings or fill empty lists. When the supplied object comes from a producer output, prepare the
   receiving payload without altering that output's recorded value. Template omissions and the
   absent-parent rule remain unchanged.
+- Validate local/remote variants with explicit timeout values, then add a branch-dependent timeout
+  default and require an unsupported-schema diagnostic before acceptance or invocation. Supplying
+  that timeout explicitly must not bypass the schema rejection. Remove the branch-local default and
+  verify conditional/alternative validation still operates; use a suitable common default outside
+  the alternatives in a separate case. Retain ordinary/composed-default conflict behavior and the
+  provider-native boundary, without silent omission or trial insertion to select a branch.
 - Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
   Use a map keyed by the local names, reject duplicate keys, and verify that reordering entries has
   no execution meaning. Give a second instance the same local names without aliasing runtime identities.

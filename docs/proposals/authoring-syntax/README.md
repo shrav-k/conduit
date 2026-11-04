@@ -185,6 +185,10 @@ Within a supplied object, including `{}`, omitted child properties receive unamb
 defaults. Supplied values still validate without fallback; whole-object defaults do not replace a
 supplied object, old settings are not merged, and empty lists stay empty. Input preparation preserves
 retained producer outputs and provider-native schema semantics.
+V0 defers branch-dependent defaults in Conduit configuration/input schemas. Report unsupported
+branch-local defaults when accepting a schema, while retaining conditional/alternative validation.
+Templates can supply variant-specific values explicitly or use ordinary defaults outside the
+alternatives; composed-default conflict rules and provider-native semantics remain unchanged.
 The accepted [integer range](../../protocol/CONFIGURATION.md#numeric-interoperability) is
 −9,007,199,254,740,991 through 9,007,199,254,740,991 for Conduit-declared configuration, inputs
 and outputs. Larger exact values can use an explicitly string-typed contract; implicit conversion

@@ -245,6 +245,19 @@ object without its own default remains absent. This applies to instance-configur
 and Conduit-authored operation-input preparation, preserving authored template omissions and the
 separate provider-native schema boundary.
 
+**V0 conditional-default boundary:** defer defaults whose applicability depends on a conditional
+or alternative schema branch. Reject unsupported branch-local defaults when accepting a
+Conduit-authored configuration/input schema; do not silently ignore them or try inserting values
+until a branch validates. Supplying explicit values for a particular use does not make an unsupported
+schema declaration acceptable.
+
+Conditional and alternative validation remain available. For example, local/remote variants can
+validate different timeout requirements while templates supply their timeout values explicitly,
+or a common default is declared outside the alternatives. Ordinary defaults and the accepted
+conflict rule for composed defaults remain supported. This is a default-materialization boundary,
+not a change to executable graph branching or provider-native schema semantics. Exact restricted
+keyword paths and diagnostics must implement this boundary consistently.
+
 Other default-resolution mechanics, including the remaining applicability rules, remain authoring
 work. This adds no ordered precedence between schema defaults or change to provider-native semantics.
 

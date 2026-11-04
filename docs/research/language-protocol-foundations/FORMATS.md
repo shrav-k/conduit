@@ -165,13 +165,14 @@ supplied objects, including `{}`, receive applicable defaults for omitted child 
 values still validate, and child defaults do not overwrite retained producer outputs. The protocol
 reference owns these rules.
 
-**Recommendation for review, not a ruling:** defer branch-dependent default insertion in v0.
-Keep conditional/alternative validation, but report unsupported defaults in those branches rather
-than ignoring them or trying values until a branch validates. For example, local/remote variants
-could require different timeouts; their templates would supply those values explicitly, or a common
-default could sit outside the alternatives. The alternative is to support conditional defaults now
-and define branch selection, ambiguous matches and reevaluation after insertion. This is a schema
-defaulting question, separate from executable graph branching. No runtime conformance was tested here.
+**Subsequently accepted:** defer branch-dependent default insertion in v0 Conduit configuration/input
+schemas. Keep conditional/alternative validation, but report unsupported branch-local defaults when
+accepting the schema rather than ignoring them or trying values until a branch validates. For example,
+local/remote variants can require different timeouts; templates supply those values explicitly, or a
+common default sits outside the alternatives. Supporting conditional defaults immediately was the
+alternative, with additional branch-selection, ambiguity and reevaluation semantics; it was deferred.
+Ordinary defaults and the composed-default conflict rule remain. This is separate from executable
+graph branching and provider-native schema handling. No runtime conformance was tested here.
 
 ## Standard-format set follow-up
 

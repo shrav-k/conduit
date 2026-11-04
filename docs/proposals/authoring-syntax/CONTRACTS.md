@@ -170,6 +170,14 @@ rule remains intact. Apply this in configuration/input preparation with the exis
 null, template-omission and provider-native boundaries. Preparing receiving inputs does not mutate
 retained producer output values.
 
+**Accepted v0 conditional-default boundary:** reject branch-dependent defaults when accepting
+Conduit-authored configuration/input schemas. Conditional/alternative validation remains supported;
+templates can supply branch-specific values explicitly or use an ordinary default outside the
+alternatives. Do not silently ignore unsupported branch-local defaults or select a branch by trying
+inserted values. Ordinary defaults, composed-default conflict rules and provider-native semantics
+remain unchanged. Exact restricted keyword paths and diagnostics remain profile work; this does
+not change the separate executable-graph branching boundary.
+
 **Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
 using the shared profile's supported formats and reporting unsupported ones instead of silently
 accepting them. V0 selects all 19 JSON Schema 2020-12 standard formats, using their standard meanings

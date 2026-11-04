@@ -1376,6 +1376,18 @@ and conflicting applicable defaults still fail preparation. Templates retain aut
 these are materialization results. When a graph supplies an object from an earlier output, defaulting
 prepares the receiving input without changing the producer's fixed published value.
 
+**Accepted v0 conditional-default boundary:** suppose the operation permits local and remote modes,
+with different timeout requirements. The schema may validate those alternatives, but v0 does not
+materialize a timeout default declared inside the selected branch. Such branch-local defaults are
+reported as unsupported when the configuration/input schema is accepted, even if one caller happens
+to supply all the values.
+
+A local template can supply its timeout explicitly and a remote template can supply another; both
+still validate against the full schema. A suitable common default can instead be declared outside
+the alternatives. This preserves ordinary defaults and the composed-default conflict rule without
+introducing branch selection by trial insertion. Provider-native schemas keep their semantics, and
+this choice is separate from executable graph branching.
+
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish
 that composite operation just as it publishes an operation backed by code or an MCP service. The

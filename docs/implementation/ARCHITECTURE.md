@@ -820,6 +820,12 @@ uncertain verification withholds the gated database output even after startup su
 Continue applying output validation, current validity and access checks. Do not require a forwarding
 worker merely to implement the gate, or infer whole-graph success from a published output.
 
+Make each public output eligible when its value dependencies, explicit success prerequisites and
+other declared publication conditions hold. Do not insert an implicit whole-graph success barrier
+or wait for unrelated steps. Continue validating the value and its current permitted use/exposure;
+honor any stronger declared publication condition. Persist and expose output availability separately
+from overall graph outcome and instance preparation, including while other work remains incomplete.
+
 A node requesting runtime startup is an ordinary typed operation explicitly bound to the instance's
 declared runtime. It supplies prepared inputs through the selected compatible contract and goes
 through the instance supervisor. The process/client is owned before the node receives a usable

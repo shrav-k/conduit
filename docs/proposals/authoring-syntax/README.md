@@ -77,6 +77,9 @@ Public outputs may also declare successful-completion prerequisites using local 
 from their value bindings. A database output may use startup's reference but wait for verification
 success, without a forwarding operation. Failed or uncertain prerequisites withhold that output;
 the remaining publication, validity, validation and access conditions still apply. Final fields remain open.
+An output becomes eligible once its own bindings, prerequisites and declared conditions are satisfied,
+without implicitly waiting for unrelated work or whole-graph success. Stronger declared conditions
+still apply. Output availability does not mark the graph complete or its owning instance prepared.
 Object/list assembly payloads contain child bindings. The accepted reference layout puts source
 fields directly beside the optional pointer, without a nested source object. Omitting the pointer
 selects the whole explicitly chosen source, equivalent to an empty pointer. The accepted v0 sources

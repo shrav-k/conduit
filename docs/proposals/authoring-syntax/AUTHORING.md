@@ -1425,6 +1425,13 @@ still apply. Verification records what it established under its contract; it doe
 the database can never become unavailable or that every other graph step succeeded. Output-container
 and prerequisite field names remain provisional.
 
+**Accepted publication timing:** once `verify` succeeds and the database output's own conditions
+hold, that output is eligible for publication even if independent diagnostics are still running.
+There is no implicit whole-graph success barrier. A stronger condition can be declared where needed.
+The Interface can show the available output alongside unfinished or failed work; output publication
+does not itself mark setup complete or the Resource prepared. If the reference has become unusable
+or current access does not permit exposure, verification's earlier success cannot bypass those checks.
+
 **Accepted recovery default:** a published graph-backed operation reuses graph recovery without
 requiring a bespoke handler merely for composition. Explicit retry of this unchanged invocation
 reuses still-valid startup progress and delegates the uncertain migration effects to its recovery

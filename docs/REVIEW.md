@@ -555,13 +555,21 @@ affected output. Publication conditions, current validity, output validation and
 publication neither confirms whole-graph success nor promises permanent database availability.
 Output field names and declaration layout remain open.
 
-Next, settle the default publication barrier for public graph outputs. The recommendation makes an
-output eligible once its values, explicit prerequisites and other declared publication conditions
-are satisfied, without an additional implicit wait for unrelated graph work. For example, the
-database output could become available after verification while independent diagnostics continue.
-The alternative waits for successful whole-graph completion by default, with explicit opt-in for
-earlier publication. This remains pending. Both preserve per-output validity, validation, access and
-stronger declared publication conditions; readiness of an output does not certify the whole graph.
+**Public-output publication timing is accepted:** an output is eligible once its value bindings,
+explicit prerequisites and other declared publication conditions are satisfied, without an implicit
+wait for unrelated work or whole-graph success. A database output can be available after verification
+while independent diagnostics continue. Current validity, validation, access and stronger declared
+conditions still apply. Publication neither completes outstanding work nor marks the graph successful
+or its owning instance prepared.
+
+Next, settle the scope of required/optional step semantics. Required-by-default steps with explicit
+optionality are already accepted for setup. The recommendation extends that classification to
+reusable graph-backed operations and change-handler graphs: required steps must succeed for
+successful graph completion, while optional failures remain visible without alone preventing it.
+The alternative requires those other graph contracts to define their success treatment separately.
+This remains pending. Public-output availability, confirmed partial control changes, actual dependency
+checks and mandatory type/access obligations retain their own rules. This concerns failure treatment,
+not permission to abandon outstanding activity or report a still-running graph as finished.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

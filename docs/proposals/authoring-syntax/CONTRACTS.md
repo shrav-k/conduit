@@ -609,6 +609,13 @@ All other publication conditions, value validity, output validation and permitte
 apply. The gate certifies neither whole-graph success nor permanent availability; field names and
 output-declaration layout remain open.
 
+**Accepted publication default:** a public output is eligible when its value bindings, explicit
+prerequisites and other declared publication conditions are satisfied, without an implicit barrier
+on unrelated work or whole-graph success. The verified database output can therefore become available
+while independent diagnostics continue. Stronger declared conditions, current validity, validation
+and access remain mandatory. Output availability neither completes outstanding work nor marks the
+graph successful or its owning instance prepared; outcome and lifecycle contracts remain separate.
+
 Distinguish three concerns within the existing operation contract and evidence system:
 
 | Concern | Meaning in a composed operation |

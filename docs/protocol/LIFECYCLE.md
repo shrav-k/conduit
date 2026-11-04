@@ -372,6 +372,17 @@ nor permanently guarantees the database's availability or schema. These prerequi
 failure/completion triggers or permission to expose other internal results. Output field names and
 the surrounding declaration layout remain authoring work.
 
+**Public-output publication:** an output becomes eligible for publication once its value bindings,
+explicit prerequisites and other declared publication conditions are satisfied. There is no implicit
+wait for unrelated steps or successful whole-graph completion. For example, the database output can
+be released after schema verification while independent diagnostics continue, provided its validity,
+validation and access conditions hold. A contract may declare stronger publication conditions.
+
+Publishing the output does not report whole-graph success, complete outstanding work or mark the
+owning instance prepared. Those outcomes and lifecycle requirements remain separately governed.
+An unavailable or invalid value, unmet prerequisite or denied access still prevents publication;
+earlier verification cannot substitute for current checks required by the output's contract.
+
 **Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
 as that key's value. The same encoding applies to child bindings inside assemblies.
 The four forms and this structure are accepted; these key spellings are working names under the

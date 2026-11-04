@@ -61,7 +61,10 @@ then-current settings; capture does not freeze permissions, dependency validity 
 checks. Retry/recovery must still revalidate retained results. Exact representation remains open.
 Reusable graph-backed operations receive caller configuration through declared typed inputs, without
 implicit configuration inheritance. Scoped invocation context and authorized Resource access retain
-their own contracts; exact input/context notation remains open.
+their own contracts. Graphs may reference explicitly declared, typed, read-only metadata supplied
+by the runtime, such as their owning instance ID. This exposes neither an unrestricted instance
+snapshot nor credentials, and passing an ID does not establish caller identity or authority.
+Exact metadata fields and input/context notation remain open.
 
 Setup requests instance-managed startup through ordinary typed operations explicitly bound to
 declared runtimes. The runtime target is a declared typed input, explicitly forwarded through

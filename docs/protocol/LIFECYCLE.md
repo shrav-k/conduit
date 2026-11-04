@@ -200,8 +200,8 @@ registry writes. They reuse scheduling, outcome, cancellation and valid-progress
 their definitions are validated before writes and are not generated from earlier node outputs.
 General setup/change graphs retain their output-bound inputs and per-step input validation.
 
-**Graph inputs:** v0 inputs use literal values and typed references to configuration or earlier
-step outputs. Calculations and transformations are implemented by plugin operations, not inline
+**Graph inputs:** v0 inputs use literal values and typed references, including configuration and
+earlier step outputs. Calculations and transformations are implemented by plugin operations, not inline
 expressions in graph bindings. References select declared values/fields; they do not implicitly
 evaluate string interpolation, shell syntax or an expression language. Reusable graph-backed
 operations receive caller configuration only through declared typed inputs, without implicitly
@@ -210,6 +210,18 @@ values into those inputs. Scoped invocation context and explicitly authorized Re
 remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
 References use separate structured source and JSON Pointer fields as defined below. Every graph
 input binding uses exactly one accepted form key; fields inside `reference` remain authoring work.
+
+**Graph-visible invocation metadata:** graphs may reference explicitly declared, typed, read-only
+metadata supplied by the runtime under its invocation contract. For example, setup can pass its
+owning instance ID to an operation that tags a created service for later reconciliation, without
+a plugin operation merely to retrieve that ID. Required metadata that is unavailable is reported,
+not fabricated or silently replaced with caller-supplied claims.
+
+This exposes declared invocation facts, not an unrestricted instance snapshot, ambient environment
+or credentials. Runtime targets remain declared typed inputs; reusable operations receive caller
+configuration explicitly. Resource reads still use authorized capabilities. An ID passed onward
+is data and cannot replace the runtime's authenticated actor or authority checks. Exact metadata
+fields, declaration/versioning, scope and reference encoding remain authoring work.
 
 **Configuration capture:** configuration references within one graph execution use values captured
 when that execution begins. Later steps do not silently reread changed instance settings. For example,

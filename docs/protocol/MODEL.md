@@ -151,7 +151,10 @@ they do not implicitly inherit the caller's configuration namespace. A template 
 search limit into an indexing operation's `limit` input, while another template supplies that input
 from a differently named setting. Internal nodes use the declared operation inputs. Scoped invocation
 context, such as identity and operation tracking, and explicitly authorized Resource access remain
-available under their contracts. Exact input/context notation remains authoring work.
+available under their contracts. Graphs may reference the runtime's explicitly declared, typed,
+read-only invocation metadata, without exposing the whole instance or treating supplied IDs as
+authenticated identity or permission. Exact metadata fields and input/context notation remain
+authoring work under the [lifecycle contract](LIFECYCLE.md#lifecycle-protocol).
 Composition preserves existing authority, endpoint selection,
 implementation retention and instance-owned runtime rules. It does not automatically make several
 external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;

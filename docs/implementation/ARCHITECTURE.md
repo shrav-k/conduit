@@ -739,6 +739,12 @@ the enclosing instance's configuration namespace into that operation. Keep scope
 and explicitly authorized Resource access available through their contracts. Validate declared input
 bindings under the same early and runtime checks used for other operations.
 
+Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
+surface. A graph can reference facts such as its owning instance ID without a helper invocation
+solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or
+substitute caller-supplied identity for missing metadata. Passed IDs remain data; authentication and
+current authority remain runtime responsibilities. Exact metadata fields and source encoding remain open.
+
 Resolve references against their explicitly selected sources. An omitted nested pointer selects
 the whole source, equivalent to the empty JSON Pointer; it does not omit the receiving input or
 invoke its default. Missing sources or selected members still block that consuming step under the

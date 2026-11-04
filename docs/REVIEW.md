@@ -380,8 +380,8 @@ retain their ordinary meanings. This adds no shorthand, merging or expression ev
 
 Reference payload layout is accepted after the comparative research and walkthroughs: use direct
 source-selection fields beside the optional pointer. Names such as `from`, `path`, `node` and
-`port` remain working vocabulary. The complete source-kind set and invocation-context access
-remain open; pointer omission has the accepted whole-value meaning described above.
+`port` remain working vocabulary. The complete source-kind set and exact metadata fields/encoding
+remain open; typed invocation metadata access and pointer omission are accepted as described below.
 
 Use the requested
 [graph authoring comparison and decision audit](research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
@@ -435,13 +435,19 @@ not release the dependent step. The database example requires migration success 
 mere completion or a schema-valid failure payload is insufficient. Declared output-publication
 dependencies, independent branches and required lifecycle cleanup retain their existing rules.
 
-Next, clarify graph-visible invocation metadata as part of the remaining reference-source inventory.
-For example, a setup graph could supply its owning instance ID to an operation that tags a created
-service for recovery. The pending recommendation permits references to explicitly declared, typed,
-read-only runtime-supplied metadata, without exposing the whole instance or ambient environment.
-The alternative keeps such metadata available to implementations and uses a plugin operation when
-a graph needs a value. Neither option permits user-supplied identity to replace authenticated
-caller context or grants access through a reference. Exact fields and source encoding remain open.
+**Graph-visible invocation metadata is accepted:** graphs may reference explicitly declared, typed,
+read-only facts supplied by the runtime, such as the owning instance ID used to tag a created service
+for recovery. No operation solely to retrieve that ID is required. This does not expose the whole
+instance, ambient environment or credentials. Supplied IDs cannot replace authenticated caller
+context or confer access. Exact metadata fields, scope and source encoding remain open.
+
+Next, consolidate the v0 reference-source inventory: declared graph inputs, captured instance
+configuration, earlier step outputs, declared runtime targets and typed invocation metadata. The
+pending recommendation uses these categories initially and obtains other data through explicit
+authorized operations, deferring arbitrary plugin-defined reference resolvers. Reusable operations
+still receive caller configuration and runtime targets through declared inputs; these source
+categories would not introduce implicit inheritance or live registry reads. This scope choice is
+pending, and does not finalize source field names or metadata contents.
 
 Then settle the remaining reference sources and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax, runtime

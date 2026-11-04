@@ -226,8 +226,8 @@ does not infer identity from a name and create duplicates.
 
 ## 4. Graph language
 
-**Accepted input boundary:** v0 inputs use literal values and typed references to configuration or
-earlier outputs. Calculations and transformations belong in plugin operations; inline expressions
+**Accepted input boundary:** v0 inputs use literal values and typed references, including configuration
+and earlier outputs. Calculations and transformations belong in plugin operations; inline expressions
 in graph bindings are deferred. Output references retain their existing dependency meaning.
 
 **Accepted reusable-operation scope:** a reusable graph-backed operation receives caller configuration
@@ -238,20 +238,36 @@ remain available under their contracts. The template-local setup example below c
 configuration, but extracting it into a reusable operation requires explicit configuration inputs.
 Exact input/context notation remains open.
 
-**Pending graph-visible invocation metadata:** one option lets graphs reference an explicitly
-declared, typed, read-only metadata surface supplied by the runtime. For example, a setup graph
-could pass its owning instance ID to a plugin that tags a created service for later reconciliation.
-The graph would not need an operation solely to retrieve that ID. The alternative keeps this
-metadata in implementation context and uses an operation to publish any value needed by the graph.
+**Accepted graph-visible invocation metadata:** graphs may reference an explicitly declared, typed,
+read-only metadata surface supplied by the runtime. For example, a setup graph can pass its owning
+instance ID to a plugin that tags a created service for later reconciliation, without an operation
+solely to retrieve that ID.
 
-The first is recommended, not accepted. Its scope would be declared invocation facts, not an
-unrestricted snapshot of instance configuration/status, ambient environment or credentials. Missing
-required metadata would be reported, not fabricated. Runtime targets still use their declared typed
+Its scope is declared invocation facts, not an unrestricted snapshot of instance configuration/status,
+ambient environment or credentials. Missing required metadata is reported, not fabricated.
+Runtime targets still use their declared typed
 inputs, reusable operations still receive caller configuration explicitly, and live Resource reads
 still use their authorized capabilities. Referenced IDs become ordinary data for their consumer;
 they cannot replace the runtime's authenticated actor or authority checks. Exact available fields,
 declaration/versioning, scope and reference encoding remain open. The older `self` example below
 is a placeholder, not approval to expose the whole instance.
+
+**Pending source inventory:** use the following categories for v0 graph references. The individual
+behaviors follow accepted contracts; making this the initial supported set and deferring arbitrary
+plugin-defined source resolvers remains a pending scope decision. Category names are provisional.
+
+| Value source | Example | Scope |
+| --- | --- | --- |
+| Declared graph inputs | A reusable operation's supplied query limit | Its published input contract. |
+| Captured instance configuration | A template setup graph's configured directory | Captured for that execution; caller configuration enters reusable operations through declared inputs. |
+| Earlier step outputs | The directory produced by attachment | Declared publication, validation and continued validity rules. |
+| Declared runtime targets | The owning instance's database runtime to start | Explicit typed target bindings; reusable operations receive and forward targets as inputs. |
+| Invocation metadata | The owning instance ID supplied by the runtime | Only the declared typed, read-only surface; no authority from passing an ID. |
+
+Under this recommendation, reading a file, a Resource record or current service state remains an
+explicit authorized operation whose output can feed later steps. References would not acquire
+plugin-defined external-fetch behavior. This keeps extension work in operations and capabilities
+initially; further source forms could be reviewed later. Exact selectors and source schemas remain open.
 
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for

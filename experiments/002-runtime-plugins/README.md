@@ -433,6 +433,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
 - Compose two reusable starting requirements in a named definition and use it in Conduit templates.
   Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
   core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.
+- Declare constituent requirements in a map with local keys for workspace, operations and result
+  limit. Reject duplicate keys. Add another entry selecting the same result-limit contract with
+  different parameters and retain both occurrences and obligations. Reorder entries and verify that
+  enforcement does not depend on map order. Inspect diagnostics by local name without creating a
+  runtime object per entry or conflating entries in separate compositions.
 - Wire constituent requirement parameters with all four binding forms. Forward declared workspace
   and result-limit parameters, assemble child parameter objects/lists and retain literal payloads
   as data. Verify the resolved child values and schema validation without a forwarding plugin.

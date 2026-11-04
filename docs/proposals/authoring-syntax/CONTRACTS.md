@@ -859,7 +859,15 @@ remain data; resolved parameters still validate against the constituent contract
 The binding forms do not turn requirements into executable graphs or import step outputs, runtime
 targets, invocation metadata or ambient caller configuration. Parameter construction does not
 establish fulfillment, support or authority. Existing individual enforcement and current-fact checks
-remain. Source names and the containing composition declaration structure remain authoring work.
+remain. Source names and remaining composition declaration fields remain authoring work.
+
+**Accepted constituent collection:** use a map keyed by names unique within the composition. Each
+entry selects a requirement contract and its parameter binding. Duplicate local keys are errors;
+the same contract may be selected in several entries with different parameters. Preserve each
+occurrence and its applicable obligations. Local names support diagnostics and inspection rather
+than identifying contracts or new runtime objects. Map order neither sequences enforcement nor
+changes the obligation to satisfy every applicable constituent. Exact container/entry spellings and
+contract-reference encoding remain open.
 
 **Accepted Policy consolidation:** [Policy names authoritative requirement application](AUTHORIZATION.md#3-policy-as-authoritative-requirement-application).
 Grant administration and governing-binding changes are ordinary protected capability operations,

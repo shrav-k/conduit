@@ -637,17 +637,25 @@ can forward `workspace` and `maxResults` to their respective restrictions and su
 operation restriction. No plugin is needed merely to forward or assemble values. Literal payloads
 remain data and constituent parameters still validate. Shared value construction does not make
 requirements executable graphs, import graph-only sources or ambient caller configuration, supply
-authority, or replace constituent support and current enforcement. Supporting names and the
-containing declaration structure remain authoring/vocabulary work.
+authority, or replace constituent support and current enforcement. Supporting names and remaining
+declaration fields remain authoring/vocabulary work.
 
-Next, settle the constituent collection inside a reusable requirement composition. The recommendation
-uses a map keyed by locally unique names, with each entry selecting a requirement contract and its
-parameter binding. For example, `workspace`, `operations` and `resultLimit` identify the parts of
-`review-access`. The alternative uses a list identified by position. This remains pending. Local names
-would support diagnostics/evidence without being contract identities or new runtime objects. The same
-requirement contract could appear in multiple entries with different parameters; ordering would not
-sequence enforcement or change the rule that every applicable constituent must hold. Container/field
-spellings and the exact contract-reference syntax remain separate.
+**Requirement constituent collection is accepted:** use a map keyed by locally unique names, each
+selecting a requirement contract and parameter binding. `workspace`, `operations` and `resultLimit`
+can identify the parts of `review-access`. Reject duplicate keys; repeated contract selections under
+different local names remain distinct occurrences and may carry different parameters. Local names
+support diagnostics/inspection without becoming contract identities or new runtime objects. Map
+order does not sequence enforcement or change the obligation to satisfy every applicable constituent.
+Container/field spellings and exact contract-reference syntax remain separate.
+
+Next, settle recursion in requirement composition. The recommendation keeps v0 composition finite
+and acyclic, rejecting direct or indirect cycles between composed requirement definitions during
+validation. For example, `review-access` including `project-access`, which includes `review-access`,
+would be rejected. Reusing a requirement in multiple independent entries remains allowed and keeps
+their distinct parameters/obligations. The alternative supports recursive composition and requires
+termination/evaluation rules. This remains pending. It concerns requirement-definition composition,
+not the topology of Conduits between objects, recursive data schemas or a general ban on package
+dependency cycles. Exact diagnostics and expansion/resource limits remain implementation work.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

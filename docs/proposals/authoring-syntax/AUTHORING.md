@@ -1731,13 +1731,23 @@ workspace: euphony
 maxResults: 10
 ```
 
-It composes existing requirement contracts with these values:
+Its constituents form a map keyed by locally unique names. Each entry selects a requirement contract
+and its parameter binding; the table illustrates the accepted grouping without selecting final fields:
 
-| Constituent requirement | Parameter construction | Result in this use |
+| Local entry name | Selected requirement | Parameter construction |
 | --- | --- | --- |
-| Workspace restriction | Reference the composition's `workspace` parameter. | Restrict the target to Euphony under that contract. |
-| Result limit | Reference `maxResults` and assemble the constituent's parameter object. | Supply a limit of 10. |
-| Operation restriction | Supply literal permitted operation identifiers, using a literal list or explicit list assembly. | Permit only the read operations defined by the selected contract. |
+| `workspace` | Workspace restriction | Reference the composition's `workspace` parameter, supplying Euphony. |
+| `resultLimit` | Result limit | Reference `maxResults` and assemble the child's parameter object, supplying a limit of 10. |
+| `operations` | Operation restriction | Supply literal permitted read-operation identifiers under the selected contract, using a literal list or explicit list assembly. |
+
+The entry name `workspace` and parameter name `workspace` belong to separate scopes; their matching
+spelling does not perform the binding. Duplicate entry keys are rejected. Reordering these entries
+does not order enforcement: every applicable constituent must hold at its declared point.
+
+The same result-limit contract could also appear under `hardLimit` with a literal limit of 20.
+That is a distinct occurrence with its own parameters; the shared contract does not make it a
+duplicate key or cause it to replace `resultLimit`. Both constraints remain applicable, under the
+existing individual-enforcement rule. No runtime object is created merely for an entry name.
 
 For the result-limit constituent, an illustrative binding is:
 
@@ -1750,8 +1760,8 @@ object:
 This resolves to `{limit: 10}`, assuming that is the constituent's declared parameter shape. The
 four binding forms are shared with graph value construction; the `parameters` source spelling and
 reference fields remain provisional. Names of caller parameters need not match the child's field
-names: the explicit binding connects them. The containing constituent collection is not selected by
-this fragment.
+names: the explicit binding connects them. The named-map collection is accepted; its container/entry
+field names and exact versioned requirement-reference encoding remain provisional.
 
 References are limited to the composition's declared parameter payload. No graph step outputs,
 runtime targets, invocation metadata or caller configuration are implicitly available. Assembling

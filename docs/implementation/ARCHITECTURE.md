@@ -144,6 +144,13 @@ invocation metadata or ambient caller configuration through these bindings. Pres
 constituent contracts and their existing support, authority and enforcement checks; construction
 is not fulfillment, and sharing the binding machinery does not create an executable graph.
 
+Read composed requirements from a map keyed by locally unique entry names. Each entry selects its
+requirement contract and parameter binding. Reject duplicate keys while retaining repeated contract
+selections under distinct names as separate occurrences. Use local names in diagnostics/inspection
+without allocating a new runtime object per entry. Map order does not schedule enforcement or
+override obligations; every applicable constituent still holds at its declared point. Exact fields
+and contract-reference encoding remain authoring work.
+
 Ordinary managed access now requires a recorded grant on its selected participation, including
 the root's broad management access. Policy governs issuance/current use without a grantless
 alternative; authorized connection setup can establish one grant for many requests. Grant

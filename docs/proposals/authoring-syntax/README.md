@@ -20,8 +20,11 @@ Reusable requirement compositions use the literal/reference/object/list binding 
 typed parameters to constituents. References are scoped to the composition's declared parameter
 payload, without graph execution sources or ambient caller configuration. No forwarding/assembly
 plugin is needed; constituent validation, support, current authority and enforcement remain separate.
-This shares value construction without making requirements executable graphs. Supporting names and
-the containing declaration structure remain open.
+This shares value construction without making requirements executable graphs. Constituents form a
+map keyed by locally unique names, each selecting a requirement contract and parameter binding.
+Reject duplicate keys, while allowing repeated contracts under distinct names with different values.
+Map order does not sequence enforcement. Names support inspection without creating runtime objects;
+exact field spellings and contract-reference encoding remain open.
 
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,

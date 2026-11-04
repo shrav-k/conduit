@@ -128,6 +128,18 @@ its meaning, support requirements and enforcement duties; assembling parameters 
 fulfillment nor authority. Responsible implementations still check applicable current facts.
 Reference-source spellings and composition declaration fields remain provisional.
 
+**Constituent collection:** a reusable requirement composition declares its constituents in a map
+keyed by names unique within that composition. Each entry selects a requirement contract and its
+parameter binding. For example, `workspace`, `operations` and `resultLimit` identify the parts of
+`review-access`. Reject duplicate local keys. The names identify entries for diagnostics and
+inspection; they are neither contract identities nor new runtime objects.
+
+The same requirement contract may appear under multiple local names with different parameters.
+Retain those distinct occurrences and their applicable obligations. Map order does not sequence
+enforcement or change the requirement that every applicable constituent must hold. Other
+compositions may reuse the same local names without sharing identities or parameters. Container
+and entry field spellings, including exact contract-reference syntax, remain provisional.
+
 Each requirement has a reusable, versioned definition of its meaning, typed parameters and
 applicability, independent of any single implementation. Multiple endpoint plugins can implement
 that same definition. For example, two deployment integrations can support one allowed-regions

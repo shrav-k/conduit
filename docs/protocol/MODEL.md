@@ -134,6 +134,9 @@ with references scoped to the composition's declared parameter payload. This for
 typed constituent parameters without plugin glue, ambient configuration or graph execution sources.
 The shared notation does not change the distinction between obligations and actions or replace
 validation, current authority and constituent enforcement.
+Constituents form a map keyed by locally unique names, each selecting a requirement contract and
+parameter binding. Reusing a contract under different entries is allowed; map order does not
+sequence enforcement. Local names support inspection without adding runtime objects.
 
 A Conduit uses both forms: its contract composes relationship requirements and its procedures
 coordinate establishment through selected endpoint capabilities. Its instance represents the live

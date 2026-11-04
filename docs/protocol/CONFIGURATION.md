@@ -95,8 +95,10 @@ semantics; source comments and formatting need not survive configuration export.
 
 Omission follows the declared default/optional rule; instances materialize declared defaults.
 Null is an explicit value accepted only where the field permits it, including a blank YAML scalar;
-it does not universally mean reset or use-default. Empty lists/maps remain explicitly empty and
-follow their field's contract rather than inheriting values. For example, integer `queryLimit: 15`
+it does not universally mean reset or use-default. Empty collections are supplied values, not
+omissions to replace with a whole-value default or inherited settings. Empty lists stay empty;
+an explicitly supplied object, including `{}`, receives applicable defaults for omitted child
+properties under the rules below. For example, integer `queryLimit: 15`
 can be valid, `queryLimit: "15"` fails that integer contract, and `enabled: yes` fails a boolean one.
 
 Comments, ordinary mappings/sequences and multiline strings remain supported. V0 rejects
@@ -229,6 +231,19 @@ Apply this boundary during instance-configuration materialization and Conduit-au
 preparation, including nested invocations. Template authoring still preserves omissions. Required-field
 validation is unchanged; child defaults cannot excuse a required parent that remains absent. Explicit
 nulls and failed references retain their existing rules rather than becoming omitted objects.
+
+**Supplied objects:** apply unambiguous applicable defaults to omitted child properties within a
+supplied object, including an empty object. With a declared default of 5 for `delaySeconds`, supplying
+`retry: {}` prepares `retry: {delaySeconds: 5}`. A supplied `delaySeconds: 2` stays 2 and must validate;
+an explicit null remains null and is accepted only if permitted. Supplied invalid values do not
+receive fallback defaults. Conflicting applicable child defaults still require explicit resolution.
+
+This clarifies the empty-collection rule: the parent is present, so its own whole-object default is
+not substituted, while its omitted child fields can receive their defaults. Do not merge with old
+configuration or inherit undeclared values. Empty lists acquire no entries, and an omitted optional
+object without its own default remains absent. This applies to instance-configuration materialization
+and Conduit-authored operation-input preparation, preserving authored template omissions and the
+separate provider-native schema boundary.
 
 Other default-resolution mechanics, including the remaining applicability rules, remain authoring
 work. This adds no ordered precedence between schema defaults or change to provider-native semantics.

@@ -1358,8 +1358,23 @@ therefore still reports a missing value under the existing reference rule.
 If the author instead declares a default of `{delaySeconds: 5}` on the `retry` property itself,
 omission can materialize that whole-object default, subject to validation and the default-conflict
 rule. This also applies when materializing instance configuration. Templates preserve their authored
-omissions; required-field checks and provider-native MCP semantics remain unchanged. Defaulting
-inside an explicitly supplied object is a separate applicability detail.
+omissions; required-field checks and provider-native MCP semantics remain unchanged.
+
+**Accepted supplied-object defaulting:** keeping `retry` optional with no parent default, the same
+child default produces these prepared configuration/input values:
+
+| Supplied value | Prepared value |
+| --- | --- |
+| `retry` omitted | `retry` remains absent. |
+| `retry: {}` | `retry: {delaySeconds: 5}`. |
+| `retry: {delaySeconds: 2}` | The supplied delay remains 2, subject to validation. |
+| `retry: {delaySeconds: null}` | Null remains null and must be permitted by the child schema. |
+
+The empty object is present, so its omitted child receives a default. Conduit does not replace that
+object with a whole-object fallback, merge old settings or fill empty lists. Invalid supplied values
+and conflicting applicable defaults still fail preparation. Templates retain authored omissions;
+these are materialization results. When a graph supplies an object from an earlier output, defaulting
+prepares the receiving input without changing the producer's fixed published value.
 
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish

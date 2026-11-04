@@ -143,6 +143,36 @@ Conduit runtime or arbitrary client conforms. No additional runtime implementati
 this comparison. Sources were rechecked through official web documentation; this brief does not
 add response hashes to the earlier retrieval manifest.
 
+## Default materialization follow-up
+
+Rechecked **2026-11-04**. JSON Schema does not fill missing values from `default` during validation;
+it treats the keyword as an annotation. Conduit's materialization behavior therefore requires its
+own contract. [JSON Schema annotations](https://json-schema.org/understanding-json-schema/reference/annotations)
+
+Conditional schemas apply validation according to the data: `if` determines whether `then` or `else`
+applies, while `dependentSchemas` depends on property presence. Those validation rules do not specify
+a procedure for inserting values that can themselves affect branch selection.
+[Conditional validation](https://json-schema.org/understanding-json-schema/reference/conditionals)
+
+Kubernetes takes a restrictive approach in its OpenAPI structural schemas: among other restrictions,
+it disallows `default` inside `allOf`, `anyOf`, `oneOf` and `not`. This is useful precedent for bounding
+defaulting complexity, not a reason to adopt that schema profile wholesale or remove Conduit's
+accepted handling of conflicting composed defaults.
+[Kubernetes structural schemas](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#specifying-a-structural-schema)
+
+**Accepted Conduit distinctions:** omitted optional objects without their own defaults stay absent;
+supplied objects, including `{}`, receive applicable defaults for omitted child properties. Explicit
+values still validate, and child defaults do not overwrite retained producer outputs. The protocol
+reference owns these rules.
+
+**Recommendation for review, not a ruling:** defer branch-dependent default insertion in v0.
+Keep conditional/alternative validation, but report unsupported defaults in those branches rather
+than ignoring them or trying values until a branch validates. For example, local/remote variants
+could require different timeouts; their templates would supply those values explicitly, or a common
+default could sit outside the alternatives. The alternative is to support conditional defaults now
+and define branch selection, ambiguous matches and reevaluation after insertion. This is a schema
+defaulting question, separate from executable graph branching. No runtime conformance was tested here.
+
 ## Standard-format set follow-up
 
 Rechecked **2026-11-03**. **Accepted:** support all 19 formats defined in

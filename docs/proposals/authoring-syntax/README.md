@@ -181,6 +181,10 @@ applicable schema defaults. Traversal order cannot select a winner.
 An omitted optional object without its own applicable default stays absent; child-property defaults
 do not create it. Authors may explicitly default the parent. This applies to instance configuration
 and Conduit-authored operation inputs, retaining validation and template omission preservation.
+Within a supplied object, including `{}`, omitted child properties receive unambiguous applicable
+defaults. Supplied values still validate without fallback; whole-object defaults do not replace a
+supplied object, old settings are not merged, and empty lists stay empty. Input preparation preserves
+retained producer outputs and provider-native schema semantics.
 The accepted [integer range](../../protocol/CONFIGURATION.md#numeric-interoperability) is
 −9,007,199,254,740,991 through 9,007,199,254,740,991 for Conduit-declared configuration, inputs
 and outputs. Larger exact values can use an explicitly string-typed contract; implicit conversion

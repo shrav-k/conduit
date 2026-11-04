@@ -303,6 +303,13 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   and verify materialization subject to normal validation/conflict checks. Preserve authored template
   omissions; a required parent still absent after preparation fails validation. Explicit nulls and
   provider-native MCP schemas retain their separate rules.
+- Supply `retry: {}` with a child default of 5 for `delaySeconds`, and verify prepared configuration
+  and code/graph inputs contain that child. Preserve explicit child values and permitted nulls;
+  reject invalid supplied values and conflicting applicable defaults. Give the parent a different
+  whole-object default and verify it is not substituted for the supplied object. Do not merge old
+  settings or fill empty lists. When the supplied object comes from a producer output, prepare the
+  receiving payload without altering that output's recorded value. Template omissions and the
+  absent-parent rule remain unchanged.
 - Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
   Use a map keyed by the local names, reject duplicate keys, and verify that reordering entries has
   no execution meaning. Give a second instance the same local names without aliasing runtime identities.

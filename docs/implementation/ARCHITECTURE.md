@@ -786,6 +786,13 @@ can establish the object, subject to conflict resolution and validation. Keep re
 template omission preservation, explicit-null semantics and missing-reference errors intact. Apply
 the same boundary in child invocations; other default-applicability mechanics remain authoring work.
 
+Within a supplied object, including `{}`, materialize unambiguous applicable defaults for omitted
+child properties. Preserve supplied values for validation, including explicit nulls; report default
+conflicts. Do not substitute a whole-object default for a supplied object, merge previous settings
+or fill empty lists. Prepare receiving input values separately from retained producer outputs so
+default materialization cannot rewrite an output's fixed value. Apply this consistently to instance
+configuration and Conduit-authored operation inputs; template and provider-native boundaries remain.
+
 Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
 surface. A graph can reference facts such as its owning instance ID without a helper invocation
 solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or

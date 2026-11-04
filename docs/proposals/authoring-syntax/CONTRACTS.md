@@ -161,6 +161,15 @@ property defaults to 5. Authors can default the parent explicitly, subject to th
 and validation rules. Template omissions, required-field checks, explicit nulls and failed-reference
 handling remain unchanged; other default-applicability mechanics remain open.
 
+**Accepted supplied-object boundary:** an explicitly supplied object, including `{}`, receives
+unambiguous applicable defaults for omitted child properties. `retry: {}` becomes
+`retry: {delaySeconds: 5}` when that child default is declared; supplied child values remain subject
+to validation and are not replaced by defaults. The parent is not replaced by its own whole-object
+default or merged with old configuration. Empty lists stay empty, and the omitted optional-parent
+rule remains intact. Apply this in configuration/input preparation with the existing conflict,
+null, template-omission and provider-native boundaries. Preparing receiving inputs does not mutate
+retained producer output values.
+
 **Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
 using the shared profile's supported formats and reporting unsupported ones instead of silently
 accepting them. V0 selects all 19 JSON Schema 2020-12 standard formats, using their standard meanings
@@ -493,10 +502,11 @@ references select within that prepared payload. Child invocations follow the sam
 own input contracts. Invalid explicit values, explicit nulls and failed reference selections are
 not replaced by defaults; null must be permitted by the schema. Conflicting applicable defaults
 require explicit resolution, and invalid prepared inputs prevent invocation. Earlier effects remain
-recorded. The optional-object boundary above also applies to operation inputs: child defaults do not
-create an omitted optional parent with no default of its own. Other default applicability remains
-open; provider-native MCP schema semantics are preserved without automatically applying Conduit
-input-default rules.
+recorded. The object boundaries above also apply: child defaults do not create an omitted optional
+parent with no default of its own, but do fill omitted child properties within a supplied object.
+Prepare the receiving payload without mutating retained producer outputs. Other default applicability
+remains open; provider-native MCP schema semantics are preserved without automatically applying
+Conduit input-default rules.
 
 **Accepted output boundary:** validate each declared plugin output against its producer's contract
 before making it available to downstream steps. Withhold invalid output and report a contract error,

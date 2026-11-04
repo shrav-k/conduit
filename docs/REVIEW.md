@@ -604,14 +604,26 @@ including child invocations. Provider-native schemas, template omission preserva
 validation, explicit nulls and failed references retain their rules. Other applicability details
 remain separate.
 
-Next, settle defaulting within an explicitly supplied object, including an empty object. The
-recommendation applies unambiguous applicable child defaults to omitted properties: supplying
-`retry: {}` would produce `retry: {delaySeconds: 5}` when that child default is declared. Supplied
-child values remain unchanged and must validate. The alternative treats a supplied object as
-complete and suppresses defaults beneath it. This remains pending. Acceptance would clarify the
-earlier empty-collection wording: the supplied object is not omitted or replaced by a whole-object
-fallback, but omitted children may be defaulted. It would not introduce inheritance/merging with
-older configuration, fill empty lists, or change the just-accepted absent-parent rule.
+**Supplied-object defaulting is accepted:** apply unambiguous applicable child defaults to omitted
+properties within a supplied object, including `{}`. Supplying `retry: {}` prepares
+`retry: {delaySeconds: 5}` when that child default is declared. Supplied values remain subject to
+validation, without fallback for invalid values or nulls; default conflicts require resolution.
+This clarifies the earlier empty-collection wording: the parent is present and is not replaced by
+a whole-object default, but omitted children can be defaulted. Do not merge old configuration or
+fill empty lists. The absent-parent rule, template omission preservation and provider-native
+semantics remain intact. Preparing receiving inputs also preserves fixed producer output values.
+
+Next, settle whether v0 materializes defaults whose applicability depends on a conditional or
+alternative schema branch. The recommendation is to defer that behavior and report unsupported
+branch-local defaults when accepting the schema, while retaining conditional/alternative validation.
+For example, local/remote variants can validate different timeout requirements, with their templates
+supplying the timeout explicitly or a common default declared outside the alternatives. The
+alternative supports conditional defaults now and needs selection/ambiguity/reevaluation rules.
+This remains pending; it does not remove ordinary defaults, explicit values or the accepted conflict
+rule for composed defaults. The [source comparison](research/language-protocol-foundations/FORMATS.md#default-materialization-follow-up)
+distinguishes JSON Schema validation from Conduit's value insertion and Kubernetes' stricter profile.
+This concerns schema defaulting, not authored graph branching; the exact restricted keyword paths
+and diagnostics would follow the selected boundary.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

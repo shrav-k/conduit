@@ -48,8 +48,10 @@ not expose credentials, extend validity or prove completion. Exact presentation 
 
 Retained observation feeds define ordering and resume cursors within each declared source. The
 Interface combines feeds and known causal links without promising a global order or inferring it
-from timestamps. This does not make every metric a lossless history. Exact cursor encoding and
-snapshot/catch-up and delivery mechanics remain open.
+from timestamps. Managed state snapshots pair with a resume position for subsequent retained
+changes, covering the handoff to the feed or explicitly reporting a continuity gap and need for
+fresh state. This is not a global snapshot, exactly-once delivery promise or change to explicit-purge
+rules. Weaker sources disclose coverage; exact encoding, pagination and transport remain open.
 
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,

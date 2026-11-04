@@ -198,7 +198,20 @@ not establish whether the database became ready before the Agent started. Explic
 can establish relationships; merely sorting timestamps cannot supply that guarantee. Source scope
 belongs to the observation contract rather than requiring a feed per process or object. This
 does not turn every CPU sample into retained history or make a cursor an access grant. Exact cursor
-encoding, snapshot/catch-up mechanics and delivery guarantees remain open.
+encoding and remaining delivery mechanics remain open.
+
+**Accepted snapshot handoff:** for a source claiming the managed state-tracking capability:
+
+1. The Interface reads a snapshot showing a Resource still preparing, together with its resume
+   position. The position's representation is deliberately unspecified here.
+2. The Resource becomes ready before the Interface opens the change feed.
+3. The Interface resumes from the snapshot's position and retrieves that subsequent update.
+4. If continuity cannot be established, the source reports the gap and need for fresh state;
+   it does not silently substitute the latest feed position.
+
+This closes the handoff gap within that source. It does not make two executors' snapshots globally
+atomic, promise exactly-once delivery or authorize automatic history expiry. Weaker/native sources
+report their actual coverage. Exact cursor encoding, pagination and transport remain open.
 
 ### What a template sees
 

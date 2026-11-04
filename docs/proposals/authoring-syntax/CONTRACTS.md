@@ -1126,7 +1126,15 @@ source. The Interface combines feeds without a global ordering guarantee, preser
 and explicit causal links rather than inferring causality from timestamps. Source scope is a
 declared observation boundary, not automatically a process or object. Cursors grant no access,
 and sampled metrics/latest-state views need not become lossless histories. Exact cursor encoding,
-snapshot/catch-up behavior and delivery guarantees remain open.
+pagination, transport and remaining delivery mechanics remain open.
+
+**Accepted snapshot handoff:** the managed state-tracking capability pairs a source snapshot with
+a resume position for subsequent retained changes. Catch-up must cover a change during the
+snapshot-to-feed handoff, or explicitly report inability to establish continuity. If the position
+cannot be resumed, report the gap/need for fresh state instead of silently advancing to the latest
+position. This guarantee is within a source, not a global snapshot or exactly-once delivery promise.
+Weaker/native sources disclose their coverage, and current access/explicit-purge rules remain
+unchanged. Exact cursor encoding, pagination and transport remain open.
 
 | Interaction | Preferred representation and fallback |
 | --- | --- |
@@ -1134,7 +1142,7 @@ snapshot/catch-up behavior and delivery guarantees remain open.
 | Inspect operation/instance | MCP resources or typed inspection tools with current, authorized content and revision/cursor. |
 | Long operation | Accepted baseline: a retained operation reference plus authorized inspection through ordinary MCP tools. Negotiated task/progress extensions may expose the same work; acceptance is not completed success. |
 | Additional human input | Accepted lifetime: the operation retains its interaction reference and safe pending state, rediscoverable by authorized Interface attachments. Supported elicitation/input presentation and adapter challenge recovery remain distinct. |
-| Observe changes | Accepted: order and resume within each declared retained-feed source, without global ordering. Subscriptions, polling and snapshot/catch-up mechanics remain proposed. |
+| Observe changes | Accepted: source-scoped order/resume; managed state snapshots pair with a position for subsequent retained changes, with explicit continuity gaps. Encoding, pagination, subscriptions and polling mechanics remain open. |
 | Cancel/reconcile | Authorized supported follow-up operations. Transport cancellation alone is not proof the effect stopped. |
 
 An operation URI is a reference, not a bearer grant. Standard MCP request IDs, task IDs and

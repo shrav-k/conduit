@@ -697,21 +697,30 @@ declared source. The Interface combines feeds without a global event-order guara
 local order and known causal links rather than inferring causality from timestamps. A source feed
 is a declared observation boundary, not automatically a process or object. Sampled metrics and
 latest-state views need not become lossless histories; authoritative state ownership and current
-access remain unchanged. Exact cursor encoding, snapshot/catch-up mechanics and delivery guarantees
+access remain unchanged. Exact cursor encoding, pagination, transport and remaining delivery mechanics
 remain open. See the
 [observation research follow-up](research/OBSERVABILITY.md#identity-and-causality).
 
-Next, settle the snapshot-to-feed handoff for managed state observation. The recommendation pairs
-a source's state snapshot with a resume position from which its subsequent retained changes can be
-retrieved, without silently missing updates between the snapshot and starting the feed. For example,
-a Resource becoming ready in that interval must appear in the catch-up or the source must report
-that continuity cannot be established. If the position cannot be resumed, report the gap/need for a
-fresh snapshot rather than silently starting at the latest position. The alternative keeps snapshots
-and feeds independent and relies on client refreshes to repair missed state. This remains pending.
-It defines a source's claimed state-tracking capability, not a global snapshot, a lossless metric
-contract, an exactly-once delivery promise or new permission to expire retained data. Weaker/native
-observation sources must expose their coverage limits. Exact cursor encoding, pagination and transport
-remain authoring work.
+**Snapshot-to-feed handoff is accepted:** the managed state-tracking capability pairs a source
+snapshot with a resume position for subsequent retained changes. A Resource becoming ready between
+the snapshot and opening the feed must be covered by catch-up, or continuity must be reported as
+unestablished. If resumption is unavailable, report the gap and need for fresh state rather than
+silently jumping to the latest position. This is a source-level guarantee, not a global snapshot,
+lossless metric history or exactly-once delivery promise. Weaker/native sources disclose coverage;
+current access and explicit-purge rules remain unchanged. Exact cursor encoding, pagination and
+transport remain authoring work.
+
+Next, resolve the type-contract scope that the older walkthrough still marks as a proposal.
+The recommendation extends the Resource model to templates/instances in all five families: each
+selects one versioned type contract for its specialized configuration and supported behavior. For
+example, a Resource selects a local-directory type, while an Agent selects a native-agent type.
+The family still supplies its fundamental role and invariants; the type cannot override ownership,
+authority or fixed-definition rules. Multiple plugin contributions can fulfill the selected type,
+without a primary implementation. The alternative keeps separate type selection for Resources
+and uses the common family schemas directly for other families, with plugin contracts validating
+their extension fields. This remains pending. It chooses a shared structural model, not final type
+names, grouping, field spellings, a type catalog or another object family. See the still-proposed
+uniform `spec.type` in the [Experiment 001 contract guide](../experiments/001-shared-access/CONTRACTS.md#draft-syntax).
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition
@@ -732,6 +741,12 @@ Continue the complete package-to-instance walkthrough through four connected bat
    and observation coverage. Preserve extensibility rather than force a closed enum.
 4. **Conformance and fixtures:** capability claims, independently consumable tests, rejection, partial
    failure and uncertain-effect cases; revise Experiment 001 YAML and Experiment 002 fixtures explicitly.
+
+**Walkthrough audit:** Experiment 001 still contains older illustrative binding markers (`from: self`),
+path-segment lists and a singular runtime declaration. Migrate those explicitly to the accepted
+binding forms/source boundaries, JSON Pointer paths and named runtime collection; do not ask for
+those rulings again. Its uniform type selection remains the separate pending structural choice
+above. Updating these paper fixtures will not constitute executing the runtime or passing conformance.
 
 ## Implementation details, not new conceptual rulings
 

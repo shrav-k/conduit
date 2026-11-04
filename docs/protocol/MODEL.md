@@ -552,7 +552,19 @@ becoming ready and an Agent starting without those reports establishing which pr
 A source feed is a declared observation boundary, not automatically one process or one object.
 This does not require sampled metrics or latest-state observations to provide lossless histories,
 move authoritative state into the Interface, or grant access through a cursor. Exact cursor encoding,
-snapshot/catch-up mechanics and delivery guarantees remain authoring work.
+pagination, transport and remaining delivery mechanics remain authoring work.
+
+**Snapshot-to-feed handoff:** the managed state-tracking capability pairs a source's state snapshot
+with a resume position for its subsequent retained changes. A change between reading the snapshot
+and opening the feed must be available through catch-up, or the source must explicitly report that
+continuity cannot be established. For example, a Resource becoming ready during that interval
+cannot silently disappear from the observation path.
+
+If the position cannot be resumed, report the gap and need for fresh state rather than silently
+starting at the latest position. This is a source-level capability, not a global snapshot or an
+exactly-once delivery guarantee. Weaker/native observation sources expose their coverage limits;
+sampled metrics need not become lossless histories. Current access and explicit-purge rules remain
+unchanged. Exact cursor encoding, pagination and transport remain authoring work.
 
 Export failure must not erase local committed outcomes. Diagnostic traces and metrics can refer
 to retained evidence without becoming its sole copy. Preserve applicable content access and secret

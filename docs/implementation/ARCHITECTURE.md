@@ -1214,12 +1214,17 @@ source boundary is declared by the observation contract, not imposed per executo
 Keep current access checks and authoritative state ownership intact; sampled diagnostics and
 latest-state observations do not acquire a lossless-history guarantee from this rule.
 
-The proposed snapshot/cursor discipline below applies within a source; concrete encoding,
-snapshot/catch-up behavior and delivery guarantees remain authoring work. A combined view exposes gaps.
-To avoid the snapshot/subscribe race, return a snapshot with its high-water cursor, then deliver
-later events.
-If the cursor is purged or unavailable, return a scoped gap and require a new snapshot. Slow
-clients do not block commits; close or limit their stream with a recoverable cursor.
+**Accepted snapshot handoff:** pair the managed state-tracking source's snapshot with a resume
+position for subsequent retained changes. Cover changes during the snapshot-to-feed interval, or
+report that continuity cannot be established. If resumption is unavailable, report the scoped gap
+and need for fresh state rather than silently jumping to the latest position. Preserve current
+authorization and explicit-purge rules. This is neither a global snapshot nor an exactly-once
+delivery guarantee; weaker/native sources expose their actual coverage.
+
+Concrete cursor encoding, pagination, transport and remaining delivery mechanisms remain proposals.
+The existing slow-client candidate closes or limits an observation stream with a recoverable
+position rather than blocking commits; this scheduling/backpressure mechanism is not settled by
+the snapshot-handoff ruling.
 
 Rust `tracing` spans correlate work and exporters can use OpenTelemetry. Neither is the operation
 journal: the OpenTelemetry SDK deliberately allows bounded queues and dropping spans under

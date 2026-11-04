@@ -516,6 +516,13 @@ but do not infer additional causality from display order. Current read permissio
 Source boundaries need not equal process/object boundaries, and a separate sampled metric stream
 must not acquire a lossless-history claim. Exact cursor and delivery fixtures remain to be authored.
 
+For a managed state-tracking source, read a snapshot and its resume position, then change fixture
+state before opening the feed. Resume from that position and verify the intervening change is
+retrievable. Separately make resumption unavailable and require an explicit gap/need for fresh state,
+without silently advancing to the latest position or claiming no changes occurred. Preserve current
+read authority. This tests a source-level handoff, not global snapshots, exactly-once delivery or
+permission to expire retained evidence. A weaker/native fixture must report its coverage limits.
+
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should
 decide whether a Wasm lane buys enough to justify another runtime; it is not a prerequisite for

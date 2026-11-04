@@ -133,6 +133,15 @@ revision is not reconciliation. Exact revision granularity, MCP fields and coord
 parallelism remain open; checks must be coordinated with application rather than only discovery
 or enqueueing, and a local revision cannot establish unseen provider state.
 
+**Unchanged configuration:** when a control confirms unchanged stored settings, retain the current
+configuration revision and record the invocation, outcome and any effects separately. All applicable
+authority, revision, transition and coordination checks still apply, as does the handler's declared
+behavior. Equal requested/stored values do not justify skipping the handler or presenting an earlier
+result as a new execution. For example, setting an already-selected limit of 15 may verify or refresh
+the provider without changing the configuration revision. That revision describes configuration;
+it does not establish that no work occurred or that runtime state, permissions or observations are
+unchanged. Existing operation-retry/result-retrieval contracts remain separate.
+
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority
 and Conduit filters; none overrides another to widen access. Exact authoring shorthand/defaults,

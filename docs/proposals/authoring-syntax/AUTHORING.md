@@ -1216,6 +1216,19 @@ use supported reconciliation; rejection of the stored result does not undo exter
 This example adds no generic field-patch interface or universal partial-failure enum. Exact result
 fields remain authoring work.
 
+### A control that confirms unchanged settings
+
+In a separate case with no unresolved conflicting change, the search limit is already 15 at
+configuration revision R. An authorized caller requests 15 using R. Run the control's applicable
+checks and declared behavior; the implementation might verify or refresh the provider. If it
+confirms unchanged stored configuration, retain R and record the new invocation's outcome and
+effects separately. Another caller using R does not encounter a configuration conflict solely
+because this control ran, but still faces current authority, state and coordination checks.
+
+A stale expected revision still conflicts under the ordinary rule, even when the requested value
+matches. Equal values do not imply a cached success or absence of external effects. Reusing a
+recorded outcome for the same logical invocation follows the existing retry contract instead.
+
 **Assessment across the three setup walkthroughs:** finite graphs, explicit data bindings and ordinary
 plugin operations can express the examples without authored loops or an expression language.
 That is evidence about these examples, not general proof of ergonomic sufficiency. Required

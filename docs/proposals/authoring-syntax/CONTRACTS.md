@@ -501,6 +501,14 @@ Plugins handle internal branching/polling; the graph language has no authored lo
 or dynamic fan-out. A Pool composition operation can process a finite declared selection and
 return separately tracked child outcomes without exposing an arbitrary loop language.
 
+**Pending setup-success default:** the recommendation treats setup steps as required unless
+explicitly optional. Optional failure would remain visible without itself preventing successful
+setup, while missing inputs, required downstream work and mandatory type/access requirements
+still govern the result. The alternative requires every declared setup step in v0 and runs
+nonessential work separately. This is distinct from the accepted required/optional connection
+rule and does not alter independent scheduling, output validity or lifecycle duties. Exact step
+notation and setup-result representation remain open.
+
 Each output declares type, publication condition and validity rules. Durable descriptors and
 live handles differ. Apply producer-output validation before the output becomes available; schema
 validity does not replace its publication or lifetime requirements. A ready output can refer to an
@@ -943,12 +951,12 @@ Coupled settings can require whole-change confirmation. This does not waive allo
 revision checks, authority or coordination, infer independence between arbitrary fields, or promise
 rollback. Preserve effect evidence if it cannot produce a valid configuration under these rules.
 
-**Pending unchanged-control revision rule:** the recommendation retains the configuration revision
+**Accepted unchanged-control revision rule:** retain the configuration revision
 when a control confirms unchanged stored settings, while recording its invocation and any external
 effects. Declared checks/effects still apply; comparison is not permission to skip the handler or
-return an earlier result as a new execution. The alternative advances that revision on every
-confirmed application. The analogous unchanged registry-write rule is already accepted; extending
-it to controls remains under review.
+return an earlier result as a new execution. This extends the unchanged registry-write behavior
+to controls. Configuration revisions do not establish that runtime state, permissions or observations
+are unchanged; operation retry/result retrieval retains its own contracts.
 
 A waiting change retains its coordination semantics. If safe parallel control domains are added,
 they need declared disjoint read/write dependencies and transaction checks; merely using different

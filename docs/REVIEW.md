@@ -473,15 +473,23 @@ change is unresolved; its last confirmed timeout is not presented as known curre
 may require whole-change confirmation. This neither infers independence between arbitrary fields
 nor promises rollback; current authority, revision checks and coordination still apply.
 
-Next, decide whether a control that confirms unchanged stored configuration retains its configuration
-revision, as an unchanged checked registry write already does. The recommendation retains it while
-recording the invocation and any effects separately: requesting a query limit already set to 15
-could verify or refresh the provider without invalidating another client's configuration baseline.
-All declared checks/effects still run; unchanged values do not turn the invocation into a cached
-success. The alternative advances the configuration revision for every confirmed control application.
-This control-specific revision rule remains pending and does not decide operation or observation IDs.
+**Unchanged-control revision rule is accepted:** when a control confirms unchanged stored settings,
+retain the configuration revision and record the invocation, outcome and effects separately. A
+request for a query limit already set to 15 can still verify or refresh the provider. All applicable
+checks and declared handler behavior remain required; equal values do not justify a skipped handler
+or cached success presented as a new execution. This matches the existing unchanged registry-write
+rule without treating configuration revisions as operation or observation identities.
 Ordinary MCP-client access itself is already accepted in the model; exact enrollment/transport
 mechanics remain refinements rather than another approval of that interoperability direction.
+
+Next, make setup success requirements explicit. The recommendation makes setup steps required by
+default while allowing genuinely nonessential steps to be marked optional: a required migration
+must succeed, while failure of optional diagnostics can be reported without itself preventing setup
+success. Actual dependencies and mandatory type/access requirements still apply; marking a step
+optional cannot supply a missing result or waive required enforcement. The alternative requires
+every declared setup step to succeed in v0, putting nonessential work in separate follow-up
+operations. This setup-gating choice remains pending; it does not change independent scheduling,
+output validity, retained effects or lifecycle cleanup. Exact notation remains open.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

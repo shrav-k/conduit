@@ -21,6 +21,9 @@ when the complete resulting stored configuration is valid, and keep remaining ef
 pending work or uncertainty separate. Coupled settings may require whole-change confirmation.
 This does not imply rollback, generic field independence or that last-confirmed values are still
 active. Exact result representation remains open.
+Controls confirming unchanged stored configuration retain its revision while recording their
+invocation and effects. Applicable checks and declared handler behavior still run; matching values
+do not justify skipping work or substituting a cached result for a new execution.
 
 The accepted package entry boundary uses one explicit document declaring exports and dependencies,
 with inline or package-local referenced definitions. It may be handwritten or generated; inspection

@@ -834,9 +834,11 @@ that it is still active. Coupled fields may require whole-change confirmation. A
 does not release applicable coordination or justify rollback, invalid state or replay of effects.
 If reported effects cannot yield a valid configuration, preserve evidence for supported reconciliation.
 
-No-op controls still perform their declared checks/effects. If they confirm unchanged stored
-settings, the proposed default preserves the configuration revision and records the outcome.
-A plugin can report external work even where configuration is unchanged. Reconciliation may
+Controls that confirm unchanged stored settings still perform their declared checks/effects.
+Preserve the configuration revision and record the outcome; do not skip dispatch or present
+a cached result as a new execution merely because the requested values match. A plugin can report
+external work even where configuration is unchanged. Configuration revision equality does not
+replace current runtime/authority checks. Reconciliation may
 establish an external change despite caller withdrawal; recording reality is separate from
 authorizing a new effect or releasing its content to the former caller.
 

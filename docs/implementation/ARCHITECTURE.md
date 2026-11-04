@@ -968,10 +968,14 @@ preparation's attachment-release duties. Report unsupported or unconfirmed cance
 does not establish that effects stopped. Instance-owned runtimes remain governed by their lifecycle
 contracts. There is no inferred rollback or reverse-topological deletion of backing data.
 
-Human-interaction waits release worker compute and retain a recoverable interaction reference.
-If a plugin cannot recover a challenge, recovery reports that fact and requests a supported new
-interaction; it does not claim continuation of arbitrary suspended code. New attempts and browser
-responses are bound to the correct instance/account/operation and cannot complete a later login.
+Retain a typed human-interaction reference and safe pending state with its managed operation,
+independently of the originating frontend. Authorized Interface attachments can rediscover that wait
+after a terminal closes. Release worker compute where the implementation supports it; retained wait
+identity alone does not guarantee recovery of arbitrary suspended code. The adapter offers a still-valid
+flow or reports the need for a supported new interaction. Preserve current authority, credential
+custody and challenge validity; rediscovery does not confirm the requested action. New attempts and
+browser responses remain bound to the correct instance/account/operation and cannot complete a later
+login. Exact interaction representation and expiry/replacement mechanics remain authoring work.
 
 ## 6. Invocation, concurrency and controls
 

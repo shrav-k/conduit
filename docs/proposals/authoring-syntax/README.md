@@ -41,6 +41,11 @@ reference, and authorized inspection retrieves progress/outcomes. Negotiated tas
 may expose the same operation without duplicate dispatch. Clients still need the published inspection
 contract; acceptance is not completion. Exact tool names and result encoding remain open.
 
+Human-interaction waits retain typed references and safe pending state under their managed operation.
+An authorized Interface attachment can rediscover a wait after the original frontend closes; adapter
+contracts determine whether its challenge is usable or a new interaction is needed. Retention does
+not expose credentials, extend validity or prove completion. Exact presentation and fields remain open.
+
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,
 pending work or uncertainty separate. Coupled settings may require whole-change confirmation.

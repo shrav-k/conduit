@@ -1113,12 +1113,20 @@ follows from exposing another view. Synchronous completion remains available, an
 stands for completed success. Tool/result names and extension encoding remain open; this adds no
 Agent job-submission capability.
 
+**Accepted human-interaction lifetime:** retain the typed interaction reference and safe pending
+state under the managed operation, independently of the originating frontend's lifetime. Authorized
+Interface attachments can rediscover it; the adapter determines whether the original native/provider
+flow remains usable or a new interaction is needed. Retention cannot extend challenge validity,
+transfer provider identity or substitute for evidence that the requested action occurred. Preserve
+current authority and credential custody; do not promise arbitrary suspended-code recovery. Exact
+interaction fields, MCP presentation and expiry/replacement mechanics remain open.
+
 | Interaction | Preferred representation and fallback |
 | --- | --- |
 | Discover/invoke a supported control | A named typed MCP tool with structured result. Provider tools retain native names/schemas where compatible. |
 | Inspect operation/instance | MCP resources or typed inspection tools with current, authorized content and revision/cursor. |
 | Long operation | Accepted baseline: a retained operation reference plus authorized inspection through ordinary MCP tools. Negotiated task/progress extensions may expose the same work; acceptance is not completed success. |
-| Additional human input | Supported elicitation/input mechanisms; otherwise a retained interaction surfaced by the Interface. No waiting forever on a disconnected frontend. |
+| Additional human input | Accepted lifetime: the operation retains its interaction reference and safe pending state, rediscoverable by authorized Interface attachments. Supported elicitation/input presentation and adapter challenge recovery remain distinct. |
 | Observe changes | Negotiated subscriptions/notifications plus durable catch-up; otherwise bounded polling from a cursor. |
 | Cancel/reconcile | Authorized supported follow-up operations. Transport cancellation alone is not proof the effect stopped. |
 

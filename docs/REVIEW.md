@@ -683,16 +683,26 @@ Instance/operation records, authentication, current permissions, selected artifa
 applicable MCP rules remain effective. Exact profile identifiers, feature fields and discovery
 encoding remain open; plain upstream services still use adapters.
 
-Next, settle the lifetime of a human-interaction wait relative to its frontend. The recommendation
-retains a typed interaction reference and safe pending-state information under the managed operation,
-so an authorized Interface attachment can rediscover it after the original frontend closes. For
-example, setup waiting for a password-manager unlock remains inspectable from a reopened terminal;
-the adapter then offers the still-valid native/provider flow or reports that a new interaction is
-needed. The alternative ties completion to the originating frontend and requires a fresh interaction
-after disconnection. This remains pending. Retaining a wait does not preserve an expired challenge,
-transfer provider identity, expose credentials, or prove that the requested action occurred.
-Current authority, sensitivity and adapter recovery rules still apply. Exact interaction schemas,
-MCP presentation and expiry/replacement mechanics remain open.
+**Human-interaction wait ownership is accepted:** retain a typed interaction reference and safe
+pending-state information under the managed operation. An authorized Interface attachment can
+rediscover the wait after the original frontend closes. For example, a password-manager unlock wait
+appears in a reopened terminal; the adapter offers its still-valid flow or reports that a new
+interaction is needed under its recovery contract. Retention does not extend challenge validity,
+transfer identity, expose credentials, prove completion or guarantee arbitrary suspended-code
+recovery. Current authority and sensitivity rules still apply. Exact interaction schemas, MCP
+presentation and expiry/replacement mechanics remain authoring work.
+
+Next, settle the ordering boundary for retained observation feeds. The recommendation scopes order
+and resume cursors to each declared source feed, while the Interface combines sources without
+promising a global event order. For example, executor A reports a database becoming ready while
+executor B reports an Agent starting: preserve each source's order and any explicit causal links,
+but timestamps alone do not establish which event caused or preceded the other. The alternative
+requires one globally sequenced observation feed, adding coordination between independent sources.
+This remains pending. A source feed is a declared observation boundary, not automatically a process
+or object. This does not force sampled metrics/latest-state observations into a lossless history,
+change authoritative state ownership, or supply permissions through a cursor. Exact cursor encoding,
+snapshot/catch-up mechanics and delivery guarantees remain open. See the
+[observation research follow-up](research/OBSERVABILITY.md#identity-and-causality).
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

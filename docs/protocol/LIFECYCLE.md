@@ -148,6 +148,18 @@ contract, and an additional presentation must not dispatch duplicate work. Finit
 still return their completed result directly. This adds neither Agent job submission nor a universal
 domain-state enum. Exact tool names, result encoding and extension mapping remain authoring work.
 
+**Human-interaction wait ownership:** retain a typed interaction reference and safe pending-state
+information with the managed operation. An authorized Interface attachment can rediscover the wait
+after the originating frontend closes. For example, setup awaiting a password-manager unlock stays
+inspectable from a reopened terminal; the adapter offers a still-valid native/provider flow or
+reports that a new interaction is required under its recovery contract.
+
+The retained wait does not preserve an expired challenge, transfer provider identity or establish
+that the requested action occurred. Current authority and sensitivity rules still apply, with
+credentials kept in their established custody rather than ordinary conversation or logs. This
+does not promise recovery of arbitrary suspended plugin code or provider state. Exact interaction
+schemas, MCP presentation and expiry/replacement mechanics remain authoring work.
+
 Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in

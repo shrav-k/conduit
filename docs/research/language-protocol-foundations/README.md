@@ -303,13 +303,13 @@ result encoding and optional extension mapping remain open; no new Agent job-sub
 **Human-interaction follow-up, 2026-11-04:** MCP elicitation distinguishes structured form input
 from external URL flows for sensitive interactions. When elicitation state is retained, it must be
 protected and associated with the correct user. These facilities do not by themselves define the
-lifetime of a Conduit operation's pending interaction when a frontend disconnects. We recommend
+lifetime of a Conduit operation's pending interaction when a frontend disconnects. The owner accepted
 retaining an interaction reference and safe pending state with the operation, discoverable through
 an authorized Interface attachment. Rediscovery must still use the adapter's valid flow; it cannot
 extend a challenge's expiry or imply that a different frontend can resume arbitrary provider state.
-The alternative binds completion to the originating frontend and requires a new interaction after
-disconnect. This recommendation remains pending owner review, with the accepted credential-custody
-and current-authority boundaries unchanged. [MCP elicitation](https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation)
+The owner selected this over binding completion to the originating frontend and requiring a new
+interaction after every disconnect. Credential custody and current authority remain unchanged;
+exact presentation and recovery mechanics remain open. [MCP elicitation](https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation)
 
 OpenAPI and AsyncAPI help separate an operation/message description from its protocol binding.
 CloudEvents supplies event identity and contextual metadata, not retained exchange history or

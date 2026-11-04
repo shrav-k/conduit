@@ -502,6 +502,13 @@ mapping is exercised, correlate it to the same operation and evidence. Also reta
 completing operation to show that the baseline does not force all calls to defer. These are planned
 tests, not evidence that a wire implementation or arbitrary MCP client already supports them.
 
+Use a synthetic human-interaction wait: retain its typed reference and safe pending state, close
+the frontend, then rediscover it through an authorized Interface attachment without creating another
+underlying operation. Exercise both a still-valid challenge and an expired/unrecoverable challenge
+that requires a supported new interaction. Rediscovery must not report completion, transfer identity
+or expose credential material. Recheck authority before inspection/response. The fixture does not
+establish real provider challenge recovery or continuation of arbitrary suspended plugin code.
+
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should
 decide whether a Wasm lane buys enough to justify another runtime; it is not a prerequisite for

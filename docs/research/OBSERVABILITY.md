@@ -95,6 +95,22 @@ context separate from grants and actor authentication. A supplied trace ID is no
 identity. For distributed display, retain per-source ordering/generation and observed freshness;
 wall-clock sorting alone is not a causal order. [W3C Trace Context][w3c-trace]
 
+**Ordering follow-up, 2026-11-04:** Kafka's historical FAQ illustrates the tradeoff between ordering
+within a partition and selecting one partition for a total order over writes. This is an ordering
+precedent, not a recommendation to adopt its older deployment settings or Kafka itself.
+[Kafka partition ordering](https://cwiki.apache.org/confluence/spaces/KAFKA/pages/33293069/FAQ)
+Kubernetes watch clients must also handle unavailable retained versions, including `410 Gone`;
+resumability is a declared service guarantee rather than proof that history remains available
+indefinitely. [Kubernetes resource versions](https://kubernetes.io/docs/reference/using-api/api-concepts/#410-gone-responses)
+
+For Conduit, we recommend source-scoped order and resume cursors for retained observation feeds.
+The Interface can combine feeds and follow explicit causal links without treating clock order as
+a global commit order. A source feed is a declared contract boundary, not necessarily an entire
+executor or a single instance. The alternative is a globally sequenced feed, which simplifies one
+ordered view but introduces coordination across independent sources. This remains pending owner
+review. It does not require a Kafka backend, a lossless metric stream, or cross-source comparison of
+cursor values; exact cursor encoding, snapshot/catch-up behavior and delivery guarantees remain open.
+
 ### MCP needs message-level propagation
 
 The pinned OpenTelemetry MCP convention describes injecting trace context into request `_meta`,

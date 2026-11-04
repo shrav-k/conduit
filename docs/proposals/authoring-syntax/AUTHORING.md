@@ -167,6 +167,22 @@ can expose the same operation without another dispatch. A quick checksum operati
 its result directly. These steps do not prescribe tool names or wire fields, add Agent work jobs,
 or replace the indexing operation's recovery and effect-evidence contract.
 
+### Rediscovering a human-interaction wait
+
+**Accepted:** a wait belongs to the managed operation, not the terminal that first displayed it.
+For example, a Resource's setup needs the user to unlock a password manager:
+
+1. The adapter reports the required interaction. The operation retains its typed reference and
+   safe pending-state information.
+2. The user closes the terminal. That does not remove the wait from the operation.
+3. An authorized attachment to the Interface discovers the pending interaction later.
+4. The adapter supplies a still-valid native/provider flow, or explains that a new interaction is
+   required under its recovery contract. It confirms the result through that contract.
+
+Displaying the wait or retaining its reference does not complete the unlock. It also cannot keep
+an expired challenge alive, move a login to a different identity, expose credentials or guarantee
+that arbitrary suspended code can resume. Exact interaction fields and MCP presentation remain open.
+
 ### What a template sees
 
 The template need not change between A and B. For example, a setup graph could fingerprint text

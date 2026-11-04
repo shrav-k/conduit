@@ -2,11 +2,10 @@
 
 The protocol and language lead this repository. Start with the [overview](OVERVIEW.md), then read
 the [protocol reference](protocol/README.md) or follow the [authoring path](authoring/README.md).
-There is one [review entry point](REVIEW.md). The post-migration review is complete; the next phase
-is a concrete authoring/conformance walkthrough, informed first by the
-[language/protocol comparison](research/language-protocol-foundations/README.md).
-Completed conceptual and implementation rulings
-remain accepted; their earlier review summaries live in the archive.
+There is one [review entry point](REVIEW.md). Behavior and structure are reviewed; vocabulary and
+concrete schemas/wire representations come next. The [vocabulary map](VOCABULARY.md) supplies stable
+links to definitions and examples. Completed rulings remain accepted, with their full records in
+the [archive](archive/README.md). Research supplies evidence, not another question queue.
 
 ## Reading paths
 
@@ -17,6 +16,7 @@ remain accepted; their earlier review summaries live in the archive.
 | Implement the protocol | [Configuration and conformance](protocol/CONFIGURATION.md) → [Conduit authority/requirements](protocol/CONDUITS.md) → [experiment obligations](../experiments/002-runtime-plugins/README.md). |
 | Build the reference runtime | [Implementation boundaries](implementation/README.md) → [architecture candidates](implementation/ARCHITECTURE.md) → [organization candidates](implementation/ORGANIZATION.md). |
 | Understand a decision or contribute | [Current review](REVIEW.md) → [research](research/README.md) / [archived rationale](archive/README.md) → [contributor guide](../CONTRIBUTING.md). |
+| Review names without changing meaning | [Vocabulary map](VOCABULARY.md) → its stable definition link → complete example → [naming procedure](VOCABULARY.md#review-and-migration-procedure). |
 
 ## Source responsibilities
 
@@ -26,7 +26,8 @@ remain accepted; their earlier review summaries live in the archive.
 | [protocol/](protocol/README.md) | One active home for detailed accepted contracts. Explicit reference-runtime selections remain qualified. This is a working reference, not a released schema or a claim of tested conformance. |
 | [authoring/](authoring/README.md) | How an original author moves from a contract to an implementation, graph and template. No unapproved syntax or unimplemented installation instructions. |
 | [implementation/](implementation/README.md) | Accepted first-implementation boundaries and marked mechanism proposals. Moving a proposal here does not ratify its candidate crates or libraries. |
-| [REVIEW.md](REVIEW.md) | Settled migration/owner decisions and next authoring refinements, with engineering and deferred scope separated. |
+| [REVIEW.md](REVIEW.md) | The short active work queue, with engineering and deferred scope separated; completed rulings link to their archive. |
+| [VOCABULARY.md](VOCABULARY.md) | Naming review map with stable definition IDs, examples and change surfaces. Navigation and distinctions, not a second specification or approved glossary. |
 | [proposals/authoring-syntax/](proposals/authoring-syntax/README.md) | Preserved representation alternatives and complete examples for the next syntax/conformance PR. |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and actual probes. Historical recommendations are not an active specification or question queue. |
 | [archive/](archive/README.md) | Closed reviews, transition accounting and attributed collaborator proposals, including dissent. Accepted behavior also stays accessible in the active reference. |
@@ -38,8 +39,9 @@ One main repository is accepted, with independently consumable protocol/conforma
 and extension surfaces. A common package envelope can contain plugins, templates or both. Neither
 decision requires a shared version or one installation containing everything.
 
-This migration establishes documentation sources and navigation. It does not create an organization,
-choose a license, approve a release scheme or scaffold a code tree. Future machine-readable protocol
+The repository uses Apache-2.0 for original material; permanent public naming remains deferred under
+the [publication policy](../CONTRIBUTING.md#project-ownership-and-publication). No runtime code tree
+or release scheme is created by organizing documentation. Future machine-readable protocol
 artifacts and conformance tests should link to these behavioral sources; they should not introduce
 another prose specification. Runtime code, package source and website build configuration can be added
 when their first reviewed slice needs them. A website should render the canonical source material;
@@ -53,5 +55,6 @@ design or proposals, a source claim in research, and a test/result in experiment
 update the relevant contract and examples together without restoring a parallel decision ledger.
 
 Use the [migration record](archive/migrations/2026-11-protocol-framing.md) to locate old paths and verify
-preservation. The [contributor guide](../CONTRIBUTING.md) documents local link/anchor checks. Research
+preservation. The [vocabulary-preparation audit](archive/migrations/2026-11-vocabulary-audit.md) records
+the later index cleanup and stable hooks. The [contributor guide](../CONTRIBUTING.md) documents local link/anchor checks. Research
 and archive wording retains historical terminology where that is necessary to explain the source.

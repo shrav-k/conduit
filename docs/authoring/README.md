@@ -12,7 +12,8 @@ primary references and worked cases for choosing those representations.
 
 Only the five object-family names are settled. Other Conduit terms and field spellings remain
 working names under the [vocabulary boundary](../protocol/MODEL.md#vocabulary-review-boundary).
-Review behavior and structure now; a separate future PR will settle a coherent vocabulary together.
+Behavior and structure have been reviewed. The [vocabulary map](../VOCABULARY.md) connects the next
+naming discussion to accepted meanings and complete examples without selecting new terms.
 
 Author configuration and data schemas in constrained YAML 1.2 or equivalent JSON. Both use
 one value model; JSON Schema 2020-12 supplies data validation, while Conduit defines execution,

@@ -4,10 +4,12 @@ This is the reference-implementation design, subordinate to the public contracts
 of the proposals directory does not approve candidate mechanisms or claim they are implemented.
 The [current review queue](../REVIEW.md) is the only active decision queue; the I1–I7 summary below is historical.
 
-Updated: 2026-11-02. This packet preserves implementation planning; **no runtime implementation or
+Navigation audited: 2026-11-04. This packet preserves implementation planning; **no runtime implementation or
 provider experiment has run**. The [design](../protocol/README.md) supplies accepted semantics. The
 [conceptual review](../archive/reviews/CONCEPTUAL.md) is complete; the
-[authoring/syntax packet](../proposals/authoring-syntax/README.md) is ready for the next review; its syntax remains proposed.
+[authoring/syntax packet](../proposals/authoring-syntax/README.md) now reflects completed behavior/structure
+review, with concrete representations still proposed. Use the [vocabulary map](../VOCABULARY.md) when
+reviewing names; physical process/crate terms must remain distinct from the five object families.
 
 The public protocol, plugin authoring and repeatable templates take priority over early efficiency.
 Use existing infrastructure and lightweight support to prove the contracts. A Rust process layout,

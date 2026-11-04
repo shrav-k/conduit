@@ -28,6 +28,8 @@ and behavioral contracts across every entry point.
 CLI/API/frontends must interpret the same objects consistently. Future generators can
 emit this model; they cannot bypass its validation or authority rules.
 
+<a id="v15"></a>
+
 Each object uses its family as `kind` and a top-level `form` beside it to identify a template
 or instance. Form is a structural distinction, not an observed lifecycle state: instantiation
 creates a separate object rather than changing the template's form. Family and form determine the
@@ -274,6 +276,8 @@ semantics, and unsupported schemas/features remain errors under the existing acc
 Other default-resolution mechanics, including the remaining applicability rules, remain authoring
 work. This adds no ordered precedence between schema defaults or change to provider-native semantics.
 
+<a id="v32"></a>
+
 ### Implementation selection
 
 **V0 rule:** select Conduit plugin implementations explicitly or through an
@@ -409,6 +413,8 @@ Pinning only a plugin does not establish compatibility with a different host or 
 users may need to pin the whole working set. Pinning Conduit-controlled artifacts does not freeze
 external services, native-agent binaries or the host environment. Their actual compatibility
 continues to be reported under the existing integration contracts.
+
+<a id="v16"></a>
 
 ### Object identity
 

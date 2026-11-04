@@ -170,6 +170,8 @@ contract and cannot be claimed until demonstrated. Managed access enforcement is
 host interception. BYO compatible skills remain native, explicitly activated from permitted Resources.
 
 The [review](archive/reviews/CONCEPTUAL.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
-A later PR will review concrete authoring syntax and conformance fixtures. Remote/multi-user operation, automatic wake, general authored loops, in-place
+The behavior/structure review is complete. The [vocabulary map](VOCABULARY.md) prepares the naming
+pass; concrete schemas and executable conformance fixtures follow. Remote/multi-user operation,
+automatic wake, general authored loops, in-place
 definition upgrades and a marketplace remain deferred. The [collaborator proposals](archive/collaborator-proposals/REVIEW.md)
 are evaluated against this model; they do not silently add deployment requirements.

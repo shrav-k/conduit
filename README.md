@@ -10,9 +10,9 @@ requirements, implement operations with code or existing MCP services, compose g
 repeatable templates. A Rust reference implementation, replaceable frontends and a thin set of
 plugins/templates will demonstrate those contracts. Richer integrations can live in ancillary packages.
 
-**Status: protocol design and review. There is no runnable Conduit implementation yet.**
-Accepted semantics are documented; exact schemas, package syntax and MCP profile mappings remain
-under review. Static examples are not evidence of runtime or provider compatibility.
+**Status: behavior/structure review complete; vocabulary and concrete representations are next.**
+There is no runnable Conduit implementation yet. Accepted semantics are documented; exact schemas,
+package syntax and MCP profile mappings remain provisional. Static examples are not runtime evidence.
 
 | Start here | Purpose |
 | --- | --- |
@@ -20,7 +20,8 @@ under review. Static examples are not evidence of runtime or provider compatibil
 | [Protocol reference](docs/protocol/README.md) | Accepted behavioral contracts and conformance boundaries. |
 | [Author with the protocol](docs/authoring/README.md) | Define an original extension and template; identify which representations are still proposals. |
 | [Reference implementation](docs/implementation/README.md) | Accepted implementation choices, candidate mechanisms and delivery evidence. |
-| [Current review](docs/REVIEW.md) | Completed migration rulings and the next authoring/conformance review. |
+| [Current review](docs/REVIEW.md) | Remaining vocabulary, representation and conformance work; completed decisions are archived. |
+| [Vocabulary map](docs/VOCABULARY.md) | Stable references to accepted meanings, examples and naming collisions. |
 | [Documentation map](docs/README.md) | Research, experiments, archived reviews and attributed dissent. |
 
 The repository now separates the active reference from completed reviews without discarding their

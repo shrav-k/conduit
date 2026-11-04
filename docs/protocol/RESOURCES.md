@@ -162,6 +162,8 @@ This does not introduce an internal ticket engine or make common observability o
 Storage, search and graph backends are replaceable; Xerj is a candidate plugin backend.
 Authoritative records, observations of external state and search projections are distinct.
 
+<a id="v33"></a>
+
 ### Retained memory and evidence
 
 Contexts, notebooks and similar memory surfaces can be ordinary Resources exposing plugin-backed

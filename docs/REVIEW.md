@@ -656,16 +656,26 @@ requirement-definition composition, not the topology of live Conduits, recursive
 package dependencies generally. Passing validation does not prove endpoint support or fulfillment.
 Exact diagnostics and expansion/resource limits remain implementation work.
 
-Next, settle where Conduit's invocation context travels in MCP calls. The recommendation uses
-MCP's separate request metadata for the Conduit profile, keeping each operation's domain input
-schema and ordinary tool arguments intact. A directory operation receives `path`; operation and
-owning-instance identifiers accompany the call outside those arguments. The alternative wraps
-domain inputs and Conduit context together in each tool's argument schema. This remains pending.
-It chooses wire placement, not a new source of authority: the responsible service must establish
-or verify caller/participation context, and supplied metadata cannot confer permission. Plain
-upstream MCP services remain adapter-backed without implementing this profile. Exact profile keys,
-context fields and negotiation remain separate; graph-visible metadata keeps its accepted declared
-read-only boundary. See the [MCP research follow-up](research/language-protocol-foundations/README.md#6-mcp-supplies-interaction-not-all-of-conduits-semantics).
+**MCP invocation placement is accepted:** use separate MCP request metadata for Conduit context,
+keeping each operation's domain input schema and ordinary tool arguments intact. A directory
+operation receives `path`; operation and owning-instance identifiers accompany the call outside
+those arguments. The responsible service establishes or verifies authenticated context and current
+authority; metadata does not confer permission. Plain upstream MCP services remain adapter-backed
+without implementing this profile or automatically receiving managed context. Graph-visible
+metadata keeps its declared read-only boundary. Exact profile keys, context fields and negotiation
+remain separate. See the [MCP research follow-up](research/language-protocol-foundations/README.md#6-mcp-supplies-interaction-not-all-of-conduits-semantics).
+
+Next, settle the minimum client interaction for deferred managed work. The recommendation provides
+a retained operation reference and authorized inspection through ordinary MCP tools as a baseline;
+negotiated task/progress extensions may expose the same work without becoming mandatory. For example,
+an Interface starts an index build, receives an acceptance reference, and later inspects progress or
+the outcome. A tool-capable client still needs to understand the published inspection contract;
+transport compatibility alone does not supply that behavior. The alternative requires the MCP Tasks
+extension for deferred work and reports unsupported capability when it is unavailable. This remains
+pending. It does not add Agent job submission, require every finite call to return early, treat
+acceptance as successful completion, grant access through a reference, or replace domain recovery
+and retained evidence with a transport task handle. Exact result/tool names and profile mapping remain
+separate.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

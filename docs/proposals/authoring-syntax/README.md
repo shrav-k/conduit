@@ -29,6 +29,11 @@ V0 requirement composition is finite and acyclic. Reject direct/indirect definit
 validation while preserving independent reuse and its distinct parameters. This does not prohibit
 cycles in live Conduit connections, recursive data schemas or package dependencies generally.
 
+Conduit invocation context uses separate MCP request metadata; ordinary operation arguments and
+their domain input schemas remain intact. The responsible service establishes or verifies trusted
+context; supplied metadata cannot grant authority. Plain upstream MCP services remain adapter-backed.
+Exact profile fields and negotiation remain open.
+
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,
 pending work or uncertainty separate. Coupled settings may require whole-change confirmation.

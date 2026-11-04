@@ -480,6 +480,13 @@ inspection and recovery. Map each exchange to standard MCP facilities or a clear
 extension. If most behavior requires a second ad hoc protocol, revisit the worker contract
 before implementing more providers.
 
+In that trace, pass a small plugin's domain arguments unchanged and carry Conduit invocation
+context separately in MCP request metadata. Exercise helper-backed and direct protocol handling;
+reject forged context claims rather than accepting metadata as authority. Verify that a plain
+upstream MCP service needs no Conduit argument wrapper and receives no automatically forwarded
+managed context. Graphs must see only their declared read-only metadata surface. These are planned
+wire/conformance cases; exact profile keys and executable fixtures remain to be authored.
+
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should
 decide whether a Wasm lane buys enough to justify another runtime; it is not a prerequisite for

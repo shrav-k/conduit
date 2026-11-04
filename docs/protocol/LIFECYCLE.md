@@ -110,6 +110,19 @@ types do not require every plugin's domain lifecycle to fit a shared enum. Plugi
 behavior; Conduit preserves attribution, current authority and evidence of effects. Follow-up calls
 remain authorized operations, not authority supplied by the preceding result.
 
+**MCP invocation placement:** carry Conduit's invocation context in MCP's separate request
+metadata, leaving each operation's domain input schema and ordinary tool arguments intact.
+For example, a directory operation receives `path`, while operation and owning-instance
+identifiers accompany the call outside those arguments. This applies to Conduit-profile calls;
+plain upstream MCP services remain reachable through adapters without implementing the profile.
+
+Metadata placement does not establish trust. The responsible service establishes or verifies
+authenticated caller, target and participation context under current authority; caller-supplied
+identifiers cannot confer permission. Do not automatically forward managed context to an upstream
+provider. Graph-visible metadata retains its explicitly declared, typed, read-only boundary rather
+than exposing the entire request metadata map. Exact profile keys, context fields and negotiation
+remain authoring work; this does not add a wrapper to every plugin input contract.
+
 Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in

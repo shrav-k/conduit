@@ -1084,6 +1084,15 @@ with relaxed permissions or a substituted account.
 
 ### MCP mapping
 
+**Accepted request placement:** Conduit invocation context travels in MCP request metadata,
+separately from the operation's ordinary tool arguments and domain input schema. Operation and
+owning-instance identifiers do not become required domain arguments merely for host bookkeeping.
+The responsible service establishes or verifies trusted context; a supplied metadata field is not
+proof of identity, participation or authority. Plain provider MCP calls remain adapter-backed and
+do not automatically receive this context. Graph-visible metadata is only the declared read-only
+surface, not unrestricted access to the wire metadata map. Exact keys, fields and negotiation remain
+open. The interaction mappings below remain proposals where not separately accepted.
+
 | Interaction | Preferred representation and fallback |
 | --- | --- |
 | Discover/invoke a supported control | A named typed MCP tool with structured result. Provider tools retain native names/schemas where compatible. |

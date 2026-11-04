@@ -262,8 +262,8 @@ verified caller, target and participation while preserving the provider operatio
 interaction metadata separately from a tool call's `arguments`. This suggests carrying the Conduit
 profile alongside ordinary domain inputs, instead of adding a Conduit wrapper to every tool's input
 schema. For example, a directory operation can retain its `path` argument while operation/instance
-identifiers travel separately. This is a proposed wire mapping, not an accepted ruling or proof of
-SDK interoperability. Metadata is caller-supplied until authenticated or checked by the responsible
+identifiers travel separately. The subsequent owner ruling accepts this placement; it is not proof
+of SDK interoperability. Metadata is caller-supplied until authenticated or checked by the responsible
 service; its location cannot establish grants or trusted caller identity. Plain upstream MCP services
 still use adapters and need not understand the profile. Exact profile keys, negotiation and fields
 remain open. [MCP metadata](https://modelcontextprotocol.io/specification/2026-07-28/basic/index#_meta) ·
@@ -275,6 +275,18 @@ of Conduit recovery or proof that a remote effect was cancelled. Its support mus
 clients without it need a declared supported interaction path or an explicit unsupported outcome.
 Choosing a mapping does not add Agent job submission to the first communication experiment.
 [Tasks extension](https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html)
+
+**Deferred-work follow-up, 2026-11-04:** this extension negotiates support explicitly and provides
+server-created task handles with retrieval, update and cancellation methods. It also declares task
+retention through a lifetime field. These are useful interaction mechanisms, but selecting them does
+not establish Conduit's effect recovery or evidence-retention guarantees. Our proposed baseline is a
+managed operation reference plus authorized inspection through ordinary MCP tools, with optional
+extension mapping to the same work. An index-build request can report acceptance and later expose
+its progress/result without requiring every client to implement Tasks. Such a client must still
+understand the published operation/inspection contract; this is not automatic usability by every
+MCP client. The alternative makes Tasks mandatory for deferred work. This remains a recommendation
+for owner review, without selecting tool names, result encoding or new Agent job-submission scope.
+[Tasks negotiation and model](https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html#capability-negotiation)
 
 OpenAPI and AsyncAPI help separate an operation/message description from its protocol binding.
 CloudEvents supplies event identity and contextual metadata, not retained exchange history or

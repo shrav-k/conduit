@@ -794,6 +794,14 @@ the enclosing instance's configuration namespace into that operation. Keep scope
 and explicitly authorized Resource access available through their contracts. Validate declared input
 bindings under the same early and runtime checks used for other operations.
 
+Place Conduit invocation context in MCP request metadata, separate from ordinary operation
+arguments. Keep the published domain input schema unchanged rather than injecting a mandatory
+context/input wrapper. The responsible service establishes or verifies authenticated context and
+current authority; reject attempts to replace it with caller-supplied claims. Do not automatically
+forward managed metadata to a plain provider MCP service, or expose the whole wire metadata map to
+graphs. Their typed read-only metadata surface remains separately declared. Exact profile fields
+and negotiation remain authoring work.
+
 For Conduit-authored operation invocations, resolve supplied bindings, materialize unambiguous
 applicable defaults for genuinely omitted fields, then validate the prepared payload before dispatch.
 Use the same preparation boundary for code and graph implementations, including child invocations;

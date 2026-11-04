@@ -122,6 +122,23 @@ small extension may benefit from A's consistent defaults. Under either approach 
 contract and conformance checks must be satisfied; an ordinary MCP tool server alone does not
 prove support for Conduit's execution, identity or recovery semantics.
 
+### Invocation inputs and Conduit context
+
+**Accepted:** use MCP's separate request metadata for Conduit's invocation context. The digest
+handler's domain input stays `{text: "hello"}`; it does not become
+`{context: {...}, input: {text: "hello"}}`. Likewise, a directory operation keeps its `path` input.
+
+| Part of the call | Illustrative content | Interpretation |
+| --- | --- | --- |
+| Ordinary tool arguments | `{text: "hello"}` | Validate against the operation's domain input schema. |
+| Separate MCP request metadata | Operation and owning-instance identifiers under the Conduit profile | Establish or verify context through the responsible service; supplied IDs do not authorize work. |
+
+Both helper-backed and directly implemented plugins use this boundary. It does not require the
+domain function to consume context it does not need. A plain upstream MCP service continues through
+its adapter without a mandatory Conduit wrapper or automatic forwarding of managed context.
+Graph-visible metadata remains explicitly declared and read-only. Exact profile keys and context
+fields are not selected by this example, and this is not an executable wire fixture.
+
 ### What a template sees
 
 The template need not change between A and B. For example, a setup graph could fingerprint text

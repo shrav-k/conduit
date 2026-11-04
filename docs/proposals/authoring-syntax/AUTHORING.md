@@ -1345,6 +1345,24 @@ bindings and constituent contracts, with explicit construction available. Both p
 effects, uncertainty and scoped evidence without publishing all intermediate values. Exact field
 names and mapping syntax remain open.
 
+**Accepted public-value wiring:** a declared public output uses the same four binding forms as a
+step input. For example, the database graph can assemble this output value; the surrounding output
+declaration and reference field spellings remain illustrative:
+
+```yaml
+object:
+  label: {literal: primary}
+  database:
+    reference: {from: output, node: start, port: database}
+```
+
+This assumes the graph declares a `start` step publishing a compatible `database` output. The
+consumer receives the assembled object, not the binding notation. No extra plugin is needed just
+for assembly. Its public contract still controls when the output may be published, its validity and
+permitted exposure. It neither exposes the rest of the graph's internal values nor certifies that
+migration or setup as a whole succeeded. Calculations, provider work and error/outcome interpretation
+remain governed by their existing operation contracts.
+
 **Accepted recovery default:** a published graph-backed operation reuses graph recovery without
 requiring a bespoke handler merely for composition. Explicit retry of this unchanged invocation
 reuses still-valid startup progress and delegates the uncertain migration effects to its recovery

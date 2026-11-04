@@ -339,6 +339,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child
   recovery instead of blindly replaying effects.
+- Bind declared public graph outputs using each accepted form: literal, reference, object assembly
+  and list assembly. Combine a literal label with a managed reference in one fixture and verify
+  resolved values reach consumers without extra assembly code or authoring wrappers. Preserve
+  source scope, publication/validity and permitted exposure; do not expose unrelated internal values
+  or declare whole-graph success from output availability alone. Reject malformed bindings and
+  invalid public values while retaining earlier effects and operation evidence.
 - Compose two reusable starting requirements in a named definition and use it in Conduit templates.
   Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
   core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.

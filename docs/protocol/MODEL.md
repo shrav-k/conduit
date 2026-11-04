@@ -176,7 +176,9 @@ Composite output contracts account for their composed success and failure modes.
 initial public result contract by default from declared public output bindings and constituent
 contracts; authors may explicitly construct a domain result instead. Preserve relevant effects,
 uncertainty and links to scoped evidence without automatically exporting internal outputs. Public
-results and retained execution evidence serve different purposes. Detailed derivation/mapping
+output values use the same literal/reference/object/list binding forms as graph inputs under their
+declared publication, validity and access contracts. Public results and retained execution evidence
+serve different purposes. Detailed derivation/mapping
 mechanics and recovery coordination remain under review in the
 [composite output proposal](../proposals/authoring-syntax/CONTRACTS.md#composite-outputs-and-outcomes--proposal).
 

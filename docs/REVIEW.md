@@ -503,14 +503,20 @@ distinct from plugin export names and runtime declarations. Different graphs may
 this grants no new visibility into a called graph's internals. Container names and supporting
 vocabulary remain open.
 
-Next, decide how declared public graph outputs bind their values. The recommendation reuses the
-four input-binding forms—literal, reference, object assembly and list assembly—under the graph's
-existing source/scope rules. For example, a graph could publish an object combining a literal label
-with a database reference from startup. The alternative only forwards selected child outputs,
-requiring an operation to construct other public values. Publication conditions, validity, output
-validation, access and sensitivity still apply; assembling a public value does not confirm overall
-success or export other internal outputs. This remains pending and does not settle error/outcome
-mapping, output-contract layout or final field names.
+**Public graph value bindings are accepted:** reuse the four input-binding forms—literal, reference,
+object assembly and list assembly—under existing source/scope rules. A graph can publish an object
+combining a literal label with a database reference from startup without an extra assembly operation.
+Publication conditions, validity, output validation, access and sensitivity still apply. Constructing
+a public value does not confirm whole-graph success, broaden scope or export other internal outputs.
+Domain-error/outcome mapping, output-contract layout and final field names remain open.
+
+Next, decide the root selected by the graph-input source. The recommendation selects the graph's
+complete declared input payload, then uses the optional JSON Pointer within it. For inputs such as
+`{limit: 15, database: ...}`, `/limit` selects 15 and an omitted pointer selects the whole payload.
+The alternative first names one declared input in the source selector, then applies the pointer
+within that input. This remains pending; neither choice supplies ambient caller configuration,
+runtime metadata or authority. Existing validation, scope and missing-selection rules still apply;
+source field names and input-contract representation remain open.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

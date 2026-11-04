@@ -790,6 +790,12 @@ incomplete start uses the same progress lineage and only reuses results whose in
 backing and current prerequisites remain valid. Changed confirmed configuration invalidates
 affected results under declared read sets, conservatively all relevant steps when unknown.
 
+Use the same literal/reference/object/list binding machinery for declared public graph outputs as
+for step inputs. Retain source/scope and literal-data rules, validate the resulting public values,
+and apply their publication, validity and exposure contracts. Assembly does not publish unrelated
+intermediate values, bypass sensitivity/custody or establish whole-operation success. Consumers
+receive resolved values; domain outcome mapping and output-contract layout remain authoring work.
+
 A node requesting runtime startup is an ordinary typed operation explicitly bound to the instance's
 declared runtime. It supplies prepared inputs through the selected compatible contract and goes
 through the instance supervisor. The process/client is owned before the node receives a usable

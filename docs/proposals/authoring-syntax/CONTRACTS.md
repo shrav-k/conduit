@@ -281,6 +281,13 @@ whose output can feed later steps. References do not acquire
 plugin-defined external-fetch behavior. This keeps extension work in operations and capabilities
 initially; further source forms could be reviewed later. Exact selectors and source schemas remain open.
 
+**Pending graph-input root:** the recommendation makes this source select the complete declared
+input payload of the graph invocation, using the optional JSON Pointer to select within it. For
+`{limit: 15, database: ...}`, `/limit` selects 15; omission selects the whole payload. The alternative
+selects a named input first and applies the pointer within that value. No ambient caller settings,
+metadata or authority enter either source; reusable operations still receive declared typed inputs.
+Exact selector fields and input-contract representation remain open.
+
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for
 reference markers. A plugin result retrieved through a reference remains data rather than being
@@ -551,13 +558,14 @@ uncertainty and scoped evidence, and do not automatically export internal output
 algorithms, mapping syntax and recovery coordination below remain proposed. Keep domain results
 open-ended rather than introducing a universal enumeration of business failures.
 
-**Pending public-value binding forms:** the recommendation reuses the accepted `literal`, `reference`,
+**Accepted public-value binding forms:** reuse the accepted `literal`, `reference`,
 `object` and `list` forms for each declared public output's value, with the same source/scope rules as
-input bindings. A graph could publish a database reference with a literal label using object assembly.
-The alternative restricts public bindings to forwarding child outputs and uses operations to construct
-other public values. Both retain declared publication conditions, validity, producer validation and
-permitted exposure. A public value does not by itself confirm whole-operation success or publish other
-internal outputs. This choice does not settle domain-error mapping, output-contract layout or vocabulary.
+input bindings. A graph can publish a database reference with a literal label using object assembly
+without an extra assembly operation. Declared publication conditions, validity, output validation and
+permitted exposure still apply, including sensitivity/custody rules. A public value does not by itself
+confirm whole-operation success, broaden scope or publish other internal outputs. Calculations and
+transformations remain plugin operations. Domain-error mapping, output-contract layout and vocabulary
+remain open; consumers receive resolved values rather than authoring forms.
 
 Distinguish three concerns within the existing operation contract and evidence system:
 

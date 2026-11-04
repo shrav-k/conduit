@@ -66,6 +66,9 @@ fields, not a compact reference string. Every graph input binding explicitly ide
 reference, object assembly or list assembly form, including children of assemblies. Literal payloads
 and resolved references remain ordinary data; there is no bare-value binding shorthand. Each binding
 uses exactly one key: `literal`, `reference`, `object` or `list`, with its payload underneath.
+Declared public graph output values reuse those same four forms and source/scope rules. Publication,
+validity, output validation, sensitivity and access still apply; assembly does not establish overall
+success or expose other internal outputs. Output-contract layout and domain-error mapping remain open.
 Object/list assembly payloads contain child bindings. The accepted reference layout puts source
 fields directly beside the optional pointer, without a nested source object. Omitting the pointer
 selects the whole explicitly chosen source, equivalent to an empty pointer. The accepted v0 sources

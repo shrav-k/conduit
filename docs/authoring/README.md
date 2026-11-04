@@ -87,6 +87,9 @@ Consider a small document-search capability used by an Agent. The authoring step
    Every graph input binding has exactly one key: `literal`, `reference`, `object` or `list`, with its
    payload underneath, including each field/item binding inside an assembly. A literal can contain
    a whole object/list with ordinary unwrapped data. Plugins receive resolved values, not authoring forms.
+   Declared public graph outputs reuse these four forms and the same source/scope rules. Their
+   publication, validity and access contracts still govern exposure; a constructed public value
+   does not itself certify whole-graph success or publish other intermediate outputs.
    A missing selected value reports a reference-resolution error and blocks the receiving step,
    even for an optional/defaulted input. An actual null value is checked against the receiving schema.
    Explicitly assemble object fields or list items from literals/references without an extra plugin

@@ -324,6 +324,18 @@ Assembly forms explicitly combine their child bindings into the resulting object
 This applies at graph authoring positions. Ordinary configuration and provider payloads keep their
 data representation, and plugins receive resolved input values without the authoring forms.
 
+**Public graph values:** declared public graph outputs use the same literal, reference, object
+assembly and list assembly forms as input bindings, under the same source/scope and literal-data
+rules. For example, an output can assemble a literal label with a managed database reference from
+startup without an operation merely to construct the object. Calculations and transformations
+still use plugin operations.
+
+Public outputs retain their declared publication conditions, validity, output validation and
+permitted exposure, including sensitivity and custody requirements. Constructing a value does not
+establish whole-graph success, broaden reference scope or publish other internal outputs. This
+shares value-binding machinery; it does not settle domain-error/outcome mapping or the surrounding
+output-contract layout. Consumers receive the resolved values, not authoring wrappers.
+
 **Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
 as that key's value. The same encoding applies to child bindings inside assemblies.
 The four forms and this structure are accepted; these key spellings are working names under the

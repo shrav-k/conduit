@@ -1,6 +1,6 @@
 # Current review
 
-Updated: 2026-11-03, after the protocol-documentation migration. This is the only active review queue.
+Updated: 2026-11-04, after the protocol-documentation migration. This is the only active review queue.
 The five-family model and completed conceptual/implementation rulings remain accepted in the
 [protocol reference](protocol/README.md). The migration did not settle new semantics or approve syntax.
 
@@ -456,15 +456,24 @@ endpoint ownership of connection-specific activity. Existing setup, control and 
 govern their behavior. The number of declarations does not introduce a new global failure policy;
 exact declaration syntax and contract-specific coordination remain authoring work.
 
-Next, decide whether Conduit-declared live service and authentication bindings share a typed
-managed-reference contract, or leave their representation to individual capability contracts.
-The recommendation shares ownership, resolution and validity semantics while leaving actual live
-objects/credentials with their owning implementation. Possession does not grant access; current
-authority and contract-specific lifetime checks still apply. The alternative can also support
-interoperability through compatible capability contracts, but may repeat common semantics or need
-adapters between differing representations. This concerns values passed between operations, not
-the graph's `reference` authoring form. It does not select wire fields, require a central broker,
-add a source category or reinterpret native provider MCP schemas. This boundary remains pending.
+**Shared managed-reference contract is accepted:** Conduit-declared live service and protected
+authentication bindings share ownership, resolution and validity semantics, while their owning
+implementations retain actual live objects/credentials. Capability contracts supply particular
+behavior and lifetime guarantees; common reference handling does not make different capabilities
+interchangeable. Possession grants no access, current authority still applies, and retained values
+do not establish current availability. This concerns operation values, not the graph's `reference`
+authoring form. It selects no wire fields, central broker or new source category and does not
+reinterpret native provider MCP schemas. Exact representation and resolution mechanisms remain open.
+
+Next, work through the existing multi-setting-control seam: may a control explicitly support
+confirming a subset of its requested changes, advancing those stored settings even when another
+part fails or remains uncertain? The recommendation allows this only under the control's declared
+contract, with the complete resulting configuration validated and evidence retained for the rest.
+For example, a confirmed query-limit change can be recorded while a timeout change is unresolved;
+the last confirmed timeout is not presented as known current. The alternative withholds all stored
+configuration changes until the entire requested change is confirmed, while reporting partial
+external effects separately. Neither choice implies rollback. This ruling remains pending; existing
+authority, revision and coordination rules still constrain any supported implementation.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

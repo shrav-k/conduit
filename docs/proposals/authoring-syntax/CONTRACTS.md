@@ -935,6 +935,15 @@ write arbitrary JSON. The host validates the complete resulting config against t
 and control constraints. If application cannot be confirmed, leave stored values unchanged and
 record uncertainty. The Interface must not label those last-confirmed values as known current.
 
+**Pending partial-confirmation boundary:** a control may request several settings whose provider
+effects are not atomic. The recommendation permits a contract to confirm and record only a subset
+of the requested changes, provided the complete resulting stored configuration is valid. Other
+effects retain their reported failure or uncertainty; neither the control as a whole nor remaining
+old settings become confirmed current merely because one part succeeded. The alternative keeps
+all stored values unchanged until the whole requested change is confirmed, with partial effects
+reported separately. This distinction remains under review; it does not waive allowed paths,
+revision checks, authority or coordination, or promise that arbitrary field subsets are independent.
+
 A waiting change retains its coordination semantics. If safe parallel control domains are added,
 they need declared disjoint read/write dependencies and transaction checks; merely using different
 field names does not prove provider-level independence. Start with serial controls and expected
@@ -969,16 +978,17 @@ step until access is available. Reuse existing interaction/recovery contracts ra
 a separate authentication workflow protocol; keep passwords/tokens out of ordinary conversations
 and logs. Exact interaction schemas remain I7 work.
 
-**Pending managed-reference boundary:** ordinary typed values can carry inspectable data such as
+**Accepted managed-reference boundary:** ordinary typed values can carry inspectable data such as
 a prepared storage descriptor. A live database or protected authentication binding instead needs
-ownership, resolution and validity semantics. The current recommendation is a shared typed contract
-for these Conduit-declared references, with the owning implementation retaining actual live objects
-and credentials. The alternative leaves representations to individual capability contracts, which
-can share compatible definitions or use adapters. Neither approach makes possession a grant or
-uses past publication as evidence of current availability.
+ownership, resolution and validity semantics. These Conduit-declared references share a typed
+contract, with the owning implementation retaining actual live objects and credentials. Capability
+contracts define their particular behavior and lifetime guarantees; common reference handling does
+not make different capabilities interchangeable. Possession is not a grant, and past publication
+does not establish current availability. Resolution and use still check applicable current authority
+and validity.
 
 Target identity, responsible endpoint and generation are candidate reference details, not accepted
-fields. Exact schemas, transport and resolution remain open; a shared contract would not require
+fields. Exact schemas, transport and resolution remain open; the shared contract does not require
 a central broker, another object family or a new graph binding form. These are operation values,
 distinct from the graph's `reference` expression that selects such a value. Native provider MCP
 schemas retain their own semantics. Inspection/recording must follow the value's sensitivity rules;

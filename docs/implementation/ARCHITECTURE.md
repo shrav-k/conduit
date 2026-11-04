@@ -526,6 +526,15 @@ instance generation and selected implementation. A delayed result is retained as
 cannot overwrite a newer confirmed configuration. Do not serialize a live handle and treat it
 as usable after reboot; reacquire or verify its instance-owned backing and authority.
 
+Conduit-declared live service and protected authentication bindings use the shared typed
+managed-reference contract. Keep actual live objects and credentials with their owning
+implementation; resolution/use checks current authority and the capability's particular validity
+rules. Common handling does not erase capability distinctions or make possession authoritative.
+Serialization and schema validation do not establish liveness. Respect sensitivity when retaining
+or exposing reference evidence. This does not require a central reference broker; exact fields,
+wire representation and resolution mechanisms remain authoring work. Provider-native MCP schemas
+retain their own semantics.
+
 ### Worked storage and recovery examples
 
 I4's conceptual review is complete. These examples illustrate the selected SQLite engine and

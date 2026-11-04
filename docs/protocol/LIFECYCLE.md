@@ -440,6 +440,24 @@ does not grant access or let the caller forge that context; resolution and invoc
 current authority and the target's contract. This choice fixes target placement, while reference
 encoding, runtime selection fields and protected-reference transport remain authoring work.
 
+**Managed references:** Conduit-declared live service and protected authentication bindings share
+a typed managed-reference contract for ownership, resolution and validity. The owning implementation
+retains actual live objects and credentials; operations exchange references under compatible
+capability contracts. Those contracts supply the particular behavior and lifetime guarantees.
+For example, database startup can publish a managed service reference consumed by migration, while
+authentication publishes a protected binding consumed by connection setup. A common reference
+contract does not make those capabilities interchangeable.
+
+Possession of a reference supplies no grant. Resolution and use remain subject to current authority
+and the binding's validity rules. Successful schema validation or a retained reference alone cannot
+establish that a service is currently available. Inspection, recording and export must respect the
+value's sensitivity and custody rules; a reference is not automatically safe to log.
+
+This describes values passed between operations, separately from the graph's `reference` form
+that selects a value. It adds neither another source category nor a mandatory central broker or
+object family. Native provider MCP schemas retain their own semantics. Exact reference fields,
+wire encoding, transport and resolution mechanisms remain authoring work.
+
 The startup operation's contract defines the guarantees of its published results. Request
 acceptance, usability for subsequent setup, completed application preparation and current runtime
 availability remain distinguishable. For example, a database usable for migration is not evidence

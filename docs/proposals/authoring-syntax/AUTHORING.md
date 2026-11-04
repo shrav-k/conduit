@@ -774,6 +774,12 @@ the MCP instance; it is not the live socket copied into YAML. Output/input valid
 Protected results require contract-appropriate handling and inspection; retaining progress must
 not turn a secret into an ordinary trace field. Exact protected-reference serialization remains open.
 
+These Conduit-declared authentication and connection values use the accepted shared
+managed-reference contract for ownership, resolution and validity. Their capability contracts
+still define different behavior and lifetimes. The common contract lets consumers handle managed
+references consistently without receiving raw tokens or sockets; it does not make an authentication
+binding interchangeable with a connection or grant access by possession.
+
 Captured configuration gives all three steps a consistent setup input. It does not freeze credential
 expiry, granted access or transport readiness. A recorded binding may need verification or recovery
 before reuse. The operation contracts define that behavior; a matching JSON schema alone cannot
@@ -1103,6 +1109,14 @@ For the MCP case the same rule applies: the startup operation receives the decla
 runtime plus its prepared authentication binding. The authentication binding does not become raw
 credentials in ordinary YAML. An operation with no runtime target, such as a pure layout check,
 does not need one added. These conceptual names do not settle the reference or input-field spelling.
+
+**Shared managed references.** The prepared storage descriptor is ordinary typed data. The live
+database binding uses the shared reference contract, while its database capability defines what
+migration can do with it and how its validity is established. The owning implementation retains
+the actual service/client state. Retaining the reference in setup progress does not prove the
+database is still usable after an interruption. Recovery must validate it under its contract and
+current authority before reuse. Shared reference semantics do not change Resource ownership or
+replace Conduits for access to another Resource.
 
 **A known migration failure does not remove the database.** If startup succeeded but migration
 reports failure, keep the running database managed by default, retain the backing and the actual

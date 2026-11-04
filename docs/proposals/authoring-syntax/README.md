@@ -76,6 +76,11 @@ target selection grants no access. Exact target-reference encoding remains open.
 An instance may declare multiple named managed runtimes when its type supports them, each explicitly
 targeted and instance-owned. Existing lifecycle contracts govern their behavior; the allowance adds
 neither a process-per-declaration rule nor another primary Agent execution. Declaration layout remains open.
+Conduit-declared live service and protected authentication bindings share a typed managed-reference
+contract for ownership, resolution and validity. Capability-specific behavior and lifetime remain
+explicit; actual live objects/credentials stay with their owner. Possession grants no access, and
+a stored reference does not prove current availability. This concerns operation values, separately
+from graph reference notation; exact fields and transport remain open.
 The [input-validation boundary](../../protocol/LIFECYCLE.md#lifecycle-protocol) is accepted: catch
 provable wiring/type errors early and validate actual resolved inputs before each step's dispatch.
 V0 requires no proof of complete producer-to-consumer schema inclusion; invalid actual inputs block

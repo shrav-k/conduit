@@ -1412,6 +1412,19 @@ permitted exposure. It neither exposes the rest of the graph's internal values n
 migration or setup as a whole succeeded. Calculations, provider work and error/outcome interpretation
 remain governed by their existing operation contracts.
 
+**Accepted publication prerequisite:** the public database output may name `verify` as a
+successful-completion prerequisite while continuing to use `start`'s database reference in its value
+binding above. Startup supplying the reference is not enough to release this output: schema
+verification must also succeed. Failed or uncertain verification leaves it unpublished, even if
+the database is running and its reference remains usable by authorized setup steps.
+
+This uses the same success meaning as `verify` waiting for `migrate`, with the prerequisite declared
+on the public output rather than on a consuming step. No plugin is needed merely to forward the
+reference after the check. Its other publication, current-validity, validation and access conditions
+still apply. Verification records what it established under its contract; it does not promise that
+the database can never become unavailable or that every other graph step succeeded. Output-container
+and prerequisite field names remain provisional.
+
 **Accepted recovery default:** a published graph-backed operation reuses graph recovery without
 requiring a bespoke handler merely for composition. Explicit retry of this unchanged invocation
 reuses still-valid startup progress and delegates the uncertain migration effects to its recovery

@@ -359,6 +359,19 @@ establish whole-graph success, broaden reference scope or publish other internal
 shares value-binding machinery; it does not settle domain-error/outcome mapping or the surrounding
 output-contract layout. Consumers receive the resolved values, not authoring wrappers.
 
+**Public-output prerequisites:** a public graph output may declare successful-completion
+prerequisites separately from its value binding. Declare them on that output using local step names
+and the same success semantics as step prerequisites. For example, the public database output can
+bind startup's database reference while requiring schema verification to succeed before publication.
+No extra plugin operation is required merely to gate and forward that value.
+
+The value's own dependencies and declared publication, validity, validation and access conditions
+must also hold. A failed or uncertain prerequisite withholds the affected output; a schema-valid
+failure payload does not satisfy it. Verification success neither establishes whole-graph success
+nor permanently guarantees the database's availability or schema. These prerequisites add no authored
+failure/completion triggers or permission to expose other internal results. Output field names and
+the surrounding declaration layout remain authoring work.
+
 **Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
 as that key's value. The same encoding applies to child bindings inside assemblies.
 The four forms and this structure are accepted; these key spellings are working names under the

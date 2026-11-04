@@ -813,6 +813,13 @@ and apply their publication, validity and exposure contracts. Assembly does not 
 intermediate values, bypass sensitivity/custody or establish whole-operation success. Consumers
 receive resolved values; domain outcome mapping and output-contract layout remain authoring work.
 
+Resolve explicit success prerequisites on public output declarations against the graph's local
+steps. Combine them with the output's value dependencies and publication conditions when deciding
+whether it can be exposed. Reuse the same successful-completion check as dependent steps: failed or
+uncertain verification withholds the gated database output even after startup supplied its value.
+Continue applying output validation, current validity and access checks. Do not require a forwarding
+worker merely to implement the gate, or infer whole-graph success from a published output.
+
 A node requesting runtime startup is an ordinary typed operation explicitly bound to the instance's
 declared runtime. It supplies prepared inputs through the selected compatible contract and goes
 through the instance supervisor. The process/client is owned before the node receives a usable

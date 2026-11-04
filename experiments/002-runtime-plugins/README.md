@@ -373,6 +373,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   source scope, publication/validity and permitted exposure; do not expose unrelated internal values
   or declare whole-graph success from output availability alone. Reject malformed bindings and
   invalid public values while retaining earlier effects and operation evidence.
+- Bind a public database output to startup's service reference and declare verification as an
+  explicit success prerequisite on that output. Withhold it while verification is unfinished,
+  failed or uncertain, even though authorized setup steps can use the startup result. After confirmed
+  success, enforce the output's remaining publication, validity and access conditions. Test an invalid
+  or unavailable source value and an unknown prerequisite name; the gate must not bypass those checks.
+  Require no extra forwarding plugin and preserve graph outcomes separately from output publication.
 - Compose two reusable starting requirements in a named definition and use it in Conduit templates.
   Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
   core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.

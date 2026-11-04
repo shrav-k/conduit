@@ -600,6 +600,15 @@ confirm whole-operation success, broaden scope or publish other internal outputs
 transformations remain plugin operations. Domain-error mapping, output-contract layout and vocabulary
 remain open; consumers receive resolved values rather than authoring forms.
 
+**Accepted public-output prerequisites:** each public output may name local steps whose successful
+completion is required before it is published, independently of the steps supplying its value.
+Place these prerequisites on the output declaration and reuse the step-prerequisite success rule.
+For example, bind startup's database reference but require schema verification success. Failed or
+uncertain verification withholds that output; a forwarding plugin is not required just for the gate.
+All other publication conditions, value validity, output validation and permitted exposure still
+apply. The gate certifies neither whole-graph success nor permanent availability; field names and
+output-declaration layout remain open.
+
 Distinguish three concerns within the existing operation contract and evidence system:
 
 | Concern | Meaning in a composed operation |

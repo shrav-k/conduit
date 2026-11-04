@@ -73,6 +73,10 @@ uses exactly one key: `literal`, `reference`, `object` or `list`, with its paylo
 Declared public graph output values reuse those same four forms and source/scope rules. Publication,
 validity, output validation, sensitivity and access still apply; assembly does not establish overall
 success or expose other internal outputs. Output-contract layout and domain-error mapping remain open.
+Public outputs may also declare successful-completion prerequisites using local step names, separate
+from their value bindings. A database output may use startup's reference but wait for verification
+success, without a forwarding operation. Failed or uncertain prerequisites withhold that output;
+the remaining publication, validity, validation and access conditions still apply. Final fields remain open.
 Object/list assembly payloads contain child bindings. The accepted reference layout puts source
 fields directly beside the optional pointer, without a nested source object. Omitting the pointer
 selects the whole explicitly chosen source, equivalent to an empty pointer. The accepted v0 sources

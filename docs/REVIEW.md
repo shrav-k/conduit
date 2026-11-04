@@ -547,13 +547,21 @@ same local names without sharing identities or authority. Map order has no execu
 declaration alone starts nothing. Instance ownership, explicit startup and existing lifecycle rules
 remain unchanged; driver/input fields and vocabulary remain separate.
 
-Next, settle how a public graph output expresses a successful-completion gate independent of its
-value bindings. The recommendation lets that output name prerequisite steps using the same success
-semantics as step prerequisites: a public ready-database output binds startup's database reference
-but waits for schema verification to succeed. The alternative requires an explicit operation to
-perform that gate and republish the value. This remains pending. Either must preserve declared
-publication conditions, current validity, output validation and access; neither makes the whole
-graph successful or turns verification evidence into a permanent availability guarantee.
+**Public-output prerequisites are accepted:** an output may declare local steps whose successful
+completion it requires, independently of its value binding, using the same success semantics as
+step prerequisites. A public database output can bind startup's reference but wait for verification
+success, without an extra forwarding operation. Failed or uncertain prerequisites withhold the
+affected output. Publication conditions, current validity, output validation and access still apply;
+publication neither confirms whole-graph success nor promises permanent database availability.
+Output field names and declaration layout remain open.
+
+Next, settle the default publication barrier for public graph outputs. The recommendation makes an
+output eligible once its values, explicit prerequisites and other declared publication conditions
+are satisfied, without an additional implicit wait for unrelated graph work. For example, the
+database output could become available after verification while independent diagnostics continue.
+The alternative waits for successful whole-graph completion by default, with explicit opt-in for
+earlier publication. This remains pending. Both preserve per-output validity, validation, access and
+stronger declared publication conditions; readiness of an output does not certify the whole graph.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

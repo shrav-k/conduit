@@ -25,6 +25,9 @@ map keyed by locally unique names, each selecting a requirement contract and par
 Reject duplicate keys, while allowing repeated contracts under distinct names with different values.
 Map order does not sequence enforcement. Names support inspection without creating runtime objects;
 exact field spellings and contract-reference encoding remain open.
+V0 requirement composition is finite and acyclic. Reject direct/indirect definition cycles during
+validation while preserving independent reuse and its distinct parameters. This does not prohibit
+cycles in live Conduit connections, recursive data schemas or package dependencies generally.
 
 Controls may explicitly support partial confirmation: record confirmed permitted settings only
 when the complete resulting stored configuration is valid, and keep remaining effects' failure,

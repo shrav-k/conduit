@@ -151,6 +151,14 @@ without allocating a new runtime object per entry. Map order does not schedule e
 override obligations; every applicable constituent still holds at its declared point. Exact fields
 and contract-reference encoding remain authoring work.
 
+Validate v0 requirement composition as a finite, acyclic graph of resolved definitions. Reject
+direct and indirect cycles, including those reached through declared dependency references. Distinguish
+cycles on the current expansion ancestry from independent reuse, retaining separate parameterized
+occurrences. Do not reject compositions merely because aliases/local names repeat or apply this
+restriction to live Conduit topology, recursive data schemas or package dependencies generally.
+Cycle diagnostics and expansion/resource bounds remain implementation work; current support and
+enforcement checks still apply after successful validation.
+
 Ordinary managed access now requires a recorded grant on its selected participation, including
 the root's broad management access. Policy governs issuance/current use without a grantless
 alternative; authorized connection setup can establish one grant for many requests. Grant

@@ -258,6 +258,17 @@ verified caller, target and participation while preserving the provider operatio
 [Tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools) ·
 [authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
 
+**Invocation placement follow-up, 2026-11-04:** the same MCP revision provides `_meta` for
+interaction metadata separately from a tool call's `arguments`. This suggests carrying the Conduit
+profile alongside ordinary domain inputs, instead of adding a Conduit wrapper to every tool's input
+schema. For example, a directory operation can retain its `path` argument while operation/instance
+identifiers travel separately. This is a proposed wire mapping, not an accepted ruling or proof of
+SDK interoperability. Metadata is caller-supplied until authenticated or checked by the responsible
+service; its location cannot establish grants or trusted caller identity. Plain upstream MCP services
+still use adapters and need not understand the profile. Exact profile keys, negotiation and fields
+remain open. [MCP metadata](https://modelcontextprotocol.io/specification/2026-07-28/basic/index#_meta) ·
+[tool invocation](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#calling-tools)
+
 MCP's Tasks extension offers task handles, polling, updates and cancellation for deferred results.
 It is a candidate transport mapping for long-running operations, not automatically the definition
 of Conduit recovery or proof that a remote effect was cancelled. Its support must be explicit;

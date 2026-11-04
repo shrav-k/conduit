@@ -648,14 +648,24 @@ support diagnostics/inspection without becoming contract identities or new runti
 order does not sequence enforcement or change the obligation to satisfy every applicable constituent.
 Container/field spellings and exact contract-reference syntax remain separate.
 
-Next, settle recursion in requirement composition. The recommendation keeps v0 composition finite
-and acyclic, rejecting direct or indirect cycles between composed requirement definitions during
-validation. For example, `review-access` including `project-access`, which includes `review-access`,
-would be rejected. Reusing a requirement in multiple independent entries remains allowed and keeps
-their distinct parameters/obligations. The alternative supports recursive composition and requires
-termination/evaluation rules. This remains pending. It concerns requirement-definition composition,
-not the topology of Conduits between objects, recursive data schemas or a general ban on package
-dependency cycles. Exact diagnostics and expansion/resource limits remain implementation work.
+**Requirement recursion boundary is accepted:** v0 composition is finite and acyclic. Reject direct
+and indirect cycles between resolved composed requirement definitions during validation, including
+cycles through declared dependencies. Independent reuse remains allowed with distinct parameters
+and obligations; repeated aliases/local names alone do not establish recursion. This concerns
+requirement-definition composition, not the topology of live Conduits, recursive data schemas or
+package dependencies generally. Passing validation does not prove endpoint support or fulfillment.
+Exact diagnostics and expansion/resource limits remain implementation work.
+
+Next, settle where Conduit's invocation context travels in MCP calls. The recommendation uses
+MCP's separate request metadata for the Conduit profile, keeping each operation's domain input
+schema and ordinary tool arguments intact. A directory operation receives `path`; operation and
+owning-instance identifiers accompany the call outside those arguments. The alternative wraps
+domain inputs and Conduit context together in each tool's argument schema. This remains pending.
+It chooses wire placement, not a new source of authority: the responsible service must establish
+or verify caller/participation context, and supplied metadata cannot confer permission. Plain
+upstream MCP services remain adapter-backed without implementing this profile. Exact profile keys,
+context fields and negotiation remain separate; graph-visible metadata keeps its accepted declared
+read-only boundary. See the [MCP research follow-up](research/language-protocol-foundations/README.md#6-mcp-supplies-interaction-not-all-of-conduits-semantics).
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

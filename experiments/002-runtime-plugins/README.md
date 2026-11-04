@@ -438,6 +438,12 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   different parameters and retain both occurrences and obligations. Reorder entries and verify that
   enforcement does not depend on map order. Inspect diagnostics by local name without creating a
   runtime object per entry or conflating entries in separate compositions.
+- Reject direct and indirect recursive requirement compositions during validation, including a
+  cycle through declared package dependencies. Accept independent entries and a diamond-shaped
+  composition that reuse a shared requirement without returning to an ancestor definition; preserve
+  each occurrence's parameters and obligations. Resolve definitions rather than guessing from local
+  names. This check must not prohibit cyclic live Conduit connections or recursive data schemas, nor
+  imply that validated requirements have current implementation support or verified fulfillment.
 - Wire constituent requirement parameters with all four binding forms. Forward declared workspace
   and result-limit parameters, assemble child parameter objects/lists and retain literal payloads
   as data. Verify the resolved child values and schema validation without a forwarding plugin.

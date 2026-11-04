@@ -869,6 +869,14 @@ than identifying contracts or new runtime objects. Map order neither sequences e
 changes the obligation to satisfy every applicable constituent. Exact container/entry spellings and
 contract-reference encoding remain open.
 
+**Accepted v0 recursion boundary:** requirement compositions are finite and acyclic. Validation
+rejects direct or indirect cycles between resolved composition definitions, including cycles across
+declared package dependencies. Independent reuse of the same requirement remains valid; preserve
+each occurrence and its parameters rather than confusing reuse with recursion. This does not ban
+cycles in live Conduit relationships, recursive data schemas or package dependencies in general.
+Diagnostics and expansion/resource limits remain implementation work; support and runtime enforcement
+still require their existing checks.
+
 **Accepted Policy consolidation:** [Policy names authoritative requirement application](AUTHORIZATION.md#3-policy-as-authoritative-requirement-application).
 Grant administration and governing-binding changes are ordinary protected capability operations,
 with recorded grants permitting them and requirements constraining their effects. One plugin can

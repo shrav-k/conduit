@@ -140,6 +140,18 @@ enforcement or change the requirement that every applicable constituent must hol
 compositions may reuse the same local names without sharing identities or parameters. Container
 and entry field spellings, including exact contract-reference syntax, remain provisional.
 
+**V0 composition recursion:** requirement compositions must be finite and acyclic. Reject direct
+and indirect cycles between resolved composed requirement definitions during validation. For
+example, `review-access` cannot include `project-access` when that definition includes `review-access`
+again. Detect definition cycles rather than treating repeated local names or ordinary contract reuse
+as recursion. Reusing a requirement in independent entries or branches remains allowed, preserving
+each occurrence's parameters and applicable obligations.
+
+This restriction applies to requirement-definition composition. It does not prohibit cycles in
+Conduit connections between objects, recursive data schemas or package dependencies generally.
+Exact cycle diagnostics and expansion/resource limits remain implementation work; validation is
+not evidence that endpoint implementations fulfill the resulting requirements.
+
 Each requirement has a reusable, versioned definition of its meaning, typed parameters and
 applicability, independent of any single implementation. Multiple endpoint plugins can implement
 that same definition. For example, two deployment integrations can support one allowed-regions

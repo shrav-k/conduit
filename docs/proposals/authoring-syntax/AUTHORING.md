@@ -1749,6 +1749,21 @@ That is a distinct occurrence with its own parameters; the shared contract does 
 duplicate key or cause it to replace `resultLimit`. Both constraints remain applicable, under the
 existing individual-enforcement rule. No runtime object is created merely for an entry name.
 
+**Accepted recursion boundary:** requirement compositions are finite and acyclic in v0. These cases
+have different meanings:
+
+| Definition relationships | Validation result |
+| --- | --- |
+| `review-access` includes itself. | Reject direct recursion. |
+| `review-access` includes `project-access`, which includes `review-access`. | Reject indirect recursion. |
+| `review-access` includes two separate result-limit entries. | Allow reuse; preserve both parameter bindings and obligations. |
+| Two separate composed requirements both include the same workspace restriction. | Allow shared-definition reuse when neither path returns to an ancestor definition. |
+
+Resolve the selected definitions before checking composition cycles; matching local entry names
+alone does not establish a cycle. This restriction does not prohibit two Agents connecting to each
+other through Conduits or recursive data schemas. Passing this check does not establish endpoint
+support or fulfillment. Exact diagnostics and expansion limits remain implementation details.
+
 For the result-limit constituent, an illustrative binding is:
 
 ```yaml

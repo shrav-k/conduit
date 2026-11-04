@@ -137,6 +137,9 @@ validation, current authority and constituent enforcement.
 Constituents form a map keyed by locally unique names, each selecting a requirement contract and
 parameter binding. Reusing a contract under different entries is allowed; map order does not
 sequence enforcement. Local names support inspection without adding runtime objects.
+V0 requirement composition is finite and acyclic: reject recursive definition cycles, while allowing
+independent reuse with distinct parameters. This does not constrain the topology of live Conduits
+between objects or prohibit recursive data schemas.
 
 A Conduit uses both forms: its contract composes relationship requirements and its procedures
 coordinate establishment through selected endpoint capabilities. Its instance represents the live

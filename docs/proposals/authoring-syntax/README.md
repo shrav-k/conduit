@@ -32,7 +32,9 @@ cycles in live Conduit connections, recursive data schemas or package dependenci
 Conduit invocation context uses separate MCP request metadata; ordinary operation arguments and
 their domain input schemas remain intact. The responsible service establishes or verifies trusted
 context; supplied metadata cannot grant authority. Plain upstream MCP services remain adapter-backed.
-Exact profile fields and negotiation remain open.
+Each managed request identifies its profile revision and required features, without a required prior
+negotiation agreement. Discovery may be cached; current support and authority checks remain effective.
+Exact profile fields and discovery encoding remain open.
 
 Deferred managed work has an ordinary-MCP-tool baseline: acceptance returns a retained operation
 reference, and authorized inspection retrieves progress/outcomes. Negotiated task/progress extensions

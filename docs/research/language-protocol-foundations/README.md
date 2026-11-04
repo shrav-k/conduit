@@ -253,12 +253,12 @@ Do not equate an MCP connection with a Conduit instance or logical participation
 
 **Profile-negotiation follow-up, 2026-11-04:** the same revision supplies protocol/capability
 metadata per request and uses explicit identifiers for state that spans requests. A connection is
-not the identity of a task or conversation. This supports a proposed Conduit mapping in which each
+not the identity of a task or conversation. This supports the accepted Conduit mapping in which each
 managed request names its profile revision and required features; no separate negotiated agreement
 is required first. The alternative could retain an explicit agreement referenced on each request,
 rather than infer it from the connection. This is a Conduit design choice, not a claim that MCP
 specifies our profile. Neither arrangement removes operation records or current authorization and
-artifact checks. The per-request recommendation remains pending owner review; it does not select
+artifact checks. The owner accepted per-request declarations; this does not select
 metadata field names, require a new discovery round trip per invocation, or allow silently dropping
 required semantics. [MCP statelessness](https://modelcontextprotocol.io/specification/2026-07-28/basic/index#statelessness)
 
@@ -276,7 +276,7 @@ schema. For example, a directory operation can retain its `path` argument while 
 identifiers travel separately. The subsequent owner ruling accepts this placement; it is not proof
 of SDK interoperability. Metadata is caller-supplied until authenticated or checked by the responsible
 service; its location cannot establish grants or trusted caller identity. Plain upstream MCP services
-still use adapters and need not understand the profile. Exact profile keys, negotiation and fields
+still use adapters and need not understand the profile. Exact profile keys, discovery encoding and fields
 remain open. [MCP metadata](https://modelcontextprotocol.io/specification/2026-07-28/basic/index#_meta) ·
 [tool invocation](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#calling-tools)
 
@@ -299,6 +299,17 @@ understand the published operation/inspection contract; this is not automatic us
 MCP client. The owner selected this over mandatory Tasks support for deferred work. Tool names,
 result encoding and optional extension mapping remain open; no new Agent job-submission scope follows.
 [Tasks negotiation and model](https://modelcontextprotocol.github.io/ext-tasks/specification/2026-07-28/tasks.html#capability-negotiation)
+
+**Human-interaction follow-up, 2026-11-04:** MCP elicitation distinguishes structured form input
+from external URL flows for sensitive interactions. When elicitation state is retained, it must be
+protected and associated with the correct user. These facilities do not by themselves define the
+lifetime of a Conduit operation's pending interaction when a frontend disconnects. We recommend
+retaining an interaction reference and safe pending state with the operation, discoverable through
+an authorized Interface attachment. Rediscovery must still use the adapter's valid flow; it cannot
+extend a challenge's expiry or imply that a different frontend can resume arbitrary provider state.
+The alternative binds completion to the originating frontend and requires a new interaction after
+disconnect. This recommendation remains pending owner review, with the accepted credential-custody
+and current-authority boundaries unchanged. [MCP elicitation](https://modelcontextprotocol.io/specification/2026-07-28/client/elicitation)
 
 OpenAPI and AsyncAPI help separate an operation/message description from its protocol binding.
 CloudEvents supplies event identity and contextual metadata, not retained exchange history or

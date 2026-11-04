@@ -120,8 +120,20 @@ Metadata placement does not establish trust. The responsible service establishes
 authenticated caller, target and participation context under current authority; caller-supplied
 identifiers cannot confer permission. Do not automatically forward managed context to an upstream
 provider. Graph-visible metadata retains its explicitly declared, typed, read-only boundary rather
-than exposing the entire request metadata map. Exact profile keys, context fields and negotiation
+than exposing the entire request metadata map. Exact profile keys, context fields and discovery encoding
 remain authoring work; this does not add a wrapper to every plugin input contract.
+
+**Per-request profile requirements:** each Conduit-profile request identifies its profile revision
+and required features. The receiver checks support before performing the requested behavior;
+no separate prior negotiation agreement is required. Clients/adapters supply this metadata, without
+a new user-authored manifest. For example, inspecting an existing index build over a new connection
+supplies its operation reference and profile information without creating a new agreement or build.
+
+Discovery may be cached, but cached declarations do not waive required support or current authority.
+Unsupported required semantics are reported rather than silently dropped. This does not remove
+instance/operation state, authentication, selected implementation checks or the applicable MCP
+transport/version requirements. Plain upstream MCP services still use adapters. Exact profile
+identifiers, feature fields and discovery encoding remain authoring work.
 
 **Deferred-work baseline:** expose deferred managed work through ordinary MCP tools that return
 a retained operation reference and permit authorized inspection of progress and the eventual

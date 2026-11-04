@@ -487,6 +487,13 @@ upstream MCP service needs no Conduit argument wrapper and receives no automatic
 managed context. Graphs must see only their declared read-only metadata surface. These are planned
 wire/conformance cases; exact profile keys and executable fixtures remain to be authored.
 
+Exercise managed calls with per-request profile revision/required-feature metadata and no prior
+negotiation agreement. Inspect an existing operation after reconnecting without redispatching its
+work. Reject an unsupported required profile feature before the requested behavior, including when
+discovery was cached; report the incompatibility without silent downgrade. Preserve current access
+and selected implementation checks. Plain upstream services remain adapter-backed. These are planned
+profile checks; concrete identifiers, wire fixtures and SDK interoperability still need validation.
+
 Exercise a deferred fake-service operation using an ordinary MCP client without Tasks support:
 receive an acceptance reference, inspect progress, then retrieve the recorded outcome without a
 second dispatch. Verify that initial acceptance is not reported as completed success and that

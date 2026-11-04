@@ -1019,9 +1019,10 @@ through a documented resource/manifest surface; ordinary operations can use tool
 JSON-RPC methods until a concrete missing standard facility justifies them.
 
 For a Conduit-aware worker, verify package/artifact identity and applicable descriptors against the
-retained binding, alongside profile compatibility, before admitting work. The earlier handshake
-proposal does not settle whether profile information travels per request or through an explicitly
-referenced prior agreement; that choice remains under review. An ordinary upstream
+retained binding, alongside profile compatibility, before admitting work. Each Conduit-profile
+request supplies its profile revision and required features; a separate prior negotiation agreement
+is not required. Profile compatibility does not depend on a prior handshake; the implementation
+and contract checks remain. An ordinary upstream
 MCP server is negotiated through its adapter; it is not required to attest to a Conduit artifact
 or implement the management profile. Record the compatibility evidence actually available.
 The responsible service uses a bounded authenticated channel and
@@ -1092,8 +1093,16 @@ owning-instance identifiers do not become required domain arguments merely for h
 The responsible service establishes or verifies trusted context; a supplied metadata field is not
 proof of identity, participation or authority. Plain provider MCP calls remain adapter-backed and
 do not automatically receive this context. Graph-visible metadata is only the declared read-only
-surface, not unrestricted access to the wire metadata map. Exact keys, fields and negotiation remain
+surface, not unrestricted access to the wire metadata map. Exact keys, fields and discovery encoding remain
 open. The interaction mappings below remain proposals where not separately accepted.
+
+**Accepted profile scope:** each managed request identifies its Conduit profile revision and
+required features, supplied by the client/adapter. Check support before performing the requested
+behavior, without requiring a separate prior agreement. Discovery may be cached; unsupported
+required semantics must still be reported rather than silently removed. The profile declaration
+does not establish authority, freeze support indefinitely or replace retained instance/operation
+records. Authentication, current permissions, selected artifact checks and applicable MCP rules
+remain effective. Exact revision identifiers, feature fields and discovery encoding remain open.
 
 **Accepted deferred-work baseline:** provide a retained operation reference and authorized
 inspection through ordinary MCP tools. A client can start an index build, receive acceptance and

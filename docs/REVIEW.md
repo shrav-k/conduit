@@ -662,7 +662,7 @@ operation receives `path`; operation and owning-instance identifiers accompany t
 those arguments. The responsible service establishes or verifies authenticated context and current
 authority; metadata does not confer permission. Plain upstream MCP services remain adapter-backed
 without implementing this profile or automatically receiving managed context. Graph-visible
-metadata keeps its declared read-only boundary. Exact profile keys, context fields and negotiation
+metadata keeps its declared read-only boundary. Exact profile keys, context fields and discovery encoding
 remain separate. See the [MCP research follow-up](research/language-protocol-foundations/README.md#6-mcp-supplies-interaction-not-all-of-conduits-semantics).
 
 **Deferred-work baseline is accepted:** ordinary MCP tools return a retained operation reference
@@ -674,17 +674,25 @@ success, and a reference grants no authority. Domain recovery and retained evide
 from transport handles. This adds no Agent job-submission capability. Exact tool/result names and
 extension mapping remain authoring work.
 
-Next, settle Conduit-profile negotiation scope. The recommendation makes each managed request
-identify its profile revision and required features, without requiring a separate prior profile
-agreement. For example, inspecting an index build over a new connection supplies the same operation
-reference plus the request's profile information; the receiving service checks required support
-before performing the requested behavior. Clients/adapters supply this protocol metadata, not a
-new user-authored manifest. Discovery may be cached, but neither cached discovery nor metadata
-confers authority or permits dropping required semantics. The alternative establishes a reusable
-negotiation agreement and explicitly references it on subsequent requests. This remains pending.
-It concerns profile compatibility, not removal of instance/operation state, authentication, selected
-artifact checks or the applicable MCP transport/version requirements. Exact profile identifiers,
-feature fields and discovery encoding remain open; plain upstream services still use their adapter.
+**Per-request profile requirements are accepted:** each managed request identifies its Conduit
+profile revision and required features, without a required prior negotiation agreement. Clients/adapters
+supply the metadata; the receiver checks support before acting. Reconnecting to inspect an index
+build addresses the same operation with profile information supplied again. Discovery may be cached,
+but neither cached declarations nor metadata grants authority or permits dropping required semantics.
+Instance/operation records, authentication, current permissions, selected artifact checks and
+applicable MCP rules remain effective. Exact profile identifiers, feature fields and discovery
+encoding remain open; plain upstream services still use adapters.
+
+Next, settle the lifetime of a human-interaction wait relative to its frontend. The recommendation
+retains a typed interaction reference and safe pending-state information under the managed operation,
+so an authorized Interface attachment can rediscover it after the original frontend closes. For
+example, setup waiting for a password-manager unlock remains inspectable from a reopened terminal;
+the adapter then offers the still-valid native/provider flow or reports that a new interaction is
+needed. The alternative ties completion to the originating frontend and requires a fresh interaction
+after disconnection. This remains pending. Retaining a wait does not preserve an expired challenge,
+transfer provider identity, expose credentials, or prove that the requested action occurred.
+Current authority, sensitivity and adapter recovery rules still apply. Exact interaction schemas,
+MCP presentation and expiry/replacement mechanics remain open.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Carry these into the remaining composition

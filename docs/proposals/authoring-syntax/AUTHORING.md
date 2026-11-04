@@ -139,6 +139,17 @@ its adapter without a mandatory Conduit wrapper or automatic forwarding of manag
 Graph-visible metadata remains explicitly declared and read-only. Exact profile keys and context
 fields are not selected by this example, and this is not an executable wire fixture.
 
+**Accepted profile scope:** each managed request identifies the Conduit profile revision and
+features it requires. Clients/adapters supply this metadata; template authors do not need another
+request manifest. A prior negotiated agreement is not required. For example, a client can reconnect
+and inspect the same index-build operation by supplying its operation reference and profile
+information again. The service checks required support and current access before acting.
+
+Cached discovery can avoid redundant discovery work; it cannot substitute for required support,
+authorize use or permit silent feature removal. Unsupported required semantics produce a diagnostic.
+This preserves implementation identity checks and applicable MCP transport/version behavior, and
+does not make plain upstream services implement the Conduit profile. Exact fields remain open.
+
 ### Following deferred work
 
 **Accepted:** ordinary MCP tools provide the baseline for deferred managed operations. For example:

@@ -800,7 +800,16 @@ context/input wrapper. The responsible service establishes or verifies authentic
 current authority; reject attempts to replace it with caller-supplied claims. Do not automatically
 forward managed metadata to a plain provider MCP service, or expose the whole wire metadata map to
 graphs. Their typed read-only metadata surface remains separately declared. Exact profile fields
-and negotiation remain authoring work.
+and discovery encoding remain authoring work.
+
+Include the requested Conduit profile revision and required features in each managed request;
+validate support before the requested behavior. Do not require a separate prior negotiated
+agreement or infer its terms from connection history. Clients/adapters supply the declarations,
+and discovery may be cached without weakening support/current-authority checks. Retain instance
+and operation records, artifact verification, authentication and applicable MCP transport/version
+handling. A reconnecting inspection request addresses the existing operation without creating
+another operation or agreement. Report unsupported required semantics without silent fallback;
+exact profile identifiers, feature fields and discovery encoding remain authoring work.
 
 Implement the deferred-work baseline with ordinary MCP tools for acceptance and authorized
 inspection by retained operation reference. Keep the reference correlated with the responsible

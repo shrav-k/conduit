@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-04.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -68,6 +68,22 @@ surface or explicitly select other supported controls. The instance retains the 
 a plugin update does not silently add controls. Type defaults are distinct from every internal
 plugin operation and from the dynamic provider-native catalogs exposed by integration capabilities.
 
+**Partial confirmation:** a control may explicitly support confirming only part of a requested
+configuration change. Store the confirmed permitted changes when the complete resulting stored
+configuration satisfies the schema and control constraints. Retain failure, pending work and
+uncertainty for the remaining effects separately; confirming a subset does not establish success
+for the entire request. A setting whose application is uncertain keeps its last confirmed stored
+value without being presented as known current.
+
+For example, a search control can confirm a query-limit change from 10 to 15 while a timeout
+change from 30 to 60 seconds remains uncertain. If its contract supports that partial result,
+store the limit of 15 and retain 30 as the last confirmed timeout, with the uncertainty visible.
+Controls with coupled settings can require confirmation of the whole change. The shared rule
+does not infer independence between arbitrary fields, allow invalid configuration or imply
+rollback. Current authority, revision checks and coordination still apply. If confirmed external
+effects cannot produce a valid stored configuration, preserve their evidence and report the
+unresolved or out-of-contract state rather than claiming that nothing changed.
+
 Frontends may present ordinary field editing and invoke the corresponding control through an
 authorized Conduit. The interaction does not require a separate user-authored operation manifest
 or make all instance fields writable. A declaration cannot make an unsupported runtime operation
@@ -94,6 +110,56 @@ types do not require every plugin's domain lifecycle to fit a shared enum. Plugi
 behavior; Conduit preserves attribution, current authority and evidence of effects. Follow-up calls
 remain authorized operations, not authority supplied by the preceding result.
 
+**MCP invocation placement:** carry Conduit's invocation context in MCP's separate request
+metadata, leaving each operation's domain input schema and ordinary tool arguments intact.
+For example, a directory operation receives `path`, while operation and owning-instance
+identifiers accompany the call outside those arguments. This applies to Conduit-profile calls;
+plain upstream MCP services remain reachable through adapters without implementing the profile.
+
+Metadata placement does not establish trust. The responsible service establishes or verifies
+authenticated caller, target and participation context under current authority; caller-supplied
+identifiers cannot confer permission. Do not automatically forward managed context to an upstream
+provider. Graph-visible metadata retains its explicitly declared, typed, read-only boundary rather
+than exposing the entire request metadata map. Exact profile keys, context fields and discovery encoding
+remain authoring work; this does not add a wrapper to every plugin input contract.
+
+**Per-request profile requirements:** each Conduit-profile request identifies its profile revision
+and required features. The receiver checks support before performing the requested behavior;
+no separate prior negotiation agreement is required. Clients/adapters supply this metadata, without
+a new user-authored manifest. For example, inspecting an existing index build over a new connection
+supplies its operation reference and profile information without creating a new agreement or build.
+
+Discovery may be cached, but cached declarations do not waive required support or current authority.
+Unsupported required semantics are reported rather than silently dropped. This does not remove
+instance/operation state, authentication, selected implementation checks or the applicable MCP
+transport/version requirements. Plain upstream MCP services still use adapters. Exact profile
+identifiers, feature fields and discovery encoding remain authoring work.
+
+**Deferred-work baseline:** expose deferred managed work through ordinary MCP tools that return
+a retained operation reference and permit authorized inspection of progress and the eventual
+outcome. For example, starting an index build can return an acceptance reference, which the client
+uses to inspect that same operation later. Acceptance is not successful completion, and an
+operation reference supplies no grant. Clients must understand the published inspection contract;
+ordinary MCP transport support alone does not supply that behavior.
+
+Negotiated task/progress extensions may expose the same work, but are not required for this
+baseline. Their handles do not replace Conduit's operation identity, effect evidence or recovery
+contract, and an additional presentation must not dispatch duplicate work. Finite operations may
+still return their completed result directly. This adds neither Agent job submission nor a universal
+domain-state enum. Exact tool names, result encoding and extension mapping remain authoring work.
+
+**Human-interaction wait ownership:** retain a typed interaction reference and safe pending-state
+information with the managed operation. An authorized Interface attachment can rediscover the wait
+after the originating frontend closes. For example, setup awaiting a password-manager unlock stays
+inspectable from a reopened terminal; the adapter offers a still-valid native/provider flow or
+reports that a new interaction is required under its recovery contract.
+
+The retained wait does not preserve an expired challenge, transfer provider identity or establish
+that the requested action occurred. Current authority and sensitivity rules still apply, with
+credentials kept in their established custody rather than ordinary conversation or logs. This
+does not promise recovery of arbitrary suspended plugin code or provider state. Exact interaction
+schemas, MCP presentation and expiry/replacement mechanics remain authoring work.
+
 Generic Interfaces can render the exchange; richer automation can interpret a plugin's schema.
 No mandatory combined MCP server or MCP boundary between internal Rust components follows.
 Exact mappings, optional-feature fallbacks and client compatibility remain in
@@ -117,6 +183,15 @@ revision is not reconciliation. Exact revision granularity, MCP fields and coord
 parallelism remain open; checks must be coordinated with application rather than only discovery
 or enqueueing, and a local revision cannot establish unseen provider state.
 
+**Unchanged configuration:** when a control confirms unchanged stored settings, retain the current
+configuration revision and record the invocation, outcome and any effects separately. All applicable
+authority, revision, transition and coordination checks still apply, as does the handler's declared
+behavior. Equal requested/stored values do not justify skipping the handler or presenting an earlier
+result as a new execution. For example, setting an already-selected limit of 15 may verify or refresh
+the provider without changing the configuration revision. That revision describes configuration;
+it does not establish that no work occurred or that runtime state, permissions or observations are
+unchanged. Existing operation-retry/result-retrieval contracts remain separate.
+
 A template may constrain the values and controls it exposes within its implementation's support.
 The accepted access-path rule intersects applicable type support, template limits, current authority
 and Conduit filters; none overrides another to widen access. Exact authoring shorthand/defaults,
@@ -131,6 +206,9 @@ rules remain live. Provider catalogs retain dynamic discovery, with explicit exp
 R5. In-place definition upgrades are deferred.
 R6 also retains exact Conduit-selected implementations and requires replacement instances for their
 upgrades. A new instance does not automatically acquire the old one's bindings, private context or permissions.
+Preserving code/contracts for running work does not promise later recreation of that implementation.
+The [implementation-selection rules](CONFIGURATION.md#implementation-selection) distinguish retained
+bindings and evidence from executable availability; missing code is reported without substitution.
 R1 confirms that this applies to Interface administration as well as Agent requests. Broad
 administrative authority does not introduce an in-place definition-upgrade mechanism. The
 Interface can revise templates, create replacement instances and explicitly reconnect consumers.
@@ -178,6 +256,370 @@ loops and provider-specific procedure remain inside plugins initially. User-auth
 iteration and dynamic graph fan-out are deferred. Independent steps may run concurrently where
 supported; interaction waits and valid-progress recovery do not require authored loops.
 
+**Step collection:** a graph declares its steps as a map keyed by names unique within that graph.
+Each entry contains one operation binding. References and explicit prerequisites select those local
+names; they do not select list positions. For example, `prepare`, `start`, `migrate` and `verify`
+identify steps, separately from their selected plugin exports or runtime declarations. Duplicate
+keys are errors under the configuration profile. Different graphs may reuse local names without
+creating a shared step or exposing a called graph's internals.
+
+Document order has no execution meaning. Dependencies supply ordering constraints, while actual
+dispatch remains subject to current authority, readiness, coordination and scheduling limits.
+This fixes the step collection structure; container names and supporting vocabulary remain open.
+
+**Graph step requirements:** steps are required by default across setup graphs, reusable graph-backed
+operations and change-handler graphs. Authors may explicitly mark nonessential steps optional.
+Required steps must succeed for successful graph completion; an optional failure is reported without
+alone preventing it. For example, migration remains required when a preparation graph is published
+as a reusable operation, while explicitly optional diagnostics can fail without that failure alone
+preventing success. Optionality does not erase failures, uncertainty or effects, or change independent
+scheduling and required lifecycle cleanup.
+
+Actual dependencies still apply. If a required step needs an optional step's output or successful
+completion, that prerequisite must be satisfied. Optionality cannot manufacture a missing value,
+waive a mandatory type/access requirement or bypass definition/input/output validation. Coupled
+requirements remain governed by their contracts. Public-output availability remains separate from
+graph completion. A change handler preserves permitted confirmed partial changes under the control
+contract without presenting an incomplete required change as successful. Optionality does not abandon
+outstanding activity or declare still-running work finished. This shared graph rule remains distinct
+from required/optional Conduit connections; exact step notation remains open.
+
+**Ordering prerequisites:** in v0, an explicit prerequisite that passes no data requires the
+predecessor to complete successfully under its operation contract. A failed or uncertain outcome
+does not satisfy it; merely finishing, returning a response or producing a schema-valid failure
+payload is insufficient. For example, schema verification can use the database output from startup
+while separately requiring migration success. Current authority, input validity and other applicable
+prerequisites still govern dispatch.
+
+Declare these prerequisites on the dependent step alongside its operation and input bindings,
+using the predecessor's local step name. For example, `verify` names `migrate` as a prerequisite;
+the graph does not maintain a separate authored edge collection for that relationship. Output
+bindings still imply their own dependencies without a duplicate prerequisite declaration.
+Validate the combined dependency graph, including cycle and missing-step checks. Placement adds
+no execution order between independent steps and does not expose another graph's internal steps.
+
+This rule does not change dependencies on declared output publication or their validity/lifetime
+rules. Independent eligible branches may continue, and required lifecycle cleanup retains its own
+contract. Reusing a previously successful step on retry still requires valid progress. No automatic
+retry, rollback or authored branching follows; final prerequisite field names remain open.
+
+V0 defers additional authored `on failure` and `after any completion` triggers. Operation and
+instance contracts still perform required cleanup and support recovery when ordinary graph work
+is blocked or cancelled. For example, migration failure blocks schema verification, while the
+migration implementation remains responsible for its declared lock-release or recovery duties.
+Cleanup must not depend on a failed operation reporting success. These illustrative trigger names
+do not introduce syntax; provider-specific error handling remains inside plugins initially.
+
+[Registration batches](CONFIGURATION.md#batch-configuration-submissions) use a constrained form of
+this graph contract: complete supplied definitions, explicit prerequisites and ordinary checked
+registry writes. They reuse scheduling, outcome, cancellation and valid-progress recovery semantics;
+their definitions are validated before writes and are not generated from earlier node outputs.
+General setup/change graphs retain their output-bound inputs and per-step input validation.
+
+**Graph inputs:** v0 inputs use literal values and typed references, including configuration and
+earlier step outputs. Calculations and transformations are implemented by plugin operations, not inline
+expressions in graph bindings. References select declared values/fields; they do not implicitly
+evaluate string interpolation, shell syntax or an expression language. Reusable graph-backed
+operations receive caller configuration only through declared typed inputs, without implicitly
+inheriting the caller's configuration namespace. A template's graph can bind captured configuration
+values into those inputs. Scoped invocation context and explicitly authorized Resource access
+remain available under their contracts; see [reusable composition](MODEL.md#authoring-concepts-beneath-the-object-families).
+References use separate structured source and JSON Pointer fields as defined below. Every graph
+input binding uses exactly one accepted form key; fields inside `reference` remain authoring work.
+
+**V0 reference sources:** the supported categories are declared graph inputs, captured instance
+configuration, earlier step outputs, declared runtime targets and typed invocation metadata.
+
+| Source | Value and scope |
+| --- | --- |
+| Declared graph inputs | The complete declared input payload of that graph invocation; the optional JSON Pointer selects within it. |
+| Captured instance configuration | Configuration available to the owning template's graph, captured for the execution. Reusable operations receive caller settings through explicit inputs. |
+| Earlier step outputs | Declared published results, subject to producer/consumer validation and continued validity. Earlier means the dependency relation, not YAML mapping order. |
+| Declared runtime targets | Select one named runtime and yield a typed target reference, resolved by the responsible service against the instance-owned definition. Reusable operations receive and forward targets through typed inputs. |
+| Invocation metadata | Only the runtime's declared, typed, read-only metadata surface. |
+
+Other data access, such as reading a file, a Resource record or current service state, uses explicit
+authorized operations whose results can feed later steps. Arbitrary plugin-defined reference
+resolvers are deferred in v0; this does not restrict authoring new operations or capabilities.
+The source set introduces no implicit parent configuration, unrestricted `self` snapshot, live
+registry lookup or authority through a reference. Source names, selector fields, metadata contents
+and protected-reference transport remain authoring work.
+
+**Graph-input root:** the graph-input source selects the complete declared input payload, without
+a separate input-name selector. The optional JSON Pointer selects within it. For example, given
+`{limit: 15, options: {timeout: 30}}`, `/options/timeout` selects 30; omitting the pointer or using
+the empty pointer selects the complete payload. Missing selections still error, and receiving
+schemas validate selected values normally.
+
+For Conduit-authored operations, this payload is the prepared input after declared defaults have
+been materialized and validation has passed. If the caller omits `limit` and its applicable default
+is 10, the graph can select `/limit` and receive 10, just as a code implementation receives that
+prepared field. The preparation boundary below applies before entering the graph.
+
+This exposes only that invocation's declared inputs. It neither inherits caller configuration nor
+adds invocation metadata or authority to the payload. Reusable graphs still receive caller settings
+and runtime targets through explicit typed inputs. Source field names and input-contract
+representation remain authoring work.
+
+**Graph-visible invocation metadata:** graphs may reference explicitly declared, typed, read-only
+metadata supplied by the runtime under its invocation contract. For example, setup can pass its
+owning instance ID to an operation that tags a created service for later reconciliation, without
+a plugin operation merely to retrieve that ID. Required metadata that is unavailable is reported,
+not fabricated or silently replaced with caller-supplied claims.
+
+This exposes declared invocation facts, not an unrestricted instance snapshot, ambient environment
+or credentials. Runtime targets remain declared typed inputs; reusable operations receive caller
+configuration explicitly. Resource reads still use authorized capabilities. An ID passed onward
+is data and cannot replace the runtime's authenticated actor or authority checks. Exact metadata
+fields, declaration/versioning, scope and reference encoding remain authoring work.
+
+**Configuration capture:** configuration references within one graph execution use values captured
+when that execution begins. Later steps do not silently reread changed instance settings. For example,
+two steps referencing a search limit receive 10 even if a supported control confirms a change to 15
+between them; a later execution captures 15. The captured values are execution inputs, while
+`spec.config` remains the instance's single stored configuration map.
+
+Capture does not establish current runtime state or freeze authority, dependency validity or
+configuration revision checks when applying a control. These checks remain current under their
+contracts, and may block work even when its captured inputs are schema-valid. Retry/recovery still
+revalidates retained results against relevant inputs and prerequisites; capture does not justify
+reusing stale results, bypassing access changes or blindly repeating effects. Exact capture/storage
+representation and recovery mechanics remain open.
+
+**Reference recognition:** the graph recognizes references only in explicitly designated binding
+positions. Literal data, ordinary configuration/provider payloads and values returned by plugins
+are not recursively searched for graph instructions. Resolving a reference retrieves its value;
+it does not reinterpret that value as another reference. For example, a storage plugin can receive
+a document containing an example of graph-reference notation without causing the graph engine to
+resolve the example. Actual references still supply their declared dependencies.
+
+**Explicit binding forms:** every supplied v0 graph input binding identifies a literal, reference,
+object assembly or list assembly form, including each field/item binding inside an assembly.
+Bare values are not binding shorthand. A literal form can contain an entire ordinary object or list;
+its contents are data, not more bindings. A reference retrieves data without reinterpreting it.
+Assembly forms explicitly combine their child bindings into the resulting object or list.
+
+This applies at graph authoring positions. Ordinary configuration and provider payloads keep their
+data representation, and plugins receive resolved input values without the authoring forms.
+
+**Public graph values:** declared public graph outputs use the same literal, reference, object
+assembly and list assembly forms as input bindings, under the same source/scope and literal-data
+rules. For example, an output can assemble a literal label with a managed database reference from
+startup without an operation merely to construct the object. Calculations and transformations
+still use plugin operations.
+
+Public outputs retain their declared publication conditions, validity, output validation and
+permitted exposure, including sensitivity and custody requirements. Constructing a value does not
+establish whole-graph success, broaden reference scope or publish other internal outputs. This
+shares value-binding machinery; it does not settle domain-error/outcome mapping. Consumers receive
+the resolved values, not authoring wrappers.
+
+**Public-output declarations:** declare public graph outputs in a map keyed by names unique within
+that graph's public outputs. Each entry groups its value binding and applicable output-specific
+declarations, including optionality and success prerequisites. For example, the database entry binds
+startup's reference and requires verification success; a separate diagnostic-report entry is
+explicitly optional. Reject duplicate output keys. Map order determines neither execution nor
+publication order; each output retains its own dependencies and conditions.
+
+This grouping does not require repeating inherited contract information or change result-contract
+derivation, output validation, validity, exposure or fixed-value semantics. It does not publish other
+internal outputs. The declaration keys and remaining contract-field encoding stay provisional.
+
+**Public-output requirements:** each declared public graph output is required for successful graph
+completion unless explicitly optional. A required output must be produced under its contract;
+an unfulfilled required output prevents successful completion even when the contributing steps
+have succeeded. For example, the database output can be required while a diagnostic report is
+explicitly optional. Absence of that optional report is reported with the known reason or explicit
+uncertainty, without that absence alone preventing graph success.
+
+This concerns whole named outputs, separately from optional fields inside a value's schema and
+from required/optional steps. An optional step does not automatically make its public output
+optional. Values that are produced still require validation, permitted exposure and satisfied
+publication/validity conditions. Optionality does not fabricate a value, substitute null, suppress
+binding errors or let a consumer use an absent result; normal reference/dependency rules apply.
+Outstanding work, effect evidence and mandatory contract obligations remain tracked under their
+existing rules. This does not require success outputs to be fabricated for a failed graph.
+
+**Public-output prerequisites:** a public graph output may declare successful-completion
+prerequisites separately from its value binding. Declare them on that output using local step names
+and the same success semantics as step prerequisites. For example, the public database output can
+bind startup's database reference while requiring schema verification to succeed before publication.
+No extra plugin operation is required merely to gate and forward that value.
+
+The value's own dependencies and declared publication, validity, validation and access conditions
+must also hold. A failed or uncertain prerequisite withholds the affected output; a schema-valid
+failure payload does not satisfy it. Verification success neither establishes whole-graph success
+nor permanently guarantees the database's availability or schema. These prerequisites add no authored
+failure/completion triggers or permission to expose other internal results. Output field names and
+remaining contract-field encoding remain authoring work.
+
+**Public-output publication:** an output becomes eligible for publication once its value bindings,
+explicit prerequisites and other declared publication conditions are satisfied. There is no implicit
+wait for unrelated steps or successful whole-graph completion. For example, the database output can
+be released after schema verification while independent diagnostics continue, provided its validity,
+validation and access conditions hold. A contract may declare stronger publication conditions.
+
+Publishing the output does not report whole-graph success, complete outstanding work or mark the
+owning instance prepared. Those outcomes and lifecycle requirements remain separately governed.
+An unavailable or invalid value, unmet prerequisite or denied access still prevents publication;
+earlier verification cannot substitute for current checks required by the output's contract.
+
+**Published value stability:** each named step output and public graph output has one fixed
+published value per producing attempt. Redelivery of that recorded value is permitted; publishing
+a different value under the same output and attempt must report a contract error rather than
+replace the value already supplied to consumers. Preserve any effects and uncertainty associated
+with the conflicting publication. This is a dataflow rule, not an exactly-once transport guarantee.
+
+A later producing attempt can publish a separately identified result without rewriting the earlier
+attempt's evidence. Recovery still checks whether retained results and their prerequisites remain
+valid; this rule neither starts a retry nor authorizes replaying effects. A fixed database reference
+does not freeze the database, its current availability or access. The responsible instance reports
+ongoing state, and the output's validity and current-use checks remain mandatory. Progress,
+observations and supported streams use their own contracts rather than replacing graph values.
+Exact attempt identifiers and value-comparison encoding remain implementation/authoring work.
+
+**Binding encoding:** a binding is an object containing exactly one of these keys, with its payload
+as that key's value. The same encoding applies to child bindings inside assemblies.
+The four forms and this structure are accepted; these key spellings are working names under the
+[vocabulary boundary](MODEL.md#vocabulary-review-boundary), to be settled in the future naming PR.
+
+| Form key | Payload | Resolved value |
+| --- | --- | --- |
+| `literal` | An ordinary value allowed by the data profile | The payload unchanged, including whole objects/lists |
+| `reference` | A structured source selection and nested JSON Pointer | The selected value; payload field names remain open |
+| `object` | A string-keyed map of child bindings | An object with those keys and resolved child values |
+| `list` | An ordered list of child bindings | A list of resolved child values in the same order |
+
+For example, `{literal: 15}` supplies 15, `{object: {title: {literal: Review}}}` constructs a document,
+and `{list: [{literal: first}, {literal: second}]}` constructs a list. Empty assemblies use
+`{object: {}}` and `{list: []}`. Reject an empty binding object, multiple form keys, unknown binding
+keys or a malformed form payload. `{literal: {reference: example}}` is valid literal data under this
+encoding; its inner key does not select a graph form. Receiving schemas still validate resolved values.
+
+**Reference structure:** represent source selection and the nested JSON Pointer in separate
+structured fields, rather than one encoded reference string. For a prior output, identify its step
+and declared output separately from the pointer within that value. For example, select step
+`connect`, output `connection`, and pointer `/endpoint`. The source fields establish the dependency
+and selected output; the pointer selects within it. Source-selection fields sit directly inside
+the `reference` payload alongside its optional pointer, without an additional nested source object.
+This direct-field layout is accepted. Source/contract checks, missing-value handling and literal-data
+rules still apply. Supporting field names and exact source selectors remain open; this does
+not approve final payload spellings, add a compact-string shorthand or create a reusable source object.
+
+**Nested value selection:** within an explicitly selected graph input, captured configuration value
+or declared output, use [JSON Pointer (RFC 6901)](https://www.rfc-editor.org/rfc/rfc6901.html).
+For example, `/connection/endpoint` selects a field and `/participants/0/name` selects a field in
+the first array item. The empty pointer selects the whole source value; `/` selects its empty-name
+member. Standard token escaping applies: `~1` represents `/`, and `~0` represents `~`.
+
+**Omitted nested pointer:** omitting the pointer selects the whole explicitly chosen source value,
+equivalent to supplying the empty JSON Pointer. Source selection remains explicit; omission does
+not infer a source, bypass source validation or turn an unavailable value into a default. For example,
+selecting step `connect` and its `connection` output without a nested pointer passes that whole
+output; `/endpoint` selects its endpoint member if present and exposed by the output contract.
+Missing sources or selected members still produce reference-resolution errors. This semantic
+default does not select the reference payload's final field names.
+
+This selects data within the chosen source, not the source itself, a registry object or a Resource
+access path. Literal strings remain data under the recognition rule above. Exact reference payload
+fields remain open; accepting JSON Pointer does not introduce expressions, wildcard
+selection or automatic reference evaluation.
+
+**Missing referenced values:** report a reference-resolution error and prevent the consuming step
+from running when a graph reference's pointer selects no value. Do not substitute null or treat the
+input as omitted to obtain a default, even if the receiving field is optional or defaulted. For
+example, a schema-valid output may omit an optional `endpoint` member, but a binding selecting
+`/connection/endpoint` still fails if that member is absent. An actual selected null value is data
+and must satisfy the receiving schema; null does not mean the selection is missing.
+
+Catch provable errors early and unresolved selections when inputs are resolved, under the existing
+input-validation boundary. Preserve earlier effects, outcomes and uncertainty; independent branches
+whose prerequisites remain satisfied continue under the normal scheduling rules. This handling does
+not change declared defaults for genuinely omitted configuration/input fields. Exact diagnostic
+fields remain authoring work.
+
+**Structured inputs:** graphs may explicitly assemble objects and lists from literals, references
+and nested assemblies, without a plugin merely to build that structure. Each declared field or
+list item supplies a value; output references contribute their normal execution dependencies. For example,
+a document can combine the literal title `Review` with a body taken from an earlier step's output.
+Literal subtrees and resolved output values remain data under the recognition rule above. Assembly
+does not add automatic merging, arithmetic, string manipulation, loops or inline expressions;
+calculations and other transformations still use plugin operations. Assemblies use the `object` and
+`list` encoding above; fields inside reference payloads remain open.
+
+**Input validation:** catch provable graph wiring/type errors before execution, including known
+invalid references and literal inputs. V0 does not require a static proof that every possible
+producer output satisfies the receiving input schema. Required schemas and their validation
+features must still be available and supported; lack of such a proof does not waive validation.
+Resolve and assemble each step's inputs, prepare declared defaults as below, then validate the actual
+payload against its input contract before dispatch. Reject invalid inputs without invoking that step.
+Early checks do not replace runtime validation, current authority or readiness checks. Exact checking
+algorithms and diagnostic coverage remain authoring/conformance work.
+
+For example, an output declared as an integer from 1–100 may feed an input accepting 1–10.
+A resolved value of 5 can proceed; 50 is rejected before the receiving step runs, without coercion
+or silently narrowing the value. This rejection does not undo earlier steps or establish that
+they had no effects; their outcomes and recovery obligations remain recorded under existing rules.
+
+**Operation-input defaults:** Conduit materializes unambiguous applicable declared defaults for
+genuinely omitted fields in Conduit-authored operation inputs, then validates the prepared payload
+before invocation. Code and graph-backed implementations receive the same prepared values; the
+graph-input source exposes that payload. This applies at the invocation boundary, including child
+operations, without implicit inheritance of caller configuration.
+
+Defaults do not replace explicit values, coerce invalid values or recover failed reference bindings.
+An explicit null remains null and must satisfy the receiving schema. Conflicting applicable defaults
+must be resolved explicitly; no schema-order winner is selected. An invalid prepared payload blocks
+invocation, preserving earlier effects and their evidence. Detailed default applicability and
+resolution algorithms remain authoring work. Provider-native MCP schemas retain their separate
+[interpretation](CONFIGURATION.md#provider-mcp-schemas); this rule does not automatically inject
+Conduit defaults into provider inputs.
+
+**Output validation:** validate each declared plugin output against its producer's output contract
+before making it available to downstream steps. Withhold invalid output and report a contract error,
+preserving available effect evidence and uncertainty. A receiving input's acceptance cannot substitute
+for this producer-side check; valid producer output still undergoes the receiving step's input check.
+
+For example, a directory-creation operation can create the directory and then return a malformed
+descriptor. Do not expose that descriptor as usable output, claim that nothing happened, infer
+rollback or blindly repeat creation. Retain the outcome/effect evidence and use the operation's
+recovery contract. A schema-valid declared failure result remains a valid result representation;
+validation success does not itself establish successful effects, readiness or continued availability.
+This concerns Conduit-declared outputs. Provider-native schemas retain their
+[existing interpretation](CONFIGURATION.md#provider-mcp-schemas); no new provider schema is imposed.
+
+**Scheduling after failure:** after a setup/change graph step fails, v0 continues scheduling
+independent steps whose own prerequisites remain satisfied. For example, a failed service login
+does not prevent unrelated workspace preparation. Work with unmet prerequisites remains blocked;
+successful independent branches do not make required unfinished setup complete. Current authority,
+readiness, target coordination, scheduling limits, cancellation and mandatory stop rules still apply.
+Authors declare dependencies/gates where later work must wait for earlier work to succeed.
+
+Retain completed and already-dispatched outcomes, effects and uncertainty under their existing
+contracts. Continuing eligible branches neither retries failed work nor rolls back effects. This
+default concerns scheduling within the requested graph; it does not start unrelated Agent turns,
+provision unselected Pool entries or bypass another instance's prerequisites.
+
+**Explicit graph cancellation:** when an authorized caller cancels a graph, stop starting ordinary
+steps and request cancellation of its in-flight child operations where their contracts support it.
+Continue tracking actual outcomes, effects and uncertainty, and perform required contract-defined
+cleanup. Unsupported cancellation or missing confirmation must remain visible; the request alone
+does not establish that work stopped, effects were undone or cleanup completed.
+
+For example, cancellation can ask an active download to stop while an already-created database
+remains governed by its instance lifecycle. Cancelling preparation still detaches the attachments
+retained by that preparation under the [connection rules](CONDUITS.md#conduits),
+preserving other consumers and backing Resources. Graph cancellation does not itself retire an
+instance or authorize arbitrary cleanup, rollback or replay. Exact propagation and transport
+mechanics remain open within this boundary.
+
+For example, database startup reads its directory from configuration, and a migration step receives
+the database handle published by startup. If the directory must be constructed from a base and a
+relative path, a typed plugin operation performs that transformation and startup references its
+output. That binding supplies the dependency. Such operations use the existing plugin contracts,
+including validation, effects and recovery where applicable; they add no new object family or
+implicit access. Plugins may implement internal calculations and branching as already agreed.
+
 For example, authenticate → connect → initialize remains visible composition, while the
 authentication plugin handles an existing-login check, challenges and provider polling. The
 reusable Pool composition step can establish declared entries through their own setup contracts;
@@ -190,9 +632,86 @@ instance start; plugins may verify already-satisfied work. This does not authori
 uncertain effects.
 
 Templates declare ongoing runtime behavior, using type defaults; graphs supply prepared inputs.
-A graph may request instance-managed runtime startup during setup, such as starting a database
-before migrations. Instances own ongoing processes/availability from startup; setup plugins do
-not remain permanent supervisors. Graph completion and ongoing readiness are separate facts.
+A graph requests instance-managed startup through an ordinary typed plugin operation explicitly
+bound to the instance's declared runtime, such as starting a database before migrations. The
+operation supplies prepared inputs through its compatible contract; the instance's responsible
+service owns ongoing activity from startup. Setup plugins do not remain permanent supervisors.
+This reuses operation composition, validation and recovery rather than introducing special
+lifecycle node kinds or automatic startup merely because input values become available.
+Registration still starts nothing.
+
+**Multiple managed runtimes:** an instance may declare several named managed runtimes when its
+type supports them. For example, a database Resource can declare a database driver and an optional
+diagnostics helper supplied by different contributions. Operations explicitly select their intended
+runtime targets; all components remain under the owning instance's lifecycle and supervision.
+Existing setup, control and retirement contracts determine preparation requirements, failure
+handling and shutdown duties. Cardinality alone adds no blanket failure or readiness policy.
+This permits neither an additional primary Agent execution nor a change in Resource/Pool or
+endpoint ownership. A declaration does not imply a separate operating-system process.
+
+**Runtime collection:** declare managed runtimes in a map keyed by names unique within the instance
+definition. Each value contains that named runtime's declaration. For example, `database` and
+`diagnostics` select two entries; duplicate keys are rejected under the configuration profile.
+Runtime-target references select these local names, not list positions. Separate instances can
+reuse the same names without sharing runtime identity or authority.
+
+Map order has no execution meaning. Declaring an entry starts nothing; setup operations still request
+instance-managed startup explicitly. The map does not imply one process per entry or an additional
+primary Agent execution. Container, driver and prepared-input field names remain authoring work.
+
+**Runtime target inputs:** an operation receives its declared runtime target as an explicit typed
+input through the ordinary graph binding machinery. A reusable graph-backed operation declares
+that input and explicitly passes it to the child operations that need it; the target is not supplied
+through a separate runtime-context binding. For example, database startup receives the declared
+runtime target and prepared storage, then publishes a usable database result under its contract.
+The declaration reference identifies what to establish; it does not establish startup or substitute
+for that later result. Operations that need no runtime target require no such input.
+
+The runtime-target source selects one named runtime and yields a typed target reference rather
+than supplying the structured runtime declaration as target data. The responsible service resolves
+that reference against the owning instance's retained definition. Prepared settings remain explicit
+operation inputs; selecting a target neither changes its fixed definition nor starts its runtime.
+Authorized inspection can expose definition details under its own contract. This does not require
+one universal opaque representation for target references.
+
+Authenticated caller identity and authority remain trusted invocation context. Supplying a target
+does not grant access or let the caller forge that context; resolution and invocation still enforce
+current authority and the target's contract. This choice fixes target placement, while reference
+encoding, runtime selection fields, inspection and protected-reference transport remain authoring work.
+
+**Managed references:** Conduit-declared live service and protected authentication bindings share
+a typed managed-reference contract for ownership, resolution and validity. The owning implementation
+retains actual live objects and credentials; operations exchange references under compatible
+capability contracts. Those contracts supply the particular behavior and lifetime guarantees.
+For example, database startup can publish a managed service reference consumed by migration, while
+authentication publishes a protected binding consumed by connection setup. A common reference
+contract does not make those capabilities interchangeable.
+
+Possession of a reference supplies no grant. Resolution and use remain subject to current authority
+and the binding's validity rules. Successful schema validation or a retained reference alone cannot
+establish that a service is currently available. Inspection, recording and export must respect the
+value's sensitivity and custody rules; a reference is not automatically safe to log.
+
+This describes values passed between operations, separately from the graph's `reference` form
+that selects a value. It adds neither another source category nor a mandatory central broker or
+object family. Native provider MCP schemas retain their own semantics. Exact reference fields,
+wire encoding, transport and resolution mechanisms remain authoring work.
+
+The startup operation's contract defines the guarantees of its published results. Request
+acceptance, usability for subsequent setup, completed application preparation and current runtime
+availability remain distinguishable. For example, a database usable for migration is not evidence
+that its application schema is ready. Startup cannot wait for a condition whose establishment
+requires a later step that is itself waiting for startup's output. These are contract-specific
+guarantees, not a universal readiness enum or permanent availability promise.
+
+An explicit runtime binding does not grant authority, expose internal setup operations or make an
+arbitrary returned process ID a managed runtime. Graph completion does not end continuing runtime
+activity. No Runtime object family, mandatory primary plugin or process per instance follows;
+an attachment type can require no persistent process, and a cloud provider retains supervision of
+its own service. Exact target-binding representation, prepared-input layout and named-runtime
+declaration syntax remain authoring work. Start/wait operation granularity must make each
+operation's guarantees explicit under the existing contracts. The
+[database/cloud comparison](../research/RUNTIME_ESTABLISHMENT.md) records the alternatives and rationale.
 
 Required setup failure normally retains an already-started managed runtime for inspection and
 explicit retry/stop. Retry of unchanged setup continues from still-valid recorded progress under
@@ -203,7 +722,7 @@ Required connection failures block initial preparation, optional ones report and
 successful partial attachments are retained for retry. After successful setup, consumers normally
 continue independent work when a dependency is unavailable. The selected MCP example uses bounded
 reconnect with a manual option; this is not a universal operation retry policy or permission to
-replay writes/start new model work. Exact graphs, waits, cancellation, retry bounds, live-change
+replay writes/start new model work. Exact graphs, waits, cancellation mechanics, retry bounds, live-change
 handlers and recovery compatibility remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples).
 
 

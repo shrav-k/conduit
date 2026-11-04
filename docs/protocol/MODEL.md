@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -28,13 +28,30 @@ Resource creation/attachment always goes through its owning Pool, including supp
 for Conduits. Templates are reusable across Pools; each resulting Resource instance has one owner.
 Backing data, credentials and process lifetime are distinct from registry identity/ownership.
 
+### Vocabulary review boundary
+
+Only the five main family names—**Interface, Agent, Resource, Pool and Conduit**—are settled.
+All other Conduit-owned terminology and field spellings are working vocabulary, including names
+previously selected while reviewing a structure. Continue using those names consistently so the
+documents and examples remain readable; their behavioral meanings and accepted structural rules
+remain in force. For example, the four explicit binding forms and their one-key encoding remain
+accepted even though the current `literal`, `reference`, `object` and `list` spellings are provisional.
+Vocabulary uncertainty does not block logical or structural review.
+
+A separate future PR will review terms collaboratively, one by one, and then update the glossary,
+protocol text, schemas and examples coherently. Record confusing collisions as they arise, without
+opportunistic renaming or treating understandable example syntax as final vocabulary approval.
+Names defined by external standards retain those standards' meanings. The
+[current review](../REVIEW.md#future-vocabulary-pr) tracks the naming work separately from the
+ongoing walkthroughs; a naming change alone must not silently alter a contract.
+
 ### Authoring concepts beneath the object families
 
 The five families describe the objects Conduit manages. The authoring and extension concepts below
 describe how those objects are defined, connected and operated. They are not competing object
-families or additional independently provisioned things. These divisions and temporary names are
-accepted as our working vocabulary. Names may change after conceptual review; the final naming
-and schema pass should preserve these responsibilities rather than silently change their meaning.
+families or additional independently provisioned things. The divisions are accepted; the names are
+temporary under the [vocabulary boundary](#vocabulary-review-boundary). The future vocabulary PR
+should preserve these responsibilities rather than silently change their meaning.
 
 | Working term | Responsibility | How it composes |
 | --- | --- | --- |
@@ -54,6 +71,15 @@ Installing a package makes its definitions available; it does not instantiate ob
 services or grant access. The common envelope does not require an identical source directory layout,
 bundled dependency copies or a new general-purpose package manager. Exact fields, dependency references
 and archive layout remain authoring work; automatic dependency resolution stays deferred.
+
+**Package entry document:** each package has one explicit entry document declaring its public
+exports and dependencies. Definitions can be inline or referenced in package-local files, so a
+small package can keep its declarations together while a larger one separates contracts, graphs
+and templates. The entry document may be handwritten or generated. Tools inspect the declared
+surface without executing plugin code or inferring exports from directory layout; merely including
+a file in an artifact does not export its definitions. Provider-native tool catalogs remain dynamic
+under their integration contracts. Filenames, fields, reference notation and archive layout remain
+open; existing package capture and supplied-dependency rules still apply.
 
 Policy and Grant are essential protocol concepts for Agents and Interfaces, alongside the other
 concepts here. Their authorization contracts must apply consistently to managed capability use,
@@ -75,6 +101,15 @@ instances realize that definition with identity, state and managed activity. The
 authoring and the managed object model; it is not merely a graph. Ongoing services remain under
 instance management rather than belonging to a finite setup node.
 
+**Type contracts across the five families:** every template and instance selects one versioned type
+contract for its specialized configuration and supported behavior. Interface, Agent, Resource, Pool
+and Conduit still define fundamental roles and invariants; a selected type cannot override ownership,
+authority or fixed-definition rules. For example, a Resource can select a local-directory type and
+an Agent a native-agent type. Type-contract versions are independent of the common object contract
+and implementation releases. Types add no object family and do not select a mandatory primary plugin.
+The shared model is accepted; concrete catalogs, identifiers, grouping for the other families and
+field spellings remain authoring work.
+
 **V0 composition:** no primary plugin is required. A complete template binds the selected type's
 required behavior to compatible contributions from one or several plugins, including setup,
 ongoing runtime/capability behavior and supported controls. Convenience comes from complete standard
@@ -86,6 +121,15 @@ identity, access and readiness are verified at their required points. Conformanc
 behavioral evidence; matching schemas or package names alone do not establish compatibility.
 This preserves instance-owned state/runtime responsibility and fixed-definition replacement rules.
 
+**Template implementation selections:** templates select implementations in one named dependency
+map. Setup operations, runtime drivers and control handlers refer to a dependency alias plus a
+public export name, with the expected kind and contract checked at each use. No alias is primary.
+For example, `messages` selects the history package; setup selects `messages` plus
+`history.establish`, while the runtime selects `messages` plus `history.managed`. Aliases identify
+implementation selections, not Resource instances, processes or access grants. Package-internal
+references retain their defining scope, and resolved implementations remain subject to the existing
+retention/replacement rules. Exact map fields and reference notation remain open.
+
 There are two distinct forms of composition. Requirements combine obligations; graphs combine
 actions and their dependencies. A graph may establish prerequisites for a requirement, but
 successfully finishing setup does not prove that every later request satisfies it. Conversely, a
@@ -93,6 +137,18 @@ requirement declaration does not itself run an authentication or connection proc
 supply the behavior for both, without collapsing declaration, execution and ownership together.
 An operation can also be invoked directly through its supported surface; ordinary tool calls do
 not need a new authored graph merely to be callable.
+
+Reusable requirement compositions share graphs' literal/reference/object/list value-building forms,
+with references scoped to the composition's declared parameter payload. This forwards or assembles
+typed constituent parameters without plugin glue, ambient configuration or graph execution sources.
+The shared notation does not change the distinction between obligations and actions or replace
+validation, current authority and constituent enforcement.
+Constituents form a map keyed by locally unique names, each selecting a requirement contract and
+parameter binding. Reusing a contract under different entries is allowed; map order does not
+sequence enforcement. Local names support inspection without adding runtime objects.
+V0 requirement composition is finite and acyclic: reject recursive definition cycles, while allowing
+independent reuse with distinct parameters. This does not constrain the topology of live Conduits
+between objects or prohibit recursive data schemas.
 
 A Conduit uses both forms: its contract composes relationship requirements and its procedures
 coordinate establishment through selected endpoint capabilities. Its instance represents the live
@@ -108,11 +164,33 @@ plugin can export several operations, and a template-local graph need not become
 No special composite-plugin family or mandatory packaging unit is introduced.
 
 The exported contract describes inputs, outputs and applicable behavior; internal nodes bind those
-values and call selected operations. Composition preserves existing authority, endpoint selection,
+values and call selected operations. V0 graph inputs use literals, typed references and explicit
+object/list assembly; calculations and other transformations use plugin operations, with inline
+binding expressions deferred under the [graph-input boundary](LIFECYCLE.md#lifecycle-protocol).
+Reusable graph-backed operations receive caller configuration through their declared typed inputs;
+they do not implicitly inherit the caller's configuration namespace. A template can pass its captured
+search limit into an indexing operation's `limit` input, while another template supplies that input
+from a differently named setting. Internal nodes use the declared operation inputs. Scoped invocation
+context, such as identity and operation tracking, and explicitly authorized Resource access remain
+available under their contracts. Graphs may reference the runtime's explicitly declared, typed,
+read-only invocation metadata, without exposing the whole instance or treating supplied IDs as
+authenticated identity or permission. Exact metadata fields and input/context notation remain
+authoring work under the [lifecycle contract](LIFECYCLE.md#lifecycle-protocol).
+V0 references select declared inputs, captured instance configuration, earlier step outputs,
+declared runtime targets or typed invocation metadata. Other data access uses explicit authorized
+operations; arbitrary plugin-defined reference resolvers are deferred. This preserves the explicit
+input boundaries of reusable operations.
+Composition preserves existing authority, endpoint selection,
 implementation retention and instance-owned runtime rules. It does not automatically make several
 external effects atomic or safe to retry. V0's finite dependency-graph boundary still applies;
 nesting does not introduce authored recursion or loops. Exact graph-call/binding syntax, publication
 layout and detailed outcome/recovery coordination remain open.
+
+Executable graphs share required-by-default steps with explicit optionality across setup, reusable
+operations and change handlers. Required steps must succeed for successful completion; optional
+failures remain visible without alone preventing it. Actual dependencies, mandatory contracts and
+lifecycle duties still apply. Public outputs and permitted partial control confirmations do not
+establish success for unfinished required work. See the [graph execution rules](LIFECYCLE.md#lifecycle-protocol).
 
 Graph-backed operations reuse Conduit's graph recovery by default. An explicit retry of the same
 unchanged invocation resumes retained child progress, reuses only still-valid results, and delegates
@@ -125,9 +203,63 @@ Composite output contracts account for their composed success and failure modes.
 initial public result contract by default from declared public output bindings and constituent
 contracts; authors may explicitly construct a domain result instead. Preserve relevant effects,
 uncertainty and links to scoped evidence without automatically exporting internal outputs. Public
-results and retained execution evidence serve different purposes. Detailed derivation/mapping
+output values use the same literal/reference/object/list binding forms as graph inputs under their
+declared publication, validity and access contracts. Public results and retained execution evidence
+serve different purposes. Detailed derivation/mapping
 mechanics and recovery coordination remain under review in the
 [composite output proposal](../proposals/authoring-syntax/CONTRACTS.md#composite-outputs-and-outcomes--proposal).
+
+### Package scope and public bindings
+
+A published package resolves its internal references within its own defining scope. Importing it
+under a caller-local alias does not rename or rebind those internal references. A same-named
+contribution in the importing template cannot silently override a package's internal dependency;
+this boundary is preserved when the package is used in a composed graph.
+
+Exports identify contributions the package makes available to callers. Imports declare dependencies
+that need bindings. Callers can supply replacements only through dependency bindings the package
+explicitly exposes, subject to the required contract compatibility. Internal names do not become
+caller-configurable merely because the package is imported.
+
+Public export names are unique across all contribution kinds within a package. Selecting a package
+and export name identifies one contribution; resolution still checks its expected kind and contract.
+For example, a package can export the template `shared-history` and operation `establish`, but cannot
+also export an operation named `shared-history`. Reject that collision rather than choosing by kind
+or declaration order. This applies across inline and referenced definitions and regardless of their
+file layout. Internal definition names, contract identities and registry object names retain their
+separate rules. Exact name grammar and reference notation remain open.
+
+A package may explicitly re-export a declared dependency's public contribution under its own public
+export name, without copying the definition or introducing a wrapper. For example, an Euphony starter
+package can expose a history package's `shared-history` template as `conversation-history`. The alias
+preserves the original definition, contract and internal reference scope; resolved dependencies retain
+their identities. Re-exporting does not adapt behavior, rebind private dependencies or grant access.
+Package-wide export-name uniqueness and the usual kind/contract checks still apply. Exact declaration
+and resolution notation remain open.
+
+For example, a history package's internal `checks` helper still selects its history validator when
+the importing template also calls an unrelated repository validator `checks`. The caller may
+replace the history validator only if the package declares that dependency replaceable. Its
+explicit binding must satisfy the required contract; name coincidence supplies no binding.
+
+An explicitly replaceable dependency may declare a default implementation binding. When the caller
+supplies no replacement, that declared default is selected. A compatible explicit replacement
+takes precedence; an invalid explicit selection reports an error rather than falling back.
+This does not authorize automatic installation or substitution with another available package.
+Existing schema-validation and readiness rules apply when the selected contribution is unavailable.
+The resolved implementation is retained on the instance under the existing fixed-definition rules.
+
+For v0, an imported dependency requires an export that explicitly supports the requested contract
+identity and exact version. Existing export-kind, type and behavioral compatibility checks still
+apply; a support declaration alone does not prove conformance. Cross-version compatibility mappings
+are deferred, and matching input/output shapes do not substitute for the required contract.
+Contract versions are independent of implementation releases: different plugin releases can fulfill
+the same contract version. This creates no obligation to retain older contracts or compatibility code.
+
+These are definition and implementation-selection rules. Selecting an export or supplying a
+dependency does not establish a live Resource connection, grant permission or change Pool ownership.
+Resolved instance bindings retain the existing implementation-retention and replacement rules.
+Exact import/export fields, default-binding representation and reference spellings remain authoring work.
 
 ### Distribution and execution
 
@@ -419,6 +551,29 @@ of a frontend's lifetime, and reconnecting frontends inspect the same underlying
 The Interface is the unified access and interaction surface, not the sole producer of observations
 or a requirement for an always-running UI. A dropped observation stream does not cancel Agent work.
 Report gaps and stale/unknown state; a latest-state view need not replay every intermediate update.
+
+**Observation ordering:** retained observation feeds define ordering and resume cursors within
+each declared source. The Interface combines sources without promising one global event order.
+Preserve each feed's order and known causal links; timestamps alone do not establish cross-source
+causality or a global commit order. For example, two executors can independently report a database
+becoming ready and an Agent starting without those reports establishing which preceded the other.
+
+A source feed is a declared observation boundary, not automatically one process or one object.
+This does not require sampled metrics or latest-state observations to provide lossless histories,
+move authoritative state into the Interface, or grant access through a cursor. Exact cursor encoding,
+pagination, transport and remaining delivery mechanics remain authoring work.
+
+**Snapshot-to-feed handoff:** the managed state-tracking capability pairs a source's state snapshot
+with a resume position for its subsequent retained changes. A change between reading the snapshot
+and opening the feed must be available through catch-up, or the source must explicitly report that
+continuity cannot be established. For example, a Resource becoming ready during that interval
+cannot silently disappear from the observation path.
+
+If the position cannot be resumed, report the gap and need for fresh state rather than silently
+starting at the latest position. This is a source-level capability, not a global snapshot or an
+exactly-once delivery guarantee. Weaker/native observation sources expose their coverage limits;
+sampled metrics need not become lossless histories. Current access and explicit-purge rules remain
+unchanged. Exact cursor encoding, pagination and transport remain authoring work.
 
 Export failure must not erase local committed outcomes. Diagnostic traces and metrics can refer
 to retained evidence without becoming its sole copy. Preserve applicable content access and secret

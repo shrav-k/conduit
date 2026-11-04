@@ -5,13 +5,24 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
 ## Configuration language
 
-**YAML is the authoring format; typed objects and explicit semantics define the language.**
+**Constrained YAML 1.2 is the human authoring format; JSON is an equivalent input and
+interchange representation.** Both use one JSON-compatible value model and the same typed
+interpretation. JSON Schema 2020-12 is the accepted basis for configuration, operation
+input/result and requirement-parameter data contracts. Schemas themselves may be authored
+as YAML mappings or JSON; authors need not maintain duplicate representations.
+
+Conduit's explicit behavioral contracts define graph execution, default materialization,
+controls, authorization, effects and recovery. Data-schema validation does not establish
+those guarantees. The detailed schema profile, reference syntax, validators and
+canonical byte encoding remain to be specified; this ruling does not accept every proposed
+schema feature or introduce another mandatory configuration language.
+
 The five families and their template/instance forms share identity, reference, composition
 and behavioral contracts across every entry point.
 CLI/API/frontends must interpret the same objects consistently. Future generators can
@@ -19,16 +30,18 @@ emit this model; they cannot bypass its validation or authority rules.
 
 Each object uses its family as `kind` and a top-level `form` beside it to identify a template
 or instance. Form is a structural distinction, not an observed lifecycle state: instantiation
-creates a separate object rather than changing the template's form. Family and form jointly
-determine how to interpret `spec`. The common authoring envelope is:
+creates a separate object rather than changing the template's form. Family and form determine the
+common `spec` contract; every template and instance also selects one versioned type contract for
+specialized configuration and supported behavior. Type contracts must preserve their family's
+invariants and can be fulfilled by multiple compatible plugin contributions. The common authoring envelope is:
 
 | Field | Meaning |
 | --- | --- |
-| `apiVersion` | The common object contract version. A Resource's selected type contract has its own separate schema version. |
+| `apiVersion` | The common object contract version. Each family's selected type contract has its own separate schema version. |
 | `kind` | The family: `Interface`, `Agent`, `Resource`, `Pool` or `Conduit`. The explicit form further determines the applicable schema and operations. |
 | `form` | The template/instance distinction, at the top level alongside `kind`. |
 | `metadata` | Author-editable naming and system-owned identity/version information, with ownership defined per field. No generic object-label map in v0. |
-| `spec` | Configuration defined by the family and form's contract. |
+| `spec` | Configuration governed by the family/form contract and the selected type contract. |
 
 Metadata ownership is defined per field: authors control naming within their
 permissions, while Conduit assigns and maintains identity/version information. Placing a
@@ -61,6 +74,8 @@ copying an established binding. The export does not resume the source instance's
 
 The shared envelope does not give every kind the same configuration or status fields.
 Exact metadata/status fields, ID encoding and remaining import/export semantics are open.
+Under the [vocabulary boundary](MODEL.md#vocabulary-review-boundary), the envelope's current field
+spellings are also working names. Its accepted roles, ownership and structure remain in force.
 
 This accepts the envelope and organizing principle, not every proposed field or algorithm
 in the research. In particular, the API group/version, registry storage layout, reference
@@ -73,13 +88,19 @@ individually authored YAML file.
 **V0 profile:** use YAML 1.2 Core scalar interpretation, restricted to string
 mapping keys and finite supported numeric values. Typed schemas enforce field types, ranges and
 units without silently converting a string to a number or boolean. Reject duplicate mapping keys
-and unknown fields outside schema-declared open maps. Unsupported numeric range/precision is an
-error, not permission to truncate. Equivalent JSON/YAML inputs have the same typed meaning.
+and unknown fields outside schema-declared open maps. Numeric values follow the shared integer and
+fractional rules below: integer precision loss and unsupported ranges are errors; ordinary fractional
+values permit the declared binary64 rounding. Equivalent JSON/YAML inputs have the same typed meaning.
+The JSON input path must likewise reject duplicate keys and numeric violations before parsing
+loses the evidence needed to check them. Presentation differences do not create different
+semantics; source comments and formatting need not survive configuration export.
 
 Omission follows the declared default/optional rule; instances materialize declared defaults.
 Null is an explicit value accepted only where the field permits it, including a blank YAML scalar;
-it does not universally mean reset or use-default. Empty lists/maps remain explicitly empty and
-follow their field's contract rather than inheriting values. For example, integer `queryLimit: 15`
+it does not universally mean reset or use-default. Empty collections are supplied values, not
+omissions to replace with a whole-value default or inherited settings. Empty lists stay empty;
+an explicitly supplied object, including `{}`, receives applicable defaults for omitted child
+properties under the rules below. For example, integer `queryLimit: 15`
 can be valid, `queryLimit: "15"` fails that integer contract, and `enabled: yes` fails a boolean one.
 
 Comments, ordinary mappings/sequences and multiline strings remain supported. V0 rejects
@@ -90,16 +111,248 @@ work; script-based plugins remain supported. This profile governs Conduit's conf
 not the contents/formats of opaque native files supplied through Resources.
 
 Parser choice, diagnostics and schema-specific numeric/unit limits remain implementation work.
-Multiple-object submission and batch outcomes follow their operation contracts; parsing YAML does
-not imply atomic deployment, authority or successful setup.
+Multiple-object submissions use the batch contract below; parsing YAML does not imply atomic
+deployment, authority or successful setup.
+
+### Numeric interoperability
+
+V0 Conduit-declared integer configuration, inputs and outputs use the inclusive range
+−9,007,199,254,740,991 through 9,007,199,254,740,991. Individual schemas may impose narrower bounds.
+This shared range supports exact exchange with ordinary JavaScript clients as well as Rust;
+it is not permission to round an out-of-range value into an accepted one. Detect violations before
+parsing or serialization loses the original value.
+
+For example, an integer history counter of `9007199254740991` is within the shared range;
+`9007199254740992` is outside it. A capability needing a larger exact counter can explicitly
+declare a string with decimal-digit constraints and define its meaning. Conduit does not
+automatically convert numeric inputs into that string contract.
+
+Ordinary fractional configuration, inputs and outputs use finite IEEE 754 binary64
+(double-precision) semantics in v0. For example, temperature `0.7` uses its normal floating-point
+approximation. A contract requiring exact decimal quantities uses an explicit decimal string or
+scaled integer, such as a duration in integer milliseconds, with its units and meaning declared.
+Conduit does not silently convert between these contracts.
+
+This explicitly permits normal fractional representational rounding, refining the earlier blanket
+precision rule. Integer exactness and limits remain strict; the choice does not authorize rounding
+to bypass an integer contract or silently replacing an out-of-range value with zero or infinity.
+Core revision/ID encodings and storage types remain separate. Provider-native schemas retain their
+own interpretation. Detailed comparison, `multipleOf` and round-trip conformance cases still need
+specification; choosing binary64 does not itself validate an implementation's constraint checks.
+
+### Schema resolution
+
+Validation resolves schema references only from the selected package and its explicitly supplied
+or declared schema dependencies. Required definitions must be available; report a missing
+definition rather than fetching it automatically from the network or treating it as unconstrained.
+Packages and schema dependencies may be acquired explicitly before validation. A network-shaped
+schema identifier is not permission to retrieve that address during validation.
+
+This rule concerns definitions used for validation. It does not establish Resource access,
+authenticate an external service or grant a runtime capability. Package-local scope and declared
+dependency boundaries still apply. Exact reference spelling, artifact layout and resolver mechanics
+remain authoring and implementation work.
+
+### Schema keyword acceptance
+
+When accepting Conduit-authored data schemas, reject unrecognized schema keywords rather than
+silently accepting them as annotations. For example, `minimun: 1` must report an error instead
+of losing the intended `minimum` constraint. This checks schema-keyword positions; names inside
+declared maps such as `properties` and `$defs` remain governed by those maps' contracts.
+
+Use standard descriptive schema annotations such as `title`, `description` and `examples` where
+they fit. Additional custom descriptive metadata uses one dedicated annotations map with namespaced
+entries. For example, a frontend can supply a slider/grouping hint for a query-limit field, while a
+documentation tool supplies a section hint under its own namespace. A frontend may use an ordinary
+numeric input when it does not support the slider hint; the field's declared validation still applies.
+
+Custom annotations do not implement validation, authorization or runtime behavior. A limit of 1–100
+belongs in the input schema; permission to change it belongs in grants/governing requirements; how
+the change is applied belongs in the control/handler contract. Unknown schema keywords outside the
+dedicated extension mechanism remain errors. The map keyword, namespace syntax and detailed value
+schemas remain open; illustrative `annotations` and `example.ui` spellings are not selected syntax.
+External provider MCP schemas follow the separate boundary below.
+
+In Conduit-authored data schemas, `format` is an enforced validation requirement. V0 selects all 19
+standard formats defined in [JSON Schema 2020-12 section 7.3](https://json-schema.org/draft/2020-12/json-schema-validation#section-7.3),
+using their standard meanings and offline syntactic checks:
+
+| Area | Formats |
+| --- | --- |
+| Time | `date-time`, `date`, `time`, `duration` |
+| Email and hostnames | `email`, `idn-email`, `hostname`, `idn-hostname` |
+| IP addresses | `ipv4`, `ipv6` |
+| Identifiers/references | `uri`, `uri-reference`, `iri`, `iri-reference`, `uuid` |
+| Templates, pointers and expressions | `uri-template`, `json-pointer`, `relative-json-pointer`, `regex` |
+
+Conformance tests must establish support before an implementation claims it. Report unsupported
+formats rather than treating their constraints as satisfied. V0 defers plugin-defined format
+validators so authored-schema validation can run before plugin code starts.
+
+For example, `date-time` validates timestamp syntax and `uri` validates a URI without contacting
+its endpoint. These checks do not establish reachability or existence. Supporting `uuid` or
+`json-pointer` does not select Conduit's object-ID encoding or graph-reference notation. A project-specific
+identifier can use ordinary string constraints and a reusable schema instead of registering `format: workspace-id`.
+Custom operations, Resource contracts and requirement checks remain extensible. Format validation
+does not replace explicit field types or establish runtime readiness, access authority or successful
+effects. Provider MCP schemas retain the separate interpretation below; any future custom-format
+extension needs an explicit contract.
+
+### Provider MCP schemas
+
+Existing provider MCP schemas retain their declared dialect's semantics. Do not automatically
+impose Conduit's stricter authoring profile on them. An unfamiliar descriptive annotation allowed
+by the provider's dialect does not alone reject a tool. Report unsupported required validation
+features without silently removing constraints or claiming they were enforced.
+
+This preserves provider-native schema interpretation while retaining the applicable compatibility,
+authorization and enforcement checks. Exact adapter handling and conformance cases remain open;
+preserving a schema does not by itself demonstrate support for its required semantics.
+
+### Schema default resolution
+
+When an omitted configuration field has conflicting applicable defaults from composed schemas,
+report the conflict instead of choosing a default by schema order. Resolution requires an
+explicit valid value or a correction to the conflicting defaults. For example, defaults of 10
+and 20 for `limit` do not select a winner; an explicit value of 15 can proceed if it satisfies
+all applicable constraints. Supplying a value does not override any validation constraint.
+
+Conduit also prepares declared defaults for omitted inputs to Conduit-authored operations before
+validating and invoking either code or a graph implementation. A reusable graph's input source sees
+the prepared payload. The same no-order-based-conflict rule applies; explicit values and failed
+references do not receive fallback defaults. See [operation input preparation](LIFECYCLE.md#lifecycle-protocol).
+Provider-native MCP inputs retain their separate schema semantics.
+
+**Omitted optional objects:** an omitted optional object stays absent when it has no applicable
+default of its own. Defaults on its child properties do not create that object. For example, if
+`retry` is optional with no default, a default of 5 on `retry.delaySeconds` does not synthesize
+`retry: {delaySeconds: 5}`. An author can declare a default on `retry` itself when that presence is
+intended; that default remains subject to conflict and validation rules.
+
+Apply this boundary during instance-configuration materialization and Conduit-authored operation-input
+preparation, including nested invocations. Template authoring still preserves omissions. Required-field
+validation is unchanged; child defaults cannot excuse a required parent that remains absent. Explicit
+nulls and failed references retain their existing rules rather than becoming omitted objects.
+
+**Supplied objects:** apply unambiguous applicable defaults to omitted child properties within a
+supplied object, including an empty object. With a declared default of 5 for `delaySeconds`, supplying
+`retry: {}` prepares `retry: {delaySeconds: 5}`. A supplied `delaySeconds: 2` stays 2 and must validate;
+an explicit null remains null and is accepted only if permitted. Supplied invalid values do not
+receive fallback defaults. Conflicting applicable child defaults still require explicit resolution.
+
+This clarifies the empty-collection rule: the parent is present, so its own whole-object default is
+not substituted, while its omitted child fields can receive their defaults. Do not merge with old
+configuration or inherit undeclared values. Empty lists acquire no entries, and an omitted optional
+object without its own default remains absent. This applies to instance-configuration materialization
+and Conduit-authored operation-input preparation, preserving authored template omissions and the
+separate provider-native schema boundary.
+
+**V0 conditional-default boundary:** defer defaults whose applicability depends on a conditional
+or alternative schema branch. Reject unsupported branch-local defaults when accepting a
+Conduit-authored configuration/input schema; do not silently ignore them or try inserting values
+until a branch validates. Supplying explicit values for a particular use does not make an unsupported
+schema declaration acceptable.
+
+Conditional and alternative validation remain available. For example, local/remote variants can
+validate different timeout requirements while templates supply their timeout values explicitly,
+or a common default is declared outside the alternatives. Ordinary defaults and the accepted
+conflict rule for composed defaults remain supported. This is a default-materialization boundary,
+not a change to executable graph branching or provider-native schema semantics. Exact restricted
+keyword paths and diagnostics must implement this boundary consistently.
+
+**Early default validation:** when accepting a Conduit-authored configuration/input schema, reject
+a declared default that is provably invalid against its own schema after applicable supported default
+preparation. For example, an integer constrained to 1–100 cannot declare a default of 0. A caller
+supplying 15 does not excuse that invalid declaration. Report the default and the violated constraint.
+
+This catches demonstrable declaration errors without requiring proof of validity in every future
+composition. The complete prepared configuration/input must still validate at use. Conflicting
+otherwise-valid defaults retain their existing explicit-resolution rule; do not conflate conflicting
+choices with a default that violates its own schema. Provider-native schemas keep their separate
+semantics, and unsupported schemas/features remain errors under the existing acceptance rules.
+
+Other default-resolution mechanics, including the remaining applicability rules, remain authoring
+work. This adds no ordered precedence between schema defaults or change to provider-native semantics.
 
 ### Implementation selection
 
 **V0 rule:** select Conduit plugin implementations explicitly or through an
-unambiguous configured default. Resolve the exact release/artifact identity before execution and
-retain it for the instance's subsequent starts, operations and recovery. Installing a newer package,
+unambiguous configured default. Resolve the exact selected contents before execution, including
+release identity when using a released package. Retain that binding for the instance's starts,
+operations and recovery. Installing a newer package,
 changing a default or package discovery order must not silently change that binding. Record an
 unresolved requested dependency as unresolved, not as located or verified code.
+
+A resolved package artifact records its package identity and content digest, plus its versioned
+release identity when released. Coverage includes its contracts, graphs, templates and any bundled
+code; packages containing only templates or implementation bindings follow the same rule.
+Separately bound dependencies retain their own selected identities.
+
+The digest identifies selected content, not publisher trust or externally operated MCP service
+code. The hash algorithm, exact bundle boundaries, encoding and storage mechanics remain open.
+This makes package-content identity explicit without adding a backward-compatibility promise.
+
+Local authoring distinguishes **edit mode** from a **versioned release**:
+
+- In edit mode, authors change source and explicitly create replacement instances from the selected
+  current contents. No release is needed for each edit, and earlier edits are not preserved for
+  future creation merely because an instance used them.
+- To preserve an implementation for later selection, authors explicitly version and publish it.
+  A release is an intentional, versioned publication of fixed package contents, identified by a
+  content digest and retrievable from a defined distribution source. That source may be public or
+  private. Editing source does not change the release; publishing changed contents requires a new
+  version. A release is independent of the instances that use it.
+
+A working-directory capture or a version string in a draft is not itself a release. Source control
+can support authoring and publication, but a source commit alone is not publication of a usable
+package. Declaration-only packages may be fully represented by their released source; authored code
+also needs the executable artifact or an explicitly supported build arrangement its binding requires.
+No particular build arrangement is selected by this boundary.
+
+Conduit resolves selected packages, verifies their identity and executes them under their contracts.
+It need not operate the publisher, hosting service or release store; existing distribution mechanisms
+may supply those roles. Exact publication/acquisition commands, metadata, storage and removal
+mechanics remain open. A separate local-only release facility is not selected. These are
+authoring/distribution distinctions, not permission to mutate running instance definitions.
+
+For managed execution of a locally authored package, preserve its selected code and contracts
+before execution so source edits cannot change a running instance. This preservation serves the
+instance's execution; it does not require a permanent package archive or make the captured contents
+available for creating other instances. Recreating an old implementation from edited source or an
+exported instance configuration is not guaranteed. Preserved versioned releases provide the explicit
+route to selecting old implementations again; Git or any particular storage mechanism is not
+required by the protocol.
+
+Ordinary development can retire the affected instance and create a replacement from revised source,
+explicitly reusing backing data where supported. Running both revisions is optional. Capture may be
+handled automatically by an explicit development-test or start workflow; authors need not assemble
+archives, publish releases or manage a catalog of simultaneous builds for each iteration.
+
+Retirement can release an edit-mode instance's private executable contents once no live activity or
+unfinished recovery requires them. It does not remove an independently preserved versioned release.
+Retained instance records or outcome evidence alone do not require an executable archive;
+their own retention rules still apply. Restart or recovery must use the recorded implementation
+when available and report unavailability otherwise, never silently adopt revised code. Exact
+cleanup mechanics remain open. A runtime may share or cache captured contents without exposing
+edit-mode build history as selectable releases.
+
+Direct handler tests may run from editable source. Managed integration tests use the captured
+artifact and the ordinary instance contracts. This does not permit live replacement of an
+existing instance's fixed definitions. Captured contents exclude credentials and Resource data
+and do not freeze the host environment; separately supplied runtimes/dependencies retain their
+declared boundaries. Storage layout and cleanup remain open.
+
+Packages explicitly declare which files and directories belong in their captured artifact.
+Directory and pattern rules can select groups of files without listing each one individually;
+capture does not include the entire working directory by default. Unselected working files
+are outside the package artifact and its content digest. Exact inclusion syntax, descriptor
+handling and internal symlink representation remain open.
+
+Each capture uses one explicit package source directory. Included paths and symlink targets
+must resolve within that directory; report an outside target rather than silently including
+it. Authors can stage shared files inside, choose a wider explicit source directory with
+inclusion rules, or use a separate package dependency. This boundary applies to captured
+package files, not Resource paths or authorized runtime filesystem access.
 
 Contract identity/version defines promised configuration and behavior; implementation bindings
 identify the declarations, adapters and any authored code supplying it. Multiple implementations
@@ -113,9 +366,10 @@ configuration can still register while code is missing; report its readiness gap
 Adopting another implementation release/artifact requires a replacement instance in v0, even where
 the new release claims the same contract. Explicit backing-data reuse remains possible under the
 type's create/attach rules; it does not transfer runtime progress, connections or grants implicitly.
-This avoids in-place code migration rules for active work and retained setup progress. It means
-keeping an older implementation available or replacing dependent instances when adopting fixes.
-The retained binding is current executable configuration, not mandatory template-history storage.
+This avoids in-place code migration rules for active work and retained setup progress. Development
+can replace affected instances without keeping the old version available for fresh creation.
+The retained binding identifies executable configuration, not mandatory template-history storage
+or a guarantee that historical executable contents remain available.
 
 This rule applies to Conduit-selected declarations, mappings and plugin/adapter code. It does not
 freeze externally operated services/native tool catalogs or promise control of external native-agent
@@ -233,8 +487,8 @@ access rules still apply when the registry configuration changes.
 Configuration submissions explicitly select create or update intent. Creation reports a
 conflict if that qualified name already exists. Updating a missing target reports a conflict
 instead of creating it. Neither operation silently switches intent based on name matches;
-exact commands and batch handling remain open. Creating Resource instances must go through
-a Pool operation; a generic registry write cannot bypass the owner requirement. Registering
+exact commands remain open and batches follow the contract below. Creating Resource instances must
+go through a Pool operation; a generic registry write cannot bypass the owner requirement. Registering
 a template is distinct from provisioning instances or launching execution.
 
 A v0 template update replaces the complete authored configuration, including `spec` and editable
@@ -310,6 +564,68 @@ still requires reconciliation; it must not be silently replaced with the current
 Exact request fields, baseline storage format/lifecycle and remaining creation/import/export
 details remain open.
 
+### Batch configuration submissions
+
+V0 supports submitting several object definitions together as a convenience over individual checked
+registry writes. Return per-object outcomes and preserve successful writes when another entry fails;
+there is no atomic batch guarantee or inferred rollback of earlier registrations/updates.
+
+A registration batch uses a constrained form of the existing finite, acyclic operation graph. Each
+node invokes an ordinary checked registry create/update with a complete supplied authored definition
+and its applicable preconditions. Complete definitions follow the existing omission/default rules;
+this does not require filling every optional template field. Execution outputs do not construct or
+modify later definitions in a v0 registration batch. General operation graphs retain their existing
+output-binding capabilities.
+
+Authors declare prerequisite edges explicitly. File position does not establish order, and ordinary
+references inside object definitions do not automatically become graph edges. Independent eligible
+nodes may run concurrently, subject to authority, target coordination and execution limits. Parallel
+eligibility does not require an implementation to execute every independent write simultaneously.
+
+For example, a history Resource-template registration can succeed while an Agent-template registration
+encounters a name conflict. The history template remains registered and both outcomes are reported.
+An incomplete batch must not be presented as complete success; existing operation tracking and
+uncertain-outcome rules still apply.
+
+Each entry retains explicit create/update intent and its applicable identity/version preconditions.
+Allow at most one write to a target object within a registration batch. Before any writes, reject
+two updates targeting the same stable object ID or two creates targeting the same kind/name, even
+when those nodes are explicitly ordered. Combine edits into one complete checked replacement or
+submit them separately. Separate clients remain subject to the existing per-write concurrency checks;
+this restriction does not limit general operation graphs.
+
+This is a limit on writes to the same registry object, not on instantiating a template. A `reviewer`
+Agent template can produce many distinct instances, such as `reviewer-7f3a` and `reviewer-9c2b`.
+Each has its own identity and follows its creation/start contract; sharing a source template does
+not make the instances duplicate targets or consume the template. Registration itself starts no runtime.
+
+Batching does not authorize generic edits to running instance definitions, bypass Resource creation
+through a Pool, provision Resources or start runtimes. Registration and subsequent setup remain
+separate actions.
+
+Parse the complete submission, validate its graph structure, and validate every supplied definition
+against its required schemas before any registry writes. If parsing fails, a required schema is
+unavailable, or an entry fails schema validation, write none of the entries and report the problem
+with its available location/entry context. For example, an unknown field in the Agent template
+prevents registration of both it and the otherwise-valid history template. A cycle or invalid
+prerequisite also blocks execution before writes.
+
+Passing this prevalidation does not reserve names or revisions, freeze permissions, or guarantee
+later writes. Current authorization, identity/version preconditions and other state-dependent checks
+still apply at each write; later conflicts can leave the accepted partial outcomes described above.
+Registration remains separate from runtime readiness and setup.
+
+Use the shared [graph scheduling, cancellation and recovery contracts](LIFECYCLE.md#lifecycle-protocol).
+An unsatisfied prerequisite blocks its dependent writes; independent eligible branches may continue.
+Preserve completed results and uncertainty, and reuse only valid progress on an explicit retry of
+the same invocation. Cancellation, partial failure and recovery do not imply rollback, automatic
+retry or runtime teardown. For example, failed history-template registration blocks a dependent
+Pool-template registration while an unrelated reviewer-template registration can proceed.
+
+This is a graph invocation through existing management capabilities, not another object family or
+a replacement for an instance's setup graph. It does not edit fixed instance definitions. Concrete
+batch notation and detailed conflict diagnostics remain open.
+
 ### Objects, representations and contracts
 
 Each object contract must distinguish what an author requests, what Conduit resolves and
@@ -369,7 +685,8 @@ Distinguish syntax/schema checks, reference resolution, semantic/transition chec
 environmental probes and effects. A valid object can still have an unresolved reference,
 an unsupported native extension or an expired credential. Error/status reporting must
 identify the relevant object and field, explain the limitation, and preserve unknowns.
-Exact diagnostic codes, stages and partial-failure policy remain open.
+Exact diagnostic codes, stages and remaining operation-specific partial-failure details remain open.
+Graph scheduling after failure follows the accepted [lifecycle rule](LIFECYCLE.md#lifecycle-protocol).
 
 Typed configuration rejects unknown fields for both templates and instances, except within
 maps whose schemas explicitly allow arbitrary keys. For example, `metadata.naem` is an unknown

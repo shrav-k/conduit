@@ -160,6 +160,13 @@ identity, ownership, graph and recovery semantics ourselves. Do not import a gen
 durable-workflow framework until a concrete boundary benefits enough to justify its lifecycle
 and deployment assumptions.
 
+Registration batches should reuse the graph coordinator under their constrained public contract:
+complete supplied definitions and explicit prerequisite edges, with validation before any registry
+writes. Do not add a separate list-order execution engine. Independent writes are eligible for
+parallelism under current authority and target coordination; shared graph outcomes, cancellation
+and valid-progress recovery still apply. This does not imply a transaction across authority services
+or runtime startup from registration.
+
 ## 4. Schema and package organization
 
 **Accepted source of truth:** published, language-neutral contracts, including typed schemas and
@@ -169,6 +176,22 @@ not implicitly change the public API. Schema checks and behavioral conformance f
 test that agreement. Plugin packages supply schemas under exact contract identities; exact dialect,
 layout and generation tooling remain I7 work. Host compilation need not enumerate every future
 Resource type.
+
+The accepted authored-schema profile rejects unknown keywords while providing one dedicated map
+for namespaced custom descriptive annotations. Reuse standard descriptive annotations where they
+fit; custom tooling hints do not implement validation, authority or runtime behavior. The map keyword,
+namespace syntax and value schemas remain open. Provider MCP schemas retain their own dialect rules.
+V0 authored-schema format validation selects all 19 JSON Schema 2020-12 standard formats, checked
+offline, and does not load plugin-defined format validators. Positive and rejection fixtures must
+establish conformance before support claims; a library's defaults or extension hooks must not
+silently determine the public contract. URI validation does not contact the endpoint.
+
+Conduit-declared integer values use the shared ±9,007,199,254,740,991 range. Check raw input and
+declared outputs without rounding an invalid value into range; accepting a wider native Rust integer
+does not expand the public contract. Ordinary fractional values use finite binary64 semantics,
+including normal representational rounding; exact decimals require an explicitly suitable contract.
+Test equivalent YAML/JSON interpretation and serialization without relaxing integer checks or
+substituting approximate schema comparisons for the declared constraints.
 
 The core uses explicit family/form enums, while type/capability/group names remain extensible.
 Plugin configuration can be represented internally as validated JSON with a known schema identity;
@@ -181,6 +204,19 @@ promise between releases; any migration supplied must be explicit and tested. Se
 locally supplied plugin packages. Defer a marketplace and automatic dependency resolution across
 programming languages. The layouts below are proposed mechanics within that scope.
 
+Each package has one explicit entry document declaring exports and dependencies, with definitions
+inline or referenced in package-local files. Load that declared surface without executing plugin
+code or inferring exports from directory conventions; merely packaging a file does not export it.
+The document can be handwritten or generated, and its concrete filename/fields remain open.
+Validate public export-name uniqueness across contribution kinds and inline/referenced definitions
+before execution. Do not resolve a collision by kind or load order; references still check the
+expected kind and contract after selecting one export. Internal names and registry naming are separate.
+Resolve explicit re-exports through declared dependencies while preserving the originating definition,
+contract and internal reference scope, along with resolved dependency identities. A local public alias
+does not require a wrapper, change behavior or grant access; the same export validation still applies.
+Resolve template implementation selections through one named dependency map and alias-plus-export
+references for setup, runtime and controls. Check each use's expected kind/contract; there is no primary
+alias. Keep package-internal scope and resolved identities intact. Concrete field names remain open.
 Package manifests describe contracts and how contributions are fulfilled: authored exports,
 bindings to existing MCP implementations, graphs of operations, or a combination. Retain exact
 declarations and selected adapter/code artifacts; report external service compatibility separately. A manifest is not another Conduit object.
@@ -195,8 +231,15 @@ The first implementation prioritizes a working protocol and authoring proof; exa
 and component packaging can adapt to that work without requiring legacy compatibility code.
 Some packages contain only declarations/templates; they must not be forced through a native build
 or executable-install step. Installation alone does not contact or authenticate their providers.
-Installing a new release adds artifacts rather than replacing a bound executable in place. A
-retained instance still selects its recorded implementation. Host protocol/storage changes need
+Installing or capturing revised source must not overwrite code used by a running instance. An
+instance's recorded binding still identifies its selected implementation; this does not require
+an archive of edit-mode revisions for future recreation. Deliberate preservation uses an explicit
+versioned publication of fixed contents through a public or private distribution source. Conduit
+resolves and verifies the selected package; it need not own publishing, hosting or release storage.
+Released contents remain fixed independently of instance retirement; publishing changes requires
+another version. Publication/acquisition and removal mechanics remain open, and a separate local-only
+release facility is not selected.
+Host protocol/storage changes need
 compatibility checks even where plugin code is unchanged. A newer host can drop older contract/store
 support and report the incompatibility. Keeping the prior working host/package set is distinct from
 adopting the update; repair, migration or replacement may be needed and need not be automated.
@@ -212,7 +255,7 @@ is not implicitly a registry, and changing the shell directory does not select a
 <service-state>/       # one authority service, not a shared management/executor database
   state.sqlite
   runtime/             # socket, OS-held lock, current host metadata
-  artifacts/           # retained implementation bundles indexed by digest
+  artifacts/           # instance-required contents; digest-indexed storage is a candidate
   payloads/            # committed content references with ownership metadata
   agent-state/<id>/    # private adapter/runtime state, not shared history
   edits/               # recoverable checked-edit baselines
@@ -226,10 +269,17 @@ Treat the entire registry as private user data. Exclude runtime state, accounts 
 payloads from Git. Backups preserve access implications and reference completeness; ordinary
 configuration export is deliberately a different operation.
 
-Development does not bypass implementation pinning. A changed debug binary creates a new artifact
-and replacement test instance, normally in a disposable registry. Do not hot-reload code into an
-existing instance and claim the immutable-definition contract still holds. Record only synthetic
-fixtures in the repository; keep real provider test evidence scrubbed and outside public fixtures.
+Development preserves code/contracts for running work. After editing a plugin, the ordinary workflow
+can retire the affected test instance and create a replacement from the current source, normally in
+a disposable registry. Backing-data reuse follows the type's attachment contract. There is no need
+to keep both versions running or make old private snapshots available as selectable packages. Git can
+retain authored history or support release publication; it is not a required execution backend. A temporary
+edit-mode snapshot or cache is an execution mechanism, not a release. Version and release a selected
+implementation through a public or private distribution source to preserve it independently of its
+instances; no Conduit-operated marketplace is required.
+Do not hot-reload code into an existing instance
+and claim the immutable-definition contract still holds. Record only synthetic fixtures in the
+repository; keep real provider test evidence scrubbed and outside public fixtures.
 
 ## 6. Delivery milestones
 
@@ -338,8 +388,11 @@ package artifacts and tested native/provider versions. A concise inventory is su
 this is not a requirement to test or maintain combinations of old releases. Before a supplied storage migration, create
 a consistent backup and refuse a newer unsupported store. Failed migration does not start partial
 runtime work. Downgrade is explicit restore/reconciliation, not an assumption that old code can
-read new data. Retain implementation artifacts until no retained instance requires them and an
-explicit cleanup authorizes removal.
+read new data. Cleanup must preserve code required by live activity or unfinished recovery. Historical
+instance/evidence records do not alone require retaining edit-mode executable artifacts. Separately
+preserved releases follow their own removal rules, not instance retirement. Later recreation from
+unreleased source is not guaranteed; unavailable code must be reported without substituting a newer implementation.
+Exact cleanup mechanics remain open under the [accepted development boundary](../protocol/CONFIGURATION.md#implementation-selection).
 
 ## 9. Research and validation limits
 

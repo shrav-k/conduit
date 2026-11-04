@@ -14,6 +14,9 @@ a small Conduit profile. Code-optional implementation bindings and independent c
 are accepted. Authored code normally runs in supervised instance-associated helpers; trusted built-in
 Rust code may remain in-process. Profile details, SDK, package syntax and exact helper grouping remain open.
 Code is illustrative and has not been executed.
+Graph examples use the accepted single-key binding forms, including `literal` and `reference`.
+Reference payload fields remain proposed, as does reusing graph bindings for runtime inputs below. Plain
+configuration and resolved values delivered to plugins do not use those authoring wrappers.
 The [review](../../archive/reviews/IMPLEMENTATION.md#review-priority-plugin-and-template-authors) records the ruling and remaining
 choices; [DESIGN](../../protocol/README.md) supplies the settled semantics.
 
@@ -119,6 +122,97 @@ small extension may benefit from A's consistent defaults. Under either approach 
 contract and conformance checks must be satisfied; an ordinary MCP tool server alone does not
 prove support for Conduit's execution, identity or recovery semantics.
 
+### Invocation inputs and Conduit context
+
+**Accepted:** use MCP's separate request metadata for Conduit's invocation context. The digest
+handler's domain input stays `{text: "hello"}`; it does not become
+`{context: {...}, input: {text: "hello"}}`. Likewise, a directory operation keeps its `path` input.
+
+| Part of the call | Illustrative content | Interpretation |
+| --- | --- | --- |
+| Ordinary tool arguments | `{text: "hello"}` | Validate against the operation's domain input schema. |
+| Separate MCP request metadata | Operation and owning-instance identifiers under the Conduit profile | Establish or verify context through the responsible service; supplied IDs do not authorize work. |
+
+Both helper-backed and directly implemented plugins use this boundary. It does not require the
+domain function to consume context it does not need. A plain upstream MCP service continues through
+its adapter without a mandatory Conduit wrapper or automatic forwarding of managed context.
+Graph-visible metadata remains explicitly declared and read-only. Exact profile keys and context
+fields are not selected by this example, and this is not an executable wire fixture.
+
+**Accepted profile scope:** each managed request identifies the Conduit profile revision and
+features it requires. Clients/adapters supply this metadata; template authors do not need another
+request manifest. A prior negotiated agreement is not required. For example, a client can reconnect
+and inspect the same index-build operation by supplying its operation reference and profile
+information again. The service checks required support and current access before acting.
+
+Cached discovery can avoid redundant discovery work; it cannot substitute for required support,
+authorize use or permit silent feature removal. Unsupported required semantics produce a diagnostic.
+This preserves implementation identity checks and applicable MCP transport/version behavior, and
+does not make plain upstream services implement the Conduit profile. Exact fields remain open.
+
+### Following deferred work
+
+**Accepted:** ordinary MCP tools provide the baseline for deferred managed operations. For example:
+
+1. The Interface invokes an index-build capability through its authorized Conduit.
+2. The managed endpoint accepts the work and returns a retained operation reference.
+3. The Interface invokes the published inspection tool with that reference, receiving permitted
+   progress, available results or an explicit unresolved outcome.
+4. Later inspection can retrieve the recorded outcome without starting another build.
+
+The initial reply confirms acceptance, not that the index is ready. Each inspection requires
+current access; knowing the reference is insufficient. The client needs the published inspection
+contract, but does not need MCP Tasks support merely to follow the work. An optional Tasks mapping
+can expose the same operation without another dispatch. A quick checksum operation can still return
+its result directly. These steps do not prescribe tool names or wire fields, add Agent work jobs,
+or replace the indexing operation's recovery and effect-evidence contract.
+
+### Rediscovering a human-interaction wait
+
+**Accepted:** a wait belongs to the managed operation, not the terminal that first displayed it.
+For example, a Resource's setup needs the user to unlock a password manager:
+
+1. The adapter reports the required interaction. The operation retains its typed reference and
+   safe pending-state information.
+2. The user closes the terminal. That does not remove the wait from the operation.
+3. An authorized attachment to the Interface discovers the pending interaction later.
+4. The adapter supplies a still-valid native/provider flow, or explains that a new interaction is
+   required under its recovery contract. It confirms the result through that contract.
+
+Displaying the wait or retaining its reference does not complete the unlock. It also cannot keep
+an expired challenge alive, move a login to a different identity, expose credentials or guarantee
+that arbitrary suspended code can resume. Exact interaction fields and MCP presentation remain open.
+
+### Combining independent observation feeds
+
+**Accepted:** ordering and resume positions belong to each declared retained observation source.
+For example, two executors can expose these independently ordered feeds:
+
+| Source | Local order |
+| --- | --- |
+| Executor A's declared operation feed | Database starting → database ready. |
+| Executor B's declared operation feed | Agent started → review requested. |
+
+The Interface can present both feeds and retain their separate resume cursors. This alone does
+not establish whether the database became ready before the Agent started. Explicit causal links
+can establish relationships; merely sorting timestamps cannot supply that guarantee. Source scope
+belongs to the observation contract rather than requiring a feed per process or object. This
+does not turn every CPU sample into retained history or make a cursor an access grant. Exact cursor
+encoding and remaining delivery mechanics remain open.
+
+**Accepted snapshot handoff:** for a source claiming the managed state-tracking capability:
+
+1. The Interface reads a snapshot showing a Resource still preparing, together with its resume
+   position. The position's representation is deliberately unspecified here.
+2. The Resource becomes ready before the Interface opens the change feed.
+3. The Interface resumes from the snapshot's position and retrieves that subsequent update.
+4. If continuity cannot be established, the source reports the gap and need for fresh state;
+   it does not silently substitute the latest feed position.
+
+This closes the handoff gap within that source. It does not make two executors' snapshots globally
+atomic, promise exactly-once delivery or authorize automatic history expiry. Weaker/native sources
+report their actual coverage. Exact cursor encoding, pagination and transport remain open.
+
 ### What a template sees
 
 The template need not change between A and B. For example, a setup graph could fingerprint text
@@ -128,7 +222,7 @@ returned by an earlier, authorized corpus-read step:
 fingerprint:
   operation: {plugin: text, name: sha256}
   inputs:
-    text: {from: output, node: read-corpus, port: text}
+    text: {reference: {from: output, node: read-corpus, port: text}}
 ```
 
 This is a node fragment. The enclosing template must declare the `text` implementation alias,
@@ -266,7 +360,7 @@ spec:
       establish:
         operation: {plugin: filesystem, name: directory.establish}
         inputs:
-          configuration: {from: config}
+          configuration: {reference: {from: config}}
 ```
 
 The example implementation reference is illustrative; artifact selection still resolves and
@@ -282,10 +376,15 @@ access/copy/mount capability; it cannot treat this path as its own local directo
 
 ### Worked comparison: two plugins in one directory template
 
+The [guided directory walkthrough](#guided-directory-walkthrough) below follows this recipe from
+authoring through Pool provisioning, failure/retry and Agent access. It starts the complete-example
+review requested after the [graph-authoring audit](../../research/language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
+
 **Accepted v0 model:** a template supplies a complete recipe using compatible contributions from
 one or several plugins, with no mandatory primary implementation. Complete standard templates and
-declared type defaults provide convenience. Concrete `plugins` and `{plugin, name}` syntax below
-is the next I7 proposal; these fragments have not been executed.
+declared type defaults provide convenience. The named dependency map and alias-plus-export reference
+pattern are accepted for setup, runtime and controls, with kind/contract checks and no primary alias.
+Concrete `plugins` and `{plugin, name}` spellings below remain proposals; these fragments have not been executed.
 
 An Euphony Pool provisions one Resource from a directory template. Setup attaches the existing
 `/work/euphony` directory and then checks for `Cargo.toml` and `src`. The resulting instance exposes
@@ -325,16 +424,16 @@ setup:
     attach:
       operation: {plugin: filesystem, name: directory.establish}
       inputs:
-        configuration: {from: config}
+        configuration: {reference: {from: config, path: ""}}
     check:
       operation: {plugin: checks, name: verify-layout}
       inputs:
-        directory: {from: output, node: attach, port: directory}
-        requiredEntries: [Cargo.toml, src]
+        directory: {reference: {from: output, node: attach, port: directory, path: ""}}
+        requiredEntries: {literal: [Cargo.toml, src]}
 runtime:
   driver: {plugin: filesystem, name: directory.managed}
   inputs:
-    directory: {from: output, node: attach, port: directory}
+    directory: {reference: {from: output, node: attach, port: directory, path: ""}}
 controls: {use: type-defaults}
 ```
 
@@ -357,6 +456,132 @@ that participation/prepared view, not the Pool's Resource or backing directory. 
 invoke their resolved handlers; they do not rerun setup checks unless their graph declares it.
 Changing fixed bindings or implementation selections still requires replacement in v0. A descriptor
 or package alias supplies no permission and cannot replace a Resource dependency through a Conduit.
+
+#### Guided directory walkthrough
+
+Walkthrough date: 2026-11-03. This is a hypothetical recipe, not a performed deployment. The path,
+packages and export names are examples; no directory or Resource is created by this document.
+The accepted binding forms use the accepted direct-field reference layout with temporary names.
+The five v0 source categories are accepted; exact source selectors, runtime-target encoding and
+package manifest syntax remain open.
+The displayed pointers are explicit. Under the accepted omission rule, an empty pointer can be
+omitted to select the same whole source value; source selection remains explicit.
+
+**Intended outcome:** an Euphony Pool owns a directory Resource backed by an existing folder. Setup
+must verify that the folder contains `Cargo.toml` and `src`. Authorized Agents can subsequently
+connect to that Resource. For this recipe the layout check is required setup, not a perpetual
+guarantee that the files will remain present. This is an example-specific choice, not a new
+requirement for every directory Resource.
+
+The full registry template uses the ordinary `kind: Resource`, `form: template` envelope and a
+name such as `project-directory`; its `spec` is the fragment above. The selected type contract
+supplies the configuration and capability obligations. Its compatible plugin contributions must
+be supplied explicitly or through declared defaults before execution; a type name alone does not
+select arbitrary installed code.
+
+| What the author supplies | Role in this example |
+| --- | --- |
+| Filesystem package's published contracts and implementation | Establish the configured folder and provide the ongoing directory capability and lifecycle. |
+| Checks package's published operation and implementation | Inspect required entries through the supported directory access contract; report findings and outcome. |
+| Resource template | Select compatible contributions, initial configuration, setup wiring and runtime/control bindings. |
+| Pool's explicit template entry | Make this recipe available for authorized provisioning into that Pool; listing it starts nothing. |
+| Agent/Conduit definitions | Supply compatible endpoint behavior and authorized participation for subsequent Agent access. |
+
+Neither plugin selection nor an output reference is a grant. Setup executes with its authorized
+instance/operation context; the checker must support the directory's actual execution placement
+and access mode. This example assumes the supported local execution context, not implicit access
+to the same path on another machine.
+
+**First, author configuration and wiring.** `spec.config` contains ordinary values. The
+`configuration` binding passes its captured value to `directory.establish`. The operation receives
+the following data, without graph wrappers:
+
+```yaml
+configuration:
+  path: /work/euphony
+  establish: attach
+```
+
+It verifies the existing folder under its contract and publishes its declared `directory` output.
+Conduit validates that output before making it available. The output's actual descriptor schema is
+defined by the operation/capability contract; this walkthrough does not equate it to an unrestricted
+host path or invent its stable-ID encoding.
+
+```mermaid
+flowchart LR
+    C[Captured configuration] --> A[Attach existing directory]
+    A -->|directory output| V[Verify required entries]
+```
+
+The checker receives that directory value and the ordinary list `[Cargo.toml, src]`. The literal
+wrapper applies once to the complete static list. No wrapper is needed around each filename and
+no separate operation is needed to construct this list. The output reference creates the ordering;
+swapping node positions in the YAML would not let the checker run first. An empty or omitted pointer
+selects the whole declared output. Selecting a nested member instead would use its pointer, provided the
+consumer contract actually accepts that member's type and meaning.
+
+The template also selects `directory.managed` for ongoing behavior. Its input identifies the same
+directory. The required check gates successful setup/readiness for this recipe; merely having a
+directory descriptor does not satisfy that check. This does not select an additional runtime-start
+field or require a daemon per directory. A runtime can be instance-managed during setup under the
+accepted contract, but its existence is separate from successful required preparation.
+
+**Then, explicitly instantiate through the Pool.** The Interface selects the Pool's entry and
+requests provisioning/setup. It can offer these as one deliberate action while reporting the
+distinct outcomes. Registration, instance creation and setup are not the same event.
+
+| Item | Result in this example |
+| --- | --- |
+| Source template | `project-directory` remains reusable. |
+| Resource instance | A new object, for example `project-directory-7f3a`, owned by the selected Pool instance. |
+| Instance definition | Retains the resolved setup graph, runtime/control bindings and selected implementation content. |
+| Stored configuration | Includes the absolute path and explicit attachment intent; declared defaults are materialized. |
+| Observed state | Records the actual attachment/check outcomes and current capability readiness separately from configuration. |
+| Backing data | The existing directory and its changing files; no copy or filesystem snapshot is implied. |
+
+Editing the template afterward changes future instances, not this instance's fixed definition.
+The exact metadata/status serialization remains open. An inspection view can report the facts above;
+configuration export must not turn reported readiness, access grants or live descriptors into
+authorable settings. A new instance from an exported configuration still goes through its Pool and
+its own establishment checks.
+
+**Finally, connect an Agent.** An authorized Conduit connects an Agent's supported filesystem
+endpoint to the Resource. Its endpoint plugins prepare the permitted exposure, such as an Agent-local
+symlink. A second Agent may have its own Conduit/participation and prepared path to the same Resource.
+Those links are preparation state, not new folder Resources or copied files. Closing one participation
+releases that view while preserving the other Agent's access, the Resource and backing data.
+A symlink alone does not enforce read-only access or isolate concurrent writers; those guarantees
+require implementations and execution modes that actually support them.
+
+**Follow failures through the same recipe.** These descriptions are outcomes for inspection, not
+a proposed universal status enumeration:
+
+| Situation | What follows |
+| --- | --- |
+| Required schema/export is unavailable or wiring is provably invalid | Definition/execution validation reports the gap before dispatch; selecting a name does not supply missing code. Missing runtimes remain distinct from accepting schema-valid configuration. |
+| `/work/euphony` does not exist | Attach fails; no directory is silently created, and the checker has no successful prerequisite. |
+| Attachment succeeds but `Cargo.toml` is missing | Required setup remains incomplete. Keep attachment evidence and the folder; report the missing entry. |
+| An authorized person or operation adds the missing file, then requests retry | Continue the same invocation using only still-valid recorded progress; rerun/recover the failed check as its contract permits. Do not claim continuous checking or automatic retry. |
+| Establishment returns a malformed directory descriptor | Withhold the invalid output, block its consumers and retain effect evidence. Do not infer that establishment had no effects. |
+| A helper response is lost | Report the unconfirmed outcome and reconcile under its recovery contract before unsafe repetition. A pure read check can declare safe repetition; folder creation has different obligations. |
+| A required file is removed after successful setup | Previous check evidence describes the earlier check. This recipe has not declared continuous layout monitoring; subsequent access/readiness follows its supported runtime contract. |
+
+Changing `establish: attach` to `create` in a template draft changes the establishment behavior
+without changing the graph wiring, if that operation's contract supports both. A fresh creation
+conflicts with an existing path. An empty new folder will still fail this recipe's layout check:
+creating a directory does not initialize a Rust project. That variant would need an explicit
+population operation before checking, or a deliberately different check. If creation happened but its response was lost, later path existence
+alone cannot prove which attempt created it; reconcile before repeating or adopting it. No automatic
+backing-data deletion follows failure or retirement.
+
+**What this case tells us about the language:** it needs no inline expression and no operation just
+to assemble static data. The binding forms have a small visible cost here; the naming distinction
+between a package alias/export and a graph node/output needs explanation. The accepted direct-field
+layout places the selector beside the optional pointer without changing data or dependencies.
+These findings should not be generalized to authenticated MCP setup or database/migration recovery
+before walking those cases.
+Questions about continuous rechecking, runtime gating notation and descriptor interoperability stay
+in the existing review; this example does not add automatic monitoring or accept new syntax.
 
 #### Compatibility: what must agree
 
@@ -435,8 +660,9 @@ supported controls continue to update confirmed configuration under the accepted
 
 The v0 ruling accepts this composition/default boundary. Type-default controls, instance-owned
 runtime management, fixed definitions/implementations and replacement rules remain intact. The
-next authoring choice is the concrete named-plugin map and export-reference form; package identity,
-schema dialect and remaining binding details are still proposals.
+remaining authoring choices include the dependency-map field name, exact export-reference notation, package
+identity and binding details. The YAML/JSON and JSON Schema 2020-12 foundation is accepted;
+its detailed profile remains open. The current review queue determines the order of these choices.
 
 ### What the plugin author supplies
 
@@ -520,6 +746,182 @@ the adapter must enforce it or leave that binding unavailable; it cannot quietly
 
 Existing protocol servers and authored operations are compatible extension paths. A compatible
 MCP implementation can fulfill a published contribution without new plugin-specific code.
+
+### Guided authenticated MCP walkthrough
+
+Walkthrough date: 2026-11-03. This follows the directory example using the same accepted behavior
+and provisional vocabulary. Consider a Linear-style issue service for the Euphony domain. Assume
+the selected integration supports the intended shared authentication and restrictions. No real
+account, endpoint, tool name or provider compatibility has been tested here. Operation/output
+names and the reference fragment below are illustrative, not additional syntax rulings.
+
+**Intended outcome:** a review Agent can read permitted Euphony issues, and a development Agent
+can perform permitted updates, using a shared service login. Their model/subscription accounts,
+private state and Conduit identities remain separate. The service login is not their Claude/Codex
+subscription. Pool membership and shared provider login do not give the two Agents identical access.
+
+```mermaid
+flowchart LR
+    A[Review Agent] -->|Conduit: permitted reads| M[MCP Resource]
+    B[Development Agent] -->|Conduit: permitted reads and updates| M
+    M -->|Authentication Conduit| H[Authentication Resource]
+    M --> S[External MCP service]
+    subgraph P[Euphony Pool owns]
+      M
+      H
+    end
+```
+
+This diagram shows logical relationships, not one process or socket for each object/edge. Endpoint
+plugins manage their local behavior; Conduits coordinate the relationships and their requirements.
+
+**What is authored:** the authentication template selects supported login/refresh behavior and
+credential custody. The service template selects its MCP integration, target configuration,
+required authentication connection, setup graph and runtime/control behavior. The Pool offers
+named entries and binds the service's declared authentication dependency to an explicitly
+provisioned or selected existing authentication Resource. Agent templates select their compatible
+endpoint behavior and starting Conduits; additional connections may be established explicitly.
+The Conduit definitions compose the required endpoint behavior and permitted restrictions. Issued
+participation grants and governing requirements supply actual authority separately.
+
+**First, request the intended Pool composition.** Listing `auth` and `issues` entries alone starts
+nothing. An Interface can explicitly request provisioning both, or provisioning the service with
+an existing authentication Resource. Resolved instance IDs identify the chosen relationship; the
+entry name is not an implicit singleton or an instruction to choose whichever account is logged in.
+Repeated use of the declared template can establish a separate composition with different targets.
+
+The authentication Resource's setup operation reuses a verified usable login when its contract
+supports that. Otherwise it reports required human interaction. The Interface presents the selected
+adapter/provider's supported enrollment or unlock flow. Login secrets remain in their supported
+custody; ordinary YAML, conversations and outcome logs do not become token storage. The operation
+retains its progress and continues or recovers under its declared contract after interaction.
+Required service preparation waits for usable prerequisites; an independently ready directory
+Resource in the same Pool can remain usable. No authored polling loop is needed in the graph.
+
+**Then, prepare the MCP Resource through its declared dependency.** Its enclosing instance supplies
+the consumer endpoint for the authentication Conduit. Pool composition supplies the concrete target;
+authorized connection establishment supplies participation. A graph value or package name cannot
+substitute for any of these. The service's integration operation can use the declared connection
+through its supported scoped invocation context; this example does not add a new graph-reference
+source kind or permit ambient account discovery.
+
+Introduce the producer contracts before their wiring:
+
+| Selected operation | Inputs and declared dependency | Named successful output | Responsibility |
+| --- | --- | --- | --- |
+| `service-auth.resolve` | Explicit service configuration; the required authorized authentication connection | `authentication`: a protected service binding | Request the correct supported identity/audience/credential arrangement from the authentication Resource, preserving that Resource's ownership. |
+| `mcp.start` | Service configuration and the prepared authentication binding | `connection`: a reference to the instance-managed client | Request startup of the already-declared runtime and report a usable result only under its readiness contract. The setup helper does not take permanent ownership of the client. |
+| `mcp.inspect` | Service configuration and the managed connection reference | `service`: observed service/catalog information | Establish the required compatibility/target facts the integration can actually verify. Discovery does not issue grants or permanently authorize calls. |
+
+These are contributions selected for this MCP Resource, not newly registered Resource instances
+for each operation. `service-auth.resolve` accesses the existing authentication Resource through
+its Conduit; it does not implement an unrelated second login owner. Selected implementations and
+their published contracts must agree on binding validity, execution context and supported behavior.
+
+The operation names in the first column belong to the selected integration package. The graph step
+names and output selectors below are separate names. This fragment uses the accepted direct-field layout
+solely to expose value flow:
+
+```yaml
+setup:
+  nodes:
+    obtain-authentication:
+      operation: {plugin: integration, name: service-auth.resolve}
+      inputs:
+        configuration: {reference: {from: config, path: ""}}
+    connect:
+      operation: {plugin: integration, name: mcp.start}
+      inputs:
+        configuration: {reference: {from: config, path: ""}}
+        authentication:
+          reference:
+            from: output
+            node: obtain-authentication
+            port: authentication
+            path: ""
+    inspect:
+      operation: {plugin: integration, name: mcp.inspect}
+      inputs:
+        configuration: {reference: {from: config, path: ""}}
+        connection:
+          reference:
+            from: output
+            node: connect
+            port: connection
+            path: ""
+```
+
+The service template must also supply its type, exact implementation selections, configuration,
+declared authentication connection and ongoing runtime/control bindings. This is the setup
+fragment, not a self-sufficient installable template. The runtime has already been declared by
+the template when `mcp.start` requests its start; that operation does not synthesize an arbitrary
+runtime definition. The required inspect step gates successful preparation in this example, while
+the instance owns any started client even if the later inspection fails.
+
+`port: authentication` selects the output declared by `service-auth.resolve`; `path: ""` selects
+that complete value. Its protection and validity come from its contract and authorized handling,
+not from the output's spelling. Similarly, the `connection` result points to runtime state owned by
+the MCP instance; it is not the live socket copied into YAML. Output/input validation still applies.
+Protected results require contract-appropriate handling and inspection; retaining progress must
+not turn a secret into an ordinary trace field. Exact protected-reference serialization remains open.
+
+These Conduit-declared authentication and connection values use the accepted shared
+managed-reference contract for ownership, resolution and validity. Their capability contracts
+still define different behavior and lifetimes. The common contract lets consumers handle managed
+references consistently without receiving raw tokens or sockets; it does not make an authentication
+binding interchangeable with a connection or grant access by possession.
+
+Captured configuration gives all three steps a consistent setup input. It does not freeze credential
+expiry, granted access or transport readiness. A recorded binding may need verification or recovery
+before reuse. The operation contracts define that behavior; a matching JSON schema alone cannot
+prove the binding is still usable. A later supported refresh can preserve the selected identity
+without changing the graph or silently choosing a different account.
+
+**Now connect the Agents.** Each authorized attachment receives its own recorded grant, and its
+selected path applies all relevant requirements. The review Agent may discover permitted read tools;
+the development Agent may discover a broader permitted set. Provider-native catalogs remain dynamic
+under their integration contract. Discovery is a view; dispatch must enforce the applicable rules.
+If the selected integration cannot enforce an essential workspace/operation restriction, that
+restricted behavior cannot be presented as available merely because the tool name was hidden.
+
+A native Agent's MCP adapter may register a Conduit-managed endpoint exposing the permitted provider
+tools. The MCP Resource then invokes the upstream service using its supported shared binding. A
+Conduit-owned Agent runtime can mediate internally. Sharing authentication does not require one
+shared socket, a universal gateway or a generic replacement tool. Agent callers authenticate to
+Conduit separately; the provider credential is not passed to each Agent as its Conduit identity.
+
+For an issue update, retain the initiating Agent and chosen participation, verify current access
+and the supported request/response restrictions, invoke the provider, and record the actual result
+or uncertainty. The service Resource uses its own authorized authentication dependency while
+preserving the caller's applicable restrictions. The provider may attribute the action to the shared
+service account; Conduit must not claim per-Agent provider attribution it cannot establish. The
+setup graph does not run for every tool call, and successful setup does not replace per-use checks.
+
+**Ongoing behavior and failures:**
+
+| Situation | Behavior under the existing contracts |
+| --- | --- |
+| Login needs user interaction | Retain the affected operation's progress, surface the adapter flow through the Interface and wait for usable access; unrelated eligible work can continue. |
+| Custody is locked or authentication cannot be verified | Report the dependency problem; block affected work that requires the unavailable binding. Do not fall back to plaintext or another account. |
+| Compatible refresh is supported for the same identity | The authentication Resource owns refresh; service clients use the supported updated binding. Cached setup output is not proof of current validity. |
+| Client starts but required target/compatibility inspection fails | Keep runtime ownership and evidence; preparation remains incomplete. Inspection, explicit retry and stop follow the instance's contracts. |
+| Transport drops after successful setup | Bounded reconnect on the same selected path/identity is the accepted MCP default where supported, with a manual option. It does not replay uncertain writes or rerun setup indiscriminately. |
+| A write response is lost | Retain an uncertain outcome; reconcile or repeat only when the operation's recovery guarantees make that safe. Transport reconnection alone does not establish whether the write happened. |
+| Current permission cannot be verified | Hold new affected managed requests; no offline grant is implied. Already-dispatched operations remain supervised and their actual outcomes retained. |
+| One Agent detaches or its grant is revoked | Detachment releases its participation; revocation blocks its affected access. Preserve other participants and shared Resources. Neither proves cancellation of an already-dispatched provider effect. |
+| Shared service login is revoked | Report the affected shared dependency. Agents can continue independent permitted work; renewal/replacement needs the supported explicit flow when required. |
+
+The Interface combines authentication progress, service-client state, Conduit participation,
+enforcement coverage and attributable operation outcomes. These remain owned by their responsible
+services; the view must identify unknown/stale information and redact protected contents. The
+authentication Resource remains distinct from the custody adapter and from the Agent's model account.
+
+**What this tests:** setup graphs can remain finite while plugins handle provider-specific
+interaction and instances manage continuing refresh/transport. The difficult contract is the
+meaning, validity and permitted use of prepared results, not an additional loop or reference-string
+syntax. The subsequent database case should test effects and recovery when setup changes durable
+data. Still-open binding/descriptor representation, runtime-start/readiness wiring and adapter
+recovery details remain in the existing review; this example does not decide them by illustration.
 
 ### Credential custody as an implementation bundle
 
@@ -684,6 +1086,303 @@ service make it the authority for the Resource's entire lifecycle. Those hosting
 implementation choices within I1's authority boundaries and I3's helper execution default.
 Distribution supports bundled plugins and explicit local installation; package syntax remains I7 work.
 
+### Guided database and migration walkthrough
+
+Walkthrough date: 2026-11-03. This is the third authoring example, following directory attachment
+and authenticated MCP access. Assume a compatible database implementation with published startup,
+migration, inspection and recovery contracts. No database has been started or migrated here, and
+no named database engine's transaction behavior is assumed. All supporting names remain provisional.
+
+The follow-up [database/cloud comparison](../../research/RUNTIME_ESTABLISHMENT.md) examines
+how the startup operation addresses the declared runtime and what its readiness output promises.
+The owner accepted ordinary typed operations explicitly bound to the instance's declared runtime.
+The target is now accepted as a declared typed input using ordinary graph bindings. The comparison
+preserves the alternatives; reference encoding and supporting vocabulary remain under review.
+
+**Intended outcome:** the Euphony Pool owns a database Resource. An explicit setup request establishes
+its backing, starts its declared runtime, applies a selected migration and verifies the expected
+schema. Ordinary consumer access requires successful initial preparation. Supported diagnostic or
+repair operations can have their own authorized availability during incomplete setup.
+
+The Resource template selects its type and implementation contributions, explicit backing
+creation/attachment intent, database settings, intended schema/migration inputs, setup graph and
+ongoing runtime/control behavior. The selected driver remains fixed with the instance definition;
+supported configuration changes retain their existing control/revision rules. Backing storage is
+part of this database's declared lifecycle unless separately modeled as another Resource. Any
+access to separately managed Resources still requires the declared authorized Conduits.
+
+**Multiple-runtime variant:** if this Resource type supports diagnostics alongside its database,
+the template can declare both managed runtimes explicitly:
+
+| Illustrative runtime name | Selected behavior | Setup target |
+| --- | --- | --- |
+| `database` | The database driver from a database contribution. | The database-start operation receives a typed target reference to this declaration. |
+| `diagnostics` | An optional diagnostics helper from another contribution. | Its establishment operation receives the corresponding target reference and any explicitly required inputs. |
+
+The declarations form a map keyed by names unique within this instance definition. An illustrative
+fragment is:
+
+```yaml
+runtime:
+  database:
+    driver: {plugin: database, name: database.managed}
+  diagnostics:
+    driver: {plugin: diagnostics, name: diagnostics.managed}
+```
+
+This assumes compatible implementation dependencies locally aliased `database` and `diagnostics`.
+Those aliases and the runtime keys belong to separate naming scopes; their equal spelling here
+does not connect them implicitly. The map structure is accepted; `runtime`, `driver` and the export
+reference fields remain provisional. Selecting the runtime target `database` resolves that entry.
+Duplicate runtime keys are errors, while another instance may independently use the same names.
+Reordering entries starts nothing and supplies no execution order.
+
+Both belong to the same Resource instance. The type and setup contracts define whether diagnostics
+needs the database first, what it promises and how failures affect usable capabilities; declaration
+count alone decides none of those behaviors. Retirement must satisfy the instance's applicable
+shutdown duties. The two declarations need not mean two processes, and the allowance does not
+create another primary Agent execution. The declaration fields remain proposals within the accepted
+map structure. The walkthrough below shows the database path.
+
+**Required and optional setup:** the backing, database startup, migration and schema-verification
+steps below are required by default. A nonessential diagnostics-establishment step may be explicitly
+optional. If it fails while all required work succeeds, report that failure without making it alone
+prevent successful setup. Retain any effects and perform its applicable lifecycle duties.
+
+Optionality does not remove dependency edges. If schema verification actually needs an output from
+diagnostics, verification cannot proceed without that valid output, and setup remains incomplete.
+Mandatory type or access guarantees cannot be made optional by a template. The rule is accepted;
+no new YAML field spelling is selected by this example.
+
+| Setup operation | Required inputs | Named successful output | What completion establishes |
+| --- | --- | --- | --- |
+| Prepare backing | Captured backing configuration and explicit creation/attachment intent | `storage`: a backing descriptor | The intended backing was established or verified under its contract; an existing target is not silently adopted by a fresh create. |
+| Start database | Explicit binding to the declared runtime, prepared backing and captured runtime settings | `database`: a reference to the instance-managed service | The declared runtime is available for the supported setup operations. This is not proof that migrations are applied. |
+| Apply migration | Database reference and selected migration inputs | `migration`: confirmed application evidence | The implementation can confirm the specified change under its effect/recovery contract. A failed or uncertain outcome does not become successful evidence. |
+| Verify schema | Database reference and expected schema, after required migration success | `verification`: observed schema evidence | The required schema checks passed at the reported time. This is not a permanent guarantee about all later data changes. |
+
+```mermaid
+flowchart LR
+    P[Prepare backing] -->|storage| S[Start instance-managed database]
+    S -->|database| M[Apply migration]
+    S -->|database| V[Verify expected schema]
+    M -.->|required successful completion| V
+```
+
+**Data dependencies and ordering are different.** The verification operation needs the database
+reference produced by startup, not necessarily the migration's evidence payload. Referencing startup
+alone would permit verification too early. The graph must also require migration success. This
+illustrates the accepted default for explicit ordering without data: require the earlier operation's
+successful completion under its contract. Mapping order does not establish the prerequisite.
+
+Declare the prerequisite on the waiting step alongside its operation and inputs. For example,
+this fragment uses the provisional name `after` for that required-success gate; its placement on
+`verify` is accepted. No separate graph-wide edge declaration is needed.
+
+The enclosing graph's step collection is a map. `verify` below is its local key; the referenced
+`start` and `migrate` are other keys in that same graph. Each key is unique locally, and moving an
+entry earlier in the document does not change the dependencies. Another graph can independently
+use those names. This map structure is accepted; its container and supporting fields remain provisional.
+
+```yaml
+verify:
+  operation: {plugin: database, name: schema.verify}
+  after: [migrate]
+  inputs:
+    database:
+      reference:
+        from: output
+        node: start
+        port: database
+        path: ""
+    expectedSchema:
+      reference: {from: config, path: /expectedSchema}
+```
+
+The author named the earlier nodes `start` and `migrate`; the startup operation's contract declares
+the `database` output. The receiving operation's input also happens to be called `database`.
+The empty pointer, which may also be omitted, selects the whole output; `/expectedSchema` selects
+the configured expected schema. The prerequisite's field spelling remains provisional. Its placement
+on the dependent step and use of the predecessor's local name are accepted. Output-implied and
+explicit dependencies are checked together for missing steps and cycles.
+A failed or uncertain outcome, including a schema-valid failure payload, cannot satisfy this
+required-success gate. This does not select one universal outcome enum or reinterpret every ordering
+field as having this spelling.
+
+V0 does not add an authored failure-triggered branch to this graph. If migration fails, verification
+stays blocked; the migration implementation still fulfills its declared cleanup/recovery duties,
+such as releasing a migration lock where its contract supports and requires that action. Required
+cleanup cannot be wired solely after successful migration. The instance retains supervision and
+effect evidence, with explicit recovery following the existing contract. `On failure` and `after
+any completion` authoring triggers are deferred, while plugin-internal error handling remains available.
+
+**Successful setup has several separate facts.** The Pool owns one registered Resource; its
+backing exists; its responsible service manages the runtime; required migration and verification
+have succeeded. The finite setup invocation can finish while the database continues running.
+An Agent's later Conduit uses the Resource's supported capability and current permissions. It does
+not rerun initialization for every query or receive an automatically broader database credential.
+Runtime readiness, schema evidence and logical consumer participation remain separately observable.
+
+**Accepted runtime target input.** The template's
+runtime declaration exists before its database starts. Selecting that declaration identifies the
+behavior to establish; the live database result is produced only after the startup contract's
+promised condition is confirmed. Those references are not interchangeable, and neither grants
+access by itself.
+
+The startup operation declares the target in its typed input contract alongside prepared storage.
+Conceptually, `start-database(target = reference to named database runtime, storage = prepared storage)`
+receives both through ordinary graph bindings. The runtime-target source yields that typed reference;
+the responsible service resolves it against the instance-owned definition. The graph does not pass
+the whole runtime declaration as target data. A reusable setup operation declares its own target
+input and explicitly passes it to its startup child. Prepared settings remain explicit inputs;
+the target does not permit replacing the fixed definition. This is composition through existing
+inputs; the alternative separate runtime-context binding was not selected.
+
+Authenticated caller identity and authority remain trusted invocation context, not user-supplied
+inputs. The runtime resolves the target within the actual invocation's permitted boundary.
+Passing a declaration reference does not start it; startup remains the explicit operation.
+Exact value representation, authorized definition inspection and protected-reference transport remain open.
+
+For the MCP case the same rule applies: the startup operation receives a target reference to the
+named MCP runtime plus its prepared authentication binding. The authentication binding does not become raw
+credentials in ordinary YAML. An operation with no runtime target, such as a pure layout check,
+does not need one added. These conceptual names do not settle the reference or input-field spelling.
+
+**Shared managed references.** The prepared storage descriptor is ordinary typed data. The live
+database binding uses the shared reference contract, while its database capability defines what
+migration can do with it and how its validity is established. The owning implementation retains
+the actual service/client state. Retaining the reference in setup progress does not prove the
+database is still usable after an interruption. Recovery must validate it under its contract and
+current authority before reuse. Shared reference semantics do not change Resource ownership or
+replace Conduits for access to another Resource.
+
+**A known migration failure does not remove the database.** If startup succeeded but migration
+reports failure, keep the running database managed by default, retain the backing and the actual
+effect evidence, and block verification's unmet prerequisite. Report setup as incomplete. The
+plugin may establish that a failure left data unchanged, that some effects occurred, or that the
+extent is unknown; the graph cannot infer rollback from the word "failed." Explicit stop and
+supported diagnostic/repair operations remain distinct actions.
+
+Independent work still follows the accepted scheduling rule. At the Pool composition level,
+provisioning a workspace Resource can proceed independently of provisioning this database Resource.
+A failed database migration need not prevent the workspace from becoming usable. The database's
+own dependent verification remains blocked. This example does not put unrelated workspace ownership
+inside the database Resource or treat the Pool composition as an atomic transaction.
+
+**A lost response is different from a confirmed failure.** Consider this sequence:
+
+1. Conduit dispatches the migration under a recorded operation identity.
+2. The database applies a change.
+3. The helper or connection fails before Conduit records a confirmed result.
+
+The stored progress establishes that migration was dispatched and its outcome is unconfirmed. A
+working connection after reconnect does not tell Conduit whether the migration happened. The
+service's authority store and the database's domain effects are not assumed to share a transaction.
+No additional client confirmation can manufacture that missing evidence.
+
+On an explicit retry of the same unchanged setup invocation:
+
+- Verify retained backing/runtime results and their current prerequisites before reusing them.
+- Reconcile the migration under its own contract before repeating effects. A compatible plugin
+  might use a durable migration receipt tied to the intended backing and migration content, an
+  application-specific check, or a supported transaction/recovery mechanism. These are examples,
+  not a mandated migration-ledger format or an automatic exactly-once guarantee.
+- If adequate evidence confirms the intended migration, retain the confirmed result and allow
+  verification to proceed. If safe repetition or continuation is established, perform only what
+  the contract permits. If evidence is insufficient, retain uncertainty and report the gap.
+
+Checking only that a table exists may be inadequate: it might predate the attempt or reflect only
+part of the intended change. Plugins may implement conservative recovery that reports uncertainty;
+graph composition cannot improve that into a guarantee the constituent implementation lacks.
+Likewise, multiple Resources pointing at one backing do not gain safe concurrent migration merely
+from having separate instance IDs. A database integration must state the coordination/exclusive-use
+guarantees it needs and can enforce. No new universal lock service is selected here.
+
+**Cancellation, restart and changed definitions retain their existing distinctions.** Cancelling
+setup stops new ordinary steps and requests supported cancellation of active operations. It does
+not prove the database stopped, a migration was undone or backing data was deleted. Already-started
+runtime activity remains supervised until its lifecycle contract establishes otherwise; required
+attachment cleanup still applies. Explicit Resource retirement follows its shutdown duties, with
+backing-data cleanup separately authorized.
+
+A new start of the same instance runs its setup contract and may verify work already satisfied.
+It is not permission to initialize existing backing again. Retry of an incomplete invocation uses
+its captured inputs and valid retained progress. Any confirmed configuration changes must be
+accounted for by the established invalidation/recovery rules before old results are reused.
+
+Changing migration implementation code or the fixed graph requires a replacement instance in v0,
+not editing a recorded attempt and calling it a retry. A replacement may explicitly attach retained
+backing where supported, but must first account for prior uncertain effects and required retirement
+duties. Reusing the folder/database does not prove that a prior write did or did not complete.
+
+**What the Interface should make distinguishable:**
+
+| Fact | Example during a lost migration response |
+| --- | --- |
+| Resource/backing identity | The same registered database Resource and its established backing remain known. |
+| Runtime | Database process confirmed running, or its current state explicitly unknown. |
+| Setup progress | Backing and startup confirmed; migration dispatched with outcome unconfirmed. |
+| Next dependent work | Schema verification has not run because its required prerequisite is unmet. |
+| Independent work | A separately provisioned workspace may be ready. |
+| Available next actions | Supported inspection, reconciliation/retry, cancellation or stop, subject to current authority. |
+
+These are distinguishable observations, not a proposed universal lifecycle enum. State freshness
+and unknowns must remain visible, and permission checks cannot be bypassed using captured setup
+configuration. No offline grant or automatic retry is introduced by the recovery example.
+
+### A control that partially applies
+
+Consider a separate search Resource with a query limit of 10 and a timeout of 30 seconds. Its
+declared control permits changing both settings and explicitly supports partial confirmation.
+An authorized caller requests a limit of 15 and a timeout of 60 using the inspected revision.
+
+| Requested change | Handler evidence | Stored setting and reported state |
+| --- | --- | --- |
+| Query limit: 10 → 15 | Application of 15 is confirmed. | Record 15 if the complete resulting configuration is valid. |
+| Timeout: 30 → 60 seconds | The provider response is lost; application is unconfirmed. | Keep 30 as the last confirmed setting and report that the current timeout is uncertain. |
+
+This is a permitted partial confirmation, not confirmation of the entire request. The instance
+retains the operation's outstanding uncertainty and applicable coordination. Reconciliation uses
+the control's supported recovery contract; the lost response does not authorize blind repetition.
+The Interface shows both the stored settings and uncertainty rather than claiming that the runtime
+is certainly using the combination 15/30. A configuration export likewise does not certify readiness
+or current runtime state.
+
+The contract can require related settings to be confirmed together. If a subset would violate a
+cross-field constraint, do not store that invalid configuration. Preserve any reported effects and
+use supported reconciliation; rejection of the stored result does not undo external changes.
+This example adds no generic field-patch interface or universal partial-failure enum. Exact result
+fields remain authoring work.
+
+If this control uses a graph, its steps follow the same required-by-default rule as setup and
+reusable operations. Confirming the limit does not make a required timeout-change step successful
+while its outcome is uncertain. Preserve the supported partial configuration confirmation and the
+remaining uncertainty separately. An explicitly optional diagnostics step can fail without alone
+preventing graph success, but cannot waive required application, validation or reconciliation duties.
+
+### A control that confirms unchanged settings
+
+In a separate case with no unresolved conflicting change, the search limit is already 15 at
+configuration revision R. An authorized caller requests 15 using R. Run the control's applicable
+checks and declared behavior; the implementation might verify or refresh the provider. If it
+confirms unchanged stored configuration, retain R and record the new invocation's outcome and
+effects separately. Another caller using R does not encounter a configuration conflict solely
+because this control ran, but still faces current authority, state and coordination checks.
+
+A stale expected revision still conflicts under the ordinary rule, even when the requested value
+matches. Equal values do not imply a cached success or absence of external effects. Reusing a
+recorded outcome for the same logical invocation follows the existing retry contract instead.
+
+**Assessment across the three setup walkthroughs:** finite graphs, explicit data bindings and ordinary
+plugin operations can express the examples without authored loops or an expression language.
+That is evidence about these examples, not general proof of ergonomic sufficiency. Required
+ordering without data, runtime ownership from startup, output validity and domain-specific recovery
+matter more than the temporary vocabulary. The exact encoding of the typed input linking setup to its
+predeclared managed runtime, prerequisite representation and protected-result representation still
+need refinement; the five source categories and shared managed-reference boundary are now accepted.
+Merely showing candidate YAML
+does not close those questions or authorize the merge checkpoint.
+
 ## 5. Where the example implementations execute
 
 **Accepted:** endpoint templates select their plugins; endpoint instances manage implementations
@@ -717,6 +1416,80 @@ authentication or grants. Supported external-service association does not imply 
 
 ### Publishing a graph as a reusable operation
 
+**Selecting the reusable graph's inputs:** suppose its declared input payload is:
+
+```yaml
+limit: 15
+options:
+  timeout: 30
+```
+
+The accepted graph-input source starts at this whole payload. A pointer `/options/timeout` selects
+30, while an omitted or empty pointer selects the whole payload. Illustrative binding notation is
+`{reference: {from: input, path: /options/timeout}}`; the field spellings remain provisional. There
+is no additional input-name selector. The receiving contract still validates the selected value,
+and a missing member is an error. Neither the caller's configuration nor trusted runtime metadata
+is implicitly part of this payload. The same source rule applies to declared public output bindings.
+
+**Defaults before invocation:** if this operation declares `limit` with a default of 10 and the
+caller supplies only `options: {timeout: 30}`, Conduit prepares
+`{limit: 10, options: {timeout: 30}}`, validates it, and then invokes the implementation. A graph
+can select `/limit`; a code implementation receives the same field. Neither needs its own fallback
+for this declared default. An explicit `limit: "ten"` fails an integer contract, while an explicit
+null is checked as null. A failed binding that tries to select a missing upstream value still
+blocks invocation; it is not converted to omission. This preparation concerns Conduit-authored
+operations; provider-native MCP schemas keep their separate semantics.
+
+**Accepted optional-object defaulting:** suppose this operation also permits a `retry` object,
+which has no default of its own, and its `delaySeconds` property declares a default of 5. Omitting
+`retry` leaves it absent from the prepared payload; the child default does not create the section.
+Code and graph implementations receive the same absence. A graph reference selecting `/retry`
+therefore still reports a missing value under the existing reference rule.
+
+If the author instead declares a default of `{delaySeconds: 5}` on the `retry` property itself,
+omission can materialize that whole-object default, subject to validation and the default-conflict
+rule. This also applies when materializing instance configuration. Templates preserve their authored
+omissions; required-field checks and provider-native MCP semantics remain unchanged.
+
+**Accepted supplied-object defaulting:** keeping `retry` optional with no parent default, the same
+child default produces these prepared configuration/input values:
+
+| Supplied value | Prepared value |
+| --- | --- |
+| `retry` omitted | `retry` remains absent. |
+| `retry: {}` | `retry: {delaySeconds: 5}`. |
+| `retry: {delaySeconds: 2}` | The supplied delay remains 2, subject to validation. |
+| `retry: {delaySeconds: null}` | Null remains null and must be permitted by the child schema. |
+
+The empty object is present, so its omitted child receives a default. Conduit does not replace that
+object with a whole-object fallback, merge old settings or fill empty lists. Invalid supplied values
+and conflicting applicable defaults still fail preparation. Templates retain authored omissions;
+these are materialization results. When a graph supplies an object from an earlier output, defaulting
+prepares the receiving input without changing the producer's fixed published value.
+
+**Accepted v0 conditional-default boundary:** suppose the operation permits local and remote modes,
+with different timeout requirements. The schema may validate those alternatives, but v0 does not
+materialize a timeout default declared inside the selected branch. Such branch-local defaults are
+reported as unsupported when the configuration/input schema is accepted, even if one caller happens
+to supply all the values.
+
+A local template can supply its timeout explicitly and a remote template can supply another; both
+still validate against the full schema. A suitable common default can instead be declared outside
+the alternatives. This preserves ordinary defaults and the composed-default conflict rule without
+introducing branch selection by trial insertion. Provider-native schemas keep their semantics, and
+this choice is separate from executable graph branching.
+
+**Accepted early default validation:** if the operation declares an integer `limit` constrained to
+1–100 with `default: 0`, reject that schema when accepting it. Supplying `limit: 15` in one template
+does not repair the invalid default declaration. Check after any supported default preparation;
+the check must not reject an object merely because its permitted child defaults have not yet been
+materialized.
+
+This is distinct from two otherwise-valid defaults, such as 10 and 20, contributed by composition:
+their conflict still requires an explicit valid value or corrected defaults. Early checks need not
+prove every future composition safe. The complete actual prepared payload still validates before
+use, and provider-native schemas keep their separate semantics.
+
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish
 that composite operation just as it publishes an operation backed by code or an MCP service. The
@@ -741,6 +1514,14 @@ followed by a failed connection is partial work, not an automatically rolled-bac
 Graph-backed operations reuse retained child progress through graph recovery by default, leaving
 uncertain effects to child recovery contracts. Exact parent/child coordination remains open.
 Nested composition retains v0's finite graph limit and selected implementation/access boundaries.
+
+The required/optional step classification is also shared. Publishing the database preparation graph
+as an operation keeps migration required unless its definition explicitly makes a supported step
+optional; it does not make failure interpretation implementation-specific. Optional diagnostics failure
+remains visible without alone preventing success. A caller that needs the composite to succeed still
+uses the ordinary success prerequisite; receiving an already-published output is not equivalent.
+Actual dependencies and mandatory contract obligations continue to apply, and ongoing optional work
+is not silently abandoned or reported as finished.
 
 ### Derived and authored composite results
 
@@ -767,6 +1548,97 @@ automatic retries or rollback.
 bindings and constituent contracts, with explicit construction available. Both preserve relevant
 effects, uncertainty and scoped evidence without publishing all intermediate values. Exact field
 names and mapping syntax remain open.
+
+**Accepted public-value wiring:** a declared public output uses the same four binding forms as a
+step input. For example, the database graph can assemble this output value; the surrounding output
+declaration and reference field spellings remain illustrative:
+
+```yaml
+object:
+  label: {literal: primary}
+  database:
+    reference: {from: output, node: start, port: database}
+```
+
+This assumes the graph declares a `start` step publishing a compatible `database` output. The
+consumer receives the assembled object, not the binding notation. No extra plugin is needed just
+for assembly. Its public contract still controls when the output may be published, its validity and
+permitted exposure. It neither exposes the rest of the graph's internal values nor certifies that
+migration or setup as a whole succeeded. Calculations, provider work and error/outcome interpretation
+remain governed by their existing operation contracts.
+
+**Accepted declaration grouping:** public outputs form a map keyed by names unique within this
+graph's public outputs. Keep each value binding and its output-specific declarations in the same
+entry. Using provisional field spellings, the database example can bring its already-accepted rules
+together as follows:
+
+```yaml
+outputs:
+  database:
+    value:
+      reference: {from: output, node: start, port: database}
+    after: [verify]
+  diagnosticReport:
+    optional: true
+    value:
+      reference: {from: output, node: diagnostics, port: report}
+```
+
+Assume `start`, `verify` and `diagnostics` are declared steps with compatible output contracts.
+`database` is required by default and waits for successful verification; `diagnosticReport` is
+explicitly optional. The `value` payload uses the accepted binding forms and could instead use the
+object assembly shown above. The map structure and grouping are accepted; `outputs`, `value`,
+`after`, `optional` and reference field spellings are illustrative, pending the vocabulary pass.
+
+Reordering entries does not order publication or execution. Duplicate public-output names are errors.
+This layout preserves result-contract derivation and inherited guarantees without requiring authors
+to restate them. Validity, current access and fixed values per producing attempt remain governed by
+their existing contracts; grouping does not weaken those conditions or publish other internal values.
+
+**Accepted required/optional outputs:** declare the public database result required, which is the
+default, and a separate `diagnosticReport` output explicitly optional. If optional diagnostics fail,
+the report can remain absent with the reason visible; that absence alone does not prevent successful
+graph completion. If the report had remained required, marking its producing step optional would
+not remove the output obligation. Missing the required database result likewise prevents success.
+
+An absent report is not a fabricated null or an empty report. Any value actually produced must
+satisfy its schema and publication/access conditions, and a consumer selecting an absent output
+still faces the existing reference/dependency rules. Ongoing diagnostic work and uncertain effects
+retain their own recorded state. These are named-output requirements, separately from optional
+fields inside the assembled database value above; exact declaration syntax remains open.
+
+**Accepted publication prerequisite:** the public database output may name `verify` as a
+successful-completion prerequisite while continuing to use `start`'s database reference in its value
+binding above. Startup supplying the reference is not enough to release this output: schema
+verification must also succeed. Failed or uncertain verification leaves it unpublished, even if
+the database is running and its reference remains usable by authorized setup steps.
+
+This uses the same success meaning as `verify` waiting for `migrate`, with the prerequisite declared
+on the public output rather than on a consuming step. No plugin is needed merely to forward the
+reference after the check. Its other publication, current-validity, validation and access conditions
+still apply. Verification records what it established under its contract; it does not promise that
+the database can never become unavailable or that every other graph step succeeded. Output-container
+and prerequisite field names remain provisional within the accepted grouped map structure.
+
+**Accepted publication timing:** once `verify` succeeds and the database output's own conditions
+hold, that output is eligible for publication even if independent diagnostics are still running.
+There is no implicit whole-graph success barrier. A stronger condition can be declared where needed.
+The Interface can show the available output alongside unfinished or failed work; output publication
+does not itself mark setup complete or the Resource prepared. If the reference has become unusable
+or current access does not permit exposure, verification's earlier success cannot bypass those checks.
+
+**Accepted value stability:** after `start` publishes its database reference, that named output
+retains the same value for that producing attempt. The public graph output likewise retains its
+published value for its producing attempt. If the database disconnects, the instance reports the
+changed availability; the graph does not replace its reference with a different value or null.
+Consumers must still satisfy current validity and access checks before use.
+
+Redelivering the recorded reference is permitted and does not establish exactly-once transport.
+Trying to replace it with another value in the same attempt reports a contract error while preserving
+effects and evidence. If supported recovery requires a later producing attempt, its result is recorded
+with that attempt, leaving the earlier publication intact. This does not initiate retry or make the
+old result reusable without validation. Changing progress and observations remain separate from these
+fixed graph values; exact attempt and reference encodings remain open.
 
 **Accepted recovery default:** a published graph-backed operation reuses graph recovery without
 requiring a bespoke handler merely for composition. Explicit retry of this unchanged invocation
@@ -941,6 +1813,67 @@ The same endpoint plugins can support another Conduit with different allowed tar
 They implement the reusable requirement meanings, not a list of user-authored template names.
 Native MCP discovery remains dynamic; this does not require copying every provider tool schema
 into the Conduit definition or replacing familiar tool names with a generic wrapper.
+
+**Accepted composition parameter wiring:** consider a reusable `review-access` requirement whose
+declared parameters are supplied as:
+
+```yaml
+workspace: euphony
+maxResults: 10
+```
+
+Its constituents form a map keyed by locally unique names. Each entry selects a requirement contract
+and its parameter binding; the table illustrates the accepted grouping without selecting final fields:
+
+| Local entry name | Selected requirement | Parameter construction |
+| --- | --- | --- |
+| `workspace` | Workspace restriction | Reference the composition's `workspace` parameter, supplying Euphony. |
+| `resultLimit` | Result limit | Reference `maxResults` and assemble the child's parameter object, supplying a limit of 10. |
+| `operations` | Operation restriction | Supply literal permitted read-operation identifiers under the selected contract, using a literal list or explicit list assembly. |
+
+The entry name `workspace` and parameter name `workspace` belong to separate scopes; their matching
+spelling does not perform the binding. Duplicate entry keys are rejected. Reordering these entries
+does not order enforcement: every applicable constituent must hold at its declared point.
+
+The same result-limit contract could also appear under `hardLimit` with a literal limit of 20.
+That is a distinct occurrence with its own parameters; the shared contract does not make it a
+duplicate key or cause it to replace `resultLimit`. Both constraints remain applicable, under the
+existing individual-enforcement rule. No runtime object is created merely for an entry name.
+
+**Accepted recursion boundary:** requirement compositions are finite and acyclic in v0. These cases
+have different meanings:
+
+| Definition relationships | Validation result |
+| --- | --- |
+| `review-access` includes itself. | Reject direct recursion. |
+| `review-access` includes `project-access`, which includes `review-access`. | Reject indirect recursion. |
+| `review-access` includes two separate result-limit entries. | Allow reuse; preserve both parameter bindings and obligations. |
+| Two separate composed requirements both include the same workspace restriction. | Allow shared-definition reuse when neither path returns to an ancestor definition. |
+
+Resolve the selected definitions before checking composition cycles; matching local entry names
+alone does not establish a cycle. This restriction does not prohibit two Agents connecting to each
+other through Conduits or recursive data schemas. Passing this check does not establish endpoint
+support or fulfillment. Exact diagnostics and expansion limits remain implementation details.
+
+For the result-limit constituent, an illustrative binding is:
+
+```yaml
+object:
+  limit:
+    reference: {from: parameters, path: /maxResults}
+```
+
+This resolves to `{limit: 10}`, assuming that is the constituent's declared parameter shape. The
+four binding forms are shared with graph value construction; the `parameters` source spelling and
+reference fields remain provisional. Names of caller parameters need not match the child's field
+names: the explicit binding connects them. The named-map collection is accepted; its container/entry
+field names and exact versioned requirement-reference encoding remain provisional.
+
+References are limited to the composition's declared parameter payload. No graph step outputs,
+runtime targets, invocation metadata or caller configuration are implicitly available. Assembling
+parameters needs no plugin but still requires typed validation; each constituent's support and
+runtime enforcement remain mandatory. An Agent's grant remains separately required. This describes
+reusable obligations, not a graph that executes operations or proves those obligations fulfilled.
 
 | Author task | What is authored | What need not change |
 | --- | --- | --- |

@@ -5,7 +5,7 @@ their accepted status without becoming requirements for every capability impleme
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
 [current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
+Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
@@ -19,6 +19,11 @@ limits, default connection choices, activation instructions and the exposed conf
 with their constraints. Establishment uses one Agent template's configuration or a directly
 authored complete instance definition. Export/creation representation belongs to the configuration
 profile; direct creation itself is accepted. V0 defers inheritance and composition between Agent templates.
+
+For example, the same `reviewer` template may establish and launch `reviewer-7f3a`, `reviewer-9c2b`
+and further Agents, each with its own identity, private state and lifecycle. Instantiation does not
+consume or rewrite the template definition. The [one-write-per-object batch rule](CONFIGURATION.md#batch-configuration-submissions)
+concerns duplicate registry targets, not the number of instances created from a reusable template.
 
 Establishment produces the Agent's complete spec. The Agent operates from that spec
 and explicit live dependencies; retain actual execution settings.

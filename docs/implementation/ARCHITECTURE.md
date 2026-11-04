@@ -136,6 +136,29 @@ storage mechanics remain implementation work. Authorization records do not inher
 semantics.
 Publishing a policy or installing a plugin cannot confer authority.
 
+Requirement composition reuses the literal/reference/object/list value-binding machinery with a
+restricted source scope: only the composition's declared parameter payload is referenceable.
+At concrete use, resolve and validate constituent parameters without running a plugin merely for forwarding
+or assembly. Keep literal payloads as data. Do not expose graph step outputs, runtime targets,
+invocation metadata or ambient caller configuration through these bindings. Preserve the resolved
+constituent contracts and their existing support, authority and enforcement checks; construction
+is not fulfillment, and sharing the binding machinery does not create an executable graph.
+
+Read composed requirements from a map keyed by locally unique entry names. Each entry selects its
+requirement contract and parameter binding. Reject duplicate keys while retaining repeated contract
+selections under distinct names as separate occurrences. Use local names in diagnostics/inspection
+without allocating a new runtime object per entry. Map order does not schedule enforcement or
+override obligations; every applicable constituent still holds at its declared point. Exact fields
+and contract-reference encoding remain authoring work.
+
+Validate v0 requirement composition as a finite, acyclic graph of resolved definitions. Reject
+direct and indirect cycles, including those reached through declared dependency references. Distinguish
+cycles on the current expansion ancestry from independent reuse, retaining separate parameterized
+occurrences. Do not reject compositions merely because aliases/local names repeat or apply this
+restriction to live Conduit topology, recursive data schemas or package dependencies generally.
+Cycle diagnostics and expansion/resource bounds remain implementation work; current support and
+enforcement checks still apply after successful validation.
+
 Ordinary managed access now requires a recorded grant on its selected participation, including
 the root's broad management access. Policy governs issuance/current use without a grantless
 alternative; authorized connection setup can establish one grant for many requests. Grant
@@ -413,10 +436,10 @@ management or execution service, with transaction boundaries limited to its own 
 | --- | --- |
 | Registry/configuration | Shared templates, registration/naming and policy; schema/default resolution and stable references. Route instance configuration reads/changes to their designated authority; label aggregate observations. No provider effects inside registry transactions. |
 | Instance supervisor/state authority | Retain the assigned instance's resolved definition, confirmed configuration/revision and operation results; supervise its executions/drivers and generations; apply lifecycle checks and expose preparation/runtime/connection observations. One service can host many instances. |
-| Graph executor | Validate finite dependency graphs, schedule ready steps and retain progress. Supply default recovery for graph-backed operations: explicit retry reuses still-valid child results and delegates uncertain effects to child recovery contracts. Detailed nested coordination remains open. |
+| Graph executor | Check finite dependency graphs and provable wiring/type errors early; validate each step's resolved inputs before dispatch without requiring complete producer-schema inclusion proofs. Schedule eligible independent branches after a step fails, preserving unmet prerequisites, authority/stop rules and incomplete required work. Retain progress. Supply default recovery for graph-backed operations: explicit retry reuses still-valid child results and delegates uncertain effects to child recovery contracts. Detailed nested coordination remains open. |
 | Invocation coordinator | Deduplicate operations, reserve target conflict domains, recheck revisions/authority at dispatch and retain confirmed/uncertain outcomes. |
 | Route/access service | Establish complete authorized paths; enforce filters at mediating endpoints; manage participation/delegation without requiring a global payload relay. |
-| Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and report worker/service failures distinctly. |
+| Plugin integration | Resolve retained contract/binding/adapter identities; start/stop owned workers or attach existing services; validate compatibility and declared outputs before downstream use. Withhold invalid output while preserving effect evidence/uncertainty and report worker/service/contract failures distinctly. |
 | Evidence service | Retain outcomes at their authoritative source; expose snapshots/catch-up and aggregate for the Interface with freshness/gaps. |
 | Artifact/credential services | Supply verified implementation artifacts and protected credential references through narrowly defined host facilities. |
 
@@ -505,7 +528,10 @@ an already committed outcome. This adapts Pi's separation of durable mutation an
 
 For large retained payloads, stage and sync immutable content before committing its reference.
 Handle abandoned staging files as explicit cleanup candidates; never automatically purge Resource
-data. A backup includes both the consistent database snapshot and referenced payloads/artifacts.
+data. A backup includes the consistent database snapshot and the available payloads/artifacts within
+its declared scope, reporting missing dependencies. Historical executable contents need not remain
+available merely because records reference them; neither those records nor a backup promises recreation
+of every past instance.
 Use SQLite's backup facilities rather than copying a live database file without coordinating its
 WAL. Restore into a stopped registry, validate it and explicitly reconcile external executions;
 restoring records does not recreate their side effects. [SQLite backup][sqlite-backup]
@@ -522,6 +548,15 @@ Workers cannot simply return success for another attempt: results carry the oper
 instance generation and selected implementation. A delayed result is retained as evidence but
 cannot overwrite a newer confirmed configuration. Do not serialize a live handle and treat it
 as usable after reboot; reacquire or verify its instance-owned backing and authority.
+
+Conduit-declared live service and protected authentication bindings use the shared typed
+managed-reference contract. Keep actual live objects and credentials with their owning
+implementation; resolution/use checks current authority and the capability's particular validity
+rules. Common handling does not erase capability distinctions or make possession authoritative.
+Serialization and schema validation do not establish liveness. Respect sensitivity when retaining
+or exposing reference evidence. This does not require a central reference broker; exact fields,
+wire representation and resolution mechanisms remain authoring work. Provider-native MCP schemas
+retain their own semantics.
 
 ### Worked storage and recovery examples
 
@@ -725,25 +760,222 @@ For an MCP-backed node, dispatch still uses the selected contract and authorized
 The common adapter can invoke a compatible existing operation; metadata alone cannot substitute
 for unimplemented conversion, filtering or recovery. No arbitrary transformation language is implied.
 
+Read the step collection as a map of locally unique names to operation bindings. Reject duplicate
+keys before dispatch. Resolve step references and prerequisites in their graph's scope; do not use
+map order as an execution sequence or let equal names in different graphs alias the same step.
+Ordering constraints come from dependencies, alongside current checks and scheduling limits.
+The step-map structure does not expose called graphs' private nodes or choose final field names.
+Read explicit success prerequisites from the dependent step beside its operation and inputs,
+resolving predecessor names within that graph. Combine these edges with output-implied dependencies
+for validation and scheduling; do not require authors to duplicate them in a separate edge collection.
+
+V0 explicit ordering prerequisites without data require the predecessor's successful
+completion under its contract. Failure or uncertainty keeps that dependency unmet. Do not satisfy
+it merely because an invocation returned or its failure payload passed schema validation. This
+does not change declared output-readiness dependencies, their validity checks, independent eligible
+work or required lifecycle cleanup. Final prerequisite field names remain authoring work.
+Do not implement authored failure/completion-triggered nodes in v0. Required operation/instance
+cleanup and supported recovery still run under their contracts when ordinary graph work is blocked
+or cancelled; they must not depend on a failed predecessor satisfying a success prerequisite.
+
+Treat steps as required by default across setup, reusable graph-backed operations and change-handler
+graphs, with explicit optionality for nonessential steps. Required steps must succeed for successful
+graph completion. Preserve optional failure/effect evidence without making that failure alone block success.
+Continue enforcing actual dependencies: a required consumer still needs its declared inputs and
+prerequisites even when their producer is optional. Mandatory type/access requirements and validation
+cannot be waived through optionality. Keep scheduling and lifecycle duties under their existing contracts.
+Do not infer graph success from published outputs or a permitted partial control confirmation;
+record those facts independently. Optionality must not discard running child activity, its eventual
+outcomes or unresolved effects. Apply the same classification when invoking a graph as a reusable
+operation rather than giving it different failure semantics merely because it was exported.
+
+Bind caller configuration into a reusable graph-backed operation's declared inputs; do not inject
+the enclosing instance's configuration namespace into that operation. Keep scoped invocation context
+and explicitly authorized Resource access available through their contracts. Validate declared input
+bindings under the same early and runtime checks used for other operations.
+
+Place Conduit invocation context in MCP request metadata, separate from ordinary operation
+arguments. Keep the published domain input schema unchanged rather than injecting a mandatory
+context/input wrapper. The responsible service establishes or verifies authenticated context and
+current authority; reject attempts to replace it with caller-supplied claims. Do not automatically
+forward managed metadata to a plain provider MCP service, or expose the whole wire metadata map to
+graphs. Their typed read-only metadata surface remains separately declared. Exact profile fields
+and discovery encoding remain authoring work.
+
+Include the requested Conduit profile revision and required features in each managed request;
+validate support before the requested behavior. Do not require a separate prior negotiated
+agreement or infer its terms from connection history. Clients/adapters supply the declarations,
+and discovery may be cached without weakening support/current-authority checks. Retain instance
+and operation records, artifact verification, authentication and applicable MCP transport/version
+handling. A reconnecting inspection request addresses the existing operation without creating
+another operation or agreement. Report unsupported required semantics without silent fallback;
+exact profile identifiers, feature fields and discovery encoding remain authoring work.
+
+Implement the deferred-work baseline with ordinary MCP tools for acceptance and authorized
+inspection by retained operation reference. Keep the reference correlated with the responsible
+service's operation records, rather than treating a transport request or optional task handle as
+its only identity. Optional task/progress mappings expose the same work without redispatching it.
+Inspection rechecks current access and distinguishes acceptance, progress, confirmed outcomes and
+uncertainty under the operation's contract. Do not require task-extension support for the baseline
+or force directly completing operations to return early. Exact tool/result encoding remains open.
+
+For Conduit-authored operation invocations, resolve supplied bindings, materialize unambiguous
+applicable defaults for genuinely omitted fields, then validate the prepared payload before dispatch.
+Use the same preparation boundary for code and graph implementations, including child invocations;
+the graph-input source exposes that prepared payload. Explicit nulls remain values subject to the
+schema. Reject invalid explicit or prepared values, unresolved default conflicts and broken references
+without dispatching the affected operation. Do not convert failed reference resolution into omission
+or inject these defaults into provider-native MCP inputs. Keep default applicability explicit in
+the schema-profile implementation; its detailed algorithm remains authoring work.
+
+In configuration and operation-input preparation, preserve the absence of an optional object with no
+applicable default of its own. Child defaults must not synthesize it. A declared whole-object default
+can establish the object, subject to conflict resolution and validation. Keep required-field checks,
+template omission preservation, explicit-null semantics and missing-reference errors intact. Apply
+the same boundary in child invocations; other default-applicability mechanics remain authoring work.
+
+Within a supplied object, including `{}`, materialize unambiguous applicable defaults for omitted
+child properties. Preserve supplied values for validation, including explicit nulls; report default
+conflicts. Do not substitute a whole-object default for a supplied object, merge previous settings
+or fill empty lists. Prepare receiving input values separately from retained producer outputs so
+default materialization cannot rewrite an output's fixed value. Apply this consistently to instance
+configuration and Conduit-authored operation inputs; template and provider-native boundaries remain.
+
+At configuration/input schema acceptance, report branch-dependent defaults as unsupported in v0.
+Preserve conditional/alternative validation and ordinary default materialization outside those
+branches. Do not silently ignore unsupported declarations or try defaults to select a validating
+branch; an explicit payload does not bypass the schema-acceptance check. Retain the composed-default
+conflict rule and provider-native semantics. The profile must specify restricted keyword paths and
+diagnostics consistently; this does not add executable graph branching.
+
+Reject provably invalid defaults during Conduit configuration/input schema acceptance, checking
+against each default's own schema after applicable supported preparation. Identify the offending
+default and constraint; an explicit caller value cannot bypass this declaration error. Do not require
+proof across all future compositions or treat this check as validation of a later prepared payload.
+Preserve explicit resolution of conflicting otherwise-valid defaults, required feature checks and
+the provider-native boundary.
+
+Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
+surface. A graph can reference facts such as its owning instance ID without a helper invocation
+solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or
+substitute caller-supplied identity for missing metadata. Passed IDs remain data; authentication and
+current authority remain runtime responsibilities. Exact metadata fields and source encoding remain open.
+
+Resolve references against their explicitly selected sources. An omitted nested pointer selects
+the whole source, equivalent to the empty JSON Pointer; it does not omit the receiving input or
+invoke its default. Missing sources or selected members still block that consuming step under the
+reference-resolution contract. Source-selection fields and the optional pointer sit directly inside
+the reference payload, without a nested source object. V0 source categories are declared graph
+inputs, captured instance configuration, earlier step outputs, declared runtime targets and typed
+invocation metadata. Enforce their scope boundaries; reusable operations receive caller settings
+and runtime targets explicitly. External data reads use authorized operations and their outputs;
+do not add arbitrary plugin-defined reference resolvers in v0. Field names and selectors remain
+authoring work.
+
+Resolve the graph-input source from the complete declared input payload of that invocation, with
+no separate input-name selector. Apply its optional JSON Pointer within that payload; omission and
+the empty pointer select it whole. Preserve missing-selection and receiving-schema checks. Do not
+combine caller configuration or trusted invocation metadata into the input source implicitly.
+
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
-is already satisfied; it must not blindly repeat a create operation. An explicit retry of an
+is already satisfied; it must not blindly repeat a create operation. Configuration references within
+a graph execution use the values captured when it begins; later steps cannot silently switch to
+newly confirmed instance settings. A later execution captures then-current settings. Current authority,
+dependency validity and control-application revision checks still apply; captured values do not
+establish current runtime state or create another mutable configuration map. An explicit retry of an
 incomplete start uses the same progress lineage and only reuses results whose inputs, implementation,
 backing and current prerequisites remain valid. Changed confirmed configuration invalidates
 affected results under declared read sets, conservatively all relevant steps when unknown.
 
-A node requesting runtime startup goes through the instance supervisor. The process/client is
-owned before the node receives a usable runtime handle. Subsequent migration/initialization nodes
-can use that handle. Successful node completion never transfers lifetime ownership to the graph.
+Use the same literal/reference/object/list binding machinery for declared public graph outputs as
+for step inputs. Retain source/scope and literal-data rules, validate the resulting public values,
+and apply their publication, validity and exposure contracts. Assembly does not publish unrelated
+intermediate values, bypass sensitivity/custody or establish whole-operation success. Consumers
+receive resolved values; domain outcome mapping and remaining contract fields remain authoring work.
 
-Graph failure blocks dependent steps and records partial progress. Independent work already
-accepted follows its contract; retain managed runtimes and successful attachments by default.
-Explicit cancellation requests cooperative stop, reports unresolved effects and performs only
-declared cleanup. There is no inferred rollback or reverse-topological deletion of backing data.
+Read public graph outputs from a map keyed by names unique within that graph's public outputs.
+Each entry groups its value binding with applicable declarations such as optionality and success
+prerequisites. Reject duplicate output keys. Map order does not schedule work or publication; resolve
+each entry against its own dependencies and conditions. Preserve contract derivation and inherited
+information without requiring authors to repeat it. Exact field spellings remain provisional.
 
-Human-interaction waits release worker compute and retain a recoverable interaction reference.
-If a plugin cannot recover a challenge, recovery reports that fact and requests a supported new
-interaction; it does not claim continuation of arbitrary suspended code. New attempts and browser
-responses are bound to the correct instance/account/operation and cannot complete a later login.
+Treat public graph outputs as required for successful completion unless explicitly optional.
+Check fulfillment under each output's contract separately from required-step success; an optional
+producer step does not make its exposed result optional. Record optional-output absence and its
+known cause or uncertainty without synthesizing null or another value. Preserve validation failures,
+unmet dependencies, current access checks, effects and outstanding activity. Do not let a consumer
+read an absent result or infer that optionality waived any mandatory contract obligation.
+
+Resolve explicit success prerequisites on public output declarations against the graph's local
+steps. Combine them with the output's value dependencies and publication conditions when deciding
+whether it can be exposed. Reuse the same successful-completion check as dependent steps: failed or
+uncertain verification withholds the gated database output even after startup supplied its value.
+Continue applying output validation, current validity and access checks. Do not require a forwarding
+worker merely to implement the gate, or infer whole-graph success from a published output.
+
+Make each public output eligible when its value dependencies, explicit success prerequisites and
+other declared publication conditions hold. Do not insert an implicit whole-graph success barrier
+or wait for unrelated steps. Continue validating the value and its current permitted use/exposure;
+honor any stronger declared publication condition. Persist and expose output availability separately
+from overall graph outcome and instance preparation, including while other work remains incomplete.
+
+Associate each published step/public output value with its named output and producing attempt.
+Keep that value fixed: permit redelivery of the recorded result, but report conflicting publication
+as a contract error without overwriting the value already supplied downstream. Preserve associated
+effects and uncertainty. Later attempts retain separate result provenance; this is neither an
+exactly-once transport guarantee nor permission to replay work. Recovery must still validate retained
+results and prerequisites before reuse. Keep live availability and state under instance supervision,
+with current validity/access checks at their declared points. Progress and observation contracts
+remain separate from fixed graph values; identifier and comparison encodings remain to be specified.
+
+A node requesting runtime startup is an ordinary typed operation explicitly bound to the instance's
+declared runtime. It supplies prepared inputs through the selected compatible contract and goes
+through the instance supervisor. The process/client is owned before the node receives a usable
+runtime handle. Subsequent migration/initialization nodes can use that handle under its validity
+and access contract. Successful node completion never transfers lifetime ownership to the graph.
+
+Support multiple named runtime declarations within an instance when its type allows them. Resolve
+each operation's explicit target to its intended declaration, retaining supervision and lifecycle
+responsibility under that instance. A database driver and diagnostics helper may use different
+plugin contributions without requiring a wrapper solely to combine them. Process grouping remains
+an implementation choice; this does not permit another primary Agent execution. Apply the existing
+setup, control and retirement contracts rather than inferring a failure policy from declaration count.
+
+Read runtime declarations from a map keyed by names unique within the instance definition. Reject
+duplicate keys and resolve targets by those local names, not positions. Identical local names in
+different instances do not alias their runtime identities. Map order does not schedule startup;
+merely loading or registering the declarations starts no runtime. Driver/input field encoding remains
+authoring work, while physical process grouping remains an implementation choice.
+
+The startup result must establish its declared guarantee, such as usability for migration rather
+than a completed application schema. Operation acceptance and current runtime observations remain
+distinct. Do not add special graph lifecycle instructions or input-triggered automatic startup as
+an implementation shortcut. The explicit runtime target is a declared typed operation input using
+normal graph bindings. Reusable graph-backed operations receive and forward it explicitly; caller
+identity and authority remain trusted invocation context. The runtime-target source selects one
+named declaration and returns a typed target reference. Resolve it at the responsible service
+against the instance-owned definition, checking owner scope, identity, contract and current
+permissions before use. Do not accept a caller-supplied replacement definition as target data;
+prepared settings remain explicit inputs under the operation contract. Selection alone starts no
+runtime and establishes no usable-service result. Exact reference encoding, inspection and transport remain under
+[authoring review](../REVIEW.md); this acceptance does not select a wire format or new runtime family.
+
+Graph failure blocks unmet prerequisites and records partial progress while independent eligible
+steps continue; retain managed runtimes and successful attachments by default. Explicit graph
+cancellation stops new ordinary steps and requests cancellation of in-flight children where their
+contracts support it. Continue tracking their actual outcomes and perform required cleanup, including
+preparation's attachment-release duties. Report unsupported or unconfirmed cancellation; the request
+does not establish that effects stopped. Instance-owned runtimes remain governed by their lifecycle
+contracts. There is no inferred rollback or reverse-topological deletion of backing data.
+
+Retain a typed human-interaction reference and safe pending state with its managed operation,
+independently of the originating frontend. Authorized Interface attachments can rediscover that wait
+after a terminal closes. Release worker compute where the implementation supports it; retained wait
+identity alone does not guarantee recovery of arbitrary suspended code. The adapter offers a still-valid
+flow or reports the need for a supported new interaction. Preserve current authority, credential
+custody and challenge validity; rediscovery does not confirm the requested action. New attempts and
+browser responses remain bound to the correct instance/account/operation and cannot complete a later
+login. Exact interaction representation and expiry/replacement mechanics remain authoring work.
 
 ## 6. Invocation, concurrency and controls
 
@@ -762,9 +994,18 @@ A handler reports the applied configuration changes and evidence; the host verif
 constraints, revision and generation before committing. Plugins cannot rewrite setup graphs,
 control definitions or implementation bindings through a configuration result.
 
-No-op controls still perform their declared checks/effects. If they confirm unchanged stored
-settings, the proposed default preserves the configuration revision and records the outcome.
-A plugin can report external work even where configuration is unchanged. Reconciliation may
+Accept a confirmed subset of a control's requested changes only when its declared contract supports
+partial confirmation and the complete resulting stored configuration is valid. Record remaining
+effects' failure, pending work or uncertainty separately; retaining an old value does not establish
+that it is still active. Coupled fields may require whole-change confirmation. A partial result
+does not release applicable coordination or justify rollback, invalid state or replay of effects.
+If reported effects cannot yield a valid configuration, preserve evidence for supported reconciliation.
+
+Controls that confirm unchanged stored settings still perform their declared checks/effects.
+Preserve the configuration revision and record the outcome; do not skip dispatch or present
+a cached result as a new execution merely because the requested values match. A plugin can report
+external work even where configuration is unchanged. Configuration revision equality does not
+replace current runtime/authority checks. Reconciliation may
 establish an external change despite caller withdrawal; recording reality is separate from
 authorizing a new effect or releasing its content to the former caller.
 
@@ -966,13 +1207,24 @@ Use three distinct streams:
 | Live observations | Snapshot plus cursor/generation, with freshness/coverage; dropping intermediate observations cannot erase an operation result. |
 | Diagnostic traces/metrics | Bounded, optionally sampled/exported; explicit exporter failures and dropped-observation counts where known. |
 
-The Interface subscribes to committed events and can catch up after disconnect. Independent
-sources need source/generation cursors and freshness; do not invent a global order from wall clocks.
-The following snapshot/cursor discipline applies within a source; a combined view exposes gaps.
-To avoid the snapshot/subscribe race, return a snapshot with its high-water cursor, then deliver
-later events.
-If the cursor is purged or unavailable, return a scoped gap and require a new snapshot. Slow
-clients do not block commits; close or limit their stream with a recoverable cursor.
+**Accepted ordering boundary:** retained observation feeds provide ordering and resume cursors
+within each declared source. The Interface combines these feeds without a global sequence guarantee;
+preserve local ordering and known causal links without deriving causality from wall clocks. The
+source boundary is declared by the observation contract, not imposed per executor/process/object.
+Keep current access checks and authoritative state ownership intact; sampled diagnostics and
+latest-state observations do not acquire a lossless-history guarantee from this rule.
+
+**Accepted snapshot handoff:** pair the managed state-tracking source's snapshot with a resume
+position for subsequent retained changes. Cover changes during the snapshot-to-feed interval, or
+report that continuity cannot be established. If resumption is unavailable, report the scoped gap
+and need for fresh state rather than silently jumping to the latest position. Preserve current
+authorization and explicit-purge rules. This is neither a global snapshot nor an exactly-once
+delivery guarantee; weaker/native sources expose their actual coverage.
+
+Concrete cursor encoding, pagination, transport and remaining delivery mechanisms remain proposals.
+The existing slow-client candidate closes or limits an observation stream with a recoverable
+position rather than blocking commits; this scheduling/backpressure mechanism is not settled by
+the snapshot-handoff ruling.
 
 Rust `tracing` spans correlate work and exporters can use OpenTelemetry. Neither is the operation
 journal: the OpenTelemetry SDK deliberately allows bounded queues and dropping spans under
@@ -1006,6 +1258,8 @@ effects; store oversized legitimate outputs by reference where their contract su
 | Invalid config / missing schema | Reject write, preserve current object and source file. |
 | Missing code / unavailable dependency | Retain valid registration; report unready operations. |
 | Required preparation failure | Block that consumer's preparation; retain successful partial work. |
+| Graph step failure | Continue independent eligible steps; block unmet prerequisites and report required unfinished setup as incomplete. Current authority, coordination and stop rules still apply. |
+| Explicit graph cancellation | Stop new ordinary steps; request supported child cancellation. Track actual outcomes and required cleanup without claiming rollback or retiring instance-owned runtimes implicitly. |
 | Dependency lost after readiness | Continue independent work; mark affected operations unavailable. |
 | Worker panic / timeout | Record failure or uncertainty according to evidence; do not infer rollback. |
 | Store unavailable before dispatch | Do not admit new effects that cannot be recorded. |

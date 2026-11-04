@@ -191,12 +191,28 @@ proves a production standalone deployment.
 | Case | Fault or action | Required observation |
 | --- | --- | --- |
 | Contract checking | Missing schema, wrong input type, unsupported restriction or missing implementation | Reject invalid configuration or report unready execution as appropriate. Never drop a filter or substitute code. |
-| Exact implementation | Start with A, make B available, then restart the original instance | Original remains bound to A or reports A unavailable. A replacement explicitly uses B. |
+| Batch prevalidation | Submit a valid history Resource template with a malformed or schema-invalid Agent template; separately use a missing required schema, graph cycle, invalid prerequisite or output-generated definition | No entries are written. Diagnostics identify the parsing/schema/graph problem. All definitions must be supplied before execution. Validation does not start plugin code or runtime setup. |
+| Batch duplicate targets | Submit two updates to one stable object ID or two creates for one kind/name; repeat with an explicit prerequisite between them | Reject the batch before any writes. Ordering does not permit repeated targets. Combine edits into one checked replacement or use separate submissions. |
+| Repeated template instantiation | Register one synthetic reviewer Agent template, then explicitly create and start two instances from it | Both instances have distinct identities, private state and independently managed lifecycles. Template reuse does not trigger duplicate-target rejection or consume/rewrite the template definition. Registration alone launches neither instance. |
+| Batch dependencies and independent work | Submit complete History, Reviewer and Pool templates with an explicit History → Pool prerequisite; vary file order and cause History to fail | Pool waits for its prerequisite and remains blocked on failure. Reviewer remains independently eligible under current checks and execution limits. File order and ordinary object references do not infer edges. Shared graph cancellation and valid-progress recovery semantics apply. |
+| Batch registration outcomes | Pass whole-batch validation for a history Resource template and an Agent template; arrange a name conflict for the Agent after history registration succeeds | Report per-object outcomes and preserve the successful history registration. Every write retains current authority and applicable precondition checks; prevalidation reserves nothing. No rollback, provisioning or Agent launch is inferred. |
+| Portable integers | Exercise both limits of ±9,007,199,254,740,991, outside values and an explicitly decimal-string counter through YAML/JSON configuration, inputs and outputs | In-range integers remain exact across clients, subject to schema bounds. Outside integers are rejected before precision is lost; there is no rounding into range or automatic string conversion. An invalid plugin output preserves effect evidence under the existing output-validation rule. |
+| Fractional values | Exchange `0.7` and `1.5` through equivalent YAML/JSON configuration, inputs and outputs; compare explicitly decimal-string and integer-millisecond contracts | Ordinary fractional values use finite binary64 semantics with normal representational rounding. Exact representations retain their declared meaning without implicit conversion. Integer checks remain strict; detailed comparison, `multipleOf`, range and round-trip cases must demonstrate the public profile rather than inherit untested library behavior. |
+| Standard-format boundary | Exercise all 19 selected JSON Schema 2020-12 formats, then attempt a plugin-defined `workspace-id` format | Positive/rejection fixtures establish their standard syntax semantics before claiming support. URI checks make no endpoint requests. Report the custom format as unsupported without loading a plugin validator; a reusable schema using supported string constraints remains possible. Provider-native schemas retain their own dialect semantics. |
+| Descriptive schema annotations | Add a namespaced slider hint to a limit schema; inspect with tooling that supports it and tooling that does not | Both retain the same 1–100 validation and control/authority behavior; unsupported presentation hints need not affect a numeric editor. A misspelled schema keyword outside the annotation map still fails acceptance. Exact map notation/value schemas remain open. |
+| Active implementation preservation | Start with A, edit local plugin code/contracts to B and invoke the running instance again | Running work still uses A. Editing source does not replace its implementation or require publishing A as a reusable package. |
+| Exact implementation on restart | Start with A, make B available, then restart the original instance | Original remains bound to A or reports A unavailable. It never silently adopts B. |
+| Development replacement | Retire the A instance and create a replacement from revised source B, reusing fixture backing data explicitly | B is selected through normal contracts; both versions need not run together. No implicit grant transfer or backing-data deletion. Historical outcome records do not require a selectable build archive. |
+| Unavailable edit-mode implementation | After safe retirement/cleanup of unreleased A's private contents, request fresh creation requiring A with only B available | Report unavailable A without substitution. A digest/export or draft version field alone does not preserve a release. |
+| Published release | Publish fixed, versioned A through a distribution-source fixture, retire its instances, edit source to B, then retrieve/select released A for fresh creation | Verify A's digest independently of its old instances. B stays in edit mode until separately published under a new version. The fixture does not select production hosting, a local-only release facility or a backward-compatibility promise. |
 | Code-optional binding | Validate published contracts with the provider stopped, then connect the fake service through the retained adapter | Registration/validation does not execute the provider. Ready calls use the declared capability; missing/incompatible behavior is reported, not supplied by an invented guarantee. |
 | External service drift | Change the fake provider's supported operation/schema after preparation | Apply existing known-drift/explicit-refresh rules; retain declaration/adapter identity and report provider compatibility separately from code pinning. |
 | Independent MCP access | Invoke through the managed endpoint using the ordinary MCP client with no aggregate frontend attached | Current caller/path restrictions and operation evidence still apply; later Interface inspection finds the attributable result. Raw caller arguments cannot grant management authority. |
 | External lifecycle | Disconnect/retire the client Resource attached to an independently running fake server | Release owned connections; preserve provider process/data unless an explicitly authorized management operation owns that effect. |
 | Partial setup | Fail initialization after managed service startup | Service remains owned and inspectable; setup is incomplete. Retry uses valid recorded progress. |
+| Optional setup step | Fail an explicitly optional diagnostics step while required setup succeeds; in a second fixture make required verification depend on its missing output | The first fixture reports diagnostics failure without that failure alone blocking setup success. The second remains incomplete because required verification lacks its prerequisite. Preserve effects, validation, mandatory type/access checks and lifecycle duties in both cases. |
+| Shared graph-step classification | Run required application plus optional diagnostics as setup, a reusable graph-backed operation and a change handler | All three use required-by-default steps and explicit optionality. Required failure prevents successful graph completion; optional failure alone does not. Dependencies and mandatory obligations still apply. Keep public-output availability and supported partial control confirmation separate from overall success; track outstanding optional activity rather than abandoning it. |
+| V0 ordering-trigger boundary | Submit an authored failure/completion trigger; separately fail a migration whose plugin declares required lock cleanup | Reject the unsupported trigger before graph execution. The valid graph keeps success-dependent verification blocked, while the plugin/instance contract performs its required cleanup or records inability/uncertainty. Cleanup is not contingent on migration success; no rollback or unconfirmed effect cancellation is inferred. |
 | Interactive wait | Fake authentication asks for a fixture response; restart host before supplying it | Wait and operation identity remain inspectable; recovery follows the plugin contract, without a fabricated login result. |
 | Uncertain effect | Worker performs a write and exits before returning its result | No blind replay. Inspect the effect ledger, reconcile and preserve one logical result. |
 | Late result | Delay a result from an obsolete attempt until a newer attempt has been reconciled | Old response cannot overwrite current confirmed state. Its evidence remains attributable. |
@@ -205,6 +221,8 @@ proves a production standalone deployment.
 | Shared access | Both Agents use one fake service identity with different operation permissions | Caller and service identity remain distinct. Each complete route enforces its own restrictions. |
 | Revocation/reconnect | Remove access while a request waits, then restore the transport | Dispatch/retry rechecks current authority. No alternate account/path is selected silently. |
 | Concurrent control | Two callers submit a change from the same configuration revision | Apply one at a time; stale request conflicts. Store confirmed settings separately from unresolved requests. |
+| Partial control confirmation | A fixture control that explicitly permits partial results confirms limit 10 → 15 while timeout 30 → 60 remains uncertain; separately return a subset that violates a cross-field constraint | Record 15 only when the complete resulting stored configuration is valid. Retain timeout 30 as last confirmed with visible uncertainty, without declaring whole-request success or releasing applicable coordination. Reject invalid stored results while retaining actual effect evidence. Do not infer rollback or replay the uncertain effect. |
+| Unchanged control | With limit 15 already stored, invoke a control that verifies/refreshes the fixture provider and confirms 15 using the current revision; repeat with a stale revision | Preserve the configuration revision after the valid confirmed invocation while recording its work/outcome. Do not skip declared behavior or manufacture a cached success from equal values. Reject the stale checked request; other current state and authority checks remain effective. |
 | Confirmed change, lost receipt | Apply a control and commit its responsible service's result, then cut the reply to management/caller | Recover the same operation and the instance authority's committed revision. Management updates its projection without a second canonical configuration commit. Never repeat the effect solely to refresh a view. |
 | Stale aggregate inventory | Delay observations while the authoritative instance state advances | Interface identifies source/freshness; older observations cannot overwrite current state. A checked mutation reaches the authority rather than trusting a stale inventory snapshot. |
 | Policy reachability versus process survival | Break authorization reachability while an executor still supervises activity | Distinguish retained supervision, already-admitted effects and new effects requiring admission. Hold new managed requests without verifiable permission; retain supervision and dispatched outcomes within admitted contracts. No offline grants or process-derived permission. |
@@ -230,16 +248,208 @@ composition together using the existing fake service, two synthetic consumers an
 authorities. The accepted process layout includes the authored-code helper default above. Exact
 syntax, permanent core vocabulary and helper grouping remain separate choices:
 
+- Author a package with one explicit entry document declaring exports/dependencies. Exercise inline
+  definitions and an equivalent version referencing package-local files; inspection resolves the
+  same declared contracts without starting plugin code. Include a definition file with no export
+  declaration and verify that it is not exposed merely because it is packaged or conventionally named.
+  These variants can have different artifact digests; this checks their declared public surface.
+- Declare an operation and a template with the same public export name, including a variant split
+  across referenced files. Reject the collision before plugin execution rather than choosing by
+  kind or load order. With distinct names, verify that selecting a template where an operation is
+  required still reports a kind mismatch. Internal definition names remain a separate concern.
+- Add a starter package that explicitly re-exports a dependency's public template under a different
+  name. Verify that it resolves to the original definition without copied template content or a
+  wrapper, retains the contract and resolved dependency identities, and uses the original internal
+  reference scope even when the starter declares a same-named private helper. Check the re-export
+  against public-name uniqueness and expected kind/contract rules; it grants no additional access.
+- Select the history implementation once under a template-local alias, then reference its distinct
+  setup operation, runtime driver and control handler exports. Include a second implementation for
+  an independent check, without a primary alias. Verify each reference's kind/contract and retained
+  selection; a missing alias or wrong-kind export must not trigger fallback or implicit lookup.
 - Reuse the fixture's externally authored operation plugin in an exported graph-backed operation,
   then invoke that operation from a template. Composition should need no new glue executable or
   hard-coded core dispatch. Record the actual author-written artifacts, not only host-side tests.
+- Declare steps in a map keyed by locally unique names. Reorder entries and verify unchanged
+  dependency/ordering constraints without requiring one fixed schedule for independent work.
+  Reject duplicate step keys before execution. Reuse the same local names in two distinct graphs
+  and verify that they do not alias or expose each other's internal steps.
+- Place a migration-success prerequisite on a verification step alongside its operation and inputs.
+  Verification also consumes startup's database output. Require both dependencies, without a separate
+  authored edge collection or duplicate prerequisites for data bindings. Reorder the step map and
+  preserve those constraints; an unrelated step may still run independently. Reject missing predecessor
+  names and cycles formed by combining explicit prerequisites with output-implied dependencies.
+  Failed or uncertain migration must not release verification. Field spelling remains provisional.
+- Invoke the same reusable graph-backed operation from two templates with differently named
+  configuration fields, explicitly binding each to its declared `limit` input. Verify that the graph
+  receives the supplied value without inheriting either caller's configuration namespace. Include an
+  undeclared caller-configuration reference and require a diagnostic rather than implicit lookup.
+  Keep the operation's supported scoped context and authorized Resource access available as declared.
+- Supply a graph with `{limit: 15, options: {timeout: 30}}` under its input contract. Verify that
+  the graph-input source with `/options/timeout` selects 30, and omitted/empty pointers select
+  the complete payload, with no separate input-name selector. Test both step-input and public-output
+  bindings. Missing members still error and receiving schemas still apply; no caller settings or
+  invocation metadata are implicitly added to the input payload.
+- Invoke code and graph implementations of a Conduit-authored operation with an omitted `limit`
+  whose declared default is 10. Require both to receive the same validated payload containing 10,
+  with `/limit` available to the graph. Repeat through a child invocation with its own input contract.
+  Check explicit valid overrides, invalid values, permitted and forbidden nulls, conflicting defaults
+  and invalid materialized values. A reference selecting a missing upstream member must still block
+  invocation even if the receiving field has a default. Retain earlier effects and verify that the
+  adapter does not automatically impose this default preparation on provider-native MCP inputs.
+- Omit an optional `retry` object that has no default of its own but whose `delaySeconds` property
+  defaults to 5. Verify absence is preserved in instance configuration and in prepared code/graph
+  inputs, including child invocations. A graph reference to the absent `/retry` still fails rather
+  than receiving a synthesized object. Repeat with a declared parent default of `{delaySeconds: 5}`
+  and verify materialization subject to normal validation/conflict checks. Preserve authored template
+  omissions; a required parent still absent after preparation fails validation. Explicit nulls and
+  provider-native MCP schemas retain their separate rules.
+- Supply `retry: {}` with a child default of 5 for `delaySeconds`, and verify prepared configuration
+  and code/graph inputs contain that child. Preserve explicit child values and permitted nulls;
+  reject invalid supplied values and conflicting applicable defaults. Give the parent a different
+  whole-object default and verify it is not substituted for the supplied object. Do not merge old
+  settings or fill empty lists. When the supplied object comes from a producer output, prepare the
+  receiving payload without altering that output's recorded value. Template omissions and the
+  absent-parent rule remain unchanged.
+- Validate local/remote variants with explicit timeout values, then add a branch-dependent timeout
+  default and require an unsupported-schema diagnostic before acceptance or invocation. Supplying
+  that timeout explicitly must not bypass the schema rejection. Remove the branch-local default and
+  verify conditional/alternative validation still operates; use a suitable common default outside
+  the alternatives in a separate case. Retain ordinary/composed-default conflict behavior and the
+  provider-native boundary, without silent omission or trial insertion to select a branch.
+- Declare an integer range of 1–100 with a default of 0 and require schema rejection identifying the
+  default and constraint, including when a caller supplies 15. Perform supported preparation before
+  judging a default's validity. Keep conflicting otherwise-valid defaults as a separate case that
+  accepts an explicit valid resolution. Validate actual prepared payloads even after schema checks
+  pass; early checks do not claim validity in every future composition or alter provider-native rules.
+- Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
+  Use a map keyed by the local names, reject duplicate keys, and verify that reordering entries has
+  no execution meaning. Give a second instance the same local names without aliasing runtime identities.
+  Select the database runtime through the runtime-target source and forward its typed target reference
+  through a reusable graph input to startup. Verify that the responsible service resolves the intended
+  instance-owned definition, with prepared settings passed explicitly. Check unknown targets and
+  incompatible or unauthorized references before effects. Selection alone must not start either
+  runtime; a supplied replacement definition cannot substitute for the target. Distinguish the target
+  reference from the later usable service result, whose publication follows the startup contract.
+  Reference encoding remains provisional; this is planned coverage, not a claim of implementation.
+- Exercise literal inputs, configuration references and prior-output references. Include a small
+  typed transformation implemented by the authored plugin, then consume its output in a later step
+  with the dependency implied by that binding. Graph bindings must not evaluate inline expressions
+  or interpolate expression-looking strings; ordinary input schemas still validate the values.
+- Have two graph steps reference a configurable limit initially set to 10. Between them, use a
+  supported control to confirm 15 where the fixture permits that concurrency. Both steps receive 10;
+  a later execution receives 15. Verify separately that captured inputs do not bypass current access,
+  dependency validity or a control's revision conflict, and that recovery revalidates retained results.
+  The Interface must distinguish captured execution inputs from current confirmed instance settings.
+- Pass a literal document containing reference-shaped data to a fixture operation, then pass the
+  same content via an explicit reference to another operation's output. Preserve the data in both
+  cases: only actual graph bindings establish dependencies, and reference resolution does not
+  recursively interpret the retrieved payload. Use the accepted `literal`/`reference` form keys;
+  reference payload fields remain open.
+- Exercise JSON Pointer selection within explicitly chosen input, captured configuration and output
+  values: nested members, array indices, escaped member names, the empty pointer and an empty-name
+  member. Distinguish a numeric object key from an array index. Keep pointer-looking literal content
+  unchanged. Use separate structured source and pointer fields, checking that output source selection
+  establishes the correct dependency and the pointer selects within that source. Source selectors
+  sit directly beside the optional pointer inside `reference`, as accepted; exact field spellings
+  remain provisional. Omitting the pointer selects the whole explicitly chosen source.
+- Return a schema-valid output that omits an optional endpoint, then explicitly reference that
+  missing field for a consumer whose input has a default. Verify a reference-resolution error and
+  no consumer dispatch, rather than a substituted null or default. Repeat with a missing array item
+  and an optional receiving field. Separately select an actual null value and test both accepting and
+  rejecting receiving schemas. Preserve earlier effects/outcomes and allow independent eligible
+  branches to continue. Genuinely omitted inputs retain their declared default/validation rules.
+- Assemble an object and a list explicitly from literals and prior outputs, including a nested
+  assembly and a reference-shaped literal subtree. Verify the resulting values and dependencies
+  without an assembly plugin, automatic merging or recursive interpretation of literal data.
+  Require an explicit form at each input binding and each assembly child. Reject bare-value bindings;
+  separately accept whole objects/lists as literal payloads without requiring forms for their data
+  members. Verify that plugins receive only resolved values and ordinary configuration stays ordinary
+  data. Require exactly one of `literal`, `reference`, `object` or `list` as the binding key, with its
+  payload as the value. Reject empty binding objects, multiple form keys, unknown keys, and incorrect
+  object/list payload shapes. Include empty assemblies and a literal payload containing all four
+  form names to verify that the restriction applies to binding objects, not arbitrary data.
+- Check undeclared output ports and provable type errors before any fixture steps run. Also wire an integer producer
+  allowing 1–100 to an input accepting 1–10: a returned 5 permits dispatch, while 50 blocks the
+  receiving step without coercion or clamping. Verify actual input validation even where early
+  compatibility checks pass; preserve prior effects/outcomes when a later step's input is rejected.
+  This demonstrates runtime value checking without requiring full schema-inclusion proofs.
+- Return an output that violates its producer contract even though a downstream input would accept
+  it. Verify that producer validation withholds it before downstream dispatch. Also create a fixture
+  store and return a malformed descriptor: report the contract error, preserve the actual effect
+  and any uncertainty, and reconcile through supported recovery without blind creation replay.
+  Check that a valid declared failure result is distinguishable from an invalid output representation.
+- Fail one branch of an explicitly requested graph while an independent branch has another eligible
+  step waiting. Verify that the independent step still runs, a step with an unmet prerequisite stays
+  blocked, and required unfinished setup is not reported complete. Preserve effects/outcomes without
+  retrying the failed branch or rolling anything back. Current authority, coordination and stop rules
+  remain prerequisites for dispatch.
+- Cancel a graph with a pending ordinary step, a cancellable active child and an active child whose
+  contract does not support cancellation. Verify that no new ordinary step starts, supported child
+  cancellation is requested, and actual child outcomes remain tracked. Lose a cancellation response
+  to prove the Interface does not claim confirmed stopping. Perform required preparation attachment
+  cleanup while preserving other consumers and an already-started instance-owned fixture runtime;
+  report incomplete cleanup rather than inferring rollback or automatically retiring that runtime.
 - Exercise default result derivation and an explicitly constructed domain result over the same
   underlying behavior. Preserve effects/uncertainty and scoped child evidence. Fault a setup step,
   then explicitly retry the same invocation to demonstrate still-valid progress reuse and child
   recovery instead of blindly replaying effects.
+- Bind declared public graph outputs using each accepted form: literal, reference, object assembly
+  and list assembly. Combine a literal label with a managed reference in one fixture and verify
+  resolved values reach consumers without extra assembly code or authoring wrappers. Preserve
+  source scope, publication/validity and permitted exposure; do not expose unrelated internal values
+  or declare whole-graph success from output availability alone. Reject malformed bindings and
+  invalid public values while retaining earlier effects and operation evidence.
+- Group public output declarations in a map: the database entry holds its binding and verification
+  prerequisite, while the diagnostic-report entry holds its binding and explicit optionality. Reject
+  duplicate public-output keys before graph execution. Reorder entries and verify that dependency
+  and publication behavior is unchanged. Retain derived contracts and inherited conditions without
+  requiring duplicated declarations; validate each entry under the existing output rules.
+- Declare a required database output and an explicitly optional diagnostic-report output. Fail optional
+  diagnostics and report the absent report's reason without that absence alone preventing success.
+  Repeat with the report required by omission of optionality: the optional producer step must not
+  waive that output obligation. Missing a required database output also prevents success. Verify
+  that optional values still undergo validation and access checks, absent outputs become neither null
+  nor fabricated data, and a consumer needing the absent result remains subject to normal binding
+  rules. Preserve outstanding work and effect evidence independently of output presence.
+- Bind a public database output to startup's service reference and declare verification as an
+  explicit success prerequisite on that output. Withhold it while verification is unfinished,
+  failed or uncertain, even though authorized setup steps can use the startup result. After confirmed
+  success, enforce the output's remaining publication, validity and access conditions. Test an invalid
+  or unavailable source value and an unknown prerequisite name; the gate must not bypass those checks.
+  Require no extra forwarding plugin and preserve graph outcomes separately from output publication.
+- Keep independent diagnostics running after verification succeeds. With the database output's value,
+  declared conditions and access checks satisfied, require it to become eligible without waiting for
+  diagnostics or whole-graph success. Verify that the Interface still reports unfinished graph work
+  and the instance's actual preparation state. Add a stronger declared publication condition and
+  require it to hold; invalidated values or revoked exposure access must still prevent publication.
+- Publish a valid service reference from a step and a public graph output, then redeliver each
+  recorded value under its original producing attempt. Permit redelivery without claiming exactly-once
+  transport. Try publishing a different value for the same output/attempt: require a contract error,
+  preserve the original value and retain any effects/uncertainty. Change the service's availability
+  separately and verify that an unchanged reference does not bypass current validity or access checks.
+  Where recovery supports a later producing attempt, record its result separately without rewriting
+  earlier evidence or automatically replaying effects. Retained-progress reuse must still validate
+  prerequisites; progress/observation updates must not mutate the published graph value.
 - Compose two reusable starting requirements in a named definition and use it in Conduit templates.
   Operation allowlisting and a result-count bound are fixture candidates, not an approved permanent
   core catalog. Demonstrate constituent enforcement without requiring a generic merge/solver.
+- Declare constituent requirements in a map with local keys for workspace, operations and result
+  limit. Reject duplicate keys. Add another entry selecting the same result-limit contract with
+  different parameters and retain both occurrences and obligations. Reorder entries and verify that
+  enforcement does not depend on map order. Inspect diagnostics by local name without creating a
+  runtime object per entry or conflating entries in separate compositions.
+- Reject direct and indirect recursive requirement compositions during validation, including a
+  cycle through declared package dependencies. Accept independent entries and a diamond-shaped
+  composition that reuse a shared requirement without returning to an ancestor definition; preserve
+  each occurrence's parameters and obligations. Resolve definitions rather than guessing from local
+  names. This check must not prohibit cyclic live Conduit connections or recursive data schemas, nor
+  imply that validated requirements have current implementation support or verified fulfillment.
+- Wire constituent requirement parameters with all four binding forms. Forward declared workspace
+  and result-limit parameters, assemble child parameter objects/lists and retain literal payloads
+  as data. Verify the resolved child values and schema validation without a forwarding plugin.
+  Reject references to graph-only sources or ambient caller configuration. Parameter construction
+  must neither issue grants nor prove fulfillment; inspect actual constituent enforcement with
+  current facts, including denied requests after a relevant restriction changes.
 - Publish one custom requirement outside core modules, with typed parameters, declared fulfillment
   duties and implementation support selected in the endpoint template. Allowed regions on a fake
   deployment operation is a candidate; this makes no claim about real cloud or CLI interception.
@@ -269,6 +479,57 @@ The spike should produce a short contract trace showing typed discovery, invocat
 inspection and recovery. Map each exchange to standard MCP facilities or a clearly identified
 extension. If most behavior requires a second ad hoc protocol, revisit the worker contract
 before implementing more providers.
+
+In that trace, pass a small plugin's domain arguments unchanged and carry Conduit invocation
+context separately in MCP request metadata. Exercise helper-backed and direct protocol handling;
+reject forged context claims rather than accepting metadata as authority. Verify that a plain
+upstream MCP service needs no Conduit argument wrapper and receives no automatically forwarded
+managed context. Graphs must see only their declared read-only metadata surface. These are planned
+wire/conformance cases; exact profile keys and executable fixtures remain to be authored.
+
+Exercise managed calls with per-request profile revision/required-feature metadata and no prior
+negotiation agreement. Inspect an existing operation after reconnecting without redispatching its
+work. Reject an unsupported required profile feature before the requested behavior, including when
+discovery was cached; report the incompatibility without silent downgrade. Preserve current access
+and selected implementation checks. Plain upstream services remain adapter-backed. These are planned
+profile checks; concrete identifiers, wire fixtures and SDK interoperability still need validation.
+
+Exercise a deferred fake-service operation using an ordinary MCP client without Tasks support:
+receive an acceptance reference, inspect progress, then retrieve the recorded outcome without a
+second dispatch. Verify that initial acceptance is not reported as completed success and that
+inspection after an access change applies current restrictions. When an optional task/progress
+mapping is exercised, correlate it to the same operation and evidence. Also retain a directly
+completing operation to show that the baseline does not force all calls to defer. These are planned
+tests, not evidence that a wire implementation or arbitrary MCP client already supports them.
+
+Use a synthetic human-interaction wait: retain its typed reference and safe pending state, close
+the frontend, then rediscover it through an authorized Interface attachment without creating another
+underlying operation. Exercise both a still-valid challenge and an expired/unrecoverable challenge
+that requires a supported new interaction. Rediscovery must not report completion, transfer identity
+or expose credential material. Recheck authority before inspection/response. The fixture does not
+establish real provider challenge recovery or continuation of arbitrary suspended plugin code.
+
+Expose two declared retained observation feeds and interleave their deliveries. Verify local order
+and separate resume positions while the Interface combines the views without claiming a global
+sequence. Include skewed/equal timestamps and explicit causal links: preserve the actual links,
+but do not infer additional causality from display order. Current read permissions still apply.
+Source boundaries need not equal process/object boundaries, and a separate sampled metric stream
+must not acquire a lossless-history claim. Exact cursor and delivery fixtures remain to be authored.
+
+For a managed state-tracking source, read a snapshot and its resume position, then change fixture
+state before opening the feed. Resume from that position and verify the intervening change is
+retrievable. Separately make resumption unavailable and require an explicit gap/need for fresh state,
+without silently advancing to the latest position or claiming no changes occurred. Preserve current
+read authority. This tests a source-level handoff, not global snapshots, exactly-once delivery or
+permission to expire retained evidence. A weaker/native fixture must report its coverage limits.
+
+Before claiming object-definition validation, cover versioned type selection across all five
+families using the paper definitions in Experiment 001. Reject an unavailable required type schema
+before registry writes and preserve family invariants even when a type or plugin attempts to relax
+them. Validate a type fulfilled by multiple compatible contributions without a primary plugin;
+do not confuse its contract version with a package release or common object version. These are
+planned contract checks, not a requirement for five additional production integrations or approval
+of the examples' type names and grouping.
 
 After the process path works, optionally run one pure transform through Wasmtime or Extism.
 Compare packaging, typed conversion, cancellation and host-call limits. That comparison should

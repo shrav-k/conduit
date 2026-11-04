@@ -95,6 +95,36 @@ context separate from grants and actor authentication. A supplied trace ID is no
 identity. For distributed display, retain per-source ordering/generation and observed freshness;
 wall-clock sorting alone is not a causal order. [W3C Trace Context][w3c-trace]
 
+**Ordering follow-up, 2026-11-04:** Kafka's historical FAQ illustrates the tradeoff between ordering
+within a partition and selecting one partition for a total order over writes. This is an ordering
+precedent, not a recommendation to adopt its older deployment settings or Kafka itself.
+[Kafka partition ordering](https://cwiki.apache.org/confluence/spaces/KAFKA/pages/33293069/FAQ)
+Kubernetes watch clients must also handle unavailable retained versions, including `410 Gone`;
+resumability is a declared service guarantee rather than proof that history remains available
+indefinitely. [Kubernetes resource versions](https://kubernetes.io/docs/reference/using-api/api-concepts/#410-gone-responses)
+
+For Conduit, the owner accepted source-scoped order and resume cursors for retained observation feeds.
+The Interface can combine feeds and follow explicit causal links without treating clock order as
+a global commit order. A source feed is a declared contract boundary, not necessarily an entire
+executor or a single instance. The alternative is a globally sequenced feed, which simplifies one
+ordered view but introduces coordination across independent sources; it was not selected. The ruling
+does not require a Kafka backend, a lossless metric stream, or cross-source comparison of
+cursor values; exact cursor encoding, pagination, transport and remaining delivery mechanics remain open.
+
+**Snapshot handoff follow-up, 2026-11-04:** Kubernetes pairs a get/list result with a resource version
+that can start a watch of subsequent changes. If the needed historical version is unavailable, the
+client handles the gap and obtains fresh state. This supplies a concrete precedent for avoiding
+missed updates between reading state and beginning observation.
+[Kubernetes list/watch](https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes)
+
+The owner accepted that Conduit's managed state-tracking capability similarly pairs a source snapshot with
+a resume position. A change during the handoff must be available through catch-up, or inability to
+establish continuity must be explicit. The alternative is independent snapshots and feeds, with
+client refreshes repairing missed state; it was not selected. The ruling does not import
+Kubernetes' retention window, change Conduit's explicit-purge rules, require a global snapshot or
+promise exactly-once delivery. Sources offering weaker/native observations should expose that
+coverage instead of claiming this guarantee. Cursor encoding, pagination and transport remain open.
+
 ### MCP needs message-level propagation
 
 The pinned OpenTelemetry MCP convention describes injecting trace context into request `_meta`,

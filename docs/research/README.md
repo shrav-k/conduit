@@ -1,11 +1,29 @@
 # Research
 
-Current sequence: the [documentation migration](../archive/migrations/2026-11-protocol-framing.md)
-preserves the completed conceptual review and supporting research. Remaining decisions are in the
-[current review queue](../REVIEW.md); [authoring syntax](../proposals/authoring-syntax/README.md)
-returns after that discussion. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
+Current sequence: the migration and post-migration rulings are complete. Before selecting syntax,
+read the new [language/protocol foundations](language-protocol-foundations/README.md) and
+[worked comparisons](language-protocol-foundations/WALKTHROUGHS.md). They compare primary sources
+and record actual library probes without changing accepted semantics. The [current review queue](../REVIEW.md)
+retains the connected authoring/conformance batches; [syntax examples](../proposals/authoring-syntax/README.md)
+remain proposals. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
 records adopted refinements and unadopted arguments from the two merged PRs, without treating
 their external platform claims as newly verified research.
+
+The [graph authoring decision audit](language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md)
+is the 2026-11-03 follow-up requested before continuing individual syntax rulings. It compares
+recent choices with Kubernetes, CWL, Tekton, Argo, Compose and related contracts, including costs
+and reasons to revisit choices if worked examples expose problems. Subsequent owner rulings accept
+direct reference fields and whole-value selection when the nested pointer is omitted. Supporting
+field names and source selectors remain open. The owner also accepted the five v0 source categories:
+declared inputs, captured configuration, earlier outputs, declared runtime targets and typed
+invocation metadata, with other data access through explicit operations.
+
+The subsequent [runtime establishment comparison](RUNTIME_ESTABLISHMENT.md) examines how setup
+addresses an instance's declared runtime using Compose, Kubernetes, CloudNativePG, AWS, Google
+Cloud SQL, Azure, Nomad and Flyway. It compares explicit lifecycle nodes, typed operations with
+runtime bindings and input-driven startup. The owner accepted typed operations explicitly bound
+to declared instance runtimes, with targets passed as declared typed inputs. Reference encoding
+and other authoring details remain open.
 
 Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
 It is not an additional set of requirements. The current concrete configuration belongs in
@@ -25,6 +43,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
+| [LANGUAGE / PROTOCOL FOUNDATIONS](language-protocol-foundations/README.md) | WIT, Smithy, YANG, TOSCA, CWL and other language/protocol comparisons; package scoping, typed bindings, effects and MCP compatibility. Includes primary-source inventory and links to 20 offline schema/YAML probes. |
 | [ECOSYSTEM_ORGANIZATION](ECOSYSTEM_ORGANIZATION.md) | Source/release/website comparison across Pi, MCP, OpenTelemetry, Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime and uv; evidence behind the repository/documentation migration and still-open distribution proposals. |
 | [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and the lightweight debugging package and capture policy accepted in I6. Backend/library/wire recommendations remain proposals. |
 | [CLOUD_AUTHORITY](CLOUD_AUTHORITY.md) | AWS, Google Cloud and Azure authority patterns; accepted shared policy/instance-owned state and independent policy. Later I4 rulings define access management and a public persistence plugin loaded as a service dependency, initially using SQLite. |
@@ -33,6 +52,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 | [CONFIGURATION](CONFIGURATION.md) | Kubernetes, Docker/Compose, typed configuration, schema semantics, papers and recorded offline probes. |
 | [CONSTRUCTION](CONSTRUCTION.md) | The concise rationale for template/plugin/graph/runtime boundaries and their source evidence. |
 | [ESTABLISHMENT](ESTABLISHMENT.md) | Detailed account, database, credential and filesystem setup/recovery cases. |
+| [RUNTIME_ESTABLISHMENT](RUNTIME_ESTABLISHMENT.md) | Fresh database/cloud comparison of graph-to-runtime binding, setup readiness, operation progress and recovery; rationale for accepted typed-operation bindings and remaining representation choices. |
 | [RESOURCES](RESOURCES.md) | Unitary responsibilities, type groups, capabilities and an open candidate catalog. |
 | [CONDUITS](CONDUITS.md) | Access scenarios, shared authentication, filtering and messaging/network protocol comparisons. |
 | [PI_CONNECTORS](PI_CONNECTORS.md) | Provider inventory, account/context boundaries, activation, MCP, Chord and telemetry. |

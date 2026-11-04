@@ -4,6 +4,10 @@ The active protocol reference lives here. Begin with the [overview](../OVERVIEW.
 [authoring path](../authoring/README.md) to develop an extension, and consult the
 [current review queue](../REVIEW.md) before treating an unresolved detail as settled.
 
+The [vocabulary boundary](MODEL.md#vocabulary-review-boundary) keeps all Conduit-owned terminology
+and field names provisional except Interface, Agent, Resource, Pool and Conduit. Accepted semantics
+and structures continue to guide the work; a separate future PR will settle the vocabulary.
+
 Updated: 2026-11-02. Current working design; implementation
 has not started. The [overview](../OVERVIEW.md) summarizes the model; the [closed review](../archive/reviews/CONCEPTUAL.md) records the
 conceptual closure review and deferred authoring boundary. The [YAML walkthrough](../../experiments/001-shared-access/README.md)

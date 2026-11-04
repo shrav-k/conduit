@@ -300,7 +300,9 @@ During expansion, the selected default must become an exact retained handler bin
 can use its own alias `messages`; the resolved handler can then refer to
 `{plugin: messages, name: history.set-read-limit}` when that alias selects the same implementation.
 Two aliases or multiple selected versions must not create an arbitrary match. Exact rebinding and
-nested-definition scope rules remain for review. No package is made primary by supplying a default.
+nested-definition reference encoding remain for the schema pass. Defining scope and explicit
+replaceable bindings already follow the accepted package-scope rules. No package is made primary
+by supplying a default.
 
 ## 5. The template an author or user works with
 

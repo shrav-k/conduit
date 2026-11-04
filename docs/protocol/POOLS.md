@@ -9,6 +9,8 @@ Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
+<a id="v34"></a>
+
 ## Pools
 
 Users compose a Pool through an Interface, referencing reusable Resource templates and their
@@ -128,6 +130,8 @@ Pool deletion does not implicitly cascade retirement, and ownership transfer is 
 Stopping a managed client does not itself delete a remote account or stop a shared external
 service. Backing data and retained evidence follow their separate cleanup/retention contracts.
 Missing ownership remains an inconsistency to resolve, never implicit orphan-purge authority.
+
+<a id="v35"></a>
 
 ### Shared access and authentication
 

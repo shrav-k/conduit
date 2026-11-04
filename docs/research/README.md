@@ -1,11 +1,12 @@
 # Research
 
-Current sequence: the migration and post-migration rulings are complete. Before selecting syntax,
-read the new [language/protocol foundations](language-protocol-foundations/README.md) and
-[worked comparisons](language-protocol-foundations/WALKTHROUGHS.md). They compare primary sources
-and record actual library probes without changing accepted semantics. The [current review queue](../REVIEW.md)
-retains the connected authoring/conformance batches; [syntax examples](../proposals/authoring-syntax/README.md)
-remain proposals. The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
+The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
+and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources
+and library probes that informed it. Research does not change accepted semantics. The
+[current review](../REVIEW.md) and [vocabulary map](../VOCABULARY.md) organize remaining naming and
+representation work; [syntax examples](../proposals/authoring-syntax/README.md) remain provisional.
+Keep source-system terms and dated recommendations intact when Conduit names change. The
+[collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
 records adopted refinements and unadopted arguments from the two merged PRs, without treating
 their external platform claims as newly verified research.
 

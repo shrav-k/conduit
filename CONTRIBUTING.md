@@ -37,6 +37,18 @@ names. Separate mechanical moves from semantic edits where practical; repair lin
 pins. The repository holds canonical documentation sources for a future website, without a second
 editable reference. Exact syntax remains for the designated authoring pass.
 
+## Vocabulary changes
+
+Use [docs/VOCABULARY.md](docs/VOCABULARY.md) to identify the accepted meaning, example and affected
+surfaces before proposing a name. Only the five family names are settled. Stable `vxx` anchors are
+documentation references, not protocol identifiers: retain them when headings change, and update
+incoming links if their definitions move. Record accepted old/new spellings and the decision link in
+the map; apply them coherently to active reference, examples and future schemas/code.
+
+Do not perform an indiscriminate rename across research, archives or external protocol fields.
+Distinguish Conduit-owned vocabulary from JSON Schema/MCP terms, source quotations and historical
+concepts. A change in meaning needs its own explicit ruling, even when proposed alongside a rename.
+
 ## Documentation checks
 
 From a checkout with Python 3 available:

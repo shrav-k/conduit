@@ -9,6 +9,8 @@ Part of the accepted [design contracts](README.md). Updated: 2026-11-04.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
+<a id="v23"></a>
+
 ## Conduits
 
 Conduits expose permitted target operations and parameter constraints from the
@@ -95,6 +97,8 @@ authentication and connection support can have a different authority and lifetim
 or joining alone does not merge private Agent context, credentials or access. Connection identity
 is separate from process, transport and backing-Resource identity. Further authoritative-state,
 recovery and composition details remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples).
+
+<a id="v17"></a>
 
 ### Composable relationship requirements
 
@@ -219,6 +223,8 @@ Exact attachment representation, component reuse selection, required/optional an
 aggregation, cleanup recovery and YAML remain open. Ready Pool Resources do not by themselves prove
 that an Agent's required composite connection has completed preparation.
 
+<a id="v21"></a>
+
 ### Explicit joining and instantiation
 
 Connection establishment supports both intents explicitly:
@@ -252,6 +258,8 @@ and required/optional failure behavior follow the [setup contract](LIFECYCLE.md#
 A connection cannot provision an unowned Resource or
 assume the Agent's loading instructions merely because it requested storage.
 
+<a id="v18"></a>
+
 ### Typed filters
 
 Conduit filters normally use typed declarations with defined semantics, validated
@@ -283,6 +291,8 @@ and service identity, retaining complete path constraints. Do not select by disc
 silently fail over to another route/account after failure. Ordinary reconnection on the same path
 is supported. An authorized caller may deliberately choose another route, subject to current
 checks and safe-outcome handling; this does not authorize replaying an uncertain write.
+
+<a id="v22"></a>
 
 ### Authority and current access
 

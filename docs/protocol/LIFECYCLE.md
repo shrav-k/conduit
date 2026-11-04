@@ -9,6 +9,8 @@ Part of the accepted [design contracts](README.md). Updated: 2026-11-04.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
+<a id="v24"></a>
+
 ## Establishment contracts and instance state
 
 Templates contain the complete instructions needed to establish an instance and
@@ -56,6 +58,8 @@ Registration has no provisioning/model-execution effects. An explicit action may
 and start, reporting their outcomes separately. Resources require a Pool owner. Direct creation
 from a complete definition remains possible; exports/imports must report missing dependencies
 or establishment intent rather than inventing it. Current schema/default rules still apply.
+
+<a id="v14"></a>
 
 ## Template-defined configuration changes
 
@@ -361,6 +365,8 @@ adds invocation metadata or authority to the payload. Reusable graphs still rece
 and runtime targets through explicit typed inputs. Source field names and input-contract
 representation remain authoring work.
 
+<a id="v27"></a>
+
 **Graph-visible invocation metadata:** graphs may reference explicitly declared, typed, read-only
 metadata supplied by the runtime under its invocation contract. For example, setup can pass its
 owning instance ID to an operation that tags a created service for later reconciliation, without
@@ -393,6 +399,8 @@ it does not reinterpret that value as another reference. For example, a storage 
 a document containing an example of graph-reference notation without causing the graph engine to
 resolve the example. Actual references still supply their declared dependencies.
 
+<a id="v11"></a>
+
 **Explicit binding forms:** every supplied v0 graph input binding identifies a literal, reference,
 object assembly or list assembly form, including each field/item binding inside an assembly.
 Bare values are not binding shorthand. A literal form can contain an entire ordinary object or list;
@@ -413,6 +421,8 @@ permitted exposure, including sensitivity and custody requirements. Constructing
 establish whole-graph success, broaden reference scope or publish other internal outputs. This
 shares value-binding machinery; it does not settle domain-error/outcome mapping. Consumers receive
 the resolved values, not authoring wrappers.
+
+<a id="v12"></a>
 
 **Public-output declarations:** declare public graph outputs in a map keyed by names unique within
 that graph's public outputs. Each entry groups its value binding and applicable output-specific
@@ -463,6 +473,8 @@ Publishing the output does not report whole-graph success, complete outstanding 
 owning instance prepared. Those outcomes and lifecycle requirements remain separately governed.
 An unavailable or invalid value, unmet prerequisite or denied access still prevents publication;
 earlier verification cannot substitute for current checks required by the output's contract.
+
+<a id="v26"></a>
 
 **Published value stability:** each named step output and public graph output has one fixed
 published value per producing attempt. Redelivery of that recorded value is permitted; publishing
@@ -640,6 +652,8 @@ This reuses operation composition, validation and recovery rather than introduci
 lifecycle node kinds or automatic startup merely because input values become available.
 Registration still starts nothing.
 
+<a id="v13"></a>
+
 **Multiple managed runtimes:** an instance may declare several named managed runtimes when its
 type supports them. For example, a database Resource can declare a database driver and an optional
 diagnostics helper supplied by different contributions. Operations explicitly select their intended
@@ -678,6 +692,8 @@ Authenticated caller identity and authority remain trusted invocation context. S
 does not grant access or let the caller forge that context; resolution and invocation still enforce
 current authority and the target's contract. This choice fixes target placement, while reference
 encoding, runtime selection fields, inspection and protected-reference transport remain authoring work.
+
+<a id="v28"></a>
 
 **Managed references:** Conduit-declared live service and protected authentication bindings share
 a typed managed-reference contract for ownership, resolution and validity. The owning implementation
@@ -725,6 +741,8 @@ reconnect with a manual option; this is not a universal operation retry policy o
 replay writes/start new model work. Exact graphs, waits, cancellation mechanics, retry bounds, live-change
 handlers and recovery compatibility remain in [current review](../REVIEW.md#refinements-to-carry-into-concrete-examples).
 
+
+<a id="v25"></a>
 
 ## Retirement and unregistration
 

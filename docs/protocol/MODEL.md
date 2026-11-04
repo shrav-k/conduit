@@ -9,6 +9,8 @@ Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
 The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
 syntax and implementation examples do not amend these rules.
 
+<a id="v01"></a>
+
 ## Families, templates and instances
 
 The five families are **Interface, Agent, Resource, Pool and Conduit**, each with template and
@@ -42,8 +44,9 @@ A separate future PR will review terms collaboratively, one by one, and then upd
 protocol text, schemas and examples coherently. Record confusing collisions as they arise, without
 opportunistic renaming or treating understandable example syntax as final vocabulary approval.
 Names defined by external standards retain those standards' meanings. The
-[current review](../REVIEW.md#future-vocabulary-pr) tracks the naming work separately from the
-ongoing walkthroughs; a naming change alone must not silently alter a contract.
+[vocabulary map](../VOCABULARY.md) links stable topic IDs to accepted meanings, examples and change
+surfaces. The [current review](../REVIEW.md#future-vocabulary-pr) tracks the naming work; the
+behavior/structure walkthrough is complete. A naming change alone must not silently alter a contract.
 
 ### Authoring concepts beneath the object families
 
@@ -55,15 +58,15 @@ should preserve these responsibilities rather than silently change their meaning
 
 | Working term | Responsibility | How it composes |
 | --- | --- | --- |
-| Contract | An inspectable agreement about meaning, typed values and behavior. Operation, capability, type and requirement contracts describe different aspects of an extension. | Definitions reference other definitions rather than duplicating their meaning. A schema describes valid data; the behavioral contract also explains what it means. |
-| Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
+| <a id="v02"></a>Contract | An inspectable agreement about meaning, typed values and behavior. Operation, capability, type and requirement contracts describe different aspects of an extension. | Definitions reference other definitions rather than duplicating their meaning. A schema describes valid data; the behavioral contract also explains what it means. |
+| <a id="v04"></a>Capability | What an endpoint offers, including supported operations and behavior. | An endpoint can offer several capabilities; a relationship selects compatible ones. |
 | Requirement | What must hold for a particular relationship or its use, with typed parameters and applicability. This can include compatibility or lifecycle obligations as well as restrictions. | A reusable definition can compose existing requirements. Every constituent retains its meaning and limits; support is checked against the constituents. |
-| Policy | Authoritative application of reusable requirements to actors, targets or relationships. | Uses the same requirement definitions, composition and implementation support. Governing bindings are checked managed state; no separate policy language or executable rule category is required. |
-| Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with its own participation lifetime and authorized administration. | Issuance/changes require current administrative authority. Issued grants have no live dependency on their issuer or the issuer's grants; provenance is not an access condition. |
-| Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
-| Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
-| Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
-| Package | A distribution envelope with declared identity, version, typed contents and dependencies. | Can contain plugin contributions, templates, or both, including template-only collections referencing other available packages. It is not another runtime object family. |
+| <a id="v19"></a>Policy | Authoritative application of reusable requirements to actors, targets or relationships. | Uses the same requirement definitions, composition and implementation support. Governing bindings are checked managed state; no separate policy language or executable rule category is required. |
+| <a id="v20"></a>Grant | A particular issued authorization for an identified subject, target/capability and permitted extent, with its own participation lifetime and authorized administration. | Issuance/changes require current administrative authority. Issued grants have no live dependency on their issuer or the issuer's grants; provenance is not an access condition. |
+| <a id="v09"></a>Operation | A callable action with typed inputs/outputs and applicable effect, completion and recovery semantics. | Graph nodes select operations and bind values. One plugin can supply several operations. |
+| <a id="v10"></a>Graph | A finite dependency structure describing a procedure. It can implement a reusable typed operation as well as template setup or a supported change. | Nodes call plugin operations, including graph-backed operations; outputs and explicit dependencies order the work. |
+| <a id="v05"></a>Plugin | A reusable contribution publishing contracts and implementation bindings, backed by authored code, existing MCP services, graphs of operations, or a combination. | A plugin can publish a composite operation implemented by a graph of other plugins' operations. This needs no new object family, process or plugin-specific executable merely for composition. |
+| <a id="v06"></a>Package | A distribution envelope with declared identity, version, typed contents and dependencies. | Can contain plugin contributions, templates, or both, including template-only collections referencing other available packages. It is not another runtime object family. |
 
 Packages use a common outer contract while each contribution retains its own typed validation and
 behavior. A template-only collection need not supply executable code or a plugin implementation.
@@ -71,6 +74,8 @@ Installing a package makes its definitions available; it does not instantiate ob
 services or grant access. The common envelope does not require an identical source directory layout,
 bundled dependency copies or a new general-purpose package manager. Exact fields, dependency references
 and archive layout remain authoring work; automatic dependency resolution stays deferred.
+
+<a id="v07"></a>
 
 **Package entry document:** each package has one explicit entry document declaring its public
 exports and dependencies. Definitions can be inline or referenced in package-local files, so a
@@ -101,6 +106,8 @@ instances realize that definition with identity, state and managed activity. The
 authoring and the managed object model; it is not merely a graph. Ongoing services remain under
 instance management rather than belonging to a finite setup node.
 
+<a id="v03"></a>
+
 **Type contracts across the five families:** every template and instance selects one versioned type
 contract for its specialized configuration and supported behavior. Interface, Agent, Resource, Pool
 and Conduit still define fundamental roles and invariants; a selected type cannot override ownership,
@@ -120,6 +127,8 @@ back to defaults. Declared contract/type compatibility is checked before executi
 identity, access and readiness are verified at their required points. Conformance tests provide
 behavioral evidence; matching schemas or package names alone do not establish compatibility.
 This preserves instance-owned state/runtime responsibility and fixed-definition replacement rules.
+
+<a id="v08"></a>
 
 **Template implementation selections:** templates select implementations in one named dependency
 map. Setup operations, runtime drivers and control handlers refer to a dependency alias plus a
@@ -260,6 +269,8 @@ These are definition and implementation-selection rules. Selecting an export or 
 dependency does not establish a live Resource connection, grant permission or change Pool ownership.
 Resolved instance bindings retain the existing implementation-retention and replacement rules.
 Exact import/export fields, default-binding representation and reference spellings remain authoring work.
+
+<a id="v30"></a>
 
 ### Distribution and execution
 
@@ -442,6 +453,8 @@ policy and instance-state authorities defined above. The accepted outage rules s
 production placement and client enrollment remain review questions. Protocol accessibility alone
 does not settle them.
 
+<a id="v31"></a>
+
 ### Interfaces and the user workflow
 
 Control and observability are inseparable parts of the Interface contract. The same surface that
@@ -519,6 +532,8 @@ or narrow access under the existing grant model. Running an Agent under the owne
 does not itself constitute a managed grant. Exact owner/client recognition, credential handling
 and native-versus-isolated enforcement remain separate; this authority rule is not proof of
 isolation between processes with the same host privileges.
+
+<a id="v29"></a>
 
 ### Interface observability
 

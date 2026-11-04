@@ -7,10 +7,11 @@ The active protocol reference lives here. Begin with the [overview](../OVERVIEW.
 The [vocabulary boundary](MODEL.md#vocabulary-review-boundary) keeps all Conduit-owned terminology
 and field names provisional except Interface, Agent, Resource, Pool and Conduit. Accepted semantics
 and structures continue to guide the work; a separate future PR will settle the vocabulary.
+The [vocabulary map](../VOCABULARY.md) provides stable definition links and naming-review examples.
 
-Updated: 2026-11-02. Current working design; implementation
-has not started. The [overview](../OVERVIEW.md) summarizes the model; the [closed review](../archive/reviews/CONCEPTUAL.md) records the
-conceptual closure review and deferred authoring boundary. The [YAML walkthrough](../../experiments/001-shared-access/README.md)
+Updated: 2026-11-04. Current working design; implementation
+has not started. The [overview](../OVERVIEW.md) summarizes the model; the [closed authoring review](../archive/reviews/AUTHORING-2026-11-04.md)
+records the behavior/structure rulings and remaining representation boundary. The [YAML walkthrough](../../experiments/001-shared-access/README.md)
 proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
 
 Prefer minimal bookkeeping: retain authoritative configuration, identity, authority and necessary
@@ -104,7 +105,8 @@ shared dependencies and evidence of external effects. No conceptual ruling remai
 The [collaborator comparison](../archive/collaborator-proposals/REVIEW.md) identifies which proposed changes
 align, which need adaptation and which remain separate future work.
 
-Specific plugin/package fields, graph bindings and schema choices are parked in the
-[authoring proposal](../proposals/authoring-syntax/README.md) for a later PR. Runtime arrangements
+Concrete plugin/package fields, schema/wire representations and supporting vocabulary remain in the
+[authoring proposal](../proposals/authoring-syntax/README.md). Accepted graph structures and binding
+semantics are already in this reference; their final spellings remain provisional. Runtime arrangements
 remain in the [implementation proposal](../implementation/README.md). Neither a sample
 YAML packet nor an implementation convenience may silently redefine a contract.

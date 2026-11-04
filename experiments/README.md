@@ -1,9 +1,10 @@
 # Experiments
 
-Current sequence: the conceptual and post-migration reviews are complete. The
-[language/protocol research](../docs/research/language-protocol-foundations/README.md) informs
-the syntax/conformance batches in the [current review](../docs/REVIEW.md). Preserve draft fixtures
-and distinguish library observations from Conduit runtime evidence.
+Current sequence: the behavior/structure review is complete. Use the
+[vocabulary map](../docs/VOCABULARY.md) to track future naming changes into these fixtures, and
+[current review](../docs/REVIEW.md) for concrete schema/conformance work. The
+[language/protocol research](../docs/research/language-protocol-foundations/README.md) preserves its
+evidence. Draft fixtures and library observations remain distinct from Conduit runtime evidence.
 
 Experiments live outside `docs/`. Each directory keeps its documentation, configuration examples,
 expected outcomes and validation record together. The [specification](../docs/OVERVIEW.md) and

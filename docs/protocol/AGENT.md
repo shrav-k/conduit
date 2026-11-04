@@ -30,6 +30,8 @@ and explicit live dependencies; retain actual execution settings.
 Permission limits remain current. Resource data stays available through live authorized reads;
 refresh of loaded content follows the activation contract below.
 
+<a id="v36"></a>
+
 ### Activation instructions
 
 Activation instructions are supplied directly in the Agent spec or materialized from its
@@ -67,6 +69,8 @@ on first use. Initial discovery and explicit refresh remain supported. Current a
 credential refresh and bounded transport reconnection keep their own contracts. The MCP section
 below distinguishes stale tool definitions from changed service data. Exact action fields, evidence,
 compatibility diagnostics and future automatic-refresh triggers remain schema/adapter work.
+
+<a id="v37"></a>
 
 ### Account selection
 

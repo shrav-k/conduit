@@ -161,7 +161,7 @@ Before treating the fixture as a successful implementation pattern, demonstrate:
 
 The accepted authoring direction is lightweight Conduit support with real plugins testing the
 public protocol; a helper library is not an acceptance prerequisite. Concrete package/wire
-formats remain under review, with detailed syntax deferred until conceptual rulings finish.
+formats remain proposed for the concrete schema pass; the behavior/structure review is complete.
 Plugins publish contracts with their implementations: demonstrate template validation against
 those contracts without starting plugin code, then test runtime conformance separately.
 Composition requires no primary plugin. The existing composed-operation fixture must resolve its

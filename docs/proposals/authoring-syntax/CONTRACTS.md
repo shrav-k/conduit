@@ -611,8 +611,16 @@ input bindings. A graph can publish a database reference with a literal label us
 without an extra assembly operation. Declared publication conditions, validity, output validation and
 permitted exposure still apply, including sensitivity/custody rules. A public value does not by itself
 confirm whole-operation success, broaden scope or publish other internal outputs. Calculations and
-transformations remain plugin operations. Domain-error mapping, output-contract layout and vocabulary
+transformations remain plugin operations. Domain-error mapping, remaining contract fields and vocabulary
 remain open; consumers receive resolved values rather than authoring forms.
+
+**Accepted public-output collection:** use a map keyed by names unique within the graph's public
+outputs. Each entry holds its value binding together with applicable declarations such as optionality
+and success prerequisites. The database entry can bind startup's reference and wait for verification;
+the diagnostic-report entry can be explicitly optional. Reject duplicate output keys; map order has
+no execution or publication meaning. Existing contract derivation and output semantics remain intact,
+without requiring inherited information to be repeated. Exact field names and remaining contract-field
+encoding stay open.
 
 **Accepted public-output requirements:** declared public outputs are required for successful graph
 completion unless explicitly optional. Missing a required output prevents success; an optional
@@ -630,7 +638,7 @@ For example, bind startup's database reference but require schema verification s
 uncertain verification withholds that output; a forwarding plugin is not required just for the gate.
 All other publication conditions, value validity, output validation and permitted exposure still
 apply. The gate certifies neither whole-graph success nor permanent availability; field names and
-output-declaration layout remain open.
+remaining contract-field encoding remain open.
 
 **Accepted publication default:** a public output is eligible when its value bindings, explicit
 prerequisites and other declared publication conditions are satisfied, without an implicit barrier

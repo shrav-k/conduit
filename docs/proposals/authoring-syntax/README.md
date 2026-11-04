@@ -74,7 +74,11 @@ and resolved references remain ordinary data; there is no bare-value binding sho
 uses exactly one key: `literal`, `reference`, `object` or `list`, with its payload underneath.
 Declared public graph output values reuse those same four forms and source/scope rules. Publication,
 validity, output validation, sensitivity and access still apply; assembly does not establish overall
-success or expose other internal outputs. Output-contract layout and domain-error mapping remain open.
+success or expose other internal outputs. Domain-error mapping and remaining contract fields remain open.
+Public outputs form a map keyed by names unique within that graph's public outputs. Each entry groups
+its binding and applicable declarations, including optionality and success prerequisites. Reject
+duplicate keys; map order does not schedule work or publication. Contract derivation and inherited
+guarantees remain unchanged, without requiring them to be repeated; exact field names stay provisional.
 Named public outputs are required for successful graph completion unless explicitly optional.
 An optional output may be absent with its reason or uncertainty reported; an optional producer step
 does not automatically make its output optional. Present values still require validation and access,

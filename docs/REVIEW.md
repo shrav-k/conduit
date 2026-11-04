@@ -508,7 +508,7 @@ object assembly and list assembly—under existing source/scope rules. A graph c
 combining a literal label with a database reference from startup without an extra assembly operation.
 Publication conditions, validity, output validation, access and sensitivity still apply. Constructing
 a public value does not confirm whole-graph success, broaden scope or export other internal outputs.
-Domain-error/outcome mapping, output-contract layout and final field names remain open.
+Domain-error/outcome mapping, remaining contract fields and final field names remain open.
 
 **Graph-input root is accepted:** the source selects the complete declared input payload and uses
 the optional JSON Pointer within it, without a separate input-name selector. Given
@@ -586,14 +586,23 @@ or effect replay. Live Resource state, availability, access and progress/streami
 their own contracts; a fixed reference is not proof of current usability. Existing validity and
 recovery checks still apply. Attempt identifiers and comparison encoding remain open.
 
-Next, settle the public-output declaration structure. The recommendation is a map keyed by names
-unique within that graph's public outputs, with each entry grouping its value binding and applicable
-output-specific declarations, such as optionality and success prerequisites. For example, the
-database entry binds startup's reference and requires verification success; a separate diagnostic
-report entry is explicitly optional. The alternative keeps the value bindings and output conditions
-in separate maps joined by name. This remains pending. It does not change derived result contracts,
-publication/validity semantics or the fixed-value rule, require repeating inherited contract
-information, or select final field spellings. Map order would not schedule work or publication.
+**Public-output declaration grouping is accepted:** use a map keyed by names unique within that
+graph's public outputs, with each entry grouping its value binding and applicable output-specific
+declarations, such as optionality and success prerequisites. The database entry binds startup's
+reference and requires verification success; a separate diagnostic-report entry is explicitly
+optional. Duplicate output keys are rejected. Map order schedules neither execution nor publication.
+Existing result-contract derivation, publication/validity and fixed-value semantics remain intact,
+without requiring inherited contract information to be repeated. Final field spellings and remaining
+contract-field encoding stay open. The database walkthrough now shows the grouped structure.
+
+Next, refine default applicability for an omitted optional object. The recommendation is to leave
+that object absent when it has no default of its own, even if its child properties declare defaults.
+For example, an optional `retry` object with a child delay default of 5 does not become
+`retry: {delaySeconds: 5}` merely because the child has a default. An author can explicitly default
+the object when that presence is intended. The alternative synthesizes the missing object from
+descendant defaults. This remains pending for Conduit configuration/input preparation; it does not
+change provider-native schemas, template omission preservation, or required-field validation.
+Other default-applicability details remain separate.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. Finish the remaining graph structure in a

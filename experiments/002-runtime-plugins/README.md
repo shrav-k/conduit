@@ -374,6 +374,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   source scope, publication/validity and permitted exposure; do not expose unrelated internal values
   or declare whole-graph success from output availability alone. Reject malformed bindings and
   invalid public values while retaining earlier effects and operation evidence.
+- Group public output declarations in a map: the database entry holds its binding and verification
+  prerequisite, while the diagnostic-report entry holds its binding and explicit optionality. Reject
+  duplicate public-output keys before graph execution. Reorder entries and verify that dependency
+  and publication behavior is unchanged. Retain derived contracts and inherited conditions without
+  requiring duplicated declarations; validate each entry under the existing output rules.
 - Declare a required database output and an explicitly optional diagnostic-report output. Fail optional
   diagnostics and report the absent report's reason without that absence alone preventing success.
   Repeat with the report required by omission of optionality: the optional producer step must not

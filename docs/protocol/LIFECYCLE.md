@@ -361,8 +361,19 @@ still use plugin operations.
 Public outputs retain their declared publication conditions, validity, output validation and
 permitted exposure, including sensitivity and custody requirements. Constructing a value does not
 establish whole-graph success, broaden reference scope or publish other internal outputs. This
-shares value-binding machinery; it does not settle domain-error/outcome mapping or the surrounding
-output-contract layout. Consumers receive the resolved values, not authoring wrappers.
+shares value-binding machinery; it does not settle domain-error/outcome mapping. Consumers receive
+the resolved values, not authoring wrappers.
+
+**Public-output declarations:** declare public graph outputs in a map keyed by names unique within
+that graph's public outputs. Each entry groups its value binding and applicable output-specific
+declarations, including optionality and success prerequisites. For example, the database entry binds
+startup's reference and requires verification success; a separate diagnostic-report entry is
+explicitly optional. Reject duplicate output keys. Map order determines neither execution nor
+publication order; each output retains its own dependencies and conditions.
+
+This grouping does not require repeating inherited contract information or change result-contract
+derivation, output validation, validity, exposure or fixed-value semantics. It does not publish other
+internal outputs. The declaration keys and remaining contract-field encoding stay provisional.
 
 **Public-output requirements:** each declared public graph output is required for successful graph
 completion unless explicitly optional. A required output must be produced under its contract;
@@ -390,7 +401,7 @@ must also hold. A failed or uncertain prerequisite withholds the affected output
 failure payload does not satisfy it. Verification success neither establishes whole-graph success
 nor permanently guarantees the database's availability or schema. These prerequisites add no authored
 failure/completion triggers or permission to expose other internal results. Output field names and
-the surrounding declaration layout remain authoring work.
+remaining contract-field encoding remain authoring work.
 
 **Public-output publication:** an output becomes eligible for publication once its value bindings,
 explicit prerequisites and other declared publication conditions are satisfied. There is no implicit

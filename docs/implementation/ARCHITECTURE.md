@@ -816,7 +816,13 @@ Use the same literal/reference/object/list binding machinery for declared public
 for step inputs. Retain source/scope and literal-data rules, validate the resulting public values,
 and apply their publication, validity and exposure contracts. Assembly does not publish unrelated
 intermediate values, bypass sensitivity/custody or establish whole-operation success. Consumers
-receive resolved values; domain outcome mapping and output-contract layout remain authoring work.
+receive resolved values; domain outcome mapping and remaining contract fields remain authoring work.
+
+Read public graph outputs from a map keyed by names unique within that graph's public outputs.
+Each entry groups its value binding with applicable declarations such as optionality and success
+prerequisites. Reject duplicate output keys. Map order does not schedule work or publication; resolve
+each entry against its own dependencies and conditions. Preserve contract derivation and inherited
+information without requiring authors to repeat it. Exact field spellings remain provisional.
 
 Treat public graph outputs as required for successful completion unless explicitly optional.
 Check fulfillment under each output's contract separately from required-step success; an optional

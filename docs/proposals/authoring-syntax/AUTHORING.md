@@ -1426,6 +1426,34 @@ permitted exposure. It neither exposes the rest of the graph's internal values n
 migration or setup as a whole succeeded. Calculations, provider work and error/outcome interpretation
 remain governed by their existing operation contracts.
 
+**Accepted declaration grouping:** public outputs form a map keyed by names unique within this
+graph's public outputs. Keep each value binding and its output-specific declarations in the same
+entry. Using provisional field spellings, the database example can bring its already-accepted rules
+together as follows:
+
+```yaml
+outputs:
+  database:
+    value:
+      reference: {from: output, node: start, port: database}
+    after: [verify]
+  diagnosticReport:
+    optional: true
+    value:
+      reference: {from: output, node: diagnostics, port: report}
+```
+
+Assume `start`, `verify` and `diagnostics` are declared steps with compatible output contracts.
+`database` is required by default and waits for successful verification; `diagnosticReport` is
+explicitly optional. The `value` payload uses the accepted binding forms and could instead use the
+object assembly shown above. The map structure and grouping are accepted; `outputs`, `value`,
+`after`, `optional` and reference field spellings are illustrative, pending the vocabulary pass.
+
+Reordering entries does not order publication or execution. Duplicate public-output names are errors.
+This layout preserves result-contract derivation and inherited guarantees without requiring authors
+to restate them. Validity, current access and fixed values per producing attempt remain governed by
+their existing contracts; grouping does not weaken those conditions or publish other internal values.
+
 **Accepted required/optional outputs:** declare the public database result required, which is the
 default, and a separate `diagnosticReport` output explicitly optional. If optional diagnostics fail,
 the report can remain absent with the reason visible; that absence alone does not prevent successful
@@ -1449,7 +1477,7 @@ on the public output rather than on a consuming step. No plugin is needed merely
 reference after the check. Its other publication, current-validity, validation and access conditions
 still apply. Verification records what it established under its contract; it does not promise that
 the database can never become unavailable or that every other graph step succeeded. Output-container
-and prerequisite field names remain provisional.
+and prerequisite field names remain provisional within the accepted grouped map structure.
 
 **Accepted publication timing:** once `verify` succeeds and the database output's own conditions
 hold, that output is eligible for publication even if independent diagnostics are still running.

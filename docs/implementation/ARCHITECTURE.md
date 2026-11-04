@@ -752,8 +752,11 @@ and access contract. Successful node completion never transfers lifetime ownersh
 The startup result must establish its declared guarantee, such as usability for migration rather
 than a completed application schema. Operation acceptance and current runtime observations remain
 distinct. Do not add special graph lifecycle instructions or input-triggered automatic startup as
-an implementation shortcut. Exact target placement in typed inputs versus invocation context remains
-under [authoring review](../REVIEW.md); this acceptance does not select a wire format or new runtime family.
+an implementation shortcut. The explicit runtime target is a declared typed operation input using
+normal graph bindings. Reusable graph-backed operations receive and forward it explicitly; caller
+identity and authority remain trusted invocation context. Validate the target under its contract
+and current permissions before use. Exact reference encoding and transport remain under
+[authoring review](../REVIEW.md); this acceptance does not select a wire format or new runtime family.
 
 Graph failure blocks unmet prerequisites and records partial progress while independent eligible
 steps continue; retain managed runtimes and successful attachments by default. Explicit graph

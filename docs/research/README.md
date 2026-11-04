@@ -18,7 +18,8 @@ The subsequent [runtime establishment comparison](RUNTIME_ESTABLISHMENT.md) exam
 addresses an instance's declared runtime using Compose, Kubernetes, CloudNativePG, AWS, Google
 Cloud SQL, Azure, Nomad and Flyway. It compares explicit lifecycle nodes, typed operations with
 runtime bindings and input-driven startup. The owner accepted typed operations explicitly bound
-to declared instance runtimes; target representation and other authoring details remain open.
+to declared instance runtimes, with targets passed as declared typed inputs. Reference encoding
+and other authoring details remain open.
 
 Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
 It is not an additional set of requirements. The current concrete configuration belongs in

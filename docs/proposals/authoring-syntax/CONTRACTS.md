@@ -285,6 +285,14 @@ The pointer does not identify the source or choose the reference payload's field
 These examples approve nested paths only. A literal string containing one of these paths is still
 literal data.
 
+**Pending omission rule:** consider allowing an omitted nested pointer to select the whole
+explicitly chosen source, equivalent to supplying the empty JSON Pointer. For example, selecting
+startup's `database` output without a nested path would pass that whole output; selecting
+`/endpoint` would pass its endpoint member where the output contract exposes one. The alternative
+requires an explicit pointer on every reference, including the empty pointer. Source selection
+remains explicit and missing-member errors remain unchanged. This is a proposal, not an accepted
+default; the examples above do not resolve it.
+
 **Accepted missing-selection handling:** when a pointer selects no value, report a reference-resolution
 error and prevent the consuming step from running. Do not turn the failed binding into null or an
 omitted input that receives a default. For example, `{"connection":{}}` may be valid under a producer
@@ -329,8 +337,9 @@ setup:
 This fragment assumes the enclosing definition supplies `consumer`/`database` implementations,
 typed configuration and the managed runtime declaration. `database.establish` requests startup
 from the responsible execution service for that declared instance-owned runtime. The accepted
-boundary requires an explicit binding to that declaration; this partial fragment omits its spelling
-while typed-input versus invocation-context placement is under review. The declaration reference
+boundary requires that target as a declared typed input using ordinary graph bindings. This partial
+fragment omits that input's provisional name and reference encoding, which remain under review.
+Reusable graph-backed operations receive and forward the input explicitly. The declaration reference
 and the usable database output are distinct. The runtime remains supervised by its responsible
 execution service, which may be independent of management. The output
 binding already orders `migrate` after `establish`; the explicit prerequisite illustrates ordering

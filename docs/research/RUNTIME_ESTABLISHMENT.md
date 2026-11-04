@@ -7,6 +7,9 @@ The owner subsequently accepted approach B: ordinary typed operations explicitly
 instance runtimes, publishing results with defined guarantees. The
 [lifecycle contract](../protocol/LIFECYCLE.md#lifecycle-protocol) records that ruling. This report
 preserves its reasoning and alternatives; remaining representation choices are still proposals.
+The follow-up ruling places the runtime target in a declared typed operation input using ordinary
+graph bindings, with explicit forwarding through reusable compositions. Trusted caller/authority
+context remains separate; the target input grants no access.
 All Conduit supporting vocabulary and example names remain provisional.
 
 ## The question and existing boundary
@@ -285,9 +288,9 @@ and promised startup guarantee visible in the authoring contract.
 
 The owner accepted ordinary typed operations explicitly bound to declared runtimes as the
 structural boundary. Next, work through the database and MCP examples to resolve target selection,
-prepared inputs and output validity before choosing their field names. The immediate placement
-choice is a declared typed operation input versus a separately declared invocation-context binding;
-both retain ordinary operation nodes and explicit targeting.
+prepared inputs and output validity before choosing their field names. The owner also selected a
+declared typed input for the runtime target, reusing ordinary graph binding and composition instead
+of adding a separate runtime-context binding. Caller identity/authority remain trusted context.
 The reference payload layout, prerequisite spelling and final vocabulary remain open. This report
 does not close the [behavior/structure merge checkpoint](../REVIEW.md#behavior-and-structure-merge-checkpoint)
 or authorize runtime implementation.

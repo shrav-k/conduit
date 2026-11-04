@@ -409,14 +409,19 @@ The [database/cloud comparison](research/RUNTIME_ESTABLISHMENT.md) records the a
 rationale. Request acceptance, usability for setup, successful application preparation and current
 availability remain distinct; no universal status enum or new object family is introduced.
 
-Next, use the worked database case to decide how that explicit target travels into a reusable
-operation: a declared typed input using ordinary binding machinery, or a separately declared
-invocation-context binding. For example, database startup needs its runtime target and prepared
-storage; migration later uses the live database result. A reference to a runtime declaration is
-not evidence that it has started or an authorization grant. Both options preserve ordinary typed
-operation nodes and instance ownership. This input-versus-context placement remains open.
+**Runtime target placement is accepted:** the target is a declared typed operation input using
+ordinary graph bindings. Reusable graph-backed operations explicitly receive and forward it;
+no separate runtime-context binding is required. Database startup receives the runtime target and
+prepared storage; migration later uses its usable database result. A declaration reference proves
+neither startup nor authority. Authenticated caller identity and authority remain trusted invocation
+context, with current checks at resolution/use. Reference encoding and protected transport stay open.
 
-Then settle reference source/selection and prerequisite representation as a coherent example,
+Next, return to reference selection: decide whether omitting the nested pointer selects the whole
+explicitly chosen source (equivalent to an empty pointer), or every reference must supply a pointer,
+including an empty one. The first is recommended but not yet accepted. Source selection stays
+explicit; missing sources or selected members still error. This does not settle source field names.
+
+Then settle the remaining reference source/layout and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax, runtime
 declaration cardinality and start/wait operation granularity remain open. Keep final vocabulary
 in its separate PR. These are concrete instances of the existing authoring seams, not a new

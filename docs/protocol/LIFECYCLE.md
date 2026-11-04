@@ -365,6 +365,19 @@ This reuses operation composition, validation and recovery rather than introduci
 lifecycle node kinds or automatic startup merely because input values become available.
 Registration still starts nothing.
 
+**Runtime target inputs:** an operation receives its declared runtime target as an explicit typed
+input through the ordinary graph binding machinery. A reusable graph-backed operation declares
+that input and explicitly passes it to the child operations that need it; the target is not supplied
+through a separate runtime-context binding. For example, database startup receives the declared
+runtime target and prepared storage, then publishes a usable database result under its contract.
+The declaration reference identifies what to establish; it does not establish startup or substitute
+for that later result. Operations that need no runtime target require no such input.
+
+Authenticated caller identity and authority remain trusted invocation context. Supplying a target
+does not grant access or let the caller forge that context; resolution and invocation still enforce
+current authority and the target's contract. This choice fixes target placement, while reference
+encoding, runtime selection fields and protected-reference transport remain authoring work.
+
 The startup operation's contract defines the guarantees of its published results. Request
 acceptance, usability for subsequent setup, completed application preparation and current runtime
 availability remain distinguishable. For example, a database usable for migration is not evidence

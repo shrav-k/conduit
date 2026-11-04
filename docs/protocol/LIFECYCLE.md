@@ -270,7 +270,7 @@ configuration, earlier step outputs, declared runtime targets and typed invocati
 
 | Source | Value and scope |
 | --- | --- |
-| Declared graph inputs | Values supplied under that graph-backed operation's input contract. |
+| Declared graph inputs | The complete declared input payload of that graph invocation; the optional JSON Pointer selects within it. |
 | Captured instance configuration | Configuration available to the owning template's graph, captured for the execution. Reusable operations receive caller settings through explicit inputs. |
 | Earlier step outputs | Declared published results, subject to producer/consumer validation and continued validity. Earlier means the dependency relation, not YAML mapping order. |
 | Declared runtime targets | Explicit references to the owning instance's declared runtime behavior. Reusable operations receive and forward targets through typed inputs. |
@@ -282,6 +282,17 @@ resolvers are deferred in v0; this does not restrict authoring new operations or
 The source set introduces no implicit parent configuration, unrestricted `self` snapshot, live
 registry lookup or authority through a reference. Source names, selector fields, metadata contents
 and protected-reference transport remain authoring work.
+
+**Graph-input root:** the graph-input source selects the complete declared input payload, without
+a separate input-name selector. The optional JSON Pointer selects within it. For example, given
+`{limit: 15, options: {timeout: 30}}`, `/options/timeout` selects 30; omitting the pointer or using
+the empty pointer selects the complete payload. Missing selections still error, and receiving
+schemas validate selected values normally.
+
+This exposes only that invocation's declared inputs. It neither inherits caller configuration nor
+adds invocation metadata or authority to the payload. Reusable graphs still receive caller settings
+and runtime targets through explicit typed inputs. Source field names and input-contract
+representation remain authoring work.
 
 **Graph-visible invocation metadata:** graphs may reference explicitly declared, typed, read-only
 metadata supplied by the runtime under its invocation contract. For example, setup can pass its

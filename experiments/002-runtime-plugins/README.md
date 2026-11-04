@@ -277,6 +277,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   receives the supplied value without inheriting either caller's configuration namespace. Include an
   undeclared caller-configuration reference and require a diagnostic rather than implicit lookup.
   Keep the operation's supported scoped context and authorized Resource access available as declared.
+- Supply a graph with `{limit: 15, options: {timeout: 30}}` under its input contract. Verify that
+  the graph-input source with `/options/timeout` selects 30, and omitted/empty pointers select
+  the complete payload, with no separate input-name selector. Test both step-input and public-output
+  bindings. Missing members still error and receiving schemas still apply; no caller settings or
+  invocation metadata are implicitly added to the input payload.
 - Exercise literal inputs, configuration references and prior-output references. Include a small
   typed transformation implemented by the authored plugin, then consume its output in a later step
   with the dependency implied by that binding. Graph bindings must not evaluate inline expressions

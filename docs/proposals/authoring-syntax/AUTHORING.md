@@ -1294,6 +1294,21 @@ authentication or grants. Supported external-service association does not imply 
 
 ### Publishing a graph as a reusable operation
 
+**Selecting the reusable graph's inputs:** suppose its declared input payload is:
+
+```yaml
+limit: 15
+options:
+  timeout: 30
+```
+
+The accepted graph-input source starts at this whole payload. A pointer `/options/timeout` selects
+30, while an omitted or empty pointer selects the whole payload. Illustrative binding notation is
+`{reference: {from: input, path: /options/timeout}}`; the field spellings remain provisional. There
+is no additional input-name selector. The receiving contract still validates the selected value,
+and a missing member is an error. Neither the caller's configuration nor trusted runtime metadata
+is implicitly part of this payload. The same source rule applies to declared public output bindings.
+
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish
 that composite operation just as it publishes an operation backed by code or an MCP service. The

@@ -80,6 +80,8 @@ Consider a small document-search capability used by an Agent. The authoring step
    capture current settings. Authority, dependency validity and control revision checks remain current.
    Pass caller configuration into reusable graph-backed operations through their declared inputs;
    those operations do not implicitly inherit the caller's configuration namespace.
+   The graph-input source starts at that complete declared payload. Its optional JSON Pointer selects
+   within it without a separate input-name selector; omission or an empty pointer selects it whole.
    References are recognized only in designated binding positions. Literal payloads and plugin results
    remain data even when they resemble reference notation. Within the selected source value, use
    JSON Pointer paths such as `/connection/endpoint` or `/participants/0/name`. Keep source selection

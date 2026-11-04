@@ -75,6 +75,9 @@ selects the whole explicitly chosen source, equivalent to an empty pointer. The 
 are declared graph inputs, captured instance configuration, earlier step outputs, declared runtime
 targets and typed invocation metadata. Other data access uses explicit authorized operations;
 arbitrary plugin-defined reference resolvers are deferred. Source names and exact selectors remain open.
+The graph-input source selects its complete declared input payload, with the optional JSON Pointer
+selecting within it and no separate input-name selector. Omitted/empty pointers select the payload
+whole; no ambient caller configuration, invocation metadata or authority is added to it.
 A missing selected value causes a reference-resolution error and blocks the consuming step, without
 substituting null or applying a default for omitted input. An actual selected null is validated normally.
 Earlier effects and independent eligible branches retain their agreed behavior.

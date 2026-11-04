@@ -510,13 +510,20 @@ Publication conditions, validity, output validation, access and sensitivity stil
 a public value does not confirm whole-graph success, broaden scope or export other internal outputs.
 Domain-error/outcome mapping, output-contract layout and final field names remain open.
 
-Next, decide the root selected by the graph-input source. The recommendation selects the graph's
-complete declared input payload, then uses the optional JSON Pointer within it. For inputs such as
-`{limit: 15, database: ...}`, `/limit` selects 15 and an omitted pointer selects the whole payload.
-The alternative first names one declared input in the source selector, then applies the pointer
-within that input. This remains pending; neither choice supplies ambient caller configuration,
-runtime metadata or authority. Existing validation, scope and missing-selection rules still apply;
-source field names and input-contract representation remain open.
+**Graph-input root is accepted:** the source selects the complete declared input payload and uses
+the optional JSON Pointer within it, without a separate input-name selector. Given
+`{limit: 15, options: {timeout: 30}}`, `/options/timeout` selects 30; omitting the pointer selects the
+whole payload. This supplies no ambient caller configuration, runtime metadata or authority.
+Validation, scope and missing-selection rules still apply; source field names and input-contract
+representation remain open.
+
+Next, settle what the runtime-target source yields. The recommendation selects one named declared
+runtime and yields a typed target reference that the responsible service resolves against the
+instance-owned definition. Prepared settings remain explicit operation inputs. The alternative
+yields the structured runtime declaration itself for the operation to consume, still subject to
+owner/identity and authority checks. This remains pending; neither option grants access, starts the
+runtime by selection or permits definition edits. Reference fields and inspection capabilities
+remain separate; the recommendation does not presume a universal opaque wire format.
 
 Then settle remaining source selectors and prerequisite representation as a coherent example,
 with protected-result validity explicit under its contract. Exact target/reference syntax and

@@ -270,7 +270,7 @@ provisional.
 
 | Value source | Example | Scope |
 | --- | --- | --- |
-| Declared graph inputs | A reusable operation's supplied query limit | Its published input contract. |
+| Declared graph inputs | A reusable operation's complete input payload, with a pointer selecting its supplied query limit | Its published input contract. |
 | Captured instance configuration | A template setup graph's configured directory | Captured for that execution; caller configuration enters reusable operations through declared inputs. |
 | Earlier step outputs | The directory produced by attachment | Declared publication, validation and continued validity rules. |
 | Declared runtime targets | The owning instance's database runtime to start | Explicit typed target bindings; reusable operations receive and forward targets as inputs. |
@@ -281,12 +281,20 @@ whose output can feed later steps. References do not acquire
 plugin-defined external-fetch behavior. This keeps extension work in operations and capabilities
 initially; further source forms could be reviewed later. Exact selectors and source schemas remain open.
 
-**Pending graph-input root:** the recommendation makes this source select the complete declared
-input payload of the graph invocation, using the optional JSON Pointer to select within it. For
-`{limit: 15, database: ...}`, `/limit` selects 15; omission selects the whole payload. The alternative
-selects a named input first and applies the pointer within that value. No ambient caller settings,
-metadata or authority enter either source; reusable operations still receive declared typed inputs.
-Exact selector fields and input-contract representation remain open.
+**Accepted graph-input root:** this source selects the complete declared input payload of the graph
+invocation, using the optional JSON Pointer within it and no separate input-name selector. Given
+`{limit: 15, options: {timeout: 30}}`, `/options/timeout` selects 30; omission or an empty pointer
+selects the whole payload. Existing missing-selection and validation rules still apply. No ambient
+caller settings, metadata or authority enter the source; reusable operations still receive declared
+typed inputs. Exact selector fields and input-contract representation remain open.
+
+**Pending runtime-target value:** the recommendation selects one named declaration and returns a
+typed target reference, resolved by the responsible service against the owning instance's runtime
+definition. The operation receives its prepared settings through declared inputs. The alternative
+supplies the structured declaration itself, with the same owner/identity, contract and authority
+checks. Neither approach starts a runtime through selection or permits changing its fixed definition.
+Reference fields and supported inspection remain open; a typed reference need not imply one opaque
+wire representation.
 
 **Accepted recognition boundary:** references are recognized only in explicitly designated binding
 positions. Literal data and ordinary configuration/provider payloads are not scanned recursively for

@@ -780,6 +780,11 @@ and runtime targets explicitly. External data reads use authorized operations an
 do not add arbitrary plugin-defined reference resolvers in v0. Field names and selectors remain
 authoring work.
 
+Resolve the graph-input source from the complete declared input payload of that invocation, with
+no separate input-name selector. Apply its optional JSON Pointer within that payload; omission and
+the empty pointer select it whole. Preserve missing-selection and receiving-schema checks. Do not
+combine caller configuration or trusted invocation metadata into the input source implicitly.
+
 Each explicit instance start gets a new start generation. Its graph can verify that establishment
 is already satisfied; it must not blindly repeat a create operation. Configuration references within
 a graph execution use the values captured when it begins; later steps cannot silently switch to

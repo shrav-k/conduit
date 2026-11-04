@@ -165,6 +165,12 @@ external effects atomic or safe to retry. V0's finite dependency-graph boundary 
 nesting does not introduce authored recursion or loops. Exact graph-call/binding syntax, publication
 layout and detailed outcome/recovery coordination remain open.
 
+Executable graphs share required-by-default steps with explicit optionality across setup, reusable
+operations and change handlers. Required steps must succeed for successful completion; optional
+failures remain visible without alone preventing it. Actual dependencies, mandatory contracts and
+lifecycle duties still apply. Public outputs and permitted partial control confirmations do not
+establish success for unfinished required work. See the [graph execution rules](LIFECYCLE.md#lifecycle-protocol).
+
 Graph-backed operations reuse Conduit's graph recovery by default. An explicit retry of the same
 unchanged invocation resumes retained child progress, reuses only still-valid results, and delegates
 uncertain external effects to the affected child's recovery contract. A composite author need not

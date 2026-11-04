@@ -1263,6 +1263,12 @@ use supported reconciliation; rejection of the stored result does not undo exter
 This example adds no generic field-patch interface or universal partial-failure enum. Exact result
 fields remain authoring work.
 
+If this control uses a graph, its steps follow the same required-by-default rule as setup and
+reusable operations. Confirming the limit does not make a required timeout-change step successful
+while its outcome is uncertain. Preserve the supported partial configuration confirmation and the
+remaining uncertainty separately. An explicitly optional diagnostics step can fail without alone
+preventing graph success, but cannot waive required application, validation or reconciliation duties.
+
 ### A control that confirms unchanged settings
 
 In a separate case with no unresolved conflicting change, the search limit is already 15 at
@@ -1367,6 +1373,14 @@ followed by a failed connection is partial work, not an automatically rolled-bac
 Graph-backed operations reuse retained child progress through graph recovery by default, leaving
 uncertain effects to child recovery contracts. Exact parent/child coordination remains open.
 Nested composition retains v0's finite graph limit and selected implementation/access boundaries.
+
+The required/optional step classification is also shared. Publishing the database preparation graph
+as an operation keeps migration required unless its definition explicitly makes a supported step
+optional; it does not make failure interpretation implementation-specific. Optional diagnostics failure
+remains visible without alone preventing success. A caller that needs the composite to succeed still
+uses the ordinary success prerequisite; receiving an already-published output is not equivalent.
+Actual dependencies and mandatory contract obligations continue to apply, and ongoing optional work
+is not silently abandoned or reported as finished.
 
 ### Derived and authored composite results
 

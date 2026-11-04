@@ -25,10 +25,12 @@ Controls confirming unchanged stored configuration retain its revision while rec
 invocation and effects. Applicable checks and declared handler behavior still run; matching values
 do not justify skipping work or substituting a cached result for a new execution.
 
-Setup steps are required by default, with explicit optionality for nonessential work. Optional
-failure is reported without itself blocking setup success; actual dependencies, validation and
-mandatory type/access requirements still apply. Scheduling, retained effects and lifecycle duties
-remain unchanged. Exact step notation remains open.
+Steps are required by default across setup, reusable graph-backed operations and change-handler
+graphs, with explicit optionality for nonessential work. Required steps must succeed for successful
+graph completion; optional failures remain visible without alone preventing it. Actual dependencies,
+validation and mandatory type/access obligations still apply. Public outputs and permitted partial
+control confirmations keep their own rules. Optionality abandons no outstanding work and does not
+change scheduling, retained effects or lifecycle duties. Exact step notation remains open.
 Graph steps form a map keyed by locally unique names. Dependencies supply ordering constraints;
 document order has no execution meaning. Different graphs may reuse local names without sharing
 steps or exposing called graphs' internals. Container names remain provisional.

@@ -217,17 +217,22 @@ Document order has no execution meaning. Dependencies supply ordering constraint
 dispatch remains subject to current authority, readiness, coordination and scheduling limits.
 This fixes the step collection structure; container names and supporting vocabulary remain open.
 
-**Setup success requirements:** setup steps are required by default; a template may explicitly
-mark nonessential steps optional. A required migration must succeed for successful setup, while
-failure of optional diagnostics is reported without itself preventing setup success. Optionality
-does not erase failures, uncertainty or effects, and does not change independent scheduling or
-required lifecycle cleanup.
+**Graph step requirements:** steps are required by default across setup graphs, reusable graph-backed
+operations and change-handler graphs. Authors may explicitly mark nonessential steps optional.
+Required steps must succeed for successful graph completion; an optional failure is reported without
+alone preventing it. For example, migration remains required when a preparation graph is published
+as a reusable operation, while explicitly optional diagnostics can fail without that failure alone
+preventing success. Optionality does not erase failures, uncertainty or effects, or change independent
+scheduling and required lifecycle cleanup.
 
 Actual dependencies still apply. If a required step needs an optional step's output or successful
 completion, that prerequisite must be satisfied. Optionality cannot manufacture a missing value,
 waive a mandatory type/access requirement or bypass definition/input/output validation. Coupled
-requirements remain governed by their contracts. This rule concerns setup success, separately
-from the already accepted required/optional connection rule; exact step notation remains open.
+requirements remain governed by their contracts. Public-output availability remains separate from
+graph completion. A change handler preserves permitted confirmed partial changes under the control
+contract without presenting an incomplete required change as successful. Optionality does not abandon
+outstanding activity or declare still-running work finished. This shared graph rule remains distinct
+from required/optional Conduit connections; exact step notation remains open.
 
 **Ordering prerequisites:** in v0, an explicit prerequisite that passes no data requires the
 predecessor to complete successfully under its operation contract. A failed or uncertain outcome

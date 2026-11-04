@@ -755,11 +755,16 @@ Do not implement authored failure/completion-triggered nodes in v0. Required ope
 cleanup and supported recovery still run under their contracts when ordinary graph work is blocked
 or cancelled; they must not depend on a failed predecessor satisfying a success prerequisite.
 
-Treat setup steps as required by default, with explicit optionality for nonessential steps. Preserve
-an optional step's failure/effect evidence without making that failure alone block setup success.
+Treat steps as required by default across setup, reusable graph-backed operations and change-handler
+graphs, with explicit optionality for nonessential steps. Required steps must succeed for successful
+graph completion. Preserve optional failure/effect evidence without making that failure alone block success.
 Continue enforcing actual dependencies: a required consumer still needs its declared inputs and
 prerequisites even when their producer is optional. Mandatory type/access requirements and validation
 cannot be waived through optionality. Keep scheduling and lifecycle duties under their existing contracts.
+Do not infer graph success from published outputs or a permitted partial control confirmation;
+record those facts independently. Optionality must not discard running child activity, its eventual
+outcomes or unresolved effects. Apply the same classification when invoking a graph as a reusable
+operation rather than giving it different failure semantics merely because it was exported.
 
 Bind caller configuration into a reusable graph-backed operation's declared inputs; do not inject
 the enclosing instance's configuration namespace into that operation. Keep scoped invocation context

@@ -545,12 +545,15 @@ Plugins handle internal branching/polling; the graph language has no authored lo
 or dynamic fan-out. A Pool composition operation can process a finite declared selection and
 return separately tracked child outcomes without exposing an arbitrary loop language.
 
-**Accepted setup-success default:** setup steps are required unless explicitly optional. Optional
-failure remains visible without itself preventing successful setup. Missing inputs, required
-downstream work and mandatory type/access requirements still govern the result; optionality
-does not weaken validation or manufacture outputs. This is distinct from the accepted required/optional
-connection rule and does not alter independent scheduling, output validity, retained effects or
-lifecycle duties. Exact step notation and setup-result representation remain open.
+**Accepted graph-step default:** steps are required unless explicitly optional across setup,
+reusable graph-backed operations and change-handler graphs. Required steps must succeed for successful
+graph completion; optional failures remain visible without alone preventing it. Missing inputs,
+required downstream work and mandatory type/access obligations still govern the result; optionality
+does not weaken validation or manufacture outputs. Public-output availability and permitted partial
+control confirmation retain their own rules and do not establish success for unfinished required work.
+This is distinct from required/optional connections and does not change independent scheduling,
+output validity, retained effects or lifecycle duties. Optionality neither abandons outstanding
+activity nor declares it finished. Exact step notation and result representation remain open.
 
 **Accepted v0 trigger scope:** defer authored `on failure` and
 `after any completion` triggers in v0, retaining successful-completion prerequisites and declared

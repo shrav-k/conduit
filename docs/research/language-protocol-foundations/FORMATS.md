@@ -174,6 +174,14 @@ alternative, with additional branch-selection, ambiguity and reevaluation semant
 Ordinary defaults and the composed-default conflict rule remain. This is separate from executable
 graph branching and provider-native schema handling. No runtime conformance was tested here.
 
+**Further accepted refinement:** reject a default provably invalid against its own schema after
+supported preparation when accepting a Conduit configuration/input schema. For example, a range of
+1–100 cannot declare 0 as its default. This is stricter than the standard annotation convention:
+JSON Schema recommends that defaults validate but does not require it.
+[Default annotations](https://json-schema.org/understanding-json-schema/reference/annotations)
+Conduit still validates actual prepared payloads; early checks need not prove every future composition.
+Conflicting otherwise-valid defaults remain subject to their separate explicit-resolution rule.
+
 ## Standard-format set follow-up
 
 Rechecked **2026-11-03**. **Accepted:** support all 19 formats defined in

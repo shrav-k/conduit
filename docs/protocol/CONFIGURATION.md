@@ -258,6 +258,17 @@ conflict rule for composed defaults remain supported. This is a default-material
 not a change to executable graph branching or provider-native schema semantics. Exact restricted
 keyword paths and diagnostics must implement this boundary consistently.
 
+**Early default validation:** when accepting a Conduit-authored configuration/input schema, reject
+a declared default that is provably invalid against its own schema after applicable supported default
+preparation. For example, an integer constrained to 1–100 cannot declare a default of 0. A caller
+supplying 15 does not excuse that invalid declaration. Report the default and the violated constraint.
+
+This catches demonstrable declaration errors without requiring proof of validity in every future
+composition. The complete prepared configuration/input must still validate at use. Conflicting
+otherwise-valid defaults retain their existing explicit-resolution rule; do not conflate conflicting
+choices with a default that violates its own schema. Provider-native schemas keep their separate
+semantics, and unsupported schemas/features remain errors under the existing acceptance rules.
+
 Other default-resolution mechanics, including the remaining applicability rules, remain authoring
 work. This adds no ordered precedence between schema defaults or change to provider-native semantics.
 

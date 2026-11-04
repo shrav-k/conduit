@@ -624,17 +624,26 @@ remain, with no trial insertion to select a branch. The
 retains the rationale. This concerns schema defaulting, not authored graph branching or provider-native
 schema semantics; exact restricted keyword paths and diagnostics remain profile work.
 
-Next, settle early rejection of invalid default values. The recommendation rejects a declared
-default that is provably invalid against its own schema after applicable supported default
-preparation, when accepting that schema. For example, an integer constrained to 1–100 cannot
-declare 0 as its default even if one caller supplies 15. The alternative accepts the declaration
-and reports invalidity only when materialization actually uses it. This remains pending. It would
-not require proving validity in every future composition or remove full prepared-payload validation;
-the accepted resolution of conflicting otherwise-valid defaults remains separate.
+**Early default validation is accepted:** reject a declared default provably invalid against its
+own schema after applicable supported preparation when accepting a Conduit configuration/input
+schema. An integer constrained to 1–100 cannot declare 0 as its default even if one caller supplies
+15. Report the declaration error. This does not require proof across every future composition or
+replace full prepared-payload validation. Conflicting otherwise-valid defaults retain their separate
+explicit-resolution rule, and provider-native schema semantics remain unchanged.
+
+Next, settle parameter wiring inside reusable requirement compositions. The recommendation reuses
+the literal/reference/object/list binding forms, with references scoped to the composition's declared
+parameter payload. For example, `review-access` passes its `workspace` parameter to a workspace
+restriction and `maxResults` to a result limit, while supplying a literal operation restriction.
+This needs no plugin merely to forward or assemble values. The alternative defines separate
+requirement-specific parameter-mapping notation. This remains pending: shared value construction
+would not make requirements executable graphs, import graph-only sources or ambient caller
+configuration, supply authority, or change constituent validation/enforcement. Exact supporting
+names and declaration fields remain vocabulary/authoring work.
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
-need no further ruling merely to rename their fields. Finish the remaining graph structure in a
-coherent example, with protected-result validity explicit under its contract. Exact target-reference
+need no further ruling merely to rename their fields. Carry these into the remaining composition
+walkthrough, with protected-result validity explicit under its contract. Exact target-reference
 encoding and the contents of each runtime declaration remain open. Start/wait operation granularity follows
 each operation's declared guarantees rather than a universal split. These are concrete authoring
 seams, not a new conceptual review; the behavior/structure merge checkpoint remains open.

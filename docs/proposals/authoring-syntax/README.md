@@ -189,6 +189,9 @@ V0 defers branch-dependent defaults in Conduit configuration/input schemas. Repo
 branch-local defaults when accepting a schema, while retaining conditional/alternative validation.
 Templates can supply variant-specific values explicitly or use ordinary defaults outside the
 alternatives; composed-default conflict rules and provider-native semantics remain unchanged.
+Schema acceptance also rejects defaults provably invalid against their own schema after supported
+preparation, without requiring proof across every future composition. Actual prepared payloads still
+validate, and conflicting otherwise-valid defaults retain their explicit-resolution rule.
 The accepted [integer range](../../protocol/CONFIGURATION.md#numeric-interoperability) is
 −9,007,199,254,740,991 through 9,007,199,254,740,991 for Conduit-declared configuration, inputs
 and outputs. Larger exact values can use an explicitly string-typed contract; implicit conversion

@@ -316,6 +316,11 @@ syntax, permanent core vocabulary and helper grouping remain separate choices:
   verify conditional/alternative validation still operates; use a suitable common default outside
   the alternatives in a separate case. Retain ordinary/composed-default conflict behavior and the
   provider-native boundary, without silent omission or trial insertion to select a branch.
+- Declare an integer range of 1–100 with a default of 0 and require schema rejection identifying the
+  default and constraint, including when a caller supplies 15. Perform supported preparation before
+  judging a default's validity. Keep conflicting otherwise-valid defaults as a separate case that
+  accepts an explicit valid resolution. Validate actual prepared payloads even after schema checks
+  pass; early checks do not claim validity in every future composition or alter provider-native rules.
 - Declare named database and diagnostics runtimes under a fixture instance whose type supports both.
   Use a map keyed by the local names, reject duplicate keys, and verify that reordering entries has
   no execution meaning. Give a second instance the same local names without aliasing runtime identities.

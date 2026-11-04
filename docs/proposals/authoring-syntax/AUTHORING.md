@@ -1388,6 +1388,17 @@ the alternatives. This preserves ordinary defaults and the composed-default conf
 introducing branch selection by trial insertion. Provider-native schemas keep their semantics, and
 this choice is separate from executable graph branching.
 
+**Accepted early default validation:** if the operation declares an integer `limit` constrained to
+1–100 with `default: 0`, reject that schema when accepting it. Supplying `limit: 15` in one template
+does not repair the invalid default declaration. Check after any supported default preparation;
+the check must not reject an object merely because its permitted child defaults have not yet been
+materialized.
+
+This is distinct from two otherwise-valid defaults, such as 10 and 20, contributed by composition:
+their conflict still requires an explicit valid value or corrected defaults. Early checks need not
+prove every future composition safe. The complete actual prepared payload still validates before
+use, and provider-native schemas keep their separate semantics.
+
 **Accepted:** the temporary terms and divisions in the concept map remain our working vocabulary;
 final names may change. A graph can implement a typed operation contract, and a plugin can publish
 that composite operation just as it publishes an operation backed by code or an MCP service. The

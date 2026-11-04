@@ -178,6 +178,13 @@ inserted values. Ordinary defaults, composed-default conflict rules and provider
 remain unchanged. Exact restricted keyword paths and diagnostics remain profile work; this does
 not change the separate executable-graph branching boundary.
 
+**Accepted early default validation:** reject a declared default that is provably invalid against
+its own schema after applicable supported default preparation when accepting a Conduit-authored
+configuration/input schema. An integer range of 1–100 with a default of 0 fails even if a particular
+caller supplies 15. This does not require proving compatibility with every future composition or
+replace validation of actual prepared payloads. Conflicting otherwise-valid defaults keep their
+explicit-resolution rule; provider-native schemas retain their separate interpretation.
+
 **Accepted format behavior:** Conduit-authored schemas enforce declared `format` constraints,
 using the shared profile's supported formats and reporting unsupported ones instead of silently
 accepting them. V0 selects all 19 JSON Schema 2020-12 standard formats, using their standard meanings

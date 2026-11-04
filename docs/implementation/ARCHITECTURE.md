@@ -800,6 +800,13 @@ branch; an explicit payload does not bypass the schema-acceptance check. Retain 
 conflict rule and provider-native semantics. The profile must specify restricted keyword paths and
 diagnostics consistently; this does not add executable graph branching.
 
+Reject provably invalid defaults during Conduit configuration/input schema acceptance, checking
+against each default's own schema after applicable supported preparation. Identify the offending
+default and constraint; an explicit caller value cannot bypass this declaration error. Do not require
+proof across all future compositions or treat this check as validation of a later prepared payload.
+Preserve explicit resolution of conflicting otherwise-valid defaults, required feature checks and
+the provider-native boundary.
+
 Expose graph-visible invocation metadata through an explicitly declared, typed, read-only runtime
 surface. A graph can reference facts such as its owning instance ID without a helper invocation
 solely to fetch them. Do not expose an unrestricted instance/environment/credential snapshot or

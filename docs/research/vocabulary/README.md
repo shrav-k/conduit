@@ -52,6 +52,7 @@ These are naming inferences from the cited systems, not claims that those projec
 | --- | --- |
 | [Precedents](PRECEDENTS.md) | What source terms actually mean, which distinctions help, and what behavior not to import. Covers orchestration, contract languages, workflows, messaging, authorization, observability and agent/runtime ecosystems. |
 | [Candidates](CANDIDATES.md) | Alternatives, tradeoffs and a provisional recommendation for every V01–V37 topic; light-theme comparison. |
+| [Simplification](SIMPLIFICATION.md) | Reviewer feedback: which candidate terms collapse into one, which words carry too many meanings, and which distinctions must stay. Diagram included. |
 | [Walkthroughs](WALKTHROUGHS.md) | Test candidate language against package authoring, shared service access, setup/recovery, communication and observation. No new YAML dialect. |
 | [Sources](SOURCES.md) | Evidence scope, direct primary links, pinned local sources, retrieval metadata and limitations. |
 

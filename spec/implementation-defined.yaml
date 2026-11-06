@@ -1,0 +1,118 @@
+# Implementation-defined behavior: what this specification deliberately leaves to each engine.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31, 32, 33 and 37). An engine documents its
+# choice for every item, and that document is its runtime profile. A choice must keep every
+# promise. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) added to DL1 when a graph's outputs become available, and
+# added DL14. The second round of the re-audit (docs/proposals/reaudit/round-2/) named the key
+# that states what an item is about `subject`, added to DL5 and DL6, reworded DL7 and added
+# DL15. Its closing pass added to DL7 which tar formats an engine reads, to DL10 how long the
+# content of a retained result is kept, and to DL12 what the `content` of a result holds. Its
+# last pass (docs/proposals/reaudit/round-2/log-tail.md) reworded DL3 in the terms of an
+# invocation, took from DL7 the use of a package from files that are still being edited, which
+# PKG-022, PKG-004 and NAM-006 decide, and from DL11 the later opening of an optional Conduit,
+# which CON-004 and ACC-006 decide, and added to DL7 how an engine is handed a directory. The
+# follow-up to the fix pass of the third round (docs/proposals/reaudit/round-3/log-fixes.md),
+# on a decision of the coordinator that the owner has not ruled on, added to DL1 the order in
+# which a Pool's Resources are retired where LIF-021 fixes none. The fix pass of the fourth
+# round (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, added to DL8 how the records of objects that
+# no longer exist are read, and to DL12 the serialized copy of a result's structured content.
+# Standing: the owner accepted this list as it stood at the rulings that the second line
+# names. Every change listed above for the conversion of the older text (the docs audit) and
+# for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37, logged in
+# the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which. Ruling 38 took out of DL7 whether an engine that is handed a
+# directory installs the packages its manifest lists: it installs none (SUB-010).
+
+- id: DL1
+  subject: Graph execution
+  document: >-
+    The order among steps that do not depend on each other; how many run at once; cancellation;
+    the states a step passes through; what happens to the remaining steps after one fails; what
+    a re-run of setup or retire does with steps that already ran; when a graph's outputs become
+    available; and the order in which `retire-with-resources.v1` retires Resources that depend
+    on each other in a cycle, or not at all, under LIF-021.
+- id: DL2
+  subject: Dispatch records
+  document: >-
+    Where the record is written before an implementation is called; how attempts are numbered;
+    what is done with a result that arrives late; and how the digest of an invocation's contents
+    is computed, which a purge keeps under REC-004. The SHA-256 of the RFC 8785 form of the
+    operation and its arguments is one way that gives equal contents the same digest.
+- id: DL3
+  subject: An invocation that does not end until an actor replies
+  document: >-
+    How long the engine waits for the reply, and what happens to a reply given twice or given
+    while the engine cannot receive it. No promise limits how long an invocation is in progress:
+    until it ends, a repeat of its request is told `inProgress` under OPS-009, and one for which
+    the engine stops waiting has the outcome OPS-007 gives where no result arrives.
+- id: DL4
+  subject: Unreachable `access` or `management`
+  document: >-
+    Whether a request is not dispatched at once, reporting unavailable, or waits, and for how
+    long.
+- id: DL5
+  subject: Locations
+  document: >-
+    How it is detected that a location cannot be reached, what a request to an instance placed
+    on it reports meanwhile, and what happens when it returns.
+- id: DL6
+  subject: First start
+  document: >-
+    What triggers it, what an interrupted or repeated one does, how repair works, and the
+    stored facts that the location `local` is given.
+- id: DL7
+  subject: Packages
+  document: >-
+    Where packages are stored, how they are fetched and removed, which schemes of `fetch` are
+    accepted, and which of the tar formats and extensions an engine reads in an archive under
+    PKG-022. Also how the engine is handed a directory under SUB-010, such as by a command or a
+    call, and for which actor it then registers.
+- id: DL8
+  subject: Delivery of observations and records
+  document: >-
+    Feeds, positions within them, and snapshots. Also how the records that name no object
+    that still exists are read, once every object they name has been unregistered and no
+    request for `inspect.v1` returns them, under LIF-019 and REC-003.
+- id: DL9
+  subject: Controls and busy instances
+  document: >-
+    What happens to a request for a busy instance, which is one that has a setup, a retirement
+    or a change in progress under REV-012, and the order in which several failed checks that
+    give the same reason are reported.
+- id: DL10
+  subject: Limits
+  document: >-
+    Sizes, counts, the time allowed for a call, how long the content of a retained result is
+    kept for retrieval under OPS-016, and behavior when storage is exhausted.
+- id: DL11
+  subject: Conduits during setup
+  document: >-
+    What a consumer with only some of its Conduits open may do.
+- id: DL12
+  subject: Transport, processes and protocol revisions
+  document: >-
+    The transport used for each implementation, who starts its process, how many instances
+    share one, which revisions of the Model Context Protocol are supported beyond the baseline,
+    and what the engine puts in the `content` member of a result it returns to a consumer,
+    within what IFC-025 states of a result whose content is withheld: among it, whether a
+    result that holds `structuredContent` also carries it serialized there, as the protocol
+    recommends.
+- id: DL13
+  subject: Identifying consumers
+  document: >-
+    What a request presents to show which instance its consumer is, and how the engine
+    establishes the instance from it for each request.
+- id: DL14
+  subject: Cancelling an invocation
+  document: >-
+    Whether an invocation that is in progress can be cancelled, how a cancellation is asked for,
+    and how it reaches the implementation. Whatever is chosen, the outcome of a cancelled
+    invocation is the one OPS-027 states.
+- id: DL15
+  subject: Generated names
+  document: >-
+    The length of the suffix that OBJ-003 has the engine generate, the characters it uses, and
+    how far the template's part of a generated name is shortened. Whatever is chosen, the name
+    satisfies OBJ-001, OBJ-002 and, for a component Conduit, CON-003.

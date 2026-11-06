@@ -1,0 +1,15 @@
+# Example. Invalid: only an input that holds a `schema` may state a `default` (CTR-002). An
+# output states none.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.count.v1
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+  outputs:
+    count:
+      schema: {type: integer, minimum: 0}
+      default: 0

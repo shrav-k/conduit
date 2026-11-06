@@ -1,0 +1,145 @@
+# Records: what is always recorded, what a record holds and how long it is kept.
+# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). The list of events and the
+# fields follow Kubernetes audit events and AWS CloudTrail, which record who, what, when and how
+# it ended, and cannot be deleted through the interface they record. A record is added and never
+# altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No promise of this file has
+# been removed. The ruling on the core package and the schemas (ruling 37) changed REC-004. The
+# conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed REC-002. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed REC-002, and its closing pass changed
+# REC-004: a purge keeps the engine's ID for an invocation, which `retrieve-result.v1` returns
+# and `reconcile.v1` names. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed REC-002 and REC-004: a purge also keeps the operation, the instance
+# and the target of an invocation. It removed none.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed REC-003
+# and REC-004: a purge also keeps the caller and the Conduit of an invocation and, for a step
+# that names a runtime, the name of that runtime. It added none and removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed REC-001: a request that cannot be
+# read, and from which no instance can be established, is not recorded.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md.
+
+- id: REC-001
+  layer: convention
+  level: must
+  when: >-
+    Any of these happens: an access decision; a request ends without being dispatched; an
+    invocation is dispatched; an invocation ends; an instance's lifecycle state changes; an
+    object is registered or unregistered; an object's revision changes.
+  then: >-
+    A record of it is kept.
+  observable: >-
+    Each such event can be found by inspecting the objects it names. Every request can be found
+    with how it ended: its outcome, or its reason where it has no outcome under OPS-005. The
+    record of an access decision states that the request was permitted, or that it was not
+    dispatched and the reason. One request is not recorded: one that cannot be read and from
+    which no instance can be established, under IFC-036. Nothing else is required to be
+    recorded.
+  vectors: []
+
+- id: REC-002
+  layer: convention
+  level: must
+  when: >-
+    A record is kept.
+  then: >-
+    It holds the caller, the instance that acted for the caller if there was one, the Conduit
+    used, the target, the operation, the engine's ID for the invocation, the operation identity
+    if the caller supplied one, the time, and how it ended.
+  observable: >-
+    Each of those is present in every record to which it applies. The inputs and outputs of the
+    operation need not be; what content is kept is stated by each type's contract, under
+    `records` as CTR-004 gives it: the inputs where `inputs` is true, and the outputs where
+    `outputs` is true. The record of a request from which the engine could establish no
+    instance, under IFC-032, holds no caller, and says that none could be established. The
+    record of a stop that the engine dispatches under OBS-007 holds no caller either, and says
+    that the engine dispatched it under that promise for no actor.
+  vectors: []
+
+- id: REC-003
+  layer: convention
+  level: must not
+  when: >-
+    A record exists.
+  then: >-
+    It is removed or altered by anything other than a purge.
+  observable: >-
+    The record can still be read after the engine has restarted and after the objects it names
+    are unregistered. A reconciliation adds a record and alters none.
+    Inspecting an object lists the records that name it, under LIF-013, and an object that has
+    been unregistered is no longer inspected. How the records that name no object that still
+    exists are read is DL8 of the implementation-defined list.
+  vectors: []
+
+- id: REC-004
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to purge records.
+  then: >-
+    The request is dispatched only if the actor is the root Interface. A purge removes the
+    records made before a time that the request names. It keeps, for every invocation, its
+    operation identity, as OPS-008 scopes it, the engine's ID for it, its outcome, a digest of
+    its contents, its operation, its caller, the instance it was dispatched to, the Conduit it
+    was dispatched through, the target that authorized it and, for a step that names a runtime,
+    the name of that runtime, and a record is kept stating which records were purged and when.
+  observable: >-
+    A request from any other actor is not dispatched and reports refused. Records made at or
+    after the time the request names are not removed. After a purge, a request that repeats the
+    operation identity of a purged invocation is still answered under OPS-009 to OPS-012 and
+    OPS-024, and no effect is applied a second time. Two requests with the same contents, as
+    OPS-009 defines them, give the same digest, so a request with that identity and different
+    contents still reports conflict under OPS-010. How the digest is computed is DL2 of the
+    implementation-defined list. The record of the purge can be read, and no later purge removes
+    it. The operation is `purge.v1`, and the time is its input `before`. The engine's ID is kept
+    so that `retrieve-result.v1` still returns it under IFC-024, and an invocation whose outcome
+    is unknown can still be reconciled under OPS-014. The operation, the instance and the target
+    are kept because a reconciliation needs them: ACC-033 fixes the target that authorizes it
+    from them, LIF-028 the instance whose state or shutdown it changes, and REV-010 the control
+    and its `changes`. The caller and the Conduit are kept because later requests are decided
+    from them: IFC-024 takes the caller of a retrieval from the invocation that it names as
+    served, and OPS-017 delivers a retained result only while the Conduit of its invocation is
+    open. The name of the runtime is kept because TPL-015 gives the handle of a reconciled start
+    to that runtime, and two runtimes of one instance may share a start operation. All of them
+    are kept for an invocation that carried no operation identity as for any other. A purge
+    removes records and nothing else: what an instance holds and the content of a retained
+    result are not records, and a purge does not touch them. What a purge keeps of an invocation
+    is read as records of that instance: inspecting the instance still lists it among the
+    records that name the instance, under LIF-013.
+  vectors: []
+
+- id: REC-005
+  layer: convention
+  level: must
+  when: >-
+    Records made at one origin are read.
+  then: >-
+    They are in the order in which they were made at that origin. No order is promised between
+    records from different origins.
+  observable: >-
+    Reading one origin's records twice gives the same order. An actor that reads records from
+    several origins is not told which of two records from different origins came first, unless
+    one names the other. An origin is where a record was made, such as one location.
+  vectors: []
+
+- id: REC-006
+  layer: convention
+  level: must
+  when: >-
+    Records that should exist cannot be read, or were lost.
+  then: >-
+    The result of reading them says that there is a gap, and where.
+  observable: >-
+    A result that omits records says so. It is never presented as complete.
+  vectors: []

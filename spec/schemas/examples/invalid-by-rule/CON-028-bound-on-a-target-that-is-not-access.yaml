@@ -1,0 +1,26 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a Conduit that applies `bound.v1` has `access` as its target. The Conduit `reviewer-scratch`
+# is made from a template that applies it, and its target is the Resource `scratch`, so it is
+# not instantiated.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: bounded-read
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    bound:
+      requirement: github.com/shrav-k/conduit/core#bound.v1
+      arguments:
+        pools: [team]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: reviewer-scratch
+from: bounded-read
+consumer: {kind: Agent, name: reviewer-1}
+target: {kind: Resource, name: scratch}

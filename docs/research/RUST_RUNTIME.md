@@ -1,5 +1,7 @@
 # Rust runtime and plugin architecture
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-01. This report proposes implementation choices for the accepted
 [specification](../OVERVIEW.md), using Xerj and Pi as source references. It does not select new
 dependencies or change the five-family model. The proposed

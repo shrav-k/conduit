@@ -1,0 +1,22 @@
+# Example. It must be rejected:
+# an implementation that is a graph is never plain and lists no `tools`. A plain
+# implementation is an existing server, reached by `command` or `url`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  listing:
+    implements: ['#directory.list.v1']
+    graph:
+      steps:
+        read:
+          operation: '#directory.read.v1'
+          arguments:
+            path: {source: input, name: path}
+      outputs:
+        entries:
+          value: {source: step, step: read, output: entries}
+    plain: true
+    tools:
+      '#directory.list.v1': list_directory

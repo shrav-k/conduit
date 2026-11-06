@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# a contract's name has at least one segment before its version segment.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: v1
+spec:
+  operations:
+    - example.org/files#directory.read.v1

@@ -1,0 +1,14 @@
+# Example. It must be rejected:
+# a plain implementation states no `supports`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  legacy-reader:
+    implements: ['#directory.read.v1']
+    url: https://files.example.org/mcp
+    plain: true
+    tools:
+      '#directory.read.v1': read_directory
+    supports: ['#rate-limit.v1']

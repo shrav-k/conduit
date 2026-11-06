@@ -1,0 +1,12 @@
+# Example. It must be rejected:
+# an input holds a `schema` or `handle: true`, never both.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: watcher.stop.v1
+spec:
+  inputs:
+    watcher:
+      schema: {type: string}
+      handle: true

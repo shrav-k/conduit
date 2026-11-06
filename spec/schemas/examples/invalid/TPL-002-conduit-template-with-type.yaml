@@ -1,0 +1,12 @@
+# Example. It must be rejected:
+# a Conduit template has no `type`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  type: example.org/files#local-directory.v1
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1

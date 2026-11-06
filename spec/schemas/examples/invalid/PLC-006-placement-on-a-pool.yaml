@@ -1,0 +1,9 @@
+# Example. It must be rejected:
+# a Pool has no placement.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: team
+from: workspace
+placement: local

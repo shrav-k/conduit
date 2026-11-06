@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# a duplicate key.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+  name: console-2
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1

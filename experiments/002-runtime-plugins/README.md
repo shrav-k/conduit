@@ -1,11 +1,24 @@
 # 002 — Rust supervision, independent execution and plugins
 
+> **Not binding. Superseded as a plan.** This document predates rulings 13 to 37 of the
+> [plan audit](../../docs/AUDIT.md#ruling-log). It uses shapes and words that the specification
+> has replaced, among them alias-plus-export references, `form`, grants, plugins, drivers and
+> handlers. Where it says accepted, current or v0, it means the design as it stood before those
+> rulings. The specification is [`spec/`](../../spec/README.md), and the current worked example
+> is [`spec/schemas/examples/valid/`](../../spec/schemas/examples/valid/).
+>
+> Nothing here was implemented or run. Statements below that implementation is not authorized,
+> and that a second runtime is deferred, no longer hold. The file stays until its acceptance
+> cases are mapped onto promises and conformance vectors (action A23 of the plan audit, which is
+> open). It is removed after that.
+
 Status: first-proof layout, core authority/outage rules and combined composition-authoring proof
 scope and supervised instance-associated helper default accepted; remaining implementation details
 are proposed. Not implemented or executed. Written 2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
-choices within the [specification](../../docs/OVERVIEW.md); it does not replace the
-[shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
+choices within the specification of that time, a file that is now the
+[overview](../../docs/OVERVIEW.md) and has been rewritten since; it does not replace the
+[shared-access YAML walkthrough](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) or approve its draft syntax.
 
 The [implementation proposal](../../docs/implementation/README.md) expands the host,
 worker, schema and persistence boundaries this spike would exercise. Accepted I1–I6 boundaries remain in force; C1–C3 conceptual closure is complete and concrete authoring/syntax returns in a future PR. This experiment still contains no executable implementation or measured results.

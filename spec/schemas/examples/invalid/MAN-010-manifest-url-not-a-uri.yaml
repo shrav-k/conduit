@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# `url` is a URI.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  files-server:
+    implements: ['#directory.read.v1']
+    url: not a uri

@@ -1,0 +1,123 @@
+# Declared against observed state: what is declared and what is seen are kept apart, and a
+# difference between them is reported, never repaired.
+# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). Reporting follows Kubernetes
+# conditions, which keep the time of the last successful observation beside an unknown status.
+# Acting only on an explicit request follows Compose and Terraform. PLC-010 was folded into
+# OBS-003 and LIF-010. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed OBS-005. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed OBS-004 and OBS-005 and added OBS-007.
+# No promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed OBS-003 and OBS-007: the stop that the engine dispatches for a
+# runtime restored without leave carries no caller. It removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+
+- id: OBS-001
+  layer: convention
+  level: must not
+  when: >-
+    Something is observed about an instance.
+  then: >-
+    The instance's declared definition, configuration or revision changes because of it.
+  observable: >-
+    The declared part of an inspection result is the same before and after any observation. It
+    changes only by an operation that an actor requested and that changes it, as the convention
+    on revisions states.
+  vectors: []
+
+- id: OBS-002
+  layer: convention
+  level: must
+  when: >-
+    An observation is reported.
+  then: >-
+    It carries the time it was made and its origin, which is where it was made.
+  observable: >-
+    Every observation in an inspection result has both.
+  vectors: []
+
+- id: OBS-003
+  layer: convention
+  level: must
+  when: >-
+    Something about an instance cannot be observed now, for example because its location cannot
+    be reached.
+  then: >-
+    It is reported as unknown, with the time of the last successful observation of it.
+  observable: >-
+    The earlier value is not shown as current. Where it was never observed, the inspection
+    result says unknown with no time. When a location cannot be reached, this holds for every
+    instance placed on it, and instances on other locations report as before.
+  vectors: []
+
+- id: OBS-004
+  layer: convention
+  level: must not
+  when: >-
+    What is observed of an instance differs from what is declared for it.
+  then: >-
+    Anything acts to remove the difference without an explicit request, other than an
+    implementation restoring its own runtime, which OBS-005 and OBS-007 govern.
+  observable: >-
+    The difference appears in the instance's status and stays until an actor asks for an
+    operation that removes it. No setup, control, open or retire is dispatched because of it.
+  vectors: []
+
+- id: OBS-005
+  layer: convention
+  level: must not
+  when: >-
+    An implementation restores its own runtime, as its type contract allows.
+  then: >-
+    The handle the instance holds for the runtime stops being valid, or the engine invokes the
+    runtime's `start` operation again, or any invocation is dispatched again because of it.
+  observable: >-
+    Restoring a runtime means that the implementation keeps alive what is behind the handle the
+    instance holds. A type contract allows it by stating `restoresRuntimes: true`, under
+    CTR-004. Afterwards the same handle is accepted, and no record shows a `start` or any other
+    operation dispatched because of the restoring. That it starts no model work is IMP-002. What
+    follows where the type contract does not allow the restoring is OBS-007.
+  vectors: []
+
+- id: OBS-006
+  layer: convention
+  level: must not
+  when: >-
+    An instance is inspected or observed.
+  then: >-
+    An effect occurs, or the actor that inspects it gains access to anything.
+  observable: >-
+    Inspecting leaves every instance's status and every Conduit as it was, and that actor's
+    requests are permitted or refused exactly as before. That it starts no model work is
+    IMP-002.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- the points known before the round).
+
+- id: OBS-007
+  layer: convention
+  level: must
+  when: >-
+    An implementation restores its own runtime although its type contract does not state
+    `restoresRuntimes: true`.
+  then: >-
+    The engine treats the handle as no longer held: the runtime is stopped under its `stop`
+    operation, and the instance is reported as not holding it. The engine dispatches that stop
+    for no actor: the request carries no caller, and its record says that the engine dispatched
+    it under this promise for no actor.
+  observable: >-
+    The engine invokes the runtime's `stop` operation with the handle. The request that the
+    implementation receives holds no `io.github.shrav-k.conduit/caller`, which IFC-006 excepts,
+    no `io.github.shrav-k.conduit/conduit` and an empty list of restrictions, because it came
+    through no Conduit and serves no invocation. The record of the stop holds no caller, under
+    REC-002. Inspecting the instance afterwards does not list the runtime as held, and a later
+    step that names the runtime starts it under TPL-007. No `start` operation is dispatched
+    because of the restoring.
+  vectors: []

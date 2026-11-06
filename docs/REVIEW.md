@@ -1,15 +1,43 @@
 # Current review
 
-Updated: 2026-11-04. This is the only active review entry point. The conceptual, implementation-boundary,
-post-migration and authoring behavior/structure reviews are complete. Accepted rules live in the
-[protocol reference](protocol/README.md); the full
-[completed authoring record](archive/reviews/AUTHORING-2026-11-04.md) preserves the rulings and rationale.
+**Superseded as a work queue by the [plan audit](AUDIT.md).** The plan audit is the one tracker:
+it holds the state of the work, the owner's rulings and the open action items. Accepted behavior
+is in the [specification](../spec/README.md), which alone binds. Nothing here binds.
 
-Next work is vocabulary, concrete representations and executable conformance. No runtime implementation
-has started. A new example that exposes a conflict with an accepted guarantee should return here with
-its affected behavior, a concrete counterexample and the specific choice needed.
+The sections below are kept as they were written, for the links into them. These statements in
+them no longer hold:
+
+- that this is the only active review entry point, and that a new question returns here;
+- that accepted rules live in the protocol reference, which is superseded;
+- that the vocabulary pass comes last, and that only five names are settled. The vocabulary is
+  ruled, and the terms in force are in [spec/definitions.md](../spec/definitions.md);
+- that schemas and the representation of documents are a later pass. They are written, under
+  [spec/schemas/](../spec/schemas/README.md).
+
+The [completed authoring record](archive/reviews/AUTHORING-2026-11-04.md) preserves the earlier
+rulings and their rationale. No Conduit engine exists.
+
+## Plan audit, 2026-11-05
+
+The owner set a new direction on 2026-11-05. The [plan audit](AUDIT.md) records the rulings, the
+priorities, the action items and the experiment program, and it governs wherever the sections below
+differ. In short: the language is the core; current work is the normative surface, a promise
+register, schemas, a Rust reference model and conformance vectors; two independent engine builds
+follow once the [readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) passes; and
+the vocabulary pass comes last. Known defects in the accepted text are in the
+[defect register](LANGUAGE_DEFECTS.md).
+
+**Owner ruling, 2026-11-05 — exploratory code:** experiment code may be written and run under
+[experiments](../experiments/README.md) whenever it is useful, including solely to prove out an
+idea, before the vocabulary and schema work below. It must be written in Rust, reflecting the
+eventual runtime. This lifts the earlier prohibition for exploratory code. A Rust
+reference model and two independent engine builds are planned in the plan audit. Results remain
+evidence rather than accepted behavior.
 
 ## Future vocabulary PR
+
+By the 2026-11-05 rulings this pass comes last, after the language is concrete and proven, and it
+may merge concepts as well as rename them.
 
 Only **Interface, Agent, Resource, Pool and Conduit** are settled names. All other Conduit-owned terms
 and field spellings remain provisional, including spellings used while accepting a structure.
@@ -19,8 +47,8 @@ accepted meanings, worked examples and affected surfaces; the IDs are not protoc
 Review distinctions before names. Preserve external-standard terminology, historical source language
 and attributed dissent. No replacement name is selected by this audit.
 
-The [naming research](research/vocabulary/README.md) now supplies cross-system precedents,
-alternatives for all 37 topics and walkthroughs. Its proposed discussion order begins with package,
+The [naming research](research/vocabulary/README.md) now supplies cross-system precedents
+and the reviewer's simplification pass. Its proposed discussion order begins with package,
 contract and plugin/implementation boundaries, then execution and relationships. This is preparation
 for owner rulings; it adopts no names, adds no object families and reopens no accepted behavior.
 

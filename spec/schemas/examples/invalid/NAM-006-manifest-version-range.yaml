@@ -1,0 +1,9 @@
+# Example. It must be rejected:
+# a manifest lists each package with exactly one version, which is one Semantic Versioning
+# 2.0.0 version (PKG-001), and never a range.
+
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/files:
+    version: ^0.3.0
+    digest: sha256:0f3a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4

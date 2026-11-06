@@ -1,0 +1,45 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a composition may be applied only where every one of its constituents may. The composition
+# `night-shift.v1` lists `conduit` in its `appliesTo`, its constituent `office-hours.v1`
+# may be applied only as a policy, and the Conduit template `night-read` applies the
+# composition to a Conduit.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: office-hours.v1
+  description: A policy. Requests are permitted only between the two hours given.
+spec:
+  appliesTo: [policy]
+  narrows: true
+  inputs:
+    from-hour:
+      schema: {type: integer, minimum: 0, maximum: 23}
+    to-hour:
+      schema: {type: integer, minimum: 0, maximum: 23}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: night-shift.v1
+spec:
+  appliesTo: [conduit, policy]
+  narrows: true
+  constituents:
+    hours:
+      requirement: '#office-hours.v1'
+      arguments:
+        from-hour: {literal: 22}
+        to-hour: {literal: 6}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: night-read
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    night:
+      requirement: '#night-shift.v1'

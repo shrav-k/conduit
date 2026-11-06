@@ -1,0 +1,25 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a value reference with the source `step` names a step that names a runtime. Once the
+# instance holds the runtime, the step is left as succeeded with nothing dispatched, and
+# returns no outputs in that run (TPL-007, GRA-026). The handle is read with the source
+# `runtime`, as `{source: runtime, name: watcher}`. A schema cannot tell: which step a
+# reference names is in another part of the document.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-directory
+spec:
+  type: example.org/files#local-directory.v1
+  config:
+    path: /srv/checkout
+  setup:
+    steps:
+      watch:
+        runtime: watcher
+        arguments:
+          directory: {source: config, pointer: /path}
+      establish:
+        operation: example.org/files#directory.establish.v1
+        arguments:
+          path: {source: step, step: watch, output: watcher}

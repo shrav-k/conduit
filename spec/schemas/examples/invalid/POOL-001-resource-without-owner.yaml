@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# a Resource has exactly one owner.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: scratch
+from: project-directory
+arguments:
+  path: /tmp/scratch

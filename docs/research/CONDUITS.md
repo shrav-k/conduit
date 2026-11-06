@@ -1,10 +1,6 @@
 # Conduit templates, connections and Pool-owned Resources
 
-**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
-define five template/instance families, Pool-managed shared service authentication and
-Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
-plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
-terminology is retained where it describes those systems; proposed syntax below is not a schema.
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Updated: 2026-10-31. The five-family template/instance model, exclusive Pool ownership,
 Pool-managed shared service authentication, Pool-only Resource creation, typed handlers and explicit open/join intents are accepted. Broader interaction examples remain research; the current YAML draft is separate from this evidence.
@@ -837,7 +833,7 @@ or special tracker abstraction in the core protocol.
 ## Evaluation cases
 
 The accepted first slice is retained messages and inspection. The
-[experiment packet](../../experiments/001-shared-access/README.md) owns the current walkthrough.
+[experiment packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) owns the current walkthrough.
 MCP is the leading external capability surface; local internals can use in-process calls or IPC.
 This investigation selects no Signal, Matrix, MQTT, AMQP, NATS, Zenoh or A2A dependency.
 

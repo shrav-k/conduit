@@ -1,5 +1,16 @@
 # Authoring and syntax proposals
 
+> **Not binding.** This document predates rulings 13 to 37 of the
+> [plan audit](../../AUDIT.md#ruling-log). It uses shapes and words that the specification has
+> replaced, among them alias-plus-export references, `form`, grants, plugins, drivers and
+> handlers. Where it says accepted, current or v0, it means the design as it stood before those
+> rulings. The specification is [`spec/`](../../../spec/README.md), and the current worked example
+> is [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
+>
+> It is not an input for engine builders. The naming review that this page puts first is done:
+> the vocabulary was ruled (rulings 16 to 18 and 27 to 29) and is in
+> [`spec/definitions.md`](../../../spec/definitions.md).
+
 Status: **behavior/structure review complete; concrete representations and supporting vocabulary
 remain provisional**, 2026-11-04. [PR #3](https://github.com/shrav-k/conduit/pull/3) merged the accepted
 rulings and migrated paper fixtures. Nothing in this packet is an installable package, runnable
@@ -21,9 +32,11 @@ or decision queue. All Conduit-owned spellings except the five family names rema
 
 ## Accepted rules to apply
 
-Read the canonical topic rather than treating a proposed field layout as authoritative:
+The heading is as first written. The table links the topic files that this packet illustrated.
+Those files are superseded and no longer the home of any rule: the rules in force are the
+promises in [`spec/`](../../../spec/README.md).
 
-| Area | Canonical home |
+| Area | Older topic file |
 | --- | --- |
 | Five families, versioned types, plugins/packages, scoped dependencies and re-exports | [Model](../../protocol/MODEL.md#authoring-concepts-beneath-the-object-families). |
 | YAML/JSON value model, schema resolution, formats, defaults and numeric limits | [Configuration language](../../protocol/CONFIGURATION.md#configuration-language). |
@@ -52,7 +65,8 @@ source categories, reference scope, schema rules and lifecycle guarantees are no
 Return a new behavioral conflict to the current review with a concrete example rather than resolving
 it through an incidental spelling or implementation shortcut.
 
-Update [Experiment 001](../../../experiments/001-shared-access/README.md) and the
+Update [Experiment 001](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md)
+(since removed; the link is to the last commit that held it) and the
 [Experiment 002 plan](../../../experiments/002-runtime-plugins/README.md) with explicit changes and
 accurately scoped evidence. [Library probes](../../../experiments/003-language-probes/README.md)
 establish only their recorded properties. Runtime mechanisms remain in

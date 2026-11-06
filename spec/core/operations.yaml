@@ -1,0 +1,825 @@
+# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
+# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
+# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
+# decisions, which the owner has not ruled on, apart from those that ruling 38 accepted:
+# spec/README.md lists them where it says what "accepted" covers. See README.md in this
+# directory. Ruling 38 (2026-11-06, docs/proposals/ruling-38/README.md) removed the tool
+# `start-later-work.v1`, because later work is not part of this version, and gave
+# `apply-policy.v1` the output `diagnostics`: both are the owner's decisions.
+#
+# The Operation contracts of the core package: every management verb (OPS-019), which is
+# every operation here but the one tool and the two controls; the tool that retrieves one's
+# own results (IFC-024); the control that designates the default location (PLC-016); and the
+# control that changes a location's facts (PLC-021).
+# Which capability includes each is in capabilities.yaml, and which open Conduit authorizes
+# each is ACC-033.
+#
+# Read with these rules. The record lists the ones that the owner accepted with the batch. Those
+# that the docs audit and rounds 2 to 4 of the re-audit added or changed since are the
+# coordinator's logged decisions, which the owner has not ruled on; README.md in this directory
+# names the logs. Among the later ones are that `reconcile.v1` is in the capability of `access`
+# and takes `handle`, that an instance is set up by one invocation of `set-up.v1`, that a
+# control's `changes` is a map, that `apply-policy.v1` takes `version`, and that `rename.v1`
+# returns `revision`.
+#   - One contract for one verb. `register.v1`, `register-replacement.v1`, `inspect.v1`,
+#     `set-up.v1`, `retire.v1` and `reconcile.v1` are included both in the capability of
+#     `management` and in the capability of a Pool; ACC-033 says which of the two targets
+#     authorizes a request, from the object the request names. `reconcile.v1` is also
+#     included in the capability of `access`, because reconciling an invocation of a
+#     management verb is authorized against the target that authorized the request being
+#     reconciled. Any other invocation, of a control or of any other operation, is
+#     reconciled through the target that manages the instance it was dispatched to: the
+#     Pool that owns a Resource, and `management` otherwise (ACC-033). So no other
+#     capability, of the core package or of any other, has to include `reconcile.v1`. Where
+#     a Pool is retired, `management` authorizes in its place the inspecting of a Resource
+#     the Pool owns and the reconciling of an invocation, and no other request. Where the
+#     instance of an invocation has been unregistered, `management` authorizes the
+#     reconciling of it, which then stores nothing (ACC-033).
+#   - An instance is set up by one invocation of `set-up.v1` and retired by one of
+#     `retire.v1`, requested of the target ACC-033 names, with the instance as an input. The
+#     engine implements both. The `setup` and `retire` graphs of the instance's template are
+#     the steps the engine then runs for that instance: they are not implementations selected
+#     in an `implementation` map, and they have no inputs of their own. "The setup operation"
+#     and "the retire operation" of an instance mean these invocations.
+#   - An operation that changes a stored object takes the object's current `revision` as an
+#     input (REV-002, REV-011), because a request's `arguments` are exactly the operation's
+#     inputs (IFC-001). `replace.v1` and `rename.v1` return the revision after the request in
+#     the output `revision` (SUB-009, OBJ-026). Setting up, retiring, retiring a Pool with
+#     its Resources, opening and closing name no revision and advance none (REV-012); nor do
+#     applying and removing a policy, because a policy is not configuration (ACC-031).
+#   - A control declares the input `revision` and the output `settings`, and its `changes`
+#     is a map from the name of an input to the pointer, into the configuration, of the
+#     setting that input sets (CTR-006). `revision` is the one input that must always be
+#     supplied (REV-006). `settings` states the settings the control confirmed: a map
+#     keyed by those pointers, with one member for each place confirmed, holding the value
+#     now stored there (REV-007). Its other inputs are optional, and one that is not supplied
+#     leaves its setting as stored: the settings a control addressed are those of the inputs
+#     it was sent. The input `settings` of `reconcile.v1` has the same shape. A reconciliation
+#     states `revision` and `settings` only where it stores settings, and `handle` only where
+#     it stores one; stated anywhere else, each reports invalid (REV-010, TPL-015, OPS-031).
+#   - No input of a core operation states a `default` (CTR-002, OPS-026): each is supplied or
+#     is optional.
+#   - `reservedToRoot: true` marks an operation reserved to the root Interface (ACC-032).
+#     Only an Operation contract of the core package carries the mark (CTR-009).
+#   - `deduplicates: true` is declared where the whole effect is a change to what the engine
+#     itself stores, which the engine can recognize by the operation identity. It is not
+#     declared where the engine runs the steps of a template's graph or invokes other
+#     implementations, as it does for `set-up.v1`, `retire.v1` and
+#     `retire-with-resources.v1`.
+#   - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
+#     operation, of this package or of any other, arranges through the engine work that
+#     outlasts its invocation, and no contract carries a mark for it (ACC-019, CTR-002).
+#   - Every core operation is implemented by the engine itself, written as the default
+#     implementation `github.com/shrav-k/conduit/core#engine`.
+#   - A request that an actor makes on its own behalf names an object by a reference and
+#     never by an ID: one that holds the resolved form `{kind, id}` in its place reports
+#     invalid (LIF-031). A step of a graph and an onward request may hold that form, because
+#     the engine handed it to them. The engine resolves a reference when it decides the
+#     request, and a retired instance's name still resolves until the instance is
+#     unregistered (LIF-007). An invocation and a policy are not
+#     objects, and each is named by the ID the engine gave it. An instance stores each of
+#     its references in the resolved form `{kind, id}`, which only the engine writes
+#     (OBJ-009), and `inspect.v1` and a control's `settings` show it so. A request made
+#     through a Conduit that lists the operation, and that names an object, a policy or an
+#     invocation that does not exist, reports invalid (OPS-029).
+#   - What a request that is not dispatched says beyond its reason, it says in `diagnostics`
+#     in its result's `structuredContent`, whether or not the operation declares an output
+#     of that name (IFC-025). A rejected registration carries them so (OBJ-023), and so does
+#     a request to retire or to unregister a Pool whose Resources are in the way (LIF-020),
+#     though `retire.v1` and `unregister.v1` declare no output. A request that is not
+#     permitted reports refused and says nothing else about the objects it names (OPS-023).
+#     A diagnostic of the other class is reported and prevents nothing: `register.v1` and
+#     `install.v1` report a package that is not installed so (PKG-006, PKG-028), and
+#     `apply-policy.v1` the targets whose implementation does not support the policy's
+#     requirement (ACC-031).
+#   - A result that carries none of an operation's outputs has `isError` true: one that
+#     ended with a reason, one whose outcome is failed or unknown, one whose content is
+#     withheld, and a repeat of an invocation that has not ended, or of one that succeeded
+#     and whose outputs the engine no longer keeps (IFC-025). An operation that declares no
+#     outputs has no content to withhold: its result is never marked as withheld, and is not
+#     an error where its outcome is succeeded, and then holds an empty map as its
+#     `structuredContent` (ACC-034, IFC-025).
+
+# --- Operations of `management`, some of them also operations of a Pool.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: register.v1
+  description: >-
+    Register the documents of one submission. The `documents` and the `manifest` of one request
+    are one project: the documents and the one manifest handed over together. Templates and
+    instances are added to the objects that exist, registering an instance document instantiates
+    its template, and contracts are made available to the project. Nothing is set up or opened.
+    Authorized against `management`; registering a Resource into a Pool that already exists also
+    needs an open Conduit to that Pool that lists this operation. `objects` lists every template
+    and instance the request added, nested instances among them, and says of each nested
+    instance which nested instantiation made it. A registration that is rejected is not
+    dispatched, and its result still carries `diagnostics`. The request hands the manifest over
+    as a value, with no directory, so an item of `packages` whose `fetch` is a relative
+    reference, and an implementation item whose program is a relative path, are rejected. A
+    registration fetches and installs no package: one that the manifest lists and that is not
+    installed is reported in `diagnostics`, and `fetch` in an item is the place an installation
+    of that item fetches from. A Resource document whose owner is a retired Pool is rejected, so
+    a request that holds one reports invalid.
+spec:
+  inputs:
+    documents:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#document.v1}
+    manifest:
+      schema: {$ref: github.com/shrav-k/conduit/core#manifest.v1}
+      optional: true
+  outputs:
+    objects:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#object.v1}
+    diagnostics:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+  effect: >-
+    Adds the templates and instances that the documents make, and the nested instances of
+    those instances, to the objects that exist.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: replace.v1
+  description: >-
+    Replace a template with the document given, which has the same kind and name. Instances made
+    before keep what they resolved. The document is handed over with no contracts: a reference
+    written `#name` in it reaches a contract or an implementation of the unpublished package
+    that the template being replaced holds. A manifest may be handed over with the document, and
+    the document's references to packages then resolve through its `packages`. Such a manifest
+    may hold `packages` alone, beside its `apiVersion`: one that holds any other member,
+    `implementations`, `exports`, `address` and `version` among them, is rejected, and so is a
+    document that refers to a package other than the core package where no manifest is handed
+    over. A request whose document or manifest is rejected, or whose document is of another kind
+    or name, reports invalid. A request whose document is equal to the template as stored, and
+    whose packages have the versions and the digests that the template keeps, changes nothing
+    and succeeds, and the revision does not advance. `revision` among the outputs is the
+    template's revision after the request, which is the one it had where nothing changed.
+    Authorized against `management`.
+spec:
+  inputs:
+    template:
+      schema: {$ref: github.com/shrav-k/conduit/core#template.v1}
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    manifest:
+      schema: {$ref: github.com/shrav-k/conduit/core#manifest.v1}
+      optional: true
+  outputs:
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    diagnostics:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+  effect: >-
+    Changes the stored definition of the template and, where it changed, advances its
+    revision.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: rename.v1
+  description: >-
+    Give a template or an instance a new name. Its ID and its definition are unchanged, and its
+    revision advances, as for any stored change. A request that gives an object the name it
+    already has changes nothing and succeeds, and the revision does not advance. The output
+    `revision` is the object's revision after the request, which is the one it had where nothing
+    changed. One whose new name another object of that kind has reports conflict, and one whose
+    new name is not a name reports invalid. Authorized against `management`. A rename of a
+    Conduit that would make one of its tool names equal to another tool's name, or longer than
+    128 characters, reports conflict. A first-start object is not renamed, and nor is either of
+    the two Conduits of `root` that exist from first start: the request reports refused. A
+    request that names an object that does not exist reports invalid.
+spec:
+  inputs:
+    object:
+      schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+    name:
+      schema: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  effect: Changes the name of the object and, where the name changed, advances its revision.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: unregister.v1
+  description: >-
+    Remove a template, or a retired instance, from the objects that exist. An instance is
+    removed only if its shutdown is confirmed or its location was declared lost; otherwise the
+    request reports conflict. Its name and its ID no longer
+    resolve. Records are kept. Authorized against `management`. A request to unregister a Pool
+    that owns a Resource that still exists reports conflict, and a diagnostic names each
+    Resource in the way. A request that names an object that does not exist reports invalid.
+spec:
+  inputs:
+    object:
+      schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  effect: Removes the object from the objects that exist.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: inspect.v1
+  description: >-
+    Read a template or an instance: what was declared, its status and the records about it.
+    Inspecting a Resource is authorized against the Pool that owns it, or against `management`
+    where that Pool is retired; inspecting anything else is authorized against `management`. A
+    request that names an object that does not exist reports invalid, whichever of the two it is
+    made of. `packages` lists the packages the object holds. Each item has `address`, `version`
+    and `digest`; the core package's item has no `digest`, and an unpublished package's has
+    `digest` alone. `declared` shows each reference in its resolved form, `{kind, id}`.
+    Inspecting an open Conduit shows, under each requirement it applies, the implementation that
+    applies it, named by its qualified reference or, for an implementation of a submitted
+    project, as `<digest>#<name>`. The status of `access` also lists the policies in force, each
+    with the ID `apply-policy.v1` returned for it, with the actors and targets it names, and
+    with the version and the digest of the requirement's package that it keeps.
+spec:
+  inputs:
+    object:
+      schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+  outputs:
+    id:
+      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    packages:
+      schema:
+        type: array
+        items:
+          anyOf:
+            - type: object
+              properties:
+                address: {$ref: github.com/shrav-k/conduit/core#address.v1}
+                version: {$ref: github.com/shrav-k/conduit/core#version.v1}
+                digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
+              required: [address, version, digest]
+              additionalProperties: false
+            - type: object
+              properties:
+                address: {const: github.com/shrav-k/conduit/core}
+                version: {$ref: github.com/shrav-k/conduit/core#version.v1}
+              required: [address, version]
+              additionalProperties: false
+            - type: object
+              properties:
+                digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
+              required: [digest]
+              additionalProperties: false
+    declared:
+      schema: {type: object}
+    status:
+      schema:
+        type: object
+        properties:
+          state: {enum: [registered, ready, retired]}
+          shutdown: {enum: [confirmed, pending, unknown]}
+          policies:
+            type: array
+            items:
+              type: object
+              properties:
+                id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+              required: [id]
+        required: [state]
+      optional: true
+    records:
+      schema:
+        type: array
+        items: {type: object}
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-up.v1
+  description: >-
+    Set up an instance. One invocation of this operation is the setup of the instance it names,
+    which the promises call the instance's setup operation. The engine implements it: it opens
+    the instance's declared Conduits, sets up the Resources of a Pool's entries, and runs the
+    steps of the `setup` graph of the instance's template. That graph is not an implementation
+    selected in an `implementation` map, and it has no inputs of its own. A step that opens a
+    declared Conduit or sets up the Resource of an entry is authorized exactly as this request
+    was, by the Conduits of the instance that sent it, which for an onward request is the
+    sending instance and not the caller it serves. A declared Conduit that is made from a
+    composite template is one step, and the opening of its component Conduits is decided as a
+    whole: it is decided for every one of them before any is opened, and where one would not
+    be opened none is, nothing is closed, and the step reports that component's reason.
+    Otherwise the step makes one request for `open.v1` for each of them, each an invocation of
+    its own, and afterwards each component Conduit is opened or closed by itself like any other.
+    Setting up a Resource is authorized against the Pool that owns it, and setting up an Agent,
+    an Interface or a Pool against `management`. A Conduit is set up with `open.v1`: a request
+    that names a Conduit or a template reports invalid, and so does one that names an object
+    that does not exist.
+spec:
+  inputs:
+    instance:
+      schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+  effect: >-
+    Runs the setup of the instance, with the effects of its steps. When it succeeds the
+    instance's state is ready.
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: retire.v1
+  description: >-
+    Retire an instance. One invocation of this operation is the retirement of the instance it
+    names, which the promises call the instance's retire operation. The instance's state is
+    retired from the moment the request is dispatched. The engine implements the operation: it
+    runs the steps of the `retire` graph of the instance's template, where the template has one
+    and a setup of the instance was ever dispatched, and then stops each runtime the instance
+    still holds. That graph is not an implementation selected in an `implementation` map, and it
+    has no inputs of its own. Retiring a Resource is authorized against the Pool that owns it,
+    and retiring an Agent, an Interface or a Pool against `management`. A retired Pool whose
+    shutdown is not confirmed is retired again with this operation, through `management`. A
+    Conduit is retired with `close.v1`: a request that names a Conduit or a template reports
+    invalid, and so does one that names an object that does not exist. A request to retire an
+    instance whose shutdown is not confirmed is a further retirement, and one to retire an
+    instance whose shutdown is confirmed changes nothing and succeeds. A request to retire a
+    Pool that owns a Resource whose shutdown is not confirmed reports conflict, and a diagnostic
+    names each Resource in the way.
+spec:
+  inputs:
+    instance:
+      schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+  effect: >-
+    Ends the instance for good, with the effects of the steps of its `retire` graph and of the
+    stops of its runtimes. The Conduits of which it is the target are closed at once, and
+    those of which it is the consumer once its shutdown is confirmed.
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: reconcile.v1
+  description: >-
+    Record, with what was checked, whether the effect of an invocation whose outcome is unknown
+    occurred. The invocation is named by the ID the engine gave it, which a consumer learns from
+    the result of its request or from `retrieve-result.v1`. An invocation of a management verb
+    is reconciled through the target that authorized the request being reconciled, by an open
+    Conduit to that target that lists this operation: `management` or a Pool for a setup or a
+    retirement, and `access` for an open or a close. Any other invocation, of a control or of
+    any other operation, is reconciled through the target that manages the instance it was
+    dispatched to: the Pool that owns a Resource, and `management` for an Agent, an Interface or
+    a Pool. Where the Pool that owns a Resource is retired, `management` authorizes in its
+    place, and so it does where the instance of the invocation has been unregistered: the
+    reconciliation then records the outcome and stores nothing, and it names no `revision` and
+    states no `settings` or `handle`: one that does reports invalid. A request that names an
+    invocation whose outcome is not unknown reports conflict, and one whose ID names no
+    invocation reports invalid. Recording that a setup or an open occurred gives it the outcome
+    succeeded and makes the instance ready or the Conduit open. Recording that a retirement or a
+    close occurred confirms the shutdown, unless the outcome of a start of one of the instance's
+    runtimes is still unknown. The retirement of an instance that holds a runtime is not
+    recorded as having occurred: the request reports conflict, and the stop of the runtime is
+    reconciled, or the instance retired again, first. Recording that the effect did not occur
+    gives the outcome failed and changes nothing else: the instance or the Conduit is as a
+    failed setup, open, retirement or close leaves it. Where a control of an instance that
+    exists took effect, `revision` is required, and `settings` states the settings that took
+    effect, in the shape of the control's output `settings`, a map keyed by the pointers of the
+    control's `changes`: they are stored in the instance's current configuration. Where the
+    control did not take effect nothing is stored, and the request names no `revision` and
+    states no `settings`. Either of the two stated where the reconciliation stores no settings,
+    as for an invocation that is not of a control, reports invalid. For the start of a runtime
+    that occurred, on an instance that exists, `handle` is required: it states the handle of the
+    runtime, which the instance then holds, and a request that records the start as having
+    occurred and states none reports invalid. This holds for a retired instance too: it then
+    holds the runtime, its shutdown is not confirmed while it does, and a further retirement
+    stops the runtime. While the outcome of a start of one of an instance's runtimes is unknown,
+    the shutdown of the instance is not confirmed. `handle` stated for an invocation that is not
+    the start of a runtime, or for a start that the request records as not having occurred,
+    reports invalid. Recording that a stop of a runtime occurred ends the holding, and recording
+    that a start or a stop did not occur leaves the instance as it was.
+spec:
+  inputs:
+    invocation:
+      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    occurred:
+      schema: {type: boolean}
+    checked:
+      schema: {type: string, minLength: 1}
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+      optional: true
+    settings:
+      schema: {type: object}
+      optional: true
+    handle:
+      handle: true
+      optional: true
+  effect: >-
+    Changes the invocation's outcome from unknown to succeeded or failed. Where a setup or an
+    open is recorded as having occurred, sets the state of the instance or the Conduit to
+    ready. Where a retirement or a close is, confirms the shutdown. For a control that took
+    effect, stores the settings stated. For the start of a runtime that occurred, stores the
+    handle stated, and for a stop that occurred, ends the holding of the runtime.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: register-replacement.v1
+  description: >-
+    Ask for a new instance for a nested instantiation whose instance is retired: a declared
+    Conduit, a component Conduit made for a declared Conduit whose template is a composite, or
+    the Resource of a Pool's entry. The request names the retired instance. The new instance has
+    a new ID, a newly generated name and the state registered, and the retired instance keeps
+    its own name; nothing is set up or opened. It is made from the template that the `from` of
+    the nested instantiation names, as that template stands when the request is made: where that
+    template no longer exists, the request reports invalid. A request that names an instance
+    that is not retired is not dispatched and reports conflict, for a declared Conduit and a
+    component as for the Resource of an entry. An instance that no nested instantiation made is
+    not covered, because no instance holds a nested instantiation for it: a request that names
+    one is not dispatched and reports invalid. That is so for an instance that a document of its
+    own made, and for a component of a composite Conduit that was instantiated by its own
+    document, for which a new Conduit is instantiated by a new document. Authorized as
+    registering that instance would be, with this operation in the place of `register.v1`:
+    against `management`, and for the Resource of a Pool's entry also by an open Conduit to that
+    Pool that lists this operation. The request is a registration, so one that is rejected still
+    carries `diagnostics`. A request for a new instance that a rule on instantiation does not
+    make reports invalid, as the registration of a document that the rule rejects does: one for
+    a declared Conduit whose target is retired, for example, or for a new Resource for an entry
+    of a retired Pool.
+spec:
+  inputs:
+    instance:
+      schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
+  outputs:
+    object:
+      schema: {$ref: github.com/shrav-k/conduit/core#object.v1}
+    diagnostics:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+  effect: Adds one instance to the objects that exist.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: install.v1
+  description: >-
+    Make one version of a package available. Nothing is registered. Authorized against
+    `management`. An installation that is rejected is not dispatched and reports invalid: an
+    archive whose digest is not `digest`, and a manifest that states another address or version,
+    are among the causes. It reports unavailable where the archive cannot be fetched now, and
+    conflict where that address and version is already installed with another digest. Where it
+    is already installed with the same digest the request is decided like any other, changes
+    nothing and succeeds. Those two are decided from what is installed: nothing is fetched for
+    an address and version that is already installed. A package whose manifest lists a package
+    that is not installed is installed, and `diagnostics` reports the missing one. `fetch` is a
+    URI reference, and a relative one is rejected, because a request has no directory to resolve
+    it against. A package is installed only by this operation: registering a project installs
+    none of the packages its manifest lists, and `fetch` in an item of `packages` is the value
+    an installation of that item gives here.
+spec:
+  inputs:
+    address:
+      schema: {$ref: github.com/shrav-k/conduit/core#address.v1}
+    version:
+      schema: {$ref: github.com/shrav-k/conduit/core#version.v1}
+    digest:
+      schema: {$ref: github.com/shrav-k/conduit/core#digest.v1}
+    fetch:
+      schema: {type: string, minLength: 1}
+      optional: true
+  outputs:
+    diagnostics:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+  effect: Adds the package, at that version and digest, to the packages that are installed.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: declare-lost.v1
+  description: >-
+    Record that a location, and the instances placed on it, can never confirm shutdown. The
+    location and every instance on it are retired. A location that a request has already retired
+    is declared lost in the same way, and a request for a location that was already declared
+    lost changes nothing and succeeds. Reserved to the root Interface, and authorized against
+    `management`.
+spec:
+  inputs:
+    location:
+      schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+  effect: >-
+    Retires the location and every instance placed on it, and closes the Conduits of which any
+    of them is an end.
+  deduplicates: true
+  reservedToRoot: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: purge.v1
+  description: >-
+    Remove the records made before a given time. For every invocation its operation identity,
+    the engine's ID for it, its outcome, a digest of its contents, its operation, its caller,
+    the instance it was dispatched to, the Conduit it was dispatched through, the target that
+    authorized it and, for a step that names a runtime, the name of that runtime are kept, and
+    are read as records of that instance. Records are removed and nothing else: what an instance
+    holds, and the content of a retained result, are untouched. A record of the purge is kept.
+    Reserved to the root Interface, and authorized against `management`.
+spec:
+  inputs:
+    before:
+      schema: {type: string, format: date-time}
+  effect: Removes records.
+  deduplicates: true
+  reservedToRoot: true
+  implementation: github.com/shrav-k/conduit/core#engine
+
+# --- Operations of a Pool alone.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: retire-with-resources.v1
+  description: >-
+    Retire the Pool that is the target of the request together with the Resources it owns. Each
+    Resource whose shutdown is not confirmed is retired, in the reverse of the order of setup: a
+    Resource before any Resource that it refers to, or to which it is the consumer of a Conduit,
+    among those the Pool owns. Among Resources that depend on each other in a cycle the order is
+    the engine's. A Resource that is already retired, with its shutdown not confirmed, is
+    retired again, by a further retirement, and none is dispatched for a Resource whose shutdown
+    is confirmed. Once a retirement that this request dispatched has ended without the shutdown
+    of its Resource confirmed, no further retirement is dispatched. The Pool is retired only if
+    the shutdown of every one of them is confirmed. Authorized against that Pool, by a Conduit
+    that need list only this operation: the retirements of the Resources are part of it, so the
+    Conduit need not list `retire.v1`. Each of those retirements is an invocation of `retire.v1`
+    of its own, with its own outcome, and so is the Pool's. Where Resources remain whose
+    shutdown is not confirmed, the Pool's retirement is not dispatched, the outcome of this
+    request is failed, and the diagnostics of its result name each of them, those whose
+    retirement was not dispatched among them: a result whose outcome is failed holds no outputs,
+    so the operation declares none.
+spec:
+  effect: >-
+    Retires the Pool, once the shutdown of every Resource it owns is confirmed. The retirement
+    of each Resource is an invocation of `retire.v1` of its own, with its own effects.
+  implementation: github.com/shrav-k/conduit/core#engine
+
+# --- Operations of `access`.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: open.v1
+  description: >-
+    Open a Conduit whose state is registered. Dispatched only if the bound of the actor's own
+    Conduit to `access` covers the Conduit's target and names every operation it lists. A
+    Conduit to `access` that applies no bound is unlimited, and is opened only by an actor whose
+    own Conduit to `access` applies no bound. Where the Conduit to be opened is itself one to
+    `access`, ACC-030 states the condition in place of this one: its bound is within the actor's
+    own, and the actor's bound need not cover `access` as a target. A request to open a Conduit
+    that is already open changes nothing and succeeds, and one to open a closed Conduit reports
+    conflict. So does one to open a Conduit that is not open and whose consumer or whose target
+    is retired, whatever its shutdown; a Conduit that was open when its consumer was retired is
+    still open, and a request to open it succeeds like any other. A request that names a Conduit
+    that does not exist reports invalid, whatever the bound.
+spec:
+  inputs:
+    conduit:
+      schema: {$ref: github.com/shrav-k/conduit/core#conduit-reference.v1}
+  effect: >-
+    Sets the Conduit's state to ready, so that its consumer may request the operations it
+    lists on its target.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: close.v1
+  description: >-
+    Close a Conduit. All the access it carried ends, and it is never opened again. Its
+    shutdown is confirmed when it is closed, however it was closed, because a Conduit holds
+    nothing to shut down. Dispatched only if the bound of the actor's own Conduit to `access`
+    covers the Conduit's target and names every operation it lists. A Conduit to `access`
+    that applies no bound is closed only by an actor whose own Conduit to `access` applies
+    no bound. Where the Conduit to be closed is itself one to `access`, ACC-030 states the
+    condition in place of this one. A request to close a Conduit that is already closed
+    changes nothing and succeeds, and one that names a Conduit that does not exist reports
+    invalid, whatever the bound. A Conduit whose consumer is retired is closed without a
+    request once the consumer's shutdown is confirmed, and until then permits only the
+    requests of the consumer's retirement.
+spec:
+  inputs:
+    conduit:
+      schema: {$ref: github.com/shrav-k/conduit/core#conduit-reference.v1}
+  effect: Sets the Conduit's state to retired, which ends the access it carried.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: apply-policy.v1
+  description: >-
+    Apply a requirement, as a policy. The request gives `actors`, `targets` or both, and one
+    that gives neither reports invalid. The policy applies to each request whose caller is one
+    of `actors`, where that list is given, and whose target is one of `targets`, where that list
+    is given. No policy applies to a request whose caller is the root Interface, and a request
+    whose `actors` names it reports refused. The policy is stored by `access`, which returns an
+    ID for it. A policy is not configuration, so the request names no revision. `requirement` is
+    a qualified reference: a policy names a Requirement contract of a published package only. A
+    qualified reference carries no version, so `version` may name a version of the package whose
+    address the reference writes. Where it is left out, exactly one installed version of that
+    package must export the requirement, and otherwise the request reports invalid. The policy
+    keeps that version of that package and its digest, also where the package re-exports the
+    requirement from another. A policy is never dropped: a request to which it applies, and
+    whose implementation does not support the requirement, reports unavailable, and that is so
+    for every request for an operation of this package, because `engine` supports `bound.v1`
+    alone. The result says where that will be so: `diagnostics` names each target that the
+    policy reaches and whose implementation does not support the requirement, and the policy is
+    applied all the same. For a policy that gives `targets` those are the ones among them, and
+    for one that gives none they are `management`, `access` and every Pool, which the engine
+    implements. Where there is none to name, `diagnostics` is an empty list. Dispatched only if
+    every actor and target named is covered by the bound of the
+    actor's own Conduit to `access`. A requirement that does not narrow requests, or that does
+    not apply as a policy, reports invalid, and so do `arguments` that do not fit the
+    requirement's inputs, a `version` that is not installed or does not export the requirement,
+    and a request that names an actor or a target that does not exist.
+spec:
+  inputs:
+    requirement:
+      schema: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+    version:
+      schema: {$ref: github.com/shrav-k/conduit/core#version.v1}
+      optional: true
+    arguments:
+      schema: {type: object}
+      optional: true
+    actors:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#actor-reference.v1}
+      optional: true
+    targets:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
+      optional: true
+  outputs:
+    policy:
+      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    diagnostics:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
+  effect: Adds a policy to the policies in force.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: remove-policy.v1
+  description: >-
+    Remove a policy, named by the ID `apply-policy.v1` returned. The request names no
+    revision. Dispatched only if every actor and target the policy names is covered by the
+    bound of the actor's own Conduit to `access`. An ID that names no policy in force reports
+    invalid.
+spec:
+  inputs:
+    policy:
+      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
+  effect: Removes a policy from the policies in force.
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+
+# --- The one tool every instance is presented, whether or not a Conduit of it is open.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: retrieve-result.v1
+  description: >-
+    Retrieve the result of an invocation that began with a request the instance sent itself,
+    named by the operation identity the request carried and the target it was sent to, for the
+    same caller. An operation identity, and the retrieval of a result, are scoped to the caller,
+    the target and the instance that sent the request: an instance retrieves only the result of
+    an invocation that it sent the request for. An identity under which the sending instance has
+    no invocation reports refused. Where the request was an onward request, the call names the
+    invocation that the request served, in the `_meta` key `serving`, and is made for that
+    invocation's caller, whether or not that invocation is still in progress; a call that names
+    none is made for the instance as its own caller. A call that names a served invocation may
+    give `target` in the resolved form `{kind, id}`, which is the only form an implementation
+    holds. Needs no Conduit. `state` is the invocation's state, and `invocation` is the engine's
+    ID for the invocation, which is the ID `reconcile.v1` takes. A retained result belongs to
+    the Conduit its invocation was dispatched through, which for an invocation with several
+    attempts is that of the latest: its content is delivered only while that Conduit is open,
+    and never under another one. `withheld` is true where content exists and is not delivered;
+    `outputs` holds the operation's outputs where they are delivered, and is absent, with
+    `withheld` not true, where the engine no longer keeps them. Once the target is unregistered
+    the request reports refused, however it names the target, as for any identity under which
+    the sending instance can reach no invocation; the records of the invocation remain.
+spec:
+  inputs:
+    operationIdentity:
+      schema: {type: string, minLength: 1}
+    target:
+      schema: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
+  outputs:
+    state:
+      schema: {enum: [inProgress, succeeded, failed, unknown]}
+    invocation:
+      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    withheld:
+      schema: {type: boolean}
+      optional: true
+    outputs:
+      schema: {type: object}
+      optional: true
+  implementation: github.com/shrav-k/conduit/core#engine
+
+# --- The control of the `system` Pool.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-default-location.v1
+  description: >-
+    Designate the default location, or clear it by giving null. A control of the `system` Pool,
+    authorized by an open Conduit to `system` that lists it. A value that is not the name of a
+    location that exists reports invalid. `settings` holds the member `/defaultLocation`, with
+    the value now stored there, where the control confirmed it: the location in its resolved
+    form, `{kind: Resource, id}`, or null.
+spec:
+  inputs:
+    location:
+      schema:
+        anyOf:
+          - $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+          - type: 'null'
+      optional: true
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
+    settings:
+      schema: {type: object}
+  effect: Changes the default-location setting of the `system` Pool.
+  changes:
+    location: /defaultLocation
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+
+# --- The control of a location.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-facts.v1
+  description: >-
+    Change the stored facts of a location. A control of a location, authorized by an open
+    Conduit to that location that lists it. `facts` is the whole of what the location is to
+    state about itself; where it is not supplied, the facts are left as stored. A location's
+    facts are changed in no other way. `settings` holds the member `/facts`, with the facts
+    now stored, where the control confirmed them.
+spec:
+  inputs:
+    facts:
+      schema:
+        type: object
+        properties:
+          host: {type: string, minLength: 1}
+          localPaths: {type: boolean}
+      optional: true
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
+    settings:
+      schema: {type: object}
+  effect: Changes the stored facts of the location.
+  changes:
+    facts: /facts
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine

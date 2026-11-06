@@ -1,5 +1,7 @@
 # Configuration languages, templates and instances
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Updated 2026-11-01. **Research evidence and proposed schema, not an executable specification.**
 Current contracts live in [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/README.md). The five families
 are Interface, Agent, Resource, Pool and Conduit. Templates specify both complete establishment
@@ -59,7 +61,7 @@ unknown/unavailable outcomes. Detailed proposed boundaries are in
 
 ## Concrete configuration
 
-The current [YAML packet](../../experiments/001-shared-access/README.md) is the single worked
+The current [YAML packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) is the single worked
 configuration draft. It replaces earlier partial control and instance examples here. The accepted
 [control contract](../protocol/LIFECYCLE.md#template-defined-configuration-changes) distinguishes fixed
 definitions, confirmed settings, outstanding requests and observed state. The research below
@@ -387,7 +389,7 @@ contract languages should be transferred as testable design hypotheses.
 | Xu and Zhou, **[Systems Approaches to Tackling Configuration Errors: A Survey](https://cseweb.ucsd.edu/~tixu/papers/csur.pdf)**, ACM Computing Surveys, 2015. [DOI](https://doi.org/10.1145/2791577) | Organizes prevention, detection and diagnosis approaches, including the difficulty of systematic configuration testing. | A survey of earlier systems, not a comparison of our candidate syntax. Build a taxonomy of failures spanning parsing, references, compatibility, transitions and environment; schema validity is one layer. |
 | Xu et al., **[Hey, You Have Given Me Too Many Knobs!](https://cseweb.ucsd.edu/~tixu/papers/fse15.pdf)**, ESEC/FSE 2015. [DOI](https://doi.org/10.1145/2786805.2786852) | Studies operational configuration use in commercial and open-source systems and identifies over-designed options, inappropriate low-level controls and opportunities to simplify domains. | Observed option use does not prove a universal ideal option count. Keep the conceptual core small; add settings for concrete scenarios rather than exposing every runtime implementation choice. |
 | Xu, Pandey and Klemmer, **[An HCI View of Configuration Problems](https://arxiv.org/abs/1601.01747)**, 2016 preprint. | Reframes configuration around human interaction and assistance, rather than syntax alone. | Exploratory framing, not a controlled evaluation of Conduit. Show the effective graph and explanations next to errors; do not require users to remember invisible precedence. |
-| Xu et al., **[Early Detection of Configuration Errors to Reduce Failure Damage](https://www.usenix.org/conference/osdi16/technical-agents/presentation/xu)**, OSDI 2016. [Paper](https://www.usenix.org/system/files/conference/osdi16/osdi16-xu.pdf) | PCheck brings checks of later-used configuration forward, reducing the damage of errors discovered only on particular execution paths. | The approach is neither sound nor complete for all configuration failures; valid values can still be wrong for a workload. Separate offline checks from explicit environment probes and retain runtime failure handling. |
+| Xu et al., **[Early Detection of Configuration Errors to Reduce Failure Damage](https://www.usenix.org/conference/osdi16/technical-sessions/presentation/xu)**, OSDI 2016. [Paper](https://www.usenix.org/system/files/conference/osdi16/osdi16-xu.pdf) | PCheck brings checks of later-used configuration forward, reducing the damage of errors discovered only on particular execution paths. | The approach is neither sound nor complete for all configuration failures; valid values can still be wrong for a workload. Separate offline checks from explicit environment probes and retain runtime failure handling. |
 | Zhang et al., **[An Evolutionary Study of Configuration Design and Implementation in Cloud Systems](https://arxiv.org/abs/2102.07052)**, 2021 study. [Paper](https://arxiv.org/pdf/2102.07052) | Examines 1,178 commits over 2.5 years in HDFS, HBase, Spark and Cassandra; configuration evolution includes defaults, constraints, dependencies and diagnostic changes. | Four systems and a commit-selection method limit generalization. Treat changes in defaults and interpretation as compatibility changes, and retain migration/conformance examples. |
 | Tang et al., **[Interpreted Formalisms for Configurations](https://arxiv.org/abs/1712.04982)**, 2017 preprint. [Paper](https://arxiv.org/pdf/1712.04982) | Uses formal types and constraints in a Hadoop configuration case study to express facts that primitive strings/integers miss. | Narrow prototype, not proof of whole-system correctness; richer environment-dependent cases remain difficult. Give durations, budgets, references and constraints domain meaning without requiring a theorem prover in v0. |
 | Freund et al., **[Union and Intersection Contracts Are Hard, Actually](https://arxiv.org/abs/2106.06278)**, DLS 2021; revised preprint 2022. [DOI](https://doi.org/10.1145/3486602.3486767) | Explains subtle tradeoffs in higher-order union/intersection contracts, including effects and blame. | This does not invalidate ordinary JSON Schema Boolean combinations. Avoid embedding arbitrary higher-order contract programs; start with tagged data variants and explicit operation/state-machine semantics. |
@@ -403,7 +405,7 @@ The current envelope, identity and editing contracts are maintained in
 [DESIGN.md](../protocol/CONFIGURATION.md#configuration-language). Family/form identify the contract; stable IDs
 are distinct from names. Templates are reusable; instances retain resolved configuration and
 controls independently of later template edits. Setup graphs run at start, and instances manage
-ongoing behavior. The [walkthrough](../../experiments/001-shared-access/README.md) gives the current graph YAML draft.
+ongoing behavior. The [walkthrough](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) gives the current graph YAML draft.
 
 Templates now specify both establishment and allowed configuration changes. The walkthrough syntax is one possible expression; no generic full-spec write path for running instances follows
 from using YAML. Interface-mediated authoring and Conduit-mediated runtime interaction have

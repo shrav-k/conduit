@@ -1,0 +1,12 @@
+# Example. It must be rejected:
+# a `default` on `items` itself is not accepted.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: paths.v1
+spec:
+  type: array
+  items:
+    type: string
+    default: /srv

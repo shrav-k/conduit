@@ -1,0 +1,13 @@
+# Example. It must be rejected:
+# an entry gives no owner, because its owner is the Pool.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: workspace
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
+  entries:
+    cache:
+      from: project-directory
+      owner: shared

@@ -1,0 +1,17 @@
+# Example. It must be rejected:
+# an input's destination is never a whole nested instantiation, here a declared Conduit.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: reviewer
+spec:
+  type: example.org/harness#coding-agent.v1
+  inputs:
+    checkout:
+      schema: {type: object}
+      to: [/conduits/checkout]
+  config: {}
+  conduits:
+    checkout:
+      from: directory-read

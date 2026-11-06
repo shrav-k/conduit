@@ -1,5 +1,7 @@
 # Graph authoring: comparison and decision audit
 
+> Not binding. This research predates the specification in [`spec/`](../../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Researched 2026-11-03, following the request to step back from individual syntax rulings.
 This records evidence and recommendations, with subsequent owner rulings identified explicitly.
 The owner accepted the direct-field `reference` layout after the walkthroughs; supporting names

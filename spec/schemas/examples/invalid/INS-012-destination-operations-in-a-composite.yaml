@@ -1,0 +1,19 @@
+# Example. It must be rejected:
+# in a composite Conduit template an input's destination is the `arguments` of a component
+# or a place inside them. `operations` is a destination only in a template that is not a
+# composite: a composite has none.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-review
+spec:
+  inputs:
+    allowed:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+      to: [/operations]
+  components:
+    read:
+      from: directory-read

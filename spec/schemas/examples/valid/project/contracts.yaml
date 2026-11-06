@@ -1,0 +1,12 @@
+# Example. A contract of the project itself. The engine keeps the contracts of a submitted
+# project as an unpublished package (SUB-008), and its documents refer to one as `#name`
+# (NAM-022), in a `$ref` as anywhere else (SCH-015). The template `reviewer` in
+# templates.yaml checks its input `model` against this schema.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: model-name.v1
+  description: The name of a model that an Agent of this project may run.
+spec:
+  enum: [standard, careful]

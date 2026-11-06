@@ -744,7 +744,7 @@ authority or fixed-definition rules. Multiple plugin contributions can fulfill t
 without a primary implementation. Type-contract versions remain independent of the common object
 contract and implementation releases. This chooses a shared structural model, not final type
 names, grouping for the other families, field spellings, a type catalog or another object family.
-See the [Experiment 001 contract guide](../../../experiments/001-shared-access/CONTRACTS.md#draft-syntax).
+See the [Experiment 001 contract guide](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/CONTRACTS.md#draft-syntax).
 
 The accepted source inventory, input root, named runtime-target value and output-selection behavior
 need no further ruling merely to rename their fields. The composition walkthrough preserves these

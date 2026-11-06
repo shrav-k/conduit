@@ -56,7 +56,7 @@ These parts of today's design already read like protocol rules.
 ## What v1 needs
 
 Four pieces, built in order. Each one uses the specs and the
-[001 YAML packet](../../../experiments/001-shared-access/README.md) as its source.
+[001 YAML packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) as its source.
 
 ### 1. Schema — what is valid
 

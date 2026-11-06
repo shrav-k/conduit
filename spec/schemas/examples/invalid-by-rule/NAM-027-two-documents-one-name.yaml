@@ -1,0 +1,21 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# no two documents of one project or package share a name, whatever their kinds. Here a Type
+# and a Capability are both named `directory.v1`, so `#directory.v1` would name two things.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: directory.v1
+spec:
+  family: Resource
+  offers:
+    - '#directory.v1'
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: directory.v1
+spec:
+  operations:
+    - example.org/files#directory.read.v1

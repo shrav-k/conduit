@@ -1,0 +1,22 @@
+# Example. One set of documents. Each is valid against the schemas, and each must be rejected:
+# a selection names nothing where everything that could give it a meaning is at hand. The
+# first template selects a type that the package `example.org/files`, which is in
+# ../valid/files-package/, does not export. The second writes `#notebook.v1`, and no document
+# of its own project has that name. Only a package that is not installed defers the check
+# (PKG-006). A schema cannot tell: what a package exports is in another document.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-folder
+spec:
+  type: example.org/files#local-folder.v1
+  config:
+    path: /srv/checkout
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: notes
+spec:
+  type: '#notebook.v1'

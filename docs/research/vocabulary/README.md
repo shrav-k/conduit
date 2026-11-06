@@ -1,5 +1,13 @@
 # Vocabulary research
 
+> **Superseded for decisions, kept as evidence.** The vocabulary was ruled on 2026-11-05; the
+> accepted words are in the [vocabulary record](../../proposals/vocabulary/README.md) and the
+> [specification's definitions](../../../spec/definitions.md). What remains here is the evidence
+> those rulings cite: the [precedents](PRECEDENTS.md), their [sources](SOURCES.md) with retrieval
+> data, and the reviewer's [simplification pass](SIMPLIFICATION.md). The candidate tables and
+> the walkthroughs proposed names that the rulings have since replaced, so they were removed
+> from the tree; links to them point at the last commit that held them.
+
 Status: research and recommendations for discussion, 2026-11-04. No replacement names or field
 spellings are adopted here. The five settled families remain **Interface, Agent, Resource, Pool
 and Conduit**. The [vocabulary map](../../VOCABULARY.md) links the accepted meanings; its `Vxx`
@@ -51,9 +59,9 @@ These are naming inferences from the cited systems, not claims that those projec
 | Document | Purpose |
 | --- | --- |
 | [Precedents](PRECEDENTS.md) | What source terms actually mean, which distinctions help, and what behavior not to import. Covers orchestration, contract languages, workflows, messaging, authorization, observability and agent/runtime ecosystems. |
-| [Candidates](CANDIDATES.md) | Alternatives, tradeoffs and a provisional recommendation for every V01–V37 topic; light-theme comparison. |
+| [Candidates](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md) | Alternatives, tradeoffs and a provisional recommendation for every V01–V37 topic; light-theme comparison. |
 | [Simplification](SIMPLIFICATION.md) | Reviewer feedback: which candidate terms collapse into one, which words carry too many meanings, and which distinctions must stay. Diagram included. |
-| [Walkthroughs](WALKTHROUGHS.md) | Test candidate language against package authoring, shared service access, setup/recovery, communication and observation. No new YAML dialect. |
+| [Walkthroughs](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/WALKTHROUGHS.md) | Test candidate language against package authoring, shared service access, setup/recovery, communication and observation. No new YAML dialect. |
 | [Sources](SOURCES.md) | Evidence scope, direct primary links, pinned local sources, retrieval metadata and limitations. |
 
 ## The distinction a name must explain
@@ -100,7 +108,7 @@ can expose semantic risks; it cannot establish which vocabulary users will find 
 ## Proposed discussion order
 
 Start with the words needed to explain an original extension author, not with command-line spelling.
-Use the [worked examples](WALKTHROUGHS.md) as the common test for each cluster.
+Use the [worked examples](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/WALKTHROUGHS.md) as the common test for each cluster.
 
 1. **Authoring:** package, contract, capability, implementation/plugin, export and dependency
    (V02–V08). Decide whether “plugin” remains a precise primitive or an explanatory umbrella.

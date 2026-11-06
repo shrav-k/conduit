@@ -1,5 +1,7 @@
 # Observability for Conduit's first distributed runtime
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: **2026-11-02**. Baseline: `f8a9973` on the implementation branch.
 This report compares primary cloud/platform documentation and distributed tracing research.
 The initial debugging package and capture policy were subsequently **accepted in

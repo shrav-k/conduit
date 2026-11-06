@@ -1,0 +1,33 @@
+# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
+# core package and the manifest's promises; the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
+# re-audit changed since rests on the coordinator's logged decisions, which the owner has
+# not ruled on, apart from those that ruling 38 accepted or made; spec/README.md says which.
+#
+# Any document an author writes: a template, an instance or a contract. The manifest is not a
+# document of one of the ten kinds and has its own schema, `manifest.v1`.
+# JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   document.v1  OBJ-017, OBJ-020 (through `envelope.v1`); INS-001 (a document of a family
+#                with `from` is an instance and has no `spec`; one without is a template);
+#                SUB-005 (anything else is not a document)
+#
+# Not expressed here, and checked by the engine: everything the other files list, and the
+# rules on a file or a submission as a whole: no duplicate key, anchor, alias, merge key, tag
+# or key that is not a string (SCH-012); no number without a JSON form (SCH-017) or outside
+# the range of SCH-006; one document or one array of documents in a JSON file (SCH-018); and
+# the rules that relate documents to each other (SUB-001 to SUB-004).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: document.v1
+  description: A template, an instance or a contract document.
+spec:
+  allOf:
+    - $ref: github.com/shrav-k/conduit/core#envelope.v1
+    - anyOf:
+        - $ref: github.com/shrav-k/conduit/core#template.v1
+        - $ref: github.com/shrav-k/conduit/core#instance.v1
+        - $ref: github.com/shrav-k/conduit/core#contract.v1

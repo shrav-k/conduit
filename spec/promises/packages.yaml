@@ -1,0 +1,400 @@
+# Packages: versions, digests and the selection of implementations.
+# Owner rulings of 2026-11-05 (plan-audit rulings 24, 32 and 33). Each rule follows an existing
+# practice: Semantic Versioning for versions, one exact version for each package a manifest
+# lists, a digest of the distributed archive as OCI, npm and Cargo use, and a gzip-compressed
+# tar file as the archive, as npm and Cargo distribute. How a package and its exports are
+# named is in naming.yaml. Consolidation pass 1: PKG-002 was folded into NAM-006; PKG-008 into
+# NAM-011; PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004; and PKG-015 into
+# PLC-007. PKG-021 was added. The follow-up decisions (ruling 33) added PKG-022. The ruling on
+# the core package and the schemas (ruling 37) changed PKG-005, PKG-013, PKG-017 to PKG-020 and
+# PKG-022, and added PKG-023 to PKG-025. The conversion of the older text (decision DA3 of the
+# docs audit, docs/proposals/docs-audit/GAPS.md) changed PKG-012, and kept PKG-023 to PKG-025 as
+# three promises, since a promise names one reason. The manifest's own format is in
+# manifest.yaml. The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md)
+# changed PKG-003, PKG-005, PKG-013, PKG-019 to PKG-021 and PKG-023, and removed none. Its
+# closing pass (docs/proposals/reaudit/round-2/log-closing.md; finding 15 of reader-3.md)
+# changed PKG-017, PKG-020, PKG-022 and PKG-023, and added PKG-026 to PKG-028, on three
+# requests to install whose ending no promise stated. PKG-027 is of the layer `convention`.
+# Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed PKG-006, PKG-020 and
+# PKG-028: a registration installs no package. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed PKG-020 and PKG-023 to PKG-027: an implementation that is a graph is
+# never plain, and a request to install what is already installed is decided from what is
+# installed. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed PKG-019 and PKG-020: an item that states
+# `graph` states no `supports`.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# PKG-017, PKG-018, PKG-023 and PKG-027: a request to install what is already installed is
+# decided like any other. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md.
+
+- id: PKG-001
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose version is not a valid Semantic Versioning 2.0.0 version.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the version, and the package is not available.
+  vectors: []
+
+- id: PKG-003
+  layer: language
+  level: must
+  when: >-
+    An item of a manifest's `packages` names a version of a package, and the installed package
+    at that address has a different version.
+  then: >-
+    That package does not satisfy the item, however close the versions are. Two versions are
+    the same when neither precedes the other under Semantic Versioning 2.0.0, which sets build
+    metadata aside.
+  observable: >-
+    With only version 1.4.1 installed, an item that names 1.4.0 is unresolved. No newer or
+    compatible version is substituted. `1.4.0+a` and `1.4.0` are the same version, and the
+    digest decides whether they are the same package, under PKG-021.
+  vectors: []
+
+- id: PKG-004
+  layer: language
+  level: must
+  when: >-
+    A published package's digest is computed or written.
+  then: >-
+    It is the SHA-256 of the package's archive file exactly as distributed, written as `sha256:`
+    followed by the hash in lowercase hexadecimal.
+  observable: >-
+    Hashing the archive with any SHA-256 tool gives the digest the package reports. A digest
+    written in any other way, such as in uppercase or without `sha256:`, is rejected with a
+    diagnostic naming it.
+  vectors: []
+
+- id: PKG-005
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The instance holds, for each package its template uses, the version and digest that the
+    template holds under NAM-009.
+  observable: >-
+    Inspecting the instance lists those packages under `packages`, in the form NAM-009 gives,
+    with the versions and digests that inspecting its template listed when the instance was
+    made. An unpublished package that the template holds under NAM-009 is listed by its digest
+    alone, and the core package by its address and version alone, since it has no digest.
+  vectors: []
+
+- id: PKG-006
+  layer: language
+  level: must
+  when: >-
+    A template is registered that refers to a package its manifest lists but that is not
+    installed.
+  then: >-
+    The template is registered, and the missing package is reported.
+  observable: >-
+    The template exists after registration, and the result lists the missing package as a
+    diagnostic that did not prevent it. The checks that need the package are made when the
+    template is instantiated, under INS-022. A registration fetches no package and installs
+    none, whatever its manifest lists: a package is installed only by a request for
+    `install.v1`, and `fetch` in an item of `packages` is the place such an installation fetches
+    from, under NAM-012.
+  vectors: []
+
+- id: PKG-007
+  layer: language
+  level: must
+  when: >-
+    An instance document's template uses a package that is not installed.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the package and the version required.
+  vectors: []
+
+- id: PKG-012
+  layer: language
+  level: must
+  when: >-
+    A package exports two things under one name.
+  then: >-
+    The package is rejected when it is installed.
+  observable: >-
+    Installation returns a diagnostic naming the repeated export name. An implementation is an
+    export under PKG-019. One that has the name of a document of its package is rejected under
+    NAM-027, whether or not the package exports that document.
+  vectors: []
+
+- id: PKG-013
+  layer: language
+  level: must
+  when: >-
+    A selection, or the `from` of an instance or of a nested instantiation, resolves to
+    something that a package re-exports from another package.
+  then: >-
+    It resolves to the package that originally exports it, and the instance holds that
+    package's version and digest.
+  observable: >-
+    Inspecting the instance lists the originating package for that selection or that `from`. How
+    a re-export is written in a manifest is MAN-008.
+  vectors: []
+
+- id: PKG-014
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose re-exports, followed through other packages, lead back to
+    itself.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the packages in the cycle.
+  vectors: []
+
+- id: PKG-016
+  layer: interface
+  level: must not
+  when: >-
+    An implementation that is not marked `plain` serves an instance.
+  then: >-
+    Its behavior for that instance depends on its having served another instance.
+  observable: >-
+    The results such an implementation returns for one instance are the same whether or not it
+    has also served others, in one process or several.
+  vectors: []
+
+# --- The manifest of a package (plan-audit ruling 31). Go's `module` line states a module's own
+# --- address in the same way.
+
+- id: PKG-017
+  layer: language
+  level: must
+  when: >-
+    A package's manifest is read.
+  then: >-
+    It states the package's own `address` and `version`, beside the `packages` it uses.
+  observable: >-
+    A package whose manifest states an address or a version other than the one it was listed,
+    asked for or fetched under is rejected when it is installed. A submitted project needs
+    neither key, and MAN-004 says that a manifest states both or neither, and what the two mean
+    in a manifest that is handed over for registration.
+  vectors: []
+
+- id: PKG-018
+  layer: language
+  level: must
+  when: >-
+    A package's manifest lists its `exports`.
+  then: >-
+    They are the names of the documents in the package that others may refer to. A document the
+    package does not export can be referred to only from inside the package, in the form
+    NAM-022 gives.
+  observable: >-
+    A qualified reference from outside to a document that exists in the package but is not
+    exported is unresolved, with a diagnostic naming it, and the document that holds the
+    reference is rejected under NAM-028. How the list is written is MAN-007.
+  vectors: []
+
+- id: PKG-019
+  layer: language
+  level: must
+  when: >-
+    A package's manifest lists its `implementations`.
+  then: >-
+    Each has a name, which is an export, and states `implements`, the operations it implements,
+    and how it is reached, which is one of `command`, `url` and `graph`. It may state
+    `placement`, its requirements on placement, and one that is reached by `command` or `url`
+    may state `supports`, the requirements it can apply. Such an item that leaves out `supports`
+    supports no requirement, and an item that leaves out `placement` has no requirement on
+    placement. No graph states `supports`, wherever it is written: an item that states both
+    `graph` and `supports` is rejected, and a graph supports a requirement where the
+    implementation selected for each of its steps that has no `conduit` does.
+  observable: >-
+    Whether an implementation implements an operation, supports a filter or can run on a
+    location is answered from the manifest, without starting it; for a graph, whether it
+    supports a filter is answered from the items of the implementations selected for its steps,
+    as CON-022 states. An implementation supports a composed requirement where its `supports`
+    lists the composition or every one of its constituents, as CON-022 states. The keys of an
+    item and their values are MAN-009 and MAN-010. The one implementation that is reached by
+    none of the three is the engine itself, in the core package's own manifest, under MAN-012.
+  vectors: []
+
+- id: PKG-020
+  layer: language
+  level: must
+  when: >-
+    An implementation is an existing server that was not written for this specification.
+  then: >-
+    Its implementation item in the manifest is marked `plain: true` and gives `tools`, a map
+    from the selection of each operation it implements to the name of the tool that serves it.
+    It states no `supports`. A plain implementation is reached by `command` or `url`: an
+    implementation that is a graph is never plain, and lists no `tools`.
+  observable: >-
+    An operation in `implements` that is not a key of `tools`, a plain implementation that
+    states `supports`, an item that is not marked `plain` and states `tools`, and an item that
+    states `graph` together with `plain: true` or with `tools`, are each rejected when the
+    package is installed. So is an item that states `graph` together with `supports`, under
+    PKG-019. A graph is written for this specification, and the engine runs its steps, so it is
+    no existing server: IFC-001 gives a tool only to an implementation that is reached by
+    `command` or `url`. A plain implementation supports no requirement, and never counts as
+    deduplicating under OPS-012, whatever the contracts of its operations declare. The `tools`
+    map gives each tool's name and nothing else: the arguments of a call are the operation's
+    inputs under their own names, as IFC-001 states.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: PKG-021
+  layer: language
+  level: must
+  when: >-
+    An item of a manifest's `packages` gives a digest for a package, and the archive of the
+    installed package at that address and version has a different digest.
+  then: >-
+    That package does not satisfy the item.
+  observable: >-
+    The item is unresolved, exactly as under PKG-003. The archive is not used, and its digest
+    is not put in place of the one the manifest gives.
+  vectors: []
+
+# --- Added by the follow-up decisions (plan-audit ruling 33; decision F26 of the re-audit).
+
+- id: PKG-022
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose archive is not a gzip-compressed tar file.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the archive. The digest of PKG-004 is taken over
+    the gzip-compressed file exactly as distributed, not over the tar file inside it or over the
+    files that tar file holds. What the archive holds, and where, is MAN-013 and MAN-014. Which
+    of the tar formats and extensions an engine reads is DL7 of the implementation-defined list.
+  vectors: []
+
+# --- Added with the core package (plan-audit ruling 37; point P5 of the ruling on the core
+# --- package and the schemas). These three are of the layer `convention`.
+
+- id: PKG-023
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to install a package, and the package is rejected, or the request gives a
+    `fetch` that is a relative reference.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The result carries the diagnostics, and the package is not available. A package one of whose
+    documents is rejected when the package is installed is itself rejected, and so is one whose
+    manifest is. This holds for every cause for which a promise says that a package is rejected
+    when it is installed, such as PKG-001, PKG-012, PKG-014, PKG-017, PKG-022, PKG-026, NAM-004,
+    MAN-011, MAN-014 and CTR-011, and for a request to install a package at the core package's
+    address, under NAM-021. An archive that cannot be fetched now is PKG-024, a package already
+    installed with another digest is PKG-025, and one already installed with the same digest is
+    PKG-027. A request has no directory to resolve a relative `fetch` against, as MAN-006
+    states, and one that gives a relative `fetch` reports invalid whether or not the package is
+    already installed. Where the actor is not permitted, or another reason also applies, OPS-023
+    says which is reported.
+  vectors: []
+
+- id: PKG-024
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to install a package, and its archive cannot be fetched now.
+  then: >-
+    The request is not dispatched, and reports unavailable.
+  observable: >-
+    Nothing is installed, and the packages that are installed are as they were. The same request
+    made once the archive can be fetched is decided as any other. How an engine fetches an
+    archive is DL7 of the implementation-defined list. Nothing is fetched for an address and
+    version that is already installed, under PKG-025 and PKG-027, so a request for one never
+    reports unavailable for this cause.
+  vectors: []
+
+- id: PKG-025
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to install a package, and a package is already installed at that address and
+    version with another digest.
+  then: >-
+    The request is not dispatched, and reports conflict. It is decided from what is installed:
+    nothing is fetched for an address and version that is already installed.
+  observable: >-
+    The installed package and its digest are as they were, and nothing is put in its place. Two
+    versions are the same as PKG-003 states. A request to install another version at that
+    address is not such a request: that version is installed beside the first, under NAM-011.
+    The request reports conflict whether or not the archive can be fetched now, and whatever
+    digest the archive at the place of `fetch` has: PKG-024 and PKG-026 are about a package that
+    is not yet installed at that address and version.
+  vectors: []
+
+# --- Added by the closing pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/reader-3.md, finding 15).
+
+- id: PKG-026
+  layer: language
+  level: must
+  when: >-
+    A package is installed, and the digest of the archive that was fetched for it is not the
+    digest that the request to install it names.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the two digests. The archive is not used, and its
+    digest is not put in place of the one the request names, as PKG-021 states for an item of a
+    manifest. The request reports invalid under PKG-023, whether or not another version of the
+    package is installed. No archive is fetched for an address and version that is already
+    installed: such a request is PKG-025 or PKG-027.
+  vectors: []
+
+- id: PKG-027
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to install a package that is already installed at that address and version
+    with the same digest.
+  then: >-
+    The request is decided like any other, changes nothing and has the outcome succeeded. It is
+    decided from what is installed: nothing is fetched for an address and version that is
+    already installed.
+  observable: >-
+    The packages that are installed are the same before and after the request, and the effect
+    that `install.v1` describes has occurred. Two versions are the same as PKG-003 states. The
+    request succeeds whether or not the archive can be fetched now, so PKG-024 does not apply to
+    it. A request that names another digest for that address and version is PKG-025.
+    Being decided like any other, the request is not dispatched where another promise has a
+    request to install not dispatched: one that is not permitted reports refused under ACC-033,
+    and one whose `fetch` is a relative reference reports invalid under PKG-023, although
+    nothing would have been fetched. The same holds for PKG-025, where OPS-023 puts invalid
+    before conflict.
+  vectors: []
+
+- id: PKG-028
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose manifest lists a package that is not installed.
+  then: >-
+    The package is installed, and the missing package is reported.
+  observable: >-
+    The result of the request lists the missing package as a diagnostic that did not prevent the
+    installation, as PKG-006 does for a template. No package is fetched or installed because
+    another package lists it, as none is because the manifest of a registration lists it. A
+    check on one of the package's documents that needs the missing package is made when a
+    template that uses the document is instantiated, with the checks of INS-022, and an instance
+    document whose template needs a package that is not installed is rejected under PKG-007.
+  vectors: []

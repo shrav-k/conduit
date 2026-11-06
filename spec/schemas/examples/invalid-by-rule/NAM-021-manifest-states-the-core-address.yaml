@@ -1,0 +1,13 @@
+# Example. One manifest, valid against `manifest.v1`, that must be rejected:
+# a manifest that is handed over for registration states the core package's address as its
+# own. The schema accepts it, in the form that it keeps for the core package's own manifest,
+# whose implementation items state none of `command`, `url` and `graph` (MAN-012). That form
+# is for the one manifest that is built into the engine. A schema cannot tell: whether a
+# manifest was handed over is not in the manifest.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: github.com/shrav-k/conduit/core
+version: 9.9.9
+implementations:
+  mine:
+    implements: ['#directory.erase.v1']

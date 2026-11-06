@@ -1,0 +1,6 @@
+# Example. It must be rejected:
+# a manifest carries `apiVersion` and no `kind`, `metadata` or `spec`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Manifest
+packages: {}

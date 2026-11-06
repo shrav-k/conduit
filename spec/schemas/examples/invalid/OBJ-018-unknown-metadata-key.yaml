@@ -1,0 +1,11 @@
+# Example. It must be rejected:
+# `metadata` holds `name`, `description` and `annotations` and nothing else.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+  labels:
+    team: platform
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1

@@ -1,0 +1,23 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# the core package's `bound.v1` is never a constituent of a composition. A bound is applied
+# only by an item of a Conduit template's `requirements` that names `bound.v1` itself, so
+# that the rules which count those items hold for every Conduit (CON-028, ACC-029). A schema
+# cannot tell: a constituent's `requirement` is a selection like any other.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: team-bound.v1
+spec:
+  appliesTo: [conduit]
+  narrows: true
+  inputs:
+    pools:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#pool-reference.v1}
+  constituents:
+    bound:
+      requirement: github.com/shrav-k/conduit/core#bound.v1
+      arguments:
+        pools: {source: input, name: pools}

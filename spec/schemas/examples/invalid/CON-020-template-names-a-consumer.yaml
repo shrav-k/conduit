@@ -1,0 +1,12 @@
+# Example. It must be rejected:
+# a Conduit template names no consumer.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  consumer: {kind: Agent, name: reviewer-1}

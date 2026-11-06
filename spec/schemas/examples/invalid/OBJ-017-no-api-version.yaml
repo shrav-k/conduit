@@ -1,0 +1,8 @@
+# Example. It must be rejected:
+# a document carries `apiVersion`.
+
+kind: Interface
+metadata:
+  name: console
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1

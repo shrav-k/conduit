@@ -1,13 +1,27 @@
 # Resource contracts
 
-Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
-their accepted status without becoming requirements for every capability implementation.
-See the [reference boundary](README.md#protocol-and-reference-implementation) and the
-[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+> **Superseded. Nothing in this file binds.** It predates rulings 16 to 37 of the
+> [plan audit](../AUDIT.md#ruling-log). The specification in [`spec/`](../../spec/README.md)
+> governs, and where this file differs from it, this file is wrong.
+>
+> It is kept for two reasons only. The first is as source material for type contracts that
+> are still to be written: the directory, worktree, memory and workspace types. The second is
+> so that links into it resolve.
+>
+> A behavior that is stated here and not in `spec/` is a gap in `spec/`, not a rule. The
+> [audit of the documents outside `spec/`](../proposals/docs-audit/README.md) found the known
+> ones, and its [report](../proposals/docs-audit/reader-older-text.md) lists them under "Gaps in
+> the specification". The words here are the older ones, among them grant, plugin, driver,
+> handler, provision and `form`; [`spec/definitions.md`](../../spec/definitions.md) has the
+> current vocabulary.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-02.
-The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
-syntax and implementation examples do not amend these rules.
+Scope: superseded working text, not a contract. No engine is held to it. Where the text below
+says accepted, settled, current or v0, it means the design as it stood when this file was last
+updated, before rulings 16 to 37.
+
+Once one of the design topics that the [pointer page](README.md) now lists. Last updated:
+2026-11-02. The [conceptual review](../archive/reviews/CONCEPTUAL.md) and the other reviews
+linked below are history.
 
 ## Resources
 

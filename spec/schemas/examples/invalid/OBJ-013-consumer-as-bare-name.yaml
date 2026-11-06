@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# `consumer` accepts more than one kind, so it is written with its kind.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: operator-scratch
+from: directory-read
+consumer: operator
+target: {kind: Resource, name: scratch}

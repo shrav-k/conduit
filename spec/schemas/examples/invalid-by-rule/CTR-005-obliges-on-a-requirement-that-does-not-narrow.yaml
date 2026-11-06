@@ -1,0 +1,14 @@
+# Example. One document that is valid against the schemas and must be rejected: a
+# requirement that does not narrow requests states no `obliges` (CTR-005). Only a filter is
+# sent to an implementation, so `obliges` on any other requirement would oblige nothing.
+# `narrows` is left out here, and is then false. A schema cannot tell: the profile has no
+# keyword that makes one key depend on another.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: audit-note.v1
+  description: Every request through the Conduit carries a note for the auditor.
+spec:
+  appliesTo: [conduit]
+  obliges: [consumer]

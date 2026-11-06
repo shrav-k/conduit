@@ -1,0 +1,106 @@
+# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
+# core package and the manifest's promises; the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
+# re-audit changed since rests on the coordinator's logged decisions, which the owner has
+# not ruled on, apart from those that ruling 38 accepted or made; spec/README.md says which.
+#
+# The envelope every template, instance and contract document has, and `metadata`.
+# JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   api-version.v1        OBJ-017, OBJ-024
+#   envelope.v1           OBJ-017 (`apiVersion`), OBJ-020 (`kind` is one of ten)
+#   template-metadata.v1  OBJ-018, OBJ-001 (a template's `name` is required)
+#   instance-metadata.v1  OBJ-018, OBJ-001, OBJ-003 (an instance's `name` may be left out)
+#   contract-metadata.v1  OBJ-018, CTR-001, NAM-004 (a contract's `name` is its export name)
+#
+# `envelope.v1` is deliberately open: it states only what all ten kinds have in common, so
+# that a document with no `apiVersion` or an unknown `kind` can be told apart from one whose
+# body is wrong. The closed schema of each kind is in templates.yaml, instances.yaml and
+# contracts.yaml, and `document.v1` in document.yaml joins them.
+#
+# A field the engine owns (OBJ-004: `id`, `revision`, `status` and `packages`, the list of
+# packages the engine keeps) is rejected by those closed schemas, at the top level and inside
+# `metadata`, like any other key this specification does not define.
+#
+# Not expressed here, and checked by the engine: that a name is not already taken (OBJ-002,
+# SUB-004).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: api-version.v1
+  description: The value of `apiVersion` in a document written for this version.
+spec:
+  const: github.com/shrav-k/conduit/v0
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: envelope.v1
+  description: What every template, instance and contract document carries.
+spec:
+  type: object
+  properties:
+    apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+    kind:
+      enum:
+        - Interface
+        - Agent
+        - Resource
+        - Pool
+        - Conduit
+        - Type
+        - Capability
+        - Operation
+        - Requirement
+        - Schema
+    metadata: {type: object}
+  required: [apiVersion, kind]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: template-metadata.v1
+  description: The `metadata` of a template.
+spec:
+  type: object
+  properties:
+    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    description: {type: string}
+    annotations:
+      type: object
+      additionalProperties: {type: string}
+  required: [name]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: instance-metadata.v1
+  description: The `metadata` of an instance. Without `name`, the engine generates one.
+spec:
+  type: object
+  properties:
+    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    description: {type: string}
+    annotations:
+      type: object
+      additionalProperties: {type: string}
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: contract-metadata.v1
+  description: The `metadata` of a contract.
+spec:
+  type: object
+  properties:
+    name: {$ref: github.com/shrav-k/conduit/core#contract-name.v1}
+    description: {type: string}
+    annotations:
+      type: object
+      additionalProperties: {type: string}
+  required: [name]
+  additionalProperties: false

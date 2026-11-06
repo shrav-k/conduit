@@ -112,7 +112,7 @@ names and fixtures follow in the future authoring PR.
 
 ## Initial experiment
 
-[001](../../../experiments/001-shared-access/README.md) is a static workflow packet;
+[001](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) is a static workflow packet;
 [002](../../../experiments/002-runtime-plugins/README.md) is the accepted synthetic runtime/composition proof.
 Neither has executed runtime/provider tests. Keep their existing evidence and scope; translate the
 accepted C1–C3 clarifications into conformance cases in the later authoring PR before finalizing syntax. Do not add

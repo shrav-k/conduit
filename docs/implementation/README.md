@@ -1,5 +1,23 @@
 # V0 reference implementation proposal
 
+**Not binding.** The [specification](../../spec/README.md) alone binds. This document uses the
+words from before the vocabulary ruling; the terms in force are in
+[spec/definitions.md](../../spec/definitions.md). The tracker is the [plan audit](../AUDIT.md),
+not REVIEW. Where the text below says that the review queue is the only active decision queue,
+that the protocol topics supply accepted semantics, or that there is no backward-compatibility
+promise, it no longer holds: those topics are superseded, and what the language promises about
+versions is in [spec/promises/naming.yaml](../../spec/promises/naming.yaml).
+
+Two documents in this directory are current: [independent builds](INDEPENDENT_BUILDS.md), the
+process and readiness gate for the two builds, and the [engine build brief](ENGINE_BUILD_BRIEF.md),
+a draft that is not issued. The rest of this page, [ARCHITECTURE](ARCHITECTURE.md) and
+[ORGANIZATION](ORGANIZATION.md) are earlier proposals for a reference implementation.
+
+**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
+audit](../AUDIT.md) and is not an input for engine builders. The proof order, the role of Experiment
+002 and the deferral of a second runtime described below are superseded; see [independent
+builds](INDEPENDENT_BUILDS.md).
+
 This is the reference-implementation design, subordinate to the public contracts. Moving it out
 of the proposals directory does not approve candidate mechanisms or claim they are implemented.
 The [current review queue](../REVIEW.md) is the only active decision queue; the I1–I7 summary below is historical.
@@ -19,10 +37,12 @@ package example or database choice cannot silently define the public model.
 
 | Document | Purpose / authority |
 | --- | --- |
-| [REVIEW](../archive/reviews/IMPLEMENTATION.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
+| [Closed implementation review](../archive/reviews/IMPLEMENTATION.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Detailed runtime mechanisms and examples; accepted boundaries are marked, other mechanisms remain proposals. |
 | [AUTHORIZATION](../proposals/authoring-syntax/AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
-| [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. |
+| [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. Its milestone table is superseded by the plan audit's experiment program. |
+| [INDEPENDENT_BUILDS](INDEPENDENT_BUILDS.md) | The process, isolation rules and readiness gate for the two independent engine builds. |
+| [ENGINE_BUILD_BRIEF](ENGINE_BUILD_BRIEF.md) | The exact brief each builder receives. Draft; not issued. |
 | [Deferred authoring](../proposals/authoring-syntax/README.md) | Contract, plugin/package and template examples for a later PR. |
 | [Collaborator comparison](../archive/collaborator-proposals/REVIEW.md) | Completed assessment of merged PR #1/#2, with adopted refinements and attributed dissent preserved. |
 

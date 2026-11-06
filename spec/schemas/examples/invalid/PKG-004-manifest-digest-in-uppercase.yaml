@@ -1,0 +1,8 @@
+# Example. It must be rejected:
+# a digest is written in lowercase hexadecimal.
+
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/files:
+    version: 0.3.0
+    digest: sha256:0F3A1B2C3D4E5F60718293A4B5C6D7E8F9A0B1C2D3E4F5A6B7C8D9E0F1A2B3C4

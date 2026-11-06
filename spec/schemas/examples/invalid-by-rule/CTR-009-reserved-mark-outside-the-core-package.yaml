@@ -1,0 +1,15 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# only an Operation contract of the core package is marked `reservedToRoot: true`. This one
+# belongs to a project, which is rejected when it is submitted.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.erase.v1
+  description: Remove a directory and everything in it.
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+  effect: Removes the directory.
+  reservedToRoot: true

@@ -1,0 +1,22 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a Conduit template applies `bound.v1` at most once, and this template applies it twice. It
+# is rejected when it is registered, so no Conduit is instantiated from it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: team-access
+spec:
+  capability: github.com/shrav-k/conduit/core#access-control.v1
+  operations:
+    - github.com/shrav-k/conduit/core#open.v1
+  requirements:
+    team:
+      requirement: github.com/shrav-k/conduit/core#bound.v1
+      arguments:
+        pools: [team]
+    scratch:
+      requirement: github.com/shrav-k/conduit/core#bound.v1
+      arguments:
+        targets:
+          - {kind: Resource, name: scratch}

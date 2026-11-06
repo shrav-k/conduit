@@ -1,0 +1,10 @@
+# Example. It must be rejected:
+# everything a template declares is under `spec`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+inputs: {}
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1

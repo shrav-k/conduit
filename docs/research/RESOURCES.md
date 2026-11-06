@@ -1,10 +1,6 @@
 # Resource types, groups and extensibility
 
-**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
-define five template/instance families, Pool-managed shared service authentication and
-Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
-plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
-terminology is retained where it describes those systems; proposed syntax below is not a schema.
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Research: 2026-10-31. **Evidence, accepted working groups and proposals; no implementation.**
 Logical type groups independent of plugin packages, separate `spec.type.group`, `spec.type.name`
@@ -406,7 +402,7 @@ replace verified capability support. Pool mechanics should follow these tested c
 
 ### Template establishment and instance state
 
-The [current YAML packet](../../experiments/001-shared-access/README.md) supplies complete
+The [current YAML packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) supplies complete
 illustrative templates and resolved instances. Resource templates carry explicit create/attach
 intent; instances retain enough current configuration and fixed graph/runtime definitions for
 later starts and export. A status-only claim that backing was created cannot replace that recipe.
@@ -507,7 +503,7 @@ reasoned proposal; it still needs user evaluation and integration evidence.
 | A plugin claims revisioned reads but returns only latest content. | Contract mismatch remains visible; shared group/schema shape does not excuse it. |
 | A dependency disappears after preparation. | Existing current-access/readiness rules apply; type classification does not invent recovery guarantees. |
 
-The [experiment packet](../../experiments/001-shared-access/README.md) is the current concrete
+The [experiment packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) is the current concrete
 schema review. Its fixture contracts demonstrate the boundaries without approving this entire
 candidate catalog or claiming provider compatibility. Further type work should be driven by a
 specific responsibility, capability and lifecycle example, including at least one failure case.

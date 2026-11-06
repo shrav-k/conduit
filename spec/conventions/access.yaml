@@ -1,0 +1,922 @@
+# Access: the shared convention that every permission is an open Conduit.
+# Owner rulings of 2026-11-05 (plan-audit rulings 14, 17, 19, 28, 29, 32 and 33). There is no
+# separate grant object: the access an open Conduit carries is the operations it lists, opening
+# it is what used to be called issuing, and closing it is what used to be called revoking. The
+# right to open Conduits is itself an open Conduit, to the `access` Resource. Ownership permits
+# nothing. Removed by consolidation pass 1: ACC-004 was folded into ACC-003; ACC-007 into
+# ACC-006; ACC-013 into CON-022; ACC-020 and ACC-021 into REC-001 and OPS-005; ACC-025 into
+# ACC-033. ACC-010 was removed earlier and folded into LIF-008. The ruling on the core package
+# and the schemas (ruling 37) changed ACC-029 and ACC-031 to ACC-034. The conversion of the
+# older text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed
+# ACC-008, ACC-014, ACC-015 and ACC-027, and added ACC-036 to ACC-038. The second round of the
+# re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed ACC-001, ACC-005, ACC-006,
+# ACC-008, ACC-014, ACC-015, ACC-018, ACC-019, ACC-022, ACC-029 to ACC-031, ACC-033, ACC-034
+# and ACC-038, and its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
+# ACC-006, ACC-009, ACC-012, ACC-015, ACC-019, ACC-026, ACC-029, ACC-031, ACC-033, ACC-035 and
+# ACC-038. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed ACC-001, ACC-003,
+# ACC-011, ACC-019, ACC-031, ACC-033 and ACC-034, and added ACC-039, on the Conduits of a
+# retired consumer, and ACC-040, on a start of later work. The follow-up to that pass changed
+# ACC-006, ACC-019, ACC-022, ACC-033, ACC-038 and ACC-040: later work is tied to every Conduit
+# of its chain, and a start needs an arranging invocation that succeeded.
+# The round removed none. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed ACC-006, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-027, ACC-029,
+# ACC-031, ACC-033 to ACC-035, ACC-037, ACC-038 and ACC-040, and added ACC-041, on what a start
+# of later work carries, ACC-042, on a request to apply a policy that reports invalid, and
+# ACC-043, on a policy that names the root Interface. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed ACC-015, ACC-018, ACC-031, ACC-033 and ACC-038:
+# no graph states `supports`.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# ACC-001, ACC-005, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-024, ACC-026, ACC-031 to
+# ACC-034, ACC-038 and ACC-040 to ACC-042: a start of later work is refused once the consumer
+# of a Conduit of its chain is retired, a policy is judged for a step when the step is decided,
+# and ACC-015 and ACC-026 say what a policy does to a request whose implementation is the
+# engine. It added none and removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed ACC-005, ACC-015, ACC-017, ACC-019,
+# ACC-031, ACC-034 and ACC-039: an onward request that serves an invocation in whose chain a
+# Conduit has a retired consumer reports refused, that consumer's own retirement apart, and a
+# requirement is matched against `supports` by the package that originally exports it.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md. It removed ACC-040 and ACC-041, on
+# later work, which is not part of this version. Those IDs are not reused.
+
+- id: ACC-001
+  layer: convention
+  level: must
+  when: >-
+    A consumer requests an operation on a target, and no open Conduit from that consumer to that
+    target lists the operation.
+  then: >-
+    The request is not dispatched, and reports refused.
+  observable: >-
+    A record of the refused request exists, and the target's implementation receives no call. An
+    instance's retrieval, under OPS-016, of the result of an invocation whose request it sent is
+    not such a request: it needs no Conduit.
+  vectors: []
+
+- id: ACC-002
+  layer: convention
+  level: must
+  when: >-
+    A request reaches a target.
+  then: >-
+    The engine's own access decision is made for the target before its implementation is
+    invoked.
+  observable: >-
+    The record of the decision precedes any record of the implementation being invoked, and a
+    request that the engine's decision does not permit has no record of invocation. A
+    restriction that the implementation applies under IFC-019 is applied after that decision,
+    and a reason the implementation then gives under IFC-026 ends the request as IFC-027 states.
+  vectors: []
+
+- id: ACC-003
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is opened.
+  then: >-
+    It permits exactly the operations it lists, on its target, and no others. A Conduit that
+    lists no operations permits nothing.
+  observable: >-
+    Inspecting the open Conduit shows the operations it lists. A request for any other operation
+    through it reports refused. A Conduit that lists none is ready once it is opened, and every
+    request through it reports refused. From the moment its consumer is retired, an open Conduit
+    permits less: only the requests of the consumer's retirement, under ACC-039.
+  vectors: []
+
+- id: ACC-005
+  layer: convention
+  level: must
+  when: >-
+    Setup reaches the step that opens a declared Conduit.
+  then: >-
+    The step is a request for `open.v1` that names that Conduit, sent by the instance that sent
+    the request to set up. It is decided under ACC-006 like any other request of that instance
+    to open a Conduit: by that instance's own Conduit to `access`.
+    For a declared Conduit made from a composite template the step decides so for every
+    component Conduit whose state is registered, before any is opened, and then makes one such
+    request for each of them, or none, under CON-004.
+  observable: >-
+    If that instance is not the consumer of an open Conduit to `access` that lists `open.v1` and
+    whose bound covers the declared Conduit's target and the operations it lists, the step
+    reports refused, the Conduit is not opened and its state is still registered. Where the
+    request to set up was an onward request, the Conduit to `access` is one of the instance that
+    sent it, and not one of the caller it serves. The same holds where the setup is itself a
+    step of a Pool's setup, under POOL-015: the steps of a setup are authorized as the request
+    to set up was, by the Conduits of the instance that sent it.
+    Where the declared Conduit is made from a composite template and the bound does not cover
+    one of its component Conduits, the step reports refused and none of them is opened, under
+    CON-004.
+  vectors: []
+
+- id: ACC-006
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to open a Conduit.
+  then: >-
+    The request is an operation of the `access` Resource. It is dispatched only if the actor is
+    the consumer of an open Conduit to `access` that lists the operation and whose bound covers
+    the new Conduit's target, as ACC-029 states, and names every operation the new Conduit
+    lists. Being the consumer of an open Conduit to the target does not permit it. Where the new
+    Conduit is itself one to `access`, ACC-030 states the condition in place of this one. A
+    request to open a Conduit that is already open is decided like any other, changes nothing
+    and has the outcome succeeded.
+  observable: >-
+    An actor with an open Conduit to the target but none to `access` reports refused. A request
+    whose target the bound does not cover, or one of whose operations it does not name, reports
+    refused, and its result names the bound in `io.github.shrav-k.conduit/restriction`, as
+    ACC-029 states. The Conduit is not opened for the part that was within the bound. In each
+    case the Conduit's state is still registered. Where the request is an onward request, the
+    Conduit to `access` is one of the instance that sent it, under ACC-016. A request to open a
+    Conduit that is already open succeeds because the effect that `open.v1` describes has
+    occurred, and it does so whatever has become of the Conduit's consumer: a Conduit that was
+    open when its consumer was retired is still open, under ACC-039. The step of a setup is left
+    as succeeded in the same case, under CON-004. A request to open a closed Conduit reports
+    conflict under LIF-015, and so does a request to open a Conduit that is not open and either
+    of whose ends is retired, under CON-031.
+  vectors: []
+
+- id: ACC-008
+  layer: convention
+  level: must
+  when: >-
+    A request is made through a Conduit.
+  then: >-
+    It is permitted only if the Conduit lists the operation and every restriction that applies
+    permits it. No restriction can permit what the Conduit does not.
+  observable: >-
+    Adding a restriction never makes a previously refused request succeed. A request that any
+    one applicable restriction forbids reports refused, has no outcome, and nothing of it is
+    performed. Whether the Conduit lists the operation is decided by the engine before any call
+    to the implementation, under ACC-002. The implementation applies the restrictions it is sent
+    under IFC-019, and where one of them forbids the request it performs nothing and answers
+    with the reason refused under IFC-026. The result names the restriction that forbade the
+    request in `io.github.shrav-k.conduit/restriction`, whether the engine or the implementation
+    found it, as IFC-025 states.
+  vectors: []
+
+- id: ACC-009
+  layer: convention
+  level: must
+  when: >-
+    A request is made through one Conduit, and its consumer is also the consumer of another
+    Conduit that carries a filter.
+  then: >-
+    The filter on the other Conduit does not apply. The request is limited by its own Conduit's
+    operations and filters, by every policy that applies to it under ACC-031 and, for an onward
+    request, by the restrictions carried under ACC-017.
+  observable: >-
+    A request that the other Conduit's filter would forbid is permitted through this Conduit,
+    unless one of the restrictions that do apply forbids it. A policy applies to a request by
+    the request's caller and its target, and not by its consumer: an onward request that a
+    Resource makes is limited by a policy that names the caller it serves.
+  vectors: []
+
+- id: ACC-011
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is closed.
+  then: >-
+    All the access it carried ends. No part of it remains in force.
+  observable: >-
+    After the close every request through the Conduit reports refused. To narrow access, the
+    Conduit is closed and a new Conduit that lists fewer operations is opened. A Conduit whose
+    consumer is retired is not closed by that: CON-008 closes it once the consumer's shutdown is
+    confirmed, or at once where the consumer is declared lost, and ACC-039 says what it permits
+    until it is closed.
+  vectors: []
+
+- id: ACC-012
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to close a Conduit.
+  then: >-
+    The request is an operation of the `access` Resource. It is dispatched only if the actor is
+    the consumer of an open Conduit to `access` that lists the operation and whose bound covers
+    the target of the Conduit to be closed and every operation that Conduit lists. Where the
+    Conduit to be closed is itself one to `access`, ACC-030 states the condition in place of
+    this one. A Conduit whose consumer is the root Interface is never closed at an actor's
+    request, as ACC-024 states: such a request is not dispatched, and reports refused, whoever
+    makes it. CON-008 still closes one whose target is retired. A request to close a Conduit
+    that is already closed is decided like any other, changes nothing and has the outcome
+    succeeded.
+  observable: >-
+    An actor with such a Conduit to `access` can close a Conduit it did not open. Any other
+    actor reports refused, and the Conduit is as it was. A request to close a Conduit that is
+    already closed succeeds because the effect that `close.v1` describes has occurred, as a
+    request to open one that is already open does under ACC-006.
+  vectors: []
+
+- id: ACC-014
+  layer: convention
+  level: must
+  when: >-
+    A restriction applies to a request and cannot be evaluated for the requested operation.
+  then: >-
+    The request reports unavailable, has no outcome, and nothing of it is performed.
+  observable: >-
+    The record names the restriction and states that it could not be evaluated. Where the engine
+    finds this before any call, the request is not dispatched and the target's implementation
+    receives no call. Where the implementation finds that it cannot apply a restriction it was
+    sent, it performs nothing and answers with the reason unavailable under IFC-026. In both
+    cases the result names the restriction in `io.github.shrav-k.conduit/restriction`, as
+    IFC-025 states.
+  vectors: []
+
+- id: ACC-015
+  layer: convention
+  level: must
+  when: >-
+    A policy applies to a request under ACC-031, or a request carries a restriction under
+    ACC-017 or ACC-018, and the implementation that the request would be dispatched to does not
+    support the requirement of that policy or of that restriction. That implementation is the
+    one that the request's target has selected for the operation or, for a step with no
+    `conduit`, the one selected for the step's own instance.
+  then: >-
+    The request is not dispatched, and reports unavailable.
+  observable: >-
+    The result of each such request names the policy or the carried restriction as the cause, in
+    `io.github.shrav-k.conduit/restriction` as IFC-025 states, until the restriction no longer
+    applies or the implementation supports its requirement. An implementation supports a
+    requirement where it states it in `supports`, and a composed requirement where it states the
+    composition or every one of its constituents, under CON-022. An implementation marked
+    `plain` states none, under PKG-020. No graph states any, wherever it is written: it supports
+    a requirement where the implementation selected for each of its steps that has no `conduit`
+    does, as CON-022 states, and a step that names a Conduit is an onward request, which is
+    checked here at its own target. The filters of a request's own Conduit need no such check
+    with each request: CON-022 made it when the Conduit was instantiated. A restriction that an
+    onward request carries was never checked against the onward target, so it is checked here:
+    an onward request that carries a filter to a target whose selected implementation is marked
+    `plain` reports unavailable, although the Conduit it is made through carries no filter. The
+    reason is the one ACC-014 gives for a restriction that cannot be evaluated. A requirement is
+    matched against `supports` by the address and the export name of the package that originally
+    exports it, whatever re-export the policy, the Conduit's template or the item of `supports`
+    names it through and whatever version of its package the policy keeps or the implementation
+    holds, as CON-022 states. A policy's arguments are sent as the policy stores them, and an
+    implementation that cannot evaluate them answers unavailable, as ACC-014 states. Requests to
+    which no such restriction applies are decided as before. The implementation `engine` of the
+    core package, which is the default implementation of every operation of that package, states
+    `bound.v1` alone in `supports`, under MAN-012. So a request for an operation of the core
+    package, made of `management`, of `access`, of a Pool or of a location, to which a policy
+    applies or which carries a filter under ACC-017, is not dispatched and reports unavailable,
+    whatever the policy or the filter would have permitted: a restriction is never dropped
+    because the implementation cannot apply it. A policy that gives only `actors` therefore
+    makes every such request of those actors report unavailable for as long as it is in force,
+    `inspect.v1`, `reconcile.v1`, `close.v1` and `remove-policy.v1` among them: an actor that
+    the policy names can no longer remove the policy itself. The root Interface can, because no
+    policy applies to a request of which it is the caller, under ACC-035. The request that
+    applied the policy was told so: the result of `apply-policy.v1` names, in a diagnostic, each
+    target that the policy reaches and whose implementation does not support its requirement,
+    under ACC-031.
+  vectors: []
+
+- id: ACC-016
+  layer: convention
+  level: must
+  when: >-
+    An instance, while serving an invocation, requests an operation on another target.
+  then: >-
+    That onward request is permitted only under the instance's own open Conduit to that target.
+  observable: >-
+    If the instance has no open Conduit to the onward target that lists the operation, the
+    onward request reports refused, whatever Conduits the caller is the consumer of. The onward
+    request names the invocation it serves in `io.github.shrav-k.conduit/serving`, and one from
+    an instance that is not an actor and that names none reports refused. The request the engine
+    then sends to the onward target names the instance's own Conduit in
+    `io.github.shrav-k.conduit/conduit`.
+  vectors: []
+
+- id: ACC-017
+  layer: convention
+  level: must
+  when: >-
+    An instance, while serving an invocation, requests an operation on another target.
+  then: >-
+    The onward request carries the identity of the caller of the invocation it names in
+    `io.github.shrav-k.conduit/serving`, and the restrictions of that invocation: the filters on
+    the Conduit that invocation was dispatched through, the filters that invocation itself
+    carried from an invocation it served, and the policies that apply, when the onward request
+    is decided, to a request of that caller to the target of the invocation it names and of each
+    invocation in that invocation's chain. The chain of an invocation is the invocations that it
+    serves, directly or through others. Its effects and returned content are limited by them.
+  observable: >-
+    The onward target's record names the original caller. The
+    `io.github.shrav-k.conduit/restrictions` sent to the onward target lists those restrictions
+    beside the ones of the instance's own Conduit and the policies that apply to the onward
+    request itself under ACC-031. An effect or content that they forbid to the caller is not
+    produced or returned, even though the instance's own Conduit would permit it. A filter is
+    carried as its Conduit's template states it, which no request changes. A policy is judged
+    anew, as ACC-036 has every decision made: one that was applied to that caller, or to the
+    target of the served invocation or of an invocation in its chain, after that invocation was
+    dispatched limits the onward request, and one that was removed in the meantime no longer
+    does. A step with no `conduit` carries the restrictions of the invocation its graph is
+    serving in the same way, with each policy judged when the step is decided, under ACC-018.
+    Where the implementation selected by the onward target does not support a restriction that
+    is carried, the onward request reports unavailable under ACC-015.
+    An onward request is dispatched only where each Conduit of its chain is open, under ACC-034,
+    and the consumer of none of them is retired, under ACC-039, which excepts the requests of
+    that consumer's own retirement.
+  vectors: []
+
+- id: ACC-018
+  layer: convention
+  level: must
+  when: >-
+    A step of a graph names one of its template's declared Conduits, or a component of one,
+    under `conduit`.
+  then: >-
+    The step is an onward request of the instance that the graph belongs to, made through that
+    Conduit to its target under ACC-016 and ACC-017. A step with no `conduit` invokes the
+    implementation selected for its own instance, and is not a request through any Conduit. It
+    carries the restrictions that ACC-017 has an onward request which serves the invocation of
+    its graph carry: the filters of that invocation, and the policies as they apply when the
+    step is decided. The implementation it invokes applies them as IFC-019 states.
+  observable: >-
+    The same refusals and limits are observed for a step that names a Conduit as for any other
+    onward request. A step that names none makes no request to another instance, and the
+    `io.github.shrav-k.conduit/restrictions` it is sent holds the restrictions of the invocation
+    its graph is serving, under IFC-018. A policy among them is judged when each step is
+    decided, as ACC-036 has every decision made and as ACC-017 judges one for an onward request:
+    a policy that was applied after the graph's invocation was dispatched limits the steps that
+    are decided after it, and one that was removed in the meantime no longer does. A filter is
+    carried as its Conduit's template states it. A filter on the Conduit through which an
+    operation was requested, and a policy that applied to the request, therefore limit every
+    step of a graph that implements the operation. A step with no `conduit` whose implementation
+    does not support the requirement of one of those restrictions, as one marked `plain`
+    supports none, is not dispatched and reports unavailable, under ACC-015. Where the step's
+    implementation is itself a graph, it supports a requirement where the implementations of its
+    own steps do, as CON-022 states. An implementation that finds it cannot apply a restriction
+    it was sent answers unavailable, as ACC-014 states. A step that names a Conduit is checked
+    at that Conduit's target in the same way.
+    A step whose `conduit` names a component of a declared Conduit that is made from a composite
+    template, by the dotted path that GRA-024 gives, is a request through that component
+    Conduit.
+  vectors: []
+
+- id: ACC-019
+  layer: convention
+  level: must not
+  when: >-
+    An invocation has ended.
+  then: >-
+    The engine dispatches a request on its behalf: one that names it in
+    `io.github.shrav-k.conduit/serving`, other than a call to `retrieve-result.v1` under
+    IFC-024, or one that the engine makes itself because of work that the invocation's
+    operation arranged.
+  observable: >-
+    In this version no operation arranges, through the engine, work that outlasts its
+    invocation. Once an invocation has ended, a request that names it in
+    `io.github.shrav-k.conduit/serving` is not dispatched and reports refused, as IFC-028
+    states, whatever Conduits are open then. The one call that may name it there is a retrieval
+    with `retrieve-result.v1`, under IFC-024, which reads a result and reaches no other
+    instance. The engine itself dispatches no request for the invocation or for its caller
+    afterwards: no Operation contract carries a mark for work that is to start or to run later,
+    under CTR-002, and the engine presents no tool with which an implementation could ask for
+    such a start, under IFC-012. Work that is to happen later is asked for later, by an actor,
+    through a Conduit that is open then. That request is decided when it is made, under ACC-036,
+    like any other, and is recorded for the actor that made it, under REC-001. An instance that
+    is not an actor makes a request only to serve an invocation that is in progress, under
+    IFC-021 and IFC-028, or to retrieve a result under IFC-024, so it makes no other request
+    once the invocations it serves have ended. An
+    invocation that outlasts its call has not ended: IFC-016 says how its result is read, and
+    until it ends its onward requests are decided under ACC-016 and ACC-017, like any other. A
+    new attempt is dispatched only for a repeat that the caller makes, under IMP-007, and the
+    stop of a runtime that the engine dispatches under OBS-007 serves no invocation.
+  vectors: []
+
+- id: ACC-022
+  layer: convention
+  level: must
+  when: >-
+    The engine has been started for the first time.
+  then: >-
+    The root Interface's Conduit to `access` has no bound.
+  observable: >-
+    The root Interface can open a Conduit to any target that is not retired, for any operation
+    the target offers, and every bound is within its own. A Conduit whose consumer is retired is
+    not opened either, under CON-031. A Conduit to `access` that has no bound is unlimited,
+    under ACC-029, and ACC-030 says who may open or close another one.
+  vectors: []
+
+- id: ACC-023
+  layer: convention
+  level: must
+  when: >-
+    An Interface other than the root Interface is instantiated.
+  then: >-
+    It has no access until a Conduit of which it is the consumer is opened.
+  observable: >-
+    Every request from the new Interface reports refused until an actor with the right to open
+    opens a Conduit for it.
+  vectors: []
+
+- id: ACC-024
+  layer: convention
+  level: must not
+  when: >-
+    An actor asks to close a Conduit whose consumer is the root Interface.
+  then: >-
+    The Conduit is closed.
+  observable: >-
+    The request reports refused under ACC-012, whoever makes it, and the root Interface's
+    Conduit stays open.
+  vectors: []
+
+- id: ACC-026
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is opened that lists more than a policy that applies to requests through it
+    permits.
+  then: >-
+    The Conduit is opened as requested, and the policy limits what the consumer can do through
+    it.
+  observable: >-
+    Inspection shows the Conduit open with the operations it lists. Requests the policy forbids
+    report refused, and are permitted without a new Conduit once the policy no longer applies.
+    This is so where the implementation that the target has selected supports the policy's
+    requirement. Where it does not, every request through the Conduit to which the policy
+    applies reports unavailable under ACC-015, and not only the requests that the policy would
+    forbid: the policy is never dropped. That is the case for a request for an operation of the
+    core package, made of `management`, of `access`, of a Pool or of a location, whose
+    implementation is `engine`: a policy that applies to such a request makes it unavailable
+    until the policy is removed, and an actor that the policy names cannot remove it. The root
+    Interface can, under ACC-035. The result of the request that applied the policy names each
+    such target in a diagnostic, under ACC-031, so the actor that applied it was told.
+  vectors: []
+
+- id: ACC-027
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is inspected.
+  then: >-
+    For each restriction on it, the inspection result states whether the restriction is enforced
+    or only mediated. In this version every restriction is reported as mediated.
+  observable: >-
+    Each restriction in the inspection result carries one of those two values. A restriction is
+    enforced where an isolation plugin also keeps the consumer from going around it. This
+    version specifies no isolation plugin, so the value is mediated for every restriction.
+  vectors: []
+
+# --- Added by the consolidation rulings (plan-audit rulings 28 and 29).
+
+- id: ACC-028
+  layer: convention
+  level: must not
+  when: >-
+    A Pool owns a Resource.
+  then: >-
+    That ownership permits any request.
+  observable: >-
+    A Pool is never a caller. An actor whose only open Conduit is to the Pool can use the Pool's
+    own operations, and reports refused on every operation of the Resources the Pool owns.
+  vectors: []
+
+- id: ACC-029
+  layer: convention
+  level: must
+  when: >-
+    A Conduit to `access` carries a bound.
+  then: >-
+    The bound is a filter. It names Pools, individual targets and operations. Naming a Pool
+    covers the Pool itself and every Resource that Pool owns, including those instantiated after
+    the Conduit that carries the bound was opened. An individual target is covered when the
+    bound names it, and so is an actor that a policy names.
+  observable: >-
+    The consumer of a Conduit to `access` whose bound names a Pool can open a Conduit to that
+    Pool, and to a Resource instantiated in that Pool afterwards, and reports refused for a
+    Resource that another Pool owns unless the bound names that Resource or its Pool. The bound
+    is written as the core package's requirement `bound.v1`, applied in the `requirements` of
+    the Conduit's template with the arguments `pools`, `targets` and `operations`, each a list
+    that is empty where it is left out. A bound that names nothing covers nothing. A Conduit to
+    `access` that applies no `bound.v1` has no bound and is unlimited: it covers every target
+    and names every operation. `operations` names each operation by a qualified reference, so a
+    bound names published contracts only: a Conduit that lists an operation of an unpublished
+    package is opened or closed only by an actor whose own Conduit to `access` has no bound. A
+    bound that names an operation which a package re-exports, by the re-export or by the
+    reference to the package that originally exports it, names both: the two references resolve
+    to one operation, under PKG-013. As a filter, the bound is a restriction: a request that it
+    does not cover reports refused and names it, as IFC-025 states. CON-028 says where a bound
+    may be applied, and CTR-011 that `bound.v1` is never a constituent of a composition: a
+    Conduit applies a bound only by an item of its own `requirements`.
+  vectors: []
+
+- id: ACC-030
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to open or to close a Conduit to `access`, whoever its consumer is, the actor
+    itself included.
+  then: >-
+    The request is dispatched only if that Conduit's bound is within the bound of the actor's
+    own Conduit to `access`. A new bound is within an old one when every Pool and every
+    individual target it names is covered by the old one, as ACC-029 states, and every operation
+    it names is one the old one names. A Conduit that has no bound is within another only if
+    that other has none: only an actor whose own Conduit to `access` applies no bound may open
+    or close a Conduit to `access` that applies none. A request to open is dispatched only if,
+    in addition, every operation of `access` that the new Conduit lists is one that the actor's
+    own Conduit to `access` lists. This is the whole condition: the actor's bound need not also
+    cover `access` as a target. A right to open is passed on, or opened for oneself, only as it
+    is or narrower.
+  observable: >-
+    A request to open or to close one whose bound is wider reports refused, and so does a
+    request to open one that lists an operation of `access` that the actor's own Conduit to
+    `access` does not list. An actor that opens a further Conduit to `access` for itself gains
+    nothing its first one did not permit. A new bound may name a Resource that the old one
+    covers only through its Pool, and may name a Pool only if the old one names that Pool. At
+    the moment a Conduit to `access` is opened, its bound covers nothing that the bound of the
+    actor that opened it does not cover, and names no operation that bound does not name.
+    Closing that actor's own Conduit to `access` afterwards closes none of the Conduits it
+    opened for others.
+  vectors: []
+
+- id: ACC-031
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to apply or to remove a policy.
+  then: >-
+    The request is an operation of the `access` Resource. It is dispatched only if the actor is
+    the consumer of an open Conduit to `access` that lists the operation and every actor and
+    target the policy names is covered by that Conduit's bound, as ACC-029 states. A request to
+    apply a policy gives `actors`, `targets` or both. The policy applies to each request whose
+    caller is one of `actors`, where that list is given, and whose target is one of `targets`,
+    where that list is given. The policy's requirement is named by a qualified reference, so a
+    policy names a published contract only. A qualified reference carries no version, so the
+    request may name one in `version`: a version of the package whose address the reference
+    writes. Where it names none, the version is the one installed version of that package that
+    exports the requirement. The policy keeps that version of that package and its digest, and
+    the requirement's contract as that version gives it is the policy's: where the package
+    re-exports the requirement, PKG-013 leads from it to the package that originally exports the
+    contract. The policy is stored by `access`, and is not part of its configuration. The result
+    of a request that applies a policy names, in a diagnostic that does not prevent the policy,
+    each target that the policy reaches and whose implementation does not support the policy's
+    requirement.
+  observable: >-
+    Applying a policy returns an ID for it, and removing a policy names that ID. Neither request
+    names a revision, and neither changes the configuration or the revision of `access`.
+    The diagnostic is in the output `diagnostics` of `apply-policy.v1`, beside the policy's ID:
+    it is of the class that is reported and prevents nothing, so the policy is applied and is in
+    force. For a policy that gives `targets`, it names each of them one of whose selected
+    implementations does not support the requirement, as CON-022 has an implementation support
+    one. For a policy that gives none, it names every target that exists when the policy is
+    applied and one of whose selected implementations does not support the requirement. Those
+    are always `management`, `access`, every Pool and every location, which the engine
+    implements and for which `engine` states `bound.v1` alone in `supports`, under MAN-012,
+    and they include every instance whose implementation is marked `plain`, which supports
+    none, under PKG-020. A request to which the policy applies, made
+    of a target so named and dispatched to such an implementation, reports unavailable for as
+    long as the policy is in force, under ACC-015 and ACC-026: the diagnostic says so before the
+    first of them is made. Where there is no target to name, `diagnostics` is an empty list. It
+    is judged from the targets and their implementations as they stand when the policy is
+    applied, and a target that is instantiated afterwards is not reported.
+    Inspecting `access` lists, in its status, the policies in force, the actors and targets each
+    names, and the version and the digest that each keeps, which are those of the package that
+    the policy's reference names. An actor with no open Conduit to `access` listing the
+    operation, or whose bound does not cover one of those actors or targets, reports refused,
+    and the policies in force are as they were. The two operations are `apply-policy.v1` and
+    `remove-policy.v1`. A policy that gives only `actors` applies to every request of which one
+    of them is the caller, whatever its target, an onward request that serves that caller
+    included. One that gives only `targets` applies to every request made of one of them,
+    whoever its caller is, the root Interface excepted under ACC-035. One that gives both
+    applies only to a request that matches both. An onward request carries, under ACC-017, the
+    policies that apply to a request of its caller to the target of an invocation it serves,
+    whatever its own target, for as long as each is in force. A list that is given and is empty
+    matches no request. ACC-042 lists the causes for which a request to apply a policy reports
+    invalid: among them one that gives neither list, and one that names no `version` while more
+    than one installed version of the package exports the requirement. `version`, and the
+    package whose installed versions are counted, are those of the address that the reference
+    writes, whether that package holds the requirement's contract or re-exports it: where a
+    package that is installed in one version re-exports a requirement of a package that is
+    installed in two, a request that names the requirement through the first and gives no
+    `version` is applied, and the contract is the one that the first package's own manifest
+    leads to, under NAM-014. A policy keeps its version and digest as a template keeps those of
+    its packages under NAM-009: installing another version of the package afterwards does not
+    change the policy, and its `arguments` were checked against the inputs that its own version
+    declares, with their defaults filled in as SCH-009 and NAM-019 state. They are stored so
+    filled, and are sent to implementations as stored. On the wire the requirement is named by
+    the address and the export name of the package that originally exports it, under IFC-018,
+    and it is matched against an implementation's `supports` by that origin, under ACC-015 and
+    CON-022. A policy's requirement narrows requests, as a filter's does: it is sent to
+    implementations under IFC-018, and one that does not narrow is never sent. A requirement of
+    an unpublished package has no qualified reference, and cannot be applied as a policy. A
+    request that names an actor or a target that does not exist, and a request to remove a
+    policy whose ID names no policy in force, report invalid under OPS-029.
+  vectors: []
+
+- id: ACC-032
+  layer: convention
+  level: must
+  when: >-
+    An actor asks for an operation that is reserved to the root Interface, such as declaring a
+    location lost, or asks to open a Conduit that lists such an operation and whose consumer is
+    not the root Interface.
+  then: >-
+    A request for a reserved operation is dispatched only if the actor is the root Interface. No
+    Conduit opened for another consumer lists such an operation: a request to open one that does
+    is not dispatched. A request that is not dispatched for either cause reports refused.
+  observable: >-
+    Both hold whoever asks: the root Interface itself reports refused where it asks to open, for
+    another consumer, a Conduit that lists a reserved operation. An operation is reserved where
+    its contract is marked `reservedToRoot: true`. Under CTR-009 only an operation of the core
+    package is so marked: `declare-lost.v1` and `purge.v1` are.
+  vectors: []
+
+- id: ACC-033
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to register, replace, rename, inspect, set up, retire or unregister an object,
+    to retire a Pool together with the Resources it owns, to install a package, for an operation
+    reserved to the root Interface, to reconcile an invocation, to open or close a Conduit, to
+    apply or remove a policy, or for a control.
+  then: >-
+    The request is authorized by an open Conduit from the actor that lists the operation, to a
+    target fixed as follows. Registering, replacing, renaming and unregistering any object are
+    authorized against `management`. Registering a Resource whose owner is a Pool that already
+    exists and is not retired also needs an open Conduit from the actor to that Pool, and each
+    of the two Conduits lists `register.v1`. Where the Pool is registered in the same
+    submission, which includes the Resources of its own entries, nothing more is needed. A
+    request under LIF-009 for a new instance for a nested instantiation is authorized as
+    registering that instance would be, by the same Conduits, each listing
+    `register-replacement.v1` in place of `register.v1`. Setting up and retiring an instance are
+    requests for `set-up.v1` and for `retire.v1`, which name the instance in the input
+    `instance`. They, and inspecting it, are authorized against the Pool that owns the instance
+    where it is a Resource, and against `management` where it is an Agent, an Interface or a
+    Pool. Inspecting a Conduit or a template is authorized against `management`. Retiring a Pool
+    together with the Resources it owns, in the one operation of LIF-021, is authorized against
+    that Pool. Installing a package, and every operation reserved to the root Interface under
+    ACC-032, are operations of `management` and are authorized against it. Opening and closing a
+    Conduit, and applying and removing a policy, are authorized against `access`, under ACC-006,
+    ACC-012 and ACC-031. A control is authorized by an open Conduit to the instance itself that
+    lists the control. Reconciling an invocation of a management verb is authorized against the
+    target that authorized the request being reconciled. Reconciling any other invocation, of a
+    control or of any other operation, is authorized against the target that manages the
+    instance the invocation was dispatched to: the Pool that owns that instance where it is a
+    Resource, and `management` where it is an Agent, an Interface or a Pool. In both cases the
+    Conduit lists `reconcile.v1`. Where a Pool is retired, two of the requests that this promise
+    authorizes against that Pool are authorized against `management` in its place: inspecting a
+    Resource that the Pool owns, and reconciling an invocation. No other request is authorized
+    against a retired Pool. Where the instance that an invocation was dispatched to, or that an
+    invocation of a management verb named, no longer exists, reconciling the invocation is
+    authorized against `management`: the reconciliation records the outcome and stores nothing.
+  observable: >-
+    An actor with an open Conduit to that target listing the operation is permitted, and any
+    other actor reports refused. Except for a control, a Conduit to the object itself, or to any
+    other target, does not permit the request. An actor that registers a Resource into a Pool
+    that exists and is not retired, or asks for a new Resource for one of its entries, with a
+    Conduit to `management` that lists the operation and none to the Pool that lists it, reports
+    refused. The Conduit to a Pool that authorizes retiring it together with its Resources need
+    list only `retire-with-resources.v1`, as LIF-021 states. The setup or the retirement of a
+    Resource is reconciled through a Conduit to the Pool that owns it, that of an Agent, an
+    Interface or a Pool through a Conduit to `management`, and the opening or the closing of a
+    Conduit through a Conduit to `access`, whose capability `access-control.v1` includes
+    `reconcile.v1`. A registration is authorized against `management` and is reconciled through
+    a Conduit to it, whether or not it also needed a Conduit to a Pool. A management verb is an
+    operation of the core package other than its two controls and the one tool that the engine
+    always presents, `retrieve-result.v1`: an invocation of `install.v1` or of `purge.v1` is
+    reconciled through a Conduit to `management`, which authorized it, like that of any other
+    verb of `object-management.v1`. An invocation that is
+    not of a management verb is never reconciled through a Conduit to the instance it was
+    dispatched to: a control of a location, or an operation of any other Resource, is reconciled
+    through a Conduit to the Pool that owns that Resource, and a control of the `system` Pool,
+    or an operation of an Agent, through a Conduit to `management`. A step that invokes the
+    implementation of its own instance was dispatched to that instance. No capability has to
+    include `reconcile.v1` beside `object-management.v1`, `pool-management.v1`, which every Pool
+    offers, and `access-control.v1`. Where a request named here is an onward request, the
+    Conduit that authorizes it is one of the instance that sent it, under ACC-016, and not one
+    of the caller it serves. Every Conduit to a retired Pool is closed, under CON-008, so no
+    request is made through one. A Resource of a retired Pool is inspected, and an invocation
+    that was dispatched to it, its setup or its retirement is reconciled, through a Conduit to
+    `management` that lists the operation, as the Pool itself is inspected. An invocation of
+    `retire-with-resources.v1`, and the Pool's own retirement that it dispatched, are reconciled
+    through such a Conduit too: the Pool authorized them, and it is retired from the moment its
+    retirement is dispatched. While the Pool is not retired, a Conduit to `management` does not
+    permit those requests: at any moment one target authorizes a request. Every other request
+    that this promise authorizes against a Pool reports refused once the Pool is retired,
+    because every Conduit to it is closed and a request through a closed Conduit reports refused
+    under ACC-011, and one made through a Conduit to `management` reports refused too: setting
+    up or retiring a Resource that the Pool owns, and `retire-with-resources.v1`, which has no
+    input that could name the Pool. A retired Pool whose shutdown is not confirmed is retired
+    again with `retire.v1`, which names the Pool and is authorized against `management`, under
+    LIF-026. Registering a Resource whose owner is a retired Pool, and asking under LIF-009 for
+    a new Resource for an entry of one, need the Conduit to `management` alone, and a permitted
+    request for either reports invalid: POOL-004 rejects the document, and POOL-017 gives the
+    reason for the entry. An invocation whose instance has been unregistered is reconciled
+    through a Conduit to `management` that lists `reconcile.v1`, whichever target would have
+    authorized the reconciliation while the instance existed: its outcome becomes succeeded or
+    failed under OPS-014, and nothing else changes, because nothing is left to change. For a
+    control, REV-010 says what such a reconciliation names. Which target that is can be told
+    only for an object that exists, and a request that names one that does not exist reports
+    invalid under OPS-029.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32, decisions U6 and U7).
+
+- id: ACC-034
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is closed while an invocation dispatched through it has not ended.
+  then: >-
+    The invocation runs to its end and its outcome is recorded. Where its operation declares
+    outputs, its content is delivered only while that Conduit is open, and so is withheld, as
+    OPS-017 states for a retained result. The result of an operation that declares no outputs
+    has nothing to withhold: its outcome is delivered, and the result is not marked as withheld.
+    An onward request made after the close, by that invocation or by any invocation that serves
+    it directly or through others, is not dispatched and reports refused.
+  observable: >-
+    The record of the invocation states its outcome. Where the operation declares outputs, the
+    caller receives the outcome and the statement that content is withheld: the result carries
+    its outcome and no `structuredContent`, its `_meta` holds
+    `io.github.shrav-k.conduit/withheld` with the value true, and its `isError` is true, because
+    it holds no outputs, as IFC-025 states. Where the operation declares none, as
+    `retire-with-resources.v1` declares none, the result carries its outcome and no such key,
+    and its `isError` is as IFC-025 gives it for that outcome: not true where the outcome is
+    succeeded, with a `structuredContent` that is an empty map. An invocation counts as
+    dispatched through the Conduit of its latest attempt, under OPS-024: where a new attempt
+    went through another Conduit than the first, it is the close of that Conduit that withholds
+    the result. The content is never delivered under another Conduit, even one from the same
+    consumer to the same target. After the close no onward request is dispatched that names the
+    invocation in `io.github.shrav-k.conduit/serving`, or that names an invocation which serves
+    it through any number of onward requests.
+    ACC-039 has an onward request refused in the same way from the moment the consumer of that
+    Conduit is retired, before the Conduit is closed, unless the invocation that the request
+    serves belongs to that consumer's own retirement.
+  vectors: []
+
+- id: ACC-035
+  layer: convention
+  level: must not
+  when: >-
+    A policy is asked for, or is in force.
+  then: >-
+    It applies to a request whose caller is the root Interface.
+  observable: >-
+    A request to apply a policy whose `actors` names the root Interface reports refused, under
+    ACC-043, and the policies in force are as they were. A policy that gives only `targets` is
+    applied, and does not apply to a request that the root Interface makes of one of them, or to
+    an onward request that serves the root Interface. The root Interface can therefore always
+    remove a policy.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP2 and
+# --- GP15 of docs/proposals/docs-audit/GAPS.md).
+
+- id: ACC-036
+  layer: convention
+  level: must
+  when: >-
+    A request is decided.
+  then: >-
+    The access decision is made anew for that request, from the Conduits and the policies as
+    they stand when it is made. No earlier decision is reused.
+  observable: >-
+    A request that was permitted a moment ago reports refused once its Conduit is closed or a
+    policy that forbids it applies, and the reverse holds once a Conduit that lists the
+    operation is opened or that policy is removed. Each request has its own record of an access
+    decision under REC-001. No decision is kept to stand in for a later one.
+  vectors: []
+
+- id: ACC-037
+  layer: convention
+  level: must
+  when: >-
+    A request is to be decided, and the state of the Conduits or of the policies that the
+    decision needs cannot be established.
+  then: >-
+    The request is not dispatched, and reports unavailable. Nothing else about the request is
+    examined or reported.
+  observable: >-
+    The target's implementation receives no call, and no earlier decision is used in place of
+    the one that cannot be made, even for a request between two instances on one location.
+    OPS-023 puts this case where refused stands in its order: the request reports unavailable
+    whatever else is wrong with it, and its result carries no diagnostic and says nothing of the
+    objects it names, since the actor has not been found to be permitted. Only a request that
+    cannot be read reports another reason, invalid. The same request made once the state can be
+    established is decided as any other. Whether the engine reports at once or first waits, and
+    for how long, is DL4 of the implementation-defined list.
+  vectors: []
+
+- id: ACC-038
+  layer: convention
+  level: must
+  when: >-
+    An open Conduit is inspected.
+  then: >-
+    For each requirement the Conduit applies, the result names, under that requirement, the
+    implementation that applies it: by its qualified reference or, for an implementation that
+    the manifest of a submitted project lists, by `<digest>#<name>`.
+  observable: >-
+    For a filter they are the implementations that must support the filter's requirement under
+    CON-022. Those that the target has selected for the operations the Conduit lists are always
+    among them: they are sent the filter under IFC-018 and apply it under IFC-019. Where the
+    filter obliges the consumer, under CTR-005, the implementations selected for the consumer
+    are named as well. Where there is more than one, each is named. Where the implementation
+    selected is a graph, whether a template writes it in place or a manifest lists it, it states
+    no `supports` and supports a requirement through the implementations of its steps, under
+    CON-022: the implementations named are those selected for its steps that have no `conduit`.
+    For a requirement that the engine itself checks, as it checks the shared-host requirement
+    under PLC-013, the result names the engine, `github.com/shrav-k/conduit/core#engine`. In
+    `<digest>#<name>` the digest is the one that identifies the unpublished package under
+    SUB-008, written as PKG-004 writes a digest, and the name is the implementation's: it is the
+    form IFC-006 gives a contract of such a package.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decisions 2 and 9 of "The closing pass, and
+# --- what it left" in DECISIONS.md).
+
+- id: ACC-039
+  layer: convention
+  level: must
+  when: >-
+    A request is made through an open Conduit whose consumer is retired.
+    Or an onward request is made, through any Conduit, that serves an invocation in whose chain
+    such a Conduit stands: the invocation that it names was dispatched through one, or an
+    invocation of that invocation's chain was.
+  then: >-
+    The request is permitted only if it belongs to the retirement of that consumer: it is a step
+    of an invocation of `retire.v1` for the consumer, or an onward request that serves, directly
+    or through others, such a step or the stop of one of the consumer's runtimes. Every other
+    such request is not dispatched, and reports refused.
+  observable: >-
+    From the moment the consumer is retired, under LIF-005, a request that the consumer makes on
+    its own behalf, and an onward request that serves any invocation other than those of its
+    retirement, report refused, although the Conduit's state is still ready and its tools are
+    still presented. A step of the consumer's `retire` graph that names the Conduit under
+    `conduit` is dispatched, and so is an onward request that names, in
+    `io.github.shrav-k.conduit/serving`, the invocation of a step of that graph or of the stop
+    of a runtime under TPL-009. This holds for a further retirement under LIF-026 as for the
+    first. It ends when the Conduit is closed: once the consumer's shutdown is confirmed or the
+    consumer is declared lost, under CON-008, or by a request of an actor under ACC-012. Every
+    other check of a request through the Conduit is made as for any request.
+    The same holds for an onward request that is made through another Conduit. Where a Resource
+    serves an invocation that a request of an Agent began, and the Agent is retired while the
+    invocation is in progress, an onward request of the Resource that names that invocation, or
+    that names an invocation which serves it through others, reports refused from that moment,
+    although the Resource's own Conduit is open and its consumer is not retired. So an onward
+    request is dispatched only where each Conduit of its chain is open, under ACC-034, and none
+    of them has a retired consumer, that consumer's own retirement apart. The invocation itself
+    runs to its end, and a step with no `conduit` is not an onward request.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md): ACC-042 and ACC-043 for finding 3A-14,
+# --- which took their rules from the observables of ACC-031 and ACC-035. ACC-042 also holds
+# --- the causes that finding 3C-7 added.
+
+- id: ACC-042
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to apply a policy, and one of these holds: the request gives neither `actors`
+    nor `targets`; no installed version of the package whose address the requirement's reference
+    writes exports the requirement; the request names no `version`, and more than one installed
+    version of that package exports the requirement; the request names a `version` of that
+    package that is not installed or that does not export the requirement; the requirement does
+    not list `policy` in its `appliesTo`, under CTR-005; the requirement does not narrow
+    requests; or the `arguments` do not fit the inputs that the requirement declares.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The policies in force are as they were. What the result says of the cause, it says in a
+    diagnostic, as IFC-025 states. The `arguments` are checked as NAM-019 checks those of an
+    applied requirement, against the requirement's contract in the version that the policy would
+    keep under ACC-031, after their defaults are filled in under SCH-009. The package is the one
+    that the reference names, also where it re-exports the requirement from another, as ACC-031
+    states. With two versions of a package installed that both export the requirement, a request
+    that names neither reports invalid, and one that names either is checked against that
+    version. A request that names an actor or a target that does not exist reports invalid under
+    OPS-029, and one whose `actors` names the root Interface reports refused under ACC-043.
+    Where the actor is not permitted, OPS-023 gives refused first.
+  vectors: []
+
+- id: ACC-043
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to apply a policy whose `actors` names the root Interface.
+  then: >-
+    The request is not dispatched, and reports refused.
+  observable: >-
+    It reports refused whoever makes it, the root Interface included, and the policies in force
+    are as they were. ACC-035 is why: no policy applies to a request whose caller is the root
+    Interface. A policy that gives only `targets` is applied, and ACC-035 says what it does not
+    apply to.
+  vectors: []

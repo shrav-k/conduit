@@ -1,12 +1,23 @@
 # Proposed runtime architecture
 
+**Not binding.** The [specification](../../spec/README.md) alone binds. This document uses the
+words from before the vocabulary ruling; the terms in force are in
+[spec/definitions.md](../../spec/definitions.md). The tracker is the [plan audit](../AUDIT.md),
+not REVIEW. Where the text below says that unresolved work is tracked in REVIEW, or that accepted
+semantics remain in the protocol topics, it no longer holds: those topics are superseded.
+
+**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
+audit](../AUDIT.md) and is not an input for engine builders. Its mechanisms remain candidates; the
+proof order is now placement in the language, then separated components under a simulated network,
+then real processes, then two machines.
+
 Current unresolved work is tracked in [REVIEW](../REVIEW.md). Detailed mechanisms below remain
 proposals unless explicitly accepted; the migration does not turn an architecture sketch into a public protocol rule.
 
 Status: implementation proposal, 2026-11-01. I1's management/execution separation and shared
 policy with instance-owned state are accepted; v0 has no offline grants. See [review](../archive/reviews/IMPLEMENTATION.md)
 for accepted boundaries and [contracts](../proposals/authoring-syntax/CONTRACTS.md) for proposed representations. Accepted semantics remain in
-[DESIGN](../protocol/README.md).
+the [protocol topics](../protocol/README.md).
 
 ## 1. System boundaries
 

@@ -1,0 +1,9 @@
+# Example. It must be rejected:
+# `kind` is one of ten, and `Policy` is not among them.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Policy
+metadata:
+  name: office-hours
+spec:
+  requirement: example.org/files#rate-limit.v1

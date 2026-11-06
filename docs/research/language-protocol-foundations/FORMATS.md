@@ -1,5 +1,7 @@
 # Format and schema decision brief
 
+> Not binding. This research predates the specification in [`spec/`](../../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Reviewed **2026-11-02** after the owner requested a final comparison before committing to the
 serialization and data-schema foundation. The owner subsequently accepted constrained YAML,
 equivalent JSON input/interchange and JSON Schema 2020-12. The accepted

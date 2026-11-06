@@ -1,0 +1,364 @@
+# Templates: what the `spec` of a template holds.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). One `implementation` map follows
+# Terraform, which picks a provider from a resource's type and lets one line override it. A
+# runtime as a pair of operations that pass a handle follows the Model Context Protocol's
+# guidance for stateful tools. A Conduit template's own keys are in conduits.yaml and a Pool's
+# entries in pools.yaml. The JSON Schemas of these shapes are in spec/schemas/templates.yaml.
+# Consolidation pass 1 took PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004.
+# The ruling on the core package and the schemas (plan-audit ruling 37) changed TPL-002,
+# TPL-003, TPL-006 and TPL-010. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed TPL-003, TPL-004, TPL-006 to TPL-009
+# and TPL-012: an instance is set up by one invocation of `set-up.v1` and retired by one of
+# `retire.v1`, and a template's `setup` and `retire` graphs are the steps the engine runs. Its
+# closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed TPL-006, where a runtime
+# is no longer marked optional, and TPL-010, and added TPL-013, of the layer `convention`.
+# Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed TPL-004, which now covers
+# every operation of a capability the type offers and every control it lists, and TPL-009, and
+# added TPL-014. No promise of this file was removed before ruling 38. Draft: no vector exists
+# yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
+# on reconciling the start or the stop of a runtime. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed TPL-007, TPL-009 and TPL-015: an instance holds
+# a runtime until a stop of it has succeeded or has been reconciled as having occurred.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# TPL-007, TPL-009, TPL-011 and TPL-015, and added TPL-016, of the layer `language`: no step
+# invokes the start or the stop operation of a runtime of its own instance by naming it as its
+# `operation`. It removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md. It removed TPL-014, on
+# later work, which is not part of this version. Those IDs are not reused.
+
+- id: TPL-001
+  layer: language
+  level: must
+  when: >-
+    The `spec` of an Interface, Agent, Resource or Pool template is read.
+  then: >-
+    It may hold `type`, `inputs`, `config`, `implementation`, `runtimes`, `setup`, `retire` and
+    `controls`; for an Interface, Agent or Resource also `conduits`; and for a Pool `entries`.
+    There are no other keys, and no family has keys of its own beyond these. `inputs`,
+    `conduits`, `runtimes` and `entries` are maps keyed by name, as OBJ-022 states.
+  observable: >-
+    An account, a model, a frontend or an isolation setting is written inside `config`, where
+    the type's schema checks it. A Pool template that declares Conduits is rejected, because a
+    Pool is never the consumer of a Conduit.
+  vectors: []
+
+- id: TPL-002
+  layer: language
+  level: must
+  when: >-
+    An Interface, Agent, Resource or Pool template is registered.
+  then: >-
+    Its `type` is the selection of a Type contract of the same family, written as NAM-018 gives
+    a selection. A Conduit template has no `type`.
+  observable: >-
+    A template with no `type`, with a type of another family, or a Conduit template that gives
+    one, is rejected with a diagnostic.
+  vectors: []
+
+- id: TPL-003
+  layer: language
+  level: must
+  when: >-
+    A template selects an implementation.
+  then: >-
+    It does so in the one `implementation` map of its `spec`. Each key is the selection of an
+    operation, written as NAM-018 gives one: a qualified reference, or `#name` for an operation
+    of the same project or package. Each value is either a string, which is the selection of an
+    implementation, or a map, which is a graph written in place.
+  observable: >-
+    A step, a runtime or a member of a template's `controls` map that carries its own
+    `implementation` key is rejected with a diagnostic naming it. An Operation contract, a
+    control's among them, may state `implementation`, its default implementation, under CTR-002.
+    The map holds one selection for an operation; the same operation written twice is a
+    duplicate key, rejected under SCH-012. `setup` and `retire` are not selected here: the
+    engine implements `set-up.v1` and `retire.v1`, and the graphs a template writes under
+    `setup` and `retire` are the steps it runs, as TPL-008 states.
+  vectors: []
+
+- id: TPL-004
+  layer: language
+  level: must
+  when: >-
+    An operation is not a key of a template's `implementation` map, and it is one that the
+    template's type requires, that a capability the type offers includes, that the type lists as
+    a control, or that a runtime of the template or of its type, or one of the template's steps
+    without `conduit`, names.
+  then: >-
+    The implementation is the default the type states for that operation, or else the default
+    the operation's own contract states. If there is neither, the template is rejected.
+  observable: >-
+    The resolved template shows one implementation for each such operation and where it came
+    from: the template, the type or the operation's contract. A default is a selection, and it
+    resolves in the project or package that holds the contract stating it: under NAM-022 where
+    it is written `#name`, and through that package's own manifest, under NAM-014, where it
+    names another package. A step that carries `conduit` is a request to another instance under
+    GRA-024 and needs no implementation here. A type's contract promises what its instances
+    offer: a Conduit may list any operation of a capability that its target's type offers, under
+    CON-017 and CON-021, a control among them, so each of those operations has an implementation
+    when the template is registered, whether or not the type also lists it under `requires`. A
+    template whose type offers a capability one of whose operations has no selection and no
+    default is rejected, and so is one whose type lists such a control, even where the
+    template's `controls` map leaves that control out. Where the template was registered while
+    the type's package was not installed, as PKG-006 allows, the check is made when the template
+    is instantiated, under INS-022.
+  vectors: []
+
+- id: TPL-005
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which an implementation is selected for an operation that the
+    implementation's package does not say it implements.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the operation and the implementation.
+  vectors: []
+
+- id: TPL-006
+  layer: language
+  level: must
+  when: >-
+    A template or a Type contract declares a runtime.
+  then: >-
+    It is a member of a `runtimes` map, keyed by its name, that holds `start` and `stop`, each
+    the selection of an operation, and nothing else. The start operation's contract declares
+    exactly one output that is a handle, and the stop operation's contract takes exactly one
+    required input that is a handle. An instance has the runtimes that its type declares as well
+    as those that its template declares.
+  observable: >-
+    A runtime whose start or stop operation does not have that shape is rejected with a
+    diagnostic naming the runtime and the operation. A template that declares a runtime under a
+    name that its type declares is rejected with a diagnostic naming the runtime. A step may
+    name a runtime that either of them declares, under GRA-017. A runtime is not marked
+    optional, and one that carries `optional` is rejected: a runtime is started only by a step
+    that names it, and that step may be marked `optional: true`.
+  vectors: []
+
+- id: TPL-007
+  layer: convention
+  level: must
+  when: >-
+    A step names a runtime.
+  then: >-
+    If the instance does not hold that runtime, the step invokes its start operation, and once
+    that succeeds the instance holds the handle it returned, under the runtime's name, until a
+    stop of the runtime has succeeded or has been reconciled as having occurred, or the engine
+    treats the handle as no longer held under OBS-007. If the instance already holds it, the
+    start operation is not invoked again and the step is left as succeeded.
+  observable: >-
+    Inspecting the instance lists the runtime as held. A value reference with the source
+    `runtime` and that name yields the handle. Setting the instance up again starts no second
+    runtime of that name, and the instance holds the same handle as before. A stop that failed,
+    or whose outcome is unknown, does not end the holding: a further retirement under LIF-026
+    stops the runtime again. A start whose outcome is unknown returned no handle, so the
+    instance does not hold the runtime: TPL-015 says how the start is reconciled, and LIF-024
+    what the shutdown of the instance reports meanwhile.
+    A step does not start or stop a runtime by naming its start or its stop operation as its
+    `operation`: TPL-016 rejects the template.
+  vectors: []
+
+- id: TPL-008
+  layer: language
+  level: must
+  when: >-
+    A template declares a `setup` graph or a `retire` graph.
+  then: >-
+    The graph is the steps that the engine runs for an instance of the template: those of
+    `setup` within the one invocation of `set-up.v1` that sets the instance up, and those of
+    `retire` within the one invocation of `retire.v1` that retires it. The engine implements
+    both operations. Neither graph is an implementation, neither is selected in the
+    `implementation` map, and neither has inputs of its own.
+  observable: >-
+    The request names the instance in the input `instance` of `set-up.v1` or of `retire.v1`, and
+    is made of the target that ACC-033 names. The setup operation and the retire operation of an
+    instance mean these two invocations, and its setup and its retirement are what they do. A
+    `setup` or `retire` graph may refer to the instance's configuration and to the handles of
+    its runtimes, as GRA-010 and GRA-020 state, and a value reference with the source `input` is
+    rejected in one. A Conduit template has neither graph: a Conduit is set up by an invocation
+    of `open.v1` and retired by one of `close.v1`.
+  vectors: []
+
+- id: TPL-009
+  layer: convention
+  level: must
+  when: >-
+    An instance is retired by an invocation of `retire.v1`.
+  then: >-
+    Within the invocation of `retire.v1` the engine runs the steps of the instance's `retire`
+    graph, if it has one and a setup of the instance was ever dispatched, and then invokes the
+    stop operation of each runtime the instance still holds. Nothing else is done, apart from
+    the closing of its Conduits under CON-008.
+  observable: >-
+    An instance for which no setup was ever dispatched does not run its `retire` graph, as
+    LIF-025 states. With no `retire` graph to run and no runtime held, the invocation succeeds
+    at once. Where the outcome of a start of one of the instance's runtimes is unknown, an
+    invocation that succeeds does not confirm the shutdown, under LIF-024: the start may have
+    left a runtime running that the instance does not hold. The stops are part of the
+    invocation, which succeeds only if the steps of the graph did, as OPS-022 counts them, and
+    every stop succeeded. A further invocation for an instance whose shutdown is confirmed runs
+    no step and stops nothing, under LIF-030: such an instance holds no runtime, because LIF-024
+    never has the shutdown of an instance that holds one confirmed. When the Conduits of which
+    the instance is the consumer are closed, and what they permit meanwhile, is CON-008 and
+    ACC-039.
+  vectors: []
+
+- id: TPL-010
+  layer: language
+  level: must
+  when: >-
+    A template's `controls` map is read.
+  then: >-
+    Each key is the selection of a control that the template's type lists, written as NAM-018
+    gives one. Each value may hold `inputs`, a map from the name of one of that control's inputs
+    to a member that holds `schema`, a schema that further narrows that input.
+  observable: >-
+    A key the type does not list, or an input name the control does not declare, is rejected. A
+    control the map does not list is not available on the template's instances, and TPL-013 says
+    what a request for it reports. A template with no `controls` map makes every control of its
+    type available. `inputs: {limit: {schema: {maximum: 50}}}` narrows the input `limit`.
+  vectors: []
+
+- id: TPL-011
+  layer: convention
+  level: must
+  when: >-
+    A control is requested on an instance whose template narrowed one of its inputs.
+  then: >-
+    The value given for that input must satisfy both the schema the control's contract gives
+    the input and the schema the template added.
+    A request whose value fails either is not dispatched, and reports invalid.
+  observable: >-
+    A request whose value the contract would accept and the template's schema rejects leaves the
+    configuration and the revision as they were, and no implementation receives a call. Where
+    the actor is not permitted, OPS-023 gives refused first.
+  vectors: []
+
+- id: TPL-012
+  layer: language
+  level: must
+  when: >-
+    A template has no `setup` graph.
+  then: >-
+    The steps that the engine runs to set up one of its instances are only the opening of the
+    instance's declared Conduits and, for a Pool, the setting up of the Resources of its
+    entries.
+  observable: >-
+    An invocation of `set-up.v1` for such an instance invokes no operation of any implementation
+    beyond those.
+  vectors: []
+
+# --- Added by the closing pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/reader-3.md, finding 28). It is of the layer `convention`.
+
+- id: TPL-013
+  layer: convention
+  level: must
+  when: >-
+    A control is requested on an instance that does not have it: the instance's type does not
+    list it under CTR-006, or its template has a `controls` map that does not list it under
+    TPL-010.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The instance's configuration and revision are as they were, and no implementation receives a
+    call. A Conduit may list the control, because its capability includes it under CON-017, and
+    the request reports invalid all the same. Where the actor is not permitted, OPS-023 gives
+    refused first.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3C-2). It is of the layer
+# --- `convention`.
+
+- id: TPL-015
+  layer: convention
+  level: must
+  when: >-
+    An actor reconciles, under OPS-014, the invocation of the start operation or of the stop
+    operation of a runtime whose outcome is unknown: the invocation of a step that names the
+    runtime, or of a stop under TPL-009 or OBS-007.
+  then: >-
+    A reconciliation that records the start as having occurred states the handle, in the input
+    `handle` of `reconcile.v1`, and the instance then holds the runtime with that handle. This
+    holds for a retired instance as for any other. On an instance that exists, one that records
+    the start as having occurred and states no handle is not dispatched, and reports invalid.
+    Where the instance no longer exists, a reconciliation of the start or of the stop states no
+    handle: it records the outcome and stores nothing. A reconciliation that records a stop as
+    having occurred ends the holding. One that records that the start or the stop did not occur
+    gives the outcome failed, and leaves the instance as it was.
+  observable: >-
+    After a start is reconciled as having occurred, inspecting the instance lists the runtime as
+    held, a value reference with the source `runtime` yields the handle that the reconciliation
+    stated, the next setup leaves the step as succeeded without starting a second runtime, under
+    TPL-007, and a retirement stops the runtime with that handle, under TPL-009. The actor
+    learns the handle from what it checked: the engine cannot, because the start returned none.
+    After a start is reconciled as not having occurred, the instance does not hold the runtime,
+    and the step is dispatched in a later run as a new invocation, under OPS-028. After a stop
+    is reconciled as having occurred, the instance no longer holds the runtime, and a later
+    retirement does not stop it again. After one is reconciled as not having occurred, the
+    instance is as it was: it still holds the runtime after a stop within a retirement whose
+    outcome was unknown, under TPL-007, and a further retirement under LIF-026 stops it; where
+    OBS-007 had the engine treat the handle as no longer held, it stays so. Until a start whose
+    outcome is unknown is reconciled, OPS-021 keeps the step from being dispatched again, except
+    as a new attempt under OPS-012. LIF-015 admits these reconciliations on a retired instance,
+    the one that stores a handle among them. A start reconciled as having occurred on a retired
+    instance leaves it holding the runtime, so its shutdown is not confirmed, under LIF-024, and
+    a further retirement under LIF-026 stops the runtime. A stop reconciled as having occurred
+    on a retired instance ends the holding, and only then can the retirement within which the
+    stop was dispatched be reconciled as having occurred, under LIF-028: while the instance
+    holds the runtime that reconciliation reports conflict. Once the instance has been
+    unregistered, as LIF-017 allows where its location was declared lost, nothing is left to
+    hold a handle: the reconciliation is authorized against `management`, under ACC-033, and
+    records the outcome alone. A request that states `handle` for an invocation that is not the
+    start of a runtime, for a start that it records as not having occurred, or for the start of
+    a runtime of an instance that no longer exists, reports invalid, under OPS-031. Which
+    runtime a start was for is told by the name of the runtime that its step names, which a
+    purge keeps under REC-004. The reconciliation is authorized under ACC-033 against the target
+    that manages the instance the invocation was dispatched to.
+  vectors: []
+
+# --- Added by the fix pass of the fourth round of the re-audit
+# --- (docs/proposals/reaudit/round-4/log-fixes.md; finding 4C-12). It is a rule on documents
+# --- and has the layer `language`.
+
+- id: TPL-016
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which a step with no `conduit` names, as its `operation`, an
+    operation that a runtime of the template or of its type names as its `start` or as its
+    `stop`. The step is one of the template's `setup` graph, of its `retire` graph or of a graph
+    selected for its instances, however the selection was made.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step, the operation and the runtime. A runtime is
+    started only by a step that names it under `runtime`, under TPL-007, and stopped only by the
+    engine, under TPL-009 or OBS-007: those are the invocations after which the instance holds
+    the handle or no longer holds it, and the ones that TPL-015 reconciles. A step that invoked
+    the stop operation itself, with the handle that a value reference with the source `runtime`
+    yields, would stop the runtime while the instance still held it, and the engine's own stop
+    would then fail with a handle that the implementation no longer recognizes, under IFC-011. A
+    step that invoked the start operation itself would start a runtime that the instance does
+    not hold. A step that carries `conduit` is a request to another instance, whose operations
+    are not this instance's runtimes, and is not counted. A selected graph counts however the
+    selection was made, as under GRA-005: in the template's `implementation` map, as a default
+    of its type or of an operation's own contract, written in place or given by an
+    implementation item of a manifest. Where the template was registered while a package it
+    needs was not installed, as PKG-006 allows, the check is made when the template is
+    instantiated, under INS-022.
+  vectors: []

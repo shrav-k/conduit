@@ -1,0 +1,20 @@
+# Example. It must be rejected:
+# a control's `changes` is a map from the name of an input to the JSON Pointer of the
+# setting that input sets. A list of pointers does not say which input sets which setting.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-read-limit.v1
+spec:
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1}
+      optional: true
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
+    settings:
+      schema: {type: object}
+  effect: Changes the read limit of the directory.
+  changes: [/readLimit]

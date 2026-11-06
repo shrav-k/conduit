@@ -1,0 +1,407 @@
+# Instantiation: how a template and its arguments become an instance.
+# Owner rulings of 2026-11-05 (plan-audit rulings 8, 18, 21, 28, 29, 32 and 33). Draft: no
+# vector exists yet. Consolidation pass 1: INS-015 was folded into OBJ-013. INS-020 to INS-022
+# were added. The follow-up decisions (ruling 33) added INS-023. The ruling on the core package
+# and the schemas (ruling 37) changed INS-006, INS-012 and INS-014. The conversion of the older
+# text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed INS-011,
+# INS-014 and INS-018 and added INS-024. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed INS-002, INS-011, INS-012, INS-014
+# and INS-018, and added INS-025, the forms of `from`. Its closing pass reworded one sentence
+# of INS-024, and wrote "composite" for "composed" in INS-012 and INS-016. Its last pass
+# (docs/proposals/reaudit/round-2/log-tail.md) changed INS-025: `#name` written as `from` in a
+# submitted project resolves as the bare name does.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed INS-020, which is now of the layer `convention`, and INS-025, whose
+# `then` now says what `#name` written as `from` reaches in a submitted project. It removed
+# none.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# INS-006, INS-013, INS-019, INS-020 and INS-025: an argument is held with the defaults of its
+# input's schema filled in, and a project that is handed over for registration is called a
+# submitted project. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+
+- id: INS-001
+  layer: language
+  level: must
+  when: >-
+    A document whose kind is one of the five families is read.
+  then: >-
+    It is a template if it has no `from`, and an instance if it has `from`. There is no other
+    marker.
+  observable: >-
+    A document with `from` that also carries a `spec` is rejected, with a diagnostic naming the
+    `spec`. A document of the kind `Type`, `Capability`, `Operation`, `Requirement` or `Schema`
+    is a contract, and this test is not applied to it.
+  vectors: []
+
+- id: INS-002
+  layer: language
+  level: must
+  when: >-
+    An instance document's `from` does not resolve to a template of the same kind.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the `from` value and what it resolved to, if anything.
+    Every instance is made from a template: one that exists when the instance is made, or one
+    that an installed package exports. The forms `from` may take are INS-025.
+  vectors: []
+
+- id: INS-003
+  layer: language
+  level: must
+  when: >-
+    An instance document supplies, under `arguments`, a value for a name that is not an input
+    its template declares.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the undeclared argument.
+  vectors: []
+
+- id: INS-004
+  layer: language
+  level: must
+  when: >-
+    An instance document omits an input that its template declares with no `default` and
+    without marking it `optional: true`.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the missing input.
+  vectors: []
+
+- id: INS-005
+  layer: language
+  level: must
+  when: >-
+    An argument does not satisfy the `schema` its input declares.
+  then: >-
+    No instance is made, and the document that supplies the argument is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the input and the part of the schema the value fails.
+  vectors: []
+
+- id: INS-006
+  layer: language
+  level: must
+  when: >-
+    An argument is supplied for an input.
+  then: >-
+    The whole value is assigned to each destination the input names.
+  observable: >-
+    In the resolved instance each destination holds the supplied value, with the defaults of the
+    properties of the input's schema filled in under SCH-009 and nothing else changed. Nothing
+    is merged with what the template had there. Where the input's schema is a reference schema
+    that fixes the kind, a bare name is accepted as the argument, and each destination receives
+    the reference with its kind: an input governed by
+    `github.com/shrav-k/conduit/core#resource-reference.v1` that is given `scratch` and has a
+    declared Conduit's `target` as its destination puts `{kind: Resource, name: scratch}` there,
+    although `target` itself accepts several kinds.
+  vectors: []
+
+- id: INS-007
+  layer: language
+  level: must
+  when: >-
+    An input that declares a `default` is not supplied.
+  then: >-
+    The default is assigned to each of its destinations.
+  observable: >-
+    In the resolved instance each destination holds the default value.
+  vectors: []
+
+- id: INS-008
+  layer: language
+  level: must
+  when: >-
+    An optional input that declares no `default` is not supplied.
+  then: >-
+    Nothing is assigned. Each of its destinations keeps the value the template gives it, or is
+    absent if the template gives none.
+  observable: >-
+    In the resolved instance each destination equals the template's value there. Where the
+    template gives none, it holds a default of the type's schema under INS-019, or is absent.
+  vectors: []
+
+- id: INS-009
+  layer: language
+  level: must
+  when: >-
+    Null is supplied for an input.
+  then: >-
+    It is assigned as a value if the input's schema permits null, and is otherwise rejected
+    under INS-005. It is never treated as the input not being supplied.
+  observable: >-
+    Where null is permitted, each destination holds null and no default is applied.
+  vectors: []
+
+- id: INS-010
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which two inputs name the same destination, or one input's
+    destination lies inside another's.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming both inputs and the destinations that overlap.
+  vectors: []
+
+- id: INS-011
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which an input names a destination whose parent is not present
+    in the template.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the input and the destination. The `config` of a
+    template that writes none is present and empty, under INS-024, so `/config/model` is
+    accepted there and `/config/limits/read` is not. The `arguments` of a nested instantiation,
+    or of an applied requirement, that writes none is present and empty in the same way, as
+    OBJ-014 and NAM-019 state: `/conduits/checkout/arguments/limit` is accepted beside a
+    declared Conduit `checkout` that writes no `arguments`, and
+    `/requirements/rate/arguments/limit` beside an applied requirement `rate` that writes none.
+  vectors: []
+
+- id: INS-012
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which an input's destination is none of these: `config` as a
+    whole, or a place inside it; a declared Conduit's `target`; the `arguments` of a declared
+    Conduit as a whole, or a place inside them; an entry's `placement`; the `arguments` of an
+    entry as a whole, or a place inside them; in a Conduit template that is not a composite,
+    `operations` as a whole, and the `arguments` of an applied requirement as a whole or a place
+    inside them; and, in a composite Conduit template, the `arguments` of a component as a whole
+    or a place inside them.
+  then: >-
+    The template is rejected. The list is closed: a destination that reaches any other place is
+    not accepted.
+  observable: >-
+    Resolving returns a diagnostic naming the input and the key its destination reaches.
+    Accepted, for example, are `/config`, `/config/model`, `/conduits/checkout/target`,
+    `/conduits/checkout/arguments`, `/entries/cache/placement`, `/operations`,
+    `/requirements/rate/arguments/limit` and `/components/read/arguments/root`. Rejected, with
+    every other place the list does not name, are: `type`, `implementation`, `runtimes`,
+    `setup`, `retire`, `controls` and a Conduit template's `capability`, and any place inside
+    one of them; the `from` or the `optional` of a nested instantiation; a whole nested
+    instantiation, such as `/conduits/checkout`; an item of `operations`, such as
+    `/operations/0`; the `requirement` of an applied requirement, such as
+    `/requirements/rate/requirement`; and anything under `/inputs`. `/operations` and a place
+    under `/requirements` are rejected in a composite template, which has neither key under
+    CON-016, and a place under `/components` is rejected in a template that is not a composite.
+    What is required of an `operations` that an input fills is INS-023.
+  vectors: []
+
+- id: INS-013
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The instance holds the complete resolved definition and configuration, including the nested
+    instantiations its template declared. The arguments are not kept as a separate layer.
+  observable: >-
+    Inspecting the instance returns its definition and configuration with every destination
+    filled, and nothing that says which values came from arguments other than the template it
+    came from. A replacement for one of its nested instances, made under LIF-009, is made from
+    the nested instantiation as the instance holds it, and from the template that its `from`
+    names as that template then stands. Every value that a schema governed is held as SCH-009
+    filled it, so the declared part of an inspection result shows `{depth: 1}` where an argument
+    gave `{}` for an input whose schema states that default.
+  vectors: []
+
+- id: INS-014
+  layer: language
+  level: must
+  when: >-
+    The configuration that instantiation would produce does not satisfy the `schema` of the
+    instance's type.
+  then: >-
+    No instance is made, and the instance document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the type and what fails. A template can narrow what
+    its type allows and cannot widen it. A value that is a reference is stored in the resolved
+    form of OBJ-009, which every reference schema accepts, so the configuration as it is stored
+    satisfies the same schema. A template that has no `config` is checked against its type's
+    schema as an empty map, under INS-024.
+  vectors: []
+
+- id: INS-016
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The only objects made are the instance and its nested instances, which are the Conduits its
+    template declares and, for a Pool, the Resources of its entries. A composite Conduit
+    template makes one Conduit for each component and none for the composite, as CON-003 states.
+    Nothing is set up or opened.
+  observable: >-
+    After instantiation no setup has run, no Conduit is open, and no implementation has received
+    a call.
+  vectors: []
+
+- id: INS-017
+  layer: language
+  level: must
+  when: >-
+    The same template is instantiated twice with the same arguments while the same objects
+    exist.
+  then: >-
+    The two results are the same, apart from generated names and IDs.
+  observable: >-
+    The two resolved instances are equal field by field once names and IDs are set aside.
+  vectors: []
+
+- id: INS-018
+  layer: language
+  level: must not
+  when: >-
+    An argument is a relative path.
+  then: >-
+    It is joined to a working directory or to any other base.
+  observable: >-
+    The value reaches its destination exactly as supplied. Whether a relative path is then valid
+    is decided by the schema of the type that receives it. Where a value is tied to a location,
+    as an absolute path is, PLC-020 says who interprets it.
+  vectors: []
+
+- id: INS-019
+  layer: language
+  level: must
+  when: >-
+    A destination could take its value from an argument, from the input's default, from the
+    template, or from a default in the type's schema.
+  then: >-
+    The first of those that exists is used, in that order.
+  observable: >-
+    An argument overrides the input's default; the input's default overrides the template's
+    value; and the type schema's default, applied under SCH-009, fills only what is still
+    absent. The defaults of the properties of an input's own schema are filled into the
+    argument, or into the input's default, before it is assigned, under SCH-009 and SCH-010.
+    A control applies no default to a setting whose input is not supplied, as REV-006 states.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: INS-020
+  layer: convention
+  level: must
+  when: >-
+    A template from which instances have been made is replaced or unregistered.
+  then: >-
+    Each of those instances keeps the definition and configuration it resolved when it was
+    made. Having instances does not prevent a template from being replaced or unregistered.
+  observable: >-
+    A request to unregister a template that has instances does not report conflict on their
+    account. Afterwards each instance inspects as it did before, and an instance document whose
+    `from` names the unregistered template is rejected under INS-002.
+    A replacement that is made afterwards under LIF-009 for one of an instance's nested
+    instances is a new instance: it is made from the nested instantiation as the instance holds
+    it, and from the template that the nested instantiation's `from` names as that template then
+    stands.
+  vectors: []
+
+- id: INS-021
+  layer: language
+  level: must
+  when: >-
+    A template declares an input.
+  then: >-
+    It is a member of the `inputs` map of the template's `spec`, keyed by the input's name. It
+    holds `schema`, the schema of the value, and `to`, a list of one or more destinations, and
+    may hold `default` and `optional: true`.
+  observable: >-
+    An input with no `schema`, or with no `to` or an empty one, is rejected with a diagnostic
+    naming the input. `to: [/config/model]` assigns the value to the `model` member of `config`.
+  vectors: []
+
+- id: INS-022
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    Every check that resolving makes on a template is made again, against the packages the
+    template holds.
+  observable: >-
+    A template that was registered while one of its packages was not installed, as PKG-006
+    allows, is checked in full before any instance is made. If a check fails, no instance is
+    made and the instance document is rejected with the diagnostic that resolving the template
+    would have returned.
+  vectors: []
+
+# --- Added by the follow-up decisions (plan-audit ruling 33; decision F18 of the re-audit).
+
+- id: INS-023
+  layer: language
+  level: must
+  when: >-
+    A Conduit is instantiated, and the `operations` that an input's argument or default gives
+    it holds an operation that its capability does not include.
+  then: >-
+    The instance document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the operation. An input may have a Conduit template's
+    `operations` as its destination under INS-012, and the check that CON-017 makes on a list
+    the template writes is then made on the resolved list, when the Conduit is instantiated.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ5 of
+# --- docs/proposals/docs-audit/GAPS.md).
+
+- id: INS-024
+  layer: language
+  level: must
+  when: >-
+    An Interface, Agent, Resource or Pool template writes no `config`.
+  then: >-
+    Its `config` is treated as present and empty: the template means the same as one that writes
+    `config: {}`.
+  observable: >-
+    The empty map is what is checked against the schema of the type under INS-014. The defaults
+    of the type's schema apply to it under SCH-009, because the map is present. An input may
+    have a destination inside it, because the parent that INS-011 requires is present. Resolving
+    a template that writes no `config` and one that writes `config: {}`, otherwise equal, gives
+    the same template.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- finding R2-S1).
+
+- id: INS-025
+  layer: language
+  level: must
+  when: >-
+    The `from` of an instance document, or of a nested instantiation, is written.
+  then: >-
+    It is one of four: a bare name, or `{kind: <Kind>, name: <name>}`, for a template that
+    exists; a qualified reference, for a template that a package exports; or `#` followed by a
+    name. In a document of a package, `#name` names a template of the same package, as NAM-022
+    gives that form. In a submitted project, whose templates are registered, it resolves as the
+    bare name does: among the templates that exist, of which the templates that the same
+    submission registers are part.
+  observable: >-
+    A bare name, and the form with a kind, resolve among the objects that exist, under NAM-003,
+    and a template that the same submission registers is one of them, under SUB-002. A document
+    of a package names a template of its own package as `#name`, because a bare name is never
+    looked up in a package. In a submitted project `#name` reaches every template that the bare
+    name reaches, one that an earlier submission registered among them, as NAM-022 excepts it. A
+    set of documents that names its own templates as `#name` therefore reads alike as a project
+    and as a package. `from` is not a selection: a selection chooses a contract or an
+    implementation, and `from` names a template. PKG-013 says what holds where a package
+    re-exports the template. A value of any other form is rejected with a diagnostic naming it,
+    and INS-002 rejects one that does not resolve to a template of the same kind.
+  vectors: []

@@ -1,0 +1,18 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# an instance has at most one implementation item that is run, because a run is named by the
+# instance's ID (TPL-019). The type `example.org/files#local-directory.v1`, in
+# ../valid/files-package/, has every operation of a directory implemented by `files-server`, a
+# `command` item, by default; this template selects `listing`, a `package` item, for
+# `directory.list.v1`, so its instances would need two runs. A schema cannot tell: which item
+# is run is in the package's manifest.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: listed-directory
+spec:
+  type: example.org/files#local-directory.v1
+  config:
+    path: /srv/checkout
+  implementation:
+    example.org/files#directory.list.v1: example.org/files#listing

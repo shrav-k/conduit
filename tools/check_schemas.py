@@ -11,12 +11,13 @@ What it checks, and reports under these numbers:
      and no other number outside the range of IEEE 754 binary64.
   2. Every Schema contract under spec/schemas/ and spec/core/ uses only the keywords and the
      formats that spec/schema-profile.md permits, places `default` only where SCH-008 accepts
-     it, and uses `$ref` only in the three forms of SCH-015, each of which resolves: `#` and a
-     JSON Pointer into the same schema, a qualified reference to a Schema contract, and
-     `#name` for a Schema contract of the same package. `schema.v1`, the profile written as a
-     schema, lists exactly the profile's keywords and formats. A schema written inside
-     another document is checked through `schema.v1` in step 3, and a `$ref` in it that is
-     not a pointer is resolved in step 5.
+     it, which is never inside `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else` or
+     `dependentSchemas`, and uses `$ref` only in the three forms of SCH-015, each of which
+     resolves: `#` and a JSON Pointer into the same schema, a qualified reference to a Schema
+     contract, and `#name` for a Schema contract of the same package. `schema.v1`, the
+     profile written as a schema, lists exactly the profile's keywords and formats. A schema
+     written inside another document is checked through `schema.v1` in step 3, and a `$ref`
+     in it that is not a pointer is resolved in step 5.
   3. Every document under spec/core/, spec/schemas/ and spec/schemas/examples/valid/ is valid
      against `document.v1`, and every manifest (a file named conduit.yaml) against
      `manifest.v1`, with a JSON Schema 2020-12 validator and format checking on.
@@ -26,23 +27,30 @@ What it checks, and reports under these numbers:
      package, every document is exported or is listed in PRIVATE below, no name is used
      twice, names follow NAM-004, CTR-001 and OBJ-001, every reference into the core package
      names an export of the kind the place expects, every control has a `changes` that maps
-     inputs it declares to places its type's schema describes and declares the input
-     `revision` and the output `settings` (CTR-006), every other input of a control is
-     optional (REV-006, as the record settled it), the operations of REV-012 take no
-     `revision`, `replace.v1` and `rename.v1` return one (SUB-009, OBJ-026), no implementation has the name of a document of its project or package
-     (NAM-027), and the
+     inputs it declares to places its type's schema describes, its `inputSchema` requires
+     `revision`, and it declares no output `settings` (CTR-006),
+     the operations of REV-012 take no `revision`, `replace.v1` returns one (SUB-009), no
+     implementation has the name of a document of its project or package (NAM-027), and the
      tables of spec/core/README.md and spec/schemas/README.md list exactly the files and the
      exports there are, each export with its kind and with promises that exist. The same
      reference check is made on every `#name`, a `$ref` and a `from` among them, inside each
      example directory, and every promise ID cited under spec/core/, spec/schemas/ and in
-     spec/promises/manifest.yaml is the ID of a promise that exists.
+     spec/promises/manifest.yaml is the ID of a promise that exists. A directory under
+     examples/valid/ whose manifest states `address` and `version` is a package (PKG-017),
+     whose exports the others may refer to; one that holds a contract or lists an
+     implementation and states no `address` breaks MAN-015.
   6. Rules that no schema can express and that this tool applies itself, each named in RULES
      below with the promise it comes from. The core package and every directory under
      examples/valid/ break none of them. Every file under examples/invalid-by-rule/ is one
      set of documents, each of them valid against the schemas, that the rule its file is
      named for rejects. A file there with `-manifest-` in its name holds a manifest, which is
-     valid against `manifest.v1` and which a rule on manifests rejects. The rule for SCH-019 validates a `default` against its schema, so it
-     needs jsonschema; without it the rule is not applied, and the tool says so.
+     valid against `manifest.v1` and which a rule on manifests rejects. The rule for SCH-019
+     validates a `default` against its schema, so it needs jsonschema; without it the rule is
+     not applied, and the tool says so. The rules that follow a template's selections into
+     an implementation item read the items from the manifests of the core package and of the
+     directories under examples/valid/, and from the set's own manifest where it has one.
+     examples/valid/first-start/ writes out the documents that first start makes, which no
+     submission may hold (FST-006), so the rule for FST-006 is not applied to it.
 
 What it does not check: anything that needs an engine. It does not resolve references to
 packages that are not in this repository, instantiate a template, or evaluate any of the
@@ -101,8 +109,33 @@ PRIVATE = frozenset()
 # The operations that REV-012 says name no revision and advance none.
 NO_REVISION = ("set-up.v1", "retire.v1", "retire-with-resources.v1", "open.v1", "close.v1")
 
-# The operations that return the revision of the object they changed (SUB-009, OBJ-026).
-RETURNS_REVISION = ("replace.v1", "rename.v1")
+# The operations that return the revision of the object they changed (SUB-009).
+RETURNS_REVISION = ("replace.v1",)
+
+# The provider capabilities of the core package (PRV-001), and the three whose operations no
+# Conduit lists, because the engine alone invokes them by provider calls (PRV-004, PRV-005).
+PROVIDER_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-source.v1",
+                         "secret-reveal.v1")
+CALLED_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-source.v1")
+CALLED_OPERATIONS = ("run.v1", "stop.v1", "inspect-run.v1", "list-machines.v1", "place.v1",
+                     "fetch-package.v1")
+
+# The core templates from which first start alone makes instances (FST-001, FST-006), and the
+# directory under examples/valid/ that writes those instances out to show what first start
+# makes. That directory is a picture of the engine's own work and not a submission, so the
+# rule for FST-006 is not applied to it; every other rule is.
+FIRST_START_TEMPLATES = ("system", "location", "management", "access", "root")
+FIRST_START_DIRECTORY = "first-start"
+
+# The prefixes of the promise files that a ruling removed, whose IDs no file this tool covers
+# may cite: GRA, of spec/promises/graphs.yaml, whose promises ruling 41 removed.
+REMOVED_PREFIXES = ("GRA",)
+
+# Where a schema may hold the core package's `secret-reference.v1` (SEC-001): as the schema
+# of a place, which `properties`, `additionalProperties` and a member of `$defs` give, or as
+# `items`. Under `anyOf` or `oneOf` only beside branches that are `{type: null}`. Under any
+# other applicator it may not stand.
+SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 
 # The rules of step 6, each with the promise it comes from. A file under
 # examples/invalid-by-rule/ is named for one of these promises.
@@ -111,25 +144,22 @@ RULES = {
     "bound-once": "CON-028",
     "bound-target": "CON-028",
     "reserved-mark": "CTR-009",
-    "location-placement": "PLC-008",
     "entry-reference": "POOL-005",
     "operations-filled": "CON-016",
     "ref": "SCH-015",
-    "constituent-input": "CTR-010",
     "default-valid": "SCH-019",
-    "pool-offers": "CTR-004",
-    "runtime-once": "TPL-006",
-    "applies-to": "CTR-005",
     "implementation-selected": "TPL-004",
-    "narrows-on-conduit": "CON-030",
-    "obliges-narrows": "CTR-005",
-    "bound-constituent": "CTR-011",
-    "runtime-step-output": "GRA-028",
-    "graph-invokes-itself": "GRA-005",
     "names-nothing": "NAM-028",
-    "runtime-operation-step": "TPL-016",
-    "conduit-names-one": "GRA-024",
     "core-address": "NAM-021",
+    "first-start-from": "FST-006",
+    "location-type": "PLC-028",
+    "one-run": "TPL-019",
+    "label-conflict": "PLC-025",
+    "item-place-required": "MAN-017",
+    "project-address": "MAN-015",
+    "secret-branch": "SEC-001",
+    "provider-family": "PRV-001",
+    "provider-conduit": "PRV-004",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -249,8 +279,34 @@ def profile():
 
 # --- 2. Schemas: a walk that knows which members of a schema are schemas.
 
+# The keywords whose value is one schema, a map of schemas or a list of schemas, and which
+# give no default to what they hold: a `default` inside them is rejected (SCH-008).
+CONDITIONAL = ("not", "if", "then", "else")
+BRANCHES = ("allOf", "anyOf", "oneOf")
+ONE_SCHEMA = ("additionalProperties", "items", "contains", "propertyNames")
+MAP_OF_SCHEMAS = ("properties", "$defs", "patternProperties", "dependentSchemas")
+
+
+def subschemas(schema):
+    """(keyword, token, sub) for each schema directly inside `schema`, where token is the name
+    or the index that reaches it under the keyword, or None for a keyword that holds one."""
+    for keyword in MAP_OF_SCHEMAS:
+        members = schema.get(keyword)
+        for name, sub in (members.items() if isinstance(members, dict) else ()):
+            yield keyword, name, sub
+    for keyword in ONE_SCHEMA + CONDITIONAL:
+        if keyword in schema:
+            yield keyword, None, schema[keyword]
+    for keyword in BRANCHES + ("prefixItems",):
+        branches = schema.get(keyword)
+        for index, sub in enumerate(branches if isinstance(branches, list) else ()):
+            yield keyword, index, sub
+
+
 def walk(schema, where, visit, place="other"):
-    """Visit every schema object. `place` is other, property or combined (SCH-008)."""
+    """Visit every schema object. `place` is other, property or combined (SCH-008): a member
+    of `properties` is a property, anything inside one of the eight keywords of SCH-008 is
+    combined, and anything else is other."""
     if isinstance(schema, bool):
         return
     if not isinstance(schema, dict):
@@ -258,20 +314,16 @@ def walk(schema, where, visit, place="other"):
         return
     visit(schema, where, place)
     inside = place == "combined"
-    for keyword in ("properties", "$defs"):
-        members = schema.get(keyword, {})
-        if not isinstance(members, dict):
+    for keyword in MAP_OF_SCHEMAS:
+        if keyword in schema and not isinstance(schema[keyword], dict):
             fail(f"{where}/{keyword}: not a map")
-            continue
-        for name, sub in members.items():
-            below = "combined" if inside else ("property" if keyword == "properties" else "other")
-            walk(sub, f"{where}/{keyword}/{name}", visit, below)
-    for keyword in ("additionalProperties", "items"):
-        if keyword in schema:
-            walk(schema[keyword], f"{where}/{keyword}", visit, "combined" if inside else "other")
-    for keyword in ("allOf", "anyOf", "oneOf"):
-        for index, sub in enumerate(schema.get(keyword, [])):
-            walk(sub, f"{where}/{keyword}/{index}", visit, "combined")
+    for keyword, token, sub in subschemas(schema):
+        at = f"{where}/{keyword}" + ("" if token is None else f"/{token}")
+        if inside or keyword in BRANCHES + CONDITIONAL + ("dependentSchemas",):
+            below = "combined"
+        else:
+            below = "property" if keyword == "properties" else "other"
+        walk(sub, at, visit, below)
 
 
 def pointer(root, text):
@@ -359,8 +411,8 @@ def validator(bundled, name):
 
 def explain(error):
     """Say why a document is not valid. Where a schema offers alternatives, follow the one the
-    document was most plainly meant for: the one whose `kind` or `source` it has, and then the
-    one it breaks in the fewest places."""
+    document was most plainly meant for: the one whose `kind` it has, and then the one it
+    breaks in the fewest places."""
     while error.context:
         branches = {}
         for sub in error.context:
@@ -368,7 +420,7 @@ def explain(error):
 
         def score(subs):
             other = any(s.validator in ("const", "enum")
-                        and list(s.relative_path) in (["kind"], ["source"]) for s in subs)
+                        and list(s.relative_path) == ["kind"] for s in subs)
             wrong_type = any(s.validator == "type" and not s.relative_path for s in subs)
             return (other, wrong_type, len(subs), -max(len(s.absolute_path) for s in subs))
         subs = min(branches.values(), key=score)
@@ -416,22 +468,13 @@ EXPECT = (
     ("Type", ("spec", "offers", "*"), "Capability"),
     ("Type", ("spec", "requires", "*"), "Operation"),
     ("Type", ("spec", "controls", "*"), "Operation"),
-    ("Type", ("spec", "placement", "*", "requirement"), "Requirement"),
-    ("Type", ("spec", "runtimes", "*", "start"), "Operation"),
-    ("Type", ("spec", "runtimes", "*", "stop"), "Operation"),
     ("Operation", ("spec", "implementation"), "implementation"),
-    ("Requirement", ("spec", "constituents", "*", "requirement"), "Requirement"),
     ("template", ("spec", "type"), "Type"),
     ("template", ("spec", "capability"), "Capability"),
     ("template", ("spec", "operations", "*"), "Operation"),
     ("template", ("spec", "requirements", "*", "requirement"), "Requirement"),
-    ("template", ("spec", "runtimes", "*", "start"), "Operation"),
-    ("template", ("spec", "runtimes", "*", "stop"), "Operation"),
-    ("template", ("spec", "setup", "steps", "*", "operation"), "Operation"),
-    ("template", ("spec", "retire", "steps", "*", "operation"), "Operation"),
     ("manifest", ("implementations", "*", "implements", "*"), "Operation"),
     ("manifest", ("implementations", "*", "supports", "*"), "Requirement"),
-    ("manifest", ("implementations", "*", "placement", "*", "requirement"), "Requirement"),
 )
 EXPECT_KEYS = (
     # the keys of these maps are references too
@@ -508,8 +551,7 @@ def check_references(role, doc, packages, local_kinds, counts):
         template(doc.get("from"), doc.get("kind"), "from")
     if role == "template":
         spec = doc.get("spec") if isinstance(doc.get("spec"), dict) else {}
-        for key, want in (("conduits", "Conduit"), ("entries", "Resource"),
-                          ("components", "Conduit")):
+        for key, want in (("conduits", "Conduit"), ("entries", "Resource")):
             members = spec.get(key) if isinstance(spec.get(key), dict) else {}
             for name, member in members.items():
                 if isinstance(member, dict):
@@ -573,14 +615,22 @@ def contents(files):
             if isinstance(doc, dict) and path.name != "conduit.yaml" and "from" not in doc}
 
 
+def members_of(body, key):
+    """The properties of an Operation contract's `inputSchema` or `outputSchema`, and the
+    names its `required` lists."""
+    schema = body.get(key) if isinstance(body.get(key), dict) else {}
+    found = schema.get("properties") if isinstance(schema.get("properties"), dict) else {}
+    listed = schema.get("required") if isinstance(schema.get("required"), list) else []
+    return found, listed
+
+
 def check_controls(label, docs, package_docs, address):
     """For every control that a Type in `docs` lists and whose contract is in this repository:
     it is an Operation with `changes`, a map in which each key is the name of an input the
     control declares and each value is a pointer to a place the type's `schema` describes
-    through `properties`, and it declares the input `revision` and the output `settings`
-    (CTR-006). It also has the shape that item D13 of the record settled under REV-006:
-    `revision` is not optional, and every other input is optional. That last part is a check
-    of the documents in this repository against the record, not of a promise."""
+    through `properties`; its `inputSchema` lists `revision` under `required`, and it declares
+    no output `settings` (CTR-006). Other inputs may be listed under `required` too: a control
+    may leave them out all the same (REV-006)."""
     count = 0
     for doc in docs:
         if not isinstance(doc, dict) or doc.get("kind") != "Type":
@@ -596,7 +646,8 @@ def check_controls(label, docs, package_docs, address):
             count += 1
             at = f"{label}: {named(doc)} lists the control {ref}, which"
             body = control.get("spec") or {}
-            inputs = body.get("inputs") if isinstance(body.get("inputs"), dict) else {}
+            inputs, required = members_of(body, "inputSchema")
+            outputs, _ = members_of(body, "outputSchema")
             changes = body.get("changes")
             if not isinstance(changes, dict) or not changes:
                 fail(f"{at} has no `changes` that maps an input to the pointer it sets "
@@ -617,28 +668,13 @@ def check_controls(label, docs, package_docs, address):
                         fail(f"{at} changes {place}, a place the type's schema does not "
                              f"describe (CTR-006)")
                         break
-            if "revision" not in inputs:
-                fail(f"{at} does not declare the input `revision` (CTR-006)")
-            elif inputs["revision"].get("optional"):
-                fail(f"{at} takes `revision` as an input that need not be supplied (REV-006)")
-            for other, member in inputs.items():
-                if other != "revision" and not member.get("optional"):
-                    fail(f"{at} has the input {other}, which is not optional (REV-006, as "
-                         f"item D13 of the record settled it)")
-            if "settings" not in (body.get("outputs") or {}):
-                fail(f"{at} does not declare the output `settings` (CTR-006)")
+            if "revision" not in inputs or "revision" not in required:
+                fail(f"{at} does not require the input `revision` in its `inputSchema` "
+                     f"(CTR-006)")
+            if "settings" in outputs:
+                fail(f"{at} declares the output `settings`, which a control does not "
+                     f"(CTR-006)")
     return count
-
-
-def contract_of(ref, kind, own, package_docs):
-    """The contract of that kind which a selection names, where this tool has it: `#name` in
-    `own`, the documents of the same project or package by name, or a qualified reference
-    into a package in this repository. None where the tool does not have it."""
-    if not isinstance(ref, str) or "#" not in ref:
-        return None
-    address, _, name = ref.partition("#")
-    found = own.get(name) if not address else package_docs.get(address, {}).get(name)
-    return found if isinstance(found, dict) and found.get("kind") == kind else None
 
 
 def check_readmes(core_dir, schema_dir, core_kinds, groups, loaded):
@@ -702,15 +738,15 @@ ACCESS = {"kind": "Resource", "name": "access"}
 SCHEMA_PLACES = (
     ("Schema", ("spec",)),
     ("Type", ("spec", "schema")),
-    ("Operation", ("spec", "inputs", "*", "schema")),
-    ("Operation", ("spec", "outputs", "*", "schema")),
+    ("Operation", ("spec", "inputSchema")),
+    ("Operation", ("spec", "outputSchema")),
     ("Requirement", ("spec", "inputs", "*", "schema")),
-    ("Requirement", ("spec", "schema")),
     ("template", ("spec", "inputs", "*", "schema")),
     ("template", ("spec", "controls", "*", "inputs", "*", "schema")),
 )
+# An Operation contract's input states its `default` on its property in `inputSchema`, which
+# SCHEMA_PLACES reaches; a template's input and a Requirement's state it beside `schema`.
 INPUT_PLACES = (
-    ("Operation", ("spec", "inputs", "*")),
     ("Requirement", ("spec", "inputs", "*")),
     ("template", ("spec", "inputs", "*")),
 )
@@ -737,17 +773,9 @@ def defaults_in(schema, tokens=()):
         return
     if "default" in schema:
         yield tokens, schema
-    for keyword in ("properties", "$defs"):
-        members = schema.get(keyword)
-        for name, sub in (members.items() if isinstance(members, dict) else ()):
-            yield from defaults_in(sub, tokens + (keyword, name))
-    for keyword in ("additionalProperties", "items"):
-        if keyword in schema:
-            yield from defaults_in(schema[keyword], tokens + (keyword,))
-    for keyword in ("allOf", "anyOf", "oneOf"):
-        branches = schema.get(keyword)
-        for index, sub in enumerate(branches if isinstance(branches, list) else ()):
-            yield from defaults_in(sub, tokens + (keyword, index))
+    for keyword, token, sub in subschemas(schema):
+        step = (keyword,) if token is None else (keyword, token)
+        yield from defaults_in(sub, tokens + step)
 
 
 class Defaults:
@@ -907,31 +935,6 @@ class Defaults:
         return out
 
 
-def forwarded(binding):
-    """The names of the inputs that the value references in one value binding name. A
-    `literal` is data and is not entered."""
-    if isinstance(binding, dict):
-        if binding.get("source") == "input":
-            yield binding.get("name")
-        for item in (binding.get("object") or {}).values() if isinstance(
-                binding.get("object"), dict) else ():
-            yield from forwarded(item)
-        for item in binding.get("list") if isinstance(binding.get("list"), list) else ():
-            yield from forwarded(item)
-
-
-def value_references(binding):
-    """The value references in one value binding. A `literal` is data and is not entered."""
-    if isinstance(binding, dict):
-        if "source" in binding:
-            yield binding
-        for item in (binding.get("object") or {}).values() if isinstance(
-                binding.get("object"), dict) else ():
-            yield from value_references(item)
-        for item in binding.get("list") if isinstance(binding.get("list"), list) else ():
-            yield from value_references(item)
-
-
 def template_of(ref, kind, templates, package_docs):
     """The template that a `from` names, where this tool has it: a template of the same set,
     by its name where the kind is fixed, by `{kind, name}` or by `#name`; or a template of a
@@ -953,19 +956,68 @@ def template_of(ref, kind, templates, package_docs):
     return None
 
 
-def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
+def required_place(schema, pointer_text):
+    """Whether the schema requires the place that a JSON Pointer names, with every member on
+    the way to it required (MAN-017): True, False, or None where a `$ref` on the way leaves
+    this tool unable to tell. A type that states no schema requires nothing."""
+    if not isinstance(pointer_text, str) or pointer_text == "":
+        return True
+    node = schema
+    tokens = [t.replace("~1", "/").replace("~0", "~") for t in pointer_text.split("/")[1:]]
+    for index, token in enumerate(tokens):
+        if not isinstance(node, dict):
+            return False
+        if "$ref" in node and "required" not in node and "properties" not in node:
+            return None
+        if token not in (node.get("required") or []):
+            return False
+        node = (node.get("properties") or {}).get(token)
+        if node is None and index < len(tokens) - 1:
+            return False
+    return True
+
+
+def secret_faults(schema, secret):
+    """Each place where a schema puts `secret-reference.v1` where SEC-001 does not let it
+    stand: under an applicator other than those of SECRET_PLACES, or under `anyOf` or `oneOf`
+    beside a branch that is not `{type: null}`. A `$ref` to a definition that holds it is not
+    followed."""
+    out = []
+
+    def visit(node, at, allowed):
+        if not isinstance(node, dict):
+            return
+        if node.get("$ref") in secret and not allowed:
+            out.append(at or "/")
+        for keyword, token, sub in subschemas(node):
+            here = f"{at}/{keyword}" + ("" if token is None else f"/{token}")
+            if keyword in BRANCHES[1:]:
+                others = [b for i, b in enumerate(node[keyword]) if i != token]
+                ok = allowed and all(b == {"type": "null"} for b in others)
+            else:
+                ok = allowed and keyword in SECRET_PLACES
+            visit(sub, here, ok)
+    visit(schema, "", True)
+    return out
+
+
+def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, items=None,
+                first_start=False):
     """Return (rule, message) for each rule of RULES that one set of documents breaks. The set
     is the documents of one project or package, or of one file of examples/invalid-by-rule/.
-    Manifests are left out. Each rule says how far it goes. `defaults` is the Defaults that
-    the rule of NEED_VALIDATOR uses, with the `scope` of this set, or None without
-    jsonschema, and then that rule is not applied."""
+    Manifests are left out, apart from their implementation items: `items` maps an address,
+    or None for the set's own project or package, to the items of its manifest. Each rule
+    says how far it goes. `defaults` is the Defaults that the rule of NEED_VALIDATOR uses,
+    with the `scope` of this set, or None without jsonschema, and then that rule is not
+    applied. `first_start` is true for the documents that first start makes, which are not a
+    submission, and the rule for FST-006 is then not applied."""
     found = []
+    items = items or {}
     docs = [d for d in docs if isinstance(d, dict)]
     templates = {(d.get("kind"), named(d)): d for d in docs
                  if d.get("kind") in FAMILIES and "from" not in d}
     instances = [d for d in docs if d.get("kind") in FAMILIES and "from" in d]
     bound = {core + "#bound.v1"} | ({"#bound.v1"} if is_core else set())
-    location = {core + "#location.v1"} | ({"#location.v1"} if is_core else set())
 
     def what(doc):
         kind = doc.get("kind")
@@ -984,30 +1036,20 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                                       f"{what(doc)}"))
         seen.setdefault(name, what(doc))
 
-    def bounds(template, visited=()):
-        """The items of `requirements` by which a Conduit template applies `bound.v1`: its own
-        and, for a composite, those of the templates of its components that this tool has.
-        `bound.v1` is never a constituent of another requirement (CTR-011), which the rule
-        bound-constituent checks, so the `constituents` of a requirement are not followed."""
+    def bounds(template):
+        """The items of `requirements` by which a Conduit template applies `bound.v1`."""
         spec = template.get("spec") or {}
-        items = [name for name, item in (spec.get("requirements") or {}).items()
-                 if isinstance(item, dict) and item.get("requirement") in bound]
-        for component in (spec.get("components") or {}).values():
-            below = template_of(component.get("from"), "Conduit", templates, package_docs) \
-                if isinstance(component, dict) else None
-            if below is not None and id(below) not in visited:
-                items += bounds(below, visited + (id(template),))
-        return items
+        return [name for name, item in (spec.get("requirements") or {}).items()
+                if isinstance(item, dict) and item.get("requirement") in bound]
 
     # bound-once (CON-028): one Conduit template applies `bound.v1` at most once.
     for (kind, name), template in templates.items():
         if kind == "Conduit":
-            items = [n for n, item in ((template.get("spec") or {}).get("requirements")
-                                       or {}).items()
-                     if isinstance(item, dict) and item.get("requirement") in bound]
-            if len(items) > 1:
+            applied = bounds(template)
+            if len(applied) > 1:
                 found.append(("bound-once", f"the Conduit template {name} applies `bound.v1` "
-                                            f"{len(items)} times, as {' and '.join(items)}"))
+                                            f"{len(applied)} times, as "
+                                            f"{' and '.join(applied)}"))
 
     # bound-target (CON-028): a Conduit whose template applies `bound.v1` has `access` as its
     # target. Applied where a document writes the target in place, as a Conduit instance
@@ -1038,26 +1080,41 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                                                f"`reservedToRoot: true` and is not a contract "
                                                f"of the core package"))
 
-    # location-placement (PLC-008): a location's document states no placement. Applied where
-    # the tool has the template, whose type says whether the instance is a location.
-    for doc in instances:
-        if doc.get("kind") == "Resource" and "placement" in doc:
-            template = template_of(doc.get("from"), "Resource", templates, package_docs)
-            if template is not None and (template.get("spec") or {}).get("type") in location:
-                found.append(("location-placement",
-                              f"the Resource {named(doc) or 'with no name'} is a location, "
-                              f"made from the template {named(template)}, and its document "
-                              f"states a placement"))
+    # first-start-from (FST-006): no instance document is made from a core template from
+    # which first start alone makes instances, `location` among them. Applied where `from` is
+    # a qualified reference into the core package: the core package's templates are never
+    # registered (NAM-013), so no other form of `from` names one.
+    if not first_start:
+        for doc in instances:
+            ref = doc.get("from")
+            if isinstance(ref, str) and ref.partition("#")[0] == core \
+                    and ref.partition("#")[2] in FIRST_START_TEMPLATES:
+                found.append(("first-start-from",
+                              f"the {doc.get('kind')} {named(doc) or 'with no name'} is made "
+                              f"from {ref}, from which first start alone makes instances"))
+
+    # location-type (PLC-028): no template but the core package's `location` has the type
+    # `location.v1`, so that no actor registers a location through a template of its own.
+    # Applied where `type` is the core package's qualified reference, or `#location.v1` inside
+    # the core package.
+    location = {core + "#location.v1"} | ({"#location.v1"} if is_core else set())
+    for (kind, name), template in templates.items():
+        if (template.get("spec") or {}).get("type") in location \
+                and not (is_core and kind == "Resource" and name == "location"):
+            found.append(("location-type",
+                          f"the {kind} template {name} has the type location.v1, which only "
+                          f"the core package's template `location` has"))
 
     # entry-reference (POOL-005): `{entry: name}` is written only in an entry of a Pool
     # template. Applied to the places of a document that are never inside an entry and always
-    # hold a reference: the `placement`, `consumer` and `target` of an instance document and
-    # the `target` of a declared Conduit. A value inside `arguments` or `config` is not
-    # looked at, because only the schema that governs it says whether it is a reference.
+    # hold a reference: the `placement`, `runtime`, `consumer` and `target` of an instance
+    # document and the `target` of a declared Conduit. A value inside `arguments` or `config`
+    # is not looked at, because only the schema that governs it says whether it is a
+    # reference.
     def entry(value):
         return isinstance(value, dict) and "entry" in value and "kind" not in value
     for doc in instances:
-        for key in ("placement", "consumer", "target"):
+        for key in ("placement", "runtime", "consumer", "target"):
             if entry(doc.get(key)):
                 found.append(("entry-reference",
                               f"the {doc.get('kind')} {named(doc) or 'with no name'} writes "
@@ -1071,8 +1128,8 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                               f"its `target` as `{{entry: {declared['target']['entry']}}}`, "
                               f"outside an entry of a Pool template"))
 
-    # operations-filled (CON-016): a Conduit template that is not a composite and writes no
-    # `operations` has an input whose destination is `/operations`.
+    # operations-filled (CON-016): a Conduit template that writes no `operations` has an
+    # input whose destination is `/operations`.
     for (kind, name), template in templates.items():
         spec = template.get("spec") or {}
         if kind == "Conduit" and "capability" in spec and "operations" not in spec:
@@ -1083,95 +1140,12 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                               f"the Conduit template {name} writes no `operations`, and no "
                               f"input's destination is `/operations`"))
 
-    # constituent-input (CTR-010): a value reference in a constituent's `arguments` names an
-    # input that the composition itself declares. That its source is `input` is the schema's.
-    for doc in docs:
-        spec = doc.get("spec") if doc.get("kind") == "Requirement" else None
-        if not isinstance(spec, dict) or not isinstance(spec.get("constituents"), dict):
-            continue
-        declared = set(spec["inputs"]) if isinstance(spec.get("inputs"), dict) else set()
-        for local, constituent in spec["constituents"].items():
-            arguments = constituent.get("arguments") if isinstance(constituent, dict) else None
-            for argument, binding in (arguments.items() if isinstance(arguments, dict) else ()):
-                for name in forwarded(binding):
-                    if name not in declared:
-                        found.append(("constituent-input",
-                                      f"the constituent {local} of the Requirement contract "
-                                      f"{named(doc)} gives `{argument}` the input {name}, "
-                                      f"which the composition does not declare"))
-
-    # pool-offers (CTR-004): a Type of the family Pool offers the core package's capability
-    # `pool-management.v1`. The capability is recognized where `offers` names it in the core
-    # package; one that reaches it through another package's re-export is not followed.
-    pool_management = {core + "#pool-management.v1"} | \
-        ({"#pool-management.v1"} if is_core else set())
-    for doc in docs:
-        spec = doc.get("spec") if doc.get("kind") == "Type" else None
-        if isinstance(spec, dict) and spec.get("family") == "Pool":
-            offers = spec.get("offers") if isinstance(spec.get("offers"), list) else []
-            if not any(isinstance(o, str) and o in pool_management for o in offers):
-                found.append(("pool-offers", f"the Type contract {named(doc)} is of the family "
-                                             f"Pool and does not offer {core}"
-                                             f"#pool-management.v1"))
-
-    # runtime-once (TPL-006): an instance has the runtimes of its type as well as those of its
-    # template, so a template declares no runtime under a name its type declares. Applied
-    # where the tool has the type's contract: in the same set, or in a package in this
-    # repository.
-    own = {named(d): d for d in docs if "from" not in d}
-    for (kind, name), template in templates.items():
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        declared = spec.get("runtimes") if isinstance(spec.get("runtimes"), dict) else {}
-        type_doc = contract_of(spec.get("type"), "Type", own, package_docs)
-        of_type = (type_doc.get("spec") or {}).get("runtimes") if type_doc else None
-        for runtime in sorted(set(declared) & set(of_type if isinstance(of_type, dict) else ())):
-            found.append(("runtime-once", f"the template {name} declares the runtime "
-                                          f"{runtime}, which its type {named(type_doc)} "
-                                          f"declares too"))
-
-    # applies-to (CTR-005): a requirement is applied only where its `appliesTo` lists, and a
-    # composition only where the `appliesTo` of every one of its constituents lists too.
-    # Applied to the `requirements` of a Conduit template, which apply to a Conduit, and to
-    # the `placement` of a Type contract, which applies to placement, where the tool has the
-    # requirement's contract and, for a composition, as far as it has the constituents'.
-    def may_not(ref, place, seen=()):
-        """The requirements, the one `ref` selects and the constituents below it, whose
-        `appliesTo` does not list `place`."""
-        contract = contract_of(ref, "Requirement", own, package_docs)
-        if contract is None or id(contract) in seen:
-            return []
-        body = contract.get("spec") if isinstance(contract.get("spec"), dict) else {}
-        listed = body.get("appliesTo") if isinstance(body.get("appliesTo"), list) else []
-        out = [] if place in listed else [named(contract)]
-        parts = body.get("constituents") if isinstance(body.get("constituents"), dict) else {}
-        for part in parts.values():
-            if isinstance(part, dict):
-                out += may_not(part.get("requirement"), place, seen + (id(contract),))
-        return out
-    applied = []
-    for (kind, name), template in templates.items():
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        if kind == "Conduit" and isinstance(spec.get("requirements"), dict):
-            applied += [(f"the Conduit template {name}", item, "conduit")
-                        for item in spec["requirements"].items()]
-    for doc in docs:
-        spec = doc.get("spec") if doc.get("kind") == "Type" else None
-        if isinstance(spec, dict) and isinstance(spec.get("placement"), dict):
-            applied += [(f"the Type contract {named(doc)}", item, "placement")
-                        for item in spec["placement"].items()]
-    for where, (local, item), place in applied:
-        ref = item.get("requirement") if isinstance(item, dict) else None
-        for requirement in may_not(ref, place):
-            found.append(("applies-to", f"{where} applies {ref} to "
-                                        f"{'a Conduit' if place == 'conduit' else place}, as "
-                                        f"{local}, and the `appliesTo` of {requirement} does "
-                                        f"not list `{place}`"))
-
-    # The three rules below follow a selection from one document into another, so they name a
+    # The rules below follow a selection from one document into another, so they name a
     # contract by the project or package that holds it and its name. `#name` is in the project
     # or package of the document that writes it (NAM-022): this set, or the package the
     # document was found in. A qualified reference names its package.
     here = core if is_core else None
+    own = {named(d): d for d in docs if "from" not in d}
 
     def canon(ref, home):
         if not isinstance(ref, str) or "#" not in ref:
@@ -1187,16 +1161,27 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
         held = own.get(name) if home == here else package_docs.get(home, {}).get(name)
         return held if isinstance(held, dict) and held.get("kind") == kind else None
 
+    def item_of(key):
+        """The implementation item that `key` names, where this tool has the manifest."""
+        if key is None:
+            return None
+        home, name = key
+        held = (items.get(None) if home == here else items.get(home)) or {}
+        found_item = held.get(name)
+        return found_item if isinstance(found_item, dict) else None
+
     def members(value):
         return value.items() if isinstance(value, dict) else ()
 
-    # implementation-selected (TPL-004): every operation that a template's type requires, that
-    # a capability the type offers includes, that the type lists as a control, or that a
-    # runtime of the template or of its type, or a step of the template without `conduit`,
-    # names has an implementation: a key of the template's `implementation` map, a default of
-    # the type, or the default of the operation's own contract. Applied where the tool has the
-    # type's contract, and for each operation whose contract it has; a capability whose
+    def provider(key):
+        return key is not None and key[0] == core and key[1] in PROVIDER_CAPABILITIES
+
+    # The operations each template of the set must have an implementation for, under TPL-004,
+    # with the implementation it has for each: the key of the template's `implementation`
+    # map, else the default of its type, else the default of the operation's own contract.
+    # Applied where the tool has the type's contract; a capability or an operation whose
     # contract it does not have is not followed.
+    selected = {}
     for (kind, name), template in templates.items():
         spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
         type_key = canon(spec.get("type"), here)
@@ -1222,264 +1207,119 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
             for ref in listed if isinstance(listed, list) else ():
                 need(ref, offered_key[0], f"the capability {offered_key[1]}, which its type "
                                           f"offers, includes the operation")
-        for holder, home, whose in ((body, type_key[0], "its type"), (spec, here, "the template")):
-            for runtime, ends in members(holder.get("runtimes")):
-                for end in ("start", "stop"):
-                    if isinstance(ends, dict):
-                        need(ends.get(end), home, f"the runtime {runtime} of {whose} names "
-                                                  f"the operation")
-        graphs = [spec.get("setup"), spec.get("retire")]
-        graphs += [value for _, value in members(spec.get("implementation"))]
-        for graph in graphs:
-            for step, held in members(graph.get("steps") if isinstance(graph, dict) else None):
-                if isinstance(held, dict) and "conduit" not in held:
-                    need(held.get("operation"), here, f"the step {step} names the operation")
-        chosen = {canon(key, here) for key, _ in members(spec.get("implementation"))}
-        chosen |= {canon(key, type_key[0]) for key, _ in members(body.get("implementation"))}
+        for key, value in members(spec.get("implementation")):
+            need(key, here, "the template selects an implementation for it")
+        chosen = {canon(k, here): canon(v, here)
+                  for k, v in members(spec.get("implementation"))}
+        by_type = {canon(k, type_key[0]): canon(v, type_key[0])
+                   for k, v in members(body.get("implementation"))}
+        picks = {}
         for key, why in needed.items():
             operation = lookup(key, "Operation")
-            if key in chosen or operation is None:
-                continue
-            if "implementation" not in (operation.get("spec") or {}):
+            if key in chosen:
+                picks[key] = chosen[key]
+            elif key in by_type:
+                picks[key] = by_type[key]
+            elif operation is not None and "implementation" in (operation.get("spec") or {}):
+                picks[key] = canon(operation["spec"]["implementation"], key[0])
+            elif operation is not None:
                 found.append(("implementation-selected",
                               f"the template {name} selects no implementation for {key[1]}, "
                               f"and neither its type {named(type_doc)} nor the operation's "
                               f"contract states a default; {why}"))
+        selected[name] = (type_doc, picks)
 
-    def narrowing(key, seen=()):
-        """Whether the requirement `key` names narrows requests: True, False, or None where
-        this tool cannot tell because it lacks a contract. A composition narrows exactly where
-        one of its constituents does (CTR-005). Also returns the names of the requirements,
-        this one and those below it, that are not compositions, do not narrow and are not of
-        the core package. A composition is judged by its constituents alone (CON-030)."""
-        contract = lookup(key, "Requirement")
-        if contract is None or id(contract) in seen:
-            return None, []
-        body = contract.get("spec") if isinstance(contract.get("spec"), dict) else {}
-        parts = [part for _, part in members(body.get("constituents")) if isinstance(part, dict)]
-        names = []
-        if parts:
-            states = []
-            for part in parts:
-                state, below = narrowing(canon(part.get("requirement"), key[0]),
-                                         seen + (id(contract),))
-                states.append(state)
-                names += below
-            narrows = True if True in states else None if None in states else False
-        else:
-            narrows = body.get("narrows") is True
-        if narrows is False and key[0] != core and not parts:
-            names.append(key[1])
-        return narrows, names
+    for name, (type_doc, picks) in selected.items():
+        body = type_doc.get("spec") if isinstance(type_doc.get("spec"), dict) else {}
+        chosen_items = {}
+        for key in picks.values():
+            item = item_of(key)
+            if item is not None:
+                chosen_items[key] = item
 
-    # narrows-on-conduit (CON-030): a requirement that is not a composition and does not
-    # narrow requests is applied to a Conduit, itself or as a constituent, only where it is a
-    # contract of the core package. A composition made only of such core requirements is
-    # accepted. Applied to the `requirements` of a Conduit template, as far as the tool has
-    # the contracts.
-    for (kind, name), template in templates.items():
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        for local, item in members(spec.get("requirements")) if kind == "Conduit" else ():
-            ref = item.get("requirement") if isinstance(item, dict) else None
-            for requirement in narrowing(canon(ref, here))[1]:
-                found.append(("narrows-on-conduit",
-                              f"the Conduit template {name} applies {ref}, as {local}, and "
-                              f"{requirement} does not narrow requests and is not a contract "
-                              f"of the core package"))
+        # one-run (TPL-019): the selected implementations include at most one item reached by
+        # `command` or `package`. Applied where the tool has the manifests of the items.
+        run = sorted(f"{k[0] + '#' if k[0] else '#'}{k[1]}" for k, item in chosen_items.items()
+                     if "command" in item or "package" in item)
+        if len(run) > 1:
+            found.append(("one-run", f"the template {name} selects {' and '.join(run)}, two "
+                                     f"items that are run, and one run serves one instance"))
 
-    # obliges-narrows (CTR-005): a requirement that does not narrow requests states no
-    # `obliges`. Applied where the tool can tell that the requirement does not narrow.
+        # label-conflict (PLC-025): no selected item's `placement` names a label that its
+        # type's `placement` names with another value.
+        labels = body.get("placement") if isinstance(body.get("placement"), dict) else {}
+        for key, item in chosen_items.items():
+            for label, value in members(item.get("placement")):
+                if label in labels and labels[label] != value:
+                    found.append(("label-conflict",
+                                  f"the template {name} selects {key[1]}, whose `placement` "
+                                  f"gives the label {label} the value {value}, and its type "
+                                  f"{named(type_doc)} gives it {labels[label]}"))
+
+        # item-place-required (MAN-017): each pointer of a selected item's `environment`,
+        # `arguments` or `headers` names a place that the type's schema requires, with every
+        # member on the way required. A `$ref` on the way is not followed.
+        for key, item in chosen_items.items():
+            for binding in ("environment", "arguments", "headers"):
+                for var, place in members(item.get(binding)):
+                    if required_place(body.get("schema"), place) is False:
+                        found.append(("item-place-required",
+                                      f"the template {name} selects {key[1]}, whose "
+                                      f"`{binding}` gives {var} the place {place}, which the "
+                                      f"schema of its type {named(type_doc)} does not "
+                                      f"require"))
+
+    # secret-branch (SEC-001): `secret-reference.v1` stands only as the schema of a place, as
+    # `items`, or under `anyOf` or `oneOf` beside `{type: null}`. Applied to every schema that
+    # a document of the set writes.
+    secret = {core + "#secret-reference.v1"} | ({"#secret-reference.v1"} if is_core else set())
     for doc in docs:
-        spec = doc.get("spec") if doc.get("kind") == "Requirement" else None
-        if isinstance(spec, dict) and "obliges" in spec \
-                and narrowing((here, named(doc)))[0] is False:
-            found.append(("obliges-narrows", f"the Requirement contract {named(doc)} states "
-                                             f"`obliges` and does not narrow requests"))
+        role = role_of(doc, False)
+        for kind, path in SCHEMA_PLACES:
+            if kind != role:
+                continue
+            for at, schema in places(doc, path):
+                for where in secret_faults(schema, secret):
+                    found.append(("secret-branch",
+                                  f"{named(doc)}: the schema at {at} puts "
+                                  f"`secret-reference.v1` at {where}, under an applicator or "
+                                  f"beside a branch where it may not stand"))
 
-    # bound-constituent (CTR-011): the core package's `bound.v1` is never a constituent of a
-    # composition, directly or through other compositions. Followed as far as the tool has
-    # the contracts of the constituents.
-    def reaches_bound(key, seen=()):
-        """The name of the constituent of the requirement `key` through which it reaches
-        `bound.v1`, or None."""
-        contract = lookup(key, "Requirement")
-        if contract is None or id(contract) in seen:
-            return None
-        for local, part in members((contract.get("spec") or {}).get("constituents")):
-            below = canon(part.get("requirement"), key[0]) if isinstance(part, dict) else None
-            if below == (core, "bound.v1") \
-                    or (below and reaches_bound(below, seen + (id(contract),))):
-                return local
-        return None
+    # provider-family (PRV-001): a Type that offers a provider capability is of the family
+    # Resource and offers no other provider capability.
     for doc in docs:
-        if doc.get("kind") == "Requirement":
-            local = reaches_bound((here, named(doc)))
-            if local:
-                found.append(("bound-constituent",
-                              f"the Requirement contract {named(doc)} has `bound.v1` among "
-                              f"its constituents, through {local}"))
-
-    # The graphs a template writes: `setup`, `retire`, and each graph written in place in its
-    # `implementation` map, with the operation it implements.
-    def graphs_of(spec, home):
-        out = [(label, None, spec.get(label)) for label in ("setup", "retire")]
-        out += [(f"the graph for {key}", canon(key, home), value)
-                for key, value in members(spec.get("implementation"))]
-        return [(label, key, graph) for label, key, graph in out
-                if isinstance(graph, dict) and isinstance(graph.get("steps"), dict)]
-
-    # runtime-step-output (GRA-028): no value reference with the source `step` names a step
-    # that names a runtime: the handle is read with the source `runtime`. Applied to the
-    # graphs a template writes, in the arguments of their steps and in their `outputs`.
-    for (kind, name), template in templates.items():
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        for label, _, graph in graphs_of(spec, here):
-            starts = {step for step, held in graph["steps"].items()
-                      if isinstance(held, dict) and "runtime" in held}
-            bindings = [(f"the step {step}", binding)
-                        for step, held in graph["steps"].items() if isinstance(held, dict)
-                        for _, binding in members(held.get("arguments"))]
-            bindings += [(f"the output {output}", held.get("value"))
-                         for output, held in members(graph.get("outputs"))
-                         if isinstance(held, dict)]
-            for where, binding in bindings:
-                for reference in value_references(binding):
-                    if reference.get("source") == "step" and reference.get("step") in starts:
-                        found.append(("runtime-step-output",
-                                      f"in {label} of the template {name}, {where} reads an "
-                                      f"output of the step {reference['step']}, which names "
-                                      f"a runtime"))
-
-    # graph-invokes-itself (GRA-005): no graph invokes the operation it implements, by a step
-    # with no `conduit`, itself or through other graphs, however each graph was selected.
-    # Applied to the graphs written in place in a template's `implementation` map and, where
-    # the tool has the type's contract, in the type's. A graph that an implementation item of
-    # a manifest gives, which a selection in either map or the default of an operation's own
-    # contract may name, is not followed: this step is given no manifest.
-    for (kind, name), template in templates.items():
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        calls = {}
-        type_key = canon(spec.get("type"), here)
-        type_doc = lookup(type_key, "Type") if kind != "Conduit" else None
-        holders = [(spec, here)]
-        if type_doc is not None and isinstance(type_doc.get("spec"), dict):
-            holders.append((type_doc["spec"], type_key[0]))
-        selected = {canon(key, here) for key, _ in members(spec.get("implementation"))}
-        for index, (holder, home) in enumerate(holders):
-            for _, key, graph in graphs_of(holder, home):
-                if key is None or key in calls or (index and key in selected):
-                    continue
-                calls[key] = {canon(held.get("operation"), home)
-                              for held in graph["steps"].values()
-                              if isinstance(held, dict) and "conduit" not in held}
-
-        def leads_back(start, at, seen):
-            for nxt in calls.get(at, ()):
-                if nxt == start or (nxt in calls and nxt not in seen
-                                    and leads_back(start, nxt, seen | {nxt})):
-                    return True
-            return False
-        for key in calls:
-            if leads_back(key, key, {key}):
-                found.append(("graph-invokes-itself",
-                              f"in the template {name}, the graph that implements {key[1]} "
-                              f"invokes that operation again, itself or through other "
-                              f"graphs"))
-
-    # runtime-operation-step (TPL-016): no step with no `conduit` names, as its `operation`, an
-    # operation that a runtime of the template or of its type names as its `start` or `stop`.
-    # Applied to the graphs a template writes, with the runtimes of its type where the tool has
-    # the type's contract. A graph that a selection reaches in another document is not followed.
-    for (kind, name), template in templates.items():
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        if kind == "Conduit":
+        spec = doc.get("spec") if doc.get("kind") == "Type" else None
+        if not isinstance(spec, dict):
             continue
-        type_key = canon(spec.get("type"), here)
-        type_doc = lookup(type_key, "Type")
-        declared = [(spec, here)]
-        if type_doc is not None and isinstance(type_doc.get("spec"), dict):
-            declared.append((type_doc["spec"], type_key[0]))
-        of_runtime = {}
-        for holder, home in declared:
-            for runtime, held in members(holder.get("runtimes")):
-                for role in ("start", "stop"):
-                    key = canon(held.get(role), home) if isinstance(held, dict) else None
-                    if key is not None:
-                        of_runtime.setdefault(key, (runtime, role))
-        for label, _, graph in graphs_of(spec, here):
-            for step, held in graph["steps"].items():
-                if not isinstance(held, dict) or "conduit" in held:
-                    continue
-                key = canon(held.get("operation"), here)
-                if key in of_runtime:
-                    runtime, role = of_runtime[key]
-                    found.append(("runtime-operation-step",
-                                  f"in {label} of the template {name}, the step {step} names "
-                                  f"{key[1]}, the `{role}` operation of the runtime {runtime}"))
+        offers = spec.get("offers") if isinstance(spec.get("offers"), list) else []
+        offered = sorted({canon(o, here)[1] for o in offers if provider(canon(o, here))})
+        if offered and spec.get("family") != "Resource":
+            found.append(("provider-family",
+                          f"the Type contract {named(doc)} offers {offered[0]} and is of the "
+                          f"family {spec.get('family')}, not Resource"))
+        if len(offered) > 1:
+            found.append(("provider-family",
+                          f"the Type contract {named(doc)} offers {' and '.join(offered)}, "
+                          f"more than one provider capability"))
 
-    # conduit-names-one (GRA-024): the `conduit` of a step names a declared Conduit of the
-    # template or, by a dotted path, a component of one, and exactly one of the Conduits it
-    # names lists the step's operation. Applied where the tool has the Conduit templates that
-    # the declared Conduit and its components are made from, and each of them writes its
-    # `operations`; where one does not, nothing is said of that step.
-    def listing(template, visited=()):
-        """The `operations` of each Conduit that one Conduit template makes, as a list of
-        (path, set of operations), or None where the tool cannot tell."""
-        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        if "components" not in spec:
-            listed = spec.get("operations")
-            if not isinstance(listed, list):
-                return None
-            return [((), {canon(ref, here) for ref in listed})]
-        out = []
-        for component, held in members(spec.get("components")):
-            below = template_of(held.get("from"), "Conduit", templates, package_docs) \
-                if isinstance(held, dict) else None
-            if below is None or id(below) in visited:
-                return None
-            inner = listing(below, visited + (id(template),))
-            if inner is None:
-                return None
-            out += [((component,) + path, ops) for path, ops in inner]
-        return out
+    # provider-conduit (PRV-004): no Conduit template's capability is one whose operations the
+    # engine alone invokes, and none lists one of those operations.
     for (kind, name), template in templates.items():
         spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
-        conduits = spec.get("conduits") if isinstance(spec.get("conduits"), dict) else {}
-        for label, _, graph in graphs_of(spec, here):
-            for step, held in graph["steps"].items():
-                value = held.get("conduit") if isinstance(held, dict) else None
-                if not isinstance(value, str):
-                    continue
-                first, *rest = value.split(".")
-                at = f"in {label} of the template {name}, the step {step}"
-                if first not in conduits:
-                    found.append(("conduit-names-one",
-                                  f"{at} names the Conduit {first}, which the template does "
-                                  f"not declare"))
-                    continue
-                made_from = template_of((conduits[first] or {}).get("from"), "Conduit",
-                                        templates, package_docs) \
-                    if isinstance(conduits[first], dict) else None
-                made = listing(made_from) if made_from is not None else None
-                if made is None:
-                    continue
-                under = [(path, ops) for path, ops in made if path[:len(rest)] == tuple(rest)]
-                if not under:
-                    found.append(("conduit-names-one",
-                                  f"{at} names {value}, and the declared Conduit {first} has "
-                                  f"no such component"))
-                    continue
-                lists = [path for path, ops in under
-                         if canon(held.get("operation"), here) in ops]
-                if len(lists) > 1:
-                    found.append(("conduit-names-one",
-                                  f"{at} names {value}, in which {len(lists)} component "
-                                  f"Conduits list its operation: "
-                                  f"{' and '.join('.'.join((first,) + p) for p in lists)}"))
-                elif not lists:
-                    found.append(("conduit-names-one",
-                                  f"{at} names {value}, and no Conduit it names lists the "
-                                  f"step's operation"))
+        if kind != "Conduit":
+            continue
+        capability = canon(spec.get("capability"), here)
+        if capability is not None and capability[0] == core \
+                and capability[1] in CALLED_CAPABILITIES:
+            found.append(("provider-conduit",
+                          f"the Conduit template {name} has the capability {capability[1]}, "
+                          f"whose operations the engine alone invokes"))
+        for ref in spec.get("operations") if isinstance(spec.get("operations"), list) else ():
+            key = canon(ref, here)
+            if key is not None and key[0] == core and key[1] in CALLED_OPERATIONS:
+                found.append(("provider-conduit",
+                              f"the Conduit template {name} lists {key[1]}, which the engine "
+                              f"alone invokes"))
 
     # default-valid (SCH-019): a `default` satisfies the schema that states it, and an input's
     # `default` the input's own `schema`. Applied where every `$ref` of the schema can be
@@ -1491,11 +1331,13 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
     return found
 
 
-def manifest_rules(manifest, core):
-    """Return (rule, message) for each rule on manifests that one manifest breaks. There is
-    one: core-address (NAM-021), that a manifest neither lists the core package under
-    `packages` nor states its address as its own. The core package's own manifest, which is
-    built into the engine, is not given to this function."""
+def manifest_rules(manifest, core, holds_contracts=False):
+    """Return (rule, message) for each rule on manifests that one manifest breaks. There are
+    two. core-address (NAM-021): a manifest neither lists the core package under `packages`
+    nor states its address as its own. project-address (MAN-015): a manifest that lists an
+    implementation, or that belongs to a project that holds a contract, states `address`.
+    The core package's own manifest, which is built into the engine, is not given to this
+    function."""
     found = []
     if not isinstance(manifest, dict):
         return found
@@ -1505,6 +1347,10 @@ def manifest_rules(manifest, core):
     if isinstance(manifest.get("packages"), dict) and core in manifest["packages"]:
         found.append(("core-address", f"the manifest lists the core package, {core}, under "
                                       f"`packages`"))
+    if "address" not in manifest and (manifest.get("implementations") or holds_contracts):
+        why = "lists an implementation" if manifest.get("implementations") \
+            else "belongs to a project that holds a contract"
+        found.append(("project-address", f"the manifest {why} and states no `address`"))
     return found
 
 
@@ -1665,47 +1511,60 @@ def main():
             fail(f"core package: the template {name} breaks OBJ-001")
     check_readmes(core_dir, schema_dir, core_kinds, groups, loaded)
 
-    # Each directory under examples/valid/ is one project. One whose manifest states an
-    # `address` is a package, and what it exports can be referred to from the others.
+    # Each directory under examples/valid/ is one project. One whose manifest states both
+    # `address` and `version` is a package (PKG-017), and what it exports can be referred to
+    # from the others. The documents of any directory whose manifest states `address` are
+    # reached by that address, which is how its own `#name` selections are followed.
     packages = {core: core_kinds}
     package_docs = {core: contents(core_files)}
+    items = {core: manifest.get("implementations") or {}}
     by_dir = {}
     for path in groups["valid"]:
         by_dir.setdefault(path.parent, []).append((path, loaded.get(path, [])))
-    local, private = {}, 0
+    local, private, own_items = {}, 0, {}
     for directory, files in by_dir.items():
         local[directory], twice = kinds_in(files)
+        own_items[directory] = {}
         for name in twice:
             fail(f"{rel(directory)}: an implementation and something else are both named "
                  f"{name} ({CLASH})")
-        for path, docs in files:
-            if path.name == "conduit.yaml" and docs and isinstance(docs[0], dict):
-                address = docs[0].get("address")
-                listed = set(docs[0].get("exports") or [])
-                if address:
-                    packages[address] = {n: k for n, k in local[directory].items()
-                                         if n in listed or k == "implementation"}
-                    package_docs[address] = contents(files)
-                    private += sum(1 for n, k in local[directory].items()
-                                   if k != "implementation" and n not in listed)
-                    for name in sorted(n for n in listed if "#" not in n
-                                       and n not in local[directory]):
-                        fail(f"{rel(path)}: exports {name}, which is not a document of the "
-                             f"package (MAN-007)")
+        held = [d for p, ds in files if p.name != "conduit.yaml" for d in ds]
+        has_contract = any(isinstance(d, dict) and d.get("kind") in CONTRACTS for d in held)
+        manifests = [ds[0] for p, ds in files
+                     if p.name == "conduit.yaml" and ds and isinstance(ds[0], dict)]
+        if has_contract and not manifests:
+            fail(f"{rel(directory)}: holds a contract and has no manifest, so it states no "
+                 f"`address` (MAN-015)")
+        for doc in manifests:
+            address = doc.get("address")
+            listed = set(doc.get("exports") or [])
+            own_items[directory] = doc.get("implementations") or {}
+            if address:
+                package_docs[address] = contents(files)
+                items[address] = own_items[directory]
+            if address and doc.get("version"):
+                packages[address] = {n: k for n, k in local[directory].items()
+                                     if n in listed or k == "implementation"}
+                private += sum(1 for n, k in local[directory].items()
+                              if k != "implementation" and n not in listed)
+                for name in sorted(n for n in listed if n not in local[directory]):
+                    fail(f"{rel(directory)}/conduit.yaml: exports {name}, which is not a "
+                         f"document of the package (MAN-007)")
 
     # The operations of REV-012, and the controls.
     operations = package_docs[core]
     for name in NO_REVISION:
-        inputs = ((operations.get(name) or {}).get("spec") or {}).get("inputs") or {}
+        inputs, _ = members_of((operations.get(name) or {}).get("spec") or {}, "inputSchema")
         if operations.get(name, {}).get("kind") != "Operation":
             fail(f"core package: {name} is not an Operation contract")
         elif "revision" in inputs:
             fail(f"core package: {name} takes `revision`, and REV-012 says it names none")
     for name in RETURNS_REVISION:
-        outputs = ((operations.get(name) or {}).get("spec") or {}).get("outputs") or {}
-        if "revision" not in outputs or outputs["revision"].get("optional"):
-            fail(f"core package: {name} does not declare the output `revision`, which SUB-009 "
-                 f"and OBJ-026 have it return")
+        outputs, listed = members_of((operations.get(name) or {}).get("spec") or {},
+                                     "outputSchema")
+        if "revision" not in outputs or "revision" not in listed:
+            fail(f"core package: {name} does not declare the output `revision` under "
+                 f"`required`, which SUB-009 has it return")
     controls = check_controls("core package", [d for _, ds in core_files for d in ds],
                               package_docs, core)
     for directory, files in by_dir.items():
@@ -1736,15 +1595,20 @@ def main():
     for name in sorted(used - set(core_kinds)):
         fail(f"a file refers to {core}#{name}, which the core package does not hold")
 
-    # Every promise cited by the files this tool covers exists.
-    prefixes = "|".join(sorted({p.split("-")[0] for p in promises}))
+    # Every promise cited by the files this tool covers exists. The prefix of a promise file
+    # that a ruling removed is looked for too, so that no citation of one of its IDs remains.
+    prefixes = "|".join(sorted({p.split("-")[0] for p in promises} | set(REMOVED_PREFIXES)))
     cited_in = [p for p in list(core_dir.rglob("*")) + list(schema_dir.rglob("*"))
                 if p.is_file() and p.suffix in (".yaml", ".md")]
     cited_in.append(ROOT / "spec" / "promises" / "manifest.yaml")
     cited = 0
     for path in cited_in:
-        ids = set(re.findall(rf"\b((?:{prefixes})-[0-9]{{3}})\b",
-                             path.name + "\n" + path.read_text()))
+        text = path.read_text()
+        if path.parent.name == "promises":
+            # A promise file's head comment names the IDs that rulings removed from it, as
+            # each must be named there; only its promises are read for citations.
+            text = text[text.find("\n- id:"):]
+        ids = set(re.findall(rf"\b((?:{prefixes})-[0-9]{{3}})\b", path.name + "\n" + text))
         cited += len(ids)
         for promise in sorted(ids - promises):
             fail(f"{rel(path)}: cites {promise}, which is not a promise that exists")
@@ -1753,9 +1617,9 @@ def main():
           f"is also an export. Checked {counts['checked']} references for the kind they name; "
           f"{counts['skipped']} name packages that are not in this repository and were not "
           f"checked. Checked {controls} controls, the {len(NO_REVISION)} operations that "
-          f"take no `revision`, the {len(RETURNS_REVISION)} that return one, the tables of the two READMEs, and {cited} citations of "
-          f"promises in {len(cited_in)} files. The example packages keep {private} documents "
-          f"private.")
+          f"take no `revision`, the {len(RETURNS_REVISION)} that returns one, the tables of "
+          f"the two READMEs, and {cited} citations of promises in {len(cited_in)} files. The "
+          f"example packages keep {private} documents private.")
 
     # 6. Rules that no schema can express.
     checker = Defaults() if validating else None
@@ -1770,14 +1634,20 @@ def main():
                      checker.add(address, docs) if checker else None))
     if checker:
         checker.close()
-    for label, docs, is_core, scope in sets:
-        for rule, message in apply_rules(docs, is_core, core, package_docs, checker, scope):
+    for (label, docs, is_core, scope), directory in zip(sets, [None] + list(by_dir)):
+        own = dict(items)
+        own[None] = own_items[directory] if directory else items[core]
+        first_start = directory is not None and directory.name == FIRST_START_DIRECTORY
+        for rule, message in apply_rules(docs, is_core, core, package_docs, checker, scope,
+                                         own, first_start):
             fail(f"{label}: {message} ({RULES[rule]})")
     for directory, files in by_dir.items():
+        holds_contract = any(isinstance(d, dict) and d.get("kind") in CONTRACTS
+                             for p, ds in files if p.name != "conduit.yaml" for d in ds)
         for path, docs in files:
             if path.name == "conduit.yaml":
                 for doc in docs:
-                    for rule, message in manifest_rules(doc, core):
+                    for rule, message in manifest_rules(doc, core, holds_contract):
                         fail(f"{rel(path)}: {message} ({RULES[rule]})")
     in_place = (checker.checked, checker.skipped) if checker else (0, 0)
     turned_away, valid_first, not_run = 0, 0, 0
@@ -1810,7 +1680,7 @@ def main():
             scope = checker.add(None, docs) if checker else None
             if checker:
                 checker.close()
-            found = apply_rules(docs, False, core, package_docs, checker, scope)
+            found = apply_rules(docs, False, core, package_docs, checker, scope, items)
             kinds, _ = kinds_in([(path, docs)])
             for doc in docs:
                 if isinstance(doc, dict):

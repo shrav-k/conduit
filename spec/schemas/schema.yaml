@@ -5,6 +5,11 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, changed `schema.v1`: the profile is JSON Schema 2020-12's applicator
+# vocabulary and its validation vocabulary less `multipleOf`, with the format `uri-reference`,
+# and a `default` is rejected under `not`, `if`, `then`, `else` and `dependentSchemas` too
+# (decision 20). The log is docs/proposals/ruling-41/log-core.md.
 #
 # The schema of a schema: what spec/schema-profile.md permits, written within that profile.
 # Every place in a document that holds a schema refers to this contract. JSON Schema 2020-12.
@@ -13,8 +18,9 @@
 #   SCH-002  only the profile's keywords; a misspelled keyword is rejected
 #   SCH-003  only the profile's formats
 #   SCH-008  `default` only on a property reached through `properties`, never on `items`
-#            itself and never anywhere inside `allOf`, `anyOf` or `oneOf`. Whether a `default`
-#            is allowed is judged where it is written, in the schema that holds it
+#            itself and never anywhere inside `allOf`, `anyOf`, `oneOf`, `not`, `if`,
+#            `then`, `else` or `dependentSchemas`. Whether a `default` is allowed is judged
+#            where it is written, in the schema that holds it
 #   SCH-015  the three forms of `$ref`: `#` and a JSON Pointer into the same schema, a
 #            qualified reference, and `#` and a name for a Schema contract of the same
 #            project or package (NAM-022). The forms cannot be confused: a pointer is empty
@@ -25,12 +31,16 @@
 #
 # Three definitions carry SCH-008. `schema` is a schema in a place where `default` is not
 # accepted. `property` is a schema that is a member of `properties`, where it is. `combined`
-# is a schema anywhere inside `allOf`, `anyOf` or `oneOf`, where it is accepted nowhere below.
-# A schema is a map or a boolean, as JSON Schema 2020-12 defines.
+# is a schema anywhere inside one of the eight keywords above, where it is accepted nowhere
+# below. Every other applicator, `items`, `prefixItems`, `contains`, `additionalProperties`,
+# `patternProperties`, `propertyNames` and a member of `$defs`, holds a `schema`, whose own
+# `properties` are again places where a `default` is accepted. A schema is a map or a
+# boolean, as JSON Schema 2020-12 defines.
 #
 # Not expressed here, and checked by the engine: that a `$ref` resolves, and to a Schema
-# contract (SCH-015); that a `pattern` is a regular expression of ECMA-262 (SCH-016); and
-# that a number is within the range of SCH-006.
+# contract (SCH-015); that a `pattern`, and a key of `patternProperties`, is a regular
+# expression of ECMA-262 (SCH-016); that a number is within the range of SCH-006; and where
+# `secret-reference.v1` may stand (SEC-001), which tools/check_schemas.py applies itself.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -52,7 +62,7 @@ spec:
     count: {type: integer, minimum: 0}
     names: {type: array, items: {type: string}, uniqueItems: true}
     format:
-      enum: [date-time, date, duration, uri, uuid]
+      enum: [date-time, date, duration, uri, uri-reference, uuid]
     ref:
       anyOf:
         - type: string
@@ -61,6 +71,9 @@ spec:
         - type: string
           pattern: '^#[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$'
           maxLength: 64
+    dependencies:
+      type: object
+      additionalProperties: {$ref: '#/$defs/names'}
     schema:
       anyOf:
         - type: boolean
@@ -72,9 +85,23 @@ spec:
             properties:
               type: object
               additionalProperties: {$ref: '#/$defs/property'}
-            required: {$ref: '#/$defs/names'}
+            patternProperties:
+              type: object
+              additionalProperties: {$ref: '#/$defs/schema'}
             additionalProperties: {$ref: '#/$defs/schema'}
+            propertyNames: {$ref: '#/$defs/schema'}
+            required: {$ref: '#/$defs/names'}
+            dependentRequired: {$ref: '#/$defs/dependencies'}
+            dependentSchemas:
+              type: object
+              additionalProperties: {$ref: '#/$defs/combined'}
+            minProperties: {$ref: '#/$defs/count'}
+            maxProperties: {$ref: '#/$defs/count'}
             items: {$ref: '#/$defs/schema'}
+            prefixItems: {$ref: '#/$defs/list'}
+            contains: {$ref: '#/$defs/schema'}
+            minContains: {$ref: '#/$defs/count'}
+            maxContains: {$ref: '#/$defs/count'}
             minItems: {$ref: '#/$defs/count'}
             maxItems: {$ref: '#/$defs/count'}
             uniqueItems: {type: boolean}
@@ -96,6 +123,10 @@ spec:
             allOf: {$ref: '#/$defs/branches'}
             anyOf: {$ref: '#/$defs/branches'}
             oneOf: {$ref: '#/$defs/branches'}
+            not: {$ref: '#/$defs/combined'}
+            if: {$ref: '#/$defs/combined'}
+            then: {$ref: '#/$defs/combined'}
+            else: {$ref: '#/$defs/combined'}
           additionalProperties: false
     property:
       anyOf:
@@ -108,9 +139,23 @@ spec:
             properties:
               type: object
               additionalProperties: {$ref: '#/$defs/property'}
-            required: {$ref: '#/$defs/names'}
+            patternProperties:
+              type: object
+              additionalProperties: {$ref: '#/$defs/schema'}
             additionalProperties: {$ref: '#/$defs/schema'}
+            propertyNames: {$ref: '#/$defs/schema'}
+            required: {$ref: '#/$defs/names'}
+            dependentRequired: {$ref: '#/$defs/dependencies'}
+            dependentSchemas:
+              type: object
+              additionalProperties: {$ref: '#/$defs/combined'}
+            minProperties: {$ref: '#/$defs/count'}
+            maxProperties: {$ref: '#/$defs/count'}
             items: {$ref: '#/$defs/schema'}
+            prefixItems: {$ref: '#/$defs/list'}
+            contains: {$ref: '#/$defs/schema'}
+            minContains: {$ref: '#/$defs/count'}
+            maxContains: {$ref: '#/$defs/count'}
             minItems: {$ref: '#/$defs/count'}
             maxItems: {$ref: '#/$defs/count'}
             uniqueItems: {type: boolean}
@@ -133,7 +178,15 @@ spec:
             allOf: {$ref: '#/$defs/branches'}
             anyOf: {$ref: '#/$defs/branches'}
             oneOf: {$ref: '#/$defs/branches'}
+            not: {$ref: '#/$defs/combined'}
+            if: {$ref: '#/$defs/combined'}
+            then: {$ref: '#/$defs/combined'}
+            else: {$ref: '#/$defs/combined'}
           additionalProperties: false
+    list:
+      type: array
+      items: {$ref: '#/$defs/schema'}
+      minItems: 1
     branches:
       type: array
       items: {$ref: '#/$defs/combined'}
@@ -149,9 +202,23 @@ spec:
             properties:
               type: object
               additionalProperties: {$ref: '#/$defs/combined'}
-            required: {$ref: '#/$defs/names'}
+            patternProperties:
+              type: object
+              additionalProperties: {$ref: '#/$defs/combined'}
             additionalProperties: {$ref: '#/$defs/combined'}
+            propertyNames: {$ref: '#/$defs/combined'}
+            required: {$ref: '#/$defs/names'}
+            dependentRequired: {$ref: '#/$defs/dependencies'}
+            dependentSchemas:
+              type: object
+              additionalProperties: {$ref: '#/$defs/combined'}
+            minProperties: {$ref: '#/$defs/count'}
+            maxProperties: {$ref: '#/$defs/count'}
             items: {$ref: '#/$defs/combined'}
+            prefixItems: {$ref: '#/$defs/branches'}
+            contains: {$ref: '#/$defs/combined'}
+            minContains: {$ref: '#/$defs/count'}
+            maxContains: {$ref: '#/$defs/count'}
             minItems: {$ref: '#/$defs/count'}
             maxItems: {$ref: '#/$defs/count'}
             uniqueItems: {type: boolean}
@@ -173,4 +240,8 @@ spec:
             allOf: {$ref: '#/$defs/branches'}
             anyOf: {$ref: '#/$defs/branches'}
             oneOf: {$ref: '#/$defs/branches'}
+            not: {$ref: '#/$defs/combined'}
+            if: {$ref: '#/$defs/combined'}
+            then: {$ref: '#/$defs/combined'}
+            else: {$ref: '#/$defs/combined'}
           additionalProperties: false

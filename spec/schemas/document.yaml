@@ -5,6 +5,9 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, changed no schema of this file. The log is
+# docs/proposals/ruling-41/log-core.md.
 #
 # Any document an author writes: a template, an instance or a contract. The manifest is not a
 # document of one of the ten kinds and has its own schema, `manifest.v1`.

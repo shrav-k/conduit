@@ -10,6 +10,13 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review (docs/proposals/principles-review/README.md, decisions 8d and 10), changed
+# FST-001, FST-002 and FST-006: `local` is the location of the machine the engine runs on, with
+# no stored facts, the engine alone makes locations, and a name is fixed. It removed none and
+# added none. Its log is docs/proposals/ruling-41/log-G2.md. The coverage check of the
+# rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed FST-006, which
+# points to PLC-028 for a template of another project or package whose type is `location.v1`.
 
 - id: FST-001
   layer: language
@@ -23,9 +30,9 @@
     Inspection lists exactly those five objects, apart from Conduits, and each has the name
     given. Each is identified by its ID: where a promise names `system`, `local`, `management`,
     `access` or `root`, or speaks of the `access` Resource or of the root Interface, it means
-    the object made at first start. Those names stay theirs, because LIF-022 refuses the rename
-    of a first-start object. The stored facts that `local` is given are DL6 of the
-    implementation-defined list.
+    the object made at first start. A name is fixed, under OBJ-011. `local` is the location of
+    the machine the engine runs on, under PLC-026, and its labels are those reported for that
+    machine under PRV-014.
   vectors: []
 
 - id: FST-002
@@ -40,8 +47,7 @@
     Inspection lists those two Conduits, with `root` as consumer, and the five objects of
     FST-001, each in the state ready. The two are the declared Conduits `management` and
     `access` of the template `root`, instantiated with it under CON-002. They are not
-    first-start objects, and LIF-022 refuses a request to rename either of them, as it refuses
-    one to rename a first-start object.
+    first-start objects.
   vectors: []
 
 - id: FST-003
@@ -78,15 +84,17 @@
   layer: language
   level: must
   when: >-
-    An instance document's `from` resolves to the core package's template `system`,
+    An instance document's `from` resolves to the core package's template `system`, `location`,
     `management`, `access` or `root`.
   then: >-
-    The document is rejected. The instances that first start makes from those four templates are
-    the only ones.
+    The document is rejected. The instances that first start makes from those templates, and the
+    locations that the engine makes under PLC-026, are the only ones: the engine alone makes
+    locations.
   observable: >-
-    Resolving returns a diagnostic naming the template. The template `location` is not one of
-    the four: every location is an instance of it, under PLC-008. Submitting the instance
-    documents that first start makes is rejected for this reason, and because their names are
-    taken under OBJ-002: the engine makes those objects itself and is handed no document for
-    them.
+    Resolving returns a diagnostic naming the template. Every location is an instance of
+    `location`, under PLC-008, made by the engine for a machine that the machines provider
+    reports. Submitting the instance documents that first start makes is rejected for this
+    reason, and because their names are taken under OBJ-002: the engine makes those objects
+    itself and is handed no document for them. A template of any other project or package whose
+    `type` is `location.v1` is rejected under PLC-028, so no location is made from one either.
   vectors: []

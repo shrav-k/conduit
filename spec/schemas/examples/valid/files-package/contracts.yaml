@@ -5,13 +5,14 @@
 # same for a Schema contract of the package (SCH-015): `directory.read.v1` and
 # `set-read-limit.v1` each state an input with `#read-limit.v1`.
 #
-# It also shows: an Operation's input with a `default`, which the engine fills in where the
-# input is not supplied (CTR-002, OPS-026); a control, whose `changes` maps its input to the
-# setting that input sets (CTR-006); a Type that declares a runtime and states
-# `restoresRuntimes` and `records` (CTR-004); a Requirement that states `obliges`
-# (CTR-005); a composed Requirement, whose constituent takes its argument from an input
-# of the composition (CTR-010). Ruling 38 removed the two operations that showed later
-# work, which is not part of this version.
+# It also shows: Operation contracts written as the Model Context Protocol writes a tool,
+# with `inputSchema` and `outputSchema` (CTR-002, CTR-012), one of them with a hint; an
+# input with a `default`, which the engine fills in where the input is not supplied
+# (OPS-026); an output and an input that are handles, whose schema is the core package's
+# `handle.v1` (IFC-011); a control, whose `changes` maps its input to the setting that input
+# sets and whose `inputSchema` requires `revision` alone (CTR-006); a Type with a label
+# selector as its `placement`, a default implementation and `records` (CTR-004); and a
+# Requirement, which a Conduit applies as a filter (CTR-005).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -27,16 +28,25 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: directory.establish.v1
-  description: Make sure the directory exists, and return its full path.
+  description: >-
+    Make sure the directory exists, and return its full path and when it was made. The
+    template `project-directory` of the example project selects the setup hook of
+    `files-server`, which does this once its instance is set up.
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-  outputs:
-    directory:
-      schema: {type: string}
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
+  outputSchema:
+    type: object
+    properties:
+      directory: {type: string}
+      created: {$ref: example.org/common#timestamp.v1}
+    required: [directory]
   effect: Creates the directory if it is absent.
   deduplicates: true
+  destructiveHint: false
   implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -45,63 +55,79 @@ metadata:
   name: directory.read.v1
   description: Read the names of the entries of a directory.
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-    # An input with a `default` may be left out, although it is not marked optional: the
-    # step `read` of the implementation `listing` gives it no value, and the engine fills in
-    # 50 before it dispatches the step.
-    maxEntries:
-      schema: {$ref: '#read-limit.v1'}
-      default: 50
-  outputs:
-    entries:
-      schema:
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+      # An input with a `default` may be left out: the engine fills in 50 before it
+      # dispatches the request (OPS-026).
+      maxEntries: {$ref: '#read-limit.v1', default: 50}
+    required: [path]
+  outputSchema:
+    type: object
+    properties:
+      entries:
         type: array
         items: {type: string}
+    required: [entries]
   implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: directory.list.v1
-  description: List a directory. Implemented by a graph that calls `directory.read.v1`.
+  description: >-
+    List a directory, recursively. Its default implementation is `listing`; the type
+    `local-directory.v1` states `files-server` as its own default, which comes first
+    (TPL-004).
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-  outputs:
-    entries:
-      schema:
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
+  outputSchema:
+    type: object
+    properties:
+      entries:
         type: array
         items: {type: string}
+    required: [entries]
   implementation: '#listing'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: watcher.start.v1
-  description: Start watching a directory. The start operation of the runtime `watcher`.
+  description: >-
+    Start watching a directory, and return a handle that names the watch. The handle permits
+    nothing, and no instance holds it: the caller passes it back to stop the watch.
 spec:
-  inputs:
-    directory:
-      schema: {type: string, minLength: 1}
-  outputs:
-    watcher:
-      handle: true
-  effect: Starts a process that watches the directory.
+  inputSchema:
+    type: object
+    properties:
+      directory: {type: string, minLength: 1}
+    required: [directory]
+  outputSchema:
+    type: object
+    properties:
+      watcher: {$ref: github.com/shrav-k/conduit/core#handle.v1}
+    required: [watcher]
+  effect: Starts watching the directory.
   implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: watcher.stop.v1
-  description: Stop watching. The stop operation of the runtime `watcher`.
+  description: Stop the watch that the handle names.
 spec:
-  inputs:
-    watcher:
-      handle: true
-  effect: Stops the process that watches the directory.
+  inputSchema:
+    type: object
+    properties:
+      watcher: {$ref: github.com/shrav-k/conduit/core#handle.v1}
+    required: [watcher]
+  effect: Stops watching the directory.
   implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -109,23 +135,21 @@ kind: Operation
 metadata:
   name: set-read-limit.v1
   description: >-
-    A control. Change how many entries one read may return. Its result states `settings`,
-    a map keyed by the pointer of `changes`: `{/readLimit: 15}` after it confirmed 15.
+    A control. Change how many entries one read may return. It applies exactly the value it
+    is sent, or fails, and the engine then stores that value at `/readLimit` (REV-007).
 spec:
-  inputs:
-    limit:
-      schema: {$ref: '#read-limit.v1'}
-      optional: true
-    revision:
-      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
-  outputs:
-    settings:
-      schema: {type: object}
+  inputSchema:
+    type: object
+    properties:
+      limit: {$ref: '#read-limit.v1'}
+      revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+    required: [revision]
   effect: Changes the read limit of the directory.
   # The input `limit` sets the setting at `/readLimit` in the configuration.
   changes:
     limit: /readLimit
   deduplicates: true
+  idempotentHint: true
   implementation: '#files-server'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -147,7 +171,7 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: local-directory.v1
-  description: A directory on the host of its location.
+  description: A directory on the machine of its location.
 spec:
   family: Resource
   schema:
@@ -175,73 +199,31 @@ spec:
     - '#directory.read.v1'
     - '#directory.list.v1'
     - '#set-read-limit.v1'
-  # Every instance of the type has this runtime, whatever its template declares. A runtime
-  # is not marked optional: the step that starts it may be (TPL-006).
-  runtimes:
-    watcher:
-      start: '#watcher.start.v1'
-      stop: '#watcher.stop.v1'
+  # The type's default comes before the one the operation's contract states (TPL-004), so an
+  # instance has `files-server` alone as its item that is run (TPL-019).
   implementation:
-    '#directory.list.v1': '#listing'
+    '#directory.list.v1': '#files-server'
   controls:
     - '#set-read-limit.v1'
+  # A label selector (PLC-007): an instance is placed only on a location whose machine is
+  # reported with this label and value, and `files-server` asks for the same (PLC-025).
   placement:
-    local-paths:
-      requirement: '#local-paths.v1'
+    kubernetes.io/os: linux
   conditions: [watching]
-  # The implementation may keep the watcher alive itself (OBS-005), and the records about a
-  # directory keep the inputs of its operations and not their outputs (REC-002).
-  restoresRuntimes: true
+  # The records about a directory keep the inputs of its operations and not their outputs
+  # (REC-002).
   records:
     inputs: true
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement
 metadata:
-  name: local-paths.v1
-  description: A requirement on placement. The location gives access to local paths.
-spec:
-  appliesTo: [placement]
-  schema:
-    type: object
-    properties:
-      localPaths: {const: true}
-    required: [localPaths]
----
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Requirement
-metadata:
   name: rate-limit.v1
-  description: A filter or a policy. No more than `limit` requests in a minute.
+  description: >-
+    A filter. No more than `limit` requests in a minute. The implementations of the target
+    that a Conduit lists apply it, and so state it in `supports`, as `files-server` does
+    (CON-022).
 spec:
-  appliesTo: [conduit, policy]
-  narrows: true
-  # The implementation of the target must always state a requirement that narrows requests
-  # in `supports`, as `files-server` does in the manifest. Naming `target` says so and adds
-  # nothing; naming `consumer` would add the implementations selected for the consumer.
-  obliges: [target]
   inputs:
     limit:
       schema: {type: integer, minimum: 1}
----
-# A composition (CTR-005, CTR-010). Its one constituent is `rate-limit.v1`, whose input
-# `limit` takes the value of the composition's own input `per-minute`. It narrows because
-# its constituent does, and it is applied to a Conduit, where its constituent may be
-# applied. An implementation that states `rate-limit.v1` in `supports` supports it.
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Requirement
-metadata:
-  name: review-limit.v1
-  description: A filter for a reviewer. It forwards its one input to `rate-limit.v1`.
-spec:
-  appliesTo: [conduit]
-  narrows: true
-  inputs:
-    per-minute:
-      schema: {type: integer, minimum: 1}
-      default: 10
-  constituents:
-    rate:
-      requirement: '#rate-limit.v1'
-      arguments:
-        limit: {source: input, name: per-minute}

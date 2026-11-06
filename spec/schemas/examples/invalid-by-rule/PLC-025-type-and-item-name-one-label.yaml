@@ -1,0 +1,30 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a type's label selector and that of an item its template selects agree on every label that
+# both name (PLC-025). The type `windows-directory.v1` asks for `kubernetes.io/os: windows`,
+# and the default implementation of `example.org/files#directory.read.v1`, `files-server` in
+# ../valid/files-package/, asks for `linux`, so no location could match both.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: windows-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
+  requires:
+    - example.org/files#directory.read.v1
+  placement:
+    kubernetes.io/os: windows
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: shared-folder
+spec:
+  type: '#windows-directory.v1'
+  config:
+    path: 'C:\shared'

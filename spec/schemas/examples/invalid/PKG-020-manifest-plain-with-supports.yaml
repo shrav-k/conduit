@@ -1,5 +1,6 @@
 # Example. It must be rejected:
-# a plain implementation states no `supports`.
+# a plain implementation gives `tools` and states no `supports` (PKG-020), whether it is
+# reached by `command`, `package` or `remote`.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/files
@@ -7,7 +8,9 @@ version: 0.3.0
 implementations:
   legacy-reader:
     implements: ['#directory.read.v1']
-    url: https://files.example.org/mcp
+    remote:
+      type: streamable-http
+      url: https://files.example.org/mcp
     plain: true
     tools:
       '#directory.read.v1': read_directory

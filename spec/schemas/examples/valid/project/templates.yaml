@@ -1,13 +1,11 @@
 # Example. The templates of a small project. Every name under example.org is invented; the
 # contracts of `example.org/files` are in ../files-package/, and `example.org/harness` is not
-# in this repository. The project's own contract is in contracts.yaml.
+# in this repository. The project's own contracts are in contracts.yaml.
 
-# A Resource template with an input, a runtime of its own, a setup graph and a narrowed
-# control. Its instances have two runtimes: `watcher`, which the type `local-directory.v1`
-# declares, and `path-watcher`, which the template declares. A step may name either
-# (GRA-017). A template that declared a runtime named `watcher` would be rejected, because
-# its type declares one of that name (TPL-006). A runtime is not marked optional; the steps
-# that start these two are.
+# A Resource template with an input and a narrowed control, which selects a setup hook. The
+# hook's implementation is `files-server`, the item that its type's operations already
+# select, so an instance has one item that is run (TPL-019). The engine dispatches the hook
+# once the instance's run is asked for (TPL-012, TPL-017).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource
 metadata:
@@ -27,29 +25,8 @@ spec:
       optional: true
   config:
     readLimit: 10
-  runtimes:
-    path-watcher:
-      start: example.org/files#watcher.start.v1
-      stop: example.org/files#watcher.stop.v1
-  setup:
-    steps:
-      establish:
-        operation: example.org/files#directory.establish.v1
-        arguments:
-          path: {source: config, pointer: /path}
-      # Names the runtime that the type declares.
-      watch:
-        runtime: watcher
-        arguments:
-          directory: {source: step, step: establish, output: directory}
-        optional: true
-      # Names the runtime that this template declares.
-      watch-path:
-        runtime: path-watcher
-        arguments:
-          directory: {source: config, pointer: /path}
-        dependsOn: [establish]
-        optional: true
+  implementation:
+    github.com/shrav-k/conduit/core#setup-hook.v1: example.org/files#files-server
   controls:
     example.org/files#set-read-limit.v1:
       inputs:
@@ -57,7 +34,9 @@ spec:
           schema: {maximum: 50}
 ---
 # A Pool template with two entries, one of which refers to the other (POOL-005). The input
-# `location` supplies the placement of both entries (POOL-009).
+# `location` supplies the placement of both entries, and the input `runtime` the runtime
+# provider of one (POOL-009); an entry whose runtime no input supplies runs on the engine's
+# own runner.
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool
 metadata:
@@ -70,6 +49,10 @@ spec:
       schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
       to: [/entries/cache/placement, /entries/checkout/placement]
       optional: true
+    runtime:
+      schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      to: [/entries/checkout/runtime]
+      optional: true
   entries:
     cache:
       from: project-directory
@@ -81,8 +64,10 @@ spec:
         path: /srv/checkout
         cache: {entry: cache}
 ---
-# A Conduit template with two requirements: the shared-host requirement and a filter. The
-# input `limit` fills an argument of the filter (INS-012).
+# A Conduit template with two requirements: the shared-host requirement, which the engine
+# decides when the Conduit is instantiated (PLC-013), and a filter, which the target's
+# implementations apply (CON-018). The input `limit` fills an argument of the filter
+# (INS-012).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit
 metadata:
@@ -114,28 +99,12 @@ spec:
   operations:
     - example.org/files#set-read-limit.v1
 ---
-# A composite Conduit template (CON-019). It has components and no capability of its own.
-# The two components show two of the four forms of `from`: the name of a template that
-# exists, and `#` and a name. In a submitted project, as this one is, the second
-# resolves as the first does, among the templates that exist, of which this project's own
-# are part (INS-025); in a package it would name a template of the package.
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Conduit
-metadata:
-  name: directory-review
-spec:
-  components:
-    read:
-      from: directory-read
-      arguments:
-        limit: 5
-    settings:
-      from: '#directory-settings'
----
 # An Agent template that declares a required and an optional Conduit. The target of the first
 # is supplied by an input, whose schema fixes the kind, so that an argument may give the name
 # alone (OBJ-006); the second names its target. The input `model` is checked against a Schema
-# contract of the project itself, referred to as `#name` (SCH-015).
+# contract of the project itself, referred to as `#name` (SCH-015). The second Conduit is
+# made from `#directory-settings`, the `#name` form of `from`, which in a submitted project
+# resolves as the bare name does, among the templates that exist (INS-025).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Agent
 metadata:
@@ -159,10 +128,8 @@ spec:
     checkout:
       from: directory-read
     notes:
-      from: directory-read
+      from: '#directory-settings'
       target: {kind: Resource, name: scratch}
-      arguments:
-        limit: 5
       optional: true
 ---
 # An Interface template. An Interface has no keys of its own: its settings are in `config`.
@@ -174,12 +141,12 @@ metadata:
 spec:
   type: github.com/shrav-k/conduit/core#interface.v1
 ---
-# A Conduit template for a right to open that carries a bound (ACC-029). The bound is a
-# filter, written like any other requirement. A template applies it at most once, and a
-# Conduit made from this template must have `access` as its target (CON-028). Its consumer
-# may open and close Conduits to the Pool `team` and to the Resources that Pool owns, for
-# the one operation the bound names, which is an operation of a published package: a bound
-# names operations by qualified reference only.
+# A Conduit template for a right to open that carries a bound (ACC-029). The bound is written
+# like any other requirement, and the engine applies it itself. A template applies it at most
+# once, and a Conduit made from this template must have `access` as its target (CON-028). Its
+# consumer may open and close Conduits to the Pool `team` and to the Resources that Pool
+# owns, for the two operations the bound names: one of a package, and one of this project,
+# named by the address its manifest states (SUB-008).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit
 metadata:
@@ -196,3 +163,67 @@ spec:
         pools: [team]
         operations:
           - example.org/files#directory.read.v1
+          - example.org/review-desk#mirror.sync.v1
+---
+# A runtime provider: a Resource of a type that offers `runtime-provider.v1`. An instance
+# names it in its standard argument `runtime` (PRV-006).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: docker-context
+spec:
+  type: '#docker-runtime.v1'
+  inputs:
+    context:
+      schema: {type: string, minLength: 1}
+      to: [/config/context]
+      default: default
+---
+# A secret Resource's template: its configuration is the locator of one keychain item.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: keychain-secret
+spec:
+  type: '#keychain-secret.v1'
+  inputs:
+    service:
+      schema: {type: string, minLength: 1}
+      to: [/config/service]
+    account:
+      schema: {type: string, minLength: 1}
+      to: [/config/account]
+---
+# The Conduit through which the engine reads a secret for its consumer. It lists
+# `reveal-secret.v1`, so only the root Interface opens one, for a Resource or an Agent
+# (SEC-008), and no request that its consumer sends through it is dispatched (SEC-007).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: secret-read
+spec:
+  capability: github.com/shrav-k/conduit/core#secret-reveal.v1
+  operations:
+    - github.com/shrav-k/conduit/core#reveal-secret.v1
+---
+# A Resource whose configuration holds a secret reference. The input `token` puts the
+# reference at `/config/token` and makes the secret Resource the target of the declared
+# Conduit `token`, through which the engine reads it before each run (SEC-010). Its schema
+# is `secret-reference.v1`, so the argument is written with its kind and never as a literal
+# (SEC-001).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: git-mirror
+spec:
+  type: '#git-mirror.v1'
+  inputs:
+    remote:
+      schema: {type: string, format: uri}
+      to: [/config/remote]
+    token:
+      schema: {$ref: github.com/shrav-k/conduit/core#secret-reference.v1}
+      to: [/config/token, /conduits/token/target]
+  conduits:
+    token:
+      from: secret-read

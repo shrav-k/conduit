@@ -1,7 +1,7 @@
 # Graphs and the schema profile — accepted
 
 Status: accepted by the owner on 2026-11-05 (plan-audit ruling 23, action A53). Written as promises
-in the specification: [graphs](../../../spec/promises/graphs.yaml),
+in the specification: [graphs](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml),
 [schemas](../../../spec/promises/schemas.yaml) and the
 [schema profile](../../../spec/schema-profile.md). The owner added a standing instruction with the
 acceptance: for graphs and schemas, do nothing revolutionary and rely heavily on existing

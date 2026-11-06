@@ -22,13 +22,27 @@ placement: local
 arguments:
   path: /tmp/scratch
 ---
-# The reference to the Resource of a Pool's entry, from outside the Pool (POOL-014).
+# A runtime provider runs on the engine's own runner, on `local` (PRV-002).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: docker
+from: docker-context
+owner: team
+placement: local
+arguments:
+  context: desktop-linux
+---
+# The reference to the Resource of a Pool's entry, from outside the Pool (POOL-014). The
+# Agent names the runtime provider that runs it, for its whole life (PRV-006); one that names
+# none runs on the engine's own runner.
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Agent
 metadata:
   name: reviewer-1
 from: reviewer
 placement: {kind: Resource, name: local}
+runtime: docker
 arguments:
   checkout: {kind: Pool, name: team, entry: checkout}
 ---
@@ -50,16 +64,6 @@ target: {kind: Resource, name: scratch}
 arguments:
   limit: 10
 ---
-# An instance document from a composite template. It makes the Conduits `review-read` and
-# `review-settings`, and none named `review` (CON-003).
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Conduit
-metadata:
-  name: review
-from: directory-review
-consumer: {kind: Agent, name: reviewer-1}
-target: {kind: Pool, name: team, entry: cache}
----
 # A right to open with a bound: a Conduit to `access`, made from a template that applies
 # `bound.v1` (ACC-029, CON-028).
 apiVersion: github.com/shrav-k/conduit/v0
@@ -69,6 +73,32 @@ metadata:
 from: team-access
 consumer: {kind: Interface, name: operator}
 target: {kind: Resource, name: access}
+---
+# A secret Resource (SEC-002). Its configuration locates the secret; the value stays in the
+# keychain.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: github-token
+from: keychain-secret
+owner: team
+arguments:
+  service: github.com
+  account: review-desk
+---
+# A Resource that reads that secret. Its `token` is a secret reference, written with its kind
+# (SEC-001). Its declared Conduit to `github-token` is opened when it is set up only where the
+# root Interface sent the setup (SEC-008), and the engine reads the token through it before
+# each run (SEC-010, SEC-011).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: mirror
+from: git-mirror
+owner: team
+arguments:
+  remote: https://github.com/example/review-desk.git
+  token: {kind: Resource, name: github-token}
 ---
 # An instance with no name: the engine generates one (OBJ-003).
 apiVersion: github.com/shrav-k/conduit/v0

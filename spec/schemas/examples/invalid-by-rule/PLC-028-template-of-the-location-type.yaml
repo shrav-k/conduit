@@ -1,0 +1,12 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# no template but the core package's `location` has the type `location.v1` (PLC-028). A
+# location is made only by the engine, for each machine that the machines provider reports
+# (PLC-026), and a project's own template of that type would let an actor register one by
+# hand. A schema cannot tell: only the template's name and package say which template it is.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: build-box
+spec:
+  type: github.com/shrav-k/conduit/core#location.v1

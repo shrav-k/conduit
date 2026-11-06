@@ -14,6 +14,13 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed OBS-005 (decision 2: restoring a runtime goes, and a runtime
+# provider's own restart of a run is PRV-010) and OBS-007 (decision 2: the stop for no actor
+# goes, and nothing replaces it); changed OBS-002 and OBS-003, which an inspection reports as
+# conditions (decision 24b), and OBS-004 (decision 2b); and added none. What changed is in
+# docs/proposals/ruling-41/log-G1.md. Those IDs are not reused. The integration of the
+# rewrite (docs/proposals/ruling-41/log-integration.md) reworded OBS-004 in PRV-010's terms.
 
 - id: OBS-001
   layer: convention
@@ -36,21 +43,23 @@
   then: >-
     It carries the time it was made and its origin, which is where it was made.
   observable: >-
-    Every observation in an inspection result has both.
+    Every observation in an inspection result has both. An observation is reported as a
+    condition of LIF-011, its time in `lastHeartbeatTime` and its origin in `origin`.
   vectors: []
 
 - id: OBS-003
   layer: convention
   level: must
   when: >-
-    Something about an instance cannot be observed now, for example because its location cannot
-    be reached.
+    Something about an instance cannot be observed now, for example because the machines
+    provider reports its machine unreachable, under PLC-023.
   then: >-
-    It is reported as unknown, with the time of the last successful observation of it.
+    It is reported as unknown, as a condition whose `status` is `Unknown`, with the time of the
+    last successful observation of it in `lastHeartbeatTime`.
   observable: >-
     The earlier value is not shown as current. Where it was never observed, the inspection
-    result says unknown with no time. When a location cannot be reached, this holds for every
-    instance placed on it, and instances on other locations report as before.
+    result says unknown with no time. When a machine is reported unreachable, this holds for
+    every instance placed on its location, and instances on other locations report as before.
   vectors: []
 
 - id: OBS-004
@@ -59,27 +68,12 @@
   when: >-
     What is observed of an instance differs from what is declared for it.
   then: >-
-    Anything acts to remove the difference without an explicit request, other than an
-    implementation restoring its own runtime, which OBS-005 and OBS-007 govern.
+    Anything acts to remove the difference without an explicit request.
   observable: >-
     The difference appears in the instance's status and stays until an actor asks for an
-    operation that removes it. No setup, control, open or retire is dispatched because of it.
-  vectors: []
-
-- id: OBS-005
-  layer: convention
-  level: must not
-  when: >-
-    An implementation restores its own runtime, as its type contract allows.
-  then: >-
-    The handle the instance holds for the runtime stops being valid, or the engine invokes the
-    runtime's `start` operation again, or any invocation is dispatched again because of it.
-  observable: >-
-    Restoring a runtime means that the implementation keeps alive what is behind the handle the
-    instance holds. A type contract allows it by stating `restoresRuntimes: true`, under
-    CTR-004. Afterwards the same handle is accepted, and no record shows a `start` or any other
-    operation dispatched because of the restoring. That it starts no model work is IMP-002. What
-    follows where the type contract does not allow the restoring is OBS-007.
+    operation that removes it. No setup, control, open or retire is dispatched because of it. A
+    runtime provider that restarts a run does so under its own setting for restarts, under
+    PRV-010, and the engine dispatches nothing because of it.
   vectors: []
 
 - id: OBS-006
@@ -93,28 +87,4 @@
     Inspecting leaves every instance's status and every Conduit as it was, and that actor's
     requests are permitted or refused exactly as before. That it starts no model work is
     IMP-002.
-  vectors: []
-
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- the points known before the round).
-
-- id: OBS-007
-  layer: convention
-  level: must
-  when: >-
-    An implementation restores its own runtime although its type contract does not state
-    `restoresRuntimes: true`.
-  then: >-
-    The engine treats the handle as no longer held: the runtime is stopped under its `stop`
-    operation, and the instance is reported as not holding it. The engine dispatches that stop
-    for no actor: the request carries no caller, and its record says that the engine dispatched
-    it under this promise for no actor.
-  observable: >-
-    The engine invokes the runtime's `stop` operation with the handle. The request that the
-    implementation receives holds no `io.github.shrav-k.conduit/caller`, which IFC-006 excepts,
-    no `io.github.shrav-k.conduit/conduit` and an empty list of restrictions, because it came
-    through no Conduit and serves no invocation. The record of the stop holds no caller, under
-    REC-002. Inspecting the instance afterwards does not list the runtime as held, and a later
-    step that names the runtime starts it under TPL-007. No `start` operation is dispatched
-    because of the restoring.
   vectors: []

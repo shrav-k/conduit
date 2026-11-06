@@ -4,19 +4,32 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, took `appliesTo` and `narrows` out of both contracts (alignment C20 and
+# decisions 3a and 7), made `bound.v1` a restriction that the engine applies itself, which
+# names the operations of a submitted project as `address#name` too (decisions 11 and 28),
+# and made `shared-host.v1` compare the `kubernetes.io/hostname` labels of the two ends'
+# locations, once, when the Conduit is instantiated (decision 8b). The log is
+# docs/proposals/ruling-41/log-core.md. The coverage check of the rewrite
+# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed the description of
+# `bound.v1`, whose `operations` are compared as names (ACC-029).
 #
 # The two Requirement contracts of the core package.
 #
 # Promises encoded:
 #   bound.v1        ACC-029 (a bound names Pools, individual targets and operations, and is a
-#                   filter), ACC-006, ACC-012, ACC-030, ACC-031 (what a bound must cover),
-#                   ACC-022 (the root Interface's Conduit to `access` applies no bound),
-#                   CTR-005, CON-028, CTR-011 (it is never a constituent of a composition)
-#   shared-host.v1  PLC-013, CON-006, CON-018, IFC-018 (it does not narrow requests, so it is
-#                   never sent to an implementation; the engine checks it)
+#                   restriction that the engine applies itself), ACC-006, ACC-012, ACC-030
+#                   (what a bound must cover), ACC-022 (the root Interface's Conduit to
+#                   `access` applies no bound), CTR-005, CON-028
+#   shared-host.v1  PLC-013, CON-006 (the two ends' locations have one hostname, decided when
+#                   the Conduit is instantiated)
+#
+# A requirement of the core package is applied by the engine itself and is never sent to an
+# implementation (CTR-005, CON-018), so no implementation states either in `supports`, and
+# `engine` states no `supports` (MAN-012).
 #
 # A bound is written in the `requirements` map of a Conduit template whose capability is
-# `access-control.v1`, like any filter:
+# `access-control.v1`, like any requirement:
 #
 #   requirements:
 #     bound:
@@ -28,31 +41,17 @@
 #
 # Each value in `pools` and `targets` is an item of a list whose `items` is a reference
 # schema, and so is resolved when the Conduit is instantiated and stored as `{kind, id}`
-# (OBJ-021). Each item of `operations` is a qualified reference, so a bound names operations
-# of published packages only: an operation of an unpublished package cannot be named in one.
-# A bound that names an operation which a package re-exports, by the re-export or by the
-# reference to the package that originally exports it, names both (ACC-029).
-# A Conduit to `access` with no bound requirement has no bound and is unlimited, and only an
+# (OBJ-021). Each item of `operations` is a qualified reference that names an operation of an
+# installed package or of a submitted project whose manifest states that address (ACC-029,
+# SUB-008, MAN-015). It is data, compared as a name and never resolved, so a project's own
+# template may name the project's operations there by its address (ACC-029, NAM-022). A
+# Conduit to `access` with no bound requirement has no bound and is unlimited, and only an
 # actor whose own Conduit to `access` applies no bound may open or close one (ACC-030); a
-# Conduit whose bound names nothing covers nothing. A Conduit template that applies
-# `bound.v1` more than once is rejected when it is registered, and a Conduit that applies
-# it and whose target is not `access` is not instantiated (CON-028). `bound.v1` is applied
-# only by an item of `requirements` that names it: a composition that has it among its
-# constituents, directly or through other compositions, is rejected when its package is
-# installed or its project is submitted (CTR-011).
-#
-# Neither contract states `obliges` (CTR-005). `bound.v1` is a filter, and the implementation
-# of the target must always state a filter in `supports` (CON-022): the target is `access`,
-# whose implementation is `engine`, and conduit.yaml states it there. `shared-host.v1` does
-# not narrow requests, so it is not a filter and no implementation applies it: the engine
-# itself checks it (PLC-013). A requirement of another package that does not narrow
-# requests and is not a composition is rejected where it is applied to a Conduit, itself or
-# as a constituent, because nothing would apply it; a composition made only of
-# `shared-host.v1` is accepted (CON-030). Neither is a composition, so neither has
-# `constituents` (CTR-010), and of the two only `shared-host.v1` may be a constituent of
-# another requirement. Each input of `bound.v1` states `default: []`, so each may be left out
-# without being marked optional (OBJ-015), and each default satisfies its input's schema
-# (SCH-019).
+# Conduit whose bound names nothing covers nothing. A Conduit
+# template that applies `bound.v1` more than once is rejected when it is registered, and a
+# Conduit that applies it and whose target is not `access` is not instantiated (CON-028).
+# Each input of `bound.v1` states `default: []`, so each may be left out without being
+# marked optional (OBJ-015), and each default satisfies its input's schema (SCH-019).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement
@@ -60,16 +59,14 @@ metadata:
   name: bound.v1
   description: >-
     The bound of a right to open: the Pools, the individual targets and the operations of the
-    Conduits that the consumer of a Conduit to `access` may open and close, and the actors and
-    targets of the policies it may apply and remove. Naming a Pool covers the Pool itself and
-    every Resource it owns. The bound is a filter. `operations` names operations by qualified
-    reference, and so only operations of published packages; naming an operation that a package
-    re-exports, by the re-export or by the reference to the package that originally exports it,
-    names both. A Conduit template applies it at most once, only a Conduit to `access` carries
-    it, and it is never a constituent of a composition.
+    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool
+    covers the Pool itself and every Resource it owns. The engine applies the bound itself,
+    and never sends it. `operations` names operations by qualified reference: of an installed
+    package, or of a submitted project, as `address#name` with the address its manifest
+    states, even in that project's own documents; each is compared as a name and never
+    resolved. A Conduit template applies it at most once, and only a Conduit to `access`
+    carries it.
 spec:
-  appliesTo: [conduit]
-  narrows: true
   inputs:
     pools:
       schema:
@@ -92,9 +89,8 @@ kind: Requirement
 metadata:
   name: shared-host.v1
   description: >-
-    The consumer and the target of the Conduit run on the same host: the stored facts of their
-    two locations give the same `host`. Checked when the Conduit is opened and on each request
-    through it.
-spec:
-  appliesTo: [conduit]
-  narrows: false
+    The consumer and the target of the Conduit run on one machine: the
+    `kubernetes.io/hostname` labels reported for their two locations are equal. Decided once,
+    when the Conduit is instantiated: a Conduit for which they differ, or either is absent, is
+    not instantiated.
+spec: {}

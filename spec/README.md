@@ -4,23 +4,39 @@ Status: draft, begun 2026-11-05. Incomplete, and not a release. Every area has b
 promises, and the core package, the JSON Schemas of documents and the manifest's format have
 been written as documents; the parts still to come are listed under [Contents](#contents).
 
-The owner accepted the specification as it stands at
+The owner accepted the specification as it stood at
 [ruling 39](../docs/proposals/ruling-39/README.md), of 2026-11-06, which accepted every
 decision of the coordinator and every choice of an editor that the records log, before and
-since ruling 37. The records under `docs/proposals/` say who decided what and when: the
-owner's rulings, listed in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of
-the session that coordinates the re-audit
-([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
+since ruling 37. [Ruling 40](../docs/proposals/ruling-40/README.md) and
+[ruling 41](../docs/proposals/ruling-41/README.md), of the same day, then changed it: Conduit
+innovates only on connection and access, and everything else is a provider behind a contract
+that the user picks. At ruling 41 the owner accepted, as recommended, every decision of the
+[principles review](../docs/proposals/principles-review/README.md), and the secret type as its
+section 4 reduces it, and then the planner's choices of the
+[work order](../docs/proposals/ruling-41/PLAN.md) that applies them, with one changed. The
+specification as it stands is that rewrite. The logs of its editors, beside the work order
+in `docs/proposals/ruling-41/`, list every change, the choices that the editors made beyond
+the work order, which the coordinator confirms or strikes, and the questions they left open.
+A [coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) then read
+the rewrite against every decision; its log lists what it fixed and what waits on a decision.
+The secret type is ruled: its promises are [promises/secrets.yaml](promises/secrets.yaml),
+and the [secrets proposal](../docs/proposals/secrets/README.md) is the reasoning behind it.
+The names that the review and the work order coined, among them `secret-reveal.v1`,
+`reveal-secret.v1` and the names of the provider capabilities, are not final: a vocabulary
+audit of the whole specification proposes names before pull request 7 is finished, and the
+owner rules on them.
+
+The records under `docs/proposals/` say who decided what and when: the owner's rulings, listed
+in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of the session that
+coordinates the re-audit ([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
 [GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
 [round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
 [round 3](../docs/proposals/reaudit/round-3/DECISIONS.md) and of
 [round 4](../docs/proposals/reaudit/round-4/DECISIONS.md). The comment at the head of each
 file says which pass changed which promise. Later work is left out of this version
-([ruling 38](../docs/proposals/ruling-38/README.md)), and the specification says nothing of
-secrets yet: the secret type is proposed and not ruled
-([docs/proposals/secrets](../docs/proposals/secrets/README.md)). The specification is still a
-draft, because it has no conformance vectors and no reference model; it stays one until it has
-them, the reference model agrees with it, and a round of readers finds nothing unsafe in it
+([ruling 38](../docs/proposals/ruling-38/README.md)). The specification is still a draft,
+because it has no conformance vectors and no reference model; it stays one until it has them,
+the reference model agrees with it, and a round of readers finds nothing unsafe in it
 (ruling 38, point 4).
 
 The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
@@ -32,19 +48,50 @@ a gap in `spec/`, and no older document supplies it.
 
 Conduit is a configuration language for the relationships between independent agents and the
 things they share. This directory is its specification: the documents that bind every engine.
-It has three layers, and every promise says in its `layer` field which one it belongs to.
+
+Conduit innovates only on connection and access
+([ruling 40](../docs/proposals/ruling-40/README.md)). What is its own is its documents;
+connection, which is the Conduits; access, which is who may reach what, under which limits,
+and how access is delegated; accountability, which is what must be recorded of who did what;
+and the shape of its contracts. Everything else is a provider behind a contract that any
+existing tool can implement and that the user picks, by registering a Resource of the
+provider's type: the runtime that runs an instance's implementation, the machines and where an
+instance is placed on them, the source of packages, and the stores of secrets
+([promises/providers.yaml](promises/providers.yaml),
+[promises/secrets.yaml](promises/secrets.yaml)). The engine's own runner, its own machine and
+its own fetching of `https:` and `file:` URLs serve where the user picks none (PRV-003), and no
+store of secrets is built into the engine (SEC-020). The storage of records and the engine's
+own state stay each engine's choice for now, in standard formats (DL2, DL8), and so does the
+mechanism that proves which instance sent a request, which any of mutual TLS, SPIFFE and the
+protocol's authorization can be, by a cryptographic proof wherever a request crosses machines
+(IFC-022, DL13). Whether a restriction is enforced is picked with the runtime provider
+(ACC-027).
+
+The specification has three layers, and every promise says in its `layer` field which one it
+belongs to.
 
 | Layer | What it determines |
 | --- | --- |
 | `language` | What a set of documents means: which objects they make, how those relate, and what is valid. Everything here is answered by resolving, which reads the documents against what already exists and runs nothing. |
 | `convention` | The few behaviors every part must agree on, stated as invariants. There are seven shared conventions: operation identity and outcomes; revision-checked change; access; declared against observed state; ownership and lifecycle; records; and that nothing starts model work or repeats an effect implicitly. |
-| `interface` | The implementation interface: the Model Context Protocol as the shared wire between an engine and an implementation, and between an engine and a consumer, with the keys Conduit adds to it. |
+| `interface` | The implementation interface: the Model Context Protocol as the shared wire between an engine and an implementation, and between an engine and a consumer, with the keys Conduit adds to it as an extension of the protocol. |
+
+The provider contracts are not a fourth layer. Each is a capability of the core package whose
+operations are written as any operation is, and its promises fall in the three layers: what a
+provider's type must state, how an instance names its runtime provider and which Conduits may
+reach a provider are `language`, as in PRV-001, PRV-004, PRV-006 and SEC-005; what the engine
+asks of a provider, by a provider call or by a read of a secret, and what a provider must do
+are `convention`, as in PRV-005, PRV-007, PRV-011 and SEC-010; and what an implementation of a
+store's contract must do with a secret is `interface`, as in SEC-006 and SEC-019.
 
 Two things are deliberately outside it. How one type behaves, such as the conditions it defines
 (running or paused, for example) or a directory's edge cases, belongs to that type's contract;
-the one lifecycle that every instance has is not among them, and is a shared convention. How an
-engine gets from documents to a running system, such as scheduling, retries and process layout,
-belongs to that engine's runtime profile, which is its documented choice for every item of the
+the one lifecycle that every instance has is not among them, and is a shared convention. How a
+system gets from documents to running work, beyond what the promises fix, belongs to the
+provider that does it, such as how a runtime provider starts a process or where a machines
+provider places an instance, which that provider's contract states; and what stays the engine's
+own, such as retries and the storage of its records, belongs to that engine's runtime profile,
+which is its documented choice for every item of the
 [implementation-defined list](implementation-defined.yaml). Neither binds other engines.
 
 One thing is left out of this version on purpose: work that outlasts its invocation. No
@@ -57,54 +104,55 @@ ended; work that is to happen later is asked for later, by an actor (ACC-019, ru
 | --- | --- | --- |
 | [names.yaml](names.yaml) | The names this version assigns: the core package's address, `apiVersion` and the prefix of its `_meta` keys. The one place they are defined | Current |
 | [definitions.md](definitions.md) | The terms the promises use | Draft; follows the promises as they stand |
-| [promises/objects.yaml](promises/objects.yaml) | Names, IDs, references, kinds and the shape of a document | Draft; 28 promises; no vectors |
+| [promises/objects.yaml](promises/objects.yaml) | Names, IDs, references, kinds and the shape of a document | Draft; 24 promises; no vectors |
 | [promises/schemas.yaml](promises/schemas.yaml) | Schemas, document syntax and numbers | Draft; 21 promises; no vectors |
 | [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the schema keywords in the profile and the formats that are checked | Draft |
-| [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 24 promises; no vectors |
-| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, runtimes, retirement and controls | Draft; 15 promises; no vectors |
-| [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 11 promises; no vectors |
+| [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 23 promises; no vectors |
+| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, hooks, retirement and controls | Draft; 14 promises; no vectors |
+| [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 10 promises; no vectors |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; no vectors |
-| [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
-| [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, its keys, how a re-export is written, which files of a project are its documents, and the layout of a package's archive | Draft; 14 promises; no vectors |
-| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
+| [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 21 promises; no vectors |
+| [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, `conduit.yml` or `conduit.json`, its keys, implementation items, which files of a project are its documents, and the layout of a package's archive | Draft; 16 promises; no vectors |
+| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project and the address that names them, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; no vectors |
-| [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: locations, default placement, requirements on placement and values tied to a location | Draft; 20 promises; no vectors |
-| [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 27 promises; no vectors |
-| [promises/graphs.yaml](promises/graphs.yaml) | The static meaning of a graph, its two invariants, and what holds when a step is dispatched | Draft; 26 promises; no vectors |
+| [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: locations, machines, labels and placement by the provider, and values tied to a location | Draft; 21 promises; no vectors |
+| [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 22 promises; no vectors |
 | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 5 promises; no vectors |
-| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 98 documents exported and 1 implementation, which is also an export |
+| [promises/providers.yaml](promises/providers.yaml) | Providers: what one is and how the user picks one; the runtime provider and its runs, the machines provider, package sources, and the provider call | Draft; 20 promises; no vectors |
+| [promises/secrets.yaml](promises/secrets.yaml) | Secrets: how a document marks one, which Resources hold one, who may have one read, how the engine reads one before a run or a connection, and where the value may go | Draft; 21 promises; no vectors |
+| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 102 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
-| [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the retrieval tool `retrieve-result.v1`, and the controls `set-default-location.v1` and `set-facts.v1` | Draft; 20 contracts |
-| [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access`, a Pool, the `system` Pool and a location offer | Draft; 5 contracts |
-| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface and Pool types, and the types of `system`, of a location, of `management` and of `access` | Draft; 6 contracts |
-| [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1` | Draft; 2 contracts |
-| [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference | Draft; 11 contracts |
-| [core/results.yaml](core/results.yaml) | The Schema contracts `object.v1` and `diagnostic.v1`, which the outputs of the operations share | Draft; 2 contracts |
+| [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and `reveal-secret.v1` | Draft; 23 contracts |
+| [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access` and a Pool offer, and the four provider capabilities | Draft; 7 contracts |
+| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface and Pool types, and the types of a location, of `management` and of `access` | Draft; 5 contracts |
+| [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1`, which the engine applies itself | Draft; 2 contracts |
+| [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference, `secret-reference.v1` among them | Draft; 12 contracts |
+| [core/results.yaml](core/results.yaml) | The Schema contracts `object.v1`, `diagnostic.v1`, `handle.v1`, `condition.v1` and `record.v1`: an object as a result names it, a diagnostic, a handle, a condition and a record | Draft; 5 contracts |
 | [core/templates.yaml](core/templates.yaml) | The templates that first start instantiates: those of the five first-start objects and of the two Conduits of `root` | Draft; 7 templates |
-| [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 45 contracts in 9 files |
+| [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 41 contracts in 8 files |
 | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
 | [schemas/envelope.yaml](schemas/envelope.yaml) | `apiVersion`, what every document carries, and `metadata` | Draft; 5 contracts |
-| [schemas/templates.yaml](schemas/templates.yaml) | A template document and the parts of its `spec` | Draft; 8 contracts |
-| [schemas/instances.yaml](schemas/instances.yaml) | An instance document of each family, the value of `from`, and the three nested instantiations | Draft; 5 contracts |
-| [schemas/graphs.yaml](schemas/graphs.yaml) | A graph, a step, a value binding and a value reference | Draft; 5 contracts |
+| [schemas/templates.yaml](schemas/templates.yaml) | A template document and the parts of its `spec` | Draft; 7 contracts |
+| [schemas/instances.yaml](schemas/instances.yaml) | An instance document of each family, the value of `from`, and the two nested instantiations | Draft; 4 contracts |
 | [schemas/contracts.yaml](schemas/contracts.yaml) | A contract document of each of the five kinds, and an applied requirement | Draft; 6 contracts |
 | [schemas/schema.yaml](schemas/schema.yaml) | `schema.v1`: the schema profile written as a schema | Draft; 1 contract |
-| [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item | Draft; 2 contracts |
-| [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions and digests | Draft; 12 contracts |
+| [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item; and `server-package.v1` and `server-remote.v1`: a Package and a Remote of server.json | Draft; 4 contracts |
+| [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions, digests, IDs, revisions and label selectors | Draft; 13 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 63 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 24 files |
-| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, unregistration and what reconciling a setup or a retirement changes | Draft; 34 promises; no vectors |
-| [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 34 promises; no vectors |
-| [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 31 promises; no vectors |
-| [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 13 promises; no vectors |
-| [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 7 promises; no vectors |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 52 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 21 files |
+| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, removal and unregistration, and what reconciling a setup or a retirement changes | Draft; 34 promises; no vectors |
+| [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 29 promises; no vectors |
+| [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 30 promises; no vectors |
+| [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 14 promises; no vectors |
+| [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 5 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
-| [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 8 promises; no vectors |
-| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 35 promises; no vectors |
-| [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 15 items |
+| [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 5 promises; no vectors |
+| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers, with Conduit's keys as an extension of the protocol | Draft; 38 promises; no vectors |
+| [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 14 items |
 
-Every area has been written as promises, 434 in all, and the rulings of the
+Every area has been written as promises, 432 in all: 198 of the layer `language`, 194 of the
+layer `convention` and 40 of the layer `interface`. The rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
 [ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
@@ -113,8 +161,10 @@ behaviors that the older text accepted and the specification did not state, the
 [decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md),
 the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md), the
 [decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md),
-[ruling 38](../docs/proposals/ruling-38/README.md) and
-[ruling 39](../docs/proposals/ruling-39/README.md) have been applied to them. The JSON Schemas
+[ruling 38](../docs/proposals/ruling-38/README.md),
+[ruling 39](../docs/proposals/ruling-39/README.md),
+[ruling 40](../docs/proposals/ruling-40/README.md) and
+[ruling 41](../docs/proposals/ruling-41/README.md) have been applied to them. The JSON Schemas
 of documents, contracts and manifests, the core package as documents and the manifest's file
 format now exist: they are `schemas/`, `core/` and `promises/manifest.yaml`. Still to come:
 the conformance vectors, and a reference model.
@@ -126,9 +176,19 @@ contract (SCH-015).
 
 Files under `promises/` are organized by topic, files under `conventions/` by convention, and
 `interface/` holds the implementation interface. A file's place does not fix the layer of what
-it holds: several topic files hold promises of the layer `convention`, one holds a promise of
-the layer `interface`, and a few rules on documents in the other two directories have the layer
+it holds: several topic files hold promises of the layer `convention`, two hold promises of the
+layer `interface`, and a few rules on documents in the other two directories have the layer
 `language`. A promise's own `layer` field decides.
+
+### Promise files that rulings removed
+
+A promise file whose every promise a ruling removed is taken out of the tree and listed here,
+with the IDs it held, so that none of them is ever reused (the owner's answer on the planner's
+choice P2, recorded in [ruling 41](../docs/proposals/ruling-41/README.md#after-the-ruling)).
+
+| File | IDs it held | Removed by |
+| --- | --- | --- |
+| `promises/graphs.yaml`, the static meaning of a graph and what held when a step was dispatched; its [last version](https://github.com/shrav-k/conduit/blob/0a9a32326830452d9761f4963077db4fb618918a/spec/promises/graphs.yaml) | GRA-001 to GRA-028. Consolidation pass 1 folded GRA-013 into GRA-019 and GRA-016 into GRA-020. Ruling 41 removed the rest by decision 1 of the principles review (ruling 40, point 3c): an instance's own setup and retirement work is a setup hook and a retire hook, and an operation built from others is an ordinary implementation. GRA-002's rule went to TPL-012; GRA-003's to OPS-022, CON-004 and POOL-013; GRA-022's to CON-004 and POOL-013; nothing replaces the others. | [Ruling 41](../docs/proposals/ruling-41/README.md) |
 
 ## The form of a promise
 
@@ -136,7 +196,7 @@ A promise is a data record with these fields:
 
 | Field | Meaning |
 | --- | --- |
-| `id` | A stable identifier. It is never reused, and a changed promise keeps it. A removed promise is named, with where it went, in the comment at the head of its file. |
+| `id` | A stable identifier. It is never reused, and a changed promise keeps it. A removed promise is named, with where it went, in the comment at the head of its file, or, where its whole file was removed, [above](#promise-files-that-rulings-removed). |
 | `layer` | `language`, `convention` or `interface`. |
 | `level` | `must`, `must not`, `should` or `may`. |
 | `when` | The situation. |
@@ -165,10 +225,50 @@ implementation, claims the Implementation level.
 | --- | --- | --- |
 | Language | An engine | Every promise whose layer is `language`: documents in, resolved objects or diagnostics out. |
 | Engine | An engine | The Language level, plus every promise whose layer is `convention` or `interface`, plus a runtime profile that documents a choice for every item of the implementation-defined list. |
-| Implementation | An implementation | Every promise whose layer is `interface` and that binds an implementation: one whose obligation falls on the implementation and not on the engine, such as IFC-008, IFC-009, IFC-019, IFC-026 and IFC-031. |
+| Implementation | An implementation | Every promise whose layer is `interface` and that binds an implementation: one whose obligation falls on the implementation and not on the engine, such as IFC-008, IFC-009, IFC-019, IFC-026, IFC-031, SEC-006 and SEC-019. |
 
 An engine that is given a document it cannot honor rejects the document and says why in a
 diagnostic. It never accepts a document and ignores part of it.
+
+## What the guarantee for secrets covers
+
+This is a statement of the limit of the promises on secrets, not a promise, and nothing tests
+it. It is section 4 of the [principles review](../docs/proposals/principles-review/README.md),
+which ruling 41 accepted.
+
+- The machine that the engine runs on and its operating-system user, and the place where the
+  chosen runtime provider keeps a run's values (PRV-011), are inside the trust domain of every
+  secret the engine reads.
+- A value in a process's environment is readable by that process, by what it starts, by root,
+  and by the user's other processes that the kernel admits, and it serves every caller of that
+  process alike.
+- An Agent's model that can run commands can read its own credential, and only the root
+  Interface's choice of which Conduits to a secret Resource it opens limits which secret
+  reaches an Agent's process (SEC-008).
+- A copy that a store's package keeps is outside the engine (SEC-006, SEC-017).
+- A value that an implementation returns or sends is data from then on (SEC-019).
+- Opening a Conduit that lists `reveal-secret.v1` also trusts the secret Resource's locator,
+  which any actor that may register that Resource writes (SEC-005).
+
+The text as it stands also leaves these outside the guarantee. The
+[coverage check](../docs/proposals/ruling-41/log-integration.md#coverage-check) of the rewrite
+lists each with the question that waits on a decision.
+
+- No promise keeps the `endpoint` of a run, that of a store's server among them, from being
+  reached by anything but the engine, or has a request that the engine sends to an
+  implementation prove that the engine sent it (IFC-017, IFC-022). An implementation that
+  carries Conduit's keys takes them as the request gives them. Where a store's server runs on
+  another machine than the engine, the value read crosses the path between the two (SEC-010,
+  PRV-002).
+- A value rotated in its store reaches a running instance only through a run that the engine
+  asks for later: no operation ends the run of an instance that is ready (SEC-014).
+- The type of a secret Resource may offer other capabilities beside `secret-reveal.v1`, and
+  nothing stops an operation of one of them from returning what the store holds (SEC-005,
+  PRV-001).
+- Once a machine is reported gone, nothing asks the runtime provider to stop a run left on it,
+  which keeps the values it was given if the machine comes back. An actor may retire each of
+  its instances again, which asks for the stop, before a request to unregister the instance
+  removes it (PLC-024, PLC-027, PRV-008).
 
 ## Checking
 
@@ -200,8 +300,12 @@ conformance vector: no promise is tested yet.
 ## Existing standards first
 
 Where an existing standard or widely used practice covers a need, the specification adopts it
-rather than defining its own. This holds above all for graphs, schemas and packages, which are
-not what distinguishes Conduit. [schema-profile.md](schema-profile.md) lists what is relied on.
+rather than defining its own. This holds for everything that is not connection and access: the
+schemas, the packages and the wire, and the infrastructure that the provider contracts reach,
+whose shapes follow the Container Runtime Interface and the node lifecycle and well-known
+labels of Kubernetes, Git's remote helpers, and the typed stores of External Secrets Operator
+and Dapr. [schema-profile.md](schema-profile.md) lists what is relied on for documents, and the
+comment at the head of each promise file names the standards that its promises follow.
 
 ## Reading order
 
@@ -217,8 +321,10 @@ can follow:
 3. Packages and submissions: `promises/naming.yaml`, `promises/packages.yaml`,
    `promises/manifest.yaml` and `promises/submissions.yaml`.
 4. The families and how they relate: `promises/pools.yaml`, `promises/placement.yaml`,
-   `promises/conduits.yaml`, `promises/graphs.yaml` and `promises/first-start.yaml`.
-5. The core package: [core/README.md](core/README.md), which lists every export with the
+   `promises/conduits.yaml` and `promises/first-start.yaml`.
+5. What the engine reaches behind contracts: `promises/providers.yaml`, then
+   `promises/secrets.yaml`.
+6. The core package: [core/README.md](core/README.md), which lists every export with the
    promise that needs it, and then the files of `core/`. The first-start objects are instances
    of its templates, and the management verbs of the conventions are its operations.
 

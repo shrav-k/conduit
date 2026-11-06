@@ -1,0 +1,21 @@
+# Example. It must be rejected:
+# no `default` stands inside `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else` or
+# `dependentSchemas` (SCH-008). Here a property under `then` states one, which would apply
+# only where the condition held.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: listing-options.v1
+spec:
+  type: object
+  properties:
+    recursive: {type: boolean}
+    depth: {type: integer, minimum: 1}
+  if:
+    properties:
+      recursive: {const: true}
+    required: [recursive]
+  then:
+    properties:
+      depth: {default: 3}

@@ -1,0 +1,14 @@
+# Example. It must be rejected:
+# an implementation item is reached by exactly one of `command`, `package` and `remote`
+# (MAN-009). This one states two.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  files-server:
+    implements: ['#directory.read.v1']
+    command: [bin/files-server, --stdio]
+    remote:
+      type: streamable-http
+      url: https://files.example.org/mcp

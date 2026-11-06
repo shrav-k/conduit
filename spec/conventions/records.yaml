@@ -26,23 +26,36 @@
 # and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), removed none, changed REC-001 to REC-004 and
+# added none. A record takes the form of the core schema `record.v1`, a CloudEvent as the
+# CloudEvents specification defines one; a provider call and the removal of an object are
+# recorded; and what repeats and reconciliations need is the engine's own state under
+# OPS-008, which a purge does not touch, so a purge keeps no fields of an invocation. What
+# changed is in docs/proposals/ruling-41/log-G4.md. The integration of the rewrite
+# (docs/proposals/ruling-41/log-integration.md) changed REC-002, so that the caller of a
+# provider call is the one PRV-005 gives it.
 
 - id: REC-001
   layer: convention
   level: must
   when: >-
     Any of these happens: an access decision; a request ends without being dispatched; an
-    invocation is dispatched; an invocation ends; an instance's lifecycle state changes; an
-    object is registered or unregistered; an object's revision changes.
+    invocation is dispatched; an invocation ends; a provider call is made, or ends; an
+    instance's lifecycle state changes; an object is registered, unregistered or removed; an
+    object's revision changes.
   then: >-
     A record of it is kept.
   observable: >-
     Each such event can be found by inspecting the objects it names. Every request can be found
     with how it ended: its outcome, or its reason where it has no outcome under OPS-005. The
     record of an access decision states that the request was permitted, or that it was not
-    dispatched and the reason. One request is not recorded: one that cannot be read and from
-    which no instance can be established, under IFC-036. Nothing else is required to be
-    recorded.
+    dispatched and the reason. A provider call is not a request, under PRV-005, and is recorded
+    all the same, with how it ended. A read of a secret is a request, under SEC-010, and is
+    recorded as one, without its value, under SEC-015. One request is not recorded: one that
+    cannot be read and from which no instance can be established, under IFC-036. Nothing else is
+    required to be recorded.
   vectors: []
 
 - id: REC-002
@@ -58,10 +71,16 @@
     Each of those is present in every record to which it applies. The inputs and outputs of the
     operation need not be; what content is kept is stated by each type's contract, under
     `records` as CTR-004 gives it: the inputs where `inputs` is true, and the outputs where
-    `outputs` is true. The record of a request from which the engine could establish no
-    instance, under IFC-032, holds no caller, and says that none could be established. The
-    record of a stop that the engine dispatches under OBS-007 holds no caller either, and says
-    that the engine dispatched it under that promise for no actor.
+    `outputs` is true. A record has the form of the core schema `record.v1`: a CloudEvent whose
+    `data` holds these fields. `inspect.v1` returns records in that form, under LIF-013, and an
+    engine may also export them in it, as DL8 of the implementation-defined list says. The
+    record of a request from which the engine could establish no instance, under IFC-032, holds
+    no caller, and says that none could be established. Every other request has a caller: a read
+    of a secret has the caller of the setup or the retirement it belongs to, under SEC-011. A
+    provider call is not a request, and its record holds a caller only where the call is made
+    for a request, the caller of that request, under PRV-005. The record of a read holds no part
+    of the value it read, under SEC-015, and a record holds a value at a place that
+    `secret-reference.v1` governs only in the resolved form, under SEC-004.
   vectors: []
 
 - id: REC-003
@@ -73,10 +92,10 @@
     It is removed or altered by anything other than a purge.
   observable: >-
     The record can still be read after the engine has restarted and after the objects it names
-    are unregistered. A reconciliation adds a record and alters none.
-    Inspecting an object lists the records that name it, under LIF-013, and an object that has
-    been unregistered is no longer inspected. How the records that name no object that still
-    exists are read is DL8 of the implementation-defined list.
+    are unregistered or removed. A reconciliation adds a record and alters none. Inspecting an
+    object lists the records that name it, under LIF-013, and an object that has been
+    unregistered or removed is no longer inspected. How the records that name no object that
+    still exists are read is DL8 of the implementation-defined list.
   vectors: []
 
 - id: REC-004
@@ -86,34 +105,21 @@
     An actor asks to purge records.
   then: >-
     The request is dispatched only if the actor is the root Interface. A purge removes the
-    records made before a time that the request names. It keeps, for every invocation, its
-    operation identity, as OPS-008 scopes it, the engine's ID for it, its outcome, a digest of
-    its contents, its operation, its caller, the instance it was dispatched to, the Conduit it
-    was dispatched through, the target that authorized it and, for a step that names a runtime,
-    the name of that runtime, and a record is kept stating which records were purged and when.
+    records made before a time that the request names, and a record is kept stating which
+    records were purged and when.
   observable: >-
     A request from any other actor is not dispatched and reports refused. Records made at or
-    after the time the request names are not removed. After a purge, a request that repeats the
-    operation identity of a purged invocation is still answered under OPS-009 to OPS-012 and
-    OPS-024, and no effect is applied a second time. Two requests with the same contents, as
-    OPS-009 defines them, give the same digest, so a request with that identity and different
-    contents still reports conflict under OPS-010. How the digest is computed is DL2 of the
-    implementation-defined list. The record of the purge can be read, and no later purge removes
-    it. The operation is `purge.v1`, and the time is its input `before`. The engine's ID is kept
-    so that `retrieve-result.v1` still returns it under IFC-024, and an invocation whose outcome
-    is unknown can still be reconciled under OPS-014. The operation, the instance and the target
-    are kept because a reconciliation needs them: ACC-033 fixes the target that authorizes it
-    from them, LIF-028 the instance whose state or shutdown it changes, and REV-010 the control
-    and its `changes`. The caller and the Conduit are kept because later requests are decided
-    from them: IFC-024 takes the caller of a retrieval from the invocation that it names as
-    served, and OPS-017 delivers a retained result only while the Conduit of its invocation is
-    open. The name of the runtime is kept because TPL-015 gives the handle of a reconciled start
-    to that runtime, and two runtimes of one instance may share a start operation. All of them
-    are kept for an invocation that carried no operation identity as for any other. A purge
-    removes records and nothing else: what an instance holds and the content of a retained
-    result are not records, and a purge does not touch them. What a purge keeps of an invocation
-    is read as records of that instance: inspecting the instance still lists it among the
-    records that name the instance, under LIF-013.
+    after the time the request names are not removed. The record of the purge can be read, and
+    no later purge removes it. The operation is `purge.v1`, and the time is its input `before`.
+    A purge removes records and nothing else. What repeats and reconciliations need is the
+    engine's own state under OPS-008, which no purge touches: after a purge, a request that
+    repeats the operation identity of an invocation whose records were purged is still answered
+    under OPS-009 to OPS-012, OPS-024 and OPS-032, no effect is applied a second time, and an
+    invocation whose outcome is unknown can still be reconciled under OPS-014. Two requests with
+    the same contents, as OPS-009 defines them, give the same digest, so a request with that
+    identity and different contents still reports conflict under OPS-010. How the digest is
+    computed is DL2 of the implementation-defined list. The outputs that the engine keeps for
+    repeats under OPS-009 are not records either, and a purge does not touch them.
   vectors: []
 
 - id: REC-005

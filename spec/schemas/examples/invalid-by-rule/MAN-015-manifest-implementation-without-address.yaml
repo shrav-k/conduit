@@ -1,0 +1,11 @@
+# Example. One manifest, valid against `manifest.v1`, that must be rejected:
+# a submitted project that lists an implementation, or holds a contract, states `address`
+# in its manifest (MAN-015): outside its own documents its contracts and implementations are
+# named `address#name`. This manifest lists one and states none. A schema cannot tell: a
+# project with no contract and no implementation needs no address.
+
+apiVersion: github.com/shrav-k/conduit/v0
+implementations:
+  notes-server:
+    implements: ['#notebook.read.v1']
+    command: [bin/notes-server, --stdio]

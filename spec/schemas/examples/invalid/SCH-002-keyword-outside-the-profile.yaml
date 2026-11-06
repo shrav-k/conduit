@@ -1,11 +1,12 @@
 # Example. It must be rejected:
-# `patternProperties` is outside the profile.
+# `multipleOf` is outside the profile: the profile holds JSON Schema 2020-12's validation
+# vocabulary less that one keyword (SCH-002).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
-  name: labels.v1
+  name: page-size.v1
 spec:
-  type: object
-  patternProperties:
-    '^[a-z]+$': {type: string}
+  type: integer
+  minimum: 10
+  multipleOf: 10

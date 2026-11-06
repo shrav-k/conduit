@@ -1,0 +1,26 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# an item's `environment` points at a place in the configuration that the type's schema
+# requires (MAN-017). `files-server`, the default implementation of
+# `example.org/files#directory.read.v1` in ../valid/files-package/, gives its variable
+# `FILES_ROOT` the place `/path`, and the type `loose-directory.v1` does not require `path`,
+# so an instance of the template `loose-folder` could leave the variable with no value.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: loose-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+  requires:
+    - example.org/files#directory.read.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: loose-folder
+spec:
+  type: '#loose-directory.v1'

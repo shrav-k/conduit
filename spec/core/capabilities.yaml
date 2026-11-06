@@ -6,10 +6,16 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed `system-settings.v1` and `location-settings.v1` (decision 8),
+# took `rename.v1` out of `object-management.v1` (decision 10) and the policy operations out
+# of `access-control.v1` (decision 3a), and added the four provider capabilities,
+# `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1` (decisions 2, 8, 21 and
+# 31a) and `secret-reveal.v1` (decision 19). The log is docs/proposals/ruling-41/log-core.md.
 #
-# The Capability contracts of the core package: what `management`, `access`, a Pool, the
-# `system` Pool and a location offer through a Conduit (OPS-019, CTR-003). The operations
-# are in operations.yaml.
+# The Capability contracts of the core package: what `management`, `access` and a Pool offer
+# through a Conduit (OPS-019, CTR-003), and the provider capabilities (PRV-001). The
+# operations are in operations.yaml.
 #
 # Promises encoded:
 #   object-management.v1  ACC-033 (what is authorized against `management`, reconciling an
@@ -17,32 +23,38 @@
 #                         among it), OPS-019, ACC-032 and CTR-003 (it lists the two
 #                         operations reserved to the root Interface, which only a capability
 #                         of the core package may)
-#   access-control.v1     ACC-006, ACC-012, ACC-031 (the operations of `access`), ACC-033 and
-#                         OPS-014 (reconciling an open or a close is authorized against
-#                         `access`, the target that authorized it, so the capability includes
+#   access-control.v1     ACC-006, ACC-012 (the operations of `access`), ACC-033 and OPS-014
+#                         (reconciling an open or a close is authorized against `access`, the
+#                         target that authorized it, so the capability includes
 #                         `reconcile.v1`)
 #   pool-management.v1    ACC-033 (what is authorized against a Pool, reconciling an
 #                         invocation of an operation of a Resource it owns among it),
 #                         ACC-028 (a Pool's own operations), LIF-021, LIF-009, CTR-004 (a
 #                         Type of the family Pool that does not offer it is rejected, so
 #                         every Pool offers it)
-#   system-settings.v1    PLC-016, OPS-020 and CON-017 (a Conduit lists a control like any
-#                         operation, so a capability includes it)
-#   location-settings.v1  PLC-021 (a location's facts are changed only by a control), OPS-020
-#                         and CON-017
+#   runtime-provider.v1   PRV-001, PRV-006 to PRV-012 (run, stop and the state of a run)
+#   machine-provider.v1   PRV-001, PRV-013 to PRV-015 (the machines, their labels and their
+#                         states, and placing an instance)
+#   package-source.v1     PRV-001, PRV-013, PRV-016, PRV-017 (fetching an archive for the
+#                         schemes the provider claims)
+#   secret-reveal.v1      SEC-002, SEC-005 (the shared contract of every secret store; a
+#                         Resource whose type offers it is a secret Resource), PRV-001
 #
 # Reconciling an invocation of a management verb is authorized against the target that
 # authorized the request being reconciled, so the three capabilities that hold management
-# verbs include `reconcile.v1`. Any other invocation, of a control or of any other
-# operation, is reconciled through the target that manages the instance it was dispatched
-# to: the Pool that owns a Resource, and `management` for an Agent, an Interface or a Pool
-# (ACC-033, OPS-014). No other capability has to include `reconcile.v1`, and
-# `system-settings.v1` and `location-settings.v1` do not: a control of a location is
-# reconciled through a Conduit to `system`, which owns every location, and a control of the
-# `system` Pool through a Conduit to `management`.
+# verbs include `reconcile.v1`. Any other invocation, of a control, of a hook or of any other
+# operation, is reconciled through the target that manages the instance it was dispatched to:
+# the Pool that owns a Resource, and `management` for an Agent, an Interface or a Pool
+# (ACC-033, OPS-014). No other capability has to include `reconcile.v1`.
 #
-# `retrieve-result.v1` is in no capability: IFC-024 presents it to every instance, and a call
-# to it needs no Conduit of that instance. It is the one such tool.
+# A provider is a Resource whose type offers one of the four provider capabilities, and no
+# other of them (PRV-001). No Conduit lists an operation of `runtime-provider.v1`,
+# `machine-provider.v1` or `package-source.v1`: the engine alone invokes them, by provider
+# calls (PRV-004, PRV-005). A Conduit may list `reveal-secret.v1`, and only the root
+# Interface opens one, for a Resource or an Agent (SEC-008, SEC-009); no actor's request
+# through it is dispatched, and the engine's reads go through it (SEC-007, SEC-010).
+# `setup-hook.v1` and `retire-hook.v1` are in no capability: a template selects them, and the
+# engine dispatches them (TPL-017, TPL-018).
 #
 # Where a Pool is retired, two of the requests that ACC-033 authorizes against that Pool are
 # authorized against `management` in its place: inspecting a Resource the Pool owns, and
@@ -59,18 +71,17 @@ kind: Capability
 metadata:
   name: object-management.v1
   description: >-
-    What the `management` Resource offers: registering, replacing, renaming and unregistering
-    objects; asking for a new instance for a nested instantiation whose instance is retired;
-    inspecting what is not a Resource, or is a Resource whose Pool is retired; setting up and
-    retiring what is not a Resource; reconciling an invocation that it authorized, an
-    invocation of an operation of an Agent, an Interface or a Pool, an invocation of a
-    Resource whose Pool is retired, or an invocation whose instance has been unregistered;
-    installing packages; and the operations reserved to the root Interface.
+    What the `management` Resource offers: registering, replacing and unregistering objects;
+    asking for a new instance for a nested instantiation whose instance is retired or has
+    been removed; inspecting what is not a Resource, or is a Resource whose Pool is retired;
+    setting up and retiring what is not a Resource; reconciling an invocation that it
+    authorized, an invocation of an operation of an Agent, an Interface or a Pool, an
+    invocation of a Resource whose Pool is retired, or an invocation whose instance no longer
+    exists; installing packages; and the operations reserved to the root Interface.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#register.v1
     - github.com/shrav-k/conduit/core#replace.v1
-    - github.com/shrav-k/conduit/core#rename.v1
     - github.com/shrav-k/conduit/core#unregister.v1
     - github.com/shrav-k/conduit/core#inspect.v1
     - github.com/shrav-k/conduit/core#set-up.v1
@@ -86,15 +97,13 @@ kind: Capability
 metadata:
   name: access-control.v1
   description: >-
-    What the `access` Resource offers: opening and closing Conduits, applying and removing
-    policies, and reconciling an invocation of one of those operations whose outcome is
-    unknown. An open Conduit to `access` that lists `open.v1` is a right to open.
+    What the `access` Resource offers: opening and closing Conduits, and reconciling an
+    invocation of one of those operations whose outcome is unknown. An open Conduit to
+    `access` that lists `open.v1` is a right to open.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#open.v1
     - github.com/shrav-k/conduit/core#close.v1
-    - github.com/shrav-k/conduit/core#apply-policy.v1
-    - github.com/shrav-k/conduit/core#remove-policy.v1
     - github.com/shrav-k/conduit/core#reconcile.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -122,22 +131,57 @@ spec:
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
 metadata:
-  name: system-settings.v1
+  name: runtime-provider.v1
   description: >-
-    What the `system` Pool offers beyond what every Pool offers: the control that designates
-    the default location.
+    What a runtime provider offers: running an instance's implementation item, as a run named
+    by the instance's ID, stopping that run and reporting its state. An Agent or a Resource
+    names the runtime provider that runs it by its standard argument `runtime`; with none, the
+    engine's own runner runs it. No Conduit lists these operations: the engine alone invokes
+    them.
 spec:
   operations:
-    - github.com/shrav-k/conduit/core#set-default-location.v1
+    - github.com/shrav-k/conduit/core#run.v1
+    - github.com/shrav-k/conduit/core#stop.v1
+    - github.com/shrav-k/conduit/core#inspect-run.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
 metadata:
-  name: location-settings.v1
+  name: machine-provider.v1
   description: >-
-    What a location offers: the control that changes its stored facts. An invocation of that
-    control whose outcome is unknown is reconciled through a Conduit to the `system` Pool,
-    which owns every location.
+    What the machines provider offers: reporting the machines, their labels and whether each
+    is reachable, unreachable or gone, and placing an instance on one of them. At most one
+    machines provider, owned by `system`, is not retired; with none, the engine's own machine
+    is the one machine. No Conduit lists these operations: the engine alone invokes them.
 spec:
   operations:
-    - github.com/shrav-k/conduit/core#set-facts.v1
+    - github.com/shrav-k/conduit/core#list-machines.v1
+    - github.com/shrav-k/conduit/core#place.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: package-source.v1
+  description: >-
+    What a package-source provider offers: fetching the archive of a package from a URL whose
+    scheme it claims, as its configuration lists under `schemes`. Each provider is owned by
+    `system`, and at most one that is not retired claims a scheme; the engine itself fetches
+    `https` and `file` URLs that no provider claims. No Conduit lists this operation: the
+    engine alone invokes it.
+spec:
+  operations:
+    - github.com/shrav-k/conduit/core#fetch-package.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: secret-reveal.v1
+  description: >-
+    The shared contract of a secret store: giving the value of the secret that the locator in
+    the secret Resource's configuration names. A Resource whose type offers it is a secret
+    Resource, and each store is its own Type, whose schema states the form of its locator and
+    which lists no control. The engine reads a secret through the reading instance's own open
+    Conduit that lists `reveal-secret.v1`, and no actor's request for it is dispatched.
+spec:
+  operations:
+    - github.com/shrav-k/conduit/core#reveal-secret.v1

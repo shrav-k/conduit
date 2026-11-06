@@ -24,6 +24,13 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), removed OBJ-005, OBJ-026, OBJ-027 and OBJ-028
+# under the review's decision 10: an object is no longer renamed, its name being fixed once it
+# is made, as OBJ-011 now states, and nothing else replaces them. It changed OBJ-003, OBJ-010,
+# OBJ-011, OBJ-013 to OBJ-016, OBJ-019, OBJ-021 and OBJ-022, and added none. The log is
+# docs/proposals/ruling-41/log-G6.md.
 
 - id: OBJ-001
   layer: language
@@ -67,15 +74,12 @@
     The resolved instance has a name of that shape, valid under OBJ-001 and unique under
     OBJ-002. A template's name follows OBJ-001 and so holds no dot, whether or not a package
     exports the template; the dots NAM-004 allows occur only in the names of exports that are
-    not templates, such as a contract's. A component Conduit is not named in this way: its name
-    is given by CON-003, which shortens the generated part further so that the whole name of the
-    component Conduit is no longer than 63 characters. How long the generated suffix is, which
-    characters it uses and how far the template's part is shortened are DL15 of the
-    implementation-defined list. From outside its Pool, the Resource of an entry is reached by
-    the reference to a Pool's entry that POOL-014 gives, whatever name was generated for it. The
-    result of `register.v1` lists each instance the request made, with its name and its ID, and
-    says of a nested instance which nested instantiation made it, so a generated name is learned
-    there.
+    not templates, such as a contract's. How long the generated suffix is, which characters it
+    uses and how far the template's part is shortened are DL15 of the implementation-defined
+    list. From outside its Pool, the Resource of an entry is reached by the reference to a
+    Pool's entry that POOL-014 gives, whatever name was generated for it. The result of
+    `register.v1` lists each instance the request made, with its name and its ID, and says of a
+    nested instance which nested instantiation made it, so a generated name is learned there.
   vectors: []
 
 - id: OBJ-004
@@ -91,18 +95,6 @@
     Resolving returns a diagnostic naming the field, and produces no objects. The rule is for
     the top-level keys of a document: inside `config` a key of one of those names is the
     author's, under OBJ-019. What the list `packages` holds is NAM-009.
-  vectors: []
-
-- id: OBJ-005
-  layer: convention
-  level: must
-  when: >-
-    An object is renamed.
-  then: >-
-    Its ID is unchanged.
-  observable: >-
-    Inspecting the object before and after an invocation of `rename.v1` that succeeded returns
-    the same ID. The rename itself is OBJ-026.
   vectors: []
 
 - id: OBJ-006
@@ -169,31 +161,34 @@
   level: must not
   when: >-
     An instance exists that holds the resolved form of a reference, and the name by which that
-    reference was written now belongs to another object, or to none: the object it resolved to
-    has another name, or no longer exists while another object has taken its name.
+    reference was written now belongs to another object, or to none, because the object it
+    resolved to no longer exists.
   then: >-
     The instance's reference comes to point at a different object.
   observable: >-
     A stored resolved form is not resolved again. Resolving a later document against the objects
     that exist reads the instance with the same resolved form, and the same ID, that it held
-    when it was made, whatever the objects are now named: a reference in the later document to
-    the name resolves to the object that now bears it, and the instance's own reference is not
-    redirected to that object. A nested instantiation that the instance holds, and from which a
-    replacement is made under LIF-009, holds its references in the resolved form in the same
-    way.
+    when it was made: where another object has taken the name, a reference in the later document
+    to the name resolves to that object, and the instance's own reference is not redirected to
+    it. A nested instantiation that the instance holds, and from which a replacement is made
+    under LIF-009, holds its references in the resolved form in the same way.
   vectors: []
 
 - id: OBJ-011
   layer: language
   level: must
   when: >-
-    A document is submitted.
+    An object exists.
   then: >-
-    It never renames an instance, and never rewrites the definition of one.
+    No document and no operation changes its name, which is fixed once the object is made, and
+    no document rewrites the definition of an instance.
   observable: >-
     A document submitted under the kind and name of an existing instance is rejected under
-    OBJ-002, and that instance keeps its name, its ID and its definition. An object is renamed
-    only by the operation that OBJ-026 names.
+    OBJ-002, and that instance keeps its name, its ID and its definition. No operation of the
+    core package gives an object another name, as the Kubernetes API never updates
+    `metadata.name`: an object is known by another name only where another object is made under
+    it. A name becomes free once its object no longer exists, which is why an instance holds the
+    resolved form of each reference, under OBJ-009 and OBJ-010.
   vectors: []
 
 # --- The shape of a document (plan-audit ruling 28). The JSON Schemas of these shapes are the
@@ -219,78 +214,85 @@
     An instance document is read.
   then: >-
     It has `apiVersion`, `kind` and `from` as top-level keys and, beside them, the standard
-    arguments of its family: `owner` for a Resource, `placement` for an Agent and a Resource,
-    and `consumer` and `target` for a Conduit. `owner`, `consumer` and `target` are required.
-    `placement` may be left out, and PLC-002 to PLC-004 then choose it; a location's document
-    leaves it out, under PLC-008. The document may have `metadata` and, under `arguments`, the
-    values for its template's inputs. A Conduit's `consumer` is a reference to an instance of
-    the kind Interface, Agent or Resource, and its `target` is a reference to an instance of the
-    kind Interface, Agent, Resource or Pool.
+    arguments of its family: `owner` for a Resource, `placement` and `runtime` for an Agent and
+    a Resource, and `consumer` and `target` for a Conduit. `owner`, `consumer` and `target` are
+    required. `placement` may be left out, and PLC-002 then chooses it. `runtime` may be left
+    out, and PRV-006 says what it names and what runs an instance that gives none. The document
+    may have `metadata` and, under `arguments`, the values for its template's inputs. A
+    Conduit's `consumer` is a reference to an instance of the kind Interface, Agent or Resource,
+    and its `target` is a reference to an instance of the kind Interface, Agent, Resource or
+    Pool.
   observable: >-
     An instance document that leaves out `arguments` supplies no arguments, exactly as one that
     writes an empty map. One that leaves out `metadata` gives no name, and the instance is named
     under OBJ-003. A standard argument is accepted whatever inputs the template declares. An
-    `owner`, a `placement`, a `consumer` or a `target` written under `arguments`, a standard
-    argument of another family, a value for an input written at the top level, or values written
-    under `inputs`, are each rejected with a diagnostic naming the key. `consumer` and `target`
-    each accept more than one kind, so each is written with its kind, as OBJ-006 requires. What
-    `from` may be is INS-025.
+    `owner`, a `placement`, a `runtime`, a `consumer` or a `target` written under `arguments`, a
+    standard argument of another family, such as `runtime` on a Pool, a value for an input
+    written at the top level, or values written under `inputs`, are each rejected with a
+    diagnostic naming the key. `consumer` and `target` each accept more than one kind, so each
+    is written with its kind, as OBJ-006 requires. What `from` may be is INS-025.
   vectors: []
 
 - id: OBJ-014
   layer: language
   level: must
   when: >-
-    A document holds a nested instantiation: a declared Conduit, a Pool's entry or a component
-    of a composite Conduit.
+    A document holds a nested instantiation: a declared Conduit or a Pool's entry.
   then: >-
     It has no `kind`, no `metadata` and no `spec`. A declared Conduit holds `from`, and may hold
     `arguments`, `target` and `optional: true`. A Pool's entry holds `from`, and may hold
-    `arguments` and `optional: true`. A component holds `from`, and may hold `arguments`.
+    `arguments` and `optional: true`.
   observable: >-
     A nested instantiation that carries `kind`, `metadata` or `spec` is rejected with a
     diagnostic naming it, and so is one with no `from`. What `from` may be is INS-025. One that
     leaves out `arguments` supplies no arguments, exactly as one that writes an empty map: the
     map is present and empty, so an input may have a destination inside it under INS-011. A
-    declared Conduit or a component that carries `consumer`, a component that carries `target`,
-    and an entry that carries `owner` or `placement`, are each rejected. How an entry is placed
-    is POOL-009 and POOL-016.
+    declared Conduit that carries `consumer`, and an entry that carries `owner`, `placement` or
+    `runtime`, are each rejected. How an entry is placed, and what runs its Resource, is
+    POOL-009 and POOL-016.
   vectors: []
 
 - id: OBJ-015
   layer: language
   level: must
   when: >-
-    An input, a step, a declared Conduit, a Pool's entry or an output is to be optional.
+    A template's input, a Requirement contract's input, a declared Conduit or a Pool's entry is
+    to be optional.
   then: >-
     It is marked `optional: true`. Without that mark it is required, except that an input that
     states a `default` may be left out whether or not it is marked. That holds for an input of a
-    template, of an Operation contract and of a Requirement contract alike. An input of a
-    control other than `revision` may also be left out without the mark, under REV-006.
+    template and of a Requirement contract alike. An Operation contract's input or output is not
+    marked: it is optional where the contract's `inputSchema` or `outputSchema` does not list it
+    under `required`. An input of a control other than `revision` may also be left out, under
+    REV-006.
   observable: >-
-    A `required` key on any of them is rejected with a diagnostic naming it. `required` keeps
-    its meaning inside a schema. An input that states `default: []` and no mark may be left out,
-    and the default is then used: INS-007 says so for a template's input, OPS-026 for an
-    Operation's and NAM-019 for a Requirement's. An output that is marked optional is one that a
-    result may leave out, and that a graph may leave without a value under GRA-021. A runtime
-    carries no such mark: `optional` on a runtime is rejected like any key this specification
-    does not define, and the step that starts the runtime may be marked instead, under GRA-017.
+    A `required` key on any of the four is rejected with a diagnostic naming it. `required`
+    keeps its meaning inside a schema, and an Operation contract's `inputSchema` and
+    `outputSchema` are schemas: `optional: true` written as a keyword inside them is outside the
+    profile, and rejected under SCH-002. An input that states `default: []` and no mark may be
+    left out, and the default is then used: INS-007 says so for a template's input and NAM-019
+    for a Requirement's. A property of an Operation contract's `inputSchema` that states a
+    `default` takes it under OPS-026 when a request leaves it out, before the request is checked
+    against `inputSchema`, so it may be left out even where `required` lists it. An output that
+    `outputSchema` does not list under `required` is one that a result may leave out.
   vectors: []
 
 - id: OBJ-016
   layer: language
   level: must
   when: >-
-    A document points at a place inside a value: an input's destination, the `pointer` of a
-    value reference, or a value of a control's `changes`.
+    A document points at a place inside a value: an input's destination, a value of a control's
+    `changes`, or a value of an implementation item's `environment`, `arguments` or `headers`.
   then: >-
     The pointer is a JSON Pointer in its string form, with a fixed root. The root is the
-    template's `spec` for a destination, the value its source names for a value reference, and
-    the instance's configuration for a control.
+    template's `spec` for a destination, and the instance's configuration for a control and for
+    an implementation item.
   observable: >-
     A pointer in any other notation, such as a dotted path or the URI fragment form, is rejected
     with a diagnostic naming it, and so is a destination that uses the `-` token.
-    `/config/model` as a destination means the `model` member of `config` in `spec`.
+    `/config/model` as a destination means the `model` member of `config` in `spec`, and `/root`
+    in an item's `environment` means the member `root` of the configuration. Which places an
+    item's pointer may name is MAN-017.
   vectors: []
 
 # --- Spelling and the envelope (plan-audit ruling 31), following Kubernetes.
@@ -329,25 +331,26 @@
   level: must
   when: >-
     A document contains a key that this specification does not define, other than: a key inside
-    `config`, `annotations` or a literal value, which is the value of `literal` in a value
-    binding or the value of an input's `default`; inside a schema, a name the author gives a
-    member of `properties` or of `$defs`, and a key inside a value the schema states under
-    `const`, `enum`, `default` or `examples`; a key inside the `arguments` of an instance, a
-    nested instantiation or an applied requirement; a name that keys a member of a map this
-    specification says is keyed by name, such as `inputs`, `steps` or `outputs`, or a member of
-    an `object` value binding; and a selection, which is a qualified reference or `#name` under
-    NAM-018, that keys an `implementation`, `controls` or `tools` map.
+    `config`, `annotations` or the value of an input's `default`; inside a schema, a name the
+    author gives a member of `properties` or of `$defs`, and a key inside a value the schema
+    states under `const`, `enum`, `default` or `examples`; a key inside the `arguments` of an
+    instance, a nested instantiation or an applied requirement; a name that keys a member of a
+    map this specification says is keyed by name, such as `inputs` or `conduits`; a label that
+    keys a member of a label selector under `placement`; a selection, which is a qualified
+    reference or `#name` under NAM-018, that keys an `implementation`, `controls` or `tools`
+    map; a key inside an implementation item's `package` or `remote`, which the schema of
+    server.json governs under MAN-010; and a key of an item's `environment`, `arguments` or
+    `headers`.
   then: >-
     The document is rejected. Every key this specification defines is written in camelCase.
   observable: >-
-    Resolving returns a diagnostic naming the key. `depends_on`, a policy written in a template,
-    and a family-specific key on an Interface or an Agent are each rejected in this way. A
-    step's `arguments`, and those of a constituent of a composed requirement under CTR-010, hold
-    value bindings, and an undefined key in one of those is rejected. An input's `default` is a
-    literal value whether a template, an Operation contract or a Requirement contract declares
-    the input, so a key inside a `default` that is a map is the author's.
-    Inside a schema only the names are the author's: its keywords are closed by the profile, and
-    one outside it is rejected under SCH-002.
+    Resolving returns a diagnostic naming the key. `depends_on`, `runtimes`, `setup` or `retire`
+    written in a template, and a family-specific key on an Interface or an Agent are each
+    rejected in this way. An input's `default` is a literal value whether a template or a
+    Requirement contract declares the input, and an Operation contract's input states its
+    `default` inside its `inputSchema`, so a key inside a `default` that is a map is the
+    author's. Inside a schema only the names are the author's: its keywords are closed by the
+    profile, and one outside it is rejected under SCH-002.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -380,33 +383,34 @@
   observable: >-
     A value governed by a reference schema is resolved under OBJ-009, and the instance stores
     the resolved form, `{kind: <Kind>, id: <ID>}`, in its place. That stored form is the one an
-    implementation receives, as in the `arguments` of a restriction under IFC-018, the one a
-    value reference with the source `config` yields, the one a control returns in `settings`,
-    and the one inspecting shows. Each item of a list whose `items` is
-    `github.com/shrav-k/conduit/core#pool-reference.v1` is a reference, and under `anyOf` with a
-    reference schema and the type null, a name is a reference and null is not. A map with the
-    keys `kind` and `name` in a place governed by any other schema is kept exactly as written,
-    and is never rewritten.
+    implementation receives, as in the `arguments` of a restriction under IFC-018 and in the
+    `config` of Conduit's keys under IFC-006, and the one inspecting shows. Each item of a list
+    whose `items` is `github.com/shrav-k/conduit/core#pool-reference.v1` is a reference, and
+    under `anyOf` with a reference schema and the type null, a name is a reference and null is
+    not. A map with the keys `kind` and `name` in a place governed by any other schema is kept
+    exactly as written, and is never rewritten. The core schema `secret-reference.v1` is a
+    reference schema too, and a place it governs is under the narrower rule of SEC-001: it holds
+    only a reference, never the secret itself.
   vectors: []
 
 - id: OBJ-022
   layer: language
   level: must
   when: >-
-    A document declares named members: the `inputs`, `conduits`, `entries`, `runtimes`,
-    `requirements` or `components` of a template, the `runtimes` or `placement` of a Type
-    contract, the `inputs` or `constituents` of a Requirement contract, or the `steps` of a
-    graph.
+    A document declares named members: the `inputs`, `conduits`, `entries` or `requirements` of
+    a template, or the `inputs` of a Requirement contract.
   then: >-
     Each is a map keyed by a name the document chooses. Such a name is made only of lowercase
     letters, digits and hyphens, starts with a letter and is no longer than 63 characters, the
     rule OBJ-001 gives for an object's name.
   observable: >-
     Any of them written as a list, and a member whose name breaks the rule, is rejected with a
-    diagnostic naming it. The names of an Operation contract's inputs and outputs are outside
-    this rule: CTR-002 lets each be any non-empty string, and the keys of a step's `arguments`,
-    of a graph's `outputs`, of a control's `changes` and of the `inputs` a template gives a
-    control are those names.
+    diagnostic naming it. The schemas of documents state the rule with `propertyNames`. The
+    names of an Operation contract's inputs and outputs, the properties of its `inputSchema` and
+    `outputSchema`, are outside this rule: CTR-002 lets each be any non-empty string, and the
+    keys of a control's `changes` and of the `inputs` a template gives a control are those
+    names. The keys of a label selector under PLC-007 are labels and not names, and the schema
+    `label-selector.v1` gives their form.
   vectors: []
 
 # --- Added by the follow-up decisions (plan-audit ruling 33; decision W4 of the re-audit).
@@ -445,7 +449,8 @@
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- findings R1-5.2, R1-5.1 and R1-1.2). These two are of the layer `convention`.
+# --- findings R1-5.2, R1-5.1 and R1-1.2). OBJ-025 is of the layer `convention`; OBJ-026,
+# --- added with it, was removed by ruling 41.
 
 - id: OBJ-025
   layer: convention
@@ -460,62 +465,4 @@
     `structuredContent` as IFC-025 states, and nothing is registered, as SUB-003 states. Every
     other cause of rejection reports invalid under OBJ-023. Where both causes are present, or
     the actor is not permitted, OPS-023 says which reason is reported.
-  vectors: []
-
-- id: OBJ-026
-  layer: convention
-  level: must
-  when: >-
-    A template or an instance is renamed.
-  then: >-
-    It is done by the operation `rename.v1`, which names the object's current revision and
-    changes only its name. The revision advances, as it does for any stored change, and the
-    output `revision` of the request is the object's revision after it. A request that gives an
-    object the name it already has changes nothing, does not advance the revision and has the
-    outcome succeeded: its `revision` is the one the object had.
-  observable: >-
-    After the rename the object has the new name, the ID, the definition and the configuration
-    it had, and a later revision, under REV-003. A request that names a revision that is not
-    current reports conflict under REV-002, and one that names none reports invalid under
-    REV-011. The request is authorized against `management`, under ACC-033. What the rename of a
-    Conduit must also satisfy is CON-026, and LIF-022 refuses the rename of a first-start object
-    and of the two Conduits of `root`. A request that gives the object the name it has is
-    decided like any other and stores no change, so REV-004 keeps the revision as it was. A
-    request whose new name another object of that kind has reports conflict under OBJ-027, and
-    one whose new name breaks OBJ-001 reports invalid under OBJ-028.
-  vectors: []
-
-# --- Added by the fix pass of the third round of the re-audit
-# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3A-14). These two took the rules
-# --- that stood in the observable of OBJ-026, and are of the layer `convention`.
-
-- id: OBJ-027
-  layer: convention
-  level: must
-  when: >-
-    An actor asks to rename a template or an instance, and another object of that kind has the
-    new name.
-  then: >-
-    The request is not dispatched, and reports conflict.
-  observable: >-
-    Both objects keep their names, their IDs and their revisions. Templates and instances of one
-    kind are counted together, as OBJ-002 counts them for a document, and the reason is the one
-    OBJ-025 gives a registration that clashes with an existing name. The name that the object
-    already has is not another object's: a request that gives it is OBJ-026. Where the actor is
-    not permitted, OPS-023 gives refused first.
-  vectors: []
-
-- id: OBJ-028
-  layer: convention
-  level: must
-  when: >-
-    An actor asks to rename a template or an instance, and the new name breaks the rule that
-    OBJ-001 gives for a name.
-  then: >-
-    The request is not dispatched, and reports invalid.
-  observable: >-
-    The object keeps its name and its revision. A name with an uppercase letter, one that does
-    not start with a letter and one longer than 63 characters are each invalid in this way, as a
-    document that gives such a name is rejected under OBJ-001. The input `name` of `rename.v1`
-    states the rule as its schema.
   vectors: []

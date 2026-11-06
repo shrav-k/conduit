@@ -1,0 +1,15 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# no Conduit permits an operation of `runtime-provider.v1`, `machine-provider.v1` or
+# `package-source.v1`, which the engine alone invokes by provider calls (PRV-004, PRV-005).
+# A Conduit made from this template could run or stop another instance's run. A schema
+# cannot tell: whether a capability is a provider capability is in the core package.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: run-anything
+spec:
+  capability: github.com/shrav-k/conduit/core#runtime-provider.v1
+  operations:
+    - github.com/shrav-k/conduit/core#run.v1
+    - github.com/shrav-k/conduit/core#stop.v1

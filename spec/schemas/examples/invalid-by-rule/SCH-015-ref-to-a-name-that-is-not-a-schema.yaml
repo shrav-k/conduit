@@ -8,14 +8,18 @@ metadata:
   name: directory.read.v1
   description: Read the names of the entries of a directory.
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-  outputs:
-    entries:
-      schema:
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
+  outputSchema:
+    type: object
+    properties:
+      entries:
         type: array
         items: {type: string}
+    required: [entries]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

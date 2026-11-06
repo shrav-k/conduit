@@ -24,6 +24,16 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), removed INS-022 under the review's decision
+# 12: a registration is rejected while a package its manifest lists is not installed (PKG-006),
+# so no check is left to instantiation, and nothing replaces it. It changed INS-012, INS-016
+# and INS-025: composite Conduit templates and re-exports go (decisions 5 and 9), and an
+# entry's `runtime` may be an input's destination (decision 31b). It added none. The log is
+# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
+# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed INS-006, under which
+# a bare name is not accepted where `secret-reference.v1` governs, as SEC-001 has it.
 
 - id: INS-001
   layer: language
@@ -98,11 +108,12 @@
     In the resolved instance each destination holds the supplied value, with the defaults of the
     properties of the input's schema filled in under SCH-009 and nothing else changed. Nothing
     is merged with what the template had there. Where the input's schema is a reference schema
-    that fixes the kind, a bare name is accepted as the argument, and each destination receives
-    the reference with its kind: an input governed by
+    that fixes the kind, other than `secret-reference.v1`, a bare name is accepted as the
+    argument, and each destination receives the reference with its kind: an input governed by
     `github.com/shrav-k/conduit/core#resource-reference.v1` that is given `scratch` and has a
     declared Conduit's `target` as its destination puts `{kind: Resource, name: scratch}` there,
-    although `target` itself accepts several kinds.
+    although `target` itself accepts several kinds. At a place that `secret-reference.v1`
+    governs a bare name is rejected, under SEC-001, although that schema fixes the kind.
   vectors: []
 
 - id: INS-007
@@ -177,28 +188,25 @@
   when: >-
     A template is registered in which an input's destination is none of these: `config` as a
     whole, or a place inside it; a declared Conduit's `target`; the `arguments` of a declared
-    Conduit as a whole, or a place inside them; an entry's `placement`; the `arguments` of an
-    entry as a whole, or a place inside them; in a Conduit template that is not a composite,
+    Conduit as a whole, or a place inside them; an entry's `placement` or `runtime`; the
+    `arguments` of an entry as a whole, or a place inside them; and, in a Conduit template,
     `operations` as a whole, and the `arguments` of an applied requirement as a whole or a place
-    inside them; and, in a composite Conduit template, the `arguments` of a component as a whole
-    or a place inside them.
+    inside them.
   then: >-
     The template is rejected. The list is closed: a destination that reaches any other place is
     not accepted.
   observable: >-
     Resolving returns a diagnostic naming the input and the key its destination reaches.
     Accepted, for example, are `/config`, `/config/model`, `/conduits/checkout/target`,
-    `/conduits/checkout/arguments`, `/entries/cache/placement`, `/operations`,
-    `/requirements/rate/arguments/limit` and `/components/read/arguments/root`. Rejected, with
-    every other place the list does not name, are: `type`, `implementation`, `runtimes`,
-    `setup`, `retire`, `controls` and a Conduit template's `capability`, and any place inside
-    one of them; the `from` or the `optional` of a nested instantiation; a whole nested
-    instantiation, such as `/conduits/checkout`; an item of `operations`, such as
-    `/operations/0`; the `requirement` of an applied requirement, such as
-    `/requirements/rate/requirement`; and anything under `/inputs`. `/operations` and a place
-    under `/requirements` are rejected in a composite template, which has neither key under
-    CON-016, and a place under `/components` is rejected in a template that is not a composite.
-    What is required of an `operations` that an input fills is INS-023.
+    `/conduits/checkout/arguments`, `/entries/cache/placement`, `/entries/cache/runtime`,
+    `/operations` and `/requirements/rate/arguments/limit`. Rejected, with every other place the
+    list does not name, are: `type`, `implementation`, `controls` and a Conduit template's
+    `capability`, and any place inside one of them; the `from` or the `optional` of a nested
+    instantiation; a whole nested instantiation, such as `/conduits/checkout`; an item of
+    `operations`, such as `/operations/0`; the `requirement` of an applied requirement, such as
+    `/requirements/rate/requirement`; and anything under `/inputs`. What is required of an
+    `operations` that an input fills is INS-023, and what an entry's `placement` and `runtime`
+    give its Resource is POOL-009.
   vectors: []
 
 - id: INS-013
@@ -242,9 +250,8 @@
     A template is instantiated.
   then: >-
     The only objects made are the instance and its nested instances, which are the Conduits its
-    template declares and, for a Pool, the Resources of its entries. A composite Conduit
-    template makes one Conduit for each component and none for the composite, as CON-003 states.
-    Nothing is set up or opened.
+    template declares and, for a Pool, the Resources of its entries. Nothing is set up or
+    opened.
   observable: >-
     After instantiation no setup has run, no Conduit is open, and no implementation has received
     a call.
@@ -325,21 +332,6 @@
     naming the input. `to: [/config/model]` assigns the value to the `model` member of `config`.
   vectors: []
 
-- id: INS-022
-  layer: language
-  level: must
-  when: >-
-    A template is instantiated.
-  then: >-
-    Every check that resolving makes on a template is made again, against the packages the
-    template holds.
-  observable: >-
-    A template that was registered while one of its packages was not installed, as PKG-006
-    allows, is checked in full before any instance is made. If a check fails, no instance is
-    made and the instance document is rejected with the diagnostic that resolving the template
-    would have returned.
-  vectors: []
-
 # --- Added by the follow-up decisions (plan-audit ruling 33; decision F18 of the re-audit).
 
 - id: INS-023
@@ -398,7 +390,7 @@
     name reaches, one that an earlier submission registered among them, as NAM-022 excepts it. A
     set of documents that names its own templates as `#name` therefore reads alike as a project
     and as a package. `from` is not a selection: a selection chooses a contract or an
-    implementation, and `from` names a template. PKG-013 says what holds where a package
-    re-exports the template. A value of any other form is rejected with a diagnostic naming it,
-    and INS-002 rejects one that does not resolve to a template of the same kind.
+    implementation, and `from` names a template. A value of any other form is rejected with a
+    diagnostic naming it, and INS-002 rejects one that does not resolve to a template of the
+    same kind.
   vectors: []

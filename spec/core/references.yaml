@@ -4,6 +4,10 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, added `secret-reference.v1` (section 4 of the review, point 1) and
+# changed the description of the resolved form, which no graph and no control's `settings`
+# holds any longer (decisions 1 and 15). The log is docs/proposals/ruling-41/log-core.md.
 #
 # The reference schemas: the Schema contracts that make a value a reference (OBJ-021). A
 # value inside `config` or `arguments` is resolved to an ID only where the schema that
@@ -21,10 +25,14 @@
 #   actor-reference.v1       the definition of actor: an Interface or an Agent
 #   consumer-reference.v1    OBJ-013, CON-027 (an Interface, an Agent or a Resource)
 #   target-reference.v1      OBJ-013, CON-027 (an Interface, an Agent, a Resource or a Pool)
+#   secret-reference.v1      SEC-001 (a reference to a Resource, written with its kind, and
+#                            never a bare name or a literal), SEC-002, OBJ-021
 #   every one of them        OBJ-009, OBJ-021 (the resolved form)
 #
 # A reference that accepts a Resource also accepts the two forms that name the Resource of a
-# Pool's entry. A bare name is accepted only where one kind is accepted (OBJ-006).
+# Pool's entry. A bare name is accepted only where one kind is accepted (OBJ-006), and never
+# by `secret-reference.v1`, which accepts one kind and no bare name: at a place it governs
+# a string is a literal, which SEC-001 rejects.
 #
 # The resolved form (decision R2-G1 of docs/proposals/reaudit/round-2/DECISIONS.md). Where a
 # value is a reference, the instance stores `{kind: <Kind>, id: <ID>}` in its place when it
@@ -32,8 +40,8 @@
 # to. Every schema below accepts that form as its last branch, with the kinds it accepts, so
 # the stored configuration still satisfies the schema of the type that INS-014 checked it
 # against. Only the engine writes the form. An implementation receives it in its
-# `arguments` and in the restrictions it is sent, a graph reads it through a value
-# reference, a control returns it in `settings`, and `inspect.v1` shows it under `declared`.
+# `arguments`, in the restrictions it is sent and in the configuration that every request to
+# it carries (IFC-006), and `inspect.v1` shows it under `declared`.
 # A reference to the Resource of a Pool's entry, in either of its two forms, is stored as
 # `{kind: Resource, id: <ID>}`.
 #
@@ -46,8 +54,13 @@
 # never writes the resolved form: a submitted document that writes `{kind, id}` is rejected
 # by the engine (OBJ-009), and a request that an actor makes on its own behalf names an
 # object by a reference and never by an ID, so one that holds the form reports invalid
-# (LIF-031). A step of a graph and an onward request may hold it, because the engine handed
-# it to them.
+# (LIF-031). An onward request may hold it, because the engine handed it to the instance that
+# sends it.
+#
+# Where `secret-reference.v1` may stand in a schema is not expressed here either: only as the
+# schema of a place, as the `items` of a list, or beside `{type: null}` under `anyOf` or
+# `oneOf` (SEC-001), which tools/check_schemas.py applies itself. That a secret reference
+# resolves to a Resource whose type offers `secret-reveal.v1` is the engine's (SEC-002).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -306,6 +319,33 @@ spec:
     - type: object
       properties:
         kind: {enum: [Interface, Agent, Resource, Pool]}
+        id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+      required: [kind, id]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: secret-reference.v1
+  description: >-
+    A secret reference: a reference to a secret Resource, a Resource whose type offers
+    `secret-reveal.v1`, written with its kind or as one of the two forms that name the
+    Resource of a Pool's entry, and never as a bare name. A place that this schema governs
+    holds the reference and never the secret itself. The engine stores
+    `{kind: Resource, id}` in its place, the resolved form, which only the engine writes.
+spec:
+  anyOf:
+    - type: object
+      properties:
+        kind: {const: Resource}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+    - type: object
+      properties:
+        kind: {const: Resource}
         id: {$ref: github.com/shrav-k/conduit/core#id.v1}
       required: [kind, id]
       additionalProperties: false

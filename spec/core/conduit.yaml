@@ -6,14 +6,21 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed 16 exports and added 20, as the log lists; made `engine`
+# implement every operation of `object-management.v1`, `access-control.v1` and
+# `pool-management.v1` and no other; and took away its `supports` and its `placement`, since
+# the engine applies the core package's requirements itself (alignment C20, MAN-012). The log
+# is docs/proposals/ruling-41/log-core.md.
 #
 # The core package is built into every engine (NAM-020) and is never installed, listed or
 # fetched (NAM-021), so it has no archive and no digest. Its documents are the files of this
 # directory and the Schema contracts under spec/schemas/. Its one implementation, `engine`,
-# is the engine itself: it states none of `command`, `url` and `graph` (MAN-012).
-# `supports` lists `bound.v1`, because a bound is a filter on a Conduit to `access` and
-# CON-022 has the implementation of the target, here the one behind `access`, always state
-# a filter's requirement.
+# is the engine itself: it states none of `command`, `package` and `remote` and no `supports`
+# (MAN-012). It implements the management verbs (OPS-019, CON-024), and neither the hooks, nor
+# an operation of a provider capability, nor `reveal-secret.v1` (MAN-012, SEC-020): the
+# engine's own runner, machine and fetching serve where no provider does, without being
+# selected as an implementation (PRV-003).
 #
 # The version is the version of the package, not of any contract: each contract carries its
 # own compatibility version in its name (NAM-015). A template or an instance that uses the
@@ -35,7 +42,6 @@ exports:
   # Types (types.yaml).
   - interface.v1
   - pool.v1
-  - system-pool.v1
   - location.v1
   - management.v1
   - access.v1
@@ -43,12 +49,13 @@ exports:
   - object-management.v1
   - access-control.v1
   - pool-management.v1
-  - system-settings.v1
-  - location-settings.v1
+  - runtime-provider.v1
+  - machine-provider.v1
+  - package-source.v1
+  - secret-reveal.v1
   # Operations (operations.yaml).
   - register.v1
   - replace.v1
-  - rename.v1
   - unregister.v1
   - inspect.v1
   - set-up.v1
@@ -61,11 +68,15 @@ exports:
   - retire-with-resources.v1
   - open.v1
   - close.v1
-  - apply-policy.v1
-  - remove-policy.v1
-  - retrieve-result.v1
-  - set-default-location.v1
-  - set-facts.v1
+  - setup-hook.v1
+  - retire-hook.v1
+  - run.v1
+  - stop.v1
+  - inspect-run.v1
+  - list-machines.v1
+  - place.v1
+  - fetch-package.v1
+  - reveal-secret.v1
   # Requirements (requirements.yaml).
   - bound.v1
   - shared-host.v1
@@ -81,9 +92,13 @@ exports:
   - target-reference.v1
   - entry-reference.v1
   - pool-entry-reference.v1
-  # Schemas of results (results.yaml).
+  - secret-reference.v1
+  # Schemas of results, statuses and records (results.yaml).
   - object.v1
   - diagnostic.v1
+  - handle.v1
+  - condition.v1
+  - record.v1
   # Schemas of documents (spec/schemas/).
   - name.v1
   - export-name.v1
@@ -97,30 +112,24 @@ exports:
   - digest.v1
   - id.v1
   - revision.v1
+  - label-selector.v1
   - schema.v1
   - api-version.v1
   - envelope.v1
   - template-metadata.v1
   - instance-metadata.v1
   - contract-metadata.v1
-  - graph.v1
-  - lifecycle-graph.v1
-  - step.v1
-  - value-binding.v1
-  - value-reference.v1
   - template.v1
   - template-spec.v1
   - pool-template-spec.v1
   - conduit-template-spec.v1
   - template-input.v1
   - implementation-map.v1
-  - runtime.v1
   - template-controls.v1
   - instance.v1
   - template-reference.v1
   - declared-conduit.v1
   - pool-entry.v1
-  - conduit-component.v1
   - contract.v1
   - type-spec.v1
   - capability-spec.v1
@@ -129,6 +138,8 @@ exports:
   - applied-requirement.v1
   - manifest.v1
   - implementation-item.v1
+  - server-package.v1
+  - server-remote.v1
   - document.v1
 
 implementations:
@@ -136,7 +147,6 @@ implementations:
     implements:
       - github.com/shrav-k/conduit/core#register.v1
       - github.com/shrav-k/conduit/core#replace.v1
-      - github.com/shrav-k/conduit/core#rename.v1
       - github.com/shrav-k/conduit/core#unregister.v1
       - github.com/shrav-k/conduit/core#inspect.v1
       - github.com/shrav-k/conduit/core#set-up.v1
@@ -149,11 +159,3 @@ implementations:
       - github.com/shrav-k/conduit/core#retire-with-resources.v1
       - github.com/shrav-k/conduit/core#open.v1
       - github.com/shrav-k/conduit/core#close.v1
-      - github.com/shrav-k/conduit/core#apply-policy.v1
-      - github.com/shrav-k/conduit/core#remove-policy.v1
-      - github.com/shrav-k/conduit/core#retrieve-result.v1
-      - github.com/shrav-k/conduit/core#set-default-location.v1
-      - github.com/shrav-k/conduit/core#set-facts.v1
-    supports:
-      - github.com/shrav-k/conduit/core#bound.v1
-    placement: {}

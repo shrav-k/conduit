@@ -1,6 +1,6 @@
 # Example. One document, valid against the schemas, that must be rejected:
-# a Conduit template that is not a composite writes `operations` unless the destination of one
-# of its inputs fills it. This one writes none, and its one input fills something else.
+# a Conduit template writes `operations` unless the destination of one of its inputs fills
+# it. This one writes none, and its one input fills something else.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

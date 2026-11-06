@@ -22,95 +22,99 @@
 # and choice of an editor.
 # Ruling 38 (2026-11-06) took out of DL7 whether an engine that is handed a directory installs
 # the packages its manifest lists: it installs none (SUB-010).
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review (docs/proposals/principles-review/README.md), removed DL14, on
+# cancellation, which is the protocol's own under OPS-027 (decision 22): nothing replaces the
+# item. It changed DL1, now only the order of a Pool's Resources, since graphs go (decision 1);
+# DL2 and DL3 (C33, 6b); DL5, now the machines provider's report, what a request reports
+# meanwhile being PLC-023 (8e); DL6 (8); DL7, since `https:` and `file:` are fetched by every
+# engine and other schemes by a package-source provider (21); DL8 (24c, 17); DL9, since a busy
+# instance reports conflict under REV-014 (23); DL10 (6c); DL12, since a runtime provider runs
+# an implementation and one run serves one instance (2a); DL13 (26a); and DL15 (30, 5). It
+# added none. What changed is in docs/proposals/ruling-41/log-G5.md. DL14 is not reused.
 
 - id: DL1
-  subject: Graph execution
+  subject: Order of a Pool's Resources
   document: >-
-    The order among steps that do not depend on each other; how many run at once; cancellation;
-    the states a step passes through; what happens to the remaining steps after one fails; what
-    a re-run of setup or retire does with steps that already ran; when a graph's outputs become
-    available; and the order in which `retire-with-resources.v1` retires Resources that depend
-    on each other in a cycle, or not at all, under LIF-021.
+    The order in which `retire-with-resources.v1` retires Resources that depend on each other
+    in a cycle, or not at all, under LIF-021.
 - id: DL2
   subject: Dispatch records
   document: >-
     Where the record is written before an implementation is called; how attempts are numbered;
     what is done with a result that arrives late; and how the digest of an invocation's contents
-    is computed, which a purge keeps under REC-004. The SHA-256 of the RFC 8785 form of the
+    is computed, which the engine keeps under OPS-008. The SHA-256 of the RFC 8785 form of the
     operation and its arguments is one way that gives equal contents the same digest.
 - id: DL3
   subject: An invocation that does not end until an actor replies
   document: >-
     How long the engine waits for the reply, and what happens to a reply given twice or given
     while the engine cannot receive it. No promise limits how long an invocation is in progress:
-    until it ends, a repeat of its request is told `inProgress` under OPS-009, and one for which
-    the engine stops waiting has the outcome OPS-007 gives where no result arrives.
+    until it ends, a repeat of its request reports conflict under OPS-032, and one for which the
+    engine stops waiting has the outcome OPS-007 gives where no result arrives.
 - id: DL4
   subject: Unreachable `access` or `management`
   document: >-
     Whether a request is not dispatched at once, reporting unavailable, or waits, and for how
     long.
 - id: DL5
-  subject: Locations
+  subject: The machines provider's report
   document: >-
-    How it is detected that a location cannot be reached, what a request to an instance placed
-    on it reports meanwhile, and what happens when it returns.
+    How often the engine asks the machines provider for its report under PRV-014, and what it
+    does while none arrives. What a request reports meanwhile, to an instance placed on a
+    machine reported unreachable, is PLC-023.
 - id: DL6
   subject: First start
   document: >-
-    What triggers it, what an interrupted or repeated one does, how repair works, and the
-    stored facts that the location `local` is given.
+    What triggers it, what an interrupted or repeated one does, and how repair works.
 - id: DL7
   subject: Packages
   document: >-
-    Where packages are stored, how they are fetched and removed, which schemes of `fetch` are
-    accepted, and which of the tar formats and extensions an engine reads in an archive under
-    PKG-022. Also how the engine is handed a directory under SUB-010, such as by a command or a
-    call, and for which actor it then registers.
+    Where packages are stored, how they are removed, whether the engine keeps a cache of the
+    archives it fetches, and how the user names a mirror, each of which gives the same bytes
+    under PKG-026; and which of the tar formats and extensions an engine reads in an archive
+    under PKG-022. Also how the engine is handed a directory under SUB-010, such as by a
+    command or a call, and for which actor it then registers.
 - id: DL8
   subject: Delivery of observations and records
   document: >-
-    Feeds, positions within them, and snapshots. Also how the records that name no object
-    that still exists are read, once every object they name has been unregistered and no
-    request for `inspect.v1` returns them, under LIF-019 and REC-003.
+    Feeds, positions within them, and snapshots, and whether records are exported in the form
+    of `record.v1`, under REC-002. Also how the records that name no object that still exists
+    are read, once every object they name has been unregistered or removed and no request for
+    `inspect.v1` returns them, under LIF-019 and REC-003.
 - id: DL9
-  subject: Controls and busy instances
+  subject: Order of failed checks
   document: >-
-    What happens to a request for a busy instance, which is one that has a setup, a retirement
-    or a change in progress under REV-012, and the order in which several failed checks that
-    give the same reason are reported.
+    The order in which several failed checks that give the same reason are reported.
 - id: DL10
   subject: Limits
   document: >-
-    Sizes, counts, the time allowed for a call, how long the content of a retained result is
-    kept for retrieval under OPS-016, and behavior when storage is exhausted.
+    Sizes, counts, the time allowed for a call, how long the outputs of a succeeded invocation
+    are kept for a repeat under OPS-009, and behavior when storage is exhausted.
 - id: DL11
   subject: Conduits during setup
   document: >-
     What a consumer with only some of its Conduits open may do.
 - id: DL12
-  subject: Transport, processes and protocol revisions
+  subject: Protocol revisions and `content`
   document: >-
-    The transport used for each implementation, who starts its process, how many instances
-    share one, which revisions of the Model Context Protocol are supported beyond the baseline,
-    and what the engine puts in the `content` member of a result it returns to a consumer,
-    within what IFC-025 states of a result whose content is withheld: among it, whether a
-    result that holds `structuredContent` also carries it serialized there, as the protocol
-    recommends.
+    Which revisions of the Model Context Protocol are supported beyond the baseline, and what
+    the engine puts in the `content` member of a result it returns to a consumer: among it,
+    whether a result that holds `structuredContent` also carries it serialized there, as the
+    protocol recommends.
 - id: DL13
   subject: Identifying consumers
   document: >-
-    What a request presents to show which instance its consumer is, and how the engine
-    establishes the instance from it for each request.
-- id: DL14
-  subject: Cancelling an invocation
-  document: >-
-    Whether an invocation that is in progress can be cancelled, how a cancellation is asked for,
-    and how it reaches the implementation. Whatever is chosen, the outcome of a cancelled
-    invocation is the one OPS-027 states.
+    The mechanism by which the engine establishes, under IFC-022, which instance a request
+    comes from: what a request presents, and how the engine establishes from it exactly one
+    instance or none, by a cryptographic proof of the instance that sent it wherever the request
+    crosses machines. Mutual TLS, SPIFFE and the authorization of the Model Context Protocol are
+    each one such mechanism. On one machine, over stdio, it is what the engine's own runner
+    gives the process it starts.
 - id: DL15
   subject: Generated names
   document: >-
     The length of the suffix that OBJ-003 has the engine generate, the characters it uses, and
     how far the template's part of a generated name is shortened. Whatever is chosen, the name
-    satisfies OBJ-001, OBJ-002 and, for a component Conduit, CON-003.
+    satisfies OBJ-001 and OBJ-002. The generator of the Kubernetes API server, which appends
+    five lowercase alphanumeric characters, is one choice that meets it.

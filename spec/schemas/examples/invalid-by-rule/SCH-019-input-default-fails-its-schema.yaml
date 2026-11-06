@@ -1,8 +1,9 @@
 # Example. One set of documents. Each is valid against the schemas, and the Operation and
-# the template must each be rejected: the `default` of an input satisfies the input's own
-# `schema`. The Operation's input `maxEntries` allows 1 to 100 through a Schema contract of
-# the same project and states the default 500, and the template's input `limit` allows 1
-# upwards and states 0.
+# the template must each be rejected: a `default` satisfies the schema that states it, and
+# the `default` of a template's input satisfies the input's own `schema`. The Operation's
+# input `maxEntries`, a property of its `inputSchema`, allows 1 to 100 through a Schema
+# contract of the same project and states the default 500, and the template's input `limit`
+# allows 1 upwards and states 0.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -18,12 +19,12 @@ kind: Operation
 metadata:
   name: directory.read.v1
 spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-    maxEntries:
-      schema: {$ref: '#read-limit.v1'}
-      default: 500
+  inputSchema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+      maxEntries: {$ref: '#read-limit.v1', default: 500}
+    required: [path]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

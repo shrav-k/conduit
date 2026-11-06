@@ -3,11 +3,12 @@
 # batch with spec/core/ and spec/schemas/. They were written for decision G1 of the re-audit
 # (plan-audit ruling 32), and the record is docs/proposals/core-and-schemas/README.md.
 # Each rule follows an existing practice: one project file with a fixed name, as Go's
-# `go.mod` and Cargo's `Cargo.toml` are; a format version inside the file, as a Helm chart's
-# `Chart.yaml` carries `apiVersion`; the files of one directory and not of those below it, as
-# Terraform reads a module; a re-export written among the exports, as a JavaScript module
-# writes `export ... from`; a program and its arguments as a list, as Kubernetes and Docker
-# write `command`; and an archive with the project file at its root, rejecting members that
+# `go.mod` and Cargo's `Cargo.toml` are, read with the ending `.yml` too, as kubectl and
+# kustomize read it; a format version inside the file, as a Helm chart's `Chart.yaml` carries
+# `apiVersion`; the files of one directory and not of those below it, as Terraform reads a
+# module; a program and its arguments as a list, as Kubernetes and Docker write `command`; a
+# published server and a remote server as the Model Context Protocol Registry's server.json
+# describes them; and an archive with the project file at its root, rejecting members that
 # would be written outside it, as npm and Cargo do. What naming.yaml and packages.yaml
 # promise is cited and not restated: what an item of `packages` must state is NAM-006 and
 # NAM-012; a package's own address and version PKG-017; which documents are exports PKG-018;
@@ -41,6 +42,19 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40
+# (docs/proposals/ruling-40/README.md) and the principles review
+# (docs/proposals/principles-review/README.md), removed MAN-008 under the review's decision 9:
+# a package exports only its own documents (MAN-007), and nothing replaces it. It changed
+# MAN-001, MAN-002, MAN-004, MAN-006, MAN-007 and MAN-009 to MAN-012: the manifest may be named
+# `conduit.yml` and documents may end in `.yml` (alignment C14), a submitted project with
+# contracts states its `address` (decision 11), `fetch` follows decision 21, and an
+# implementation item is reached by `command`, `package` or `remote`, with no `url` and no
+# `graph` (decisions 1 and 25). It added MAN-015 to MAN-017. The log is
+# docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
+# (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed MAN-004, on the
+# `operations` of a bound (ACC-029), and MAN-010, under which a Package's transport is `stdio`
+# or `streamable-http`, since IFC-017 reaches a run over no other.
 
 - id: MAN-001
   layer: language
@@ -48,30 +62,31 @@
   when: >-
     A project's manifest is read.
   then: >-
-    It is the one file named `conduit.yaml`, or `conduit.json` for the JSON form that SCH-013
-    allows, that lies in the project's directory itself, and it holds exactly one YAML
-    document.
+    It is the one file named `conduit.yaml`, `conduit.yml` or `conduit.json`, the last for the
+    JSON form that SCH-013 allows, that lies in the project's directory itself, and it holds
+    exactly one YAML document.
   observable: >-
-    A file of that name is read as the manifest and never as a template, an instance or a
-    contract. A manifest file that holds two YAML documents, or a JSON manifest that holds an
-    array, is rejected with a diagnostic naming the file. A project is the documents and the
-    one manifest handed over together in one registration, and a directory is one way to hand
-    them over. Where several files are submitted without a directory, the manifest is the one
-    among them that has that name, and where a registration hands the manifest over as a
-    value, as the input `manifest` of `register.v1` does, that value is the manifest.
+    A file of one of those names is read as the manifest and never as a template, an instance or
+    a contract. A manifest file that holds two YAML documents, or a JSON manifest that holds an
+    array, is rejected with a diagnostic naming the file. A project is the documents and the one
+    manifest handed over together in one registration, and a directory is one way to hand them
+    over. Where several files are submitted without a directory, the manifest is the one among
+    them that has that name, and where a registration hands the manifest over as a value, as the
+    input `manifest` of `register.v1` does, that value is the manifest.
   vectors: []
 
 - id: MAN-002
   layer: language
   level: must
   when: >-
-    A project's directory holds both `conduit.yaml` and `conduit.json`, or several files
-    submitted without a directory include more than one file with either name.
+    A project's directory holds more than one of `conduit.yaml`, `conduit.yml` and
+    `conduit.json`, or several files submitted without a directory include more than one file
+    with any of those names.
   then: >-
     The submission is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the files, and nothing is registered. A project has
-    at most one manifest.
+    Resolving returns a diagnostic naming the files, and nothing is registered. A project has at
+    most one manifest.
   vectors: []
 
 - id: MAN-003
@@ -96,19 +111,21 @@
   when: >-
     A manifest is read.
   then: >-
-    Beside `apiVersion` it may hold `packages`, `exports` and `implementations`, and it holds
-    either both `address` and `version` or neither. There are no other keys.
+    Beside `apiVersion` it may hold `packages`, `exports`, `implementations`, `address` and
+    `version`, and it holds `version` only beside `address`. There are no other keys.
   observable: >-
-    A manifest with any other top-level key, or with one of `address` and `version` and not
-    the other, is rejected with a diagnostic naming the key. The manifest of a package, which is
-    read from the package's archive when it is installed, states both, as PKG-017 requires. The
-    manifest of a submitted project, which is handed over for registration, may state both or
-    neither, and the two keys change nothing there: a project that is handed over for
-    registration is never published, whatever its manifest states. Its contracts are kept as an
-    unpublished package under SUB-008, a reference written `#name` in it means what NAM-022
-    gives it in any submitted project, and a qualified reference that uses the address its
-    manifest states is rejected under NAM-007, because that address is not among its `packages`.
-    The one address that such a manifest may not state is the core package's, under NAM-021.
+    A manifest with any other top-level key, or with `version` and no `address`, is rejected
+    with a diagnostic naming the key. The manifest of a package, which is read from the
+    package's archive when it is installed, states both, as PKG-017 requires. The manifest of a
+    submitted project, which is handed over for registration, states `address` where MAN-015
+    requires it, and may state `address`, and `version` beside it, where it does not; a project
+    that is handed over for registration is never published, whatever its manifest states. Its
+    contracts are then named `address#name` outside its own documents, under SUB-008, a
+    reference written `#name` in it means what NAM-022 gives it in any submitted project, and a
+    qualified reference that uses the address its manifest states is rejected under NAM-007,
+    because that address is not among its `packages`, the `operations` of a bound apart, which
+    are compared as names under ACC-029. The address may not be the core package's, under
+    NAM-021, nor one at which a package is installed, under MAN-016.
   vectors: []
 
 - id: MAN-005
@@ -133,22 +150,26 @@
   when: >-
     An item of `packages` in a manifest gives `fetch`.
   then: >-
-    Its value is a URI reference, as RFC 3986 gives one, to the package's archive file. A
-    relative reference is resolved against the directory the manifest was read from. Where the
-    manifest was handed over without a directory, a relative reference is rejected.
+    Its value is a URI reference, as RFC 3986 gives one, to the package's archive file, checked
+    by the format `uri-reference`. A relative reference is resolved against the directory the
+    manifest was read from, to a `file:` URL. Where the manifest was handed over without a
+    directory, a relative reference is rejected. It carries no user information, the part of a
+    URI where RFC 3986 places a credential, and one that does is rejected.
   observable: >-
-    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and
-    `fetch: ../history/history-1.4.0.tar.gz` each name one archive file. The package is still
-    identified by its address, as NAM-012 states, and the digest decides whether what was
-    fetched satisfies the item, under PKG-021. Which schemes an engine can fetch from is DL7 of
-    the implementation-defined list. A manifest is handed over without a directory where several
-    files are submitted without one, or where a registration hands it over as a value, as the
-    input `manifest` of `register.v1` does: `fetch: ../history.tar.gz` in such a manifest is
-    rejected with a diagnostic naming the item. It is rejected when the manifest is read,
-    whether or not anything is ever fetched: reading a manifest installs nothing, under NAM-012.
-    The input `fetch` of `install.v1` is a URI reference in the same way, and a request has no
-    directory, so a relative one is rejected there too. An installation of an item whose `fetch`
-    is relative gives `install.v1` the reference as resolved against the manifest's directory.
+    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and `fetch:
+    ../history/history-1.4.0.tar.gz` each name one archive file, and `fetch:
+    https://user:token@example.org/history-1.4.0.tar.gz` is rejected: a credential comes from
+    the scheme's own mechanism, under NAM-012. The package is still identified by its address,
+    as NAM-012 states, and the digest decides whether what was fetched satisfies the item, under
+    PKG-021. Which schemes are fetched, and by what, is NAM-012 and PRV-017. A manifest is
+    handed over without a directory where several files are submitted without one, or where a
+    registration hands it over as a value, as the input `manifest` of `register.v1` does:
+    `fetch: ../history.tar.gz` in such a manifest is rejected with a diagnostic naming the item.
+    It is rejected when the manifest is read, whether or not anything is ever fetched: reading a
+    manifest installs nothing, under NAM-012. The input `fetch` of `install.v1` is a URI
+    reference in the same way, and a request has no directory, so a relative one is rejected
+    there too. An installation of an item whose `fetch` is relative gives `install.v1` the
+    reference as resolved against the manifest's directory.
   vectors: []
 
 - id: MAN-007
@@ -157,33 +178,17 @@
   when: >-
     A manifest lists `exports`.
   then: >-
-    `exports` is a list, and each item is either the name of a document of the package, which
-    PKG-018 makes an export, or a qualified reference, which is a re-export under MAN-008.
+    `exports` is a list, and each item is the name of a document of the package, which PKG-018
+    makes an export.
   observable: >-
-    An item that is neither, and a name that no document of the package has, are each rejected
-    with a diagnostic naming the item. A name is the name of one document, because no two
-    documents of a package share a name under NAM-027. That document is a template or a
-    contract: a package holds no instance document, under MAN-011, so no item names one. An
-    implementation is not listed in `exports`: its item under `implementations` is what exports
-    it, as PKG-019 states. A name written twice is rejected under PKG-012, and a name that an
-    implementation also has under NAM-027.
-  vectors: []
-
-- id: MAN-008
-  layer: language
-  level: must
-  when: >-
-    An item of `exports` is a qualified reference.
-  then: >-
-    The package re-exports that export of another package, under the name the other package
-    gives it.
-  observable: >-
-    With `github.com/acme/base#shared-reviewer` among the exports of
-    `github.com/acme/starter`, the reference `github.com/acme/starter#shared-reviewer`
-    resolves as PKG-013 states. The address before the `#` is one the manifest lists under
-    `packages`, or the item is rejected under NAM-007. Where the package at that address is
-    installed in the version listed and exports no such name, the manifest is rejected under
-    NAM-028. A re-export never gives the export another name.
+    An item that is not a name, such as a qualified reference, and a name that no document of
+    the package has, are each rejected with a diagnostic naming the item: a package exports only
+    its own documents. A name is the name of one document, because no two documents of a package
+    share a name under NAM-027. That document is a template or a contract: a package holds no
+    instance document, under MAN-011, so no item names one. An implementation is not listed in
+    `exports`: its item under `implementations` is what exports it, as PKG-019 states. A name
+    written twice is rejected under PKG-012, and a name that an implementation also has under
+    NAM-027.
   vectors: []
 
 - id: MAN-009
@@ -192,16 +197,17 @@
   when: >-
     A manifest lists `implementations`.
   then: >-
-    `implementations` is a map keyed by each implementation's name. An item holds the keys
-    that PKG-019 and PKG-020 name, and no other: `implements`; exactly one of `command`, `url`
-    and `graph`; and, where they are given, `plain`, `tools`, `supports` and `placement`.
+    `implementations` is a map keyed by each implementation's name. An item holds the keys that
+    PKG-019 and PKG-020 name, and no other: `implements`; exactly one of `command`, `package`
+    and `remote`; and, where they are given, `plain`, `tools`, `supports`, `placement`,
+    `digest`, `environment`, `arguments` and `headers`.
   observable: >-
-    An item with two of `command`, `url` and `graph`, with none of them, or with any other key,
-    is rejected with a diagnostic naming the item. What leaving out `supports` or `placement`
-    means is PKG-019, what `plain` and `tools` require of each other is PKG-020, which also says
-    that an item that states `graph` is never plain and lists no `tools`, as PKG-019 says that
-    it states no `supports`, and the name follows NAM-004. The one exception is the core
-    package's own manifest, under MAN-012.
+    An item with two of `command`, `package` and `remote`, with none of them, or with any other
+    key, such as `url` or `graph`, is rejected with a diagnostic naming the item. What leaving
+    out `supports` or `placement` means is PKG-019, what `plain` and `tools` require of each
+    other is PKG-020, which keys go with which way of reaching the implementation is MAN-010,
+    and the name follows NAM-004. The one exception is the core package's own manifest, under
+    MAN-012.
   vectors: []
 
 - id: MAN-010
@@ -212,23 +218,33 @@
   then: >-
     `implements` is a list of selections of operations, and `supports` a list of selections of
     requirements, each written as NAM-018 gives a selection. `command` is a list of one or more
-    strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in place,
-    as TPL-003 gives one. `placement` is a map of applied requirements keyed by name, as CTR-004
-    gives a Type, and each key follows the rule that OBJ-022 gives for the name of a member of a
-    Type's `placement`. `plain` is a boolean. `tools` is the map of PKG-020, and each of its
-    values is a non-empty string.
+    strings: a program, then its arguments. `package` is one Package as the schema of the Model
+    Context Protocol Registry's server.json, version 2025-12-11, gives it, and an item that
+    states `package` states `digest` beside it, the SHA-256 of the package's artifact written as
+    PKG-004 writes a digest, and whose `transport` is of the `type` `stdio` or
+    `streamable-http`. `remote` is one Remote of that schema whose `type` is `streamable-http`.
+    `environment` is a map from the name of a variable to a JSON Pointer into the instance's
+    configuration, the name being, for a `package` item, one that the Package declares.
+    `arguments` is a map from the name of an argument that the Package declares, and `headers` a
+    map from the name of a header that the Remote declares, to such a pointer. `placement` is a
+    label selector. `plain` is a boolean. `tools` is the map of PKG-020, and each of its values
+    is a non-empty string.
   observable: >-
-    A `command` written as one string, a `url` with no scheme, and a `graph` item whose
-    `implements` does not list exactly one operation, as GRA-014 requires, are each rejected
-    with a diagnostic naming the item. `plain: false` means the same as leaving `plain` out. A
-    member of `placement` whose name breaks the rule of OBJ-022, such as `Local_Paths`, is
-    rejected in the same way. A program given as a relative path is taken from the directory the
-    manifest was read from, which for a package is the root of its archive, and no shell reads
-    the list. Where the manifest was handed over without a directory, as MAN-006 describes, an
-    item whose program is a relative path is rejected. A program is a relative path where it
-    holds a `/` and does not begin with one; one that holds no `/` is a name and not a path, and
-    is found as the one who starts it finds programs. Who starts the program is DL12 of the
-    implementation-defined list.
+    A `command` written as one string, a `package` with no `digest` or whose `transport` is
+    `sse`, a `remote` whose `url` is not a URI or whose `type` is another transport, and a name
+    in `environment`, `arguments` or `headers` that the Package or the Remote does not declare,
+    are each rejected with a diagnostic naming the item. So is an item that states `environment`
+    beside `remote`, `arguments` beside anything but `package`, `headers` beside anything but
+    `remote`, or `digest` without `package`. `plain: false` means the same as leaving `plain`
+    out. A key of `placement` is a label and not a name, under OBJ-022. A program given as a
+    relative path is taken from the directory the manifest was read from, which for a package is
+    the root of its archive, and no shell reads the list. Where the manifest was handed over
+    without a directory, as MAN-006 describes, an item whose program is a relative path is
+    rejected. A program is a relative path where it holds a `/` and does not begin with one; one
+    that holds no `/` is a name and not a path, and is found as the one who starts it finds
+    programs. The runtime provider runs a `command` or `package` item, under PRV-007, and which
+    places a pointer may name is MAN-017. What a pointer to a place that `secret-reference.v1`
+    governs yields is SEC-010 and SEC-013.
   vectors: []
 
 - id: MAN-011
@@ -238,20 +254,20 @@
     A project's directory is read, whether it was submitted or is the content of a package's
     archive.
   then: >-
-    Its documents are the files whose names end in `.yaml` or `.json` and that lie in the
-    directory itself, apart from the manifest. Nothing in a directory below it is read. A
+    Its documents are the files whose names end in `.yaml`, `.yml` or `.json` and that lie in
+    the directory itself, apart from the manifest. Nothing in a directory below it is read. A
     package holds templates and contracts only: a package whose archive holds an instance
     document is rejected when it is installed.
   observable: >-
     A project keeps the programs of its implementations, and any other file, in directories
-    below its own. A file in the directory itself that has one of the two endings and holds
+    below its own. A file in the directory itself that has one of the three endings and holds
     something other than templates, instances or contracts is rejected under SUB-005. A
     submitted project may hold instance documents, which the registration instantiates. A
     package may not: installing registers nothing, under NAM-013, so an instance document in an
     archive could never be used, and installation returns a diagnostic naming it. The request to
-    install reports invalid under PKG-023. A file with any other ending, `.yml` among them, is
-    not a document and is not read. Documents in a directory below are another project, with a
-    manifest of its own if it uses packages.
+    install reports invalid under PKG-023. A file with any other ending is not a document and is
+    not read. Documents in a directory below are another project, with a manifest of its own if
+    it uses packages.
   vectors: []
 
 - id: MAN-012
@@ -262,13 +278,17 @@
     read.
   then: >-
     Its implementations are the engine itself. Each item states `implements`, may state
-    `supports` and `placement`, and states none of `command`, `url` and `graph`.
+    `placement`, and states none of `command`, `package` and `remote` and no `supports`.
   observable: >-
     An item of any other package that states none of the three is rejected under MAN-009. The
-    core package is built into the engine under NAM-020, so it has no archive and no digest,
-    and its manifest lists no `packages`. What a template or an instance that refers to it
-    then holds is NAM-009 and PKG-005. The engine states under `supports` the requirements it
-    can apply, as PKG-019 has any implementation do, and `bound.v1` is one.
+    core package is built into the engine under NAM-020, so it has no archive and no digest, and
+    its manifest lists no `packages`. What a template or an instance that refers to it then
+    holds is NAM-009 and PKG-005. The engine applies the requirements of the core package,
+    `bound.v1` and `shared-host.v1`, itself and is sent none, under CTR-005, so a request for an
+    operation of the core package that carries a filter reports unavailable under ACC-015. Its
+    items list no operation of a provider capability: the engine's own runner, machine and
+    fetching serve under PRV-003 without being selected as an implementation, and no engine
+    serves `reveal-secret.v1`, under SEC-020.
   vectors: []
 
 - id: MAN-013
@@ -299,4 +319,64 @@
     Installation returns a diagnostic naming the member, and nothing is written outside the
     place where the engine keeps the package. Which reason the installation reports is
     PKG-023.
+  vectors: []
+
+# --- Added by ruling 41 (docs/proposals/ruling-41/README.md; decisions 11 and 25d of the
+# --- principles review, docs/proposals/principles-review/README.md).
+
+- id: MAN-015
+  layer: language
+  level: must
+  when: >-
+    A submitted project holds a contract document, or its manifest lists an implementation, and
+    it has no manifest or its manifest states no `address`.
+  then: >-
+    The submission is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the project's manifest, or saying that none was handed
+    over, and nothing is registered; the registration reports invalid under OBJ-023. The address
+    names the project's contracts and implementations outside its own documents, as
+    `address#name` under SUB-008: in Conduit's keys on the wire, in the `operations` of a bound
+    and where inspecting names an implementation. A project that holds only templates and
+    instances needs no address. The address follows NAM-001, and may be neither the core
+    package's, under NAM-021, nor that of an installed package, under MAN-016.
+  vectors: []
+
+- id: MAN-016
+  layer: language
+  level: must
+  when: >-
+    A submitted project's manifest states, as its `address`, the address of a package that is
+    installed, at any version.
+  then: >-
+    The submission is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the address, and the registration reports invalid
+    under OBJ-023. A qualified reference at that address reaches the installed package's
+    exports, so the project's contracts cannot be named by it as well. The other order,
+    installing a package at the address of a submitted project, reports conflict under PKG-029.
+    The core package's address is ruled out in the same way, under NAM-021.
+  vectors: []
+
+- id: MAN-017
+  layer: language
+  level: must
+  when: >-
+    A template selects an implementation item, by its `implementation` map or by default, whose
+    `environment`, `arguments` or `headers` gives a JSON Pointer to a place in the configuration
+    that the schema of the template's type does not require, with every member on the way to it
+    required.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the item, the name and the pointer. With a type whose
+    schema is `{type: object, properties: {root: {type: string}, depth: {type: integer}},
+    required: [root]}`, the pointer `/root` is accepted and `/depth` is not, and neither is a
+    pointer into a member that is not itself required, so every instance of the template has a
+    value at each place the item reads. A type that states no `schema` requires nothing, so a
+    template of it that selects an item with a pointer is rejected. The value at the place is
+    given to the run under PRV-007, or sent as a header under IFC-041, and a value at a place
+    that `secret-reference.v1` governs is read under SEC-010 or SEC-013. The check is made when
+    the template is registered, against the type's schema and the item as the template holds
+    them under NAM-009.
   vectors: []

@@ -1,0 +1,18 @@
+# Example. It must be rejected:
+# a Type of the family Pool offers the core package's capability `pool-management.v1`, and
+# this one does not (CTR-004). No Conduit that carries that capability could be instantiated
+# to a Pool of this type, so nothing could be registered into it, set up, retired or
+# inspected. The schema `type-spec.v1` states the rule with `if`, `then` and `contains`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: archive-pool.v1
+  description: A Pool of archived directories.
+spec:
+  family: Pool
+  schema:
+    type: object
+    additionalProperties: false
+  offers: []
+  requires: []

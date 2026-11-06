@@ -5,6 +5,12 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, removed `runtime.v1` and a template's `runtimes`, `setup` and `retire`
+# (decisions 1 and 2), the composite Conduit template (decision 5) and the graph written in
+# place in an `implementation` map (decision 1); added `/entries/<name>/runtime` to the places
+# a Pool template's input may reach (decision 31b); and states the keys of the named maps with
+# `propertyNames` (decision 20). The log is docs/proposals/ruling-41/log-core.md.
 #
 # A template document, and the parts of a template's `spec`.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -13,67 +19,66 @@
 #   template.v1               OBJ-012 (the four top-level keys and no other), INS-001 (no
 #                             `from`), OBJ-020, OBJ-004
 #   template-spec.v1          TPL-001, TPL-002 (`type` is required): the `spec` of an
-#                             Interface, an Agent or a Resource template; INS-012
+#                             Interface, an Agent or a Resource template; INS-012, OBJ-022
 #   pool-template-spec.v1     TPL-001 (`entries`, and no `conduits`), TPL-002, OBJ-014,
-#                             INS-012
-#   conduit-template-spec.v1  CON-016 (either `capability`, `operations` and `requirements`,
-#                             or `components`, never both; a template that is not a composite
-#                             requires `capability`, and `operations` unless an input fills
-#                             it), CON-017, CON-018, CON-019, CON-020 (no `consumer` or
-#                             `target`), TPL-002 (no `type`), INS-012
+#                             INS-012, POOL-009, OBJ-022
+#   conduit-template-spec.v1  CON-016 (`capability` is required, and `operations` unless an
+#                             input fills it), CON-017, CON-018, CON-020 (no `consumer` or
+#                             `target`), TPL-002 (no `type`), INS-012, OBJ-022
 #   template-input.v1         INS-021 (`schema` and a non-empty `to` are required; `default`
 #                             and `optional` may be given), OBJ-015 (no `required`; an input
 #                             that states a `default` may be left out, marked optional or
 #                             not), OBJ-016
-#   implementation-map.v1     TPL-003 (each value is a string or a graph written in place)
-#   runtime.v1                TPL-006 (`start` and `stop`, and nothing else: a runtime is not
-#                             marked optional), TPL-003
-#   template-controls.v1      TPL-010 (each value may hold `inputs`, each with a `schema`)
+#   implementation-map.v1     TPL-003 (each key selects an operation and each value an
+#                             implementation), NAM-018
+#   template-controls.v1      TPL-010 (each key selects a control; each value may hold
+#                             `inputs`, each with a `schema`)
+#
+# A template that writes `runtimes`, `setup` or `retire` is rejected by these schemas, as any
+# key this specification does not define is (TPL-001, OBJ-019): an instance's run is PRV-007,
+# and its own work at setup and at retirement is a hook that its `implementation` map selects,
+# under TPL-017 and TPL-018.
 #
 # The places a destination may reach are a closed list (INS-012), and each schema of a
-# `spec` carries it as a pattern, under its `$defs`. The schema of a Conduit template's
-# `spec` carries two, one for a template that is not a composite and one for a composite:
+# `spec` carries it as a pattern, under its `$defs`:
 #   an Interface, Agent or Resource template   the whole of `config` or a place inside it; a
 #                                              declared Conduit's `target`; the whole of a
 #                                              declared Conduit's `arguments` or a place
 #                                              inside it
 #   a Pool template                            the whole of `config` or a place inside it; an
-#                                              entry's `placement`; the whole of an entry's
-#                                              `arguments` or a place inside it
-#   a Conduit template that is not a composite `operations`; the whole of the `arguments` of
+#                                              entry's `placement` or `runtime`; the whole of
+#                                              an entry's `arguments` or a place inside it
+#   a Conduit template                         `operations`; the whole of the `arguments` of
 #                                              an applied requirement or a place inside it
-#   a composite Conduit template               the whole of the `arguments` of a component or
-#                                              a place inside it
-# Every other destination is rejected: among them an item of `operations`, `operations` in a
-# composite, a whole nested instantiation, a requirement's `requirement`, and anything under
-# `inputs`.
+# Every other destination is rejected: among them an item of `operations`, a whole nested
+# instantiation, a requirement's `requirement`, and anything under `inputs`.
 #
 # Open, as OBJ-019 exempts: everything inside `config`, and the value of an input's
 # `default`, which is a literal value. `config` may be left out, and a template that writes
 # none means the same as one that writes `config: {}` (INS-024). The `arguments` of a nested
 # instantiation and of an applied requirement may be left out in the same way, and are then
-# present and empty, so that an input's destination may lie inside them. The keys of `inputs`,
-# `conduits`, `entries`, `runtimes`, `requirements` and `components` are names; the keys of
-# `implementation` and `controls` are selections of operations, each a qualified reference
-# or `#` and a name (NAM-018, NAM-022).
+# present and empty, so that an input's destination may lie inside them. The keys of
+# `inputs`, `conduits`, `entries` and `requirements` are names, and the keys of
+# `implementation` and `controls` are selections of operations, each a qualified reference or
+# `#` and a name (NAM-018, NAM-022): each schema states the form of the key with
+# `propertyNames`.
 #
-# Not expressed here, and checked by the engine: the rule for the name of a member of a named
-# map, and the form of a key of `implementation` or `controls` (OBJ-022, TPL-003, TPL-010),
-# because the profile has no keyword that constrains the keys of a map; that `type` is a Type
-# contract of the template's own family (TPL-002); that destinations do not overlap and that
-# a destination's parent is present (INS-010, INS-011); that, where a Conduit template that
-# is not a composite writes no `operations`, the destination of one of its inputs is
-# `/operations` (CON-016); that an implementation implements the operation it is selected
-# for (TPL-005); default implementations (TPL-004); the shape of a runtime's operations, and
-# that a template declares no runtime under a name its type declares (TPL-006); that a
-# control is one the type lists and an input one the control declares (TPL-010); that an
-# operation is in the capability (CON-017); that a requirement may be applied to a Conduit
-# and that its arguments fit its inputs (CTR-005, NAM-019); that a Conduit template applies
-# the bound of a right to open at most once, which is checked when the template is
-# registered (CON-028); cycles among components (CON-019) and among entries (POOL-011); that
+# Not expressed here, and checked by the engine: that `type` is a Type contract of the
+# template's own family (TPL-002); that destinations do not overlap and that a destination's
+# parent is present (INS-010, INS-011); that, where a Conduit template writes no
+# `operations`, the destination of one of its inputs is `/operations` (CON-016); that an
+# implementation implements the operation it is selected for (TPL-005); default
+# implementations (TPL-004); that the selected implementations include at most one item that
+# is run (TPL-019), that their label selectors agree with the type's (PLC-025) and that their
+# pointers name places the type's schema requires (MAN-017); that a control is one the type
+# lists and an input one the control declares (TPL-010); that an operation is in the
+# capability (CON-017); that a requirement's arguments fit its inputs (NAM-019); that a
+# Conduit template applies the bound of a right to open at most once, which is checked when
+# the template is registered (CON-028); that no Conduit lists an operation of a provider
+# capability other than `secret-reveal.v1` (PRV-004); cycles among entries (POOL-011); that
 # a template gives no placement, which leaves only the `default` of an input whose
-# destination is an entry's `placement` (PLC-005); and that `config`, once filled,
-# satisfies the type's schema (INS-014).
+# destination is an entry's `placement` (PLC-005); and that `config`, once filled, satisfies
+# the type's schema (INS-014).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -125,20 +130,17 @@ spec:
     type: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     inputs:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
       additionalProperties:
         allOf:
           - $ref: github.com/shrav-k/conduit/core#template-input.v1
           - $ref: '#/$defs/reaches'
     config: {type: object}
     implementation: {$ref: github.com/shrav-k/conduit/core#implementation-map.v1}
-    runtimes:
-      type: object
-      additionalProperties: {$ref: github.com/shrav-k/conduit/core#runtime.v1}
-    setup: {$ref: github.com/shrav-k/conduit/core#lifecycle-graph.v1}
-    retire: {$ref: github.com/shrav-k/conduit/core#lifecycle-graph.v1}
     controls: {$ref: github.com/shrav-k/conduit/core#template-controls.v1}
     conduits:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
       additionalProperties: {$ref: github.com/shrav-k/conduit/core#declared-conduit.v1}
   required: [type]
   additionalProperties: false
@@ -165,20 +167,17 @@ spec:
     type: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     inputs:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
       additionalProperties:
         allOf:
           - $ref: github.com/shrav-k/conduit/core#template-input.v1
           - $ref: '#/$defs/reaches'
     config: {type: object}
     implementation: {$ref: github.com/shrav-k/conduit/core#implementation-map.v1}
-    runtimes:
-      type: object
-      additionalProperties: {$ref: github.com/shrav-k/conduit/core#runtime.v1}
-    setup: {$ref: github.com/shrav-k/conduit/core#lifecycle-graph.v1}
-    retire: {$ref: github.com/shrav-k/conduit/core#lifecycle-graph.v1}
     controls: {$ref: github.com/shrav-k/conduit/core#template-controls.v1}
     entries:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
       additionalProperties: {$ref: github.com/shrav-k/conduit/core#pool-entry.v1}
   required: [type]
   additionalProperties: false
@@ -190,7 +189,7 @@ spec:
           type: array
           items:
             type: string
-            pattern: "^/(entries/[a-z][a-z0-9-]{0,62}/placement|\
+            pattern: "^/(entries/[a-z][a-z0-9-]{0,62}/(placement|runtime)|\
               (config|entries/[a-z][a-z0-9-]{0,62}/arguments)\
               (/(?!-(/|$))([^/~]|~[01])*)*)$"
 ---
@@ -199,57 +198,34 @@ kind: Schema
 metadata:
   name: conduit-template-spec.v1
   description: >-
-    The `spec` of a Conduit template: a single Conduit, with one capability, or a composite,
-    with components. A single Conduit template writes `operations`, or else declares `inputs`,
-    one of which fills `operations`. An input of a single template may fill `operations` or
-    the `arguments` of an applied requirement, and an input of a composite the `arguments` of
-    a component.
+    The `spec` of a Conduit template, with one capability. It writes `operations`, or else
+    declares `inputs`, one of which fills `operations`. An input may fill `operations` or the
+    `arguments` of an applied requirement.
 spec:
-  oneOf:
-    - type: object
-      properties:
-        inputs: {$ref: '#/$defs/inputs'}
-        capability: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-        operations: {$ref: '#/$defs/operations'}
-        requirements: {$ref: '#/$defs/requirements'}
-      required: [capability, operations]
-      additionalProperties: false
-    - type: object
-      properties:
-        inputs: {$ref: '#/$defs/inputs'}
-        capability: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-        requirements: {$ref: '#/$defs/requirements'}
-      required: [capability, inputs]
-      additionalProperties: false
-    - type: object
-      properties:
-        inputs: {$ref: '#/$defs/compositeInputs'}
-        components:
-          type: object
-          additionalProperties:
-            $ref: github.com/shrav-k/conduit/core#conduit-component.v1
-      required: [components]
-      additionalProperties: false
-  $defs:
+  type: object
+  properties:
     inputs:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
       additionalProperties:
         allOf:
           - $ref: github.com/shrav-k/conduit/core#template-input.v1
           - $ref: '#/$defs/reaches'
-    compositeInputs:
-      type: object
-      additionalProperties:
-        allOf:
-          - $ref: github.com/shrav-k/conduit/core#template-input.v1
-          - $ref: '#/$defs/compositeReaches'
+    capability: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     operations:
       type: array
       items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     requirements:
       type: object
+      propertyNames: {$ref: github.com/shrav-k/conduit/core#name.v1}
       additionalProperties:
         $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+  required: [capability]
+  additionalProperties: false
+  anyOf:
+    - required: [operations]
+    - required: [inputs]
+  $defs:
     reaches:
       type: object
       properties:
@@ -259,15 +235,6 @@ spec:
             type: string
             pattern: "^/(operations|requirements/[a-z][a-z0-9-]{0,62}/arguments\
               (/(?!-(/|$))([^/~]|~[01])*)*)$"
-    compositeReaches:
-      type: object
-      properties:
-        to:
-          type: array
-          items:
-            type: string
-            pattern: "^/components/[a-z][a-z0-9-]{0,62}/arguments\
-              (/(?!-(/|$))([^/~]|~[01])*)*$"
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -296,30 +263,12 @@ metadata:
   description: >-
     The `implementation` map of a template or of a Type contract. Each key selects an
     operation, by a qualified reference or, for an operation of the same project or package,
-    by `#` and its name. Each value selects an implementation, or is a graph written in place.
+    by `#` and its name, and each value selects an implementation in the same way. A setup
+    hook and a retire hook are selected here like any operation.
 spec:
   type: object
-  additionalProperties:
-    anyOf:
-      - $ref: github.com/shrav-k/conduit/core#selection.v1
-      - $ref: github.com/shrav-k/conduit/core#graph.v1
----
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Schema
-metadata:
-  name: runtime.v1
-  description: >-
-    One member of the `runtimes` of a template or of a Type contract. An instance has the
-    runtimes its type declares as well as those its template declares, and a step may name
-    either. A template that declares a runtime under a name its type declares is rejected. A
-    runtime is not marked optional: the step that starts it may be.
-spec:
-  type: object
-  properties:
-    start: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-    stop: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-  required: [start, stop]
-  additionalProperties: false
+  propertyNames: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+  additionalProperties: {$ref: github.com/shrav-k/conduit/core#selection.v1}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -328,14 +277,17 @@ metadata:
   description: >-
     The `controls` map of a template. Each key selects a control of the template's type, by a
     qualified reference or, for a control of the same project or package, by `#` and its name.
-    Each value may narrow that control's inputs.
+    Each value may narrow that control's inputs, each named as the control's `inputSchema`
+    names it.
 spec:
   type: object
+  propertyNames: {$ref: github.com/shrav-k/conduit/core#selection.v1}
   additionalProperties:
     type: object
     properties:
       inputs:
         type: object
+        propertyNames: {minLength: 1}
         additionalProperties:
           type: object
           properties:

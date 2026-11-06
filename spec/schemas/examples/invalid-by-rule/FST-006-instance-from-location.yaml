@@ -1,0 +1,12 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# no instance document is made from the core package's template `location`, nor from
+# `system`, `management`, `access` or `root` (FST-006). The engine alone makes a location,
+# for each machine that the machines provider reports (PLC-026). A schema cannot tell: only
+# resolving `from` says which template it names.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: laptop
+from: github.com/shrav-k/conduit/core#location
+owner: system

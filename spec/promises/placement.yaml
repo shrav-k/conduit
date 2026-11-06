@@ -1,8 +1,10 @@
 # Placement: where an Agent or Resource runs.
-# Owner rulings of 2026-11-05 (plan-audit rulings 7, 8, 17, 28, 29, 32 and 33). What a type or
-# an implementation needs of a location is a requirement on placement: a schema that the
-# location's stored facts must satisfy. Removed by consolidation pass 1: PLC-010 was folded into
-# OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
+# Owner rulings of 2026-11-05 (plan-audit rulings 7, 8, 17, 28, 29, 32 and 33). Since ruling 41,
+# a location stands for a machine that the machines provider reports
+# (spec/promises/providers.yaml), and what a type or an implementation needs of a location is a
+# label selector, matched against the labels reported for it, as a Kubernetes `nodeSelector`
+# is. Removed by consolidation pass 1: PLC-010 was folded into OBS-003 and LIF-010, and PLC-014
+# into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
 # The follow-up rulings removed nothing. The ruling on the core package and the schemas (ruling
 # 37) changed PLC-008 and PLC-016. The conversion of the older text (decision DA3 of the docs
 # audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. The second round of the re-audit
@@ -17,6 +19,20 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review (docs/proposals/principles-review/README.md, decision 8), removed PLC-003,
+# PLC-004, PLC-016 and PLC-022, with the default location, which placement by the machines
+# provider replaces (PLC-002, PRV-015), and PLC-021, with a location's facts, which the
+# labels of PLC-026 replace; changed PLC-002, PLC-007, PLC-008, PLC-011, PLC-012, PLC-013,
+# PLC-017 and PLC-020; and added PLC-023 to PLC-026. Its log is
+# docs/proposals/ruling-41/log-G2.md. The integration of the rewrite
+# (docs/proposals/ruling-41/log-integration.md) changed PLC-002, whose machines provider is
+# one that is not retired, as PRV-003 has it, and PLC-005, which no longer offers a declared
+# Conduit to a location as an example, since a location offers no capability. Its coverage
+# check (the same log, "Coverage check") changed PLC-008; PLC-017, which no longer speaks of
+# the status of an instance already removed; PLC-023, which also covers asking for a run or a
+# stop, and PLC-023 and PLC-024, which leave out the machine for which `local` stands; and
+# added PLC-027 and PLC-028.
 
 - id: PLC-001
   layer: language
@@ -32,42 +48,22 @@
   vectors: []
 
 - id: PLC-002
-  layer: language
+  layer: convention
   level: must
   when: >-
-    An Agent or Resource instance document, other than a location's, gives no placement, and
-    exactly one location exists that is not retired.
+    An Agent or a Resource is instantiated with no placement given: its instance document gives
+    none or, for the Resource of a Pool's entry, no input of the Pool's template supplies one,
+    under POOL-016.
   then: >-
-    Its placement is that location.
+    Its placement is the location that stands for the machine that the machines provider names
+    for it under PRV-015. Where no machines provider exists that is not retired, the engine's
+    own machine serves under PRV-003, and that location is `local`.
   observable: >-
-    The resolved instance holds that location's ID. A retired location is not counted.
-  vectors: []
-
-- id: PLC-003
-  layer: language
-  level: must
-  when: >-
-    An Agent or Resource instance document, other than a location's, gives no placement,
-    several locations exist that are not retired, and the `system` Pool's default-location
-    setting names one of them.
-  then: >-
-    Its placement is the designated default.
-  observable: >-
-    The resolved instance holds the default location's ID.
-  vectors: []
-
-- id: PLC-004
-  layer: language
-  level: must
-  when: >-
-    An Agent or Resource instance document, other than a location's, gives no placement,
-    several locations exist that are not retired, and the `system` Pool's default-location
-    setting names none of them.
-  then: >-
-    The instance is not instantiated. No location is chosen by the order in which locations
-    were registered or found.
-  observable: >-
-    Resolving returns a diagnostic listing the locations that are not retired.
+    The resolved instance holds that location's ID. A Resource whose type offers
+    `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` is placed on `local`
+    under PRV-002, and no machines provider is asked. A retired location is never chosen: a
+    location stands for a machine only until it is retired, under PLC-026. The placement is
+    chosen once, when the instance is instantiated, and never changes, under PLC-009.
   vectors: []
 
 - id: PLC-005
@@ -80,8 +76,9 @@
     The template is rejected. A placement is given only when an instance is instantiated.
   observable: >-
     Resolving returns a diagnostic naming the entry or the input. A template may refer to a
-    location in any other way: as the `target` of a declared Conduit, among the `targets` of a
-    bound, or in a place of `config` that a reference schema governs.
+    location in any other way, such as among the `targets` of a bound or in a place of `config`
+    that a reference schema governs. A location offers no capability, under PLC-008, so no
+    Conduit to one is instantiated, under CON-021.
   vectors: []
 
 - id: PLC-006
@@ -99,34 +96,37 @@
   layer: language
   level: must
   when: >-
-    An instance's type, or an implementation selected for it, states a requirement on placement
-    whose schema the stored facts of the instance's location do not satisfy.
+    An instance's type, or an implementation item selected for it, states `placement`, a label
+    selector, and the labels reported for the location that the instance would be placed on do
+    not hold each label that the selector names, with the value it gives.
   then: >-
     The instance is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the type or the implementation, the requirement and
-    the location, before any effect. A fact that is absent from the location's stored facts
-    fails the requirement. It is decided from the documents and the stored facts, without
-    reaching the location.
+    Resolving returns a diagnostic naming the type or the item, the label and the location,
+    before any effect. A label that is absent from the location's reported labels does not
+    match. The selector that must match is the union of the type's and those of the items
+    selected for the instance, which PLC-025 keeps from naming one label with two values. It is
+    decided from the documents and the labels that the location's status holds under PLC-026,
+    without reaching the machine, when the instance is instantiated and not again: a later
+    report of other labels changes no instance placed on the location. A placement that the
+    machines provider chose under PRV-015 is checked in the same way.
   vectors: []
 
 - id: PLC-008
   layer: language
   level: must
   when: >-
-    A location is instantiated.
+    A location exists.
   then: >-
-    It is a Resource instance of the location type, owned by the system Pool, and it is its own
-    placement. Its facts, including its host, are stored configuration of the location, held
-    under `facts` in its configuration.
+    It is a Resource of the core type `location.v1`, owned by `system`, and it is its own
+    placement. Its configuration is empty. The engine makes it, `local` at first start and every
+    other location under PLC-026, and no instance document makes one, under FST-006 and PLC-028.
   observable: >-
-    Inspecting a location shows the kind Resource, the location type, the system Pool as owner,
-    its own ID as placement, and its facts under `facts` in its configuration. A location's
-    document states no placement: one that states a `placement` is rejected. It writes
-    `owner: system`, as OBJ-013 requires an owner of every Resource document, and one that names
-    another Pool is rejected. A document made from the core package's template `location`
-    supplies the facts as the argument `facts`. How they are changed once the location is
-    instantiated is PLC-021.
+    Inspecting a location shows the kind Resource, the type `location.v1`, `system` as owner,
+    its own ID as placement, an empty configuration, and in its status the labels last reported
+    for the machine it stands for, under PLC-026. The type `location.v1` offers no capability
+    and lists no control, so nothing changes a location once it is made apart from its lifecycle
+    state and the labels reported for it.
   vectors: []
 
 - id: PLC-009
@@ -145,25 +145,26 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to retire or to unregister a location that has other instances placed on it,
-    retired or not.
+    An actor asks to retire or to unregister a location that has other instances placed on it
+    that exist, retired or not.
   then: >-
     The request is not dispatched and reports conflict. Only the declare-lost operation, which
-    is reserved to the root Interface, retires a location that still has instances.
+    is reserved to the root Interface, and a report of the machines provider that the location's
+    machine is gone, under PLC-024, retire a location that still has instances.
   observable: >-
     The location and its instances still exist, in the states they had. Every instance that
     exists and whose placement is the location counts, a retired one included, whatever its
-    shutdown reports: a retired instance keeps its placement until it is unregistered. So a
-    location is retired by a request only once every other instance placed on it has been
-    unregistered, and no instance whose shutdown is pending or unknown is left on a location
-    that a request retired.
+    shutdown reports: a retired instance keeps its placement until it is removed or
+    unregistered. So a location is retired by a request only once every other instance placed on
+    it has been removed or unregistered, and no instance whose shutdown is pending or unknown is
+    left on a location that a request retired.
   vectors: []
 
 - id: PLC-012
   layer: convention
   level: must not
   when: >-
-    Two instances share a location or a host.
+    Two instances share a location or a machine.
   then: >-
     Either gains access to the other because of it.
   observable: >-
@@ -172,20 +173,21 @@
   vectors: []
 
 - id: PLC-013
-  layer: convention
+  layer: language
   level: must
   when: >-
-    A Conduit carries a shared-host requirement, and the stored facts of its consumer's and its
-    target's locations do not give the same host, either when the Conduit is being opened or
-    when a request is made through it.
+    A Conduit is instantiated that applies `shared-host.v1`, and the `kubernetes.io/hostname`
+    labels reported for its consumer's location and for its target's location are not equal, or
+    either is absent.
   then: >-
-    The request to open, or the request through the Conduit, is not dispatched and reports
-    unavailable. No other way of reaching the target is substituted.
+    The Conduit is not instantiated.
   observable: >-
-    A Conduit that was not opened is still in the state registered. A Conduit that is already
-    open stays open, and a request through it is dispatched only while the stored facts give
-    the same host. A host that is absent from the stored facts of either location does not
-    satisfy the requirement.
+    Resolving returns a diagnostic naming the Conduit, the requirement and the two locations. A
+    Conduit one of whose ends has no placement is rejected under CON-006. It is decided once: a
+    location stands for one machine, which its hostname names, and a placement never changes,
+    under PLC-009, so neither the opening of the Conduit nor a request through it is checked
+    again. The requirement is applied by the engine itself and is never sent to an
+    implementation.
   vectors: []
 
 - id: PLC-015
@@ -201,26 +203,6 @@
     three ways a location differs from other Resources; the others are PLC-008 and PLC-011.
   vectors: []
 
-- id: PLC-016
-  layer: convention
-  level: must
-  when: >-
-    The default location is designated or cleared.
-  then: >-
-    It is done by a control of the `system` Pool, permitted and checked like any other control,
-    which sets the setting to a location that exists or to nothing.
-  observable: >-
-    The control is `set-default-location.v1` of the core package, in the capability
-    `system-settings.v1` that the type of the `system` Pool offers. It takes `location`, a
-    reference to a Resource or null, and null clears the setting. What a value other than null
-    that does not refer to a location that exists reports is PLC-022. The setting stores the
-    location in the resolved form of OBJ-009. After the control succeeds, an instance
-    instantiated without a placement takes the named location under PLC-003. Once the location
-    that the setting names is unregistered, the setting still holds its ID and reports it as
-    missing, under LIF-019: it then names none of the locations that exist, and PLC-004 applies
-    until the control sets it again.
-  vectors: []
-
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).
 
 - id: PLC-017
@@ -231,18 +213,19 @@
   then: >-
     The location and every instance placed on it are retired. The status of each reports its
     shutdown as unknown, and states that it could not be confirmed because the location was
-    declared lost. An instance for which no setup was ever dispatched reports confirmed, as
-    LIF-025 states, and one whose shutdown was confirmed before stays confirmed, under LIF-024.
-    A location that a request has already retired is declared lost in the same way. A request to
-    declare lost a location that was already declared lost changes nothing and has the outcome
-    succeeded.
+    declared lost. The shutdown of an instance for which no setup was ever dispatched is
+    confirmed, as LIF-025 states, and the instance is removed, under LIF-035. A location that a
+    request has already retired is declared lost in the same way. A request to declare lost a
+    location that was already declared lost changes nothing and has the outcome succeeded.
   observable: >-
-    Each of them can then be unregistered under LIF-017 without a reconciliation. The Conduits
-    of which any of them was an end are closed under CON-008. LIF-015 lists the request among
-    those that a retired instance takes: a location that a request retired, and whose own
-    shutdown is not confirmed, is declared lost and can then be unregistered. A second request
-    for one location succeeds because the effect that `declare-lost.v1` describes has occurred,
-    as a request to close a closed Conduit does under ACC-012.
+    One of them whose shutdown is unknown is removed by a request to unregister it, under
+    LIF-017, with no reconciliation; one whose shutdown is confirmed is removed under LIF-035.
+    The Conduits of which any of them was an end are closed under CON-008. LIF-015 lists the
+    request among those that a retired instance takes: a location that a request retired, and
+    whose own shutdown is not confirmed, is declared lost and can then be unregistered. A second
+    request for one location succeeds because the effect that `declare-lost.v1` describes has
+    occurred. A report of the machines provider that the location's machine is gone has the same
+    effect, under PLC-024.
   vectors: []
 
 - id: PLC-018
@@ -288,47 +271,143 @@
   observable: >-
     The engine stores the value and passes it on as it was written, and never opens it, expands
     it or checks it against the machine the engine itself runs on or against any other location.
-    An absolute path in the configuration of a Resource means that path on the host of the
+    An absolute path in the configuration of a Resource means that path on the machine of the
     Resource's location. That the engine joins no base to a relative path is INS-018.
   vectors: []
 
-# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
-# --- finding R1-5.3): the part of PLC-008 that is of the layer `convention`.
+# --- Added by ruling 41 (docs/proposals/ruling-41/README.md), applying decision 8 of the
+# --- principles review: what a machine reported unreachable or gone means, a label that a
+# --- type and an item name with two values, and how a reported machine becomes a location.
 
-- id: PLC-021
+- id: PLC-023
   layer: convention
   level: must
   when: >-
-    The stored facts of a location that has been instantiated are changed.
+    The machines provider reports a machine unreachable, other than the one for which `local`
+    stands, and a request, or a setup hook or retire hook, would be dispatched to the
+    implementation of an instance placed on the location that stands for that machine, or the
+    engine would ask that instance's runtime provider for its run or its stop.
   then: >-
-    They are changed only by the control `set-facts.v1` of the core package, permitted and
-    checked like any other control.
+    It is not dispatched, or not asked for, and reports unavailable, and no secret is read for a
+    run that is not asked for. Nothing is retired because a machine is unreachable.
   observable: >-
-    The control is in the capability `location-settings.v1`, which the location type offers, so
-    it is requested through an open Conduit to the location that lists it. It takes the
-    location's current `revision` and `facts`, and its result states the settings it confirmed
-    in `settings`. Nothing observed of the location changes a stored fact. A change of facts
-    changes no instance that is placed on the location: PLC-007 tests a requirement on placement
-    when an instance is instantiated and not again, and PLC-013 tests the shared-host
-    requirement on each opening and each request.
+    In a setup or a retirement, the part that would ask for the run or the stop reports
+    unavailable, as PRV-007 and PRV-008 have it report where the runtime provider is not ready.
+    The instance keeps its lifecycle state, under LIF-010, and what cannot be observed of it is
+    reported as unknown, under OBS-003. Its Conduits stay open, under CON-007. Once the provider
+    reports the machine reachable again, a request to the instance is decided as any other. A
+    machine that sleeps, or whose network is cut, so loses no instance: only a machine reported
+    gone retires, under PLC-024. How often the engine asks the machines provider, and what it
+    does while no report arrives, is DL5 of the implementation-defined list. A report that the
+    machine for which `local` stands is unreachable makes nothing unavailable: the engine runs
+    on that machine, and `management` and `access` are placed there at first start, and every
+    provider other than a secret Resource under PRV-002. Where the actor is not permitted,
+    OPS-023 gives refused first.
   vectors: []
 
-# --- Added by the fix pass of the third round of the re-audit
-# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3A-14): the rule stood in the
-# --- observable of PLC-016.
-
-- id: PLC-022
+- id: PLC-024
   layer: convention
   level: must
   when: >-
-    The control `set-default-location.v1` is requested with a `location` that is not null and
-    does not refer to a location that exists.
+    The machines provider reports a machine gone, other than the one for which `local` stands.
   then: >-
-    The request is not dispatched, and reports invalid.
+    The location that stands for it and every instance placed on that location are retired, as
+    PLC-017 retires them where the root Interface declares the location lost, and the location
+    counts from then on as declared lost. The status of each, and the record of each retirement,
+    state that the machines provider reported the machine gone.
   observable: >-
-    The default-location setting and the revision of the `system` Pool are as they were. A name
-    that no Resource has, and a reference to a Resource that is not a location, are each invalid
-    in this way, as OPS-029 gives the reason for a request that names nothing. Null is accepted,
-    and clears the setting under PLC-016. Where the actor is not permitted, OPS-023 gives
-    refused first.
+    No actor asks for it, and no request is made. The Conduits of which any of them is an end
+    are closed under CON-008, and an instance whose shutdown is unknown is removed by a request
+    to unregister it, under LIF-017, as where the root Interface declares a location lost. Where
+    no location stands for the machine, nothing is retired. A machine that the provider later
+    reports again under the same hostname is given a new location under PLC-026, because a
+    retired location is never brought back, under LIF-006. A machine reported unreachable
+    retires nothing, under PLC-023. A report that the machine for which `local` stands is gone
+    retires nothing: the engine runs on that machine, so no first-start object and no provider
+    other than a secret Resource is retired by a report. A further retirement of an instance
+    left on the location dispatches no retire hook and asks for no run, under PLC-027.
+  vectors: []
+
+- id: PLC-025
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose selected implementations, by its `implementation` map or by
+    default, include an item whose `placement` names a label that the `placement` of the
+    template's type names with another value.
+  then: >-
+    The template is rejected: a type's label selector and that of an item its template selects
+    agree on every label that both name.
+  observable: >-
+    Resolving returns a diagnostic naming the item, the type and the label. Where they agree,
+    both selectors apply under PLC-007, as Kubernetes merges the node selector of a RuntimeClass
+    with a Pod's and rejects a Pod for which both name one label with different values.
+  vectors: []
+
+- id: PLC-026
+  layer: convention
+  level: must
+  when: >-
+    The machines provider reports a machine, reachable or unreachable, for which no location
+    stands.
+  then: >-
+    The engine registers a location for it from the core package's template `location`, owned by
+    `system`, and sets it up. The location is named by the part of the machine's hostname before
+    the first dot, in lowercase, where that is a valid name under OBJ-001 that no Resource that
+    exists has under OBJ-002, and otherwise under OBJ-003. The machine the engine runs on is
+    `local`, which first start makes, and no other location stands for it. A location's labels
+    are those the provider last reported for its machine, held in its status.
+  observable: >-
+    A location stands for the machine it was registered for, which its status names by its
+    `kubernetes.io/hostname` label, until it is retired: a retired location stands for none. The
+    engine makes the location itself, as it makes the first-start objects: no actor asks for it,
+    and its registration and its lifecycle states are recorded under REC-001. A machine reported
+    gone is given no location. Labels are reported status and never configuration: a report of
+    other labels changes the location's status and nothing else, under PLC-007. With no machines
+    provider, the engine's own machine reports the one machine the engine runs on, under
+    PRV-003, and `local` stands for it.
+  vectors: []
+
+# --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
+# --- "Coverage check"): what a retirement does for an instance on a location declared lost,
+# --- and that no location is registered by hand (ruling 40, point 3b, revised). PLC-027 is
+# --- of the layer `convention`, and PLC-028, a rule on documents, of the layer `language`.
+
+- id: PLC-027
+  layer: convention
+  level: must
+  when: >-
+    A retirement of an instance whose location was declared lost, under PLC-017, or counts as
+    declared lost, under PLC-024, would dispatch the instance's retire hook or ask for its run
+    to serve that hook, under TPL-018.
+  then: >-
+    Neither is done: the hook is not dispatched, no run is asked for and no secret is read for
+    one, and the part of the hook reports unavailable.
+  observable: >-
+    A location declared lost is retired, and a retired location stands for no machine, under
+    PLC-026, so there is no machine on which to run the item, under PRV-019, or to give in
+    `location`, under PRV-007; and the Conduits of which the instance is the consumer were
+    closed when the location was declared lost, under CON-008. As where the machine is reported
+    unreachable, under PLC-023, nothing is dispatched to it. The stop is asked for all the same,
+    under TPL-009 and PRV-008. A retirement in which this holds does not succeed, under
+    OPS-022: the instance's shutdown stays unknown, under LIF-024, and a request to unregister
+    the instance removes it, under LIF-017. A retirement in which no hook is to be dispatched,
+    because the template selects none or the hook succeeded before, succeeds once the stop has
+    succeeded, and the instance is then removed, under LIF-035.
+  vectors: []
+
+- id: PLC-028
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose `type` is the core package's `location.v1`, and it is not
+    the core package's template `location`.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the template and the type. Every location is made by
+    the engine from the core package's template `location`, under PLC-008 and PLC-026, and no
+    instance document is made from that template, under FST-006, so no actor registers a
+    location, through that template or through one of its own. A Pool's entry is made from a
+    template too, so no entry makes a location either.
   vectors: []

@@ -4,31 +4,40 @@
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
+# Ruling 41 (docs/proposals/ruling-41/README.md, 2026-11-06), applying ruling 40 and the
+# principles review, changed `diagnostic.v1` into SARIF 2.1.0's `result` reduced (decision
+# 24a) and the `nested` of `object.v1`, which names a declared Conduit or an entry and no
+# component (decision 5), and added `handle.v1` (decision 16a), `condition.v1` (decision 24b)
+# and `record.v1` (decision 24c). The log is docs/proposals/ruling-41/log-core.md.
 #
-# Two small Schema contracts that the outputs of the core operations share. No promise gives
-# the whole of either shape; both are choices the record lists (C16), kept as small as the
-# promises allow. OBJ-003 states what `object.v1` must let a result say: the name and the ID
-# of each instance, and which nested instantiation made a nested instance. The full format
-# of a diagnostic and of an inspection result is not settled.
+# The Schema contracts that the inputs and outputs of the core operations share, and those
+# that a status, a diagnostic and a record take their shape from. Each follows an existing
+# standard where one gives the shape: SARIF for a diagnostic, Kubernetes `metav1.Condition`
+# for a condition and CloudEvents for a record.
 #
 # Promises relied on:
-#   object.v1      OBJ-003 (a generated name is learned from the result), OBJ-005 (the ID),
-#                  INS-016 (the nested instances are made with the instance). `nested` says
-#                  which nested instantiation made a nested instance, so that a generated
-#                  name can be matched to the declared Conduit, the entry or the component it
-#                  belongs to; the member was added for finding 26 of the third reader of
-#                  docs/proposals/reaudit/round-2/
-#   diagnostic.v1  OBJ-008, NAM-008, PKG-006 (a result lists the diagnostics that did not
-#                  prevent it), IFC-025 (a request that is not dispatched says what it says
-#                  beyond its reason in `diagnostics`)
+#   object.v1      OBJ-003 (a generated name is learned from the result), INS-016 (the nested
+#                  instances are made with the instance), LIF-009 (`nested` names the
+#                  nested instantiation that made a nested instance, by the instance that
+#                  holds it and its name, which `register-replacement.v1` takes)
+#   diagnostic.v1  IFC-025 (a result that reports invalid or conflict carries an error
+#                  diagnostic whose `ruleId` is the ID of the promise that decided it), OBJ-008,
+#                  OBJ-023, PKG-006, LIF-020, SEC-003 (a diagnostic names the place by its JSON
+#                  Pointer and holds no part of a secret)
+#   handle.v1      CTR-002, IFC-011, IFC-033 (a handle is a property whose schema is this
+#                  contract; on the wire it is an opaque string the implementation issued)
+#   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
+#   record.v1      REC-002, LIF-013, SEC-015
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: object.v1
   description: >-
-    How a result names an object, by its kind, its name and its ID. For a nested instance,
-    and for a component Conduit, `nested` names the nested instantiation that made it.
+    How a result names an object, by its kind, its name and its ID. For an instance that a
+    nested instantiation made, `nested` names that nested instantiation: `instance` is the ID
+    of the instance that holds it, the consumer of a declared Conduit or the Pool of an
+    entry, and `name` is the name of the declared Conduit or of the entry.
 spec:
   type: object
   properties:
@@ -37,19 +46,10 @@ spec:
     id: {$ref: github.com/shrav-k/conduit/core#id.v1}
     nested:
       type: object
-      description: >-
-        Present for an instance that a nested instantiation made. `instance` is the ID of the
-        instance whose template holds the nested instantiation: the consumer of a declared
-        Conduit, or the Pool of an entry. It is absent for a component of a composite that
-        was instantiated by its own document. `path` holds the name of the declared Conduit
-        or of the entry, and then the name of each component on the way, outermost first.
       properties:
         instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
-        path:
-          type: array
-          items: {$ref: github.com/shrav-k/conduit/core#name.v1}
-          minItems: 1
-      required: [path]
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [instance, name]
   required: [kind, name, id]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -57,10 +57,116 @@ kind: Schema
 metadata:
   name: diagnostic.v1
   description: >-
-    One diagnostic. Only `message` is fixed here; an engine may add what it names, such as the
-    document, the key or the promise.
+    One diagnostic, in the shape of a `result` of SARIF 2.1.0 reduced to four members.
+    `ruleId` is the ID of the promise the diagnostic is about; `level` is SARIF's, and a
+    diagnostic that is why a request reported invalid or conflict has the level `error`;
+    `message.text` says what is wrong; and each logical location of `locations` gives in
+    `fullyQualifiedName` the JSON Pointer of the place it is about. An engine may add what
+    else SARIF's `result` holds.
 spec:
   type: object
   properties:
-    message: {type: string, minLength: 1}
+    ruleId:
+      type: string
+      pattern: '^[A-Z]+-[0-9]{3}$'
+    level: {enum: [none, note, warning, error]}
+    message:
+      type: object
+      properties:
+        text: {type: string, minLength: 1}
+      required: [text]
+    locations:
+      type: array
+      items:
+        type: object
+        properties:
+          logicalLocations:
+            type: array
+            items:
+              type: object
+              properties:
+                fullyQualifiedName: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
   required: [message]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: handle.v1
+  description: >-
+    A handle: an opaque string that an implementation issued, which the engine passes back
+    unchanged and never interprets. An input or an output of an Operation contract is a handle
+    where its property's schema is this contract. A handle permits nothing, and no instance
+    holds one.
+spec:
+  type: string
+  minLength: 1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: condition.v1
+  description: >-
+    One condition of an instance's status, in the shape of Kubernetes `metav1.Condition` as it
+    is: `type`, `status`, `reason`, `message`, `lastTransitionTime` and `observedGeneration`.
+    `lastHeartbeatTime`, the time of the last successful observation, as Kubernetes's
+    `NodeCondition` has it, and `origin`, where the observation was made, are Conduit's
+    additions. A condition never changes the lifecycle state.
+spec:
+  type: object
+  properties:
+    type:
+      type: string
+      maxLength: 316
+      pattern: "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?\
+        (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$"
+    status: {enum: ['True', 'False', Unknown]}
+    reason:
+      type: string
+      minLength: 1
+      maxLength: 1024
+      pattern: '^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$'
+    message: {type: string, maxLength: 32768}
+    lastTransitionTime: {type: string, format: date-time}
+    observedGeneration: {type: integer, minimum: 0}
+    lastHeartbeatTime: {type: string, format: date-time}
+    origin: {type: string, minLength: 1}
+  required: [type, status, reason, message, lastTransitionTime]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: record.v1
+  description: >-
+    One record, as a CloudEvent of CloudEvents 1.0 whose `data` holds the fields of a record:
+    the IDs of the caller, of the instance that acted for the caller, of the Conduit used and
+    of the target; the operation, by its qualified reference; the engine's ID for the
+    invocation; the operation identity, where the caller supplied one; and how the request
+    ended, by its outcome or its reason. The time of the record is the CloudEvent's `time`.
+    Each field is present where it applies, and the inputs and outputs of the operation are
+    present where the type's `records` keeps them. An engine names the event's `source` and
+    `type`, and may add members.
+spec:
+  type: object
+  properties:
+    specversion: {const: '1.0'}
+    id: {type: string, minLength: 1}
+    source: {type: string, format: uri-reference, minLength: 1}
+    type: {type: string, minLength: 1}
+    time: {type: string, format: date-time}
+    subject: {type: string, minLength: 1}
+    datacontenttype: {type: string, minLength: 1}
+    data:
+      type: object
+      properties:
+        caller: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        conduit: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        target: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        operation: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+        invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        operationIdentity: {type: string, minLength: 1}
+        outcome: {enum: [succeeded, failed, unknown]}
+        reason: {enum: [refused, invalid, conflict, unavailable]}
+        inputs: {type: object}
+        outputs: {type: object}
+  required: [specversion, id, source, type, time, data]

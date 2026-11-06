@@ -13,12 +13,16 @@ metadata:
   name: notebook.read.v1
   description: Read one page of a notebook. It states no default implementation.
 spec:
-  inputs:
-    page:
-      schema: {type: integer, minimum: 1}
-  outputs:
-    text:
-      schema: {type: string}
+  inputSchema:
+    type: object
+    properties:
+      page: {type: integer, minimum: 1}
+    required: [page]
+  outputSchema:
+    type: object
+    properties:
+      text: {type: string}
+    required: [text]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
@@ -38,7 +42,6 @@ spec:
     type: object
   offers:
     - '#notebook-access.v1'
-  placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

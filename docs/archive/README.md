@@ -1,11 +1,14 @@
 # Archive
 
+Nothing here binds. The specification is [`spec/`](../../spec/README.md).
+
 **Direction note, 2026-11-05.** The active tracker is the [plan audit](../AUDIT.md); the current
 review remains the review entry point and defers to it.
 
 Historical contributions belong here when their arguments should remain available without
-competing with the current specification. Preserve attribution, source revisions and dissent;
-accepted refinements live in the current design, with unresolved questions in review.
+competing with the current specification. Preserve attribution, source revisions and dissent.
+What was accepted and still holds is written in the specification, and the rulings are logged
+in the [plan audit](../AUDIT.md#ruling-log).
 
 - [Collaborator proposals](collaborator-proposals/README.md) — PR #1 and PR #2, with source links and current disposition.
 
@@ -17,4 +20,6 @@ accepted refinements live in the current design, with unresolved questions in re
 
 [Current review](../REVIEW.md) is the only active question queue. Archiving is not approval or
 evidence that a proposed integration was tested. Historical prose retains its original context;
-current semantics live in [protocol](../protocol/README.md).
+current semantics live in the specification, [`spec/`](../../spec/README.md). The
+[protocol topics](../protocol/README.md) that these documents link to as the active reference
+are superseded.

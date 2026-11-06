@@ -1,5 +1,12 @@
 # Plugin and template authoring walkthrough
 
+> **Not binding.** This document predates rulings 13 to 37 of the
+> [plan audit](../../AUDIT.md#ruling-log). It uses shapes and words that the specification has
+> replaced, among them alias-plus-export references, `form`, grants, plugins, drivers and
+> handlers. Where it says accepted, current or v0, it means the design as it stood before those
+> rulings. The specification is [`spec/`](../../../spec/README.md), and the current worked example
+> is [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
+
 **Deferred authoring packet:** preserve these examples for the later syntax/conformance PR.
 The [conceptual review](../../archive/reviews/CONCEPTUAL.md) is complete; [this packet](README.md) changes no accepted rules.
 

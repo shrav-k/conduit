@@ -7,6 +7,26 @@ in the specification: [objects](../../../spec/promises/objects.yaml),
 written; after that explanation they were accepted (ruling 22) and are in
 [submissions](../../../spec/promises/submissions.yaml). Spellings follow the [ruled vocabulary](../vocabulary/README.md).
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 27: a submission may also hold the project's one manifest, and a template's exact
+  versions are written there;
+- rulings 28 and 29: a Pool's entries are instantiated with the Pool; "provision" is no longer
+  a verb, and is setting up the entry's Resource; a reference from one entry to another has its
+  own structured form;
+- ruling 31: setting up a Pool sets up the Resources of its entries, in dependency order, and
+  references among entries may not form a cycle;
+- ruling 32: a project may hold contracts, so a submission may contain them; "create" is not
+  used for an operation, and an instance is instantiated by registering its document; the pass
+  that applied this ruling also retired the word "declaration", so what is submitted is a
+  document and what is written inside a template is a nested instantiation;
+- ruling 37: no two documents of one project share a name, whatever their kinds; it also
+  changed POOL-005 and SUB-005.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
+
 This is the third batch of fixes, and it is entirely in the language layer: everything here can
 be answered by reading declarations. It is the part the two independent builds must agree on
 exactly, since for them the language is a function from declarations to resolved objects or
@@ -19,6 +39,13 @@ L109, L112, L113, L115, L117, L118, L150, L160, L161 and L164.
 
 The owner accepted every recommendation.
 
+> Later rulings changed DD3 and DD4, which are stated in terms of provisioning. Ruling 29 removed
+> the verb: one Resource is instantiated for each entry when the Pool is instantiated
+> (POOL-002), and an entry never has more than one Resource that is not retired (POOL-003). So
+> under DD4 there is no missing entry to refuse. Setting up one entry's Resource still sets up
+> no other (POOL-007), and setting up the Pool sets up its entries' Resources in dependency
+> order (ruling 31; POOL-013).
+
 | ID | Decision | Options | Accepted | Defects |
 | --- | --- | --- | --- | --- |
 | DD1 | When a reference becomes an ID. | (a) Templates hold names; instances hold IDs. A reference resolves once, when the instance that holds it is created, and never again. A name in a template that does not resolve yet is reported but accepted. (b) A template's references resolve when the template is registered. | (a). A template stays a reusable definition that fixes no particular object, registration order between templates stops mattering, and replacing a template never has to re-resolve anything. | L107, L108 |
@@ -30,6 +57,14 @@ The owner accepted every recommendation.
 ## Rules
 
 These involved no real choice once the decisions were fixed. The owner accepted them as a group.
+
+> Later rulings changed two rules below.
+>
+> - DR10: a submission may also contain contracts and the project's one manifest (rulings 27
+>   and 32; SUB-005).
+> - DR11: a reference from one entry to another is written `{entry: name}`, and a bare name in
+>   that place never means an entry (ruling 28; POOL-005). It resolves when the Pool is
+>   instantiated (POOL-006).
 
 | ID | Rule | Defects |
 | --- | --- | --- |

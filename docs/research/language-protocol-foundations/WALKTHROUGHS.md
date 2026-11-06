@@ -1,5 +1,7 @@
 # Worked comparisons for the authoring review
 
+> Not binding. This research predates the specification in [`spec/`](../../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research examples, 2026-11-02. These apply the accepted model without selecting Conduit field
 names. Arrows and tables below are explanatory notation. The two native-language fragments are
 original illustrations of source-system mechanisms, not runnable Conduit configuration or tested

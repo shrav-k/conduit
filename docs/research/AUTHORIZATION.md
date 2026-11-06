@@ -1,5 +1,7 @@
 # Authorization: policies, grants and Conduit enforcement
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-01. The user directed Conduit to formalize Policy and Grant alongside the
 other concepts beneath its five object families, covering Agents as well as Interfaces. Independent
 policy, broad default owner administration, current access checks and no offline grants are already

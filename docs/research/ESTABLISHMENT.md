@@ -1,10 +1,6 @@
 # Establishment, ordering, outputs and recovery
 
-**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
-define five template/instance families, Pool-managed shared service authentication and
-Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
-plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
-terminology is retained where it describes those systems; proposed syntax below is not a schema.
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Research: 2026-10-31. **Source evidence and lifecycle examples; no live provider work.**
 Read [the current construction contract](../protocol/LIFECYCLE.md#establishment-contracts-and-instance-state),
@@ -587,7 +583,7 @@ different timeout behavior, and timing out either does not prove cancellation co
 The [review outcomes](../archive/reviews/CONCEPTUAL.md#review-outcomes) define the accepted boundaries.
 These cases illustrate the accepted R2 graph and R3 ownership/lifetime boundaries and support
 the accepted R6 configuration/export profile. Direct complete-instance creation, graph composition
-and the template/plugin/instance responsibility split are already accepted. The [schema packet](../../experiments/001-shared-access/README.md) should
+and the template/plugin/instance responsibility split are already accepted. The [schema packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) should
 render their inputs, waits, outcomes and recovery together rather than reopen those foundations.
 
 ## Evidence gates before implementation and live experiments

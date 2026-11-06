@@ -7,6 +7,22 @@ in the specification: [graphs](../../../spec/promises/graphs.yaml),
 acceptance: for graphs and schemas, do nothing revolutionary and rely heavily on existing
 frameworks and paradigms. Spellings follow the [ruled vocabulary](../vocabulary/README.md).
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 28: the key of a value reference that says where the value comes from is `source`, and
+  every pointer is a JSON Pointer with a stated root;
+- ruling 31: a value reference is a small map with one of five sources, and the four binding
+  forms are written `literal`, the reference map, `object` and `list`;
+- ruling 32: two more invariants on running setup or retirement again, and the outcome of an
+  operation that a graph implements when only some steps succeeded;
+- ruling 33: a `default` is allowed on a property of the object that `items` gives, which
+  amends SR3; a schema can be exported as a contract of the kind `Schema`;
+- ruling 37: changed GRA-017, SCH-008 and SCH-015.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
+
 This is the fourth batch of fixes, in the language layer. By layer decision LD2 the language
 defines a graph's static meaning and two invariants; how an engine walks a graph is its runtime
 profile. The owner has also ruled that the graph engine and the schema profile are not what
@@ -29,6 +45,10 @@ The owner accepted every recommendation.
 ## Rules
 
 These involved no real choice once the decisions were fixed. The owner accepted them as a group.
+
+> Later ruling: ruling 33 (decision F23 of the re-audit) amended SR3. A `default` on a property
+> of the object that `items` gives is accepted. A `default` on `items` itself is still rejected
+> (SCH-008).
 
 | ID | Rule | Defects |
 | --- | --- | --- |

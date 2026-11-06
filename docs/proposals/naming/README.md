@@ -2,9 +2,31 @@
 
 Status: accepted by the owner on 2026-11-05 (plan-audit rulings 25 and 27, action A55), including
 the section on versions across connections. Written as promises in the specification:
-[naming](../../../spec/promises/naming.yaml), NAM-001 to NAM-017. This replaces decision PD1 of the
-[packages batch](../packages-and-start/README.md). The evidence is the
+[naming](../../../spec/promises/naming.yaml), NAM-001 to NAM-017 as first written; later
+rulings added more, and the comment at the head of that file lists them. This replaces decision
+PD1 of the [packages batch](../packages-and-start/README.md). The evidence is the
 [naming research](../../research/naming/README.md).
+
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 28: every selection of a type, a capability, an operation, a requirement or an
+  implementation is a qualified reference; the core package is built in, needs no manifest item
+  and cannot be replaced; an instance writes its values under `arguments`;
+- ruling 32: where the two ends of a Conduit hold different versions, the target's contract
+  governs; under one contract name a later release may only add optional things; `#name` refers
+  to a document of the same project or package; a project that is not published may hold
+  contracts;
+- ruling 33: the manifest key that says where a package is fetched from is `fetch`, so that
+  `source` is the key of a value reference only; a breaking release taking a new address is a
+  `should`; the host part of an address is a lowercase DNS name with no port; and the
+  specification's own names come from the repository, which replaces `conduit.dev`;
+- ruling 37: the manifest's file and keys, among them that a manifest carries `apiVersion`; no
+  two documents of one project share a name; it changed NAM-001, NAM-006, NAM-009, NAM-012,
+  NAM-018, NAM-019 and NAM-022 and added NAM-027.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
 
 ## The problem is wider than one decision
 
@@ -119,6 +141,20 @@ Accepted: options 1 and 4 together. Neither adds a second place to write a versi
 
 ## What it would look like
 
+The heading is as first written. The shapes were accepted with the decisions (ruling 27).
+
+> Later rulings changed the shapes in the two examples below.
+>
+> - A manifest's `source` is now `fetch` (ruling 33; NAM-012). A manifest also carries
+>   `apiVersion`, and its file name is fixed as `conduit.yaml` (ruling 37; MAN-001, MAN-003).
+> - An instance writes its values under `arguments`, not `inputs` (rulings 28 and 29; OBJ-013).
+> - `conduit.dev/files` stands for some package's address. `conduit.dev` is not a name of the
+>   specification: its names are derived from the repository (ruling 33;
+>   [`spec/names.yaml`](../../../spec/names.yaml)), and its own examples use `example.org`.
+>
+> The current worked example is
+> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
+
 The manifest, with an illustrative file name of `conduit.yaml`:
 
 ```yaml
@@ -160,6 +196,9 @@ spec:
   two different exports that happen to be related.
 
 ## Rules that would follow
+
+The heading is as first written. These rules were accepted with the decisions (ruling 27) and
+are written among the naming promises.
 
 | ID | Rule |
 | --- | --- |

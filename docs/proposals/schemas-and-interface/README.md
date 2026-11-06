@@ -8,12 +8,37 @@ and package promises, the [implementation interface](../../../spec/interface/imp
 and the [implementation-defined list](../../../spec/implementation-defined.yaml). This was the last
 batch of rulings before the promises are consolidated and the specification is audited again.
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 32: a control is an Operation contract that also states the settings it changes, so a
+  template's `controls` map is keyed by the control's qualified reference, which changes D6;
+  every request names its Conduit and carries the restrictions that apply, and an onward request
+  names the invocation it serves, which adds keys to I2; a plain implementation never counts as
+  deduplicating; a thirteenth entry joined the implementation-defined list;
+- ruling 33: decision X1 is settled, and the names come from the repository, not `conduit.dev`;
+  there is a fifth kind of contract, `Schema`, which changes D11; changes to one instance are
+  applied one at a time, which changes entry DL9; a tool's name also holds the name of each
+  component, which changes I6; an implementation that carries Conduit's keys may answer with a
+  reason in place of an outcome;
+- ruling 37: the core package, the JSON Schemas and the manifest's format are written; the
+  core package's reference schemas carry a version segment, as in `resource-reference.v1`.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
+
 The inventory behind it was taken from the specification, the accepted records, `docs/protocol`
 and the fixtures of Experiments 001 to 003. Where the accepted text already decides something it
 is restated without a decision. The decisions are the points with no ruled shape, or with two
 conflicting shapes.
 
 ## A name the owner controls
+
+> Later ruling: ruling 33 settled X1. Until there is a domain the names come from the
+> repository: the core package is `github.com/shrav-k/conduit/core`, a document's `apiVersion`
+> is `github.com/shrav-k/conduit/v0`, and Conduit's `_meta` keys begin
+> `io.github.shrav-k.conduit/`. They are defined once, in
+> [`spec/names.yaml`](../../../spec/names.yaml). `conduit.dev` is no longer used.
 
 | ID | Decision | Options | Recommendation |
 | --- | --- | --- | --- |
@@ -30,6 +55,15 @@ and `optional`; selections as qualified references; a Pool's `entries`; a Condui
 operations and filters. Fields the engine owns are never written.
 
 ### Decisions
+
+> Later rulings changed two rows below.
+>
+> - D6: a control is an Operation contract that also states the settings it changes. A type
+>   lists its controls by reference, and a template's `controls` map is keyed by the control's
+>   qualified reference, with an `inputs` map that narrows the control's inputs (ruling 32,
+>   decision G11 of the re-audit; CTR-006, TPL-010).
+> - D11: there are five kinds of contract, with `Schema` (ruling 33, decision F21 of the
+>   re-audit; CTR-001, CTR-008).
 
 | ID | Decision | Options | Recommendation | Existing practice |
 | --- | --- | --- | --- | --- |
@@ -57,6 +91,21 @@ Every field traces to a promise that already exists.
 | `Requirement` | `inputs`; where it may be applied, on a Conduit, as a policy or on placement; whether it narrows requests; and, for a composition, its constituents. |
 
 ### Example
+
+> Later rulings changed three shapes in the example below.
+>
+> - `conduit.dev` names are now derived from the repository (ruling 33;
+>   [`spec/names.yaml`](../../../spec/names.yaml)): `apiVersion` is
+>   `github.com/shrav-k/conduit/v0`, and the core package is `github.com/shrav-k/conduit/core`.
+>   A package outside the core, written here as `conduit.dev/files`, has its own address.
+> - A template's `controls` map is keyed by the control's qualified reference, and narrows an
+>   input under `inputs`, as in `inputs: {limit: {schema: {maximum: 50}}}` (ruling 32; TPL-010).
+>   It is not keyed by a bare name such as `set-read-limit`.
+> - The reference schema is `github.com/shrav-k/conduit/core#resource-reference.v1` (rulings 33
+>   and 37).
+>
+> The current worked example is
+> [`spec/schemas/examples/valid/project/`](../../../spec/schemas/examples/valid/project/).
 
 ```yaml
 apiVersion: conduit.dev/v0
@@ -113,6 +162,15 @@ outcome, and the engine may change it only to unknown.
 
 ### Decisions
 
+> Later rulings changed two rows below.
+>
+> - I2: a request's `_meta` also holds the engine's ID for the invocation, the Conduit and the
+>   restrictions that apply, and an onward request names the invocation it serves (ruling 32;
+>   IFC-006, IFC-020). A result may carry a reason in place of an outcome (ruling 33; IFC-026).
+> - I6: a tool is named by the Conduit's local name, then the name of each component for a
+>   Conduit made from a composite template, then the operation's export name, joined by dots
+>   (ruling 33; IFC-012).
+
 | ID | Decision | Options | Recommendation | Existing practice |
 | --- | --- | --- | --- | --- |
 | I1 | The wire. | (1) An implementation is a Model Context Protocol server at revision 2026-07-28, the current one. Each operation it implements is one tool, named by the operation's export name. The tool's input schema is the operation's inputs and its structured content is the operation's outputs. (2) A wire of Conduit's own. | (1). That revision has no sessions and carries everything per request, which suits "an implementation's behavior for one instance does not depend on another". Export names were already restricted to what a tool name allows. | The protocol's own tools |
@@ -127,6 +185,12 @@ outcome, and the engine may change it only to unknown.
 
 An engine must document its choice for every entry, and its choice must keep every promise. That
 document is the engine's runtime profile.
+
+> Later rulings: the list now has thirteen entries. Ruling 32 added DL13, on how the engine
+> establishes which instance a consumer is. Ruling 33 (decision F10 of the re-audit) took "how
+> many run at once" out of DL9: changes to one instance are applied one at a time (REV-012).
+> The list as it stands is
+> [`spec/implementation-defined.yaml`](../../../spec/implementation-defined.yaml).
 
 | ID | Entry | Defects it answers |
 | --- | --- | --- |

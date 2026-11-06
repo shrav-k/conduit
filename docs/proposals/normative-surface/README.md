@@ -5,6 +5,22 @@ Status: accepted by the owner on 2026-11-05 (plan-audit ruling 17), for plan-aud
 directories, files and fields are illustrative. By vocabulary decision V8 the "normative surface"
 is called the specification from here on.
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ, and the form as it now stands is
+[the form of a promise](../../../spec/README.md#the-form-of-a-promise). The four decisions below
+are worded "Proposed", as they were put to the owner; all four were accepted as written.
+Amended by:
+
+- ruling 17 itself: a seventh shared convention was accepted with this form, so "the six
+  behaviors" below are seven; and the "plugin interface" is called the implementation interface
+  (vocabulary decision V7);
+- ruling 20: a promise also has a `layer` field;
+- ruling 31: the implementation interface is written, as the specification's third layer;
+- ruling 32: the core package, the JSON Schemas and the manifest's format are normative parts
+  of `spec/`, so the types of the first-start objects are inside it; every other type contract
+  stays outside;
+- ruling 37: accepted those parts as drafted.
+
 **Revised 2026-11-05 for the [layered claim](../../AUDIT.md#layered-claim) and layer decisions LD1 to
 LD5.** The normative surface holds only the language and the shared conventions. Type contracts
 live with their types in a standard library, and the runtime profile lives with the reference
@@ -21,6 +37,11 @@ sentences bind. This proposal draws the line and fixes one form for everything i
 
 Proposed: the language is exactly the contents of one directory, `spec/`. Everything else in the
 repository explains, records or tests it.
+
+> As it now stands, two rows below read differently: the shared conventions are seven, and the
+> "plugin interface" is the implementation interface, between an engine and an implementation.
+> The parts of `spec/` as they are today are in its
+> [Contents table](../../../spec/README.md#contents).
 
 | Part | Contents | Form |
 | --- | --- | --- |
@@ -57,6 +78,11 @@ Proposed: a promise is a data record, not a paragraph.
   vectors: [s4/uncertain-effect-plain-provider]
 ```
 
+> As it now stands: `spec/README.md` has five writing rules, not these seven. The levels are
+> must, must not, should and may. A promise with no vector is allowed while the specification is
+> a draft, and does not count as covered. A removed promise is named, with where it went, in the
+> comment at the head of its file.
+
 Rules for writing one:
 
 1. **One obligation.** A promise with "and" in its `then` is two promises.
@@ -83,6 +109,11 @@ entry on the implementation-defined list, material for a named type contract, ma
 runtime profile, or explanation.
 Explanation moves to a non-normative guide beside the promises and may be shortened freely. When
 a topic is converted, its file under `docs/protocol/` is replaced by a pointer.
+
+> Where this stands: every area has been written as promises. The topic files keep their paths,
+> because about 200 links point at their headings, and each now opens with a banner that says it
+> is superseded. [`docs/protocol/README.md`](../../protocol/README.md) is the pointer
+> ([docs audit](../docs-audit/README.md), decisions DA1 and DA2).
 
 The accepted rulings recorded in the [placement](../placement/README.md) and
 [instantiation](../instantiation/README.md) records are converted the same way and those records

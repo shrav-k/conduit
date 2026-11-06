@@ -1,5 +1,7 @@
 # Primary sources and reading guide
 
+> Not binding. This research predates the specification in [`spec/`](../../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Inspected **2026-11-02**. This guide identifies the source versions and portions used in the
 [synthesis](README.md) and [walkthroughs](WALKTHROUGHS.md). Versioned comparisons are deliberate
 baselines, not claims that every listed version is the newest release. Moving documentation may

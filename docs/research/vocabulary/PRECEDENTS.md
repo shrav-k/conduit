@@ -1,5 +1,7 @@
 # Naming precedents and semantic differences
 
+> Not binding. This research predates the specification in [`spec/`](../../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-04. These comparisons concern terminology, not adopting another runtime.
 Source descriptions are attributed below; the “Conduit implication” column is our analysis.
 Candidate words remain unaccepted. See [source boundaries](SOURCES.md) and the

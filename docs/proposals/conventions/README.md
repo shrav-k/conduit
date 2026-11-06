@@ -7,6 +7,22 @@ ACC-033 and PLC-016; [observation](../../../spec/conventions/observation.yaml) O
 [records](../../../spec/conventions/records.yaml) REC-001 to REC-006; and
 [nothing implicit](../../../spec/conventions/implicit.yaml) IMP-001 to IMP-007.
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 32: every request and how it ended is always recorded, dispatched or not, which widens
+  RC1; a purge keeps the identity and the outcome of every invocation; a Pool may be retired
+  only when the shutdown of every Resource it owns is confirmed, which tightens OL4; an
+  instance that was never set up does not run its `retire` graph;
+- ruling 33: a purge also keeps a digest of each invocation's contents; the `retire` graph
+  never starts model work, as for setup; work arranged for later is bound to the Conduit that
+  arranged it and never revives, which narrows NI3; where a record or an observation was made
+  is its origin, not its source;
+- ruling 37: changed LIF-007, LIF-009, LIF-013, REC-004 and ACC-031 to ACC-034.
+
+Promise IDs and ranges are as first written; the comment at the head of each spec file says
+where a removed ID went and which were added.
+
 This batch covers the four shared conventions that are still unwritten or partly written:
 ownership and lifecycle, declared against observed state, records, and that nothing starts model
 work or repeats an effect implicitly. Most of each already exists as accepted text in

@@ -6,6 +6,23 @@ rules are written as promises in the specification:
 [revisions](../../../spec/conventions/revisions.yaml). Spellings follow the
 [ruled vocabulary](../vocabulary/README.md).
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- rulings 27 to 29: a grant is the access an open Conduit carries; there is one table of the
+  words for how a request ends, and "unknown" is the one word for "cannot tell";
+- ruling 31: whether an operation deduplicates is declared in the operation's contract;
+- ruling 32: a repeat of an identity is the new attempt, which reverses OR4; an identity is
+  scoped to one caller and one target; a plain implementation never counts as deduplicating;
+  and what is kept for an identity is the invocation's state, read from its records;
+- ruling 33: changes to one instance are applied one at a time, and reconciling a control names
+  the instance's current revision;
+- ruling 37: requests name objects by reference only; it changed OPS-007, OPS-009, OPS-014,
+  OPS-016 and OPS-019 and added OPS-025.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
+
 This is the second batch of fixes. It covers two shared conventions: operation identity and
 outcomes, and revision-checked change. An implementation and an engine written by different
 people must agree on these, which is why they are in the specification. How an engine keeps the
@@ -18,6 +35,12 @@ L58, L60, L61, L64, L98, L99, L100, L101 and L110.
 
 The owner accepted every recommendation.
 
+> Later rulings changed OD2. Whether an operation deduplicates is declared in the operation's
+> contract, as `deduplicates: true`, not in the implementation's (ruling 31; CTR-002). An
+> implementation marked `plain` never counts as deduplicating (ruling 32; OPS-012). "An actor
+> holding a grant for it" is now an actor that is the consumer of an open Conduit that lists the
+> reconcile operation (rulings 27 to 29; OPS-014).
+
 | ID | Decision | Options | Accepted | Defects |
 | --- | --- | --- | --- | --- |
 | OD1 | What the three outcomes mean. | (a) Succeeded: the effect the contract describes occurred. Failed: the implementation confirms it did not occur. Unknown: neither can be confirmed, including any partial effect. (b) Failed means only that the operation did not achieve its purpose; effects may have occurred and the result describes them. | (a). It gives agents one rule: trying again after failed is safe, and after unknown it is not. Preservation test 6. | L10 |
@@ -29,6 +52,17 @@ The owner accepted every recommendation.
 ## Rules
 
 These involved no real choice once the decisions were fixed. The owner accepted them as a group.
+
+> Later rulings changed three rules below.
+>
+> - OR4 is reversed by ruling 32 (decision Q1 of the re-audit): a repeat of an identity is the
+>   new attempt. A repeat is dispatched again after the outcome failed, and after the outcome
+>   unknown only where the operation's contract declares `deduplicates: true` and the
+>   implementation is not plain. Otherwise it is answered with the invocation's state (OPS-009,
+>   OPS-012, OPS-024).
+> - OR3: the identity is scoped to one caller and one target, and what is kept for it is the
+>   invocation's state, not a record (ruling 32; OPS-008).
+> - OR9: the word is unknown, not uncertain (ruling 28; REV-009).
 
 | ID | Rule | Defects |
 | --- | --- | --- |
@@ -61,6 +95,9 @@ These involved no real choice once the decisions were fixed. The owner accepted 
 | OR8 | REV-007, REV-008 |
 | OR9 | REV-009 |
 | A stale revision is refused | REV-002 |
+
+> Later ruling: "refused" in the last row is loose. A change that names a stale revision is not
+> dispatched and reports conflict (ruling 28, one table of words; REV-002).
 
 Model checking in [Experiment 004](../../../experiments/004-stateright-evaluation/README.md)
 supports OD2 and OPS-018: the rule sets that match the accepted decision applied the effect at

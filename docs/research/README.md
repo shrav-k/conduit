@@ -1,8 +1,9 @@
 # Research
 
-**Direction note, 2026-11-05.** The [plan audit](../AUDIT.md) records the current direction and is
-the active tracker. Statements below about the current queue and the first proof layout are
-historical.
+> Not binding. Nothing under `docs/research/` binds. Every packet predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
+The [plan audit](../AUDIT.md) is the tracker. Statements below about the current queue, the
+current design and the first proof layout are historical.
 
 The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
 and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources
@@ -10,9 +11,9 @@ and library probes that informed it. Research does not change accepted semantics
 [current review](../REVIEW.md) and [vocabulary map](../VOCABULARY.md) organize remaining naming and
 representation work; [syntax examples](../proposals/authoring-syntax/README.md) remain provisional.
 The [vocabulary research](vocabulary/README.md) compares naming across orchestration, contract,
-workflow, networking, messaging, authorization, observability and agent systems. It includes candidate
-language for all 37 stable vocabulary topics and worked examples; none of its recommendations adopts
-a name or changes accepted behavior.
+workflow, networking, messaging, authorization, observability and agent systems. Its candidate
+tables and walkthroughs were removed once the vocabulary was ruled (plan-audit ruling 36); the
+precedents, the sources and the reviewer's simplification pass remain as evidence.
 Keep source-system terms and dated recommendations intact when Conduit names change. The
 [collaborator comparison](../archive/collaborator-proposals/REVIEW.md)
 records adopted refinements and unadopted arguments from the two merged PRs, without treating
@@ -34,10 +35,12 @@ runtime bindings and input-driven startup. The owner accepted typed operations e
 to declared instance runtimes, with targets passed as declared typed inputs. Reference encoding
 and other authoring details remain open.
 
-Research supports the [specification](../OVERVIEW.md) and [design contracts](../protocol/README.md).
-It is not an additional set of requirements. The current concrete configuration belongs in
-[experiments](../../experiments/README.md), where proposed syntax and validation evidence are
-kept together. Completed ruling queues and duplicate configuration walkthroughs have been removed.
+Research supported the design documents that came before the specification, chiefly the
+[protocol topics](../protocol/README.md), which are now superseded. It is not a set of
+requirements. The specification is [`spec/`](../../spec/README.md), and the current worked
+example is [`spec/schemas/examples/valid/`](../../spec/schemas/examples/valid/).
+[Experiments](../../experiments/README.md) hold evidence. Completed ruling queues and duplicate
+configuration walkthroughs have been removed.
 
 The [v0 implementation proposal](../implementation/README.md) applies this evidence
 to concrete runtime and repository boundaries. Its pending decisions are separate from research
@@ -52,7 +55,7 @@ controlled connection failures; two-machine validation precedes remote-support c
 
 | Report | Read it for |
 | --- | --- |
-| [VOCABULARY](vocabulary/README.md) | Primary-source naming comparisons, candidate tradeoffs, light conduit/pool imagery and complete walkthroughs; linked to V01–V37 without selecting final terms. |
+| [VOCABULARY](vocabulary/README.md) | Primary-source naming comparisons, their sources and the reviewer's simplification pass. The candidate tables and walkthroughs were removed (plan-audit ruling 36), and the vocabulary is ruled. |
 | [LANGUAGE / PROTOCOL FOUNDATIONS](language-protocol-foundations/README.md) | WIT, Smithy, YANG, TOSCA, CWL and other language/protocol comparisons; package scoping, typed bindings, effects and MCP compatibility. Includes primary-source inventory and links to 20 offline schema/YAML probes. |
 | [ECOSYSTEM_ORGANIZATION](ECOSYSTEM_ORGANIZATION.md) | Source/release/website comparison across Pi, MCP, OpenTelemetry, Kubernetes, Compose, containerd, OCI, OpenTofu, Wasmtime and uv; evidence behind the repository/documentation migration and still-open distribution proposals. |
 | [OBSERVABILITY](OBSERVABILITY.md) | Cloud/platform comparison, OpenTelemetry pipelines and correlation, Rust/GenAI compatibility, and the lightweight debugging package and capture policy accepted in I6. Backend/library/wire recommendations remain proposals. |

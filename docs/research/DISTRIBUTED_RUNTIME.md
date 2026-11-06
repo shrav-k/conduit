@@ -1,5 +1,7 @@
 # Independent runtimes, management and network Conduits
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-01. **Subsequent I1 ruling:** separate management and execution services
 and shared policy with instance-owned state are accepted. V0 uses no offline grants. The first
 proof uses management and two independent executor processes on one machine, with controlled

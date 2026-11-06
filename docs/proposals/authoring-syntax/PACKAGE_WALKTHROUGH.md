@@ -1,11 +1,19 @@
 # Complete package walkthrough: retained message history
 
+> **Not binding.** This document predates rulings 13 to 37 of the
+> [plan audit](../../AUDIT.md#ruling-log). It uses shapes and words that the specification has
+> replaced, among them alias-plus-export references, `form`, grants, plugins, drivers and
+> handlers. Where it says accepted, current or v0, it means the design as it stood before those
+> rulings. The specification is [`spec/`](../../../spec/README.md), and the current worked example
+> is [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
+
 Status: **illustrative package design for authoring review**, 2026-11-03. Package-local scope,
 explicit dependency bindings, one explicit package entry document and a template's named dependency
 map with alias-plus-export references are accepted. Concrete field names and file layout remain open.
 [Conceptual closure](../../archive/reviews/CONCEPTUAL.md) is complete.
 This follows the accepted [design](../../protocol/README.md) and reuses the history Resource from
-[Experiment 001](../../../experiments/001-shared-access/README.md). It is a complete walkthrough
+[Experiment 001](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md)
+(since removed; the link is to the last commit that held it). It is a complete walkthrough
 of publication, implementation binding, template use and instance behavior, not an installable
 package. No worker binary, SDK, public schema release or runtime test is supplied here.
 

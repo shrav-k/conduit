@@ -1,10 +1,6 @@
 # Pi runtime, Durable and ecosystem research
 
-**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
-define five template/instance families, Pool-managed shared service authentication and
-Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
-plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
-terminology is retained where it describes those systems; proposed syntax below is not a schema.
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Source investigation: 2026-10-30. This report provides source evidence for the current **Interface, Agent, Resource, Pool and
 Conduit** design. Pi's native Session terminology remains in source descriptions. Current contracts live in [SPEC.md](../OVERVIEW.md) and

@@ -1,5 +1,7 @@
 # Connecting setup graphs to instance runtimes
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-03. This follows the [directory, MCP and database walkthroughs](../proposals/authoring-syntax/AUTHORING.md#guided-directory-walkthrough)
 and the [graph authoring audit](language-protocol-foundations/GRAPH_AUTHORING_REVIEW.md).
 The owner requested comparative database/cloud research before resolving the next structural question.

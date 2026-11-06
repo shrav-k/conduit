@@ -1,10 +1,6 @@
 # Pi re-review: connectors, context and communication
 
-**Current-design reading note:** [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/POOLS.md#shared-access-and-authentication)
-define five template/instance families, Pool-managed shared service authentication and
-Conduit-mediated access. Templates supply establishment, runtime and permitted-change contracts;
-plugin operations and graphs implement handlers, while instances own ongoing state. Source-system
-terminology is retained where it describes those systems; proposed syntax below is not a schema.
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Research date: 2026-10-30. **Recommendations for discussion, not new accepted contracts.**
 The source review used the earlier Session/Resource/Pool/Conduit vocabulary. Current design
@@ -569,7 +565,7 @@ The next experiment should be specified in this order:
    the local evidence through the Interface and exercise pluggable export; no issue-management
    integration or specific broker is required.
 
-The [experiment packet](../../experiments/001-shared-access/README.md) now carries the schema and acceptance examples.
+The [experiment packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) now carries the schema and acceptance examples.
 R5 settles activation/refresh, R6 configuration/extension resolution, and R7 the first communication
 and Interface-observability slice. Broader research examples remain proposals; this report supplies
 evidence rather than a separate Pi review queue.

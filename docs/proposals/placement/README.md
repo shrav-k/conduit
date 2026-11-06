@@ -2,9 +2,29 @@
 
 Status: owner rulings of 2026-11-05 for
 [plan-audit item A31](../../AUDIT.md#p0--make-the-language-concrete-and-complete) (question Q11).
-Field and type spellings are illustrative under the
-[vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary). No runtime exists and
-none of this has been executed.
+Field and type spellings were illustrative when this was written, under a
+[vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
+since ended. No runtime exists and none of this has been executed.
+
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 8: PL2 is settled through instantiation, and placement is a standard argument;
+- rulings 17 and 18: the word is "location", and a reference is a kind and a name, with no form;
+- ruling 23: every type states what it needs of a location, including nothing;
+- rulings 27 to 29: a grant is the access an open Conduit carries; "provisioning" is setting up;
+  what a type needs of a location is a requirement on placement; an instance writes its values
+  under `arguments`; and "owner-only" operations are operations reserved to the root Interface;
+- ruling 30: the default location is designated by a control of the `system` Pool;
+- ruling 32: a location's facts are stored configuration, a requirement on placement is a schema
+  those facts must satisfy, and the shared-host requirement is checked when a Conduit is opened
+  and on each request through it;
+- ruling 33: built-in schemas are exports of the core package, whose address comes from the
+  repository;
+- ruling 37: a control of the core package sets a location's facts.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
 
 ## Ruling status, 2026-11-05
 
@@ -18,8 +38,10 @@ none of this has been executed.
 | PL7 and PL8 — fixed placement, replacement to move, no reassignment, and a "declare lost" operation | Accepted |
 
 All decisions are accepted and are written as promises in the specification:
-[placement](../../../spec/promises/placement.yaml), PLC-001 to PLC-014. Promises PL-1 to PL-10 below
-are the earlier wording of the same rules.
+[placement](../../../spec/promises/placement.yaml), PLC-001 to PLC-014 as first written. That
+file has changed since: the comment at its head says which promises were folded into others and
+which were added. Promises PL-1 to PL-10 below are the earlier wording of the same rules, and the
+PLC wording governs.
 
 ## The gap
 
@@ -44,6 +66,9 @@ without a sixth family, and whether that is deployment configuration, an environ
 or an existing Resource type "remains open".
 
 ## Constraints already accepted
+
+> Later ruling: these are the constraints as they stood on the day. Ruling 18 dropped `form`, so
+> a reference is a kind and a name (OBJ-006).
 
 - Five families only; supporting concepts add no family.
 - Pool ownership is logical. Pool membership grants nothing.
@@ -74,6 +99,9 @@ through the system Pool, which gives remote enrollment a defined home. Its stabl
 location identity; its address is ordinary mutable configuration. First initialization
 establishes the local execution location alongside the system Pool. An execution-location
 Resource is its own placement, which is the base case.
+
+> Later ruling: ruling 29 removed "provision" as a verb. A location is instantiated by
+> registering its document, like any Resource, and is then set up (PLC-008).
 
 ### PL2 — Where placement is declared
 
@@ -125,6 +153,11 @@ native runtime installed; OS credential custody needs that credential store.
 
 This is a check on an explicit choice. It is not a scheduler and introduces no selectors.
 
+> Later rulings: rulings 28 and 32 replaced "location capabilities". What a type or an
+> implementation needs is a requirement on placement: a schema that the stored facts of the
+> location must satisfy (CTR-005, PLC-007). A location publishes nothing; its facts are stored
+> configuration, changed only by a control (PLC-008).
+
 ### PL5 — Access that only works on a shared host
 
 Some access modes need both endpoints on one host: a symlinked directory, a local socket, a
@@ -134,6 +167,11 @@ stdio child. Others are location-transparent because they travel as operations.
 `shared-host`) attached by the access mode that needs it. It is checked at establishment like any
 other requirement. A required connection that cannot satisfy it fails preparation; an optional one
 is reported. There is no silent fallback to another mode. No new mechanism is needed.
+
+> Later ruling: ruling 32 (decision G13 of the re-audit) changed when and how this is checked.
+> The engine checks the shared-host requirement when the Conduit is opened and on each request
+> through it. Where it does not hold, the request is not dispatched and reports unavailable
+> (PLC-013).
 
 A shared host is necessary but not sufficient. An isolated Agent on the same machine still cannot
 see host paths without a bridge. The requirement catches the cross-machine case before any
@@ -178,6 +216,15 @@ reference, so an exported path is never ambiguous.
 Two enrolled locations, one Pool spanning both, one Agent on each. The examples use the document
 shape and names ruled later the same day: one kind per family, `from` marking an instance, and
 "location". The `apiVersion` line is omitted.
+
+> Later rulings changed the shapes in the three examples below. An instance writes the values
+> for its template's inputs under `arguments`, not `inputs` (rulings 28 and 29; OBJ-013). The
+> schema of a reference to a location is now the core package's export
+> `github.com/shrav-k/conduit/core#resource-reference.v1`, not
+> `conduit:reference#/$defs/location` (rulings 28 and 33; the names are in
+> [`spec/names.yaml`](../../../spec/names.yaml)). A location is made from the core package's
+> template, and what is stored about it is its facts (PLC-008). The current worked example is
+> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
 
 ```yaml
 kind: Resource
@@ -275,6 +322,12 @@ belongs with caller authentication (audit question Q3) and the wire profile (Q2)
 support is claimed before a test across two machines.
 
 ## Still to specify
+
+> Later rulings: the first and the third are now specified. Declare lost is PLC-017 and
+> LIF-017. A requirement that is not a filter, such as the shared-host requirement, is a
+> Requirement contract applied in a Conduit template's `requirements` map (CTR-005, CON-018,
+> PLC-013). The second no longer applies: there are no location capabilities, only a location's
+> stored facts.
 
 The exact contract of the declare-lost operation (audit action A35), the catalog of location
 capabilities used by the first scenarios, and the YAML shape of a non-filter requirement such as

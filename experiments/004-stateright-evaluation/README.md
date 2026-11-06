@@ -11,9 +11,13 @@ suitable way to check Conduit's safety promises under message loss, reordering a
 
 ## What was modelled
 
-One revision-checked control change with an external effect, taken from the
-[outcome and recovery rules](../../docs/protocol/CONDUITS.md#outcomes-and-recovery) and the
-[state check](../../docs/protocol/LIFECYCLE.md#template-defined-configuration-changes):
+One revision-checked control change with an external effect. When this was run, the rules were
+read from the protocol topics, which are now superseded. The promises that now state them are
+OPS-008 to OPS-013 of the [operations convention](../../spec/conventions/operations.yaml), on
+operation identity and on what follows an unknown outcome, and REV-002, REV-011 and REV-012 of
+the [revisions convention](../../spec/conventions/revisions.yaml), on the revision check. The
+sentence quoted under Findings is from the older text; OPS-012 and OPS-013 now state the
+condition it lacked.
 
 ```text
 caller --Change{op, expected_rev}--> authority --Apply{op}--> provider

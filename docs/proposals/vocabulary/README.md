@@ -1,14 +1,34 @@
-# Final vocabulary — proposal
+# Final vocabulary — accepted
 
-Status: accepted by the owner on 2026-11-05 (plan-audit rulings 17 and 18, action A28). The names
-are not yet applied to the text. The owner ruled that the vocabulary is decided now and applied as each area is
-reworked, so that names and behavior are fixed together and the text is rewritten once.
+Status: accepted by the owner on 2026-11-05 (plan-audit rulings 17 and 18, action A28). The owner
+ruled that the vocabulary is decided now and applied as each area is reworked, so that names and
+behavior are fixed together and the text is rewritten once. The names are applied in the
+specification. The older documents keep the earlier words. Where this record says "this
+proposal", it means this record as it was put to the owner.
 
-Amended on 2026-11-05 by the [consolidation rulings](../consolidation/README.md#rulings) (plan-audit
-rulings 28 and 29). Where this record differs, the [specification](../../../spec/README.md) governs. The words that changed: a grant is the access an open Conduit carries, so "issue" and "revoke" are
-open and close; "right to issue" is the right to open; "provision" is setting up an entry's
-Resource; "location capability" is a requirement on placement; the lifecycle states are
-registered, ready and retired; and "owner" is used only for a Pool.
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ: [`spec/definitions.md`](../../../spec/definitions.md) is the current
+vocabulary, and the tables below are the record. Amended by:
+
+- ruling 27: a selection is a qualified reference, with no alias; the manifest is a project's
+  one file, which lists the packages it uses;
+- rulings 28 and 29, the [consolidation rulings](../consolidation/README.md#rulings): a grant is
+  the access an open Conduit carries, so "issue" and "revoke" are open and close; "right to
+  issue" is the right to open; "provision" is setting up an entry's Resource; "location
+  capability" is a requirement on placement; the lifecycle states are registered, ready and
+  retired; "owner" is used only for a Pool; a control is an operation; and a record is a log
+  entry only;
+- ruling 31: an implementation is what does the work behind an operation, since a runtime is a
+  pair of operations; a contract is a document with a kind of its own;
+- ruling 32: "registered" names a lifecycle state, and an object that has been registered
+  "exists"; "create" is not used for an operation; a location's facts are stored, not reported;
+  the pass that applied this ruling also retired the word "declaration", so what is submitted is
+  a document;
+- ruling 33: where a record or an observation was made is its origin, and `source` is the key
+  of a value reference only; there is a fifth kind of contract, `Schema`.
+
+The notes above the tables below name the rows these rulings replaced. They are not a complete
+comparison: read `spec/definitions.md` for any word.
 
 It combines three inputs:
 
@@ -53,6 +73,12 @@ Source column: **R** research recommendation, **S** simplification pass, **A** f
 
 ### Packages and implementations
 
+> Later rulings replaced three rows below. selection: a qualified reference, the package's
+> address, `#` and the export's name, with no alias (ruling 27; NAM-002, NAM-018). manifest: the
+> one file of a project, which lists each package the project uses; a package's manifest also
+> states its exports (ruling 27; NAM-006). implementation: what does the work behind an
+> operation only (ruling 31; TPL-003).
+
 | Term | Meaning | Replaces or drops | Source |
 | --- | --- | --- | --- |
 | package | What an author ships. | "bundle" | S |
@@ -85,6 +111,12 @@ Source column: **R** research recommendation, **S** simplification pass, **A** f
 
 ### Lifecycle verbs
 
+> Later rulings replaced three rows below. provision: no longer a verb; a Pool's entries are
+> instantiated with the Pool, and what was provisioning is setting up the entry's Resource
+> (ruling 29; POOL-002, POOL-013). register: takes instance documents as well as templates, and
+> registering an instance document instantiates its template (ruling 32). declare lost: an
+> operation reserved to the root Interface, not "the owner" (ruling 28; PLC-017).
+
 | Term | Meaning | Replaces or drops | Source |
 | --- | --- | --- | --- |
 | register | Record a template. Has no other effect. | — | R |
@@ -100,6 +132,13 @@ Source column: **R** research recommendation, **S** simplification pass, **A** f
 | declare lost | The owner recording that a location can never confirm shutdown. | — | A |
 
 ### Relationships and authority
+
+> Later rulings replaced four rows below. grant: not used; the access an open Conduit carries
+> is the operations it lists, and it is opened and closed, not issued and revoked (rulings 27
+> and 28; ACC-003, ACC-011). open, close: to open a Conduit is to set it up, and to close it is
+> to retire it (ruling 29). owner: only the Pool that owns a Resource; no promise uses the word
+> for a person (ruling 28; POOL-001). entry: a named nested instantiation of a Resource
+> template, whose Resource is instantiated with the Pool (ruling 29; POOL-002, POOL-012).
 
 | Term | Meaning | Replaces or drops | Source |
 | --- | --- | --- | --- |
@@ -117,6 +156,9 @@ A Conduit is pairwise (decision V3): one consumer, one target.
 
 ### Placement
 
+> Later ruling replaced one row below. host: one of a location's stored facts; the location
+> does not report it (ruling 32; PLC-008).
+
 | Term | Meaning | Replaces or drops | Source |
 | --- | --- | --- | --- |
 | location | Where an Agent or Resource runs: a Resource of the location type in the system Pool. | "execution location", "executor" in the language | A |
@@ -124,6 +166,11 @@ A Conduit is pairwise (decision V3): one consumer, one target.
 | host | The machine a location reports it is on. | — | A |
 
 ### Records and layers
+
+> Later rulings replaced three rows below. record: a log entry about a request or an event, and
+> nothing else (ruling 28; REC-002). observation: reported with the time it was made and its
+> origin, not its source (ruling 33; OBS-002). specification: it has a third layer, the
+> implementation interface, and binds every engine (ruling 31).
 
 | Term | Meaning | Replaces or drops | Source |
 | --- | --- | --- | --- |

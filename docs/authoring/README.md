@@ -1,9 +1,17 @@
 # Author with the protocol
 
-**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
-audit](../AUDIT.md) and is not an input for engine builders. Creation by editing a template draft is
-replaced by the [instantiation rulings](../proposals/instantiation/README.md); the naming discussion
-it refers to as next now comes last.
+> **Not binding.** This document predates rulings 13 to 37 of the
+> [plan audit](../AUDIT.md#ruling-log). It uses shapes and words that the specification has
+> replaced, among them alias-plus-export references, `form`, grants, plugins, drivers and
+> handlers. Where it says accepted, current or v0, it means the design as it stood before those
+> rulings. The specification is [`spec/`](../../spec/README.md), and the current worked example
+> is [`spec/schemas/examples/valid/`](../../spec/schemas/examples/valid/).
+>
+> It is not an input for engine builders. Creation by editing a template draft is replaced by
+> instantiation (the [record](../proposals/instantiation/README.md), and
+> [`spec/promises/instantiation.yaml`](../../spec/promises/instantiation.yaml)). The naming
+> discussion it refers to as next is done: the vocabulary was ruled (rulings 16 to 18 and 27 to
+> 29) and is in [`spec/definitions.md`](../../spec/definitions.md).
 
 Conduit's extension boundary is the product: an author should be able to define a new capability,
 implement it, compose it into a template and inspect the resulting instance without editing runtime

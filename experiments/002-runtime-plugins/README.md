@@ -10,7 +10,7 @@ scope and supervised instance-associated helper default accepted; remaining impl
 are proposed. Not implemented or executed. Written 2026-11-01 from the
 [Rust runtime research](../../docs/research/RUST_RUNTIME.md). This experiment tests engineering
 choices within the [specification](../../docs/OVERVIEW.md); it does not replace the
-[shared-access YAML walkthrough](../001-shared-access/README.md) or approve its draft syntax.
+[shared-access YAML walkthrough](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) or approve its draft syntax.
 
 The [implementation proposal](../../docs/implementation/README.md) expands the host,
 worker, schema and persistence boundaries this spike would exercise. Accepted I1–I6 boundaries remain in force; C1–C3 conceptual closure is complete and concrete authoring/syntax returns in a future PR. This experiment still contains no executable implementation or measured results.

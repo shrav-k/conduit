@@ -5,6 +5,25 @@ was found to name things in three unrelated ways (plan-audit ruling 25). It look
 expressed by several unrelated mechanisms, notations or keys, and for one key or word carrying
 several meanings. Findings are recorded here, with the owner's rulings in the [next section](#rulings).
 
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- ruling 30: decided what the paragraph "Still unwritten" lists: who may retire or unregister an
+  object, when an instance may be unregistered, what retiring a Pool does, and who designates
+  the default location;
+- ruling 31: references among a Pool's entries may not form a cycle, which reverses one choice
+  below; setting up a Pool sets up the Resources of its entries; there is one `implementation`
+  map;
+- ruling 32: a location's facts are stored configuration, not something the location reports;
+  "registered" names a lifecycle state only, and an object that has been registered "exists";
+  "create" is not used for an operation; several promises were folded into others;
+- ruling 33: the core package's address is `github.com/shrav-k/conduit/core`, not
+  `conduit.dev/core`; a right to open stated for a Pool covers the Pool itself as well as the
+  Resources it owns.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
+
 Two cold readers ran the audit: one on the shape of documents, reported below, and one on
 concepts and mechanisms, [reported after it](#concepts-and-mechanisms).
 
@@ -43,6 +62,15 @@ the specification was rewritten for them once.
 
 These were needed to write the promises and follow from a ruling or an existing practice, but the
 owner did not rule on them one by one. Each can be changed by a ruling.
+
+> Later rulings changed two choices in the table below, and settled the paragraph after it.
+>
+> - The core package's address is now `github.com/shrav-k/conduit/core` (ruling 33;
+>   [`spec/names.yaml`](../../../spec/names.yaml)).
+> - Entries may not refer to each other in a cycle. A Pool template whose entries do is rejected
+>   (ruling 31, decision D9 of the [last batch](../schemas-and-interface/README.md); POOL-011).
+> - "Still unwritten" is written: ruling 30 decided all four points
+>   ([record](../conventions/README.md); LIF-017, LIF-021, PLC-016, ACC-033).
 
 | Choice | Why | Promise |
 | --- | --- | --- |

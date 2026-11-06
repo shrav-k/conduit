@@ -1,5 +1,7 @@
 # Sources and evidence boundaries
 
+> Not binding. This research predates the specification in [`spec/`](../../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: **2026-11-04**. This packet examines vocabulary and the behavior a name suggests,
 not implementation fitness, security certification or popularity. The [precedents](PRECEDENTS.md)
 link each technical comparison to its primary source. The [candidate table](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md) and

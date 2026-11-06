@@ -1,5 +1,7 @@
 # Repository, extension and distribution patterns
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-02. This compares project organization, publication and documentation;
 it does not select dependencies or reopen the accepted object model. Recommendations are in the
 [repository proposal](../archive/reviews/REPOSITORY-2026-11-02.md). None is adopted merely by appearing here.

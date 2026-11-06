@@ -1,5 +1,7 @@
 # Cloud management patterns and Conduit's authority boundary
 
+> Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+
 Research date: 2026-11-01. **Subsequent I1 ruling: shared policy with instance-owned state is
 accepted, alongside separate management and execution services.** V0 subsequently adopted no
 offline grants: retain supervision/dispatched outcomes, but block new managed requests without

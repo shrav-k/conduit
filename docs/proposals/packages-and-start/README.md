@@ -1,12 +1,36 @@
-# Packages, first start and conformance — accepted in part
+# Packages, first start and conformance — accepted
 
 Status: the owner accepted everything here on 2026-11-05 (plan-audit ruling 24, action A54) except
-decision PD1, on how a template in a package is referred to, which is held for more research and
-discussion of naming patterns. The accepted parts are written as promises in the specification:
-[packages](../../../spec/promises/packages.yaml),
+decision PD1, on how a template in a package is referred to, which was held for more research.
+PD1 has since been settled by the naming rulings (plan-audit rulings 25 and 27;
+[naming record](../naming/README.md)), so nothing in this record is open. It is written as
+promises in the specification: [packages](../../../spec/promises/packages.yaml),
+[naming](../../../spec/promises/naming.yaml),
 [first start](../../../spec/promises/first-start.yaml) and the conformance section of the
-[specification's manifest](../../../spec/README.md#conformance). Spellings follow the
+[specification's README](../../../spec/README.md#conformance). Spellings follow the
 [ruled vocabulary](../vocabulary/README.md).
+
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- rulings 25 and 27: PD1 is settled. A reference to a package's export is the package's address,
+  `#` and the export's name, and installing a package registers nothing. Exact versions are
+  written once, in the project's manifest, and never in a template or a reference, which
+  changes PR1 and PR4;
+- rulings 28 and 29: what an implementation needs of a location is a requirement on placement,
+  which changes PR6; the first-start objects are instances of templates that the core package
+  exports;
+- ruling 31: the `implementation` map is keyed by operation only, since a runtime is a pair of
+  operations and a control is an operation;
+- the re-audit that ruling 32 accepted: the second conformance level is called Engine, not
+  Host, because "host" is the machine a location is on (a finding of its second reader, fixed
+  without a ruling of its own); several promises of this batch were folded into others;
+- ruling 33: the core package's address comes from the repository;
+- ruling 37: the manifest's format, and changes to PKG-005, PKG-013, PKG-017 to PKG-020 and
+  PKG-022.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
 
 This is the fifth and last batch of fixes in the specification's two layers. The owner ruled
 that the package system is not what differentiates Conduit, and instructed that graphs and
@@ -18,7 +42,17 @@ L38, L44, L45, L46, L47 and L48.
 
 ## Decisions
 
-PD2 to PD5 are accepted. PD1 is open.
+PD2 to PD5 are accepted. PD1 was open when this was written, and the "Recommendation" column
+below is as it stood then.
+
+> Later rulings changed two rows below.
+>
+> - PD1 is settled by rulings 25 and 27: option (a) in substance, written as the package's
+>   address, `#` and the export's name, such as
+>   `github.com/acme/conduit-history#shared-reviewer` (NAM-002, NAM-013).
+> - PD5: the second level is called Engine, and it is an engine that claims conformance. The
+>   Engine level also asks for a runtime profile
+>   ([Conformance](../../../spec/README.md#conformance)).
 
 | ID | Decision | Options | Recommendation | Existing practice | Defects |
 | --- | --- | --- | --- | --- | --- |
@@ -31,7 +65,19 @@ PD2 to PD5 are accepted. PD1 is open.
 ## Rules
 
 Accepted as a group, except the half of PR8 that concerns the separator in qualified names, which
-waits on PD1.
+waited on PD1.
+
+> Later rulings changed four rules below.
+>
+> - PR1: a template names no version. The project's manifest names exactly one version of each
+>   package, and a registered template keeps the versions and digests the manifest gave
+>   (ruling 27; NAM-005, NAM-006, NAM-009).
+> - PR4: a default is a qualified reference and carries no version (ruling 27; NAM-005,
+>   TPL-004). Only operations have implementations selected (ruling 31; TPL-003).
+> - PR6: there are no location capabilities. An implementation states its requirements on
+>   placement in its manifest item (rulings 28 and 32; PKG-019, PLC-007).
+> - PR8: the separator is settled. A local name contains neither `#` nor `/` (ruling 27;
+>   NAM-003, OBJ-001).
 
 | ID | Rule | Existing practice | Defects |
 | --- | --- | --- | --- |
@@ -48,7 +94,7 @@ waits on PD1.
 
 | Decision or rule | Promises |
 | --- | --- |
-| PD1 | Open; replaced by the wider [naming proposal](../naming/README.md) |
+| PD1 | Open when this was written; settled by the [naming rulings](../naming/README.md) |
 | PD2 | PKG-001, PKG-002, PKG-003 |
 | PD3 | PKG-004 |
 | PD4 | FST-001, FST-002, FST-003 |

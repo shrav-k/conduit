@@ -1,18 +1,25 @@
 # Configuration and identity
 
-**Direction note, 2026-11-05.** The owner's rulings on [placement](../proposals/placement/README.md)
-and [instantiation](../proposals/instantiation/README.md) amend this topic and are not yet restated
-here. Known defects in this text are listed in the [defect register](../LANGUAGE_DEFECTS.md). The
-[plan audit](../AUDIT.md) tracks its conversion into numbered promises.
+> **Superseded. Nothing in this file binds.** It predates rulings 16 to 37 of the
+> [plan audit](../AUDIT.md#ruling-log). The specification in [`spec/`](../../spec/README.md)
+> governs, and where this file differs from it, this file is wrong.
+>
+> No type contract is to be written from it. It is kept only so that links into it resolve.
+>
+> A behavior that is stated here and not in `spec/` is a gap in `spec/`, not a rule. The
+> [audit of the documents outside `spec/`](../proposals/docs-audit/README.md) found the known
+> ones, and its [report](../proposals/docs-audit/reader-older-text.md) lists them under "Gaps in
+> the specification". The words here are the older ones, among them grant, plugin, driver,
+> handler, provision and `form`; [`spec/definitions.md`](../../spec/definitions.md) has the
+> current vocabulary.
 
-Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
-their accepted status without becoming requirements for every capability implementation.
-See the [reference boundary](README.md#protocol-and-reference-implementation) and the
-[current review queue](../REVIEW.md) for unresolved questions; historical review links below record prior rulings.
+Scope: superseded working text, not a contract. No engine is held to it. Where the text below
+says accepted, settled, current or v0, it means the design as it stood when this file was last
+updated, before rulings 16 to 37.
 
-Part of the accepted [design contracts](README.md). Updated: 2026-11-03.
-The [conceptual review](../archive/reviews/CONCEPTUAL.md) records completed rulings and deferred work;
-syntax and implementation examples do not amend these rules.
+Once one of the design topics that the [pointer page](README.md) now lists. Last updated:
+2026-11-03. The [conceptual review](../archive/reviews/CONCEPTUAL.md) and the other reviews
+linked below are history.
 
 ## Configuration language
 

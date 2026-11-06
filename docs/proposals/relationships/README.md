@@ -5,10 +5,25 @@ are written as promises in the specification: [Conduits](../../../spec/promises/
 and [access](../../../spec/conventions/access.yaml). Spellings follow the
 [ruled vocabulary](../vocabulary/README.md).
 
-Amended on 2026-11-05 by the [consolidation rulings](../consolidation/README.md#rulings) (plan-audit
-rulings 28 and 29). Where this record differs, the [specification](../../../spec/README.md) governs. The grant is no longer a separate object, the right to issue is an open Conduit to `access`, a
-Conduit's states are registered, ready and retired, and a closed Conduit is replaced only on an
-explicit request.
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- rulings 27 to 29, the [consolidation rulings](../consolidation/README.md#rulings): the grant
+  is no longer a separate object. It is the access an open Conduit carries, so issuing is
+  opening and revoking is closing. The right to issue is the right to open, which is itself an
+  open Conduit to `access`. A Conduit's states are registered, ready and retired, so the "not
+  open" state of RD3 is registered. A closed Conduit is replaced only on an explicit request.
+  The three access decisions of RR10 are the reasons of one table, and "unverifiable" is
+  unavailable. On an instance, `consumer` and `target` are top-level keys and the other values
+  go under `arguments`;
+- ruling 32: a Conduit that carries a filter its target's implementation does not support is
+  rejected when it is instantiated, which is earlier than RD6 says; what travels with an onward
+  request (RR9) is carried on the wire, and the onward request names the invocation it serves;
+  a delegate's bound also limits the policies it may apply;
+- ruling 37: a bound is rejected on a Conduit whose target is not `access`.
+
+Promise IDs are as first written; the comment at the head of each spec file says where a removed
+ID went.
 
 This is the first batch of fixes because [the relationship is the product](../../AUDIT.md#purpose).
 It covers the defects in the [register](../../LANGUAGE_DEFECTS.md) that concern Conduits, grants
@@ -111,6 +126,11 @@ part of the language. The owner accepted these promises (ruling 20):
 | CON-012 | A Conduit template can be instantiated on its own, naming an existing instance as consumer and another as target. The consumer need not have declared it, and the consumer's definition does not change. |
 | CON-013 | Opening a Conduit whose consumer is already set up or running needs no stop, restart or repeated setup, and its grant is in force for the consumer's next request. |
 | CON-014 | Closing a Conduit whose consumer is running leaves the consumer running, and its next request through that Conduit is refused. |
+
+> Later ruling: ruling 28 changed the shape below. `consumer` and `target` are top-level keys of
+> the instance document, and `operations` goes under `arguments`, not `inputs` (OBJ-013). The
+> current worked example is
+> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
 
 ```yaml
 kind: Conduit

@@ -1,5 +1,12 @@
 # Policy and Grant contracts
 
+> **Not binding.** This document predates rulings 13 to 37 of the
+> [plan audit](../../AUDIT.md#ruling-log). It uses shapes and words that the specification has
+> replaced, among them alias-plus-export references, `form`, grants, plugins, drivers and
+> handlers. Where it says accepted, current or v0, it means the design as it stood before those
+> rulings. The specification is [`spec/`](../../../spec/README.md), and the current worked example
+> is [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
+
 Status: accepted semantic model with proposed detailed representations, 2026-11-02. Policy and Grant are
 essential concepts beneath the five object families, for Agents and Interfaces alike.
 Independent policy, recorded participation grants and issuer-independent grant lifetime are

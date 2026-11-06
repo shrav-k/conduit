@@ -2,13 +2,29 @@
 
 Status: owner rulings of 2026-11-05 for
 [plan-audit item A36](../../AUDIT.md#p0--make-the-language-concrete-and-complete) (question Q12).
-The decisions below are accepted. Their spellings are illustrative under the
-[vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary), and they will be
-restated as numbered promises in the normative surface when its form is ruled. Nothing here has been executed.
+The decisions below are accepted. Their spellings were illustrative when this was written, under
+a [vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
+since ended. They are now written as numbered promises in the specification:
+[instantiation](../../../spec/promises/instantiation.yaml), INS-001 to INS-023, less those the
+comment at the head of that file says were folded elsewhere. Nothing here has been executed.
 
-Amended on 2026-11-05 by the [consolidation rulings](../consolidation/README.md#rulings) (plan-audit
-rulings 28 and 29). Where this record differs, the [specification](../../../spec/README.md) governs. An instance now writes its values under `arguments`, not `inputs`, and a nested instantiation
-has the shape of an instance document.
+This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
+where they differ. Amended by:
+
+- rulings 18 and 19: one kind per family, and the name alone where a field accepts one kind
+  (already written into IN8 to IN10 below);
+- rulings 28 and 29, the [consolidation rulings](../consolidation/README.md#rulings): an
+  instance writes its values under `arguments`, not `inputs`; a nested instantiation has the
+  shape of an instance document; and the input's default is applied first, then the defaults of
+  the type's schema;
+- ruling 31: a template's `spec` also holds its `implementation` map, `runtimes`, an optional
+  `retire` graph and `controls`, none of which an input may fill;
+- ruling 32: an "ordinary schema reference" to a built-in schema is a reference to one of the
+  core package's reference schemas, and a value is a reference only where such a schema governs
+  its place;
+- ruling 33: the core package's address comes from the repository, so the schema in the example
+  below is now `github.com/shrav-k/conduit/core#resource-reference.v1`;
+- ruling 37: changed INS-006, INS-012 and INS-014.
 
 ## What this replaces
 
@@ -48,6 +64,13 @@ concrete location.
 ## Worked example
 
 The `apiVersion` line is omitted for brevity.
+
+> Later rulings changed two shapes below. The instance's values are now written under
+> `arguments`, not `inputs` (rulings 28 and 29; OBJ-013). `conduit:reference#/$defs/resource` is
+> now `github.com/shrav-k/conduit/core#resource-reference.v1` (rulings 28 and 33; the names are
+> in [`spec/names.yaml`](../../../spec/names.yaml)). A template also selects a `type` (TPL-002),
+> which this example leaves out. The current worked example is
+> [`spec/schemas/examples/valid/`](../../../spec/schemas/examples/valid/).
 
 ```yaml
 kind: Agent
@@ -98,6 +121,12 @@ arguments reuses the same registered template.
 - A reader follows one indirection from an input to where it lands.
 
 ## Still to specify
+
+> Later rulings: the first two are specified. INS-010 to INS-012 and INS-021 say which
+> destinations are legal, and an input reaches an entry by naming the entry's `placement` or its
+> `arguments` as a destination (INS-012, POOL-009). The third will not happen: Experiment 001
+> was removed, and `spec/schemas/examples/valid/` is the worked example
+> ([docs audit](../docs-audit/README.md), decision DA4).
 
 - The exact rule checked when a template is registered: which destinations are legal, and which
   mismatches between an input's schema and its destination are provable early.

@@ -1,5 +1,7 @@
 # Secrets: a secret type in the core package
 
+> **Ruled.** Ruling 41 settled the secret type as section 4 of the [principles review](../principles-review/README.md) reduces this proposal; where they differ, that section governs. This file is the reasoning and the record of the options. See [ruling 41](../ruling-41/README.md).
+
 Status: **proposed, not ruled.** It follows [ruling 38](../ruling-38/README.md), point 1, which set
 the direction and asked for the secret type to be explored. Its first draft was put to the owner as
 point 1 of [ruling 39](../ruling-39/README.md), and the owner asked for more research first: "I feel

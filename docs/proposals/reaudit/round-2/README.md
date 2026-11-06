@@ -3,7 +3,8 @@
 Status: done, 2026-11-06 (plan-audit action A59). Four cold readers read the repository as it
 stood at commit `bdacd83`, after consolidation pass 1, the follow-up pass, the core package and
 schemas, and the conversion of the behaviors the older text accepted. The three who read only
-`spec/` reported 125 findings, 8 of them unsafe. The findings were resolved under ruling 37,
+`spec/` reported 125 findings. Reader 3 marked 7 of them as unsafe, and the coordinator classed
+one of reader 1's as unsafe too, which makes 8. The findings were resolved under ruling 37,
 without a ruling on each, and every choice is logged. Round 3 is [next](../round-3/README.md).
 
 | Step | Record |

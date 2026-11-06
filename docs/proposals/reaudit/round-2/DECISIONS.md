@@ -1,7 +1,9 @@
 # Round 2: decisions for the fix pass
 
 The three readers of `spec/` reported 125 findings: [reader 1](reader-1.md), 36;
-[reader 2](reader-2.md), 49; [reader 3](reader-3.md), 40, of which 7 unsafe. The owner ruled
+[reader 2](reader-2.md), 49; [reader 3](reader-3.md), 40, of which that reader marked 7 as
+unsafe. The coordinator classed one finding of reader 1, R1-1.1, as unsafe as well, which
+makes the 8 that the tracker gives. The owner ruled
 that findings are resolved without a ruling on each (plan-audit ruling 37). This file settles
 every finding a reader marked as needing a decision, and the unsafe ones. Every other finding
 is fixed as its reader proposes. Each row is the coordinator's choice and can be struck by the
@@ -147,7 +149,8 @@ owner.
 ## The last pass, and what it left
 
 Done on 2026-11-06 by one editor ([log](log-tail.md)). 410 promises became 421. The pass listed
-eleven further points, most of them about later work, which decision 9 above made concrete for
+fourteen points, of which three were already known or were its own choices, and eleven were
+new, most of them about later work, which decision 9 above made concrete for
 the first time. The coordinator settles them here, under ruling 37, and the same editor applies
 them (the log gains a section). Each can be struck by the owner. The choices that pass made
 itself are in its log and stand unless the owner strikes them.

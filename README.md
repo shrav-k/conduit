@@ -38,8 +38,11 @@ The specification in [spec/](spec/README.md) alone binds. Nothing else in this r
   type behaves and are still to be written.
 - A behavior that is missing from `spec/` is a gap in `spec/`. It is not supplied by an older
   document.
-- Accepted behavior changes only by a ruling of the project's owner, logged in the
-  [plan audit](docs/AUDIT.md#ruling-log).
+- Accepted behavior changes by a ruling of the project's owner, logged in the
+  [plan audit](docs/AUDIT.md#ruling-log). Since ruling 37 a finding of the re-audit may also be
+  settled without a ruling on it; each such decision is logged, is not the owner's, and can be
+  struck by the owner. [Who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)
+  says which is which.
 
 ## Start here
 

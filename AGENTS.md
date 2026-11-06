@@ -53,7 +53,10 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 - An owner ruling: the ruling log in `docs/AUDIT.md`, with its record under `docs/proposals/`,
   then the documents it affects.
 - Accepted behavior: a promise in `spec/`, in the terms of `spec/definitions.md`. It changes
-  only by a logged ruling.
+  by a logged ruling. Under ruling 37 the session that coordinates the re-audit may also settle
+  a cold reader's finding without a ruling on it, and logs each such decision under
+  `docs/proposals/reaudit/` as its own and not the owner's
+  ([who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)).
 - A defect in the language: fix it in the language, not around it. Findings against `spec/` are
   recorded under `docs/proposals/reaudit/`. `docs/LANGUAGE_DEFECTS.md` is the register of the
   first sweep, which read `docs/protocol/`.

@@ -21,7 +21,9 @@ to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
 - **Accepted behavior** is a promise in [spec/](spec/README.md), in the terms of
   [spec/definitions.md](spec/definitions.md). A change needs an owner ruling, recorded in the
   [ruling log](docs/AUDIT.md#ruling-log) of the plan audit with its record under
-  `docs/proposals/`. `docs/protocol/` is no longer edited.
+  `docs/proposals/`. The one other way is a decision on a finding of the re-audit, under
+  ruling 37, which is logged as the coordinator's and not the owner's
+  ([who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)). `docs/protocol/` is no longer edited.
 - **A proposal for a ruling** is a record under `docs/proposals/`, with the options and a
   recommendation. The owner makes the rulings. Do not record a recommendation as accepted.
 - **A defect in the language** is fixed in the language, not around it. Findings against `spec/`
@@ -152,7 +154,9 @@ Any future contribution procedure remains an explicit project decision.
 
 ## Project ownership and publication
 
-One main repository, a common package envelope and Apache-2.0 are accepted. Public naming is
+One main repository, one format for every package and Apache-2.0 are accepted. The format is
+the manifest and the archive that [the package promises](spec/promises/packages.yaml) give;
+the older documents call it the common package envelope. Public naming is
 deferred: work continues in `shrav-k/conduit` until the owner selects an organization or transfer.
 Until there is a domain, the names the specification assigns come from this repository (rulings
 33 to 35 of the plan audit). They are defined once, in `spec/names.yaml`, and
@@ -160,8 +164,8 @@ Until there is a domain, the names the specification assigns come from this repo
 
 The repository owner retains final authority over the direction of the language. Collaborators
 can propose and review changes; merge and release work uses existing repository permissions and responsibilities
-explicitly delegated to appointed maintainers. Existing task authorizations remain valid. This does
-not introduce an additional approval step for already-authorized work, a fixed review quorum or a
+explicitly delegated to appointed maintainers. Work that the owner has already asked for needs no
+new approval. This does not introduce an additional approval step for already-authorized work, a fixed review quorum or a
 formal committee. Governance can evolve through an explicit project decision when useful.
 
 Public support/security contact details and any additional contribution procedures can be selected

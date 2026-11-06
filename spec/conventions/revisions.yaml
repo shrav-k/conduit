@@ -7,7 +7,8 @@
 # REV-009, REV-010 and REV-012: a rename advances the revision, and a control's `changes` maps
 # each input to the setting it sets. Its closing pass
 # (docs/proposals/reaudit/round-2/log-closing.md) changed REV-006, REV-007, REV-010 and
-# REV-013. No promise of this file has been removed.
+# REV-013, and its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed REV-010. No
+# promise of this file has been removed.
 
 - id: REV-001
   layer: convention
@@ -159,8 +160,8 @@
     settings are the inputs `revision` and `settings`, and `settings` has the shape of the
     control's output `settings`: a map keyed by the pointers of the control's `changes`. The
     request is authorized under ACC-033 against the target that manages the instance: the Pool
-    that owns it where it is a Resource, and `management` otherwise. It is not authorized by a
-    Conduit to the instance itself, as the control was.
+    that owns it where it is a Resource, and `management` otherwise, or where that Pool is
+    retired. It is not authorized by a Conduit to the instance itself, as the control was.
   vectors: []
 
 - id: REV-011

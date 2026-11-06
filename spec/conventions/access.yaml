@@ -13,7 +13,9 @@
 # ACC-008, ACC-014, ACC-015, ACC-018, ACC-019, ACC-022, ACC-029 to ACC-031, ACC-033, ACC-034
 # and ACC-038, and its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
 # ACC-006, ACC-009, ACC-012, ACC-015, ACC-019, ACC-026, ACC-029, ACC-031, ACC-033, ACC-035 and
-# ACC-038.
+# ACC-038. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed ACC-001, ACC-003,
+# ACC-011, ACC-019, ACC-031, ACC-033 and ACC-034, and added ACC-039, on the Conduits of a
+# retired consumer, and ACC-040, on a start of later work.
 # The round removed none. Draft: no vector exists yet.
 
 - id: ACC-001
@@ -27,7 +29,8 @@
   observable: >-
     A record of the refused request exists, and the target's implementation receives no call. An
     instance's retrieval, under OPS-016, of the result of an invocation whose request it sent is
-    not such a request: it needs no Conduit.
+    not such a request: it needs no Conduit. Nor is an instance's request, under ACC-040, for a
+    start of later work: the Conduit through which the work was arranged decides it.
   vectors: []
 
 - id: ACC-002
@@ -56,7 +59,8 @@
   observable: >-
     Inspecting the open Conduit shows the operations it lists. A request for any other operation
     through it reports refused. A Conduit that lists none is ready once it is opened, and every
-    request through it reports refused.
+    request through it reports refused. From the moment its consumer is retired, an open Conduit
+    permits less: only the requests of the consumer's retirement, under ACC-039.
   vectors: []
 
 - id: ACC-005
@@ -147,7 +151,10 @@
     All the access it carried ends. No part of it remains in force.
   observable: >-
     After the close every request through the Conduit reports refused. To narrow access, the
-    Conduit is closed and a new Conduit that lists fewer operations is opened.
+    Conduit is closed and a new Conduit that lists fewer operations is opened. A Conduit whose
+    consumer is retired is not closed by that: CON-008 closes it once the consumer's shutdown is
+    confirmed, or at once where the consumer is declared lost, and ACC-039 says what it permits
+    until it is closed.
   vectors: []
 
 - id: ACC-012
@@ -270,11 +277,12 @@
   observable: >-
     This holds from the close on, whatever Conduits the caller is later the consumer of: a new
     Conduit to the same target does not bring the work back. Each start is an invocation that
-    the engine itself dispatches, for the caller and through the Conduit of the request that
-    arranged the work, and a request that the work makes while it runs is an onward request that
-    names that invocation under IFC-020. An operation whose contract does not carry the mark
-    arranges no later work, under CTR-002. A start of model work is arranged only by an
-    operation that is also marked as starting it, under IMP-006.
+    the engine dispatches when the implementation that holds the work asks for it with
+    `start-later-work.v1`, for the caller and through the Conduit of the invocation that
+    arranged the work, as ACC-040 states. A request that the work makes while it runs is an
+    onward request that names the started invocation under IFC-020. An operation whose contract
+    does not carry the mark arranges no later work, under CTR-002. A start of model work is
+    arranged only by an operation that is also marked as starting it, under IMP-006.
   vectors: []
 
 - id: ACC-022
@@ -440,10 +448,14 @@
     both; an onward request that serves such a request carries the policy under ACC-017,
     whatever its own target. A list that is given and is empty matches no request. A request to
     apply a policy is not dispatched and reports invalid where it gives neither list, where its
-    requirement does not list `policy` in its `appliesTo` under CTR-005, and where its
-    `arguments` do not fit the inputs the requirement declares, which are checked as NAM-019
-    checks those of an applied requirement. A requirement of an unpublished package has no
-    qualified reference, and cannot be applied as a policy.
+    requirement does not list `policy` in its `appliesTo` under CTR-005, where its requirement
+    does not narrow requests, and where its `arguments` do not fit the inputs the requirement
+    declares, which are checked as NAM-019 checks those of an applied requirement. A policy's
+    requirement narrows requests, as a filter's does: it is sent to implementations under
+    IFC-018, and one that does not narrow is never sent. A requirement of an unpublished package
+    has no qualified reference, and cannot be applied as a policy. A request that names an actor
+    or a target that does not exist, and a request to remove a policy whose ID names no policy
+    in force, report invalid under OPS-029.
   vectors: []
 
 - id: ACC-032
@@ -493,7 +505,9 @@
     reconciled. Reconciling any other invocation, of a control or of any other operation, is
     authorized against the target that manages the instance the invocation was dispatched to:
     the Pool that owns that instance where it is a Resource, and `management` where it is an
-    Agent, an Interface or a Pool. In both cases the Conduit lists `reconcile.v1`.
+    Agent, an Interface or a Pool. In both cases the Conduit lists `reconcile.v1`. Where a Pool
+    is retired, every request that this promise authorizes against that Pool is authorized
+    against `management` in its place.
   observable: >-
     An actor with an open Conduit to that target listing the operation is permitted, and any
     other actor reports refused. Except for a control, a Conduit to the object itself, or to any
@@ -515,7 +529,16 @@
     `object-management.v1`, `pool-management.v1`, which every Pool offers, and
     `access-control.v1`. Where a request named here is an onward request, the Conduit that
     authorizes it is one of the instance that sent it, under ACC-016, and not one of the caller
-    it serves.
+    it serves. Every Conduit to a retired Pool is closed, under CON-008, so no request is made
+    through one. A Resource of a retired Pool is inspected, and an invocation that was
+    dispatched to it, its setup or its retirement is reconciled, through a Conduit to
+    `management` that lists the operation, as the Pool itself is inspected. An invocation of
+    `retire-with-resources.v1`, and the Pool's own retirement that it dispatched, are reconciled
+    through such a Conduit too: the Pool authorized them, and it is retired from the moment its
+    retirement is dispatched. While the Pool is not retired, a Conduit to `management` does not
+    permit those requests: at any moment one target authorizes a request. Which target that is
+    can be told only for an object that exists, and a request that names one that does not exist
+    reports invalid under OPS-029.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decisions U6 and U7).
@@ -533,11 +556,12 @@
   observable: >-
     The record of the invocation states its outcome. The caller receives the outcome and the
     statement that content is withheld: the result carries its outcome and no
-    `structuredContent`, and its `_meta` holds `io.github.shrav-k.conduit/withheld` with the
-    value true, as IFC-025 states. The content is never delivered under another Conduit, even
-    one from the same consumer to the same target. After the close no onward request is
-    dispatched that names the invocation in `io.github.shrav-k.conduit/serving`, or that names
-    an invocation which serves it through any number of onward requests.
+    `structuredContent`, its `_meta` holds `io.github.shrav-k.conduit/withheld` with the value
+    true, and its `isError` is true, because it holds no outputs, as IFC-025 states. The content
+    is never delivered under another Conduit, even one from the same consumer to the same
+    target. After the close no onward request is dispatched that names the invocation in
+    `io.github.shrav-k.conduit/serving`, or that names an invocation which serves it through any
+    number of onward requests.
   vectors: []
 
 - id: ACC-035
@@ -609,4 +633,71 @@
     `github.com/shrav-k/conduit/core#engine`. In `<digest>#<name>` the digest is the one that
     identifies the unpublished package under SUB-008, written as PKG-004 writes a digest, and
     the name is the implementation's: it is the form IFC-006 gives a contract of such a package.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decisions 2 and 9 of "The closing pass, and
+# --- what it left" in DECISIONS.md).
+
+- id: ACC-039
+  layer: convention
+  level: must
+  when: >-
+    A request is made through an open Conduit whose consumer is retired.
+  then: >-
+    The request is permitted only if it belongs to the consumer's retirement: it is a step of an
+    invocation of `retire.v1` for the consumer, or an onward request that serves such a step or
+    the stop of one of the consumer's runtimes. Every other request through the Conduit is not
+    dispatched, and reports refused.
+  observable: >-
+    From the moment the consumer is retired, under LIF-005, a request that the consumer makes on
+    its own behalf, and an onward request that serves any invocation other than those of its
+    retirement, report refused, although the Conduit's state is still ready and its tools are
+    still presented. A step of the consumer's `retire` graph that names the Conduit under
+    `conduit` is dispatched, and so is an onward request that names, in
+    `io.github.shrav-k.conduit/serving`, the invocation of a step of that graph or of the stop
+    of a runtime under TPL-009. This holds for a further retirement under LIF-026 as for the
+    first. It ends when the Conduit is closed: once the consumer's shutdown is confirmed or the
+    consumer is declared lost, under CON-008, or by a request of an actor under ACC-012. Every
+    other check of a request through the Conduit is made as for any request.
+  vectors: []
+
+- id: ACC-040
+  layer: convention
+  level: must
+  when: >-
+    An instance asks, with `start-later-work.v1`, for a start of later work: it names the
+    engine's ID for the invocation that arranged the work, an operation and arguments.
+  then: >-
+    The engine dispatches an invocation of that operation to that instance, for the caller of
+    the arranging invocation and through the Conduit that invocation was dispatched through,
+    only if all of these hold: the arranging invocation was dispatched to the instance that
+    asks; its operation is marked `arrangesLaterWork: true`; that Conduit is open and lists the
+    operation to be started; and, where the operation to be started is marked
+    `startsModelWork: true`, the arranging operation is so marked too. Where one of these does
+    not hold, the request is not dispatched, and reports refused.
+  observable: >-
+    The implementation that holds the work asks, through the server the engine presents for its
+    instance, under IFC-035. The request needs no Conduit of which that instance is the
+    consumer, and names no invocation in `io.github.shrav-k.conduit/serving`: it is decided
+    here, and not under ACC-001 or IFC-021. The started invocation is a new invocation with an
+    ID of its own. Its implementation is sent the caller of the arranging invocation in
+    `io.github.shrav-k.conduit/caller`, that Conduit in `io.github.shrav-k.conduit/conduit`,
+    and, in `io.github.shrav-k.conduit/restrictions`, the filters of that Conduit and the
+    policies that apply to a request of that caller to that instance, as they stand when the
+    start is dispatched. The access decision is made anew for each start, under ACC-036, and
+    every other check of a request through that Conduit is made as for any request, and gives
+    its own reason: a start whose arguments do not satisfy the operation's inputs reports
+    invalid, one whose instance is not ready reports unavailable under CON-024, and one through
+    a Conduit whose consumer is retired reports refused under ACC-039. A request that names an
+    ID which is that of no invocation, of an invocation dispatched to another instance, or of
+    one that came through no Conduit, as a step that invokes its own instance's implementation
+    does, reports refused, and its result says nothing of whether such an invocation exists. A
+    record exists in every case, under REC-001: of the request that was not dispatched, or of
+    the started invocation with its caller and its Conduit. The request may carry an operation
+    identity under IFC-023, scoped under OPS-008 to the instance that asks, to that caller and
+    to that instance as the target: a repeat is the same start, under OPS-009, and a request
+    with no identity is a new start each time, under OPS-011. Work that is to run repeatedly
+    asks for each start. IMP-006 states the condition on a start of model work, and ACC-019 what
+    holds once the Conduit is closed.
   vectors: []

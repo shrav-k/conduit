@@ -116,6 +116,9 @@ RULES = {
     "pool-offers": "CTR-004",
     "runtime-once": "TPL-006",
     "applies-to": "CTR-005",
+    "implementation-selected": "TPL-004",
+    "narrows-on-conduit": "CON-030",
+    "obliges-narrows": "CTR-005",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -1135,6 +1138,133 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                                         f"{'a Conduit' if place == 'conduit' else place}, as "
                                         f"{local}, and the `appliesTo` of {requirement} does "
                                         f"not list `{place}`"))
+
+    # The three rules below follow a selection from one document into another, so they name a
+    # contract by the project or package that holds it and its name. `#name` is in the project
+    # or package of the document that writes it (NAM-022): this set, or the package the
+    # document was found in. A qualified reference names its package.
+    here = core if is_core else None
+
+    def canon(ref, home):
+        if not isinstance(ref, str) or "#" not in ref:
+            return None
+        address, _, name = ref.partition("#")
+        return (address or home, name)
+
+    def lookup(key, kind):
+        """The contract of that kind which `key` names, where this tool has it."""
+        if key is None:
+            return None
+        home, name = key
+        held = own.get(name) if home == here else package_docs.get(home, {}).get(name)
+        return held if isinstance(held, dict) and held.get("kind") == kind else None
+
+    def members(value):
+        return value.items() if isinstance(value, dict) else ()
+
+    # implementation-selected (TPL-004): every operation that a template's type requires, that
+    # a capability the type offers includes, that the type lists as a control, or that a
+    # runtime of the template or of its type, or a step of the template without `conduit`,
+    # names has an implementation: a key of the template's `implementation` map, a default of
+    # the type, or the default of the operation's own contract. Applied where the tool has the
+    # type's contract, and for each operation whose contract it has; a capability whose
+    # contract it does not have is not followed.
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        type_key = canon(spec.get("type"), here)
+        type_doc = lookup(type_key, "Type") if kind != "Conduit" else None
+        if type_doc is None:
+            continue
+        body = type_doc.get("spec") if isinstance(type_doc.get("spec"), dict) else {}
+        needed = {}
+
+        def need(ref, home, why):
+            key = canon(ref, home)
+            if key is not None:
+                needed.setdefault(key, why)
+
+        for ref in body.get("requires") if isinstance(body.get("requires"), list) else ():
+            need(ref, type_key[0], "its type requires the operation")
+        for ref in body.get("controls") if isinstance(body.get("controls"), list) else ():
+            need(ref, type_key[0], "its type lists the operation as a control")
+        for offered in body.get("offers") if isinstance(body.get("offers"), list) else ():
+            offered_key = canon(offered, type_key[0])
+            capability = lookup(offered_key, "Capability")
+            listed = (capability.get("spec") or {}).get("operations") if capability else None
+            for ref in listed if isinstance(listed, list) else ():
+                need(ref, offered_key[0], f"the capability {offered_key[1]}, which its type "
+                                          f"offers, includes the operation")
+        for holder, home, whose in ((body, type_key[0], "its type"), (spec, here, "the template")):
+            for runtime, ends in members(holder.get("runtimes")):
+                for end in ("start", "stop"):
+                    if isinstance(ends, dict):
+                        need(ends.get(end), home, f"the runtime {runtime} of {whose} names "
+                                                  f"the operation")
+        graphs = [spec.get("setup"), spec.get("retire")]
+        graphs += [value for _, value in members(spec.get("implementation"))]
+        for graph in graphs:
+            for step, held in members(graph.get("steps") if isinstance(graph, dict) else None):
+                if isinstance(held, dict) and "conduit" not in held:
+                    need(held.get("operation"), here, f"the step {step} names the operation")
+        chosen = {canon(key, here) for key, _ in members(spec.get("implementation"))}
+        chosen |= {canon(key, type_key[0]) for key, _ in members(body.get("implementation"))}
+        for key, why in needed.items():
+            operation = lookup(key, "Operation")
+            if key in chosen or operation is None:
+                continue
+            if "implementation" not in (operation.get("spec") or {}):
+                found.append(("implementation-selected",
+                              f"the template {name} selects no implementation for {key[1]}, "
+                              f"and neither its type {named(type_doc)} nor the operation's "
+                              f"contract states a default; {why}"))
+
+    def narrowing(key, seen=()):
+        """Whether the requirement `key` names narrows requests: True, False, or None where
+        this tool cannot tell because it lacks a contract. A composition narrows exactly where
+        one of its constituents does (CTR-005). Also returns the names of the requirements,
+        this one and those below it, that do not narrow and are not of the core package."""
+        contract = lookup(key, "Requirement")
+        if contract is None or id(contract) in seen:
+            return None, []
+        body = contract.get("spec") if isinstance(contract.get("spec"), dict) else {}
+        parts = [part for _, part in members(body.get("constituents")) if isinstance(part, dict)]
+        names = []
+        if parts:
+            states = []
+            for part in parts:
+                state, below = narrowing(canon(part.get("requirement"), key[0]),
+                                         seen + (id(contract),))
+                states.append(state)
+                names += below
+            narrows = True if True in states else None if None in states else False
+        else:
+            narrows = body.get("narrows") is True
+        if narrows is False and key[0] != core:
+            names.append(key[1])
+        return narrows, names
+
+    # narrows-on-conduit (CON-030): a requirement that does not narrow requests is applied to
+    # a Conduit, itself or as a constituent, only where it is a contract of the core package.
+    # Applied to the `requirements` of a Conduit template, as far as the tool has the
+    # contracts.
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        for local, item in members(spec.get("requirements")) if kind == "Conduit" else ():
+            ref = item.get("requirement") if isinstance(item, dict) else None
+            for requirement in narrowing(canon(ref, here))[1]:
+                found.append(("narrows-on-conduit",
+                              f"the Conduit template {name} applies {ref}, as {local}, and "
+                              f"{requirement} does not narrow requests and is not a contract "
+                              f"of the core package"))
+
+    # obliges-narrows (CTR-005): a requirement that does not narrow requests states no
+    # `obliges`. Applied where the tool can tell that the requirement does not narrow.
+    for doc in docs:
+        spec = doc.get("spec") if doc.get("kind") == "Requirement" else None
+        if isinstance(spec, dict) and "obliges" in spec \
+                and narrowing((here, named(doc)))[0] is False:
+            found.append(("obliges-narrows", f"the Requirement contract {named(doc)} states "
+                                             f"`obliges` and does not narrow requests"))
 
     # default-valid (SCH-019): a `default` satisfies the schema that states it, and an input's
     # `default` the input's own `schema`. Applied where every `$ref` of the schema can be

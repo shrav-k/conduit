@@ -6,7 +6,11 @@
 # added DL14. The second round of the re-audit (docs/proposals/reaudit/round-2/) named the key
 # that states what an item is about `subject`, added to DL5 and DL6, reworded DL7 and added
 # DL15. Its closing pass added to DL7 which tar formats an engine reads, to DL10 how long the
-# content of a retained result is kept, and to DL12 what the `content` of a result holds.
+# content of a retained result is kept, and to DL12 what the `content` of a result holds. Its
+# last pass (docs/proposals/reaudit/round-2/log-tail.md) reworded DL3 in the terms of an
+# invocation, took from DL7 the use of a package from files that are still being edited, which
+# PKG-022, PKG-004 and NAM-006 decide, and from DL11 the later opening of an optional Conduit,
+# which CON-004 and ACC-006 decide, and added to DL7 how an engine is handed a directory.
 
 - id: DL1
   subject: Graph execution
@@ -23,10 +27,12 @@
     is computed, which a purge keeps under REC-004. The SHA-256 of the RFC 8785 form of the
     operation and its arguments is one way that gives equal contents the same digest.
 - id: DL3
-  subject: A request that waits for an actor to reply
+  subject: An invocation that does not end until an actor replies
   document: >-
-    When the wait expires, and what happens to a reply given twice or given while the engine
-    cannot receive it.
+    How long the engine waits for the reply, and what happens to a reply given twice or given
+    while the engine cannot receive it. No promise limits how long an invocation is in progress:
+    until it ends, a repeat of its request is told `inProgress` under OPS-009, and one for which
+    the engine stops waiting has the outcome OPS-007 gives where no result arrives.
 - id: DL4
   subject: Unreachable `access` or `management`
   document: >-
@@ -46,9 +52,10 @@
   subject: Packages
   document: >-
     Where packages are stored, how they are fetched and removed, which schemes of `fetch` are
-    accepted, which of the tar formats and extensions an engine reads in an archive under
-    PKG-022, and whether a package can be used from files that are still being edited, with no
-    archive.
+    accepted, and which of the tar formats and extensions an engine reads in an archive under
+    PKG-022. Also how the engine is handed a directory under SUB-010, such as by a command or a
+    call, for which actor it then registers, and whether it installs the packages that the
+    manifest lists, by requests for `install.v1`, before it registers.
 - id: DL8
   subject: Delivery of observations and records
   document: >-
@@ -67,8 +74,7 @@
 - id: DL11
   subject: Conduits during setup
   document: >-
-    What a consumer with only some of its Conduits open may do, and how an optional Conduit
-    that failed to open is opened later.
+    What a consumer with only some of its Conduits open may do.
 - id: DL12
   subject: Transport, processes and protocol revisions
   document: >-

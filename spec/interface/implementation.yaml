@@ -16,8 +16,16 @@
 # `invocation`; changed IFC-006, IFC-010, IFC-012, IFC-016, IFC-018 to IFC-020, IFC-023 to
 # IFC-025, IFC-029 and IFC-032; and added IFC-033. Its closing pass
 # (docs/proposals/reaudit/round-2/log-closing.md) changed IFC-001, IFC-012, IFC-018, IFC-020,
-# IFC-024, IFC-025, IFC-029 and IFC-033: `retrieve-result.v1` returns the engine's ID. No
-# promise of this file has been removed. Draft: no vector exists yet.
+# IFC-024, IFC-025, IFC-029 and IFC-033: `retrieve-result.v1` returns the engine's ID. Its last
+# pass (docs/proposals/reaudit/round-2/log-tail.md) changed IFC-001, IFC-004, IFC-006, IFC-007,
+# IFC-009, IFC-010, IFC-012 to IFC-014, IFC-016, IFC-021, IFC-025, IFC-032 and IFC-033, and
+# added IFC-034 and IFC-035. It applied the check of these promises against the protocol
+# (docs/proposals/reaudit/round-2/mcp-citations.md): each side keeps every requirement of the
+# protocol, a call to a tool that is not presented is answered with the protocol's error, whose
+# `data` holds the key `reason`, and `isError` is true on every result that the engine gives a
+# consumer and that carries none of the operation's outputs. It also put the key `restrictions`
+# in the `_meta` of a tool's definition, and added the tool `start-later-work.v1`. No promise
+# of this file has been removed. Draft: no vector exists yet.
 
 - id: IFC-001
   layer: interface
@@ -29,13 +37,20 @@
     operation is one tool, called with `tools/call`. The tool's `name` is the operation's export
     name or, for an implementation marked `plain`, the name its `tools` map gives under PKG-020.
     Its `arguments` are the operation's inputs, and the result's `structuredContent` is the
-    operation's outputs, keyed by name.
+    operation's outputs, keyed by name. The engine and the implementation each keep every
+    requirement of the protocol at the revision in use, and this specification repeats none of
+    them.
   observable: >-
     A `tools/call` request for the operation carries exactly the operation's inputs as its
     `arguments`. Operations of two packages may share an export name. An implementation that
     implements two such operations has one tool of that name, and tells the two apart by
     `io.github.shrav-k.conduit/operation`, which IFC-006 sends with every request. A plain
-    implementation is sent no such key, and its `tools` map names a tool for each operation.
+    implementation is sent no such key, and its `tools` map names a tool for each operation. The
+    interface is the protocol with Conduit's keys added. What the protocol requires of a client
+    and of a server, such as the keys it requires in the `_meta` of every request, what a server
+    must implement beside its tools, and what a tool list must carry, binds the engine and an
+    implementation as the protocol states it. The same holds for the server that the engine
+    presents to a consumer under IFC-012.
   vectors: []
 
 - id: IFC-002
@@ -75,8 +90,8 @@
     A revision of the protocol is used under IFC-003.
   then: >-
     It provides what this interface relies on: `tools/call` with a `name` and `arguments`;
-    `_meta` on the request and on the result; `structuredContent`; and `isError`, the flag that
-    marks a result as an error.
+    `_meta` on the request, on the result and on a tool's definition; `structuredContent`; and
+    `isError`, the flag that marks a result as an error.
   observable: >-
     A revision that lacks any of these is not used, whatever both sides support.
   vectors: []
@@ -118,7 +133,10 @@
     unpublished package has no address and so no qualified reference: it is written
     `<digest>#<name>`, the digest that identifies the unpublished package under SUB-008, written
     as PKG-004 writes a digest, then `#`, then the contract's name. No separate key names the
-    package, so one request can name contracts of two unpublished packages.
+    package, so one request can name contracts of two unpublished packages. A start of later
+    work is sent the caller for whom the work was arranged, the Conduit through which it was
+    arranged, and the operation identity that the instance which asked for the start supplied,
+    if it supplied one, under ACC-040.
   vectors: []
 
 - id: IFC-007
@@ -129,7 +147,7 @@
   then: >-
     The request carries Conduit's keys.
   observable: >-
-    The request's `_meta` holds only what the protocol itself requires, such as
+    The request's `_meta` holds only keys that the protocol itself defines, such as
     `io.modelcontextprotocol/protocolVersion`.
   vectors: []
 
@@ -161,7 +179,13 @@
     other than those named for it, has the outcome unknown, as OPS-007 states. A result that
     carries both an outcome and a reason is recorded as unknown, and its reason is not reported:
     the implementation has contradicted itself, so its statement that it performed nothing is
-    not relied on.
+    not relied on. An implementation sets `isError` to true on a result that states failed or
+    unknown, as the protocol has a tool report its own errors, as IFC-008 states for one such
+    result and as IFC-026 states for a result that gives a reason. That result need not hold the
+    operation's outputs: OPS-007 checks the declared outputs of a result that states succeeded.
+    The engine takes the outcome from `io.github.shrav-k.conduit/outcome` and not from
+    `isError`. The `isError` of the result that the engine gives a consumer is the engine's own,
+    as IFC-025 states.
   vectors: []
 
 - id: IFC-010
@@ -171,15 +195,17 @@
     An implementation marked `plain` answers a `tools/call` request.
   then: >-
     A complete result that is not an error is the outcome succeeded. An error on an operation
-    whose contract declares no effect, and a JSON-RPC error that says the tool is unknown or the
-    request malformed, is failed. A result whose `resultType` is `input_required`, any other
-    error, and no result at all, is unknown.
+    whose contract declares no effect, and a JSON-RPC error for invalid parameters, is failed. A
+    result whose `resultType` is `input_required`, any other error, and no result at all, is
+    unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
-    `isError` is true. A protocol error is a JSON-RPC error, and the one that says the tool is
-    unknown or the request malformed is the protocol's invalid-params error, code -32602. The
-    outcome the engine records for a plain server follows that table and nothing else, except
-    that a result in which a declared output fails validation is unknown under OPS-007.
+    `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
+    parameters is -32602, and an unknown tool is one case of it; arguments that the tool does
+    not accept, and a request whose parameters are malformed, are others. The outcome the engine
+    records for a plain server follows that table and nothing else, except that a result in
+    which a declared output fails validation is unknown under OPS-007. Where the protocol's
+    tasks extension is used, under IFC-016, the table applies to the task's final result.
   vectors: []
 
 - id: IFC-011
@@ -203,31 +229,35 @@
     An instance is the consumer of an open Conduit.
   then: >-
     The engine presents to that instance a Model Context Protocol server whose tools are exactly
-    the operations its open Conduits list, and the one tool of IFC-024. A tool for an operation
-    is named by the Conduit's local name, then the name of each component for a Conduit made
-    from a composite template, then the operation's export name, joined by dots. The local name
-    of a declared Conduit is the name its consumer's template gives it, and that of a Conduit
-    instantiated on its own is the Conduit's own name.
+    the operations its open Conduits list, and the two tools of IFC-024 and IFC-035. A tool for
+    an operation is named by the Conduit's local name, then the name of each component for a
+    Conduit made from a composite template, then the operation's export name, joined by dots.
+    The local name of a declared Conduit is the name its consumer's template gives it, and that
+    of a Conduit instantiated on its own is the Conduit's own name.
   observable: >-
     The instance's tool list holds one tool for each operation of each of its open Conduits, the
-    tool of IFC-024, and nothing else. A call to a Conduit's tool is a request through that
-    Conduit and is decided under the access convention. A tool name ends in the operation's
-    version segment, because that segment is part of the export name under CTR-001. The declared
-    Conduit `checkout` that lists an operation exported as `directory.read.v1` gives the tool
-    `checkout.directory.read.v1`. Where `checkout` is made from a composite template, its
-    component `files` gives the tool `checkout.files.directory.read.v1`, and where a component
-    is itself made from a composite the name of each component on the way is written, outermost
-    first. A Conduit `review-read` that was instantiated on its own as the component `read` of a
-    composite gives `review-read.read.directory.read.v1`. Such a name uses only characters the
-    protocol allows in a tool name, which are letters, digits, `_`, `-` and `.`. The protocol
-    limits a tool name to 128 characters. The local name of a Conduit that is not made from a
-    composite is at most 63 characters under OBJ-001 and OBJ-022, and an export name at most 63
-    under NAM-004, so only a Conduit made from a composite can pass the limit. A Conduit one of
-    whose tool names would be longer, or would equal another tool's name, is not instantiated,
-    under IFC-014. What the definition of each tool holds is IFC-033. A call that names a tool
-    the engine does not present to the instance is a request that no open Conduit permits: it
-    reports refused under ACC-001, whether the name was never presented or its Conduit has been
-    closed.
+    tools of IFC-024 and IFC-035, and nothing else. A call to a Conduit's tool is a request
+    through that Conduit and is decided under the access convention. A tool name ends in the
+    operation's version segment, because that segment is part of the export name under CTR-001.
+    The declared Conduit `checkout` that lists an operation exported as `directory.read.v1`
+    gives the tool `checkout.directory.read.v1`. Where `checkout` is made from a composite
+    template, its component `files` gives the tool `checkout.files.directory.read.v1`, and where
+    a component is itself made from a composite the name of each component on the way is
+    written, outermost first. A Conduit `review-read` that was instantiated on its own as the
+    component `read` of a composite gives `review-read.read.directory.read.v1`. Such a name uses
+    only the characters that the protocol recommends for a tool name, which are ASCII letters,
+    digits, `_`, `-` and `.`. The protocol says that a tool name should be at most 128
+    characters, and this specification makes that a limit. The local name of a Conduit that is
+    not made from a composite is at most 63 characters under OBJ-001 and OBJ-022, and an export
+    name at most 63 under NAM-004, so only a Conduit made from a composite can pass the limit. A
+    Conduit one of whose tool names would be longer, or would equal another tool's name, is not
+    instantiated, under IFC-014. What the definition of each tool holds is IFC-033 and IFC-034.
+    A call that names a tool the engine does not present to the instance is a request that no
+    open Conduit permits: it reports refused under ACC-001, whether the name was never presented
+    or its Conduit has been closed. The engine answers such a call as the protocol prescribes
+    for an unknown tool: with the JSON-RPC error for invalid parameters, code -32602, and with
+    no tool result. The error's `data` holds `io.github.shrav-k.conduit/reason` with the value
+    refused, and the request is recorded as refused, under REC-001.
   vectors: []
 
 - id: IFC-013
@@ -238,7 +268,10 @@
   then: >-
     Its tools are no longer presented to its consumer.
   observable: >-
-    The consumer's next tool list omits them. What a call to one of them reports is ACC-011.
+    The next tool list that the engine serves to the consumer omits them. A consumer may hold a
+    tool list for as long as the protocol lets it. A call to a tool that is no longer presented
+    reports refused under ACC-011, and is answered as IFC-012 states, with the protocol's error
+    for an unknown tool.
   vectors: []
 
 - id: IFC-014
@@ -253,11 +286,12 @@
   observable: >-
     Resolving returns a diagnostic naming the tool name and, where two names are equal, the
     Conduit that has the other. The other tools are those of the consumer's other Conduits that
-    are not closed, whether or not they are open yet, and the tool of IFC-024. A Conduit
-    instantiated on its own under the local name of one of its consumer's declared Conduits is
-    not instantiated where the two would have a tool name in common. No two tools presented to
-    one consumer share a name, and none is longer than the protocol allows. A rename that would
-    make a tool name longer than 128 characters, or two tool names equal, is CON-026.
+    are not closed, whether or not they are open yet, and the tools of IFC-024 and IFC-035. A
+    Conduit instantiated on its own under the local name of one of its consumer's declared
+    Conduits is not instantiated where the two would have a tool name in common. No two tools
+    presented to one consumer share a name, and none is longer than the 128 characters that the
+    protocol recommends. A rename that would make a tool name longer than 128 characters, or two
+    tool names equal, is CON-026.
   vectors: []
 
 - id: IFC-015
@@ -281,8 +315,9 @@
   then: >-
     The call returns, among its outputs, a value that names the work, as the operation's
     contract declares it, and the result is retrieved later under the operations convention. The
-    protocol's tasks extension, `io.modelcontextprotocol/tasks`, may also be used, and never
-    stands in for the operation identity.
+    protocol's tasks extension, `io.modelcontextprotocol/tasks`, which is an official extension
+    outside the baseline revision, may also be used, and never stands in for the operation
+    identity.
   observable: >-
     The retained result is found by the operation identity and the target of the request, under
     OPS-016, whichever facility delivered it.
@@ -378,14 +413,17 @@
   level: must
   when: >-
     An instance that is not an actor, which is to say neither an Interface nor an Agent, makes a
-    request that names no invocation in `io.github.shrav-k.conduit/serving`.
+    request, other than one for `start-later-work.v1`, that names no invocation in
+    `io.github.shrav-k.conduit/serving`.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
     A Resource's implementation that calls onward without naming the invocation it serves
     reports refused, whatever open Conduits the Resource is the consumer of. An Interface or an
     Agent that names none makes the request on its own behalf and is its caller. What a request
-    reports that names an invocation its sender does not serve is IFC-028.
+    reports that names an invocation its sender does not serve is IFC-028. A request for
+    `start-later-work.v1` names no invocation in that key, whichever instance makes it: its
+    caller is that of the invocation that arranged the work, and ACC-040 decides it.
   vectors: []
 
 - id: IFC-022
@@ -460,35 +498,63 @@
     `io.github.shrav-k.conduit/outcome`, with the value succeeded, failed or unknown. When it
     ended with a reason, whether the engine did not dispatch it or the implementation gave the
     reason under IFC-026, the result's `_meta` holds `io.github.shrav-k.conduit/reason`, with
-    the value refused, invalid, conflict or unavailable, and the result's `isError` is true.
-    Where a restriction is why the request ended with a reason, the result's `_meta` also holds
+    the value refused, invalid, conflict or unavailable. Where a restriction is why the request
+    ended with a reason, the result's `_meta` also holds
     `io.github.shrav-k.conduit/restriction`, which names that restriction by its `requirement`
     and its `arguments`: the engine's own result carries it under the same key that an
     implementation uses under IFC-026. When the request is a repeat of an invocation that has
     not ended, under OPS-009, the result's `_meta` holds neither of the two and holds
-    `io.github.shrav-k.conduit/state`, with the value `inProgress`, and the result's `isError`
-    is not true. When the request has an outcome, or is a repeat of an invocation, the result's
-    `_meta` also holds `io.github.shrav-k.conduit/invocation`, the engine's ID for that
-    invocation. Where the content of a result is withheld under ACC-034 or OPS-017, the result
-    carries its outcome and no `structuredContent`, and its `_meta` holds
-    `io.github.shrav-k.conduit/withheld`, with the value true.
+    `io.github.shrav-k.conduit/state`, with the value `inProgress`. When the request has an
+    outcome, or is a repeat of an invocation, the result's `_meta` also holds
+    `io.github.shrav-k.conduit/invocation`, the engine's ID for that invocation. Where the
+    content of a result is withheld under ACC-034 or OPS-017, the result carries its outcome and
+    no `structuredContent`, and its `_meta` holds `io.github.shrav-k.conduit/withheld`, with the
+    value true. The result's `isError` is true in these cases and in no other, and in each of
+    them the result carries none of the operation's outputs, `diagnostics` apart: where the
+    request ended with a reason, where its outcome is failed or unknown, where its content is
+    withheld, and where it is a repeat of an invocation that has not ended, or of one that
+    succeeded and whose outputs the engine no longer keeps.
   observable: >-
     A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
     and a result for one that ended with a reason never carries
     `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. A result
-    that ended with a reason may carry `diagnostics` in its `structuredContent`, as the result
-    of a rejected registration does under OBJ-023. A request that the engine does not dispatch
-    because a filter or a policy forbids it, or cannot be evaluated or applied, names that
-    filter or policy in `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015
-    require; for a composed requirement it names the constituent, as IFC-018 sends it. The ID in
-    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the
-    invocation, under OPS-014, so a consumer learns it from the result. For a call to the tool
-    of IFC-024 the keys say how the retrieval itself ended, and the ID among them is that of the
-    retrieval. The state of the invocation it asks about, that invocation's ID and whether its
-    content is withheld are in the result's `structuredContent`, as IFC-024 states. This
-    specification gives the `content` member of a tool result no meaning: an operation's outputs
-    are in `structuredContent`. A result whose content is withheld holds nothing in `content`
-    that the implementation returned. What the engine puts there otherwise is DL12 of the
+    whose `isError` is not true has the outcome succeeded and holds the operation's outputs in
+    its `structuredContent`, which conforms to the `outputSchema` of IFC-033, as the protocol
+    requires of a tool that declares one. A result whose `isError` is true holds none of them,
+    and the keys beside it say why: `io.github.shrav-k.conduit/reason`, an outcome that is
+    failed or unknown, `io.github.shrav-k.conduit/withheld` or
+    `io.github.shrav-k.conduit/state`. A result whose content is withheld still carries its
+    outcome, which may be succeeded. One whose `isError` is true, whose outcome is succeeded and
+    which holds neither `io.github.shrav-k.conduit/withheld` nor
+    `io.github.shrav-k.conduit/state` is a repeat whose outputs the engine no longer keeps. A
+    result has content to withhold, or to keep, only where its operation declares outputs: the
+    result of an operation that declares none is never marked as withheld, and where its outcome
+    is succeeded its `isError` is not true, even where its Conduit was closed before it ended.
+    The protocol's revision 2026-07-28 does not say whether a result whose `isError` is true
+    must conform to `outputSchema`. This specification takes it that it need not: such a result
+    carries no outputs, and may carry `diagnostics`. What a request that is not dispatched says
+    beyond its reason, and beyond the restriction it names, it says there: `diagnostics` in the
+    `structuredContent` of its result is a list of diagnostics, whether or not the operation's
+    contract declares an output of that name, as that of `register.v1` does. The result of a
+    rejected registration carries them under OBJ-023, and that of a request to retire a Pool
+    whose Resources are in the way names those Resources there, under LIF-020. A request that
+    reports refused says nothing there of the objects it names, under OPS-023. A request that
+    the engine does not dispatch because a filter or a policy forbids it, or cannot be evaluated
+    or applied, names that filter or policy in `io.github.shrav-k.conduit/restriction`, as
+    ACC-008, ACC-014 and ACC-015 require; for a composed requirement it names the constituent,
+    as IFC-018 sends it. The ID in `io.github.shrav-k.conduit/invocation` is the one by which
+    `reconcile.v1` names the invocation, under OPS-014, so a consumer learns it from the result.
+    For a call to the tool of IFC-024 the keys say how the retrieval itself ended, and the ID
+    among them is that of the retrieval. The state of the invocation it asks about, that
+    invocation's ID and whether its content is withheld are in the result's `structuredContent`,
+    as IFC-024 states, and that result is not an error. For a call to the tool of IFC-035 the
+    keys are those of the invocation it started. A call that names a tool the engine does not
+    present is answered with no tool result: the reason is then in the `data` of the protocol's
+    error, as IFC-012 states. IFC-032 names the other request that has none. The `content`
+    member is always present in a tool result, as the protocol requires, and may be an empty
+    list. This specification gives it no meaning: an operation's outputs are in
+    `structuredContent`. A result whose content is withheld holds nothing in `content` that the
+    implementation returned. What the engine puts there otherwise is DL12 of the
     implementation-defined list.
   vectors: []
 
@@ -610,9 +676,13 @@
   observable: >-
     A client of the Model Context Protocol that is not an instance, or that presents nothing
     from which the engine establishes one under IFC-022, can use no tool: each of its calls
-    reports refused, the tool of IFC-024 included, and no implementation receives a call. The
-    record of such a request holds no caller, and says that none could be established, under
-    REC-002.
+    reports refused, the tools of IFC-024 and IFC-035 included, and no implementation receives a
+    call. The engine presents no tool to such a client, so it answers each call as IFC-012
+    states for a tool that is not presented. The record of such a request holds no caller, and
+    says that none could be established, under REC-002. Where what a request presents is a
+    credential of the protocol's own authorization on an HTTP transport, a request whose
+    credential is missing or invalid is answered as the protocol requires, with HTTP 401, and
+    with no tool result. It is recorded as refused all the same.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md,
@@ -626,14 +696,78 @@
   then: >-
     The tool's definition is derived from the Operation contract as the target holds it. Its
     `inputSchema` describes a map whose properties are the contract's inputs, each with the
-    input's `schema`, and whose `required` lists the inputs that are neither marked `optional:
-    true` nor state a `default`; for a control it lists `revision` alone, under REV-006. Its
-    `outputSchema` is derived from the contract's outputs in the same way.
+    input's `schema`, and whose `required` lists the inputs that are neither marked
+    `optional: true` nor state a `default`; for a control it lists `revision` alone, under
+    REV-006. Its `outputSchema` is derived from the contract's outputs in the same way.
   observable: >-
     An input or an output that is a handle is given the schema of a string, which is what
     IFC-011 makes it on the wire. A `$ref` that names a Schema contract, by a qualified
     reference or as `#name`, is replaced by the schema that the contract's `spec` is, under
     SCH-015, so the definition can be read with no package at hand. Where the consumer, the
     Conduit and the target hold different versions of the contract's package, the definition is
-    that of the version the target holds, as NAM-023 states.
+    that of the version the target holds, as NAM-023 states. A result of the tool that is not an
+    error conforms to `outputSchema`, and IFC-025 says which results are errors. What the
+    definition's `_meta` holds is IFC-034.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decisions 8 and 9 of "The closing pass, and
+# --- what it left" in DECISIONS.md).
+
+- id: IFC-034
+  layer: interface
+  level: must
+  when: >-
+    The engine presents a tool for an operation of a Conduit to the Conduit's consumer, under
+    IFC-012, and the Conduit carries a filter whose contract names `consumer` in `obliges`.
+  then: >-
+    The tool's definition holds `io.github.shrav-k.conduit/restrictions` in its `_meta`: a list
+    of those filters, each item in the form IFC-018 gives, with `requirement` and `arguments`.
+  observable: >-
+    The list holds the filters of that Conduit whose contract obliges the consumer, under
+    CTR-005, and nothing else: no filter that obliges the target alone, no policy, and nothing
+    carried from an invocation. A composed filter whose contract obliges the consumer is written
+    as IFC-018 sends it, as one item for each constituent that narrows requests, and an argument
+    that is a reference is in the resolved form of OBJ-009. Every tool of the Conduit carries
+    the same list, and where the Conduit carries no such filter the definition holds no such
+    key. It is how the implementation selected for the consumer, which CON-022 has state the
+    filter in `supports`, learns which filters it is to keep to in its requests through the
+    Conduit. What keeping to a filter means for a consumer is stated by the requirement's
+    contract. The target's implementation is still sent every filter with each request, under
+    IFC-018, and applies it under IFC-019. The tools of IFC-024 and IFC-035 belong to no Conduit
+    and carry no such key.
+  vectors: []
+
+- id: IFC-035
+  layer: interface
+  level: must
+  when: >-
+    The engine presents its server to an instance.
+  then: >-
+    The server always has the tool `start-later-work.v1`, an operation of the core package that
+    is in no capability, with which the implementation that holds later work asks for a start of
+    it. The tool is named by that export name alone, with no Conduit's name before it. It is
+    presented whether or not any Conduit of which the instance is the consumer is open, and a
+    call to it needs no Conduit of that instance. A call names `invocation`, the engine's ID for
+    the invocation that arranged the work; `operation`, the operation to start, written as
+    IFC-006 writes an operation; and `arguments`, the inputs of that operation. The result is
+    that of the invocation the call started: its `_meta` holds that invocation's outcome and the
+    engine's ID for it, as IFC-025 states, and its `structuredContent` holds `outputs`, the
+    outputs of the operation that was started.
+  observable: >-
+    An instance with no open Conduit still lists the tool. Whether a call is dispatched is
+    ACC-040: a call that fails one of its conditions reports refused, and one that fails another
+    check of a request reports the reason of that check, in a result that IFC-025 describes. The
+    operation is named by its qualified reference or, for an operation of an unpublished
+    package, as `<digest>#<name>`. `arguments` may be left out, and then supplies none. The call
+    carries no `io.github.shrav-k.conduit/serving`, under IFC-021, and may carry
+    `io.github.shrav-k.conduit/operationIdentity`, under IFC-023: a repeat of the call is the
+    same start, and its result is the one OPS-009 gives a repeat. The ID in
+    `io.github.shrav-k.conduit/invocation` is that of the started invocation. It is the ID that
+    a request the work makes while it runs names in `io.github.shrav-k.conduit/serving`, under
+    ACC-019, and the one `reconcile.v1` names where the outcome is unknown. Where the outcome is
+    failed or unknown, or the content is withheld under ACC-034, the result holds no `outputs`
+    and its `isError` is true, as IFC-025 states. An implementation marked `plain` is sent no ID
+    of an invocation, under IFC-007, and cannot ask for a start: TPL-014 rejects a template that
+    would have one arrange later work.
   vectors: []

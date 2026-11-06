@@ -21,8 +21,9 @@
 # and what gives `fetch` is called an item of `packages`. Its closing pass
 # (docs/proposals/reaudit/round-2/log-closing.md) changed MAN-006 and MAN-010: a relative
 # `fetch` or program is resolved against the directory the manifest was read from, and is
-# rejected where there is none. No promise of this file has been removed. Draft: no vector
-# exists yet.
+# rejected where there is none. Its last pass (docs/proposals/reaudit/round-2/log-tail.md)
+# changed MAN-006: reading a manifest installs nothing. No promise of this file has been
+# removed. Draft: no vector exists yet.
 
 - id: MAN-001
   layer: language
@@ -113,16 +114,18 @@
     relative reference is resolved against the directory the manifest was read from. Where the
     manifest was handed over without a directory, a relative reference is rejected.
   observable: >-
-    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and `fetch:
-    ../history/history-1.4.0.tar.gz` each name one archive file. The package is still identified
-    by its address, as NAM-012 states, and the digest decides whether what was fetched satisfies
-    the item, under PKG-021. Which schemes an engine can fetch from is DL7 of the
-    implementation-defined list. A manifest is handed over without a directory where several
+    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and
+    `fetch: ../history/history-1.4.0.tar.gz` each name one archive file. The package is still
+    identified by its address, as NAM-012 states, and the digest decides whether what was
+    fetched satisfies the item, under PKG-021. Which schemes an engine can fetch from is DL7 of
+    the implementation-defined list. A manifest is handed over without a directory where several
     files are submitted without one, or where a registration hands it over as a value, as the
     input `manifest` of `register.v1` does: `fetch: ../history.tar.gz` in such a manifest is
-    rejected with a diagnostic naming the item. The input `fetch` of `install.v1` is a URI
-    reference in the same way, and a request has no directory, so a relative one is rejected
-    there too.
+    rejected with a diagnostic naming the item. It is rejected when the manifest is read,
+    whether or not anything is ever fetched: reading a manifest installs nothing, under NAM-012.
+    The input `fetch` of `install.v1` is a URI reference in the same way, and a request has no
+    directory, so a relative one is rejected there too. An installation of an item whose `fetch`
+    is relative gives `install.v1` the reference as resolved against the manifest's directory.
   vectors: []
 
 - id: MAN-007

@@ -1,0 +1,48 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a type's contract promises what its instances offer, so every operation of a capability
+# that a template's type offers has an implementation when the template is registered
+# (TPL-004). Here the type `notebook.v1` offers `notebook-access.v1`, which includes
+# `notebook.read.v1`. The type does not list that operation under `requires` and states no
+# default for it, the operation's own contract states none, and the template `notes` selects
+# none. A schema cannot tell: it needs the type's contract, the capability's and the
+# operation's.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: notebook.read.v1
+  description: Read one page of a notebook. It states no default implementation.
+spec:
+  inputs:
+    page:
+      schema: {type: integer, minimum: 1}
+  outputs:
+    text:
+      schema: {type: string}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: notebook-access.v1
+spec:
+  operations:
+    - '#notebook.read.v1'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: notebook.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+  offers:
+    - '#notebook-access.v1'
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: notes
+spec:
+  type: '#notebook.v1'

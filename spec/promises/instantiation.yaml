@@ -7,7 +7,9 @@
 # INS-014 and INS-018 and added INS-024. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed INS-002, INS-011, INS-012, INS-014
 # and INS-018, and added INS-025, the forms of `from`. Its closing pass reworded one sentence
-# of INS-024, and wrote "composite" for "composed" in INS-012 and INS-016.
+# of INS-024, and wrote "composite" for "composed" in INS-012 and INS-016. Its last pass
+# (docs/proposals/reaudit/round-2/log-tail.md) changed INS-025: `#name` written as `from` in a
+# submitted project resolves as the bare name does.
 
 - id: INS-001
   layer: language
@@ -366,8 +368,11 @@
     A bare name, and the form with a kind, resolve among the objects that exist, under NAM-003,
     and a template that the same submission registers is one of them, under SUB-002. A document
     of a package names a template of its own package as `#name`, because a bare name is never
-    looked up in a package. `from` is not a selection: a selection chooses a contract or an
-    implementation, and `from` names a template. PKG-013 says what holds where a package
-    re-exports the template. A value of any other form is rejected with a diagnostic naming it,
-    and INS-002 rejects one that does not resolve to a template of the same kind.
+    looked up in a package. In a submitted project, whose templates are registered, `#name`
+    resolves as the bare name does: among the templates that exist, those of the same submission
+    among them, as NAM-022 excepts it. The same documents then read alike as a project and as a
+    package. `from` is not a selection: a selection chooses a contract or an implementation, and
+    `from` names a template. PKG-013 says what holds where a package re-exports the template. A
+    value of any other form is rejected with a diagnostic naming it, and INS-002 rejects one
+    that does not resolve to a template of the same kind.
   vectors: []

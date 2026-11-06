@@ -6,8 +6,9 @@
 # DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed SUB-008. The second round
 # of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) reduced SUB-007 to its rule on
 # documents, changed SUB-005 and SUB-008, and added SUB-009, which is of the layer
-# `convention`. Its closing pass changed SUB-005, SUB-008 and SUB-009. No promise of this file
-# has been removed.
+# `convention`. Its closing pass changed SUB-005, SUB-008 and SUB-009. Its last pass
+# (docs/proposals/reaudit/round-2/log-tail.md) changed SUB-005 and added SUB-010: every engine
+# takes a directory. No promise of this file has been removed.
 
 - id: SUB-001
   layer: language
@@ -74,12 +75,12 @@
     way to hand them over. Where a directory is submitted, what is read is the files in the
     directory itself whose names end in `.yaml` or `.json`, the manifest among them, as MAN-001
     and MAN-011 state. Nothing below the directory is read, and a file with any other ending is
-    not read, so neither is part of the submission. An engine that is handed files applies the
-    rules on a file when it reads them: which files are read, under MAN-001, MAN-002 and
-    MAN-011, and their syntax, under SCH-012, SCH-017 and SCH-018. Where a registration hands
-    the documents over as values, as the input `documents` of `register.v1` does, no file is in
-    front of the engine and those rules have nothing to check; every other rule applies to the
-    values.
+    not read, so neither is part of the submission. Every engine takes a directory, under
+    SUB-010. An engine that is handed files applies the rules on a file when it reads them:
+    which files are read, under MAN-001, MAN-002 and MAN-011, and their syntax, under SCH-012,
+    SCH-017 and SCH-018. Where a registration hands the documents over as values, as the input
+    `documents` of `register.v1` does, no file is in front of the engine and those rules have
+    nothing to check; every other rule applies to the values.
   vectors: []
 
 - id: SUB-006
@@ -160,4 +161,34 @@
     it under NAM-007, and the template as replaced keeps the packages it gives, under NAM-009. A
     replacing document that is rejected, or that is of another kind or name than the template,
     is not dispatched and reports invalid, and its result carries the diagnostics.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 13 of "The closing pass, and what it
+# --- left" in DECISIONS.md).
+
+- id: SUB-010
+  layer: language
+  level: must
+  when: >-
+    An engine is handed a directory to register.
+  then: >-
+    It takes the directory. It reads the directory as MAN-001 and MAN-011 state, and registers
+    what it reads as one submission, with the same result as a request for `register.v1` that is
+    given the values read, once each relative `fetch` and each program given as a relative path
+    is resolved against the directory.
+  observable: >-
+    The objects that exist afterwards, and the diagnostics, are those that `register.v1` gives
+    for the same documents as its input `documents` and the same manifest as its input
+    `manifest`. The rules on a file are applied as the files are read, under SUB-005. A relative
+    `fetch` or program is resolved against the directory, under MAN-006 and MAN-010, before the
+    values are compared with what `register.v1` takes: a registration that hands over values has
+    no directory, and rejects a relative one. Every engine can be handed a directory, and not
+    only values through `register.v1`, because the rules on files are promises of the language
+    and a conformance vector is made of files. How a directory is handed to an engine, such as
+    by a command or a call, is DL7 of the implementation-defined list. So is whether the engine
+    then installs the packages that the manifest lists, by a request for `install.v1` for each,
+    before it registers; where it does not, PKG-006 says what the registration reports. In an
+    engine that keeps the conventions the registration is a request like any other, made for an
+    actor that DL7 has the engine name, and is authorized under ACC-033.
   vectors: []

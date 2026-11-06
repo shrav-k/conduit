@@ -1,8 +1,20 @@
 # Re-audit, round 2
 
-Status: in progress, 2026-11-06 (plan-audit action A59). Four cold readers are reading the
-repository as it stands at commit `bdacd83`, after consolidation pass 1, the follow-up pass, the
-core package and schemas, and the conversion of the behaviors the older text accepted.
+Status: done, 2026-11-06 (plan-audit action A59). Four cold readers read the repository as it
+stood at commit `bdacd83`, after consolidation pass 1, the follow-up pass, the core package and
+schemas, and the conversion of the behaviors the older text accepted. The three who read only
+`spec/` reported 125 findings, 8 of them unsafe. The findings were resolved under ruling 37,
+without a ruling on each, and every choice is logged. Round 3 is [next](../round-3/README.md).
+
+| Step | Record |
+| --- | --- |
+| The decisions on the findings, and on what each later pass left | [DECISIONS.md](DECISIONS.md) |
+| The fix pass: promises | [log-promises.md](log-promises.md) |
+| The fix pass: core package, schemas and checker | [log-documents.md](log-documents.md) |
+| The closing pass, with the choices it made | [log-closing.md](log-closing.md) |
+| The last pass, on the fifteen points the closing pass left | [log-tail.md](log-tail.md) |
+| The check of what the interface says about the Model Context Protocol | [mcp-citations.md](mcp-citations.md) |
+| The fourth reader's findings, outside `spec/` | [log-reader-4-fixes.md](log-reader-4-fixes.md) |
 
 | Reader | Sees | Looks for | Report |
 | --- | --- | --- | --- |
@@ -11,12 +23,11 @@ core package and schemas, and the conversion of the behaviors the older text acc
 | 3 | `spec/` only | Anything two conforming engines could disagree on, by walking scenarios end to end | [reader-3.md](reader-3.md) |
 | 4 | The whole repository, from `README.md` | What an outside reviewer with no context would be misled by or unable to find | [reader-4.md](reader-4.md) |
 
-What was done about the fourth reader's report, finding by finding, and what it leaves for the
-owner, is in [log-reader-4-fixes.md](log-reader-4-fixes.md).
-
 ## Known before the round
 
-These points are open and are not to be reported again unless a reader has something new:
+These points were open when the round began, and the readers were told not to report them
+again unless they had something new. What became of each is in the decisions and the logs
+above; the first is still for the owner:
 
 - How a value is marked as secret, so that a promise can say secrets never appear in
   configuration or records. Left for the owner.

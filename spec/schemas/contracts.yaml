@@ -22,9 +22,10 @@
 #                           (`reservedToRoot`)
 #   requirement-spec.v1     CTR-005 (`obliges` is drawn from `consumer` and `target`; naming
 #                           `consumer` adds the consumer's implementations to the target's,
-#                           which must always state a filter in `supports`), CTR-010 (a
-#                           constituent's `arguments` are value bindings whose only source is
-#                           `input`)
+#                           which must always state a filter in `supports`; a requirement
+#                           that does not narrow requests states no `obliges`, which no
+#                           schema can express), CTR-010 (a constituent's `arguments` are
+#                           value bindings whose only source is `input`)
 #   applied-requirement.v1  NAM-019, CON-018 (`requirement` is required)
 #
 # The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) made a
@@ -300,14 +301,16 @@ spec:
       type: boolean
       description: >-
         True for a requirement that limits requests and so can serve as a filter. Absent means
-        false.
+        false. A requirement that does not narrow requests is applied to a Conduit only where
+        it is a contract of the core package, and is never applied as a policy.
     obliges:
       type: array
       description: >-
         Where it names `consumer`, the implementations selected for the consumer of a Conduit
         must state the requirement in `supports`, as those of its target always must for a
         requirement that narrows requests. Left out, empty, or naming `target` alone, it adds
-        nothing: the implementation of the target must.
+        nothing: the implementation of the target must. A requirement that does not narrow
+        requests states no `obliges`.
       items: {enum: [consumer, target]}
       uniqueItems: true
     constituents:
@@ -315,7 +318,8 @@ spec:
       description: >-
         The constituents of a composition. An implementation supports the composition when
         its `supports` lists the composition or every one of its constituents. On the wire a
-        composition is sent as one item for each constituent, with its arguments bound.
+        composition is sent as one item for each constituent that narrows requests, with its
+        arguments bound.
       additionalProperties: {$ref: '#/$defs/constituent'}
     schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
   required: [appliesTo]

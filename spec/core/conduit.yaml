@@ -59,6 +59,7 @@ exports:
   - apply-policy.v1
   - remove-policy.v1
   - retrieve-result.v1
+  - start-later-work.v1
   - set-default-location.v1
   - set-facts.v1
   # Requirements (requirements.yaml).
@@ -147,6 +148,7 @@ implementations:
       - github.com/shrav-k/conduit/core#apply-policy.v1
       - github.com/shrav-k/conduit/core#remove-policy.v1
       - github.com/shrav-k/conduit/core#retrieve-result.v1
+      - github.com/shrav-k/conduit/core#start-later-work.v1
       - github.com/shrav-k/conduit/core#set-default-location.v1
       - github.com/shrav-k/conduit/core#set-facts.v1
     supports:

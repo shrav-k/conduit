@@ -16,7 +16,10 @@
 # format is in manifest.yaml. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed NAM-001, NAM-003, NAM-005, NAM-007,
 # NAM-009, NAM-012, NAM-018 to NAM-020, NAM-022 and NAM-023, and its closing pass changed
-# NAM-009. No promise of this file has been removed. Draft: no vector exists yet.
+# NAM-009. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed NAM-012, where
+# `fetch` is the place an installation fetches from, and NAM-022, which excepts `#name` written
+# as `from` in a submitted project. No promise of this file has been removed. Draft: no vector
+# exists yet.
 
 - id: NAM-001
   layer: language
@@ -189,11 +192,16 @@
     An item of a manifest's `packages` gives `fetch`, a place to fetch the package from that
     differs from the item's address.
   then: >-
-    The package is fetched from that place, and is still identified by its address.
+    That place is where an installation of the item's package fetches the archive from, and the
+    package is still identified by its address.
   observable: >-
     Documents that refer to the address resolve unchanged whether the package came from the
     address itself or from the place `fetch` gives, provided the digest matches under PKG-021.
-    What the value of `fetch` is, and how a relative one is resolved, is MAN-006.
+    What the value of `fetch` is, and how a relative one is resolved, is MAN-006. Reading or
+    registering the manifest fetches nothing and installs nothing: a package is installed only
+    by a request for `install.v1`, which is given the item's address, `version` and `digest`
+    and, in its input `fetch`, the place the item gives. A registration whose manifest lists a
+    package that is not installed is PKG-006.
   vectors: []
 
 - id: NAM-013
@@ -337,19 +345,23 @@
   observable: >-
     In a package it reaches a document the package does not export as well as one it does, as
     PKG-018 allows. In a submitted project it reaches a contract of that project, as SUB-008
-    states, and a template of that project where it is written as `from`, under INS-025. It
-    reaches an implementation that the manifest of the project or package lists under
+    states. It reaches an implementation that the manifest of the project or package lists under
     `implementations`, as the selection of an implementation under NAM-018 needs. Under NAM-027
     a name is the name of one document or of one implementation, so the reference reaches at
     most one thing. Where no document and no implementation of that project or package has the
     name, the reference is unresolved; it is never looked up among the objects that exist or in
-    another package. In the document that replaces a template, which is handed over with no
-    contracts, it reaches a contract of the unpublished package that the template being replaced
-    holds under NAM-009. A document refers to something in its own project or package in this
-    form and never by a qualified reference: a package's own address is not among the `packages`
-    of its own manifest, so a qualified reference that uses it is rejected under NAM-007. The
-    core package's own documents are the exception: they write its address in full, which
-    resolves under NAM-020.
+    another package. There is one exception. A project's templates are registered, unlike its
+    contracts, so in a submitted project `#name` written as `from` resolves as the bare name
+    does under INS-025: among the templates that exist, of which the templates that the same
+    submission registers are part. A nested instantiation that writes its `from` so, in a
+    template of such a project or in the document that replaces one, resolves in the same way
+    whenever the template that holds it is instantiated. In the document that replaces a
+    template, which is handed over with no contracts, it reaches a contract of the unpublished
+    package that the template being replaced holds under NAM-009. A document refers to something
+    in its own project or package in this form and never by a qualified reference: a package's
+    own address is not among the `packages` of its own manifest, so a qualified reference that
+    uses it is rejected under NAM-007. The core package's own documents are the exception: they
+    write its address in full, which resolves under NAM-020.
   vectors: []
 
 - id: NAM-023

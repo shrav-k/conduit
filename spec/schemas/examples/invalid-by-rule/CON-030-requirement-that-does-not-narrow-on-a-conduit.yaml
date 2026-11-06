@@ -1,0 +1,27 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a requirement that does not narrow requests is applied to a Conduit only where it is a
+# contract of the core package, as `shared-host.v1` is (CON-030). The engine checks only the
+# requirements it knows, and an implementation is sent only the requirements that narrow
+# requests, so nothing would apply `same-team.v1`. Its `appliesTo` lists `conduit`, so
+# CTR-005 does not reject the template `team-read`: only the requirement's contract says
+# that it does not narrow.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: same-team.v1
+  description: The consumer and the target belong to one team. It states no `narrows`.
+spec:
+  appliesTo: [conduit]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: team-read
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    team:
+      requirement: '#same-team.v1'

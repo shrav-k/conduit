@@ -12,7 +12,11 @@
 # (docs/proposals/reaudit/round-2/log-closing.md) changed CON-022: the implementation of the
 # target always states a filter's requirement. It also wrote "composite" where CON-003,
 # CON-016, CON-019 and CON-020 said "composition" of a Conduit template, a word that is kept
-# for a composed requirement. Draft: no vector exists yet.
+# for a composed requirement. Its last pass (docs/proposals/reaudit/round-2/log-tail.md)
+# changed CON-008, CON-018 and CON-022, and added CON-030: a Conduit whose consumer is retired
+# is closed once the consumer's shutdown is confirmed, and a requirement that does not narrow
+# requests is applied to a Conduit only where it is the core package's. Draft: no vector exists
+# yet.
 
 - id: CON-001
   layer: language
@@ -118,14 +122,21 @@
     or declared lost.
   then: >-
     The Conduit is closed. A Conduit whose target is retired, or either of whose ends is
-    declared lost, is closed at once. A Conduit whose consumer is retired is closed when the
-    consumer's `retire` graph and the stops of its runtimes have ended, or at once where none of
-    them runs.
+    declared lost, is closed at once. A Conduit whose consumer is retired is closed once the
+    consumer's shutdown is confirmed.
   observable: >-
     Inspecting the Conduit reports the state retired and which of those events closed it, and
-    reports its shutdown as confirmed, however it was closed, under LIF-024. A step of the
-    consumer's `retire` graph can make a request through the consumer's own Conduit, and a
-    request to a retired target reports refused from the moment its retirement is dispatched.
+    reports its shutdown as confirmed, however it was closed, under LIF-024. A request to a
+    retired target reports refused from the moment its retirement is dispatched. A consumer's
+    shutdown is confirmed as LIF-024 states: when an invocation of `retire.v1` for it succeeds,
+    at once where no setup of it was ever dispatched, or when a reconciliation records that its
+    retirement occurred, under LIF-028. From the moment the consumer is retired until then, the
+    Conduit's state is as it was, and the Conduit permits only the requests of the consumer's
+    retirement, as ACC-039 states: a step of the consumer's `retire` graph can make a request
+    through the consumer's own Conduit, in a further retirement under LIF-026 as in the first.
+    Where the consumer's shutdown stays pending or unknown, the Conduit stays so until the
+    shutdown is confirmed, the consumer is declared lost, or an actor closes the Conduit under
+    ACC-012.
   vectors: []
 
 - id: CON-011
@@ -228,7 +239,9 @@
     `arguments` supplies none, as NAM-019 states. Whether a requirement may be applied to a
     Conduit at all is decided by its contract, under CTR-005. The shared-host requirement is
     `github.com/shrav-k/conduit/core#shared-host.v1`, and the bound of a Conduit to `access` is
-    written there too, under ACC-029.
+    written there too, under ACC-029. A requirement that does not narrow requests is applied to
+    a Conduit only where it is a contract of the core package, as the shared-host requirement
+    is, under CON-030.
   vectors: []
 
 - id: CON-019
@@ -286,11 +299,12 @@
     that the target has selected for the operations the Conduit lists must always state the
     requirement: they are sent every filter on the Conduit under IFC-018, and apply it under
     IFC-019. Where `obliges` in the requirement's contract names `consumer`, under CTR-005,
-    every implementation selected for the consumer must state it too. `obliges` never takes the
-    obligation from the target. An implementation supports a composed requirement where its
-    `supports` lists the composition or every one of its constituents. An implementation marked
-    `plain` states no `supports` under PKG-020, so no Conduit is instantiated with a filter that
-    an instance it serves must apply.
+    every implementation selected for the consumer must state it too, and IFC-034 says how it is
+    told which filters it is to keep to. `obliges` never takes the obligation from the target.
+    An implementation supports a composed requirement where its `supports` lists the composition
+    or every one of its constituents. An implementation marked `plain` states no `supports`
+    under PKG-020, so no Conduit is instantiated with a filter that an instance it serves must
+    apply.
   vectors: []
 
 - id: CON-023
@@ -406,4 +420,31 @@
     Resolving returns a diagnostic naming the component and the name it would have, and the
     document that would make the Conduit is rejected. No component's name and no given name is
     shortened. This holds even when nothing in the name was generated.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 7 of "The closing pass, and what it
+# --- left" in DECISIONS.md).
+
+- id: CON-030
+  layer: language
+  level: must
+  when: >-
+    A Conduit template applies, in its `requirements`, a requirement that does not narrow
+    requests and is not a contract of the core package, or a composition that has such a
+    requirement among its constituents, directly or through other compositions.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the item of `requirements` and the requirement. The
+    engine itself checks only the requirements it knows, which are those of the core package, as
+    it checks `shared-host.v1` under PLC-013. Every other requirement on a Conduit is applied by
+    implementations, and they are sent only the requirements that narrow requests, under
+    IFC-018, so one that does not narrow would be applied by nothing. A composition narrows
+    requests exactly where one of its constituents does, under CTR-005, so a composition none of
+    whose constituents narrows is itself such a requirement. `shared-host.v1` may be applied
+    itself, and may be a constituent of a composition that narrows. Where the template was
+    registered while the requirement's package was not installed, as PKG-006 allows, the check
+    is made when a Conduit is instantiated from it, under INS-022. The requirement of a policy
+    narrows requests too, under ACC-031.
   vectors: []

@@ -38,7 +38,9 @@
 # of the target must always state a filter in `supports` (CON-022): the target is `access`,
 # whose implementation is `engine`, and conduit.yaml states it there. `shared-host.v1` does
 # not narrow requests, so it is not a filter and no implementation applies it: the engine
-# itself checks it (PLC-013). Neither is a composition, so neither has `constituents`
+# itself checks it (PLC-013). It is the one requirement that does not narrow requests and
+# may be applied to a Conduit: any other is rejected, because nothing would apply it
+# (CON-030). Neither is a composition, so neither has `constituents`
 # (CTR-010). Each input of `bound.v1` states `default: []`, so each may be left out without
 # being marked optional (OBJ-015), and each default satisfies its input's schema (SCH-019).
 

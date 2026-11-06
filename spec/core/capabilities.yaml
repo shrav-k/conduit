@@ -35,8 +35,13 @@
 # reconciled through a Conduit to `system`, which owns every location, and a control of the
 # `system` Pool through a Conduit to `management`.
 #
-# `retrieve-result.v1` is in no capability: IFC-024 presents it to every instance, and a call
-# to it needs no Conduit.
+# `retrieve-result.v1` and `start-later-work.v1` are in no capability: IFC-024 and IFC-035
+# present them to every instance, and a call to either needs no Conduit of that instance.
+#
+# Where the Pool that owns a Resource is retired, every request that ACC-033 authorizes
+# against that Pool is authorized against `management` in its place, so an operation of
+# `pool-management.v1` that names such a Resource is then requested through a Conduit to
+# `management` that lists it.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
@@ -45,7 +50,8 @@ metadata:
   description: >-
     What the `management` Resource offers: registering, replacing, renaming and unregistering
     objects; asking for a new instance for a nested instantiation whose instance is retired;
-    inspecting, setting up and retiring what is not a Resource; reconciling an
+    inspecting, setting up and retiring what is not a Resource, or is a Resource whose Pool
+    is retired; reconciling an
     invocation that it authorized, or an invocation of an operation of an Agent, an Interface
     or a Pool; installing packages; and the operations reserved to the root Interface.
 spec:

@@ -15,7 +15,8 @@
 # closing pass (docs/proposals/reaudit/round-2/log-closing.md; finding 15 of reader-3.md)
 # changed PKG-017, PKG-020, PKG-022 and PKG-023, and added PKG-026 to PKG-028, on three
 # requests to install whose ending no promise stated. PKG-027 is of the layer `convention`.
-# Draft: no vector exists yet.
+# Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed PKG-006, PKG-020 and
+# PKG-028: a registration installs no package. Draft: no vector exists yet.
 
 - id: PKG-001
   layer: language
@@ -84,7 +85,10 @@
   observable: >-
     The template exists after registration, and the result lists the missing package as a
     diagnostic that did not prevent it. The checks that need the package are made when the
-    template is instantiated, under INS-022.
+    template is instantiated, under INS-022. A registration fetches no package and installs
+    none, whatever its manifest lists: a package is installed only by a request for
+    `install.v1`, and `fetch` in an item of `packages` is the place such an installation fetches
+    from, under NAM-012.
   vectors: []
 
 - id: PKG-007
@@ -213,8 +217,10 @@
     states `supports`, and an item that is not marked `plain` and states `tools`, are each
     rejected when the package is installed. A plain implementation supports no requirement, and
     never counts as deduplicating under OPS-012, whatever the contracts of its operations
-    declare. The `tools` map gives each tool's name and nothing else: the arguments of a call
-    are the operation's inputs under their own names, as IFC-001 states.
+    declare. It cannot ask for a start of later work, so a template whose implementation of an
+    operation marked `arrangesLaterWork: true` is plain is rejected, under TPL-014. The `tools`
+    map gives each tool's name and nothing else: the arguments of a call are the operation's
+    inputs under their own names, as IFC-001 states.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -339,8 +345,8 @@
   observable: >-
     The result of the request lists the missing package as a diagnostic that did not prevent the
     installation, as PKG-006 does for a template. No package is fetched or installed because
-    another package lists it. A check on one of the package's documents that needs the missing
-    package is made when a template that uses the document is instantiated, with the checks of
-    INS-022, and an instance document whose template needs a package that is not installed is
-    rejected under PKG-007.
+    another package lists it, as none is because the manifest of a registration lists it. A
+    check on one of the package's documents that needs the missing package is made when a
+    template that uses the document is instantiated, with the checks of INS-022, and an instance
+    document whose template needs a package that is not installed is rejected under PKG-007.
   vectors: []

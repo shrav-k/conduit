@@ -12,7 +12,9 @@
 # `retire.v1`, and a template's `setup` and `retire` graphs are the steps the engine runs. Its
 # closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed TPL-006, where a runtime
 # is no longer marked optional, and TPL-010, and added TPL-013, of the layer `convention`.
-# No promise of this file has been removed. Draft: no vector exists yet.
+# Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed TPL-004, which now covers
+# every operation of a capability the type offers and every control it lists, and TPL-009, and
+# added TPL-014. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: TPL-001
   layer: language
@@ -65,8 +67,10 @@
   layer: language
   level: must
   when: >-
-    An operation that a template's type requires, or that one of its runtimes or one of its
-    steps without `conduit` names, is not a key of the template's `implementation` map.
+    An operation is not a key of a template's `implementation` map, and it is one that the
+    template's type requires, that a capability the type offers includes, that the type lists as
+    a control, or that a runtime of the template or of its type, or one of the template's steps
+    without `conduit`, names.
   then: >-
     The implementation is the default the type states for that operation, or else the default
     the operation's own contract states. If there is neither, the template is rejected.
@@ -76,7 +80,16 @@
     resolves in the project or package that holds the contract stating it: under NAM-022 where
     it is written `#name`, and through that package's own manifest, under NAM-014, where it
     names another package. A step that carries `conduit` is a request to another instance under
-    GRA-024 and needs no implementation here.
+    GRA-024 and needs no implementation here. A type's contract promises what its instances
+    offer: a Conduit may list any operation of a capability that its target's type offers, under
+    CON-017 and CON-021, a control among them, so each of those operations has an implementation
+    when the template is registered, whether or not the type also lists it under `requires`. A
+    template whose type offers a capability one of whose operations has no selection and no
+    default is rejected, and so is one whose type lists such a control, even where the
+    template's `controls` map leaves that control out. Where the template was registered while
+    the type's package was not installed, as PKG-006 allows, the check is made when the template
+    is instantiated, under INS-022. Which implementation may be selected for an operation that
+    arranges later work is TPL-014.
   vectors: []
 
 - id: TPL-005
@@ -162,7 +175,10 @@
     An instance for which no setup was ever dispatched does not run its `retire` graph, as
     LIF-025 states. With no `retire` graph to run and no runtime held, the invocation succeeds
     at once. The stops are part of the invocation, which succeeds only if the steps of the graph
-    did, as OPS-022 counts them, and every stop succeeded.
+    did, as OPS-022 counts them, and every stop succeeded. A further invocation for an instance
+    whose shutdown is confirmed runs no step and stops nothing, under LIF-030. When the Conduits
+    of which the instance is the consumer are closed, and what they permit meanwhile, is CON-008
+    and ACC-039.
   vectors: []
 
 - id: TPL-010
@@ -225,4 +241,27 @@
     call. A Conduit may list the control, because its capability includes it under CON-017, and
     the request reports invalid all the same. Where the actor is not permitted, OPS-023 gives
     refused first.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 9 of "The closing pass, and what it
+# --- left" in DECISIONS.md).
+
+- id: TPL-014
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which the implementation of an operation marked
+    `arrangesLaterWork: true` is marked `plain`, whether the template selects that
+    implementation or it is the default under TPL-004.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the operation and the implementation. It is decided
+    from the operation's contract and from the manifest, under PKG-020, without starting
+    anything. A plain implementation is sent none of Conduit's keys, under IFC-007, so it never
+    learns the engine's ID for the invocation that arranged the work, and cannot ask for a start
+    with `start-later-work.v1` under ACC-040. Where the template was registered while a package
+    it needs was not installed, as PKG-006 allows, the check is made when the template is
+    instantiated, under INS-022.
   vectors: []

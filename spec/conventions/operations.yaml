@@ -13,8 +13,10 @@
 # OPS-005, OPS-006, OPS-008 to OPS-010, OPS-012, OPS-014 to OPS-019, OPS-021 to OPS-023, OPS-025
 # and OPS-026, made OPS-015 the rule for an identity under which the sender has no invocation,
 # and added OPS-028. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
-# OPS-007, OPS-009, OPS-012, OPS-014, OPS-016, OPS-017, OPS-022 and OPS-024. No promise of this
-# file has been removed.
+# OPS-007, OPS-009, OPS-012, OPS-014, OPS-016, OPS-017, OPS-022 and OPS-024. Its last pass
+# (docs/proposals/reaudit/round-2/log-tail.md) changed OPS-005, OPS-007, OPS-009 and OPS-014,
+# and added OPS-029, on a request that names what does not exist. No promise of this file has
+# been removed.
 
 - id: OPS-001
   layer: convention
@@ -76,7 +78,10 @@
     The result that is returned and the record of the request carry the same one of those four
     reasons and no outcome. Where the request was not dispatched, the implementation received no
     call. Where the implementation gave the reason, which is refused or unavailable, it
-    performed nothing. Where more than one reason applies, OPS-023 says which is reported.
+    performed nothing. Where more than one reason applies, OPS-023 says which is reported. What
+    a request that is not dispatched says beyond its reason, it says in diagnostics, as IFC-025
+    states. A call that names a tool the engine does not present is answered with no result: its
+    reason, refused, is in the protocol's error, as IFC-012 states.
   vectors: []
 
 - id: OPS-006
@@ -99,8 +104,8 @@
   when: >-
     No result arrives; the implementation stops before returning one; a result from an
     implementation that carries Conduit's keys states neither an outcome nor a reason under
-    IFC-026, or states both; or a declared output in a result fails validation, whether or not
-    the implementation is marked `plain`.
+    IFC-026, or states both; or a declared output fails validation in a result that would
+    otherwise have the outcome succeeded, whether or not the implementation is marked `plain`.
   then: >-
     The invocation's outcome is unknown.
   observable: >-
@@ -108,8 +113,10 @@
     succeeded or failed only when the implementation's result stated it or, for an
     implementation marked `plain`, when IFC-010 gives it. A declared output that is not marked
     `optional: true` and that the result does not hold fails validation in this sense: a plain
-    server that returns no `structuredContent` for an operation with such an output has the
-    outcome unknown.
+    server that returns a complete result that is not an error, and no `structuredContent`, for
+    an operation with such an output has the outcome unknown. A result that states failed or
+    unknown, and an error of a plain server, hold no outputs to validate, under IFC-009 and
+    IFC-010.
   vectors: []
 
 - id: OPS-008
@@ -146,11 +153,13 @@
     state read from the invocation's records. Two requests have the same contents when they name
     the same operation and their arguments are equal under SCH-007, judged after the defaults of
     OPS-026 are filled in. The result of a repeat of an invocation that has not ended carries
-    neither an outcome nor a reason, and its `_meta` holds `io.github.shrav-k.conduit/state`
-    with the value `inProgress`, as IFC-025 states. The result of a repeat of an invocation that
-    succeeded is that invocation's retained result: it carries the outcome succeeded and the
-    outputs, where the engine still keeps them under OPS-016 and OPS-017 does not withhold them.
-    A repeat is a request through a Conduit, and the access decision is made for it like any
+    neither an outcome nor a reason, its `_meta` holds `io.github.shrav-k.conduit/state` with
+    the value `inProgress`, and its `isError` is true, because it holds no outputs, as IFC-025
+    states. The result of a repeat of an invocation that succeeded is that invocation's retained
+    result: it carries the outcome succeeded and the outputs, where the engine still keeps them
+    under OPS-016 and OPS-017 does not withhold them. Where it holds no outputs for either
+    cause, its `isError` is true, and where they are withheld it says so, under IFC-025. A
+    repeat is a request through a Conduit, and the access decision is made for it like any
     other, under ACC-036: a repeat sent through a Conduit that has been closed reports refused
     under ACC-011, and the instance learns the invocation's state with `retrieve-result.v1`
     under OPS-016.
@@ -230,11 +239,13 @@
     from the result of the request, under IFC-025, or from `retrieve-result.v1`, under IFC-024.
     The target is the one that authorized the request being reconciled where the invocation is
     of a management verb, and otherwise the Pool that owns the instance the invocation was
-    dispatched to, or `management` where that instance is not a Resource. A request that names
-    an invocation whose outcome is not unknown, because it is in progress, has ended with
-    another outcome or has been reconciled already, is not dispatched and reports conflict. What
-    the reconciliation of a setup, an open, a retirement or a close changes beside the outcome
-    is LIF-028, and what that of a control changes is REV-010.
+    dispatched to, or `management` where that instance is not a Resource or the Pool that owns
+    it is retired, as ACC-033 states. A request that names an invocation whose outcome is not
+    unknown, because it is in progress, has ended with another outcome or has been reconciled
+    already, is not dispatched and reports conflict. One that names an ID which the engine gave
+    to no invocation reports invalid, under OPS-029. What the reconciliation of a setup, an
+    open, a retirement or a close changes beside the outcome is LIF-028, and what that of a
+    control changes is REV-010.
   vectors: []
 
 - id: OPS-015
@@ -496,4 +507,43 @@
     setup or a retirement runs again, and the effect is applied once. Two steps of one
     invocation have different identities. An implementation marked `plain` receives none, under
     IFC-007, and is never sent a new attempt, under OPS-012.
+  vectors: []
+
+# --- Added by the last pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 4 of "The closing pass, and what it
+# --- left" in DECISIONS.md).
+
+- id: OPS-029
+  layer: convention
+  level: must
+  when: >-
+    A request is made through an open Conduit that lists its operation, and it names, in an
+    input of that operation, an object, a policy or an invocation that does not exist: a
+    reference that resolves to nothing, or an ID that the engine gave to no policy in force or
+    to no invocation.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    This holds for every operation of the core package that names something: `inspect.v1`,
+    `set-up.v1`, `retire.v1`, `rename.v1`, `unregister.v1`, `register-replacement.v1`,
+    `declare-lost.v1`, `open.v1` and `close.v1` for an object; `replace.v1` for the template
+    that its document names; `apply-policy.v1` for an actor or a target; `remove-policy.v1` for
+    a policy; and `reconcile.v1` for an invocation. An object that has been unregistered no
+    longer exists. Refused means that no open Conduit permits the request, and whether the
+    Conduit's target is the one that ACC-033 fixes for a thing can be told only for a thing that
+    exists. So a request for `inspect.v1` that names nothing reports invalid whether it is made
+    through a Conduit to `management` or to a Pool, and one that names a Resource through a
+    Conduit to `management` reports refused while the Pool that owns the Resource is not
+    retired. A bound is judged against what exists, and does not make such a request report
+    refused: a request for `open.v1` that names no Conduit reports invalid whatever the bound of
+    the actor's Conduit to `access`. A request from an actor with no open Conduit that lists the
+    operation reports refused under ACC-001, and says nothing of whether the thing exists, as
+    OPS-023 states. OPS-015 is another case: a retrieval needs no Conduit, and reports refused
+    for an identity and a target under which the instance has no invocation. So is ACC-040: no
+    Conduit lists `start-later-work.v1`, and a request for it that names no invocation reports
+    refused. A value in a control's input that names no location that exists is invalid in the
+    same way, under PLC-016. So is a request for `set-up.v1` or for `retire.v1` that names a
+    template or a Conduit, under LIF-012: the thing exists, and is not one the operation
+    addresses. What the result says of the thing that was named, it says in a diagnostic, as
+    IFC-025 states.
   vectors: []

@@ -12,7 +12,10 @@ whose model decides its own actions. An Interface is where a person, or a system
 on the system. A Resource is a shared thing that agents use, such as a project directory or a
 service login. A Pool is what owns and groups Resources. A Conduit is a relationship: it joins
 one consumer to one target and lists the operations it permits. A request is permitted only
-when an open Conduit from its consumer to its target lists the operation. An engine is a
+when an open Conduit from its consumer to its target lists the operation. Conduit invents only
+the connection and the access. Everything underneath is existing infrastructure the user
+chooses, reached through a contract: a secret store such as the macOS keychain or 1Password, the
+runtime that runs things, the machines they run on, the source of packages. An engine is a
 running program that implements the language. The work behind an operation is done by an
 implementation, and the shared wire between an engine and an implementation is the Model
 Context Protocol (MCP).

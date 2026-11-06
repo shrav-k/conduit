@@ -24,8 +24,10 @@ the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim). Work that mak
 concise, concrete and provable comes first.
 
 The relationship is the product: an agent decides for itself, so the language declares what it may
-reach, under which limits, and who answers for what it did. Check any change against the purpose
-and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
+reach, under which limits, and who answers for what it did. Conduit innovates only on connection
+and access (ruling 40): everything else is a provider behind a contract that any existing tool
+can implement, and a design that invents infrastructure instead is wrong. Check any change
+against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 
 ## What binds and what does not
 

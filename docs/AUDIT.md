@@ -91,15 +91,18 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
 
 ### What happens next
 
-1. Ruling 39 is applied in pull request 7, with a fifth round of readers before the merge.
-2. The owner rules on the secret type, from the [revised proposal](proposals/secrets/README.md),
-   and it is written into the specification.
-3. The owner starts a cold read by Codex (rulings 37 to 39). What that reader needs is in the
-   next section, [for the next reader](#for-the-next-reader).
-4. The conformance vectors (A39) and the reference model (A38) follow. Neither is begun. They
-   are where convergence is now judged (ruling 38, point 4). In the
-   [order of the experiment program](#experiment-program) the work is at step 2, and they
-   belong to step 3, which takes scenario S1 alone through every method.
+1. Pull request 7 applies rulings 39 and 40. A review of the whole design against ruling 40
+   ([principles review](proposals/principles-review/README.md)) brings the owner the changes it
+   needs; the owner rules on them and on the secret type.
+2. The specification is rewritten around provider contracts (A62): the runtime model, the location
+   model and the setup graphs are cut down as ruling 40 says, and the secret type is written in.
+3. A fifth round of readers reads the rewritten specification, with scenarios across several
+   machines, and every confirmed finding is fixed. Then pull request 7 is merged.
+4. The owner starts a cold read by Codex. What that reader needs is in the next section,
+   [for the next reader](#for-the-next-reader).
+5. The conformance vectors (A39), the reference model (A38) and the first providers (A63)
+   follow. Convergence is judged on them (ruling 38, point 4). In the
+   [order of the experiment program](#experiment-program) the work is at step 2.
 
 ### For the next reader
 
@@ -186,12 +189,13 @@ the owner confirmed in ruling 38.
 
 ## Waiting for the owner
 
-One list of everything that only the owner can settle. Ruling 39 settled the rest of the list
-on 2026-11-06 ([record](proposals/ruling-39/README.md)).
+One list of everything that only the owner can settle.
 
 | What | Where it is recorded |
 | --- | --- |
-| The secret type: the decisions of the revised proposal, written after the research that ruling 39, point 1, asked for. Until they are ruled the specification says nothing of secrets. | [Proposal](proposals/secrets/README.md); [research](research/SECRETS.md) |
+| The changes that the review of the whole design against ruling 40 found, where they change what Conduit is for or reverse a ruling. | [Principles review](proposals/principles-review/README.md) |
+| The secret type, reduced under ruling 40 to a contract that any store implements. | [Proposal](proposals/secrets/README.md); [research](research/SECRETS.md) |
+| Where the first providers' code lives: a top-level `packages/` directory of Rust crates, one per provider, beside the planned `conformance/` and `reference-model/`, or under `experiments/` until the contracts settle. | [A63](#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept) |
 
 ## Purpose
 
@@ -260,6 +264,16 @@ states, for test 5, that an agent may issue grants to others only within a bound
 
 ## Current direction
 
+- **Conduit innovates only on connection and access** (ruling 40). It owns its documents,
+  connection (Conduits), access, accountability (what must be recorded) and the shape of its
+  contracts. Everything else is a provider behind a contract, swappable by the user wherever
+  possible: secret stores, the runtime that runs implementations, the machines and their
+  placement, the source of packages, and later identity, isolation and the storage of records.
+  Where an existing tool or standard does the job, Conduit adopts it.
+- **It works across machines.** Coordination of agents and resources on several machines is part
+  of what Conduit is for. Conduit owns what placement, a lost machine and a failed request mean
+  for access; providers own the mechanics. One control plane decides every request in the first
+  version; local enforcement with a bound on how long a revocation takes is likely needed in v1.
 - **The language is the core; the runtime fulfills its promise.**
 - **Conduit is a configuration language, not a behavioral specification.** The language fully
   determines what a set of documents means. Behavior beyond a few shared conventions lives in
@@ -287,8 +301,8 @@ states, for test 5, that an agent may issue grants to others only within a bound
 
 ## Ruling log
 
-All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, and rulings 38 and
-39 on 2026-11-06. Each row is the coordinator's summary of the owner's messages, with the
+All rulings are the owner's, in this order: rulings 1 to 37 on 2026-11-05, and rulings 38 to
+40 on 2026-11-06. Each row is the coordinator's summary of the owner's messages, with the
 owner's own words quoted where they are marked as quoted; the owner confirmed that labelling in
 ruling 39, point 15. The record linked from a row holds the owner's words in full where the
 ruling was given point by point.
@@ -334,6 +348,7 @@ ruling was given point by point.
 | 37 | Accepted: the core package, the document schemas and the manifest format as drafted ([record](proposals/core-and-schemas/README.md)), with five changes: a control that sets a location's facts; requests name objects by reference only; a bound is rejected on a Conduit whose target is not `access` or when applied twice; a package outside the core may not mark an operation as reserved to `root`; and names are unique across kinds within a project. Also accepted: the definitions of the four families, model work, enforced and mediated, project and published. The owner further ruled that findings of the cold readers are to be resolved without waiting for a ruling on each, that the documents outside `spec/` are to be audited once more, and that the repository is to be made ready for a cold read by Codex after these rounds. How each item is applied is in [the instructions](proposals/core-and-schemas/APPLY.md). |
 | 38 | After four rounds of the re-audit the coordinator put fourteen points to the owner ([record](proposals/ruling-38/README.md)). Ruled: a secret is referred to and never written as a literal, and a secret type is to be explored before anything is written; the six behaviors of the older design that the specification does not carry are dropped; a composite Conduit opens whole or not at all at setup and its components are independent afterwards; the gate of two clean rounds of cold reading is withdrawn, and convergence is judged on no unsafe finding in the latest round and on the reference model and the vectors; no domain need be named before the engine builds; later work is dropped from v0; a policy that makes an actor's requests to an engine-implemented target unavailable stands, and `apply-policy.v1` warns of it; handing an engine a directory installs no package. Accepted, of the coordinator's decisions: a retired consumer's Conduits stay open for its retirement alone; the resolved form in a step and in an onward request; the interface following the protocol on errors, to be looked at again; and eight changes to what earlier rulings accepted, listed in its record; those that changed what an earlier ruling had accepted are under later amendments. Confirmed: the coordinator's reading of ruling 37, and committing and pushing at each milestone. Pull request 6 is merged by squashing. |
 | 39 | Before the cold read by Codex the coordinator put fifteen points to the owner ([record](proposals/ruling-39/README.md)). Ruled: the secret type is not decided: "I feel we need more research into how secrets are handled by cloud providers like AWS and in kubernetes before making a determination"; accepted for it, as direction, that only a Resource reads a secret and only the root Interface may open a Conduit that reads one, that the engine sets a credential in a process's environment at start for servers that take one there, and that an Agent's own provider credential is delivered the same way. Accepted: a composite Conduit opens with a whole decision and an outcome for each component; every logged decision of the coordinator and choice of an editor, before and since ruling 37, and the three corrections to the interface; "the grant is an object" becomes "the Conduit is an object"; an assessed state for each readiness condition, for the owner to confirm; the removal from the tree of the material that the specification superseded, with links pinned to `main`; the historical sections of this tracker moved to the archive; the names of two private repositories removed; the stale branches deleted; the personal address on the merge of pull request 6 left as it is. The sentence on who made the external audit is struck. The rows of this log are labelled as the coordinator's summaries. |
+| 40 | Conduit innovates only on connection and access ([record](proposals/ruling-40/README.md)). In the owner's words: "The point of conduit was always to leverage existing infrastructure where possible and only innovate on connection and access"; "We should not innovate on the architecture ourselves just the contracts". Ruled: Conduit owns its documents, connection, access, accountability (what must be recorded) and the shape of its contracts, and everything else is a provider behind a contract, swappable by the user wherever possible, "leaving decisions to the user on architecture and existing tools as long as they meet requirements"; the runtime model becomes a runtime provider contract (run, stop, status); locations stay in the language but a provider reports them, places instances by label and reports a lost machine, while what placement and loss mean for access stays Conduit's; setup graphs reduce to declared dependencies, and an operation built from other operations becomes an ordinary implementation; a request that crosses machines carries cryptographic proof of its sender; one control plane decides every request in the first version, and "a robust version of B [local enforcement] will likely be a requirement for v1"; the changes are made now, before round 5 and the cold read by Codex. |
 
 ### Later amendments
 
@@ -349,6 +364,10 @@ The rows above are kept as the rulings were given. Later rulings amended some of
 | 31 | Contracts are documents of four kinds. | Five, with `Schema`, since follow-up decision F21 of the re-audit (ruling 33). |
 | 31 | The implementation-defined list has twelve entries. | Fifteen. Ruling 32 added DL13. Decision DA3 of the documents audit, taken under ruling 37, added DL14 when the behaviors that the older text accepted were converted. Round 2 of the re-audit, under ruling 37, added DL15. |
 | 31 | `conduit.dev` stays a placeholder. | Replaced by ruling 33: the names come from this repository. |
+| 7, 8, 9 | Placement as Conduit's own model: locations registered as Resources with facts, a default location, Conduit's own rules for choosing one. | Ruling 40, point 3b: a provider reports the machines, places instances by label and reports a lost one; what placement and loss mean for access stays Conduit's. |
+| 13, 14 (LD2), 23 | Setup graphs, with the static meaning of steps, bindings and dependencies, in the language. | Ruling 40, point 3c: reduced to declared dependencies; an operation built from other operations is an ordinary implementation. |
+| 13 | Process layout is part of each engine's runtime profile. | Ruling 40: processes are run by a runtime provider that the user chooses. |
+| 31 | Runtimes declared in templates, with start and stop operations and handles the engine holds. | Ruling 40, point 3a: a runtime provider contract (run, stop, status). |
 | 15 | "The grant is an object", in the purpose. | "The Conduit is an object", by ruling 39, point 7. |
 | 31 | A domain must be named before the engine builds. | Withdrawn by ruling 38, point 5. |
 | 19, 20 | Rule RR8 of the relationships record: work that a caller started stays subject to that caller's access whenever it later runs. | Later work is dropped from v0 by ruling 38, point 6: no operation arranges, through the engine, work that outlasts its invocation. ACC-019 states that instead, and IMP-006 is removed. |
@@ -397,6 +416,13 @@ and the table of layer decisions below are kept in the words of rulings 13 and 1
 "declarations" as documents, "grant" as the access an open Conduit carries, "plugin" as
 implementation, and "normative surface" as the specification. MCP is the Model Context
 Protocol.
+
+Ruling 40 adds one layer beside these: **provider contracts**. A provider is existing
+infrastructure that the user chooses (a secret store, a runtime, a set of machines, a source of
+packages), reached through a contract that Conduit states and any tool can implement, as
+Kubernetes reaches runtimes, storage and networks through CRI, CSI and CNI. The contracts belong
+to the specification; the providers do not. What a runtime profile held about process layout and
+placement now belongs to the chosen provider.
 
 ### Layer decisions
 
@@ -456,10 +482,14 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | A38 | Write the executable reference model in Rust for the language layer and the shared conventions: a pure, deterministic library in which every case cites a promise. | Rulings 10, 14 | It passes every vector with no unhandled case (G4). | open |
 | A39 | Publish the conformance vectors, with a held-out set. | Ruling 10 | Any engine can run them through an adapter; coverage by promise is reported. | open |
 | A44 | Mutation-test the reference model against the vectors. | G6 | No unexplained surviving mutant. | open |
-| A40 | Model-check the safety promises with Stateright in small configurations, in the ordinary test run. | [Experiment 004](../experiments/004-stateright-evaluation/README.md) | Each safety promise holds or has a recorded reason it cannot be checked this way (G5). | open: tool evaluated |
+| A40 | Model-check the safety promises with Stateright in small configurations, in the ordinary test run, including two machines with message loss, reordering, a partition and a lost machine (ruling 40). | [Experiment 004](../experiments/004-stateright-evaluation/README.md) | Each safety promise holds or has a recorded reason it cannot be checked this way (G5). | open: tool evaluated |
 | A45 | Publish the build base: the orphan branch, the brief as `BUILD.md`, agent instruction files, and a pilot run of the brief on S1. | Ruling 12 | G10 passes and the owner signs off (G11). | open: brief and process drafted |
 | A34 | Two independent builds in Rust, by Codex and by Claude, of the language layer, the shared conventions and the implementation interface (LD4). | Rulings 10, 14 | Both pass the public and held-out vectors; every divergence is traced to the language and fixed. | open: blocked by the readiness gate |
 | A50 | Build one reference engine, with a standard library of core type contracts and a recorded runtime profile. | LD4, LD5 | It runs the nine scenarios. | open |
+| A62 | Write the provider contracts of ruling 40 in the specification: the runtime that runs an instance's implementation (run, stop, status); the machines, their labels and the loss of one; the secret store; the source of packages. | Ruling 40 | Each is a contract any existing tool can implement, and the specification names no backing system. | open: after the principles review |
+| A63 | Build the first providers, as packages in Rust: two for each provider contract, on different existing tools. Candidates: secret stores on the engine's own file and variable, the macOS keychain and 1Password; runtimes on a local process and Docker; machines on the local machine and a second host reached over the network; package sources on Git and a local directory. | Ruling 40 | Each passes the vectors of its contract, and S10 passes with every provider swapped. | open: needs A62 |
+| A64 | Require proof of the sending instance on every request that crosses machines, with the mechanism swappable (mutual TLS, SPIFFE, the authorization of the Model Context Protocol). | Ruling 40, point 3e | Written as a promise; a vector shows a request without proof refused. | open |
+| A65 | Design local enforcement for v1: each machine enforces access from configuration pushed to it, with a stated bound on how long a revocation takes to arrive. | Ruling 40, point 3f | A proposal for the owner, before v1. Nothing in v0 may assume that every decision is made in one place. | open |
 | A14 | Run the acceptance scenario on a built engine and use it for a week. | Ruling 4 | Each promise is scored exercised, contradicted or never needed. | open |
 | A4 | Native launch and identity probe. | E1 | Results recorded for Claude Code and Codex. | open |
 | A5 | Four-account coexistence probe, 48 hours. | E2 | Refresh and logout behavior recorded per account. | open |
@@ -489,9 +519,11 @@ counts are in [spec/README.md](../spec/README.md#contents).
 
 Accepted 2026-11-05 (ruling 9).
 
-**Claim to prove:** the [layered claim](#layered-claim). The language fully determines what a set of
-declarations means; the shared conventions hold as invariants; everything else is a type
-contract or the runtime profile.
+**Claim to prove:** the [layered claim](#layered-claim), with the provider layer of ruling 40. The
+language fully determines what a set of documents means; the shared conventions hold as
+invariants, on one machine and across several; everything else is a type contract, a provider or
+the runtime profile. And every provider can be swapped: each provider contract has at least two
+implementations, built on different existing tools, that pass the same vectors.
 
 | Method | What it shows | Action |
 | --- | --- | --- |
@@ -501,22 +533,25 @@ contract or the runtime profile.
 | Mutation testing of the model against the vectors | Whether the vectors actually pin behavior | A44 |
 | Model checking of safety promises under faults | The promises can all hold together | A40 |
 | Cold-reader sweeps | Places where two builders would diverge, found cheaply before any build | A42 |
+| Two providers for each provider contract, built on different existing tools | The infrastructure really is swappable: the same documents behave the same on either | A63 |
+| Multi-machine runs, with a partition and a lost machine | The access promises hold across machines | S3, A40 |
 | Independent builds by Codex and by Claude of the language layer, shared conventions and implementation interface | Unambiguity, by the recognized public standard of independent implementations passing one suite | A34 |
 
 | # | Scenario | Mainly exercises |
 | --- | --- | --- |
 | S1 | Two Agents share a project directory and a message history on one location | All five families, instantiation, communication, inspection |
 | S2 | One service login shared by two Agents with different restrictions | Requirements, grants, shared authentication, dependent calls |
-| S3 | S1 and S2 across two locations, including a partition and a lost location | Placement promises, outage rule |
+| S3 | S1 and S2 across two machines, including a partition and a lost machine. Central to the claim since ruling 40 | Placement by a provider, what a lost machine retires and closes, unknown outcomes across the network, proof of identity across machines |
 | S4 | Setup that fails partway, is retried, and loses a response | Graphs, outcome model, recovery |
 | S5 | A control change under contention | Revisions, partial confirmation, lost receipt |
 | S6 | Access revoked and a Resource retired while requests are in flight | Current-access checks, retirement duties |
 | S7 | An outside author packages an existing MCP server and a small code plugin | Packages, contracts, types, location-need declarations |
 | S8 | Search over storage returning only what the caller may see | Restrictions on returned content, derived content |
 | S9 | First initialization, later start, and explicit repair | Root Interface and foundational setup |
+| S10 | S1 and S2 again with every provider swapped: another secret store, another runtime, another package source | Provider contracts (ruling 40) |
 
-The scenarios exercise all four layers, so they run on the reference engine with its standard
-library of types (A50). The acceptance scenario is S1 and S2 passing there, with their
+The scenarios exercise every layer, so they run on the reference engine with its standard
+library of types (A50) and the first providers (A63). The acceptance scenario is S1 and S2 passing there, with their
 language-layer and convention parts also passing in both independent builds. Running them with
 real Claude and Codex Agents, and the two-Claude, two-Codex account check, are later gates.
 
@@ -526,11 +561,15 @@ Order:
    of a promise (A47), then the defect re-triage (A42).
 2. The language and shared conventions, each ruled, checked and swept.
 3. Tracer, in series: S1 alone through every method, to fix the file formats for scenarios,
-   vectors and promises.
-4. Fan-out, in parallel: S2 to S9, one scenario per session, with one integrator.
-5. Whole-model checks: model checking and mutation testing.
-6. The readiness gate, then the two engine builds.
-7. Prune.
+   vectors and promises, on the first provider of each contract.
+4. Second providers: a second implementation of each provider contract, on a different existing
+   tool, and S10 (A63).
+5. Fan-out, in parallel: S2 to S9, one scenario per session, with one integrator. S3 runs on at
+   least two real machines.
+6. Whole-model checks: model checking, including the safety promises across machines under loss,
+   reordering and partition, and mutation testing.
+7. The readiness gate, then the two engine builds.
+8. Prune.
 
 The vocabulary is no longer a last step: ruling 16 moved it up, and it was decided and applied
 with the rework.
@@ -545,5 +584,4 @@ owner or a neutral harness compares the results.
 
 Removal of the old experiments: 001 was removed on 2026-11-05, once
 [spec/schemas/examples](../spec/schemas/examples/) had replaced it as the worked example
-(decision DA4 of the documents audit); 002 goes after its cases are mapped onto promises and
-vectors (A23); 003 goes when the Rust loader exists (A43).
+(decision DA4 of the documents audit); 002 and 003 were removed by ruling 39.

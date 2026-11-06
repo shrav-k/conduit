@@ -87,7 +87,7 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
 | Readiness gate | G1 to G11, with G7 as ruling 38 restated it. None is met; G1 and G3 are partly met. The state of each, assessed under ruling 39 and confirmed by the owner, is in the [build process](implementation/INDEPENDENT_BUILDS.md). |
 | Vocabulary | Ruled ([record](proposals/vocabulary/README.md)) and applied in `spec/` and the overview. The record of old and new spellings (A29) is not written. |
 | Build process and brief | Drafted: [independent builds](implementation/INDEPENDENT_BUILDS.md), [engine build brief](implementation/ENGINE_BUILD_BRIEF.md). Not issued. |
-| Code | [Experiment 004](../experiments/004-stateright-evaluation/README.md), a Rust model-checking evaluation. No engine and no reference model. |
+| Code | [Experiment 004](../experiments/004-stateright-evaluation/README.md), a Rust model-checking evaluation, and Experiment 005, a probe of the macOS keychain for the first secret store package (running). No engine, no reference model and no package yet. |
 
 ### What happens next
 
@@ -195,7 +195,6 @@ One list of everything that only the owner can settle.
 | --- | --- |
 | The changes that the review of the whole design against ruling 40 found, where they change what Conduit is for or reverse a ruling. | [Principles review](proposals/principles-review/README.md) |
 | The secret type, reduced under ruling 40 to a contract that any store implements. | [Proposal](proposals/secrets/README.md); [research](research/SECRETS.md) |
-| Where the first providers' code lives: a top-level `packages/` directory of Rust crates, one per provider, beside the planned `conformance/` and `reference-model/`, or under `experiments/` until the contracts settle. | [A63](#p1--prove-the-language-can-be-rebuilt-and-its-promises-kept) |
 
 ## Purpose
 
@@ -487,7 +486,7 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | A34 | Two independent builds in Rust, by Codex and by Claude, of the language layer, the shared conventions and the implementation interface (LD4). | Rulings 10, 14 | Both pass the public and held-out vectors; every divergence is traced to the language and fixed. | open: blocked by the readiness gate |
 | A50 | Build one reference engine, with a standard library of core type contracts and a recorded runtime profile. | LD4, LD5 | It runs the nine scenarios. | open |
 | A62 | Write the provider contracts of ruling 40 in the specification: the runtime that runs an instance's implementation (run, stop, status); the machines, their labels and the loss of one; the secret store; the source of packages. | Ruling 40 | Each is a contract any existing tool can implement, and the specification names no backing system. | open: after the principles review |
-| A63 | Build the first providers, as packages in Rust: two for each provider contract, on different existing tools. Candidates: secret stores on the engine's own file and variable, the macOS keychain and 1Password; runtimes on a local process and Docker; machines on the local machine and a second host reached over the network; package sources on Git and a local directory. | Ruling 40 | Each passes the vectors of its contract, and S10 passes with every provider swapped. | open: needs A62 |
+| A63 | Build the first providers, as packages in Rust under a top-level `packages/` directory, one crate per provider (ruling 40, after the ruling): two for each provider contract, on different existing tools. Candidates: secret stores on the engine's own file and variable, the macOS keychain and 1Password; runtimes on a local process and Docker; machines on the local machine and a second host reached over the network; package sources on Git and a local directory. | Ruling 40 | Each passes the vectors of its contract, and S10 passes with every provider swapped. | open: needs A62 |
 | A64 | Require proof of the sending instance on every request that crosses machines, with the mechanism swappable (mutual TLS, SPIFFE, the authorization of the Model Context Protocol). | Ruling 40, point 3e | Written as a promise; a vector shows a request without proof refused. | open |
 | A65 | Design local enforcement for v1: each machine enforces access from configuration pushed to it, with a stated bound on how long a revocation takes to arrive. | Ruling 40, point 3f | A proposal for the owner, before v1. Nothing in v0 may assume that every decision is made in one place. | open |
 | A14 | Run the acceptance scenario on a built engine and use it for a week. | Ruling 4 | Each promise is scored exercised, contradicted or never needed. | open |

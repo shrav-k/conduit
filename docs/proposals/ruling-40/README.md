@@ -44,3 +44,12 @@ infrastructure where possible and only innovate on connection and access."
   promises on how a decision is made may assume that decisions are made in one place, and the
   promise that no earlier decision stands in for one that cannot be made is the one place to
   revisit, with a stated bound on how long a revocation may take to arrive.
+
+## After the ruling
+
+Two further answers of the owner, on 2026-11-06:
+
+| What was put | The owner's answer |
+| --- | --- |
+| Where the first providers' code lives: a top-level `packages/` directory of Rust crates, one per provider, beside the planned `conformance/` and `reference-model/`. | "Yes" |
+| Start the probe of the macOS keychain now (Experiment 005), on a throwaway keychain, never the login keychain, knowing that macOS might show a permission dialog. | "Yes" |

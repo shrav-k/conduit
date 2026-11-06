@@ -75,8 +75,9 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
 
 ## Rules
 
-- Any code is Rust, in its own directory under `experiments/` with a `Cargo.lock`, a pinned
-  toolchain and ignored build output. The only exception is the Python checkers in `tools/`.
+- Any code is Rust, with a `Cargo.lock`, a pinned toolchain and ignored build output: a probe or
+  an evaluation in its own directory under `experiments/`, and a provider package, one crate per
+  provider, under `packages/` (ruling 40). The only exception is the Python checkers in `tools/`.
 - The owner makes the rulings. When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted.
 - Do not edit what `docs/archive/` holds or the content of `docs/research/`: they are records

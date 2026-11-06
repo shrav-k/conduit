@@ -8,6 +8,13 @@ the experiment program. It is the one tracker: the earlier [review queue](REVIEW
 superseded. It is not a specification. The specification is [spec/](../spec/README.md), which
 alone binds, and a ruling changes nothing until it is written there.
 
+The external audit was made on that day, at the owner's request, by a Claude session that had
+not written the plans it read. Its report is not kept as a file. What survives of it is the
+[findings](#findings) and the other sections marked **Historical**. "The audit" in ruling 1
+means it. This document is called the plan audit after it. Later audits have other names: the
+consolidation audit, the re-audit of the specification and the audit of the documents outside
+`spec/`, each with a record under [proposals/](README.md#records-of-rulings).
+
 ## Identifiers
 
 A bare identifier in this document is one of the tracker's own:
@@ -28,7 +35,7 @@ from a record is therefore written with the record's name, as in "re-audit decis
 
 | Prefix | Meaning | Record |
 | --- | --- | --- |
-| **PL**, **IN** | Placement and instantiation decisions. **PL-1** to **PL-10** are the earlier wording of the placement rules, which are now the promises `PLC-001` onward | [placement](proposals/placement/README.md), [instantiation](proposals/instantiation/README.md) |
+| **PL**, **IN** | Placement and instantiation decisions, written with no hyphen: PL1 to PL8 and IN1 to IN10. With a hyphen, **PL-1** to **PL-10** are something else: the earlier wording of the placement rules, which are now the promises `PLC-001` onward | [placement](proposals/placement/README.md), [instantiation](proposals/instantiation/README.md) |
 | **NS** | Decisions on the form of the specification, NS1 to NS4 | [normative-surface](proposals/normative-surface/README.md) |
 | **V** | Vocabulary decisions, V1 to V8. The older [vocabulary map](VOCABULARY.md) also numbers its topics V01 to V37 | [vocabulary](proposals/vocabulary/README.md) |
 | **RD**, **RR** | Decisions and rules on relationships and access | [relationships](proposals/relationships/README.md) |
@@ -68,16 +75,29 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
 
 ## Where things stand
 
-| Item | State on 2026-11-05 |
+| Item | State on 2026-11-06 |
 | --- | --- |
-| Specification | [spec](../spec/README.md) exists as a draft. Every area has been ruled and written as numbered promises, in three layers: the language, the shared conventions and the implementation interface. Its [contents table](../spec/README.md#contents) gives the files and the counts. A first re-audit by three cold readers found about 170 problems, 11 of them unsafe ([record](proposals/reaudit/README.md)). Consolidation pass 1 applied the 37 accepted decisions (ruling 32) and the fixes that needed none, and a follow-up pass applied the 26 follow-up decisions (ruling 33) and ruling 35. The core package, the JSON Schemas of documents and the manifest format are written and accepted (ruling 37), with five changes, which are applied ([record](proposals/core-and-schemas/README.md)). No vectors yet. `conformance/` and `reference-model/` do not exist. |
-| Documents outside the specification | Audited by two cold readers ([record](proposals/docs-audit/README.md)). Nothing outside `spec/` binds. Decisions DA1 to DA13 are being applied (A61). Nineteen accepted behaviors that only the older text stated are being converted into promises ([list](proposals/docs-audit/GAPS.md)). One that needs a decision, and six that appear to have been dropped, are [listed for the owner](#behaviors-not-carried-into-the-specification). |
+| Specification | [spec](../spec/README.md) exists as a draft. Every area has been ruled and written as numbered promises, in three layers: the language, the shared conventions and the implementation interface. Its [contents table](../spec/README.md#contents) gives the files and the counts. A first re-audit by three cold readers found about 170 problems, 11 of them unsafe ([record](proposals/reaudit/README.md)). Consolidation pass 1 applied the 37 accepted decisions (ruling 32) and the fixes that needed none, and a follow-up pass applied the 26 follow-up decisions (ruling 33) and ruling 35. The core package, the JSON Schemas of documents and the manifest format are written and accepted (ruling 37), with five changes, which are applied ([record](proposals/core-and-schemas/README.md)). The decisions of the audit of the documents outside `spec/` are applied too; they added the behaviors that the older text accepted and the specification lacked (next row). Round 2 of the re-audit, with four cold readers, is in progress ([record](proposals/reaudit/round-2/README.md)). No vectors yet. `conformance/` and `reference-model/` do not exist. |
+| Documents outside the specification | Audited by two cold readers ([record](proposals/docs-audit/README.md)). Nothing outside `spec/` binds. Decisions DA1 to DA13 are applied (A61). The older text accepted nineteen behaviors that the specification did not state. Eighteen are converted into promises, fields or items of the implementation-defined list ([list](proposals/docs-audit/GAPS.md), [log](proposals/docs-audit/log-gaps.md)). The nineteenth, on secrets, needs a decision and is left for the owner. It and six behaviors that appear to have been dropped are [listed for the owner](#behaviors-not-carried-into-the-specification). The fourth reader of round 2 read the whole repository cold: [report](proposals/reaudit/round-2/reader-4.md), and [what was done about it](proposals/reaudit/round-2/log-reader-4-fixes.md). |
 | Language defects | 167 recorded in the first sweep, against the withdrawn stronger claim. Triage by layer: 48 language, 39 shared convention, 30 type contract, 50 runtime profile. Of the 87 in the first two layers, three are closed and 84 are ruled. Of the 50 in the runtime profile, 49 are answered by an item of the implementation-defined list and one is ruled. The 30 type-contract defects wait for their contracts. None has a vector. |
-| Readiness gate | None of G1 to G11 is met. The gate was revised for layer decision LD4. |
+| Readiness gate | None of G1 to G11 is recorded as met. G1 is the nearest. Its contents list exists, in [spec/README.md](../spec/README.md#contents), and nothing outside `spec/` binds (decision DA1 of the documents audit). One accepted behavior, on secrets, is still stated only in the older text and waits for the owner (A32). Whether G1 is met while that is open is for the owner to say, as is the gate itself (G11). The gate was revised for layer decision LD4. |
 | Vocabulary | Ruled ([record](proposals/vocabulary/README.md)). Applied in `spec/` and in the overview. Not applied to `docs/protocol` and the other documents written before it. The record of old and new spellings (A29) is not written. |
 | Placement and instantiation | Ruled, and written as promises in [placement.yaml](../spec/promises/placement.yaml) and [instantiation.yaml](../spec/promises/instantiation.yaml). |
 | Build process and brief | Drafted: [independent builds](implementation/INDEPENDENT_BUILDS.md), [engine build brief](implementation/ENGINE_BUILD_BRIEF.md). Not issued. |
 | Code | [Experiment 004](../experiments/004-stateright-evaluation/README.md), a Rust model-checking evaluation. No engine and no reference model. |
+
+### What happens next
+
+1. Round 2 of the re-audit finishes (A59). Its findings are resolved without waiting for a
+   ruling on each (ruling 37). What only the owner can settle is listed for the owner: in the
+   [section below](#behaviors-not-carried-into-the-specification), in the
+   [record of the documents audit](proposals/docs-audit/README.md#left-for-the-owner) and in
+   the [record of round 2](proposals/reaudit/round-2/README.md).
+2. Rounds are run until two in a row report no finding in the language, the conventions or the
+   interface. That is the done-when of A59.
+3. The conformance vectors (A39) and the reference model (A38) follow. Neither is begun. In the
+   [order of the experiment program](#experiment-program) the work is at step 2, and they
+   belong to step 3, which takes scenario S1 alone through every method.
 
 ## Purpose
 
@@ -226,7 +246,7 @@ The rows above are kept as the rulings were given. Later rulings amended some of
 | 15, 17, 19 | Grants, and issuing them. | Rulings 27 to 29: grants are merged into Conduits. The access is what an open Conduit carries, and to issue is to open. |
 | 24 | Decision PD1, how a package's exports are named, is held back. | Settled by rulings 25 and 27. |
 | 31 | Contracts are documents of four kinds. | Five, with `Schema`, since follow-up decision F21 of the re-audit (ruling 33). |
-| 31 | The implementation-defined list has twelve entries. | Thirteen: ruling 32 added DL13. |
+| 31 | The implementation-defined list has twelve entries. | Fourteen. Ruling 32 added DL13. Decision DA3 of the documents audit, taken under ruling 37, added DL14 when the behaviors that the older text accepted were converted. |
 | 31 | `conduit.dev` stays a placeholder. | Replaced by ruling 33: the names come from this repository. |
 | 34 | Proposed: the names belong to a version of the specification. | Accepted as ruling 35. |
 
@@ -310,7 +330,7 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | ID | Action | Source | Done when | Status |
 | --- | --- | --- | --- | --- |
 | A47 | Owner rulings on the [form of the specification](proposals/normative-surface/README.md): NS1 to NS4. | A32, A33 | — | done: ruling 17 |
-| A32 | Define the specification: the exact set of documents from which an engine must be rebuildable. | Goal, Q2, Q10 | The contents list exists and everything outside it is marked as not binding (G1). | in progress: `spec/` exists and [spec/README.md](../spec/README.md) lists its parts. Nothing outside it binds (decision DA1 of the documents audit). What remains is the conversion of the accepted behaviors that only the older text stated (DA3; [list](proposals/docs-audit/GAPS.md)) |
+| A32 | Define the specification: the exact set of documents from which an engine must be rebuildable. | Goal, Q2, Q10 | The contents list exists and everything outside it is marked as not binding (G1). | in progress: `spec/` exists and [spec/README.md](../spec/README.md) lists its parts. Nothing outside it binds (decision DA1 of the documents audit). Eighteen of the nineteen accepted behaviors that only the older text stated are converted (DA3; [list](proposals/docs-audit/GAPS.md), [log](proposals/docs-audit/log-gaps.md)). What remains is the nineteenth, on secrets (GP3 of the list), which waits for the owner |
 | A33 | Build the promise register: restate accepted behavior as numbered promises, each with a vector. | Goal, D8 | Every topic is converted, with word counts before and after (G2). | in progress: every area is written as promises; no vectors; the word counts are not done |
 | A48 | Owner rulings on the [layer decisions](#layer-decisions) LD1 to LD5. | Ruling 13 | — | done: ruling 14 |
 | A49 | State the language's purpose and agent-first differentiation, and turn it into tests applied to every rework decision. | Ruling 14 | The purpose and the tests are recorded and the owner has accepted them. | done: [purpose](#purpose) and the nine preservation tests accepted (rulings 15, 17) |
@@ -324,18 +344,18 @@ counts are in [spec/README.md](../spec/README.md#contents).
 | A56 | Consolidation audit: find every place where one idea has several unrelated mechanisms, notations or keys, or one key has several meanings. | Ruling 25 | Each finding is consolidated, or recorded as a deliberate distinction. | done: all 26 findings ruled (rulings 27 to 29) and applied to the specification in one pass; the [consolidation record](proposals/consolidation/README.md#rulings) lists the rulings and the choices made while writing them, which the owner has not ruled on one by one |
 | A57 | Write the four remaining shared conventions: ownership and lifecycle, declared against observed state, records, and nothing implicit. | Ruling 29 | Each is a file of promises under `spec/conventions/`. | done: ruling 30; written as LIF-014 to LIF-023, ACC-033, PLC-016, OBS-001 to OBS-006, REC-001 to REC-006 and IMP-001 to IMP-007 ([record](proposals/conventions/README.md)) |
 | A58 | Decide the schema of each family's `spec` and of contracts and manifests, the implementation interface, and the implementation-defined list. | Ruling 30 | Each is written in `spec/`; the readiness conditions G2 and G9 can then be worked on. | done: ruling 31; written as TPL-001 to TPL-012, CTR-001 to CTR-006, IFC-001 to IFC-017, the implementation-defined list, and additions to the object, graph, Conduit, Pool and package promises ([record](proposals/schemas-and-interface/README.md)). The JSON Schemas are A60. |
-| A59 | Consolidate the promises and audit the whole specification again with cold readers who see only `spec/`. | Ruling 30 | Two consecutive rounds with no finding in the language, conventions or interface. | in progress: round 1 done, with about 170 findings, 11 of them unsafe; 37 decisions accepted (ruling 32) and applied by consolidation pass 1, which changed 212 promises, removed 21 and added 48 ([record](proposals/reaudit/README.md)). The follow-up decisions (rulings 33 to 35) are applied. Next: round 2 |
+| A59 | Consolidate the promises and audit the whole specification again with cold readers who see only `spec/`. | Ruling 30 | Two consecutive rounds with no finding in the language, conventions or interface. | in progress: round 1 done, with about 170 findings, 11 of them unsafe; 37 decisions accepted (ruling 32) and applied by consolidation pass 1, which changed 212 promises, removed 21 and added 48 ([record](proposals/reaudit/README.md)). The follow-up decisions (rulings 33 to 35) are applied. Round 2 is in progress, with four readers ([record](proposals/reaudit/round-2/README.md)) |
 | A60 | Write the concrete surface that the first re-audit found missing (re-audit decision G1): the core package as documents, the JSON Schemas of every document, and the manifest's format. | Ruling 32 | Each is a normative part of `spec/`, checked by `tools/check_schemas.py`, and accepted by the owner. | done: accepted (ruling 37) with five changes, which are applied as [the instructions](proposals/core-and-schemas/APPLY.md) set out. Written: `spec/core/`, `spec/schemas/` with valid and invalid examples, and `spec/promises/manifest.yaml` ([record](proposals/core-and-schemas/README.md)) |
-| A61 | Audit the documents outside `spec/` and make the repository ready for a cold read. | Ruling 37 | Every decision of the audit is applied, and a cold reader can tell from the entry points what binds. | in progress: audited; decisions DA1 to DA13 being applied ([record](proposals/docs-audit/README.md)) |
+| A61 | Audit the documents outside `spec/` and make the repository ready for a cold read. | Ruling 37 | Every decision of the audit is applied, and a cold reader can tell from the entry points what binds. | in progress: audited, and decisions DA1 to DA13 are applied ([record](proposals/docs-audit/README.md), which links the logs). The second half of the done-when was put to the fourth reader of round 2 of the re-audit, who read the whole repository cold and could tell from the entry points what binds ([report](proposals/reaudit/round-2/reader-4.md)). What was done about that reader's other findings, and what is left for the owner, is in [the log](proposals/reaudit/round-2/log-reader-4-fixes.md). The action waits for round 2 to finish |
 | A41 | Fix the uncertain-write rule (L1) with A13. | L1 | The convention states when reissue is safe and a vector covers it. | ruled: ruling 20, OPS-012 to OPS-014; vector pending |
 | A12 | Name the target MCP revision and specify the implementation interface and its profile. Whether the wire between an engine's own services is shared is layer decision LD3. | Q2, G9 | An implementation written against the interface works with any conforming engine. | ruled: ruling 31, IFC-001 to IFC-017; the baseline revision is 2026-07-28; vectors and test implementations pending |
-| A11 | State what the language requires of caller authentication, then choose the mechanism from the native probes. | Q3 | Both are in the specification. | open |
+| A11 | State what the language requires of caller authentication, then choose the mechanism from the native probes. | Q3 | Both are in the specification. | in progress: the requirement is stated. The engine establishes which instance the consumer is for each request, and no consumer can present as another (IFC-022); what a consumer presents is never sent to an implementation (IFC-030); how a request shows which instance it comes from is item DL13 of the implementation-defined list (re-audit decisions U10 and F2). The mechanism waits for the native probe (A4) |
 | A16 | Conduit instance granularity, participation and grant lifetime. | Q5 | Ruled in the layer it is assigned to and swept clean. | ruled: a Conduit has one consumer and one target (ruling 17), and what closes one is ruled (rulings 19, 28, 29); vectors pending |
 | A25 | Agent lifecycle, including what survives replacement. | Q8 | Ruled in the layer it is assigned to and swept clean. | open |
 | A17 | State what runs with no frontend attached and what starts it. | Q7 | It is a promise. | open |
 | A35 | Specify the declare-lost operation, which is reserved to the root Interface. | Ruling 7 | Its contract, fencing and effects are promises. | ruled: PLC-017, reserved to the root Interface; vector pending |
 | A43 | Write the schemas and a strict loader in Rust. | G3 | Every scenario file validates and the negative cases are rejected. | in progress: the schemas are written in `spec/schemas` and accepted (A60); the Rust loader is open |
-| A21 | Repair status and consistency defects in the documents. | Q10 | Each item under [known inconsistencies](#known-inconsistencies) is fixed or dropped. | in progress: readiness audit applied 2026-11-05 |
+| A21 | Repair status and consistency defects in the documents. | Q10 | Each item under [known inconsistencies](#known-inconsistencies) is fixed or dropped. | in progress: readiness audit applied 2026-11-05. On 2026-11-06 each of the eleven items was checked against the tree and its state is noted beside it. Three are overtaken, two partly. Five stand as written in files that are marked as not binding or are not edited; whether to drop them is the owner's call. One, a stale branch, waits for the owner |
 | A1 | Permit exploratory code. | Q9 | — | done: ruling 3 |
 | A2 | Name the acceptance scenario. | Q1 | — | done: named as S1 and S2 (rulings 4, 9); not yet run. Real Agents and the four-account check are later gates |
 | A9 | Decide how v0 honors multi-system support. | D4, Q11 | — | done: ruling 5 |
@@ -391,7 +411,8 @@ counts are in [spec/README.md](../spec/README.md#contents).
 For the owner. The audit of the documents outside `spec/` (A61) compared the older text with the
 specification. It found nineteen accepted behaviors that the specification did not state. The
 [conversion list](proposals/docs-audit/GAPS.md) says how each is written as a promise, a field
-or an item of the implementation-defined list (decision DA3).
+or an item of the implementation-defined list (decision DA3). Eighteen are converted, and the
+[log](proposals/docs-audit/log-gaps.md) lists every promise that was changed or added for them.
 
 One of the nineteen is not converted, because it needs a decision first: secrets never appear
 in configuration, records or events, and a credential is never handed to a caller (GP3 of the
@@ -486,14 +507,14 @@ vectors (A23); 003 goes when the Rust loader exists (A43).
 | --- | --- | --- | --- |
 | Q1 | What does v0 do that a plain MCP configuration cannot? | Sharing one service with two Agents takes about 260 lines across six documents in the Experiment 001 fixture, against about five lines today. | done: S1 and S2 name it, one login shared under per-Agent restriction, plus shared history |
 | Q2 | What is the protocol, normatively? | No MCP revision is named in the protocol reference, the profile keys are unselected and the wire between services is open. | answered: ruling 31, for the wire to implementations and consumers; the wire between an engine's own services is not shared (LD3) |
-| Q3 | How does a native Agent prove who it is? | Every access rule rests on an authenticated originating caller, but [owner and client recognition](protocol/MODEL.md#interfaces-and-the-user-workflow) is left open. | open: A11 |
+| Q3 | How does a native Agent prove who it is? | Every access rule rests on an authenticated originating caller, but [owner and client recognition](protocol/MODEL.md#interfaces-and-the-user-workflow) is left open. | in progress: A11 |
 | Q4 | Who is the independent author? | The project has one owner and the sessions that wrote the language. | done: A26 |
 | Q5 | What is the granularity of a Conduit instance? | Per consumer and target, or shared; grant lifetime for a crashed Agent. | answered: a Conduit has one consumer and one target (ruling 17), and what closes one is ruled (rulings 19, 28, 29) |
 | Q6 | What is the outcome model? | Prerequisites require successful completion, but no representation of success, failure or uncertainty exists. | answered: ruling 20 |
 | Q7 | What runs when no frontend is attached? | Evidence must persist, yet no always-running process is required. | open: A17 |
 | Q8 | What survives Agent replacement? | A replacement does not automatically acquire private context or grants. | open: A25 |
 | Q9 | When may code be written? | — | done: ruling 3 |
-| Q10 | Which text is normative? | The proposals folder holds about 120 "Accepted" paragraphs outside the protocol reference. | answered: the specification in `spec/`, and nothing else (ruling 17; decision DA1 of the documents audit). The behaviors still to be converted are tracked by A32 and A33 |
+| Q10 | Which text is normative? | The proposals folder holds about 120 "Accepted" paragraphs outside the protocol reference. | answered: the specification in `spec/`, and nothing else (ruling 17; decision DA1 of the documents audit). Eighteen of the nineteen behaviors that only the older text stated are converted; the last is tracked by A32 |
 | Q11 | How does the language say where an instance runs? | — | done: ruling 7 |
 | Q12 | What may an instantiator supply, and how does a template say so? | — | done: ruling 8 |
 
@@ -602,28 +623,52 @@ across two machines. Option (c) is the [placement record](proposals/placement/RE
 
 ### Known inconsistencies
 
-> **Historical.** Recorded at the audit, before rulings 13 to 37. Not maintained. Action A21
-> tracks what is left of it.
+> **Historical.** Recorded at the audit, before rulings 13 to 37. The items are as first
+> written. Each was checked against the tree on 2026-11-06, and the sentence in italics after
+> it says what was found. Action A21 tracks what is left.
 
 - `proposals/authoring-syntax/AUTHORING.md` lines 433–436 declare a singular runtime with output
   references, against the accepted named runtime map and explicit start operation.
+  *Stands as written, now near line 440. The file is marked as not binding (decision DA6 of the
+  documents audit). The shape of a runtime in force is TPL-006 and TPL-007.*
 - The two package entry-document examples (authoring proposal and package walkthrough) use
   different fields, and neither carries a format version.
+  *Stands as written. Both files are marked as not binding (DA6). The manifest's format in
+  force is in `spec/promises/manifest.yaml`.*
 - Control declarations differ between the package walkthrough and `instances.yaml`.
+  *Overtaken. `instances.yaml` was a file of Experiment 001, which is removed (DA4), and the
+  walkthrough is marked as not binding. Controls in force are CTR-006 and TPL-010.*
 - Templates in Experiment 001 hard-code predicted instance names, so they are per-deployment
   documents rather than reusable templates.
+  *Overtaken. Experiment 001 is removed (DA4).*
 - Operations that create instances, open Conduits and start runtimes are presented as ordinary
   plugin exports, with no plugin-to-host interface described.
+  *Overtaken in the specification. Registering and opening are Operation contracts of the core
+  package, which the engine itself implements (OPS-019, MAN-012). A runtime's start is an
+  operation that returns a handle (TPL-006, TPL-007). The older documents that present them as
+  plugin exports are marked as not binding.*
 - The conceptual review relies on rulings R1–R7, which are defined nowhere in the current tree.
+  *Stands as written. The file is in the archive, which is not edited.*
 - `research/ESTABLISHMENT.md` has `<session-workspace>`, an artifact of a Session-to-Agent
   replacement whose intended text is not known.
+  *Stands as written, at line 389. The content of a research packet is not edited.*
 - Rulings R1, R5 and R6 are cited in the lifecycle topic and defined nowhere.
+  *Stands as written, at lines 222 to 228 of `protocol/LIFECYCLE.md`. The topic is superseded
+  and is not edited.*
 - Bare labels such as `[DESIGN]`, `[REVIEW]` and "specification" point at files that have since
   moved; the link targets resolve but the labels mislead.
+  *Partly overtaken. The older files that carry one now say under their title that they do
+  not bind, apart from the files of the archive, where only the index says so. The note on each
+  research packet says what "SPEC.md" and "DESIGN.md" meant. The label in Experiment 002 that
+  called the overview the specification was corrected on 2026-11-06. The other labels stand.*
 - About 30 links point into Experiments 001 to 003 and will break when those are removed; the
   vocabulary map holds 17 of them.
+  *Partly overtaken. The links to Experiment 001 now point at commit `7927d68`, the last that
+  held it (DA4). About twenty links still point into Experiments 002 and 003, and break when
+  those are removed (A23, A43).*
 - The local branch `implementation/rust-runtime-plugins` contains no code and its name could
   mislead.
+  *Still so: the branch exists locally and on the remote. Left for the owner.*
 
 Fixed on 2026-11-05: stale status and sequence statements in the entry documents; the overview's
 date; the corrupted citation URL in `research/CONFIGURATION.md`; "a Agent-local"; the two shapes

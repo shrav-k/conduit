@@ -1,6 +1,27 @@
 #!/usr/bin/env python3
-"""Offline checks for the repository's Markdown navigation (Python standard library only)."""
+"""Offline checks for the repository's Markdown navigation (Python standard library only).
 
+    python3 tools/check_docs.py
+    python3 tools/check_docs.py --walk
+
+It checks, in every Markdown file, that each local link leads to a path that exists, that each
+anchor is a heading or an `id` of the file it points into, that each reference link is defined
+once, and that each code fence is closed. It does not follow links to other sites.
+
+It finds the Markdown files in one of two ways, and its first line of output says which:
+
+  - In a Git working tree whose top is this repository, it asks Git for the files that are
+    tracked, and for those that are untracked and not ignored.
+  - Anywhere else, it walks the directory. That is the case when the `git` command is not
+    found, and when the directory is not a Git working tree, as after the repository was
+    downloaded as an archive. It skips `.git/`, `target/` and what a `.gitignore` file plainly
+    names: a line with no wildcard and no `!`. `--walk` asks for this way in a Git working
+    tree too.
+
+The last line of output is "Errors: N", and the exit status is 1 when N is not 0.
+"""
+
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -8,6 +29,72 @@ import sys
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
+SKIPPED = (".git", "target")           # never walked, whatever .gitignore says
+
+
+def from_git():
+    """The Markdown files Git knows of, or None with the reason Git could not be asked."""
+    def git(*arguments):
+        return subprocess.run(["git", *arguments], cwd=ROOT, stdout=subprocess.PIPE,
+                              stderr=subprocess.DEVNULL, check=True).stdout.decode()
+    try:
+        top = git("rev-parse", "--show-toplevel").strip()
+        if Path(top).resolve() != ROOT:
+            return None, "this directory is not the top of a Git working tree"
+        names = git("ls-files", "--cached", "--others", "--exclude-standard", "-z").split("\0")
+    except FileNotFoundError:
+        return None, "the `git` command was not found"
+    except subprocess.CalledProcessError:
+        return None, "this directory is not a Git working tree"
+    return {ROOT / name for name in names if name.endswith(".md")}, None
+
+
+def plainly_named(directory):
+    """What the .gitignore of one directory plainly names, as (path, directories only, anchored).
+
+    A line with a wildcard or a leading `!` is not read: Git's pattern rules are not
+    reimplemented here.
+    """
+    try:
+        lines = (directory / ".gitignore").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return []
+    named = []
+    for line in lines:
+        line = line.strip()
+        if not line or line[0] in "#!" or any(mark in line for mark in "*?[\\"):
+            continue
+        only_directories = line.endswith("/")
+        line = line.rstrip("/")
+        anchored = "/" in line
+        if line.strip("/"):
+            named.append((directory / line.strip("/"), only_directories, anchored))
+    return named
+
+
+def by_walking():
+    """Every Markdown file under ROOT, apart from what is skipped."""
+    files, named = set(), []
+
+    def skipped(path, is_directory):
+        for target, only_directories, anchored in named:
+            if only_directories and not is_directory:
+                continue
+            if anchored:
+                if path == target:
+                    return True
+            elif path.name == target.name and target.parent in path.parents:
+                return True
+        return False
+
+    for current, directories, names in os.walk(ROOT):
+        current = Path(current)
+        named.extend(plainly_named(current))
+        directories[:] = sorted(name for name in directories
+                                if name not in SKIPPED and not skipped(current / name, True))
+        files.update(current / name for name in names
+                     if name.endswith(".md") and not skipped(current / name, False))
+    return files
 
 
 def prose(text):
@@ -43,14 +130,18 @@ def anchors(text):
     return result
 
 
-def check():
-    names = subprocess.check_output(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"], cwd=ROOT
-    ).decode().split("\0")
-    files = sorted({ROOT / name for name in names if name.endswith(".md") and (ROOT / name).is_file()})
+def check(walk=False):
+    found, why = (None, "--walk was given") if walk else from_git()
+    if found is None:
+        found = by_walking()
+        print(f"Files: found by walking the directory, because {why}. Skipped: "
+              f"{', '.join(name + '/' for name in SKIPPED)} and what .gitignore plainly names.")
+    else:
+        print("Files: listed by Git (tracked, and untracked but not ignored).")
+    files = sorted(path for path in found if path.is_file())
     errors, count, cache = [], 0, {}
     for path in files:
-        body, fence = prose(path.read_text())
+        body, fence = prose(path.read_text(encoding="utf-8"))
         label = path.relative_to(ROOT).as_posix()
         if fence:
             errors.append(f"{label}:{fence[2]}: unclosed code fence")
@@ -81,7 +172,7 @@ def check():
                 errors.append(f"{label}:{line}: missing path {target}")
             elif parsed.fragment and destination.suffix == ".md":
                 if destination not in cache:
-                    cache[destination] = anchors(destination.read_text())
+                    cache[destination] = anchors(destination.read_text(encoding="utf-8"))
                 if unquote(parsed.fragment) not in cache[destination]:
                     errors.append(f"{label}:{line}: missing anchor {target}")
     print(f"Checked {len(files)} Markdown files and {count} local links (offline).")
@@ -92,4 +183,6 @@ def check():
 
 
 if __name__ == "__main__":
-    sys.exit(check())
+    if set(sys.argv[1:]) - {"--walk"}:
+        sys.exit("usage: python3 tools/check_docs.py [--walk]")
+    sys.exit(check(walk="--walk" in sys.argv[1:]))

@@ -1,7 +1,7 @@
 # 004 — Stateright evaluation
 
-Status: executed 2026-11-05. Exploratory Rust code under the
-[exploratory-code ruling](../../docs/REVIEW.md#plan-audit-2026-11-05). It models one promise
+Status: executed 2026-11-05. Exploratory Rust code under the exploratory-code ruling, which is
+ruling 3 of the [ruling log](../../docs/AUDIT.md#ruling-log) in the plan audit. It models one promise
 group to evaluate a tool. It is not a Conduit runtime, a reference model or conformance evidence.
 
 ## Question

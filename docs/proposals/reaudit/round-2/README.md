@@ -6,10 +6,13 @@ core package and schemas, and the conversion of the behaviors the older text acc
 
 | Reader | Sees | Looks for | Report |
 | --- | --- | --- | --- |
-| 1 | `spec/` only | Promises that duplicate or contradict each other, the definitions, the schemas or the core package | `reader-1.md` |
-| 2 | `spec/` only | Terms and document shapes: every term defined once, and the schemas, examples and core package agreeing with the promises | `reader-2.md` |
-| 3 | `spec/` only | Anything two conforming engines could disagree on, by walking scenarios end to end | `reader-3.md` |
-| 4 | The whole repository, from `README.md` | What an outside reviewer with no context would be misled by or unable to find | `reader-4.md` |
+| 1 | `spec/` only | Promises that duplicate or contradict each other, the definitions, the schemas or the core package | [reader-1.md](reader-1.md) |
+| 2 | `spec/` only | Terms and document shapes: every term defined once, and the schemas, examples and core package agreeing with the promises | [reader-2.md](reader-2.md) |
+| 3 | `spec/` only | Anything two conforming engines could disagree on, by walking scenarios end to end | [reader-3.md](reader-3.md) |
+| 4 | The whole repository, from `README.md` | What an outside reviewer with no context would be misled by or unable to find | [reader-4.md](reader-4.md) |
+
+What was done about the fourth reader's report, finding by finding, and what it leaves for the
+owner, is in [log-reader-4-fixes.md](log-reader-4-fixes.md).
 
 ## Known before the round
 

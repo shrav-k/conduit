@@ -38,8 +38,9 @@ to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
 - **Evidence** goes in its own directory under [experiments/](experiments/README.md), with its
   scope, instructions and dated results. An expected outcome is never presented as a result.
 - **Code** is Rust, in its own directory under [experiments/](experiments/README.md) with a
-  lockfile, a pinned toolchain and ignored build output. The Python checkers in `tools/` are the
-  only exception.
+  lockfile, a pinned toolchain and ignored build output. The only exceptions are the Python
+  checkers in `tools/` and [Experiment 003](experiments/003-language-probes/README.md), which
+  is Python and predates the rule.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
   dissent. It is not edited.
 
@@ -82,16 +83,36 @@ python3 tools/check_schemas.py       # schemas, core package and examples; needs
 git diff --check                     # whitespace errors
 ```
 
-`check_schemas.py` needs the Python packages PyYAML and jsonschema. If the interpreter that runs
-it lacks either, it runs itself again under `/usr/bin/python3`, and it never reports a check it
-did not run. The other two tools need only Python 3.
+What each check needs:
+
+- `check_docs.py` and `set_names.py` need only Python 3. In a Git working tree `check_docs.py`
+  asks Git for the Markdown files. Anywhere else, such as a copy downloaded as an archive, it
+  walks the directory, skipping `.git/`, `target/` and what `.gitignore` plainly names. Its
+  first line of output says which it did.
+- `check_schemas.py` needs the Python packages PyYAML and jsonschema. It was last run with
+  PyYAML 6.0.1 and jsonschema 4.20.0. To install them:
+
+  ```sh
+  python3 -m pip install pyyaml jsonschema
+  ```
+
+  If the `python3` that runs it lacks either package, and `/usr/bin/python3` exists and is a
+  different interpreter, it runs itself again under that one. If PyYAML is still missing, it
+  stops, says that nothing was checked and exits with status 2. If only jsonschema is missing,
+  it runs steps 1, 2, 5 and 6 without the one rule that needs a validator, and says that steps
+  3 and 4 and that rule were not run. Its last line then begins "Errors: N in the steps that
+  ran", and it exits with status 3 when N is 0. It never reports a check it did not run. Its
+  first line of output names the interpreter and the package versions it used.
+- `git diff --check` needs Git and a Git working tree.
 
 Run `cargo test --release` in each Rust experiment directory you change.
 
 What the checks cover:
 
 - `check_docs.py` validates repository Markdown paths, heading anchors, reference links and
-  fenced-code balance without network access. It does not validate external links.
+  fenced-code balance without network access. It does not validate external links, and it
+  does not check that some document links to each file. `--walk` makes it walk the directory
+  in a Git working tree too.
 - `set_names.py --check` refuses a retired name, a `_meta` key of Conduit's written with another
   prefix, and a value that looks like one of the three names of `spec/names.yaml` and differs
   from it. To change the names, run it with the new values to see what would change, and add

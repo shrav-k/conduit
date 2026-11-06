@@ -1,5 +1,7 @@
 # Naming and reference patterns in existing systems
 
+> Not binding. This research is evidence for the naming rulings, 25 and 27 of the [plan audit](../../AUDIT.md#ruling-log). What it calls the naming proposal is now the accepted [naming record](../../proposals/naming/README.md), and the rules in force are in [`spec/promises/naming.yaml`](../../../spec/promises/naming.yaml).
+
 Retrieved 2026-11-05 from the primary documentation listed at the end, for
 [plan-audit action A55](../../AUDIT.md#p0--make-the-language-concrete-and-complete). This is
 evidence for the [naming proposal](../../proposals/naming/README.md); it recommends nothing.

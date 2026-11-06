@@ -1,7 +1,9 @@
 # Audit of the documents outside `spec/`
 
 Status: audit of 2026-11-05 (plan-audit action A61), asked for by the owner in ruling 37 so
-that the repository can be read cold by an outside reviewer. Two readers reported:
+that the repository can be read cold by an outside reviewer. The thirteen decisions below are
+applied; [Applied](#applied) links the logs. What the readers concluded describes the
+repository as it stood before that. Two readers reported:
 
 | Reader | Scope | Report |
 | --- | --- | --- |
@@ -10,15 +12,18 @@ that the repository can be read cold by an outside reviewer. Two readers reporte
 
 ## What they concluded
 
-- Links, checks and hygiene are clean, and the specification and the ruling log agree with each
-  other.
-- The repository is not ready for a cold read. The front door never sends a reader to `spec/`.
-  It presents the overview and the protocol topics, which teach the model the rulings replaced,
-  as the accepted reference.
-- The tracker's status tables are behind its own ruling log.
-- Twelve of fifteen proposal records never say that the specification governs, and several show
-  examples that later rulings reversed.
-- Nineteen accepted behaviors in the older text are not stated in the specification.
+This is the state the two readers found on 2026-11-05, before the decisions were applied. It is
+not the state now.
+
+- Links, checks and hygiene were clean, and the specification and the ruling log agreed with
+  each other.
+- The repository was not ready for a cold read. The front door never sent a reader to `spec/`.
+  It presented the overview and the protocol topics, which teach the model the rulings
+  replaced, as the accepted reference.
+- The tracker's status tables were behind its own ruling log.
+- Twelve of fifteen proposal records never said that the specification governs, and several
+  showed examples that later rulings reversed.
+- Nineteen accepted behaviors in the older text were not stated in the specification.
 
 ## Decisions taken to fix it
 
@@ -40,6 +45,21 @@ below follows a ruling already made; the last column names it.
 | DA11 | One description of Conduit everywhere, the specification's own: a configuration language for the relationships between independent agents and the things they share. | Ruling 14, the layered claim. |
 | DA12 | The same list of four checks in `AGENTS.md` and `CONTRIBUTING.md`. | — |
 | DA13 | The build brief asks each builder for a runtime profile, uses "documents" and "contents list" for what it called declarations and the manifest, says that `tools/` ships on the build base, and says that its tags are revisions of version `v0`. | The Engine conformance level in `spec/README.md`; the definitions. |
+
+## Applied
+
+All thirteen decisions are applied. Each log lists the edits made, file by file.
+
+| Log | Decisions | What it covers |
+| --- | --- | --- |
+| [Entry points and tracker](log-entry-points.md) | DA1 to DA4, DA7 and DA9 to DA13 | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/README.md`, the overview, the plan audit, the defect register, the build documents and the experiment index |
+| [Older and supporting text](log-older-text.md) | DA1 to DA6 and DA8 | The protocol topics, the proposal records, the research packets, the archive's index, the authoring documents and the experiments |
+| [Conversion list](GAPS.md) and its [log](log-gaps.md) | DA3 | The nineteen behaviors that the older text accepted and the specification did not state. Eighteen are converted: the specification went from 376 promises to 395, and the implementation-defined list from 13 items to 14. The nineteenth, on secrets (GP3), is left for the owner |
+
+A later reader read the whole repository cold, as the fourth reader of round 2 of the
+re-audit. Its [report](../reaudit/round-2/reader-4.md) found the entry points consistent and
+the tracker two commits behind, and the [log of the fixes](../reaudit/round-2/log-reader-4-fixes.md)
+says what was done.
 
 ## Left for the owner
 

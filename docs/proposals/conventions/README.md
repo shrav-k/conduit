@@ -13,7 +13,9 @@ where they differ. Amended by:
 - ruling 32: every request and how it ended is always recorded, dispatched or not, which widens
   RC1; a purge keeps the identity and the outcome of every invocation; a Pool may be retired
   only when the shutdown of every Resource it owns is confirmed, which tightens OL4; an
-  instance that was never set up does not run its `retire` graph;
+  instance that was never set up does not run its `retire` graph; an instance that was retired
+  because its location was declared lost can be unregistered without its shutdown being
+  confirmed (re-audit decision A2, LIF-017), which widens OL3;
 - ruling 33: a purge also keeps a digest of each invocation's contents; the `retire` graph
   never starts model work, as for setup; work arranged for later is bound to the Conduit that
   arranged it and never revives, which narrows NI3; where a record or an observation was made

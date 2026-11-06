@@ -29,7 +29,7 @@ the language, and you must not invent it.
 | --- | --- |
 | `spec/README.md` | The contents list of the specification. Start here. It lists every normative file. |
 | `spec/` | The specification: the language, the shared conventions and the implementation interface, as numbered promises, with the definitions, the schemas of documents and the core package. |
-| `tools/` | The two checkers the specification refers to, `check_schemas.py` and `set_names.py`. You may run them. They are not part of the specification. |
+| `tools/` | The two checkers of the specification, `check_schemas.py` and `set_names.py`. You may run them. They are not part of the specification. `spec/README.md` lists a third, `check_docs.py`. It checks the links of the whole repository and is not for this checkout. |
 | `conformance/README.md` | How conformance vectors are structured and how your implementation must run them. |
 | `conformance/` | The public conformance vectors, each tagged with the promises it tests, and the test implementations. |
 | `BUILD.md` | This brief. |

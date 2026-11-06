@@ -56,7 +56,10 @@ is `v0`, the one [spec/names.yaml](../../spec/names.yaml) states, and every `spe
 revision of that version.
 
 `tools/` ships on the build base because files under `spec/` tell the reader to run
-`tools/check_schemas.py` and `tools/set_names.py`. Files under `spec/` also link to records
+`tools/check_schemas.py` and `tools/set_names.py`. `spec/README.md` lists a third check,
+`tools/check_docs.py`. That one is for the whole repository: it checks the links between the
+Markdown files, and on the build base the links from `spec/` into `docs/` lead nowhere. The
+brief therefore names only the first two. Files under `spec/` also link to records
 under `docs/`, which the build base does not hold; the brief tells builders that they do not
 need them.
 

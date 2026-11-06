@@ -2,7 +2,7 @@
 
 Not binding. This is a plain-language tour of the language, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md) as they
-stood on 2026-11-05. The [specification](../spec/README.md) alone binds, and it governs where
+stood on 2026-11-06. The [specification](../spec/README.md) alone binds, and it governs where
 this page differs. Each section links the files that state its rules. A code such as `CON-001`
 is the identifier of one promise in them.
 
@@ -25,7 +25,7 @@ Every object is a template or an instance of one of five families
 
 | Family | What it is |
 | --- | --- |
-| Interface | An actor: it makes requests on its own behalf. |
+| Interface | Where a person, or a system outside, acts on the system. It is an actor: it makes requests on its own behalf. |
 | Agent | An actor, as an Interface is. Its model being run is called model work. |
 | Resource | Something that agents share, such as a directory. It is not an actor: it makes a request only to serve one it received. |
 | Pool | The owner of Resources. It is never a consumer or a caller. |
@@ -43,8 +43,10 @@ A document is one template, instance or contract written out, in YAML or the equ
 - A **template** has no `from`. Its `spec` holds everything it declares, including its inputs.
   Each input has a schema and names the places in the `spec` where its value is assigned.
 - An **instance** is one identified object made from a template. Its document has `from`, which
-  names the template, and `arguments`, which supply the inputs. It has no `spec`. Every
-  instance comes from a template.
+  names the template, and the standard arguments of its family: `owner` for a Resource,
+  `placement` for an Agent and a Resource, and `consumer` and `target` for a Conduit. It may
+  have `arguments`, which supply values for the template's inputs (OBJ-013). It has no `spec`.
+  Every instance comes from a template.
 - A template of any family but Conduit selects a **type**: a contract that states the schema of
   an instance's `config`, the capabilities its instances offer and their controls.
 
@@ -86,14 +88,19 @@ from that consumer to that target lists is refused (ACC-001). There is no separa
 permission.
 
 A Conduit comes to exist in one of two ways. A template of an Interface, an Agent or a Resource
-can declare it; one Conduit is then made with each instance of that template, and opening it is
-a step of that instance's setup (CON-002). Or a Conduit document names an existing instance as
-its consumer and another as its target (CON-012).
+can declare it; one Conduit is then made with each instance of that template (CON-002), and
+opening it is a step of that instance's setup (GRA-022, CON-004). Or a Conduit document names
+an existing instance as its consumer and another as its target (CON-012).
 
 A Conduit can carry restrictions. A filter narrows what may pass through one Conduit. A policy
 limits every request of the actors or targets it is applied to. A restriction only narrows
-(ACC-008). Inspecting a Conduit reports, for each restriction, whether it is enforced or only
-mediated, which means it applies only to requests that pass through the engine (ACC-027).
+(ACC-008).
+
+Inspecting a Conduit reports, for each restriction, whether it is enforced or only mediated
+(ACC-027). Mediated means that the restriction applies to requests that pass through the
+engine. Enforced means that an isolation plugin also keeps the consumer from going around it.
+This version specifies no isolation plugin. So in this version nothing is enforced: every
+restriction is reported as mediated.
 
 **The right to open Conduits is itself an open Conduit.** Opening and closing are operations of
 a Resource named `access`. An actor may open a Conduit only if it is the consumer of an open
@@ -190,7 +197,10 @@ conditions, and they are reported beside the state (LIF-011).
 
 Inspecting an instance returns what was declared, its status and the records about it
 (LIF-013). A difference between what is observed and what was declared is reported, and nothing
-removes it without an explicit request (OBS-004).
+acts to remove it without an explicit request (OBS-004). There is one exception: an
+implementation may restore its own runtime, where its type's contract allows it. To restore a
+runtime is to keep alive what is behind the handle that the instance holds. The handle stays
+valid, and nothing is dispatched because of it (OBS-005).
 
 ## Operations, outcomes and reasons
 
@@ -212,8 +222,13 @@ dispatched, which begins an invocation. Every request ends in exactly one of sev
 
 A caller may attach an operation identity to a request so that a repeat is recognized, and at
 most one invocation exists for one caller, one target and one identity (OPS-008). Nothing is
-dispatched again unless the caller repeats the request (IMP-007). An unknown outcome stays
-unknown until an actor reconciles it (OPS-014).
+dispatched again unless the caller repeats the request (IMP-007).
+
+What follows an unknown outcome is fixed. A repeat of the request is dispatched as a new
+attempt only if the operation's contract declares `deduplicates: true` and the implementation
+is not marked `plain` (OPS-012). Where no new attempt is dispatched, the outcome stays unknown
+until it is reconciled (OPS-013): an actor records, with what it checked, that the effect
+occurred or that it did not, and the outcome becomes succeeded or failed (OPS-014).
 
 A control is an operation that changes stored settings. A request to change an object names the
 object's current revision, and one that names another reports conflict (REV-002).
@@ -270,11 +285,14 @@ Two things are deliberately outside it, and neither binds other engines:
   process layout. That belongs to the engine's runtime profile: its documented choice for every
   item of the [implementation-defined list](../spec/implementation-defined.yaml).
 
-An engine claims conformance at a level the specification names. The Language level covers
-the layer `language`. The Engine level adds the other two layers and a runtime profile
-([conformance](../spec/README.md#conformance)). For graphs, schemas and packages, which are not
-what distinguishes Conduit, the specification adopts existing standards
-([schema profile](../spec/schema-profile.md)).
+A claim of conformance names one of three levels
+([conformance](../spec/README.md#conformance)). An engine claims the Language level, which
+covers the layer `language`, or the Engine level, which adds the other two layers and a
+runtime profile. An implementation, which is not an engine, claims the Implementation level:
+every promise of the layer `interface` whose obligation falls on the implementation.
+
+For graphs, schemas and packages, which are not what distinguishes Conduit, the specification
+adopts existing standards ([schema profile](../spec/schema-profile.md)).
 
 No promise is yet tested by a conformance vector, and there is no reference model. The
 [plan audit](AUDIT.md#where-things-stand) tracks the state of the work.

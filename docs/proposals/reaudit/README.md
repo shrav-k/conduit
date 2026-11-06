@@ -4,6 +4,11 @@ Status: findings recorded on 2026-11-05 (plan-audit action A59). The owner accep
 decision below as recommended (plan-audit ruling 32). They are applied by
 [consolidation pass 1](CONSOLIDATION.md).
 
+This page is the record of round 1. Round 2, with four readers, is in progress and has
+[its own record](round-2/README.md). Counts of promises on this page are as they stood when
+each pass ended; the current counts are in the
+[contents table of the specification](../../../spec/README.md#contents).
+
 After the last batch of rulings (ruling 31) the owner asked for the promises to be consolidated
 and put back through the audit. Three cold readers each read all of `spec/`, and nothing else,
 as an engine builder would. Their reports are kept verbatim:
@@ -100,12 +105,18 @@ as an engine builder would. Their reports are kept verbatim:
 | W3 | "Create", "instantiate" and "register". | One operation, register. Registering an instance document instantiates its template. "Create" is not used for an operation. | R2-T25 |
 | W4 | "Rejected". | A rejected document makes its registration end not dispatched, with the reason invalid; a clash with an existing name reports conflict. | R2-T26 |
 
-## What comes next
+## What came next
 
-1. The owner rules on the decisions above.
-2. One consolidation pass applies those rulings together with the fixes that need none.
-3. Decision G1's deliverables are written and reviewed.
-4. A second round of cold readers. The readiness gate asks for two clean rounds.
+These four steps were written when the findings were recorded. Each now has its state.
+
+1. The owner rules on the decisions above. Done: plan-audit ruling 32.
+2. One consolidation pass applies those rulings together with the fixes that need none. Done:
+   [consolidation pass 1](#consolidation-pass-1), then the [follow-up pass](#follow-up-pass).
+3. Decision G1's deliverables are written and reviewed. Done: the core package, the schemas
+   and the manifest's format, accepted with five changes by plan-audit ruling 37
+   ([record](../core-and-schemas/README.md)).
+4. A second round of cold readers. The readiness gate asks for two clean rounds. In progress:
+   [round 2](round-2/README.md).
 
 ## Consolidation pass 1
 
@@ -217,9 +228,11 @@ coordinator then made three further changes:
 | A Pool template declares no Conduits. | A Pool is never a consumer (decision F20, and ACC-028). | TPL-001 |
 | The names belong to a version of the specification. | Plan-audit ruling 35. | OBJ-024, IFC-029 |
 
-The specification now has 355 promises. Points the editors left open, because no ruling settles
-them, are carried into the batch that writes the core package, the schemas and the manifest
-format, where each is settled with a recommendation for the owner:
+After this pass the specification had 355 promises. It has more now; the
+[contents table](../../../spec/README.md#contents) gives the count. Points the editors left
+open, because no ruling settled them, were carried into the batch that wrote the core package,
+the schemas and the manifest format. Its [record](../core-and-schemas/README.md) lists each
+with a recommendation and with what the owner ruled:
 
 - how the digest of an unpublished project is computed, and how a purge's digest of contents is;
 - whether `#name` in a `$ref` reaches a Schema contract in the same project;

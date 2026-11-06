@@ -41,7 +41,7 @@ batch under [proposals/](#records-of-rulings).
 | [AUDIT.md](AUDIT.md) | The plan audit. The one tracker: where things stand, the owner's ruling log, priorities, action items and the experiment program. Not a specification: a ruling changes nothing until it is applied to the documents it affects. |
 | [OVERVIEW.md](OVERVIEW.md) | A plain-language overview of the language, written from the specification. Not binding. |
 | [LANGUAGE_DEFECTS.md](LANGUAGE_DEFECTS.md) | The register of the first sweep: 167 places where `docs/protocol/` would have let two engine builders diverge, and what became of each. Findings against `spec/` are in the [re-audit record](proposals/reaudit/README.md). |
-| [../tools/](../tools) | The checkers: `check_docs.py` for links and anchors, `set_names.py` for the names `spec/names.yaml` defines, `check_schemas.py` for the schemas, the core package and the examples, and `check_doc_migration.py`, the record of one past migration. |
+| [../tools/](../tools) | The checkers: `check_docs.py` for links and anchors, `set_names.py` for the names `spec/names.yaml` defines, `check_schemas.py` for the schemas, the core package and the examples, and `check_doc_migration.py`, the record of one past migration. The first three are the checks run before each commit; [what each needs](../CONTRIBUTING.md#checks) is in the contributor guide. |
 
 ### Records of rulings
 
@@ -63,9 +63,10 @@ of the rulings. Where a record and the specification differ, the specification g
 | [proposals/consolidation/](proposals/consolidation/README.md) | 27 to 29 | The audit for one idea with several notations, or one key with several meanings: 26 findings, the owner's rulings on all of them, and the choices made while writing them. Applied to the specification. |
 | [proposals/conventions/](proposals/conventions/README.md) | 30 | The four remaining shared conventions: fourteen decisions. Accepted; written as promises under `spec/conventions/`. |
 | [proposals/schemas-and-interface/](proposals/schemas-and-interface/README.md) | 31 | The shape of documents and contracts, the implementation interface and the implementation-defined list. Accepted, with the owner's amendment on protocol revisions. |
-| [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. |
+| [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification, round 1, by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. Round 2 is the last row of this table. |
 | [proposals/core-and-schemas/](proposals/core-and-schemas/README.md) | 37 | The core package as documents, the JSON Schemas of every document, and the manifest's format. Accepted with five changes; [how each is applied](proposals/core-and-schemas/APPLY.md). |
-| [proposals/docs-audit/](proposals/docs-audit/README.md) | 37 | The audit of the documents outside `spec/`, asked for in ruling 37: two readers' reports and the decisions taken to make the repository ready for a cold read. |
+| [proposals/docs-audit/](proposals/docs-audit/README.md) | 37 | The audit of the documents outside `spec/`, asked for in ruling 37: two readers' reports and the thirteen decisions taken to make the repository ready for a cold read, all applied. With it are the [list](proposals/docs-audit/GAPS.md) of the behaviors that the older text accepted and the specification lacked, and the logs of the edits: [entry points](proposals/docs-audit/log-entry-points.md), [older text](proposals/docs-audit/log-older-text.md) and [the specification](proposals/docs-audit/log-gaps.md). |
+| [proposals/reaudit/round-2/](proposals/reaudit/round-2/README.md) | 30, 37 | Round 2 of the re-audit, in progress. Ruling 30 asked for the specification to be audited again, and ruling 37 says how the findings are resolved. Four cold readers, three of the specification alone and one of the whole repository: their reports, and the logs of what was done about them. |
 
 ### Process for the builds
 

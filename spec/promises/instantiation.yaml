@@ -10,6 +10,11 @@
 # of INS-024, and wrote "composite" for "composed" in INS-012 and INS-016. Its last pass
 # (docs/proposals/reaudit/round-2/log-tail.md) changed INS-025: `#name` written as `from` in a
 # submitted project resolves as the bare name does.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed INS-020, which is now of the layer `convention`, and INS-025, whose
+# `then` now says what `#name` written as `from` reaches in a project that is not published. It
+# removed none.
 
 - id: INS-001
   layer: language
@@ -274,7 +279,7 @@
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
 
 - id: INS-020
-  layer: language
+  layer: convention
   level: must
   when: >-
     A template from which instances have been made is replaced or unregistered.
@@ -362,17 +367,19 @@
   then: >-
     It is one of four: a bare name, or `{kind: <Kind>, name: <name>}`, for a template that
     exists; a qualified reference, for a template that a package exports; or `#` followed by a
-    name, for a template of the same project or package as the document that holds it, as
-    NAM-022 gives that form.
+    name. In a document of a package, `#name` names a template of the same package, as NAM-022
+    gives that form. In a project that is not published, whose templates are registered, it
+    resolves as the bare name does: among the templates that exist, of which the templates that
+    the same submission registers are part.
   observable: >-
     A bare name, and the form with a kind, resolve among the objects that exist, under NAM-003,
     and a template that the same submission registers is one of them, under SUB-002. A document
     of a package names a template of its own package as `#name`, because a bare name is never
-    looked up in a package. In a submitted project, whose templates are registered, `#name`
-    resolves as the bare name does: among the templates that exist, those of the same submission
-    among them, as NAM-022 excepts it. The same documents then read alike as a project and as a
-    package. `from` is not a selection: a selection chooses a contract or an implementation, and
-    `from` names a template. PKG-013 says what holds where a package re-exports the template. A
-    value of any other form is rejected with a diagnostic naming it, and INS-002 rejects one
-    that does not resolve to a template of the same kind.
+    looked up in a package. In a submitted project `#name` reaches every template that the bare
+    name reaches, one that an earlier submission registered among them, as NAM-022 excepts it. A
+    set of documents that names its own templates as `#name` therefore reads alike as a project
+    and as a package. `from` is not a selection: a selection chooses a contract or an
+    implementation, and `from` names a template. PKG-013 says what holds where a package
+    re-exports the template. A value of any other form is rejected with a diagnostic naming it,
+    and INS-002 rejects one that does not resolve to a template of the same kind.
   vectors: []

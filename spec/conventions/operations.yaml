@@ -11,12 +11,17 @@
 # docs audit, docs/proposals/docs-audit/GAPS.md) changed OPS-016 and added OPS-026 and OPS-027.
 # The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
 # OPS-005, OPS-006, OPS-008 to OPS-010, OPS-012, OPS-014 to OPS-019, OPS-021 to OPS-023, OPS-025
-# and OPS-026, made OPS-015 the rule for an identity under which the sender has no invocation,
-# and added OPS-028. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
+# and OPS-026, made OPS-015 the rule for an identity under which the sending instance has no
+# invocation, and added OPS-028. Its closing pass
+# (docs/proposals/reaudit/round-2/log-closing.md) changed
 # OPS-007, OPS-009, OPS-012, OPS-014, OPS-016, OPS-017, OPS-022 and OPS-024. Its last pass
 # (docs/proposals/reaudit/round-2/log-tail.md) changed OPS-005, OPS-007, OPS-009 and OPS-014,
 # and added OPS-029, on a request that names what does not exist. The follow-up to that pass
 # changed OPS-007. No promise of this file has been removed.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed OPS-014, OPS-016, OPS-021, OPS-023, OPS-028 and OPS-029, and added
+# OPS-030, on reconciling an invocation whose outcome is not unknown. It removed none.
 
 - id: OPS-001
   layer: convention
@@ -242,12 +247,14 @@
     The target is the one that authorized the request being reconciled where the invocation is
     of a management verb, and otherwise the Pool that owns the instance the invocation was
     dispatched to, or `management` where that instance is not a Resource or the Pool that owns
-    it is retired, as ACC-033 states. A request that names an invocation whose outcome is not
-    unknown, because it is in progress, has ended with another outcome or has been reconciled
-    already, is not dispatched and reports conflict. One that names an ID which the engine gave
-    to no invocation reports invalid, under OPS-029. What the reconciliation of a setup, an
-    open, a retirement or a close changes beside the outcome is LIF-028, and what that of a
-    control changes is REV-010.
+    it is retired, as ACC-033 states. Where the instance that the invocation was dispatched to,
+    or that an invocation of a management verb named, has been unregistered, the target is
+    `management`, and the reconciliation records the outcome and stores nothing, as ACC-033
+    states. A request that names an invocation whose outcome is not unknown reports conflict,
+    under OPS-030. One that names an ID which the engine gave to no invocation reports invalid,
+    under OPS-029. What the reconciliation of a setup, an open, a retirement or a close changes
+    beside the outcome is LIF-028, what that of a control changes is REV-010, and what that of
+    the start or the stop of a runtime changes is TPL-015.
   vectors: []
 
 - id: OPS-015
@@ -278,8 +285,12 @@
   observable: >-
     The result states the outcome even if the Conduit was closed after the invocation was
     dispatched. The request names the target as well as the identity, because OPS-008 scopes an
-    identity to a caller, a sending instance and a target. It is made with the tool
-    `retrieve-result.v1`, which IFC-024 says is always presented, and the state is in that
+    identity to a caller, a sending instance and a target. The caller is established as IFC-024
+    states: where the request that began the invocation was an onward request, the retrieval
+    names the invocation that request served, in `io.github.shrav-k.conduit/serving`, and its
+    caller is that invocation's, whether or not that invocation is still in progress; a
+    retrieval that names none is made for the instance as its own caller. It is made with the
+    tool `retrieve-result.v1`, which IFC-024 says is always presented, and the state is in that
     tool's result as IFC-024 states. Once the target is unregistered, a reference to it no
     longer resolves, and the request reports refused under OPS-015. The records of the
     invocation remain, as LIF-019 and REC-003 state. The ID is the one that `reconcile.v1` names
@@ -377,7 +388,9 @@
     whose implementation is not plain, is dispatched as a new attempt on the conditions of
     OPS-012, with the identity it carried before, so its implementation recognizes it. What a
     further run does with the other steps that already ran is DL1 of the implementation-defined
-    list. A runtime the instance holds is not started again, as TPL-007 states.
+    list: one of them that the run dispatches is a new invocation with a new identity, under
+    OPS-028, and is not a repeat of the step's earlier invocation. A runtime the instance holds
+    is not started again, as TPL-007 states.
   vectors: []
 
 - id: OPS-022
@@ -410,11 +423,21 @@
     A request is not dispatched, and more than one of the four reasons applies to it.
   then: >-
     It reports one reason, chosen in this order: invalid if the request cannot be read;
-    otherwise refused, then invalid, then conflict, then unavailable.
+    otherwise refused, or unavailable where the access decision cannot be made under ACC-037;
+    then invalid; then conflict; then unavailable for any other cause. Where the access decision
+    cannot be made, nothing else about the request is examined or reported.
   observable: >-
     A request that is not permitted reports refused whatever else is wrong with it, and its
-    result says nothing else about the objects it names. A permitted request that fails a schema
-    and also names a revision that is not current reports invalid.
+    result says nothing else about the objects it names. A request whose access decision cannot
+    be made, because the state of the Conduits or of the policies cannot be established, reports
+    unavailable whatever else is wrong with it, provided it can be read, and its result carries
+    no diagnostic and says nothing else about the objects it names either: the actor has not
+    been found to be permitted. A request to register a document under a name that is taken,
+    made while that state cannot be established, reports unavailable, and not conflict with a
+    diagnostic that names the object. A permitted request that fails a schema and also names a
+    revision that is not current reports invalid. Unavailable for any other cause, such as a
+    restriction that cannot be evaluated under ACC-014 or a target that is not ready under
+    CON-024, is reported only where no other reason applies.
   vectors: []
 
 - id: OPS-024
@@ -499,16 +522,25 @@
     an instance's setup or retirement.
   then: >-
     It gives the step an operation identity, derived from the ID of the invocation in which the
-    step is first dispatched and from the step's name, and sends it. A new attempt of the step
-    carries the same identity.
+    step is dispatched and from the step's name, and sends it. A step of a setup or a retirement
+    keeps the identity that an earlier run gave it only while that run's invocation of the step
+    is in progress or its outcome is unknown, and a new attempt of the step carries that
+    identity. Any other step that a later run dispatches is a new invocation, with a new
+    identity derived from the ID of the invocation of that run.
   observable: >-
     The step's implementation receives the identity in
     `io.github.shrav-k.conduit/operationIdentity` under IFC-006, whether or not the caller of
     the invocation supplied one of its own. An implementation whose operation declares
     `deduplicates: true` therefore recognizes the new attempt that OPS-021 dispatches when a
     setup or a retirement runs again, and the effect is applied once. Two steps of one
-    invocation have different identities. An implementation marked `plain` receives none, under
-    IFC-007, and is never sent a new attempt, under OPS-012.
+    invocation have different identities. A step that failed, succeeded or was reconciled in an
+    earlier run, and that a later run dispatches, does not carry its earlier identity: OPS-009,
+    OPS-010 and OPS-024 do not answer it from the earlier invocation, and arguments that differ
+    from those of the earlier run, as after a control changed the configuration that a `setup`
+    graph reads under GRA-027, do not make it report conflict. Whether a later run dispatches
+    such a step at all is DL1 of the implementation-defined list, apart from the steps that
+    GRA-003 leaves as succeeded. An implementation marked `plain` receives none, under IFC-007,
+    and is never sent a new attempt, under OPS-012.
   vectors: []
 
 # --- Added by the last pass of the second round of the re-audit
@@ -543,9 +575,31 @@
     OPS-023 states. OPS-015 is another case: a retrieval needs no Conduit, and reports refused
     for an identity and a target under which the instance has no invocation. So is ACC-040: no
     Conduit lists `start-later-work.v1`, and a request for it that names no invocation reports
-    refused. A value in a control's input that names no location that exists is invalid in the
-    same way, under PLC-016. So is a request for `set-up.v1` or for `retire.v1` that names a
-    template or a Conduit, under LIF-012: the thing exists, and is not one the operation
-    addresses. What the result says of the thing that was named, it says in a diagnostic, as
-    IFC-025 states.
+    refused. A value in the input `location` of `set-default-location.v1` that names no location
+    that exists is invalid in the same way, under PLC-022. So is a request for `set-up.v1` or
+    for `retire.v1` that names a template or a Conduit, under LIF-032: the thing exists, and is
+    not one the operation addresses. A request that an actor makes on its own behalf names an
+    object by a reference, and one that holds the resolved form `{kind, id}` in its place
+    reports invalid under LIF-031, whether or not an object has that ID. What the result says of
+    the thing that was named, it says in a diagnostic, as IFC-025 states.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3A-14): the rule stood in the
+# --- observable of OPS-014.
+
+- id: OPS-030
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to reconcile an invocation whose outcome is not unknown: it is in progress, it
+    has ended with the outcome succeeded or failed, or it has been reconciled already.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    The invocation's state is as it was, and no record of a reconciliation is added. A second
+    reconciliation of one invocation reports conflict in this way, whichever way the first
+    recorded the effect. One that names an ID which the engine gave to no invocation reports
+    invalid, under OPS-029. Where the actor is not permitted under OPS-014, OPS-023 gives
+    refused first.
   vectors: []

@@ -1,5 +1,7 @@
-# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
-# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
+# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
+# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
+# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# decisions, which the owner has not ruled on. See README.md in this directory.
 #
 # The templates of the first-start objects (FST-005). At first start the engine instantiates
 # them under the names FST-001 gives: the Pool `system` from `system`; the location `local`

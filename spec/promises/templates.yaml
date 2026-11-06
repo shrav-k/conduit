@@ -15,6 +15,10 @@
 # Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed TPL-004, which now covers
 # every operation of a capability the type offers and every control it lists, and TPL-009, and
 # added TPL-014. No promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
+# on reconciling the start or the stop of a runtime. It removed none.
 
 - id: TPL-001
   layer: language
@@ -56,11 +60,13 @@
     of the same project or package. Each value is either a string, which is the selection of an
     implementation, or a map, which is a graph written in place.
   observable: >-
-    A step, a runtime or a control that carries its own `implementation` key is rejected with a
-    diagnostic naming it. The map holds one selection for an operation; the same operation
-    written twice is a duplicate key, rejected under SCH-012. `setup` and `retire` are not
-    selected here: the engine implements `set-up.v1` and `retire.v1`, and the graphs a template
-    writes under `setup` and `retire` are the steps it runs, as TPL-008 states.
+    A step, a runtime or a member of a template's `controls` map that carries its own
+    `implementation` key is rejected with a diagnostic naming it. An Operation contract, a
+    control's among them, may state `implementation`, its default implementation, under CTR-002.
+    The map holds one selection for an operation; the same operation written twice is a
+    duplicate key, rejected under SCH-012. `setup` and `retire` are not selected here: the
+    engine implements `set-up.v1` and `retire.v1`, and the graphs a template writes under
+    `setup` and `retire` are the steps it runs, as TPL-008 states.
   vectors: []
 
 - id: TPL-004
@@ -137,7 +143,9 @@
   observable: >-
     Inspecting the instance lists the runtime as held. A value reference with the source
     `runtime` and that name yields the handle. Setting the instance up again starts no second
-    runtime of that name, and the instance holds the same handle as before.
+    runtime of that name, and the instance holds the same handle as before. A start whose
+    outcome is unknown returned no handle, so the instance does not hold the runtime: TPL-015
+    says how the start is reconciled, and what reconciling a stop does.
   vectors: []
 
 - id: TPL-008
@@ -264,4 +272,41 @@
     with `start-later-work.v1` under ACC-040. Where the template was registered while a package
     it needs was not installed, as PKG-006 allows, the check is made when the template is
     instantiated, under INS-022.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3C-2). It is of the layer
+# --- `convention`.
+
+- id: TPL-015
+  layer: convention
+  level: must
+  when: >-
+    An actor reconciles, under OPS-014, the invocation of the start operation or of the stop
+    operation of a runtime whose outcome is unknown: the invocation of a step that names the
+    runtime, or of a stop under TPL-009 or OBS-007.
+  then: >-
+    A reconciliation that records the start as having occurred states the handle, in the input
+    `handle` of `reconcile.v1`, and the instance then holds the runtime with that handle. One
+    that records the start as having occurred and states no handle is not dispatched, and
+    reports invalid. A reconciliation that records a stop as having occurred ends the holding.
+    One that records that the start or the stop did not occur gives the outcome failed, and
+    leaves the instance as it was.
+  observable: >-
+    After a start is reconciled as having occurred, inspecting the instance lists the runtime as
+    held, a value reference with the source `runtime` yields the handle that the reconciliation
+    stated, the next setup leaves the step as succeeded without starting a second runtime, under
+    TPL-007, and a retirement stops the runtime with that handle, under TPL-009. The actor
+    learns the handle from what it checked: the engine cannot, because the start returned none.
+    After a start is reconciled as not having occurred, the instance does not hold the runtime,
+    and the step is dispatched in a later run as a new invocation, under OPS-028. After a stop
+    is reconciled as having occurred, the instance no longer holds the runtime, and a later
+    retirement does not stop it again. After one is reconciled as not having occurred, the
+    instance is as it was: where it still holds the runtime, as after a stop within a retirement
+    whose outcome was unknown, a further retirement under LIF-026 stops it, and where OBS-007
+    had the engine treat the handle as no longer held, it stays so. Until a start whose outcome
+    is unknown is reconciled, OPS-021 keeps the step from being dispatched again, except as a
+    new attempt under OPS-012. The reconciliation is authorized under ACC-033 against the target
+    that manages the instance the invocation was dispatched to, and LIF-015 says which
+    reconciliations a retired instance takes.
   vectors: []

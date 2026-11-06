@@ -9,6 +9,11 @@
 # `convention`. Its closing pass changed SUB-005, SUB-008 and SUB-009. Its last pass
 # (docs/proposals/reaudit/round-2/log-tail.md) changed SUB-005 and added SUB-010: every engine
 # takes a directory. No promise of this file has been removed.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed SUB-008 and SUB-009: a contract of a project may need a package that
+# is not installed, and SUB-009 says what a manifest handed to `replace.v1` may state. It
+# removed none.
 
 - id: SUB-001
   layer: language
@@ -124,6 +129,8 @@
     8785, of one map with two members: `documents`, a list of the project's contract documents
     ordered by `kind` and then by `metadata.name`, each compared by the bytes of its UTF-8
     string, and `manifest`, the project's manifest, which is left out when the project has none.
+    Where a contract of the project needs a package that the manifest lists and that is not
+    installed, the submission is accepted, and the missing package is reported.
   observable: >-
     A document of the same project can refer to such a contract as `#name` under NAM-022. No
     object exists for the contract after the submission, and no document outside the project can
@@ -136,7 +143,14 @@
     `Operation`, `Requirement`, `Schema`, `Type`, and the name `a.v10` stands before `a.v2`. A
     project whose manifest lists implementations and that has no contract document has an
     unpublished package too, with an empty `documents` list: its digest is what names those
-    implementations as `<digest>#<name>` under ACC-038.
+    implementations as `<digest>#<name>` under ACC-038. A contract that needs a package which is
+    not installed, such as a Type that offers a capability of that package or a schema with a
+    `$ref` into it, does not make the submission rejected: the result lists the missing package
+    as a diagnostic that did not prevent the registration, as PKG-006 does for a template and
+    PKG-028 for a package. A check on the contract that needs the missing package, such as those
+    of CTR-006 and SCH-015, is made when a template that uses the contract is instantiated, with
+    the checks of INS-022, and an instance document whose template needs a package that is not
+    installed is rejected under PKG-007.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
@@ -149,18 +163,33 @@
     A template is replaced.
   then: >-
     It is done by the operation `replace.v1`, which names the template's current revision and
-    gives the document that takes its place, a template of the same kind and name.
+    gives the document that takes its place, a template of the same kind and name. A reference
+    written `#name` in the replacing document reaches the contracts and the implementations of
+    the unpublished package that the template being replaced holds under NAM-009. A manifest
+    handed over with the document lists packages only: one that states `implementations` or
+    `exports` is rejected. A replacing document that refers to a package other than the core
+    package, where no manifest is handed over, is rejected under NAM-007. A request whose
+    document or manifest is rejected, or whose document is of another kind or name than the
+    template, is not dispatched, and reports invalid. A request that leaves the template's
+    stored definition as it was changes nothing, does not advance the revision and has the
+    outcome succeeded.
   observable: >-
-    After a replace the template's revision has advanced, under REV-003. The instances made
-    before it are as INS-020 states, and instances made after it come from the template as
-    replaced. A request that names a revision that is not current reports conflict under
-    REV-002, and one that names none reports invalid under REV-011. The request is authorized
-    against `management`, under ACC-033. What a reference written `#name` reaches in the
-    replacing document is NAM-022. The request may hand over a manifest with the document, as
-    the input `manifest` of `replace.v1`: the document's references to packages resolve through
-    it under NAM-007, and the template as replaced keeps the packages it gives, under NAM-009. A
-    replacing document that is rejected, or that is of another kind or name than the template,
-    is not dispatched and reports invalid, and its result carries the diagnostics.
+    After a replace that changed the template's stored definition, its revision has advanced,
+    under REV-003. One whose document is equal, under SCH-007, to the template as stored is
+    decided like any other and stores no change, so REV-004 keeps the revision as it was. The
+    instances made before a replace are as INS-020 states, and instances made after it come from
+    the template as replaced. A request that names a revision that is not current reports
+    conflict under REV-002, and one that names none reports invalid under REV-011. The request
+    is authorized against `management`, under ACC-033. A request to replace a template is not a
+    submission, and makes no unpublished package under SUB-008: the replacing document is handed
+    over with no contracts, and `#name` in it resolves in the unpublished package that the
+    template already holds, whether it selects a contract or an implementation, so instances
+    made afterwards run the implementations that the template's project listed when it was
+    registered. What `#name` written as `from` reaches in a nested instantiation is NAM-022. The
+    request may hand over a manifest with the document, as the input `manifest` of `replace.v1`:
+    the document's references to packages resolve through its `packages` under NAM-007, and the
+    template as replaced keeps the packages it gives, under NAM-009. The result of a request
+    that reports invalid carries the diagnostics, as IFC-025 states.
   vectors: []
 
 # --- Added by the last pass of the second round of the re-audit

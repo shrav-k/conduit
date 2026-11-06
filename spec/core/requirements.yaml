@@ -1,5 +1,7 @@
-# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
-# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
+# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
+# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
+# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# decisions, which the owner has not ruled on. See README.md in this directory.
 #
 # The two Requirement contracts of the core package.
 #
@@ -7,7 +9,7 @@
 #   bound.v1        ACC-029 (a bound names Pools, individual targets and operations, and is a
 #                   filter), ACC-006, ACC-012, ACC-030, ACC-031 (what a bound must cover),
 #                   ACC-022 (the root Interface's Conduit to `access` applies no bound),
-#                   CTR-005, CON-028
+#                   CTR-005, CON-028, CTR-011 (it is never a constituent of a composition)
 #   shared-host.v1  PLC-013, CON-006, CON-018, IFC-018 (it does not narrow requests, so it is
 #                   never sent to an implementation; the engine checks it)
 #
@@ -26,13 +28,16 @@
 # schema, and so is resolved when the Conduit is instantiated and stored as `{kind, id}`
 # (OBJ-021). Each item of `operations` is a qualified reference, so a bound names operations
 # of published packages only: an operation of an unpublished package cannot be named in one.
-# A bound that names an operation which a package re-exports, by the re-export or by its
-# origin, covers both (ACC-029).
+# A bound that names an operation which a package re-exports, by the re-export or by the
+# reference to the package that originally exports it, names both (ACC-029).
 # A Conduit to `access` with no bound requirement has no bound and is unlimited, and only an
 # actor whose own Conduit to `access` applies no bound may open or close one (ACC-030); a
 # Conduit whose bound names nothing covers nothing. A Conduit template that applies
 # `bound.v1` more than once is rejected when it is registered, and a Conduit that applies
-# it and whose target is not `access` is not instantiated (CON-028).
+# it and whose target is not `access` is not instantiated (CON-028). `bound.v1` is applied
+# only by an item of `requirements` that names it: a composition that has it among its
+# constituents, directly or through other compositions, is rejected when its package is
+# installed or its project is submitted (CTR-011).
 #
 # Neither contract states `obliges` (CTR-005). `bound.v1` is a filter, and the implementation
 # of the target must always state a filter in `supports` (CON-022): the target is `access`,
@@ -42,9 +47,10 @@
 # requests and is not a composition is rejected where it is applied to a Conduit, itself or
 # as a constituent, because nothing would apply it; a composition made only of
 # `shared-host.v1` is accepted (CON-030). Neither is a composition, so neither has
-# `constituents`
-# (CTR-010). Each input of `bound.v1` states `default: []`, so each may be left out without
-# being marked optional (OBJ-015), and each default satisfies its input's schema (SCH-019).
+# `constituents` (CTR-010), and of the two only `shared-host.v1` may be a constituent of
+# another requirement. Each input of `bound.v1` states `default: []`, so each may be left out
+# without being marked optional (OBJ-015), and each default satisfies its input's schema
+# (SCH-019).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement
@@ -53,12 +59,12 @@ metadata:
   description: >-
     The bound of a right to open: the Pools, the individual targets and the operations of the
     Conduits that the consumer of a Conduit to `access` may open and close, and the actors and
-    targets of the policies it may apply and remove. Naming a Pool
-    covers the Pool itself and every Resource it owns. The bound is a filter. `operations`
-    names operations by qualified reference, and so only operations of published packages;
-    naming an operation that a package re-exports, by the re-export or by its origin, covers
-    both. A Conduit template applies it at most once, and only a Conduit to `access` carries
-    it.
+    targets of the policies it may apply and remove. Naming a Pool covers the Pool itself and
+    every Resource it owns. The bound is a filter. `operations` names operations by qualified
+    reference, and so only operations of published packages; naming an operation that a package
+    re-exports, by the re-export or by the reference to the package that originally exports it,
+    names both. A Conduit template applies it at most once, only a Conduit to `access` carries
+    it, and it is never a constituent of a composition.
 spec:
   appliesTo: [conduit]
   narrows: true

@@ -24,6 +24,11 @@
 # rejected where there is none. Its last pass (docs/proposals/reaudit/round-2/log-tail.md)
 # changed MAN-006: reading a manifest installs nothing. No promise of this file has been
 # removed. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed MAN-007 and MAN-009 to MAN-011: a package holds no instance
+# document, and the keys of an implementation item's `placement` follow OBJ-022. It removed
+# none.
 
 - id: MAN-001
   layer: language
@@ -139,10 +144,11 @@
   observable: >-
     An item that is neither, and a name that no document of the package has, are each rejected
     with a diagnostic naming the item. A name is the name of one document, because no two
-    documents of a package share a name under NAM-027. An implementation is not listed in
-    `exports`: its item under `implementations` is what exports it, as PKG-019 states. A name
-    written twice is rejected under PKG-012, and a name that an implementation also has under
-    NAM-027.
+    documents of a package share a name under NAM-027. That document is a template or a
+    contract: a package holds no instance document, under MAN-011, so no item names one. An
+    implementation is not listed in `exports`: its item under `implementations` is what exports
+    it, as PKG-019 states. A name written twice is rejected under PKG-012, and a name that an
+    implementation also has under NAM-027.
   vectors: []
 
 - id: MAN-008
@@ -171,11 +177,11 @@
     that PKG-019 and PKG-020 name, and no other: `implements`; exactly one of `command`, `url`
     and `graph`; and, where they are given, `plain`, `tools`, `supports` and `placement`.
   observable: >-
-    An item with two of `command`, `url` and `graph`, with none of them, or with any other
-    key, is rejected with a diagnostic naming the item. What leaving out `supports` or
-    `placement` means is PKG-019, what `plain` and `tools` require of each other is PKG-020,
-    and the name follows NAM-004. The one exception is the core package's own manifest, under
-    MAN-012.
+    An item with two of `command`, `url` and `graph`, with none of them, or with any other key,
+    is rejected with a diagnostic naming the item. What leaving out `supports` or `placement`
+    means is PKG-019, what `plain` and `tools` require of each other is PKG-020, which also says
+    that an item that states `graph` is never plain and lists no `tools`, and the name follows
+    NAM-004. The one exception is the core package's own manifest, under MAN-012.
   vectors: []
 
 - id: MAN-010
@@ -187,19 +193,22 @@
     `implements` is a list of selections of operations, and `supports` a list of selections of
     requirements, each written as NAM-018 gives a selection. `command` is a list of one or more
     strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in place,
-    as TPL-003 gives one. `placement` is a map of applied requirements, as CTR-004 gives a Type.
-    `plain` is a boolean. `tools` is the map of PKG-020, and each of its values is a non-empty
-    string.
+    as TPL-003 gives one. `placement` is a map of applied requirements keyed by name, as CTR-004
+    gives a Type, and each key follows the rule that OBJ-022 gives for the name of a member of a
+    Type's `placement`. `plain` is a boolean. `tools` is the map of PKG-020, and each of its
+    values is a non-empty string.
   observable: >-
     A `command` written as one string, a `url` with no scheme, and a `graph` item whose
     `implements` does not list exactly one operation, as GRA-014 requires, are each rejected
     with a diagnostic naming the item. `plain: false` means the same as leaving `plain` out. A
-    program given as a relative path is taken from the directory the manifest was read from,
-    which for a package is the root of its archive, and no shell reads the list. Where the
-    manifest was handed over without a directory, as MAN-006 describes, an item whose program is
-    a relative path is rejected. A program is a relative path where it holds a `/` and does not
-    begin with one; one that holds no `/` is a name and not a path, and is found as the one who
-    starts it finds programs. Who starts the program is DL12 of the implementation-defined list.
+    member of `placement` whose name breaks the rule of OBJ-022, such as `Local_Paths`, is
+    rejected in the same way. A program given as a relative path is taken from the directory the
+    manifest was read from, which for a package is the root of its archive, and no shell reads
+    the list. Where the manifest was handed over without a directory, as MAN-006 describes, an
+    item whose program is a relative path is rejected. A program is a relative path where it
+    holds a `/` and does not begin with one; one that holds no `/` is a name and not a path, and
+    is found as the one who starts it finds programs. Who starts the program is DL12 of the
+    implementation-defined list.
   vectors: []
 
 - id: MAN-011
@@ -210,13 +219,19 @@
     archive.
   then: >-
     Its documents are the files whose names end in `.yaml` or `.json` and that lie in the
-    directory itself, apart from the manifest. Nothing in a directory below it is read.
+    directory itself, apart from the manifest. Nothing in a directory below it is read. A
+    package holds templates and contracts only: a package whose archive holds an instance
+    document is rejected when it is installed.
   observable: >-
     A project keeps the programs of its implementations, and any other file, in directories
     below its own. A file in the directory itself that has one of the two endings and holds
-    something other than templates, instances or contracts is rejected under SUB-005. A file
-    with any other ending, `.yml` among them, is not a document and is not read. Documents in
-    a directory below are another project, with a manifest of its own if it uses packages.
+    something other than templates, instances or contracts is rejected under SUB-005. A
+    submitted project may hold instance documents, which the registration instantiates. A
+    package may not: installing registers nothing, under NAM-013, so an instance document in an
+    archive could never be used, and installation returns a diagnostic naming it. The request to
+    install reports invalid under PKG-023. A file with any other ending, `.yml` among them, is
+    not a document and is not read. Documents in a directory below are another project, with a
+    manifest of its own if it uses packages.
   vectors: []
 
 - id: MAN-012

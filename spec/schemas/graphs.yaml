@@ -1,5 +1,8 @@
-# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
+# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
+# core package and the manifest's promises; the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 and 3 of the
+# re-audit changed since rests on the coordinator's logged decisions, which the owner has
+# not ruled on.
 #
 # A graph, a step, a value binding and a value reference.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -31,8 +34,10 @@
 # literal satisfies its input's schema (GRA-007, GRA-008); which sources a graph may use
 # (GRA-010, GRA-020: `config` only in `setup` and `retire`, `input` never there); a `pointer`
 # on a handle (GRA-011); that a step is not named as a declared Conduit or an entry is
-# (GRA-022); that the outputs match the operation's contract (GRA-021); and model work
-# (IMP-004, IMP-005, IMP-009).
+# (GRA-022); that the outputs match the operation's contract (GRA-021); that no value
+# reference reads an output of a step that names a runtime (GRA-028); that no graph invokes
+# the operation it implements (GRA-005); model work (IMP-004, IMP-005, IMP-009); and later
+# work (IMP-010, IMP-012).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

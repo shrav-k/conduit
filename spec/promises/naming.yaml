@@ -20,6 +20,10 @@
 # `fetch` is the place an installation fetches from, and NAM-022, which excepts `#name` written
 # as `from` in a submitted project. No promise of this file has been removed. Draft: no vector
 # exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed NAM-022, whose `then` now states the exception for `#name` written
+# as `from`. It removed none.
 
 - id: NAM-001
   layer: language
@@ -341,7 +345,10 @@
     A reference is written as `#` followed by a name, with no address before the `#`.
   then: >-
     It refers to the document, or the implementation, of that name in the same project, or the
-    same package, as the document that holds it.
+    same package, as the document that holds it. There is one exception: in a project that is
+    not published, `#name` written as `from` resolves as the bare name does under INS-025, among
+    the templates that exist, of which the templates that the same submission registers are
+    part. In a package, `#name` written as `from` reaches a template of the package.
   observable: >-
     In a package it reaches a document the package does not export as well as one it does, as
     PKG-018 allows. In a submitted project it reaches a contract of that project, as SUB-008
@@ -350,18 +357,19 @@
     a name is the name of one document or of one implementation, so the reference reaches at
     most one thing. Where no document and no implementation of that project or package has the
     name, the reference is unresolved; it is never looked up among the objects that exist or in
-    another package. There is one exception. A project's templates are registered, unlike its
-    contracts, so in a submitted project `#name` written as `from` resolves as the bare name
-    does under INS-025: among the templates that exist, of which the templates that the same
-    submission registers are part. A nested instantiation that writes its `from` so, in a
-    template of such a project or in the document that replaces one, resolves in the same way
-    whenever the template that holds it is instantiated. In the document that replaces a
-    template, which is handed over with no contracts, it reaches a contract of the unpublished
-    package that the template being replaced holds under NAM-009. A document refers to something
-    in its own project or package in this form and never by a qualified reference: a package's
-    own address is not among the `packages` of its own manifest, so a qualified reference that
-    uses it is rejected under NAM-007. The core package's own documents are the exception: they
-    write its address in full, which resolves under NAM-020.
+    another package. The exception for `from` follows from what is registered: a project's
+    templates are registered, unlike its contracts, so in a submitted project `#name` written as
+    `from` reaches a template that an earlier submission registered as well as one of its own,
+    and resolves to nothing only where no template of that kind and name exists. A nested
+    instantiation that writes its `from` so, in a template of such a project or in the document
+    that replaces one, resolves in the same way whenever the template that holds it is
+    instantiated. In the document that replaces a template, which is handed over with no
+    contracts, it reaches a contract or an implementation of the unpublished package that the
+    template being replaced holds under NAM-009, as SUB-009 states. A document refers to
+    something in its own project or package in this form and never by a qualified reference: a
+    package's own address is not among the `packages` of its own manifest, so a qualified
+    reference that uses it is rejected under NAM-007. The core package's own documents are the
+    exception: they write its address in full, which resolves under NAM-020.
   vectors: []
 
 - id: NAM-023

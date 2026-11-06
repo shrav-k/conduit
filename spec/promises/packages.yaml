@@ -17,6 +17,11 @@
 # requests to install whose ending no promise stated. PKG-027 is of the layer `convention`.
 # Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed PKG-006, PKG-020 and
 # PKG-028: a registration installs no package. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed PKG-020 and PKG-023 to PKG-027: an implementation that is a graph is
+# never plain, and a request to install what is already installed is decided from what is
+# installed. It removed none.
 
 - id: PKG-001
   layer: language
@@ -211,16 +216,20 @@
   then: >-
     Its implementation item in the manifest is marked `plain: true` and gives `tools`, a map
     from the selection of each operation it implements to the name of the tool that serves it.
-    It states no `supports`.
+    It states no `supports`. A plain implementation is reached by `command` or `url`: an
+    implementation that is a graph is never plain, and lists no `tools`.
   observable: >-
     An operation in `implements` that is not a key of `tools`, a plain implementation that
-    states `supports`, and an item that is not marked `plain` and states `tools`, are each
-    rejected when the package is installed. A plain implementation supports no requirement, and
-    never counts as deduplicating under OPS-012, whatever the contracts of its operations
-    declare. It cannot ask for a start of later work, so a template whose implementation of an
-    operation marked `arrangesLaterWork: true` is plain is rejected, under TPL-014. The `tools`
-    map gives each tool's name and nothing else: the arguments of a call are the operation's
-    inputs under their own names, as IFC-001 states.
+    states `supports`, an item that is not marked `plain` and states `tools`, and an item that
+    states `graph` together with `plain: true` or with `tools`, are each rejected when the
+    package is installed. A graph is written for this specification, and the engine runs its
+    steps, so it is no existing server: IFC-001 gives a tool only to an implementation that is
+    reached by `command` or `url`. A plain implementation supports no requirement, and never
+    counts as deduplicating under OPS-012, whatever the contracts of its operations declare. It
+    cannot ask for a start of later work, so a template whose implementation of an operation
+    marked `arrangesLaterWork: true` is plain is rejected, under TPL-014. The `tools` map gives
+    each tool's name and nothing else: the arguments of a call are the operation's inputs under
+    their own names, as IFC-001 states.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -268,12 +277,13 @@
     The result carries the diagnostics, and the package is not available. A package one of whose
     documents is rejected when the package is installed is itself rejected, and so is one whose
     manifest is. This holds for every cause for which a promise says that a package is rejected
-    when it is installed, such as PKG-001, PKG-012, PKG-014, PKG-017, PKG-022, PKG-026, NAM-004
-    and MAN-014, and for a request to install a package at the core package's address, under
-    NAM-021. An archive that cannot be fetched now is PKG-024, a package already installed with
-    another digest is PKG-025, and one already installed with the same digest is PKG-027. A
-    request whose `fetch` is a relative reference reports invalid too, under MAN-006. Where the
-    actor is not permitted, or another reason also applies, OPS-023 says which is reported.
+    when it is installed, such as PKG-001, PKG-012, PKG-014, PKG-017, PKG-022, PKG-026, NAM-004,
+    MAN-011, MAN-014 and CTR-011, and for a request to install a package at the core package's
+    address, under NAM-021. An archive that cannot be fetched now is PKG-024, a package already
+    installed with another digest is PKG-025, and one already installed with the same digest is
+    PKG-027. A request whose `fetch` is a relative reference reports invalid too, under MAN-006.
+    Where the actor is not permitted, or another reason also applies, OPS-023 says which is
+    reported.
   vectors: []
 
 - id: PKG-024
@@ -286,7 +296,9 @@
   observable: >-
     Nothing is installed, and the packages that are installed are as they were. The same request
     made once the archive can be fetched is decided as any other. How an engine fetches an
-    archive is DL7 of the implementation-defined list.
+    archive is DL7 of the implementation-defined list. Nothing is fetched for an address and
+    version that is already installed, under PKG-025 and PKG-027, so a request for one never
+    reports unavailable for this cause.
   vectors: []
 
 - id: PKG-025
@@ -296,11 +308,15 @@
     An actor asks to install a package, and a package is already installed at that address and
     version with another digest.
   then: >-
-    The request is not dispatched, and reports conflict.
+    The request is not dispatched, and reports conflict. It is decided from what is installed:
+    nothing is fetched for an address and version that is already installed.
   observable: >-
     The installed package and its digest are as they were, and nothing is put in its place. Two
     versions are the same as PKG-003 states. A request to install another version at that
     address is not such a request: that version is installed beside the first, under NAM-011.
+    The request reports conflict whether or not the archive can be fetched now, and whatever
+    digest the archive at the place of `fetch` has: PKG-024 and PKG-026 are about a package that
+    is not yet installed at that address and version.
   vectors: []
 
 # --- Added by the closing pass of the second round of the re-audit
@@ -318,7 +334,8 @@
     Installation returns a diagnostic naming the two digests. The archive is not used, and its
     digest is not put in place of the one the request names, as PKG-021 states for an item of a
     manifest. The request reports invalid under PKG-023, whether or not another version of the
-    package is installed.
+    package is installed. No archive is fetched for an address and version that is already
+    installed: such a request is PKG-025 or PKG-027.
   vectors: []
 
 - id: PKG-027
@@ -328,11 +345,13 @@
     An actor asks to install a package that is already installed at that address and version
     with the same digest.
   then: >-
-    The request changes nothing, and its outcome is succeeded.
+    The request changes nothing, and its outcome is succeeded. It is decided from what is
+    installed: nothing is fetched for an address and version that is already installed.
   observable: >-
     The packages that are installed are the same before and after the request, and the effect
-    that `install.v1` describes has occurred. Two versions are the same as PKG-003 states. A
-    request that names another digest for that address and version is PKG-025.
+    that `install.v1` describes has occurred. Two versions are the same as PKG-003 states. The
+    request succeeds whether or not the archive can be fetched now, so PKG-024 does not apply to
+    it. A request that names another digest for that address and version is PKG-025.
   vectors: []
 
 - id: PKG-028

@@ -9,6 +9,10 @@
 # (docs/proposals/reaudit/round-2/log-closing.md) changed REV-006, REV-007, REV-010 and
 # REV-013, and its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed REV-010. No
 # promise of this file has been removed.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed REV-010: a control of an instance that no longer exists is
+# reconciled with no revision and no settings. It removed none.
 
 - id: REV-001
   layer: convention
@@ -147,21 +151,27 @@
     A control whose outcome is unknown is reconciled under OPS-014 as having taken effect.
   then: >-
     The reconciliation names the instance's current revision and states the settings that took
-    effect, and exactly those settings are stored.
+    effect, and exactly those settings are stored. Where the instance no longer exists, a
+    reconciliation of the control names no revision and states no settings: it records the
+    outcome and stores nothing.
   observable: >-
     The stored configuration equals the current configuration with the stated settings applied,
     whatever other change was stored after the control was dispatched. The revision advances
     under REV-003 if anything changed, and those settings are no longer reported as unknown. A
     reconciliation that records that the effect did not occur stores nothing. Every
-    reconciliation of a control names the instance's current revision, whichever way it records
-    the effect: one that names a revision that is not current is not dispatched and reports
-    conflict under REV-002, and one that names none reports invalid under REV-011. One whose
-    stated settings do not satisfy the schema is REV-013. In `reconcile.v1` the revision and the
-    settings are the inputs `revision` and `settings`, and `settings` has the shape of the
-    control's output `settings`: a map keyed by the pointers of the control's `changes`. The
-    request is authorized under ACC-033 against the target that manages the instance: the Pool
-    that owns it where it is a Resource, and `management` otherwise, or where that Pool is
-    retired. It is not authorized by a Conduit to the instance itself, as the control was.
+    reconciliation of a control of an instance that exists names the instance's current
+    revision, whichever way it records the effect: one that names a revision that is not current
+    is not dispatched and reports conflict under REV-002, and one that names none reports
+    invalid under REV-011. One whose stated settings do not satisfy the schema is REV-013. In
+    `reconcile.v1` the revision and the settings are the inputs `revision` and `settings`, and
+    `settings` has the shape of the control's output `settings`: a map keyed by the pointers of
+    the control's `changes`. The request is authorized under ACC-033 against the target that
+    manages the instance: the Pool that owns it where it is a Resource, and `management`
+    otherwise, or where that Pool is retired. It is not authorized by a Conduit to the instance
+    itself, as the control was. Once the instance has been unregistered there is no current
+    revision to name and no configuration to store settings in: the reconciliation is authorized
+    against `management`, under ACC-033, and records that the effect occurred or that it did
+    not, and nothing else.
   vectors: []
 
 - id: REV-011

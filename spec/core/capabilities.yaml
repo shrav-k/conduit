@@ -1,5 +1,7 @@
-# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
-# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
+# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
+# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
+# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# decisions, which the owner has not ruled on. See README.md in this directory.
 #
 # The Capability contracts of the core package: what `management`, `access`, a Pool, the
 # `system` Pool and a location offer through a Conduit (OPS-019, CTR-003). The operations
@@ -38,11 +40,15 @@
 # `retrieve-result.v1` and `start-later-work.v1` are in no capability: IFC-024 and IFC-035
 # present them to every instance, and a call to either needs no Conduit of that instance.
 #
-# Where the Pool that owns a Resource is retired, every request that ACC-033 authorizes
-# against that Pool is authorized against `management` in its place, so an operation of
-# `pool-management.v1` that names such a Resource is then requested through a Conduit to
-# `management` that lists it. No Resource is registered into a retired Pool, and none for
-# one of its entries: such a request reports conflict (POOL-017).
+# Where a Pool is retired, two of the requests that ACC-033 authorizes against that Pool are
+# authorized against `management` in its place: inspecting a Resource the Pool owns, and
+# reconciling an invocation. `inspect.v1` or `reconcile.v1` is then requested through a
+# Conduit to `management` that lists it. No other request is authorized against a retired
+# Pool: `retire-with-resources.v1`, which is in `pool-management.v1` alone and has no input,
+# is not asked of one, and a retired Pool whose shutdown is not confirmed is retired again
+# with `retire.v1` through `management` (LIF-026). No Resource is registered into a retired
+# Pool, and none for one of its entries: the document is rejected (POOL-004), and either
+# request reports invalid (OBJ-023, POOL-017).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability

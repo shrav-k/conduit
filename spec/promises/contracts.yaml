@@ -17,6 +17,10 @@
 # a requirement that does not narrow requests states no `obliges`. The follow-up to that pass
 # changed CTR-005: a composition obliges the consumer where any constituent that narrows does.
 # No promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed CTR-002, CTR-003, CTR-005 and CTR-010, and added CTR-011: `bound.v1`
+# is never a constituent of a composition. It removed none.
 
 - id: CTR-001
   layer: language
@@ -45,13 +49,16 @@
     and may hold `optional: true`. An input that holds a `schema` may also hold `default`. The
     `spec` may further hold `effect`, a statement of what it changes outside itself;
     `startsModelWork`; `arrangesLaterWork`, the mark of an operation that arranges work to start
-    or to run after its own invocation has ended; `deduplicates`; `reservedToRoot`, the mark of
-    an operation reserved to the root Interface; `implementation`, its default implementation,
-    which is one selection; and, for a control, `changes`, as CTR-006 states.
+    or to run after its own invocation has ended; `deduplicates`, the mark of an operation whose
+    implementation recognizes an operation identity that it has already been sent and applies
+    the effect at most once for it; `reservedToRoot`, the mark of an operation reserved to the
+    root Interface; `implementation`, its default implementation, which is one selection; and,
+    for a control, `changes`, as CTR-006 states.
   observable: >-
     An operation with no `effect` changes nothing outside itself. `startsModelWork`,
     `arrangesLaterWork`, `deduplicates` and `reservedToRoot` are booleans, and one that is
-    absent is false; IMP-003, ACC-019, OPS-012 and ACC-032 state what each mark means, and
+    absent is false; IMP-003, ACC-019 and ACC-032 state what the other three marks mean, OPS-012
+    and OPS-021 say what the engine does with a repeat where `deduplicates` is declared, and
     CTR-009 says where `reservedToRoot` may be written. An operation whose contract does not
     state `arrangesLaterWork: true` arranges no later work, and one that arranges a later start
     of model work states `startsModelWork: true` as well, under IMP-006. What a graph, an onward
@@ -72,11 +79,15 @@
   when: >-
     A Capability contract is read.
   then: >-
-    Its `spec` holds `operations`, a list of selections of the operations it includes.
+    Its `spec` holds `operations`, a list of selections of the operations it includes. A
+    capability that is not a contract of the core package and that lists an operation reserved
+    to the root Interface is rejected when its package is installed or its project is submitted.
   observable: >-
-    A capability outside the core package that lists an operation reserved to the root
-    Interface, which is one whose contract is marked `reservedToRoot: true`, is rejected when
-    its package is installed or its project is submitted.
+    Installation or resolving returns a diagnostic naming the capability and the operation. An
+    operation is reserved to the root Interface where its contract is marked `reservedToRoot:
+    true`, and only an Operation contract of the core package carries the mark, under CTR-009:
+    `object-management.v1` lists the two that do. What a capability may not list twice is
+    CTR-007.
   vectors: []
 
 - id: CTR-004
@@ -125,27 +136,29 @@
     facts must satisfy, and declares no `inputs`.
   observable: >-
     Applying a requirement somewhere its `appliesTo` does not list is rejected, so one whose
-    `appliesTo` is empty can be applied nowhere. A composition that reaches itself through its
-    constituents, and a requirement that applies to placement and states no `schema` or declares
-    `inputs`, are rejected when the package is installed or the project is submitted. `narrows`
-    may be left out, and is then false. The implementations that the target of a Conduit has
-    selected for the operations the Conduit lists must always state a filter's requirement in
-    `supports`, as CON-022 states, and they are always sent it. `obliges` that names `consumer`
-    adds that every implementation selected for the consumer must state it too, and IFC-034 says
-    how the consumer's implementation is told of the filter. A composition obliges the consumer
-    where its own contract, or the contract of any of its constituents that narrows requests,
-    names `consumer`, as it narrows where any of its constituents does. `obliges` may be left
-    out or be empty, and one that names `target` alone means the same as one that is left out.
-    An item of `obliges` other than `consumer` or `target` is rejected. A composition narrows
-    requests if any of its constituents does, whatever its own `narrows` states, and applying it
-    somewhere that the `appliesTo` of one of its constituents does not list is rejected. A
-    requirement that does not narrow requests and states `obliges`, whatever the list holds, is
-    rejected when the package is installed or the project is submitted: only a filter is sent to
-    an implementation, so `obliges` on any other requirement would oblige nothing. A requirement
-    that is not a composition and does not narrow requests is applied to a Conduit, itself or as
-    a constituent, only where it is a contract of the core package, under CON-030, and one that
-    does not narrow requests is never applied as a policy, under ACC-031. Which implementation
-    applies a requirement on an open Conduit is reported under ACC-038.
+    `appliesTo` is empty can be applied nowhere. A composition that has the core package's
+    `bound.v1` among its constituents is rejected under CTR-011. A composition that reaches
+    itself through its constituents, and a requirement that applies to placement and states no
+    `schema` or declares `inputs`, are rejected when the package is installed or the project is
+    submitted. `narrows` may be left out, and is then false. The implementations that the target
+    of a Conduit has selected for the operations the Conduit lists must always state a filter's
+    requirement in `supports`, as CON-022 states, and they are always sent it. `obliges` that
+    names `consumer` adds that every implementation selected for the consumer must state it too,
+    and IFC-034 says how the consumer's implementation is told of the filter. A composition
+    obliges the consumer where its own contract, or the contract of any of its constituents that
+    narrows requests, names `consumer`, as it narrows where any of its constituents does.
+    `obliges` may be left out or be empty, and one that names `target` alone means the same as
+    one that is left out. An item of `obliges` other than `consumer` or `target` is rejected. A
+    composition narrows requests if any of its constituents does, whatever its own `narrows`
+    states, and applying it somewhere that the `appliesTo` of one of its constituents does not
+    list is rejected. A requirement that does not narrow requests and states `obliges`, whatever
+    the list holds, is rejected when the package is installed or the project is submitted: only
+    a filter is sent to an implementation, so `obliges` on any other requirement would oblige
+    nothing. A requirement that is not a composition and does not narrow requests is applied to
+    a Conduit, itself or as a constituent, only where it is a contract of the core package,
+    under CON-030, and one that does not narrow requests is never applied as a policy, under
+    ACC-031. Which implementation applies a requirement on an open Conduit is reported under
+    ACC-038.
   vectors: []
 
 - id: CTR-006
@@ -234,7 +247,9 @@
     The constituent holds `requirement`, the selection of a requirement, and may hold
     `arguments`, a map that gives a value binding, as GRA-019 gives one, for an input of that
     requirement, keyed by the input's name. A value reference in it has the source `input` and
-    names an input that the composition itself declares. No other source is accepted.
+    names an input that the composition itself declares. No other source is accepted. Where a
+    value reference in a binding yields no value when the composition is applied, the
+    constituent's input that the binding is for counts as not supplied.
   observable: >-
     `arguments: {limit: {source: input, name: max-results}}` forwards the composition's input
     `max-results` to the constituent's input `limit`, and `{literal: 20}` gives it a fixed
@@ -244,7 +259,39 @@
     rejected when the package is installed or the project is submitted. When the composition is
     applied, each binding takes its value from the arguments given to the composition, and the
     values are checked against the constituent's inputs as NAM-019 checks the arguments of an
-    applied requirement. A constituent that leaves out `arguments` supplies none. Where a
-    composition is applied to a Conduit, CON-022 says what an implementation must state in
-    `supports`, and IFC-018 how the composition is sent.
+    applied requirement. A constituent that leaves out `arguments` supplies none. A value
+    reference yields no value where it names an optional input of the composition that was left
+    out and that states no default, or where its `pointer` selects nothing in the argument. The
+    constituent's input then takes its own `default`, and where it states none and is not marked
+    optional, applying the composition is rejected, as NAM-019 rejects a missing argument. With
+    a composition whose optional input `per-minute` is forwarded to a constituent's input
+    `limit` that states `default: 20`, a template that applies the composition with no arguments
+    is accepted, and `limit` is 20. GRA-026, under which no default stands in for a missing
+    value, is about a step of a graph and not about a constituent. Where a composition is
+    applied to a Conduit, CON-022 says what an implementation must state in `supports`, and
+    IFC-018 how the composition is sent.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3B-1).
+
+- id: CTR-011
+  layer: language
+  level: must
+  when: >-
+    A Requirement contract that is a composition has the core package's requirement `bound.v1`
+    among its constituents, directly or through other compositions.
+  then: >-
+    The contract is rejected: a package that holds it is rejected when it is installed, and a
+    project that holds it is rejected when it is submitted. `bound.v1` is never a constituent.
+  observable: >-
+    Installation or resolving returns a diagnostic naming the composition and the constituent
+    that reaches `github.com/shrav-k/conduit/core#bound.v1`. A bound is applied only by an item
+    of a Conduit template's `requirements` that names `bound.v1` itself, so the rules that count
+    such items hold for every Conduit: at most one bound on a template and none on a Conduit to
+    a target other than `access`, under CON-028, and no bound on a Conduit to `access` that
+    applies no `bound.v1`, under ACC-029. Where a constituent's package is not installed, the
+    check is made when a template that uses the contract is instantiated, with the checks of
+    INS-022, as PKG-028 and SUB-008 state. The other requirement of the core package,
+    `shared-host.v1`, may be a constituent, under CON-030.
   vectors: []

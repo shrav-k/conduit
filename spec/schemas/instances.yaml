@@ -1,5 +1,8 @@
-# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
+# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
+# core package and the manifest's promises; the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 and 3 of the
+# re-audit changed since rests on the coordinator's logged decisions, which the owner has
+# not ruled on.
 #
 # An instance document of each family, and the three nested instantiations.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -29,8 +32,9 @@
 # `owner`, `placement`, `consumer` and `target` are governed by the core package's reference
 # schemas, which also accept the resolved form `{kind, id}`. Only the engine writes that
 # form: it stores it in the place of a reference when the instance is made, and a submitted
-# document that writes it is rejected by the engine (OBJ-009). A request names an object by
-# a reference and never by an ID (LIF-007). The schemas do not catch either.
+# document that writes it is rejected by the engine (OBJ-009). A request that an actor makes
+# on its own behalf names an object by a reference and never by an ID, and one that holds
+# the form reports invalid (LIF-031). The schemas do not catch either.
 #
 # Not expressed here, and checked by the engine: that `from` resolves to a template of the
 # right kind (INS-002, OBJ-007); that the arguments fit the template's inputs (INS-003 to
@@ -118,12 +122,14 @@ kind: Schema
 metadata:
   name: template-reference.v1
   description: >-
-    The value of `from`: the template an instance or a nested instantiation is made from. It
-    has four forms. The name alone, or `{kind, name}`, names a template that exists. A
-    qualified reference names a template that a package exports. `#` and a name names a
-    template of the same project or package as the document that holds it. A bare name is
-    never looked up in a package, so a document of a package writes `#name` for a template
-    of its own package. The value of `from` is not a selection.
+    The value of `from`: the template an instance or a nested instantiation is made from. It has
+    four forms. The name alone, or `{kind, name}`, names a template that exists. A qualified
+    reference names a template that a package exports. `#` and a name names, in a document of a
+    package, a template of the same package: a bare name is never looked up in a package, so a
+    document of a package writes `#name` for a template of its own package. In a project that is
+    not published, `#name` resolves as the bare name does, among the templates that exist, of
+    which the templates that the same submission registers are part (INS-025). The value of
+    `from` is not a selection.
 spec:
   anyOf:
     - $ref: github.com/shrav-k/conduit/core#name.v1

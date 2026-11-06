@@ -19,6 +19,11 @@
 # pass changed CON-018, CON-022, CON-023 and CON-030, which judges a composition by its
 # constituents alone, and added CON-031, of the layer `convention`: a Conduit either of whose
 # ends is retired is not opened. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
+# place supports a requirement where the implementations of its steps do, and CON-031 is about a
+# Conduit that is not open. It removed none.
 
 - id: CON-001
   layer: language
@@ -125,20 +130,22 @@
   then: >-
     The Conduit is closed. A Conduit whose target is retired, or either of whose ends is
     declared lost, is closed at once. A Conduit whose consumer is retired is closed once the
-    consumer's shutdown is confirmed.
+    consumer's shutdown is confirmed. From the moment the retirement of a target is dispatched,
+    a request to that target is a request through a closed Conduit: it is not dispatched, and
+    reports refused.
   observable: >-
     Inspecting the Conduit reports the state retired and which of those events closed it, and
     reports its shutdown as confirmed, however it was closed, under LIF-024. A request to a
-    retired target reports refused from the moment its retirement is dispatched. A consumer's
-    shutdown is confirmed as LIF-024 states: when an invocation of `retire.v1` for it succeeds,
-    at once where no setup of it was ever dispatched, or when a reconciliation records that its
-    retirement occurred, under LIF-028. From the moment the consumer is retired until then, the
-    Conduit's state is as it was, and the Conduit permits only the requests of the consumer's
-    retirement, as ACC-039 states: a step of the consumer's `retire` graph can make a request
-    through the consumer's own Conduit, in a further retirement under LIF-026 as in the first.
-    Where the consumer's shutdown stays pending or unknown, the Conduit stays so until the
-    shutdown is confirmed, the consumer is declared lost, or an actor closes the Conduit under
-    ACC-012.
+    retired target has no open Conduit to be made through, which is the case ACC-001 and ACC-011
+    state. A consumer's shutdown is confirmed as LIF-024 states: when an invocation of
+    `retire.v1` for it succeeds, at once where no setup of it was ever dispatched, or when a
+    reconciliation records that its retirement occurred, under LIF-028. From the moment the
+    consumer is retired until then, the Conduit's state is as it was, and the Conduit permits
+    only the requests of the consumer's retirement, as ACC-039 states: a step of the consumer's
+    `retire` graph can make a request through the consumer's own Conduit, in a further
+    retirement under LIF-026 as in the first. Where the consumer's shutdown stays pending or
+    unknown, the Conduit stays so until the shutdown is confirmed, the consumer is declared
+    lost, or an actor closes the Conduit under ACC-012.
   vectors: []
 
 - id: CON-011
@@ -291,10 +298,13 @@
   layer: language
   level: must
   when: >-
-    A Conduit is instantiated that carries a filter, and an implementation that must state the
-    filter's requirement in `supports` does not state it.
+    A Conduit is instantiated that carries a filter, and an implementation that must support the
+    filter's requirement does not support it.
   then: >-
-    The Conduit is not instantiated.
+    The Conduit is not instantiated. An implementation supports a requirement where it states
+    the requirement in `supports`. A graph written in place states no `supports`: it supports a
+    requirement where the implementation selected for each of its steps that has no `conduit`
+    supports it.
   observable: >-
     Resolving returns a diagnostic naming the filter, the operation and the implementation. It
     is decided from the manifest under PKG-019, without starting anything. The implementations
@@ -307,7 +317,15 @@
     requests does. `obliges` never takes the obligation from the target. An implementation
     supports a composed requirement where its `supports` lists the composition or every one of
     its constituents. An implementation marked `plain` states no `supports` under PKG-020, so no
-    Conduit is instantiated with a filter that an instance it serves must apply.
+    Conduit is instantiated with a filter that an instance it serves must apply. A graph written
+    in place as a value of an `implementation` map has no implementation item, and so nowhere to
+    state `supports`: the implementations selected, for the graph's own instance, for the
+    operations of its steps that have no `conduit` are what is checked, and where one of those
+    is again a graph written in place the rule applies to its steps. A step with `conduit` is an
+    onward request to another target, and is not counted here: it carries the filter under
+    ACC-017, and ACC-015 checks it against the implementation that its own target has selected.
+    A graph that has no step without `conduit` supports every requirement, because no
+    implementation of its instance is invoked through it.
   vectors: []
 
 - id: CON-023
@@ -404,7 +422,10 @@
   observable: >-
     Resolving returns a diagnostic naming the template or the Conduit, and each item of its
     `requirements` that applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried
-    only by a Conduit to `access`, and such a Conduit carries at most one.
+    only by a Conduit to `access`, and such a Conduit carries at most one. `bound.v1` is applied
+    only by an item of `requirements` that names it: it is never a constituent of a composition,
+    under CTR-011, so no composition applies a second bound, or a bound on a Conduit to another
+    target, out of sight of this rule.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ4 of
@@ -448,7 +469,8 @@
     here. A composition is judged by its constituents alone: one made only of requirements of
     the core package that do not narrow, such as one whose single constituent is
     `shared-host.v1`, is accepted, and the engine checks each such constituent. `shared-host.v1`
-    may be applied itself, and may be a constituent of any composition. Where the template was
+    may be applied itself, and may be a constituent of any composition. The other requirement of
+    the core package, `bound.v1`, is never a constituent, under CTR-011. Where the template was
     registered while the requirement's package was not installed, as PKG-006 allows, the check
     is made when a Conduit is instantiated from it, under INS-022. The requirement of a policy
     narrows requests too, under ACC-031.
@@ -462,7 +484,8 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to open a Conduit whose consumer or whose target is retired.
+    An actor asks to open a Conduit that is not open and whose consumer or whose target is
+    retired.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
@@ -471,8 +494,10 @@
     conflict under LIF-015. A Conduit in the state registered whose consumer is retired stays
     registered until CON-008 closes it, once the consumer's shutdown is confirmed, and is never
     opened: CON-025 does not instantiate a Conduit for a retired end, and this is the same rule
-    for opening one. A Conduit that was open when its consumer was retired is as ACC-039 states.
-    The step of a setup that would open a declared Conduit of a retired consumer does not arise,
+    for opening one. This promise is about a Conduit that is not open. A Conduit that was open
+    when its consumer was retired is still open, as ACC-039 states, and a request to open it
+    changes nothing and has the outcome succeeded, as for any open Conduit under ACC-006. The
+    step of a setup that would open a declared Conduit of a retired consumer does not arise,
     because a request to set up a retired instance reports conflict under LIF-015. Where the
     actor is not permitted, OPS-023 gives refused first.
   vectors: []

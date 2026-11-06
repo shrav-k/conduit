@@ -1,5 +1,7 @@
-# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
-# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
+# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
+# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
+# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# decisions, which the owner has not ruled on. See README.md in this directory.
 #
 # The reference schemas: the Schema contracts that make a value a reference (OBJ-021). A
 # value inside `config` or `arguments` is resolved to an ID only where the schema that
@@ -40,8 +42,10 @@
 # wherever a Resource is accepted, because an entry's argument is checked against the
 # schema of the Resource template's input. Nor do they express that a document or a request
 # never writes the resolved form: a submitted document that writes `{kind, id}` is rejected
-# by the engine (OBJ-009), and a request names an object by a reference and never by an ID
-# (LIF-007).
+# by the engine (OBJ-009), and a request that an actor makes on its own behalf names an
+# object by a reference and never by an ID, so one that holds the form reports invalid
+# (LIF-031). A step of a graph and an onward request may hold it, because the engine handed
+# it to them.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

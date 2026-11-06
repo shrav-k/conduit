@@ -1,7 +1,7 @@
 # Example. It must be rejected:
 # in a composite Conduit template an input's destination is the `arguments` of a component
-# or a place inside them. `operations` is a destination only in a template that is not
-# composed: a composite has none.
+# or a place inside them. `operations` is a destination only in a template that is not a
+# composite: a composite has none.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

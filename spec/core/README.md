@@ -1,21 +1,29 @@
 # The core package
 
-Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as one batch with
-[the schemas](../schemas/README.md) and [the manifest's promises](../promises/manifest.yaml).
-It was written for decision G1 of the [re-audit](../../docs/proposals/reaudit/README.md). The
-record of the batch, with every choice made here and its alternative, is
+Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as it stood on that
+day, as one batch with [the schemas](../schemas/README.md) and
+[the manifest's promises](../promises/manifest.yaml). **Changed since by decisions that the
+owner has not ruled on.** It was written for decision G1 of the
+[re-audit](../../docs/proposals/reaudit/README.md). The record of the batch, with every choice
+made here and its alternative, is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
-the owner changed is in
-[APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md). The decisions of the
-[docs audit](../../docs/proposals/docs-audit/GAPS.md) settled the points that batch left open
-and changed some descriptions here; they added no export. The
+the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
+
+What follows was changed after the owner's ruling, by the coordinator of the re-audit, whose
+decisions are logged and can be struck by the owner. None of it is a choice the owner accepted.
+The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) settled the points
+that batch left open and changed some descriptions here; they added no export. The
 [decisions of the second re-audit round](../../docs/proposals/reaudit/round-2/DECISIONS.md)
 changed contracts and descriptions here and added no export either; what changed is in the
 [log of that pass](../../docs/proposals/reaudit/round-2/log-documents.md) and the
 [log of its closing pass](../../docs/proposals/reaudit/round-2/log-closing.md). The
 [last pass of that round](../../docs/proposals/reaudit/round-2/log-tail.md) added one export,
-the operation `start-later-work.v1`. The promises are the source of truth: where a document
-here and a promise differ, the document is wrong.
+the operation `start-later-work.v1`. The
+[decisions of the third round](../../docs/proposals/reaudit/round-3/DECISIONS.md) added no
+export: they gave `reconcile.v1` the input `handle` and `apply-policy.v1` the input `version`,
+and changed descriptions; what changed is in the
+[log of that pass](../../docs/proposals/reaudit/round-3/log-fixes.md). The promises are the
+source of truth: where a document here and a promise differ, the document is wrong.
 
 ## What this is
 
@@ -88,7 +96,7 @@ these invocations. A Conduit is set up by `open.v1` and retired by `close.v1` in
 | `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
 | `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, POOL-013 |
 | `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009 |
-| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control | yes | — | OPS-014, ACC-033, LIF-028, REV-010 |
+| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control | yes | — | OPS-014, ACC-033, LIF-028, REV-010, TPL-015 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019 |
 | `declare-lost.v1` | `object-management.v1` | — | yes | yes | PLC-017, ACC-032 |
@@ -134,14 +142,22 @@ How to read the columns:
   or a Pool (ACC-033, OPS-014). So a control of a location is reconciled through a Conduit
   to `system`, which owns every location, and a control of the `system` Pool through a
   Conduit to `management`. No capability, of this package or of any other, has to include
-  `reconcile.v1` beside those three. Where the Pool that owns a Resource is retired, every
-  request that the Pool would have authorized is authorized against `management` in its
-  place, inspecting the Resource and reconciling its invocations among them (ACC-033).
+  `reconcile.v1` beside those three. Where a Pool is retired, two of the requests that the
+  Pool would have authorized are authorized against `management` in its place: inspecting a
+  Resource the Pool owns, and reconciling an invocation. No other request is authorized
+  against a retired Pool, and one whose shutdown is not confirmed is retired again with
+  `retire.v1` through `management` (ACC-033, LIF-026). Where the instance of an invocation
+  has been unregistered, the invocation is reconciled through `management`, and the
+  reconciliation records the outcome and stores nothing (ACC-033).
   Recording that an unknown setup or open occurred makes the
   instance ready or the Conduit open. Recording that a retirement or a close occurred
   confirms the shutdown. Recording that the effect did not occur gives the outcome failed
   and changes nothing else (LIF-028). For a control, the settings stated are stored in the
-  current configuration, or nothing is (REV-010). A consumer learns the ID that names the
+  current configuration, or nothing is (REV-010). The start of a runtime is recorded as
+  having occurred only with the handle, in the input `handle`, and the instance then holds
+  the runtime; a request that states none reports invalid. Recording that a stop occurred
+  ends the holding (TPL-015). A request that names an invocation whose outcome is not
+  unknown reports conflict (OPS-030). A consumer learns the ID that names the
   invocation from the `io.github.shrav-k.conduit/invocation` of its result (IFC-025), or
   from the output `invocation` of `retrieve-result.v1` (IFC-024).
 - **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
@@ -157,18 +173,22 @@ How to read the columns:
   says what the mark means, and only an Operation contract of the core package carries it: any
   other package that holds one is rejected when it is installed, and a project that holds one
   when it is submitted (CTR-009).
-- **How a request names things.** An object is named by a reference and never by an ID, and a
-  retired instance's name still resolves until the instance is unregistered (LIF-007). An
-  invocation and a policy are not objects: `reconcile.v1` names an invocation, and
-  `remove-policy.v1` a policy, by the ID the engine gave it. A request made through a Conduit
-  that lists the operation, and that names an object, a policy or an invocation that does not
-  exist, reports invalid (OPS-029). So does a request for `set-up.v1` or `retire.v1` that
-  names a template or a Conduit (LIF-012).
+- **How a request names things.** A request that an actor makes on its own behalf names an
+  object by a reference and never by an ID, and one that holds the resolved form in its place
+  reports invalid (LIF-031). A retired instance's name still resolves until the instance is
+  unregistered (LIF-007). An invocation and a policy are not objects: `reconcile.v1` names an
+  invocation, and `remove-policy.v1` a policy, by the ID the engine gave it. A request made
+  through a Conduit that lists the operation, and that names an object, a policy or an
+  invocation that does not exist, reports invalid (OPS-029). So does a request for
+  `set-up.v1` or `retire.v1` that names a template or a Conduit (LIF-032).
 - **The resolved form of a reference.** Where a value is a reference, the instance stores
   `{kind: <Kind>, id: <ID>}` in its place (OBJ-009, OBJ-021). Every reference schema accepts
   that form, and only the engine writes it. An implementation receives it in its `arguments`
   and in the restrictions it is sent, a graph reads it through a value reference, a control
-  returns it in `settings`, and `inspect.v1` shows it under `declared`.
+  returns it in `settings`, and `inspect.v1` shows it under `declared`. A step of a graph and
+  an onward request may therefore hold it in an input of a core operation, because the
+  engine handed it to them; a request that an actor makes on its own behalf may not
+  (LIF-031).
 - **Diagnostics.** `register.v1`, `replace.v1`, `register-replacement.v1` and `install.v1`
   declare the output `diagnostics`, for the diagnostics that did not prevent the request.
   What a request that is not dispatched says beyond its reason, it says in `diagnostics` in
@@ -176,22 +196,32 @@ How to read the columns:
   that name (IFC-025). A rejected registration carries them so (OBJ-023), and a request to
   retire or to unregister a Pool whose Resources are in the way names those Resources so
   (LIF-020), though `retire.v1` and `unregister.v1` declare no output. A request that is not
-  permitted reports refused and says nothing else about the objects it names (OPS-023). A
-  rejected installation reports invalid, unavailable or conflict as PKG-023 to PKG-025 state.
+  permitted reports refused and says nothing else about the objects it names, and so does
+  one whose access decision cannot be made, which reports unavailable (OPS-023, ACC-037). A
+  request to install that installs nothing reports invalid, unavailable or conflict as
+  PKG-023 to PKG-025 state.
 - **Retiring.** A request to retire an instance whose shutdown is not confirmed is a further
   retirement (LIF-026), and one to retire an instance whose shutdown is confirmed changes
   nothing and succeeds (LIF-030). The Conduits of which a retired instance is the target are
   closed at once. Those of which it is the consumer are closed once its shutdown is
   confirmed, and until then permit only the requests of its retirement (CON-008, ACC-039).
-  Where Resources remain whose shutdown is not confirmed, `retire-with-resources.v1` has the
-  outcome failed, and the diagnostics of its result name them (LIF-021). It declares no
-  output, because a result whose outcome is failed holds none (IFC-025).
+  `retire-with-resources.v1` retires the Resources in the reverse of the order of setup: a
+  Resource before any Resource that it refers to, or to which it is the consumer of a
+  Conduit, among those the Pool owns. Where Resources remain whose shutdown is not confirmed,
+  it has the outcome failed, and the diagnostics of its result name them (LIF-021). It
+  declares no output, because a result whose outcome is failed holds none (IFC-025).
 - **Installing.** A package is installed only by `install.v1`. A registration installs none
   of the packages its manifest lists, and `fetch` in an item of `packages` is the place an
-  installation of that item fetches from (NAM-012, PKG-006).
+  installation of that item fetches from (NAM-012, PKG-006). A request for an address and
+  version that is already installed is decided from what is installed, and fetches nothing
+  (PKG-025, PKG-027).
 - **Published contracts only.** The input `requirement` of `apply-policy.v1`, and each item
   of the argument `operations` of `bound.v1`, is a qualified reference. A policy and a bound
-  therefore name contracts of published packages only (ACC-031, ACC-029).
+  therefore name contracts of published packages only (ACC-031, ACC-029). A qualified
+  reference carries no version, so `apply-policy.v1` takes the optional input `version`.
+  Where it is left out, exactly one installed version of the package must export the
+  requirement, and otherwise the request reports invalid (ACC-042). The policy keeps the
+  version and its digest (ACC-031).
 - No core operation starts model work (IMP-002), so none carries `startsModelWork`. None
   arranges later work either, so none carries `arrangesLaterWork` (CTR-002, ACC-019).
   `start-later-work.v1` starts work that another operation arranged, and the marks of the
@@ -204,13 +234,17 @@ The tool that IFC-024 always presents is named `retrieve-result.v1`, with no Con
 before it. An instance names an invocation that began with a request it sent itself by
 `operationIdentity` and `target` (OPS-016). An
 operation identity, and the retrieval of a result, are scoped to the caller, the target and
-the instance that sent the request (OPS-008), and an identity under which the sender has no
-invocation reports refused (OPS-015). A retained result belongs to the Conduit its
+the instance that sent the request (OPS-008), and an identity under which the sending
+instance has no invocation reports refused (OPS-015). Where the request was an onward
+request, the call names the invocation that the request served, in
+`io.github.shrav-k.conduit/serving`, and is made for that invocation's caller, whether or not
+that invocation is still in progress; a call that names none is made for the instance as its
+own caller (IFC-024). A retained result belongs to the Conduit its
 invocation was dispatched through: its content is delivered only while that Conduit is open,
 and never under another one (OPS-017, ACC-034). Once the target is unregistered it can no
-longer be named, so the request reports refused, as for any identity under which the sender
-can reach no invocation; the records of the invocation remain (OPS-016, LIF-019). The tool's
-result holds `state`, `invocation`, `withheld` and `outputs`. `invocation` is the engine's
+longer be named, so the request reports refused, as for any identity under which the sending
+instance can reach no invocation; the records of the invocation remain (OPS-016, LIF-019). The
+tool's result holds `state`, `invocation`, `withheld` and `outputs`. `invocation` is the engine's
 ID for the invocation asked about, so an instance that lost the result of its request can
 still reconcile it. `outputs` is absent where content is withheld, and where the engine no
 longer keeps it (OPS-016). `state` and `withheld` are also what a result that answers a
@@ -231,7 +265,8 @@ unknown, where its content is withheld, and where it is a repeat of an invocatio
 not ended, or of one that succeeded and whose outputs the engine no longer keeps. Any other
 result holds the outputs in `structuredContent`, which conforms to the tool's `outputSchema`
 (IFC-025, IFC-033). The result of an operation that declares no outputs has no content to
-withhold. A call that names a tool the engine does not present is answered with no
+withhold: it is never marked as withheld, and is not an error where its outcome is succeeded
+(ACC-034, IFC-025). A call that names a tool the engine does not present is answered with no
 tool result: the engine returns the protocol's error for invalid parameters, code -32602,
 whose `data` holds `io.github.shrav-k.conduit/reason` with the value refused (IFC-012).
 
@@ -246,8 +281,12 @@ starts model work, the arranging operation is marked `startsModelWork` too. The 
 tied to the Conduit the arranging request came through and to every Conduit that the
 invocations it served came through, and a start is dispatched only while all of them are
 open; work that a step with no `conduit` arranged is tied to the Conduit of the invocation
-that the step's graph serves (ACC-019). Where one of these does not hold, the request
-reports refused (ACC-040). The result is that of the started invocation, with the started
+that the step's graph serves, and work that a start of later work arranged is tied as well
+to every Conduit to which the work of that start is tied (ACC-019). Where one of these does
+not hold, the request reports refused (ACC-040). A start carries the filters of its Conduit,
+the filters that the arranging invocation carried, and the policies that apply, when the
+start is decided, to a request of that caller to the target of each invocation in the chain
+(ACC-041). The result is that of the started invocation, with the started
 operation's outputs in `outputs`. The consumer that arranged the work did not request the
 start, so `retrieve-result.v1` does not return its result to that consumer: an operation
 that arranges later work says in its contract how the results are read.
@@ -275,12 +314,15 @@ PKG-005). `declared` shows each reference in its resolved form, `{kind, id}`. Fo
 Conduit it shows, under each requirement the Conduit applies, the implementation that applies it,
 named by its qualified reference or, for an implementation of a project that is not
 published, as `<digest>#<name>` (ACC-038). The status of `access` lists the policies in
-force under `policies`, each with the `id` that `apply-policy.v1` returned (ACC-031).
+force under `policies`, each with the `id` that `apply-policy.v1` returned, the actors and
+targets it names, and the version and the digest of the requirement's package that it keeps
+(ACC-031).
 
 A policy applies to each request whose caller is one of its `actors`, where that list is
 given, and whose target is one of its `targets`, where that list is given. A request to
-`apply-policy.v1` gives at least one of the two (ACC-031), and no policy applies to a request
-whose caller is the root Interface (ACC-035).
+`apply-policy.v1` gives at least one of the two (ACC-031, ACC-042), and no policy applies to a
+request whose caller is the root Interface (ACC-035): a request whose `actors` names it
+reports refused (ACC-043).
 
 ## First start
 
@@ -321,8 +363,10 @@ Conduit to the location that lists it. A location's document states no placement
 
 ## Every export
 
-"Requires" names the promise that needs the export to exist. Where it says "none", the export
-is a choice of the batch that the owner accepted, and the record lists it.
+"Requires" names the promises that need the export to exist. Every export but
+`start-later-work.v1` was in the batch that the owner accepted; that one was added by the last
+pass of the second round of the re-audit, on a decision of the coordinator that the owner has
+not ruled on. No row says "none".
 
 | Export | Kind | Requires |
 | --- | --- | --- |
@@ -351,7 +395,7 @@ is a choice of the batch that the owner accepted, and the record lists it.
 | `inspect.v1` | Operation | LIF-013, ACC-033 |
 | `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003 |
 | `retire.v1` | Operation | OPS-019, ACC-033, LIF-005 |
-| `reconcile.v1` | Operation | OPS-014, REV-010 |
+| `reconcile.v1` | Operation | OPS-014, REV-010, TPL-015 |
 | `register-replacement.v1` | Operation | LIF-009, POOL-003 |
 | `install.v1` | Operation | OPS-019, ACC-033 |
 | `declare-lost.v1` | Operation | PLC-017, ACC-032 |
@@ -359,13 +403,13 @@ is a choice of the batch that the owner accepted, and the record lists it.
 | `retire-with-resources.v1` | Operation | LIF-021 |
 | `open.v1` | Operation | ACC-006 |
 | `close.v1` | Operation | ACC-012 |
-| `apply-policy.v1` | Operation | ACC-031 |
+| `apply-policy.v1` | Operation | ACC-031, ACC-042 |
 | `remove-policy.v1` | Operation | ACC-031 |
 | `retrieve-result.v1` | Operation | IFC-024, OPS-016 |
 | `start-later-work.v1` | Operation | IFC-035, ACC-040, ACC-019 |
 | `set-default-location.v1` | Operation, a control | PLC-016 |
 | `set-facts.v1` | Operation, a control | PLC-021, PLC-008 |
-| `bound.v1` | Requirement | ACC-029, ACC-030, CON-028 |
+| `bound.v1` | Requirement | ACC-029, ACC-030, CON-028, CTR-011 |
 | `shared-host.v1` | Requirement | PLC-013, CON-006 |
 | `reference.v1` | Schema, a reference schema | OBJ-021, OBJ-006 |
 | `interface-reference.v1` | Schema, a reference schema | OBJ-021, OBJ-006 |
@@ -379,7 +423,7 @@ is a choice of the batch that the owner accepted, and the record lists it.
 | `entry-reference.v1` | Schema, a reference schema | OBJ-021, POOL-005 |
 | `pool-entry-reference.v1` | Schema, a reference schema | OBJ-021, POOL-014 |
 | `object.v1` | Schema | OBJ-003: a result names each instance made, and says which nested instantiation made a nested one. Its shape is a choice |
-| `diagnostic.v1` | Schema | none |
+| `diagnostic.v1` | Schema | OBJ-008, NAM-008, PKG-006, IFC-025: a result lists diagnostics. Its shape beyond `message` is not settled |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
 | `export-name.v1` | Schema of a document's part | NAM-004 |
 | `contract-name.v1` | Schema of a document's part | CTR-001 |
@@ -390,8 +434,8 @@ is a choice of the batch that the owner accepted, and the record lists it.
 | `destination.v1` | Schema of a document's part | OBJ-016, INS-021, INS-012 |
 | `version.v1` | Schema of a document's part | PKG-001 |
 | `digest.v1` | Schema of a document's part | PKG-004 |
-| `id.v1` | Schema of a document's part | none |
-| `revision.v1` | Schema of a document's part | none |
+| `id.v1` | Schema of a document's part | OBJ-005, IFC-006: an object, an invocation and a policy each have an ID. Its type is a choice |
+| `revision.v1` | Schema of a document's part | REV-001, REV-011. Its type is a choice |
 | `schema.v1` | Schema of a document's part | CTR-008, SCH-002, SCH-008, SCH-015 |
 | `api-version.v1` | Schema of a document's part | OBJ-017 |
 | `envelope.v1` | Schema of a document's part | OBJ-017, OBJ-020 |
@@ -442,7 +486,8 @@ is a choice of the batch that the owner accepted, and the record lists it.
   with its time and its origin (OBS-002, OBS-003); where conditions appear (LIF-011); where
   the word unknown stands against a setting (REV-009); how the status names a setup and its
   outcome, what retired an instance and which event closed a Conduit (LIF-004, LIF-005,
-  CON-008, CON-011); the members that list the actors or targets of a policy (ACC-031); where
+  CON-008, CON-011); the members that list the actors or targets of a policy, and the version
+  and the digest it keeps (ACC-031); where
   an instance's `from` is reported (FST-005); and how a gap in the records is shown
   (REC-006). Settled: what a request that is not dispatched says beyond its reason, it says
   in diagnostics, so a request to retire or to unregister a Pool names the Resources in the
@@ -458,7 +503,9 @@ No contract of the core package states `restoresRuntimes`, `records` or `obliges
 a composition (CTR-004, CTR-005, CTR-010). No core type declares a runtime. `bound.v1` is a
 filter, and the implementation of the target must always state a filter in `supports`
 (CON-022): `engine`, which is the implementation behind `access`, does. `shared-host.v1` does
-not narrow requests, and the engine itself checks it (PLC-013). A requirement of another
+not narrow requests, and the engine itself checks it (PLC-013). `bound.v1` is never a
+constituent of a composition: a contract that has it among its constituents, directly or
+through other compositions, is rejected (CTR-011). A requirement of another
 package that does not narrow requests and is not a composition is rejected where it is
 applied to a Conduit, itself or as a constituent, and a composition made only of
 `shared-host.v1` is accepted (CON-030).

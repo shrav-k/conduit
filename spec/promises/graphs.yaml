@@ -13,6 +13,10 @@
 # `set-up.v1` or of `retire.v1`. Its closing pass
 # (docs/proposals/reaudit/round-2/log-closing.md) changed GRA-021 and GRA-026: an optional
 # output is one the graph may leave without a value.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed GRA-005, GRA-020 and GRA-026, and added GRA-028: a value reference
+# does not read an output of a step that names a runtime. It removed none.
 
 - id: GRA-001
   layer: language
@@ -71,12 +75,21 @@
   layer: language
   level: must
   when: >-
-    A template is registered whose graph contains a cycle, counting both stated dependencies
-    and uses of outputs.
+    A template is registered whose graph contains a cycle, counting both stated dependencies and
+    uses of outputs; or in which a graph invokes the operation it implements, by a step with no
+    `conduit` that names that operation, or does so through other graphs, among the graphs
+    selected in the template's `implementation` map and in its type's defaults.
   then: >-
     The template is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the steps in the cycle.
+    Resolving returns a diagnostic naming the steps in the cycle, or the graphs and the
+    operations that lead back to one another. A step with no `conduit` invokes the
+    implementation selected for its own instance, under GRA-024, so a graph that implements
+    `directory.list.v1` and holds such a step for `directory.list.v1` would invoke itself
+    without end, and so would two graphs of one template each of which names the other's
+    operation. A step that names a Conduit is a request to another instance and is not counted.
+    Where the template was registered while its type's package was not installed, as PKG-006
+    allows, the check is made when the template is instantiated, under INS-022.
   vectors: []
 
 - id: GRA-006
@@ -255,8 +268,10 @@
     inputs of its own under TPL-008: the engine reads the input `instance` of `set-up.v1` and of
     `retire.v1`, and the graph reaches the instance through the source `instance`. `config` is
     rejected elsewhere, as GRA-010 states. `step`, `runtime` and `instance` are accepted in
-    every graph. In a constituent of a composed requirement, which is not a graph, `input` is
-    the only source, and it names an input of the composition, as CTR-010 states.
+    every graph, but a reference with the source `step` to a step that names a runtime is
+    rejected under GRA-028: the handle is read with the source `runtime`. In a constituent of a
+    composed requirement, which is not a graph, `input` is the only source, and it names an
+    input of the composition, as CTR-010 states.
   vectors: []
 
 - id: GRA-021
@@ -350,19 +365,27 @@
   when: >-
     A step is about to be dispatched, and a value reference among its arguments yields no value:
     its `pointer` selects nothing in the value its source names, or its source names something
-    that is absent.
+    that is absent. An optional input that the request left out and that states no default is
+    absent, and so are an output that the step it names did not return in this run and a runtime
+    that the instance does not hold.
   then: >-
-    The step is not dispatched, and reports invalid.
+    The step is not dispatched, and reports invalid. A step that is not dispatched in a run,
+    because it is left as succeeded or was reconciled, returned no outputs in that run.
   observable: >-
     No implementation receives a call for the step. No null and no default stands in for the
     missing value, even where the input is optional or states a default. The pointer
     `/connection/endpoint` selects nothing in an output whose `connection` has no `endpoint`. A
     pointer that selects a member whose value is null selects a value, and that null is checked
-    against the input's schema like any other value. A source names something absent where it is
-    an optional input that the request left out and that states no default, an optional output
-    that a step did not return, or a runtime that the instance does not hold. Where a value
-    reference in a graph's `outputs` yields no value, OPS-022 gives the invocation's outcome,
-    unless the output is marked optional under GRA-021.
+    against the input's schema like any other value. A step did not return an output in a run
+    where the output is optional and its result left it out, and where the step was not
+    dispatched in that run: it was left as succeeded for something already done, under GRA-003,
+    an engine did not dispatch it again under DL1 of the implementation-defined list, or its
+    invocation was reconciled as having occurred, which gives it no outputs. The outputs of an
+    earlier run are not read in a later one. A step that reads the output of such a step
+    therefore reports invalid in that run, and a graph whose later runs are to succeed takes
+    what it needs from `config`, or from the source `runtime` for a handle, as GRA-028 requires.
+    Where a value reference in a graph's `outputs` yields no value, OPS-022 gives the
+    invocation's outcome, unless the output is marked optional under GRA-021.
   vectors: []
 
 - id: GRA-027
@@ -380,4 +403,25 @@
     that run, and a later run reads the configuration as changed. REV-012 already keeps another
     change of the same instance from being dispatched while its setup or retirement has not
     ended.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3C-9). It is a rule on documents and
+# --- has the layer `language`.
+
+- id: GRA-028
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which a value reference with the source `step` names a step that
+    names a runtime.
+  then: >-
+    The template is rejected. The handle of a runtime is read with the source `runtime`.
+  observable: >-
+    Resolving returns a diagnostic naming the reference and the step. A runtime's start
+    operation declares its handle and may declare other outputs, under TPL-006, and none of them
+    is read through the step: once the instance holds the runtime the step is left as succeeded
+    with nothing dispatched, under TPL-007, and returns no outputs in that run, under GRA-026.
+    `{source: runtime, name: watcher}` yields the handle in every run in which the instance
+    holds the runtime. A step may still name such a step in `dependsOn`.
   vectors: []

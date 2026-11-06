@@ -119,6 +119,9 @@ RULES = {
     "implementation-selected": "TPL-004",
     "narrows-on-conduit": "CON-030",
     "obliges-narrows": "CTR-005",
+    "bound-constituent": "CTR-011",
+    "runtime-step-output": "GRA-028",
+    "graph-invokes-itself": "GRA-005",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -905,6 +908,18 @@ def forwarded(binding):
             yield from forwarded(item)
 
 
+def value_references(binding):
+    """The value references in one value binding. A `literal` is data and is not entered."""
+    if isinstance(binding, dict):
+        if "source" in binding:
+            yield binding
+        for item in (binding.get("object") or {}).values() if isinstance(
+                binding.get("object"), dict) else ():
+            yield from value_references(item)
+        for item in binding.get("list") if isinstance(binding.get("list"), list) else ():
+            yield from value_references(item)
+
+
 def template_of(ref, kind, templates, package_docs):
     """The template that a `from` names, where this tool has it: a template of the same set,
     by its name where the kind is fixed, by `{kind, name}` or by `#name`; or a template of a
@@ -959,8 +974,9 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
 
     def bounds(template, visited=()):
         """The items of `requirements` by which a Conduit template applies `bound.v1`: its own
-        and, for a composite, those of the templates of its components that this tool has. A
-        bound applied through the `constituents` of another requirement is not followed."""
+        and, for a composite, those of the templates of its components that this tool has.
+        `bound.v1` is never a constituent of another requirement (CTR-011), which the rule
+        bound-constituent checks, so the `constituents` of a requirement are not followed."""
         spec = template.get("spec") or {}
         items = [name for name, item in (spec.get("requirements") or {}).items()
                  if isinstance(item, dict) and item.get("requirement") in bound]
@@ -1043,7 +1059,7 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                               f"its `target` as `{{entry: {declared['target']['entry']}}}`, "
                               f"outside an entry of a Pool template"))
 
-    # operations-filled (CON-016): a Conduit template that is not composed and writes no
+    # operations-filled (CON-016): a Conduit template that is not a composite and writes no
     # `operations` has an input whose destination is `/operations`.
     for (kind, name), template in templates.items():
         spec = template.get("spec") or {}
@@ -1267,6 +1283,94 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                 and narrowing((here, named(doc)))[0] is False:
             found.append(("obliges-narrows", f"the Requirement contract {named(doc)} states "
                                              f"`obliges` and does not narrow requests"))
+
+    # bound-constituent (CTR-011): the core package's `bound.v1` is never a constituent of a
+    # composition, directly or through other compositions. Followed as far as the tool has
+    # the contracts of the constituents.
+    def reaches_bound(key, seen=()):
+        """The name of the constituent of the requirement `key` through which it reaches
+        `bound.v1`, or None."""
+        contract = lookup(key, "Requirement")
+        if contract is None or id(contract) in seen:
+            return None
+        for local, part in members((contract.get("spec") or {}).get("constituents")):
+            below = canon(part.get("requirement"), key[0]) if isinstance(part, dict) else None
+            if below == (core, "bound.v1") \
+                    or (below and reaches_bound(below, seen + (id(contract),))):
+                return local
+        return None
+    for doc in docs:
+        if doc.get("kind") == "Requirement":
+            local = reaches_bound((here, named(doc)))
+            if local:
+                found.append(("bound-constituent",
+                              f"the Requirement contract {named(doc)} has `bound.v1` among "
+                              f"its constituents, through {local}"))
+
+    # The graphs a template writes: `setup`, `retire`, and each graph written in place in its
+    # `implementation` map, with the operation it implements.
+    def graphs_of(spec, home):
+        out = [(label, None, spec.get(label)) for label in ("setup", "retire")]
+        out += [(f"the graph for {key}", canon(key, home), value)
+                for key, value in members(spec.get("implementation"))]
+        return [(label, key, graph) for label, key, graph in out
+                if isinstance(graph, dict) and isinstance(graph.get("steps"), dict)]
+
+    # runtime-step-output (GRA-028): no value reference with the source `step` names a step
+    # that names a runtime: the handle is read with the source `runtime`. Applied to the
+    # graphs a template writes, in the arguments of their steps and in their `outputs`.
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        for label, _, graph in graphs_of(spec, here):
+            starts = {step for step, held in graph["steps"].items()
+                      if isinstance(held, dict) and "runtime" in held}
+            bindings = [(f"the step {step}", binding)
+                        for step, held in graph["steps"].items() if isinstance(held, dict)
+                        for _, binding in members(held.get("arguments"))]
+            bindings += [(f"the output {output}", held.get("value"))
+                         for output, held in members(graph.get("outputs"))
+                         if isinstance(held, dict)]
+            for where, binding in bindings:
+                for reference in value_references(binding):
+                    if reference.get("source") == "step" and reference.get("step") in starts:
+                        found.append(("runtime-step-output",
+                                      f"in {label} of the template {name}, {where} reads an "
+                                      f"output of the step {reference['step']}, which names "
+                                      f"a runtime"))
+
+    # graph-invokes-itself (GRA-005): no graph invokes the operation it implements, by a step
+    # with no `conduit`, itself or through other graphs. Applied to the graphs written in
+    # place in a template's `implementation` map and, where the tool has the type's contract,
+    # in the type's; a graph that an implementation item of a manifest gives is not followed.
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        calls = {}
+        type_key = canon(spec.get("type"), here)
+        type_doc = lookup(type_key, "Type") if kind != "Conduit" else None
+        holders = [(spec, here)]
+        if type_doc is not None and isinstance(type_doc.get("spec"), dict):
+            holders.append((type_doc["spec"], type_key[0]))
+        selected = {canon(key, here) for key, _ in members(spec.get("implementation"))}
+        for index, (holder, home) in enumerate(holders):
+            for _, key, graph in graphs_of(holder, home):
+                if key is None or key in calls or (index and key in selected):
+                    continue
+                calls[key] = {canon(held.get("operation"), home)
+                              for held in graph["steps"].values()
+                              if isinstance(held, dict) and "conduit" not in held}
+
+        def leads_back(start, at, seen):
+            for nxt in calls.get(at, ()):
+                if nxt == start or (nxt in calls and nxt not in seen
+                                    and leads_back(start, nxt, seen | {nxt})):
+                    return True
+            return False
+        for key in calls:
+            if leads_back(key, key, {key}):
+                found.append(("graph-invokes-itself",
+                              f"in the template {name}, the graph that implements {key[1]} "
+                              f"invokes that operation again, itself or through other "
+                              f"graphs"))
 
     # default-valid (SCH-019): a `default` satisfies the schema that states it, and an input's
     # `default` the input's own `schema`. Applied where every `$ref` of the schema can be

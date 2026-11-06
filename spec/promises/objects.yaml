@@ -12,6 +12,11 @@
 # to OBJ-023, and added OBJ-025 and OBJ-026, which are of the layer `convention`. Its closing
 # pass (docs/proposals/reaudit/round-2/log-closing.md) changed OBJ-003, OBJ-015, OBJ-023 and
 # OBJ-026: a runtime is no longer marked optional. No promise of this file has been removed.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed OBJ-005, which is now of the layer `convention`, OBJ-009, OBJ-010,
+# which is worded as what resolving reads, and OBJ-026, and added OBJ-027 and OBJ-028, of the
+# layer `convention`, which took their rules from the observable of OBJ-026. It removed none.
 
 - id: OBJ-001
   layer: language
@@ -82,14 +87,15 @@
   vectors: []
 
 - id: OBJ-005
-  layer: language
+  layer: convention
   level: must
   when: >-
     An object is renamed.
   then: >-
     Its ID is unchanged.
   observable: >-
-    Inspecting the object before and after the rename returns the same ID.
+    Inspecting the object before and after an invocation of `rename.v1` that succeeded returns
+    the same ID. The rename itself is OBJ-026.
   vectors: []
 
 - id: OBJ-006
@@ -148,22 +154,26 @@
     the diagnostic names the reference. Only the engine writes the resolved form. Every
     reference schema accepts it, so the stored configuration still satisfies the schema of the
     instance's type, and a submitted document that writes it is rejected with a diagnostic
-    naming where it is written. LIF-007 says that a request names an object by a reference and
-    never by an ID.
+    naming where it is written. What a request that writes it reports is LIF-031.
   vectors: []
 
 - id: OBJ-010
   layer: language
   level: must not
   when: >-
-    The object an instance's reference resolved to is renamed, or is unregistered and another
-    object takes its name.
+    An instance exists that holds the resolved form of a reference, and the name by which that
+    reference was written now belongs to another object, or to none: the object it resolved to
+    has another name, or no longer exists while another object has taken its name.
   then: >-
     The instance's reference comes to point at a different object.
   observable: >-
-    After the rename the instance still holds the same resolved form, with the same ID. After
-    the other object takes the name the instance still holds that ID, and its reference is not
-    redirected to the object now bearing the name.
+    A stored resolved form is not resolved again. Resolving a later document against the objects
+    that exist reads the instance with the same resolved form, and the same ID, that it held
+    when it was made, whatever the objects are now named: a reference in the later document to
+    the name resolves to the object that now bears it, and the instance's own reference is not
+    redirected to that object. A nested instantiation that the instance holds, and from which a
+    replacement is made under LIF-009, holds its references in the resolved form in the same
+    way.
   vectors: []
 
 - id: OBJ-011
@@ -452,14 +462,52 @@
     A template or an instance is renamed.
   then: >-
     It is done by the operation `rename.v1`, which names the object's current revision and
-    changes only its name. The revision advances, as it does for any stored change.
+    changes only its name. The revision advances, as it does for any stored change. A request
+    that gives an object the name it already has changes nothing, does not advance the revision
+    and has the outcome succeeded.
   observable: >-
     After the rename the object has the new name, the ID, the definition and the configuration
     it had, and a later revision, under REV-003. A request that names a revision that is not
     current reports conflict under REV-002, and one that names none reports invalid under
     REV-011. The request is authorized against `management`, under ACC-033. What the rename of a
     Conduit must also satisfy is CON-026, and LIF-022 refuses the rename of a first-start object
-    and of the two Conduits of `root`. A request whose new name another object of that kind has
-    is not dispatched and reports conflict, and one whose new name breaks OBJ-001 reports
-    invalid.
+    and of the two Conduits of `root`. A request that gives the object the name it has is
+    decided like any other and stores no change, so REV-004 keeps the revision as it was. A
+    request whose new name another object of that kind has reports conflict under OBJ-027, and
+    one whose new name breaks OBJ-001 reports invalid under OBJ-028.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3A-14). These two took the rules
+# --- that stood in the observable of OBJ-026, and are of the layer `convention`.
+
+- id: OBJ-027
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to rename a template or an instance, and another object of that kind has the
+    new name.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    Both objects keep their names, their IDs and their revisions. Templates and instances of one
+    kind are counted together, as OBJ-002 counts them for a document, and the reason is the one
+    OBJ-025 gives a registration that clashes with an existing name. The name that the object
+    already has is not another object's: a request that gives it is OBJ-026. Where the actor is
+    not permitted, OPS-023 gives refused first.
+  vectors: []
+
+- id: OBJ-028
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to rename a template or an instance, and the new name breaks the rule that
+    OBJ-001 gives for a name.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The object keeps its name and its revision. A name with an uppercase letter, one that does
+    not start with a letter and one longer than 63 characters are each invalid in this way, as a
+    document that gives such a name is rejected under OBJ-001. The input `name` of `rename.v1`
+    states the rule as its schema.
   vectors: []

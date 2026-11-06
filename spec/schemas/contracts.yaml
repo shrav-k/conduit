@@ -1,5 +1,8 @@
-# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
-# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
+# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
+# core package and the manifest's promises; the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 and 3 of the
+# re-audit changed since rests on the coordinator's logged decisions, which the owner has
+# not ruled on.
 #
 # The five kinds of contract document, and an applied requirement.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -60,7 +63,8 @@
 # core package's capability `pool-management.v1` (CTR-004), because the profile cannot say
 # that a list holds a value; default implementations (CTR-004, TPL-004); that a requirement
 # on placement states `schema` and no `inputs`, and that a composition does not reach itself
-# (CTR-005); that a value reference in a constituent names an input the composition declares
+# (CTR-005) and does not have the core package's `bound.v1` among its constituents
+# (CTR-011); that a value reference in a constituent names an input the composition declares
 # (CTR-010); that a control declares the input `revision` and the output `settings`
 # (CTR-006); that a `default` satisfies its input's schema (SCH-019); and compatibility
 # between releases (NAM-024).

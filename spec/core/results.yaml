@@ -1,5 +1,7 @@
-# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
-# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
+# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
+# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
+# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# decisions, which the owner has not ruled on. See README.md in this directory.
 #
 # Two small Schema contracts that the outputs of the core operations share. No promise gives
 # the whole of either shape; both are choices the record lists (C16), kept as small as the
@@ -15,7 +17,8 @@
 #                  belongs to; the member was added for finding 26 of the third reader of
 #                  docs/proposals/reaudit/round-2/
 #   diagnostic.v1  OBJ-008, NAM-008, PKG-006 (a result lists the diagnostics that did not
-#                  prevent it)
+#                  prevent it), IFC-025 (a request that is not dispatched says what it says
+#                  beyond its reason in `diagnostics`)
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

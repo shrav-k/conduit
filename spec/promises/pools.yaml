@@ -13,6 +13,11 @@
 # entry to OBJ-014. Its closing pass changed POOL-016. The follow-up to its last pass
 # (docs/proposals/reaudit/round-2/log-tail.md) changed POOL-004 and added POOL-017, of the layer
 # `convention`: no Resource is registered into a retired Pool. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed POOL-004, which now rejects a Resource document whose owner is a
+# retired Pool, and POOL-017, which keeps the request under LIF-009 alone and now reports
+# invalid. It removed none.
 
 - id: POOL-001
   layer: language
@@ -59,10 +64,16 @@
   when: >-
     A Resource document names a Pool as owner and is not one of that Pool's entries.
   then: >-
-    The Resource is instantiated like any other instance and is owned by that Pool.
+    Where the Pool is not retired, the Resource is instantiated like any other instance and is
+    owned by that Pool. Where the Pool is retired, the document is rejected.
   observable: >-
     The Pool owns the new Resource alongside any instantiated from its entries. No entry is
-    needed for it. A request to register a Resource into a retired Pool is POOL-017.
+    needed for it. For a retired Pool, resolving returns a diagnostic naming the Resource and
+    the Pool and stating that the Pool is retired, and the Pool owns the same Resources as
+    before. A retired Pool gains no Resource, as a retired location is given no instance under
+    PLC-018 and a retired end no Conduit under CON-025: the three are rules of the language, and
+    the registration of a document that one of them rejects reports invalid under OBJ-023. A
+    request under LIF-009 for a new Resource for an entry of a retired Pool is POOL-017.
   vectors: []
 
 - id: POOL-005
@@ -225,15 +236,15 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to register a Resource whose owner is a retired Pool, or asks under LIF-009
-    for a new Resource for an entry of a retired Pool.
+    An actor asks under LIF-009 for a new Resource for an entry of a retired Pool.
   then: >-
-    The request is not dispatched, and reports conflict.
+    The request is not dispatched, and reports invalid.
   observable: >-
-    The Pool owns the same Resources before and after the request, and nothing in the submission
-    is registered. A diagnostic names the Resource and the Pool, as IFC-025 states. A retired
-    instance is not changed, under LIF-015, and a retired Pool gains no Resource, as a retired
-    location is given no instance under PLC-018 and a retired end no Conduit under CON-025.
-    Where the actor is not permitted, OPS-023 gives refused first: with the Pool retired,
-    ACC-033 authorizes the request against `management` alone.
+    The Pool owns the same Resources before and after the request. A diagnostic names the entry
+    and the Pool, as IFC-025 states. No document is handed over with the request, so POOL-004
+    has none to reject: the reason is the one LIF-009 gives for every new instance that a rule
+    on instantiation does not make, and the one that the registration of a Resource document
+    whose owner is a retired Pool reports under POOL-004 and OBJ-023. Where the actor is not
+    permitted, OPS-023 gives refused first: with the Pool retired, the request needs the Conduit
+    to `management` alone, under ACC-033.
   vectors: []

@@ -1,10 +1,12 @@
 # Conduit overview
 
 Not binding. This is a short tour of the language in ordinary words, written from
-[spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md) as they
-stood on 2026-11-06. The [specification](../spec/README.md) alone binds, and it governs where
-this page differs. Each section links the files that state its rules. A code such as `CON-001`
-is the identifier of one promise in them.
+[spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
+last read against the specification on 2026-11-06, as the fix pass of
+[round 3 of the re-audit](proposals/reaudit/round-3/log-fixes.md) left it. The
+[specification](../spec/README.md) alone binds, and it governs where this page differs. Each
+section links the files that state its rules. A code such as `CON-001` is the identifier of
+one promise in them.
 
 ## What Conduit is
 
@@ -59,9 +61,10 @@ Registering an instance document makes the instance and the instances its templa
 it. Nothing is set up, and nothing is opened (INS-016).
 
 Where a document refers to another object, the instance stores the kind and the ID of the
-object that the reference resolved to, written `{kind, id}`. Only the engine writes that form.
-A later rename of that object does not make the reference point at another one (OBJ-009,
-OBJ-010).
+object that the reference resolved to, written `{kind, id}`. Only the engine writes that form:
+a document never does, and nor does a request that an actor makes on its own behalf, which
+names an object by a reference (OBJ-009, LIF-031). A later rename of that object does not make
+the reference point at another one (OBJ-010).
 
 ## Pools, ownership and placement
 
@@ -73,7 +76,7 @@ made, and no operation changes it (POOL-001). Ownership is a stored fact and per
 
 A Pool template may declare entries. When the Pool is made, one Resource is made for each entry
 and is owned by that Pool (POOL-002). A Resource can also be made on its own, by a document
-that names a Pool as its owner (POOL-004).
+that names as its owner a Pool that is not retired (POOL-004).
 
 An Agent and a Resource each have exactly one placement: the location where it runs. A location
 is itself a Resource, owned by the Pool `system`. Interfaces, Pools and Conduits have none.
@@ -92,7 +95,10 @@ offers. Offering is not permission.
 **Every permission is an open Conduit.** While a Conduit is open it permits exactly the
 operations it lists, on its target (ACC-003). A request for an operation that no open Conduit
 from that consumer to that target lists is refused (ACC-001). There is no separate object for a
-permission.
+permission. Two tools of the core package are the exception and need no Conduit:
+`retrieve-result.v1`, with which an instance retrieves the results of its own requests, and
+`start-later-work.v1`, which is described [below](#operations-outcomes-and-reasons) (IFC-024,
+IFC-035).
 
 A Conduit comes to exist in one of two ways. A template of an Interface, an Agent or a Resource
 can declare it; one Conduit is then made with each instance of that template (CON-002), and
@@ -204,6 +210,10 @@ verbs are open and close, in place of set up and retire, and the operations are 
 `close.v1`. A retired instance still exists until it is unregistered, which needs its shutdown
 to be confirmed or its location to have been declared lost (LIF-017).
 
+Retiring an instance also closes its Conduits. Those of which it is the target are closed at
+once. Those of which it is the consumer are closed once its shutdown is confirmed, and until
+then they permit only the requests of its retirement (CON-008, ACC-039).
+
 Whether an instance is running, paused or idle is not a lifecycle state. A type may define such
 conditions, and they are reported beside the state (LIF-011).
 
@@ -225,7 +235,7 @@ management verb, such as register, set up, open, close and retire, is itself an 
 
 A request asks for one operation on one target. The engine makes its own access decision before
 any implementation is invoked (ACC-002). A request that passes the engine's checks is
-dispatched, which begins an invocation. Every request ends in exactly one of seven ways
+dispatched, which begins an invocation. Every request ends in one of seven ways
 ([definitions](../spec/definitions.md#how-a-request-ends)):
 
 - With an **outcome**: succeeded, failed or unknown. Unknown means it cannot be confirmed that
@@ -235,7 +245,9 @@ dispatched, which begins an invocation. Every request ends in exactly one of sev
 A caller may attach an operation identity to a request so that a repeat is recognized. The
 identity is scoped to the caller, the target and the instance that sent the request, and at
 most one invocation exists for one of each and one identity (OPS-008). Nothing is dispatched
-again unless the caller repeats the request (IMP-007).
+again unless the caller repeats the request (IMP-007). A repeat of a request whose invocation
+has not ended is told that it is in progress, which is none of the seven: the request ends
+when its invocation does (OPS-009).
 
 What follows an unknown outcome is fixed. A repeat of the request is dispatched as a new
 attempt only if the operation's contract declares `deduplicates: true` and the implementation
@@ -252,8 +264,15 @@ A control is an operation that changes stored settings. A request to change an o
 object's current revision, and one that names another reports conflict (REV-002).
 
 Model work starts only as the effect of an operation whose contract is marked as starting it,
-dispatched through an open Conduit that lists it (IMP-001). Setup never starts it. Every access
-decision and every invocation is recorded (REC-001).
+dispatched through an open Conduit that lists it (IMP-001). Setup never starts it.
+
+Not every invocation begins with a consumer's request. An operation whose contract is marked
+as arranging later work may arrange work that starts after its own invocation has ended. The
+implementation that holds the work asks for each start with `start-later-work.v1`, and the
+engine dispatches it for the caller that arranged the work, through the Conduit it was
+arranged through, and only while every Conduit the work is tied to is open (ACC-019, ACC-040).
+Such work starts model work only if the operation that arranged it is marked as starting it
+too (IMP-006). Every access decision and every invocation is recorded (REC-001).
 
 ## Packages, contracts and the core package
 
@@ -268,9 +287,11 @@ version, such as `.v1`.
 
 A package is what an author ships: a manifest and the things it exports. It is identified by an
 address, such as `example.org/files`, and each release has a version. A project's manifest lists
-each package it uses with exactly one version and that version's digest. A document reaches an
-export by a qualified reference: the address, then `#`, then the export's name. A reference
-never carries a version.
+each package it uses with exactly one version and that version's digest. Listing a package
+does not install it: a package is made available only by `install.v1`, an operation of
+`management`, and registering a project installs none and reports a package that is missing
+(PKG-006). A document reaches an export by a qualified reference: the address, then `#`, then
+the export's name. A reference never carries a version.
 
 An implementation does the work behind an operation. It is reached by a command, by a URL or as
 a graph, which is a set of steps ordered only by their dependencies. An existing server that
@@ -279,7 +300,8 @@ was not written for Conduit can be one; its implementation item in the manifest 
 
 The shared wire between an engine and an implementation, and between an engine and a consumer,
 is the Model Context Protocol. An operation is one tool, and the engine presents to each
-consumer, as tools, the operations its open Conduits list (IFC-012).
+consumer, as tools, the operations its open Conduits list and the two tools that need no
+Conduit (IFC-012).
 
 The core package is built into every engine. It exports the templates of the first-start
 objects, the contracts of the management verbs and the schemas of documents. It needs no item
@@ -304,7 +326,7 @@ Two things are deliberately outside it, and neither binds other engines:
   process layout. That belongs to the engine's runtime profile: its documented choice for every
   item of the [implementation-defined list](../spec/implementation-defined.yaml).
 
-A claim of conformance names one of three levels
+A claim of conformance names a version of the specification and one of three levels
 ([conformance](../spec/README.md#conformance)). An engine claims the Language level, which
 covers the layer `language`, or the Engine level, which adds the other two layers and a
 runtime profile. An implementation, which is not an engine, claims the Implementation level:

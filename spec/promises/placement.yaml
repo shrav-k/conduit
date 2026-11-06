@@ -10,6 +10,10 @@
 # PLC-020, and added PLC-021, of the layer `convention`, which took from PLC-008 how a
 # location's facts are changed. Its closing pass changed PLC-017 and PLC-021 and reworded one
 # sentence of PLC-007. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed PLC-011, PLC-016 and PLC-017, and added PLC-022, of the layer
+# `convention`, which took a rule from the observable of PLC-016. It removed none.
 
 - id: PLC-001
   layer: language
@@ -138,12 +142,18 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to retire or to unregister a location that has other instances placed on it.
+    An actor asks to retire or to unregister a location that has other instances placed on it,
+    retired or not.
   then: >-
     The request is not dispatched and reports conflict. Only the declare-lost operation, which
     is reserved to the root Interface, retires a location that still has instances.
   observable: >-
-    The location and its instances still exist, in the states they had.
+    The location and its instances still exist, in the states they had. Every instance that
+    exists and whose placement is the location counts, a retired one included, whatever its
+    shutdown reports: a retired instance keeps its placement until it is unregistered. So a
+    location is retired by a request only once every other instance placed on it has been
+    unregistered, and no instance whose shutdown is pending or unknown is left on a location
+    that a request retired.
   vectors: []
 
 - id: PLC-012
@@ -199,13 +209,13 @@
   observable: >-
     The control is `set-default-location.v1` of the core package, in the capability
     `system-settings.v1` that the type of the `system` Pool offers. It takes `location`, a
-    reference to a Resource or null, and null clears the setting. A value other than null that
-    does not refer to a location that exists reports invalid. The setting stores the location in
-    the resolved form of OBJ-009. After the control succeeds, an instance instantiated without a
-    placement takes the named location under PLC-003. Once the location that the setting names
-    is unregistered, the setting still holds its ID and reports it as missing, under LIF-019: it
-    then names none of the locations that exist, and PLC-004 applies until the control sets it
-    again.
+    reference to a Resource or null, and null clears the setting. What a value other than null
+    that does not refer to a location that exists reports is PLC-022. The setting stores the
+    location in the resolved form of OBJ-009. After the control succeeds, an instance
+    instantiated without a placement takes the named location under PLC-003. Once the location
+    that the setting names is unregistered, the setting still holds its ID and reports it as
+    missing, under LIF-019: it then names none of the locations that exist, and PLC-004 applies
+    until the control sets it again.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).
@@ -220,9 +230,16 @@
     shutdown as unknown, and states that it could not be confirmed because the location was
     declared lost. An instance for which no setup was ever dispatched reports confirmed, as
     LIF-025 states, and one whose shutdown was confirmed before stays confirmed, under LIF-024.
+    A location that a request has already retired is declared lost in the same way. A request to
+    declare lost a location that was already declared lost changes nothing and has the outcome
+    succeeded.
   observable: >-
     Each of them can then be unregistered under LIF-017 without a reconciliation. The Conduits
-    of which any of them was an end are closed under CON-008.
+    of which any of them was an end are closed under CON-008. LIF-015 lists the request among
+    those that a retired instance takes: a location that a request retired, and whose own
+    shutdown is not confirmed, is declared lost and can then be unregistered. A second request
+    for one location succeeds because the effect that `declare-lost.v1` describes has occurred,
+    as a request to close a closed Conduit does under ACC-012.
   vectors: []
 
 - id: PLC-018
@@ -291,4 +308,24 @@
     changes no instance that is placed on the location: PLC-007 tests a requirement on placement
     when an instance is instantiated and not again, and PLC-013 tests the shared-host
     requirement on each opening and each request.
+  vectors: []
+
+# --- Added by the fix pass of the third round of the re-audit
+# --- (docs/proposals/reaudit/round-3/log-fixes.md; finding 3A-14): the rule stood in the
+# --- observable of PLC-016.
+
+- id: PLC-022
+  layer: convention
+  level: must
+  when: >-
+    The control `set-default-location.v1` is requested with a `location` that is not null and
+    does not refer to a location that exists.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The default-location setting and the revision of the `system` Pool are as they were. A name
+    that no Resource has, and a reference to a Resource that is not a location, are each invalid
+    in this way, as OPS-029 gives the reason for a request that names nothing. Null is accepted,
+    and clears the setting under PLC-016. Where the actor is not permitted, OPS-023 gives
+    refused first.
   vectors: []

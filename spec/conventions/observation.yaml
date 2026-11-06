@@ -7,6 +7,10 @@
 # docs/proposals/docs-audit/GAPS.md) changed OBS-005. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed OBS-004 and OBS-005 and added OBS-007.
 # No promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed OBS-003 and OBS-007: the stop that the engine dispatches for a
+# runtime restored without leave carries no caller. It removed none.
 
 - id: OBS-001
   layer: convention
@@ -41,9 +45,9 @@
   then: >-
     It is reported as unknown, with the time of the last successful observation of it.
   observable: >-
-    The earlier value is not shown as current. Where it was never observed, the report says
-    unknown with no time. When a location cannot be reached, this holds for every instance
-    placed on it, and instances on other locations report as before.
+    The earlier value is not shown as current. Where it was never observed, the inspection
+    result says unknown with no time. When a location cannot be reached, this holds for every
+    instance placed on it, and instances on other locations report as before.
   vectors: []
 
 - id: OBS-004
@@ -99,9 +103,15 @@
     `restoresRuntimes: true`.
   then: >-
     The engine treats the handle as no longer held: the runtime is stopped under its `stop`
-    operation, and the instance is reported as not holding it.
+    operation, and the instance is reported as not holding it. The engine dispatches that stop
+    for no actor: the request carries no caller, and its record says that the engine dispatched
+    it under this promise for no actor.
   observable: >-
-    The engine invokes the runtime's `stop` operation with the handle. Inspecting the instance
-    afterwards does not list the runtime as held, and a later step that names the runtime starts
-    it under TPL-007. No `start` operation is dispatched because of the restoring.
+    The engine invokes the runtime's `stop` operation with the handle. The request that the
+    implementation receives holds no `io.github.shrav-k.conduit/caller`, which IFC-006 excepts,
+    no `io.github.shrav-k.conduit/conduit` and an empty list of restrictions, because it came
+    through no Conduit and serves no invocation. The record of the stop holds no caller, under
+    REC-002. Inspecting the instance afterwards does not list the runtime as held, and a later
+    step that names the runtime starts it under TPL-007. No `start` operation is dispatched
+    because of the restoring.
   vectors: []

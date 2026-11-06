@@ -1,12 +1,16 @@
 # The schemas of documents
 
-Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as one batch with
-[the core package](../core/README.md) and
-[the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
+Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as it stood on that
+day, as one batch with [the core package](../core/README.md) and
+[the manifest's promises](../promises/manifest.yaml). **Changed since by decisions that the
+owner has not ruled on.** It was written for decision G1 of the
 [re-audit](../../docs/proposals/reaudit/README.md). The record of the batch is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
-the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md). The
-decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) then added four things
+the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
+
+What follows was changed after the owner's ruling, by the coordinator of the re-audit, whose
+decisions are logged and can be struck by the owner. None of it is a choice the owner accepted.
+The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) added four things
 a contract may hold, which are listed under
 [Choices the schemas encode](#choices-the-schemas-encode). The
 [decisions of the second re-audit round](../../docs/proposals/reaudit/round-2/DECISIONS.md)
@@ -14,8 +18,13 @@ changed seven shapes, which are listed in the same place; what changed in each f
 [log of that pass](../../docs/proposals/reaudit/round-2/log-documents.md) and the
 [log of its closing pass](../../docs/proposals/reaudit/round-2/log-closing.md). The
 [last pass of that round](../../docs/proposals/reaudit/round-2/log-tail.md) changed no shape:
-it added three rules that no schema can express, with an example of each. The promises
-are the source of truth: where a schema and a promise differ, the schema is wrong.
+it added three rules that no schema can express, with an example of each. The
+[decisions of the third round](../../docs/proposals/reaudit/round-3/DECISIONS.md) changed no
+shape either: they added three more such rules, with an example of each, and one example of
+a manifest that a schema rejects; the
+[log of that pass](../../docs/proposals/reaudit/round-3/log-fixes.md) says what changed in
+each file. The promises are the source of truth: where a schema and a
+promise differ, the schema is wrong.
 
 ## What this is
 
@@ -63,7 +72,7 @@ inside `config` or `arguments` a reference (OBJ-021).
 | `{kind: <Kind>, id: <ID>}`, the resolved form, which only the engine writes | Every reference schema, as its last branch, with the kinds that schema accepts |
 | A qualified reference, `<address>#<name>` | `qualified-reference.v1` |
 | `#<name>`, or a qualified reference, where a document selects something | `selection.v1` |
-| The value of `from`: a bare name or `{kind: <Kind>, name: <name>}` for a template that exists, a qualified reference for a template that a package exports, or `#<name>` for a template of the same project or package | `template-reference.v1`. It is not a selection, and a template's name holds no dot, so its `#<name>` form holds none |
+| The value of `from`: a bare name or `{kind: <Kind>, name: <name>}` for a template that exists, a qualified reference for a template that a package exports, or `#<name>`, which names a template of the same package and, in a project that is not published, resolves as the bare name does (INS-025) | `template-reference.v1`. It is not a selection, and a template's name holds no dot, so its `#<name>` form holds none |
 
 `{entry: <name>}` is accepted by every reference schema that accepts a Resource, because an
 entry's argument is checked against the schema of a Resource template's input. Written
@@ -79,9 +88,10 @@ schema of the type that INS-014 checked it against, and a control or a reconcili
 stores a setting is checked against the same schema (REV-008, REV-013). Only the engine
 writes the form. An implementation receives it in its `arguments` and in the restrictions it
 is sent, a graph reads it through a value reference, a control returns it in `settings`, and
-`inspect.v1` shows it under `declared`. A document or a request never writes it: the engine
-rejects a submitted document that does (OBJ-009), and a request names an object by a
-reference and never by an ID (LIF-007).
+`inspect.v1` shows it under `declared`. A document never writes it, and nor does a request
+that an actor makes on its own behalf: the engine rejects a submitted document that does
+(OBJ-009), and such a request reports invalid (LIF-031). A step of a graph and an onward
+request may hold it, because the engine handed it to them.
 
 No schema here describes a resolved instance, because `inspect.v1` leaves the shape of
 `declared` open, so there is no example file of one. This is what the resolved definition of
@@ -153,27 +163,28 @@ documents in front of it show, in its step 6; an example under
 
 | What | Promises | Why a schema cannot | Tool |
 | --- | --- | --- | --- |
-| The rule for a key of a named map: the name of an input, a step, a declared Conduit, an entry, a runtime, a requirement or a component; of a runtime or a member of `placement` in a Type; and of an input or a constituent of a Requirement; that an Operation's input or output name is not empty; that a key of `implementation`, `controls` or `tools` is a selection, which is a qualified reference or `#name`; that a key of `packages` is an address | OBJ-022, CTR-002, TPL-003, TPL-010, PKG-020, NAM-001, NAM-004, NAM-018 | The profile has no keyword that constrains the keys of a map. `propertyNames` and `patternProperties` are outside it | — |
+| The rule for a key of a named map: the name of an input, a step, a declared Conduit, an entry, a runtime, a requirement or a component; of a runtime or a member of `placement` in a Type; of a member of `placement` in an implementation item; and of an input or a constituent of a Requirement; that an Operation's input or output name is not empty; that a key of `implementation`, `controls` or `tools` is a selection, which is a qualified reference or `#name`; that a key of `packages` is an address | OBJ-022, CTR-002, TPL-003, TPL-010, PKG-020, MAN-010, NAM-001, NAM-004, NAM-018 | The profile has no keyword that constrains the keys of a map. `propertyNames` and `patternProperties` are outside it | — |
 | The syntax of the file: duplicate keys, anchors, aliases, merge keys, tags, keys that are not strings; numbers with no JSON form; whole numbers out of range; other numbers outside the range of binary64; one document or one array in a JSON file | SCH-012, SCH-017, SCH-006, SCH-021, SCH-018 | They are gone, or cannot be seen, once the file has been read into values | When it reads a file, in step 1, except SCH-018 |
 | A standard argument written under `arguments`, and anything else inside an open place | OBJ-013, INS-003 | The place is open by OBJ-019 | — |
 | That a reference resolves, and to the right thing: a template or an instance, a kind, a contract of the expected kind, an export; that a `$ref` written as a qualified reference or as `#name` names a Schema contract | OBJ-007 to OBJ-009, INS-002, TPL-002, TPL-005, CON-017, CON-021, CON-027, NAM-003, NAM-007, NAM-022, PKG-018, POOL-014, SCH-015 | It needs the other documents, the objects that exist and the installed packages | Only a selection, a `$ref`, or a `from` written as a qualified reference or as `#name`, that names something in this repository, for its kind; SCH-015 has an example |
-| That a document or a request does not write the resolved form of a reference, `{kind, id}` | OBJ-009, LIF-007 | Every reference schema accepts the form, because a stored instance holds it and the same schema governs what is stored | — |
+| That a document, or a request that an actor makes on its own behalf, does not write the resolved form of a reference, `{kind, id}` | OBJ-009, LIF-031 | Every reference schema accepts the form, because a stored instance holds it and the same schema governs what is stored | — |
 | That no two documents of one project or package share a name, whatever their kinds, and that no implementation has the name of a document | NAM-027 | It needs the other documents, and the manifest | Yes for two documents. For an implementation, in step 5, for the core package and the valid examples |
 | That a `default` satisfies the schema that states it, and an input's `default` the input's own `schema`. A default that is a map is checked after the defaults of its own properties are filled in | SCH-019, SCH-010 | A schema of a schema sees the keyword and not whether its value fits. `schema.v1` describes a schema and does not apply it | Yes, where jsonschema is importable and every `$ref` of the schema can be followed inside this repository |
 | That a value reference in a constituent's `arguments` names an input the composition declares | CTR-010 | It relates values in different parts of a document. That the source is `input` is in the schema | Yes |
-| Other uniqueness across documents | OBJ-002, SUB-004, PKG-012, CTR-007, IFC-014, MAN-002 | It needs the other documents, or the objects that exist. One case is in a schema: `manifest.v1` gives `exports` `uniqueItems`, so a name that `exports` writes twice is rejected (PKG-012) | — |
-| Cycles | GRA-005, POOL-011, CON-019, CTR-005, PKG-014 | It needs the other documents | — |
+| Other uniqueness across documents, and the length of a name that is put together from several: a tool name, and the name of a component Conduit | OBJ-002, SUB-004, PKG-012, CTR-007, IFC-014, CON-029, MAN-002 | It needs the other documents, or the objects that exist. One case is in a schema: `manifest.v1` gives `exports` `uniqueItems`, so a name that `exports` writes twice is rejected (PKG-012) | — |
+| Cycles: among the steps of a graph, among the graphs of one template that invoke one another's operations, among entries, components, constituents and re-exports | GRA-005, POOL-011, CON-019, CTR-005, PKG-014 | It needs the other documents, or relates values in different parts of one | GRA-005 only, for a graph written in place in a template's `implementation` map, or in its type's where the tool has the type's contract, that invokes its own operation |
 | What an argument must satisfy, and what the resolved instance holds | INS-003 to INS-009, INS-013, INS-014, INS-019, INS-023, NAM-019, SCH-009, SCH-010 | It needs the template or the requirement, and its schemas | — |
 | That two destinations do not overlap, and that a destination's parent is present | INS-010, INS-011 | It relates values in different parts of a document. Which places a destination may reach is in the schemas | — |
 | That a Conduit template that is not a composite and writes no `operations` has an input whose destination is `/operations` | CON-016 | The profile cannot say that some member of a map holds a value. The schema does reject such a template that declares no `inputs` at all | Yes |
 | That a Conduit template applies `bound.v1` at most once, which is checked when the template is registered, and that a Conduit that applies it has `access` as its target | CON-028 | The profile cannot count the members of a map that hold one value, and the target is in another document | Yes: a template that applies it twice, and a target written in place beside a template the tool has |
+| That `bound.v1` is never a constituent of a composition, directly or through other compositions | CTR-011 | A constituent's `requirement` is a selection like any other, and a composition that reaches it through another needs that other's contract | Yes, as far as the tool has the contracts of the constituents |
 | That no Operation contract outside the core package is marked `reservedToRoot: true`, and that no capability outside it lists an operation that is | CTR-009, CTR-003 | A schema sees one document and not the package it belongs to | CTR-009 only |
 | That a Type of the family Pool offers the core package's capability `pool-management.v1` | CTR-004 | The profile has no keyword that says a list holds a value, and none that makes one key depend on another | Yes, where `offers` names the capability in the core package |
 | That a template declares no runtime under a name its type declares, and that a step's `runtime` names a runtime of the template or of its type | TPL-006, GRA-017 | The type's contract is another document | TPL-006 only, where the tool has the type's contract |
 | That a location's document states no `placement` | PLC-008 | Only the type of the template says that an instance is a location | Yes, where the tool has the template |
 | That `{entry: name}` is written only in an entry of a Pool template | POOL-005 | A reference schema governs an entry's argument and every other place alike | Only in the `placement`, `consumer` and `target` of an instance document and the `target` of a declared Conduit |
-| The meaning of a graph: that what a step names exists, required inputs, literals against their schemas, declared outputs, which source is allowed in which graph, handles, model work, later work | GRA-004, GRA-006 to GRA-008, GRA-010, GRA-011, GRA-014, GRA-021, GRA-022, GRA-024, TPL-006, IMP-004, IMP-005, IMP-009, IMP-010 | It needs the operations' contracts, and knowledge of which graph a step is in | — |
-| Rules that tie two keys of one map together beyond "exactly one of": a requirement on placement states `schema` and no `inputs`; `tools` has a key for each operation in `implements`; a `graph` item implements exactly one operation; each key of a control's `changes` is an input the control declares and each pointer a place its type's schema describes, and a control declares the input `revision` and the output `settings` | CTR-005, PKG-020, GRA-014, CTR-006 | The profile has no `if`, `not` or dependent keyword, and none that constrains the keys of a map | CTR-006 only, in step 5, for a control whose contract is in this repository |
+| The meaning of a graph: that what a step names exists, required inputs, literals against their schemas, declared outputs, which source is allowed in which graph, that no value reference reads an output of a step that names a runtime, handles, model work, later work | GRA-004, GRA-006 to GRA-008, GRA-010, GRA-011, GRA-014, GRA-020, GRA-021, GRA-022, GRA-024, GRA-028, TPL-006, IMP-004, IMP-005, IMP-009, IMP-010, IMP-012 | It needs the operations' contracts, and knowledge of which graph a step is in | GRA-028 only |
+| Rules that tie two keys of one map together beyond "exactly one of": a requirement on placement states `schema` and no `inputs`; `tools` has a key for each operation in `implements`; a `graph` item implements exactly one operation, and, which the schema does express, is not marked `plain: true` and gives no `tools`; each key of a control's `changes` is an input the control declares and each pointer a place its type's schema describes, and a control declares the input `revision` and the output `settings` | CTR-005, PKG-020, GRA-014, CTR-006 | The profile has no `if`, `not` or dependent keyword, and none that constrains the keys of a map | CTR-006 only, in step 5, for a control whose contract is in this repository |
 | That a requirement is applied only where its `appliesTo` lists, and a composition only where the `appliesTo` of every constituent lists too | CTR-005 | It needs the requirement's contract and those of its constituents | Yes, for the `requirements` of a Conduit template and the `placement` of a Type, where the tool has the contracts |
 | That a requirement that is not a composition and does not narrow requests is applied to a Conduit, itself or as a constituent of a composition, only where it is a contract of the core package | CON-030 | It needs the requirement's contract and those of its constituents | Yes, for the `requirements` of a Conduit template, where the tool has the contracts |
 | That a requirement that does not narrow requests states no `obliges` | CTR-005 | The profile has no keyword that makes one key depend on another, and whether a composition narrows is in the contracts of its constituents | Yes, where the tool can tell that the requirement does not narrow |
@@ -188,7 +199,7 @@ documents in front of it show, in its step 6; an example under
 | That the address a package's manifest states is the one it was listed or fetched under | PKG-017 | It needs the manifest that lists the package, or the request that installs it | — |
 | That a document does not use one version's `apiVersion` with another version's core address | OBJ-024 | The schemas are those of one version, and state its names alone | — |
 | That a `pattern` is a regular expression of ECMA-262 | SCH-016 | Not expressible | — |
-| Everything a package's archive must be, and which files of a directory are read | PKG-004, PKG-021, PKG-022, MAN-001, MAN-002, MAN-011, MAN-013, MAN-014 | It is about files, not a document | — |
+| Everything a package's archive must be, which files of a directory are read, and that a package holds no instance document | PKG-004, PKG-021, PKG-022, MAN-001, MAN-002, MAN-011, MAN-013, MAN-014 | It is about files, not a document: a schema sees one document, and not whether it lies in a package or in a submitted project | — |
 
 A schema therefore answers one question: is this document, taken alone, one this specification
 could accept. It never says a document is accepted.
@@ -201,7 +212,10 @@ lists each. The owner accepted them all, and most are now stated by a promise: `
 `arguments` may be left out (OBJ-013, OBJ-014); a template narrows a control's input as
 `inputs: {<name>: {schema: ...}}` (TPL-010); a schema may be a boolean; a Requirement's input
 holds `schema` and may hold `default` and `optional` (CTR-005); and an implementation item
-that is not marked `plain: true` holds no `tools` (PKG-020). These remain choices of the
+that is not marked `plain: true` holds no `tools` (PKG-020). One more choice of the schemas
+was not in that list and is now stated by a promise, on a decision of the third round of the
+re-audit that the owner has not ruled on: an implementation item that states `graph` is not
+marked `plain: true` and gives no `tools` (PKG-020). These remain choices of the
 schemas alone: `optional` is a boolean, so `optional: false` is accepted; and a Type's
 `family` is one of the four families that have a type. No schema requires `optional`
 beside `default`: an input that states a `default` may be left out, whether or not it is
@@ -230,15 +244,20 @@ changed seven shapes:
 | An Operation may hold `arrangesLaterWork`, a boolean; one that is left out is false | `operation-spec.v1` | The fix pass, and what it left; CTR-002, ACC-019 |
 | A runtime holds `start` and `stop` and no `optional` | `runtime.v1` | The fix pass, and what it left; TPL-006 |
 
+The [decisions of the third re-audit round](../../docs/proposals/reaudit/round-3/DECISIONS.md)
+changed no shape of a document. Two core operations gained an optional input, which
+`operation-spec.v1` already allowed: `reconcile.v1` the handle `handle` (TPL-015), and
+`apply-policy.v1` `version` (ACC-031).
+
 ## Examples
 
 | Path | What |
 | --- | --- |
 | [examples/valid/project](examples/valid/project) | A small project that is not published: a manifest; a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input, a runtime of its own beside the one its type declares, a setup graph whose steps name both, and a narrowed control; a Pool template with two entries, one referring to the other; a Conduit template with two requirements; a composite Conduit template, one of whose components writes its `from` as `#name`; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open; and instance documents of every family, a Conduit to `access` among them |
-| [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports`, a re-export and three implementations, and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are an Operation whose input states a `default`, an Operation marked `arrangesLaterWork`, a control whose `changes` maps its input to a setting, a Type that declares a runtime and states `restoresRuntimes` and `records`, a Requirement that states `obliges`, and a composed Requirement |
+| [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports`, a re-export and three implementations, and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are an Operation whose input states a `default`, an Operation marked `arrangesLaterWork` and the operation that each start of that work invokes, a control whose `changes` maps its input to a setting, a Type that declares a runtime and states `restoresRuntimes` and `records`, a Requirement that states `obliges`, and a composed Requirement |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the four made from the templates `system`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
-| [examples/invalid](examples/invalid) | 59 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
-| [examples/invalid-by-rule](examples/invalid-by-rule) | 17 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
+| [examples/invalid](examples/invalid) | 60 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
+| [examples/invalid-by-rule](examples/invalid-by-rule) | 20 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest in an example is illustrative.
 Each directory under `examples/valid` is one project, with its documents beside its manifest

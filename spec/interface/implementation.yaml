@@ -28,6 +28,13 @@
 # to that pass changed IFC-006, IFC-009, IFC-016 and IFC-034: a result whose `isError` disagrees
 # with its outcome is unknown, and IFC-016 is about one invocation that outlasts its call. No
 # promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
+# has not ruled on, changed IFC-006, IFC-021, IFC-024, IFC-025 and IFC-028: a retrieval names
+# the invocation that its request served, the stop that the engine dispatches under OBS-007
+# carries no caller, and the result of an operation that declares no outputs is never withheld.
+# It changed nothing that these promises say of the Model Context Protocol itself, and what they
+# say of it has not been checked against the protocol since the pass. It removed none.
 
 - id: IFC-001
   layer: interface
@@ -124,7 +131,8 @@
     `io.github.shrav-k.conduit/operationIdentity` when the caller supplied an operation
     identity, or when the request is a step, to which the engine gives one under OPS-028, and
     `io.github.shrav-k.conduit/conduit` when the request came through a Conduit. None of them
-    appears in the `arguments`.
+    appears in the `arguments`. The one request that holds no `io.github.shrav-k.conduit/caller`
+    is the stop of a runtime that the engine dispatches for no actor, under OBS-007.
   observable: >-
     The interface version is `v0` for this version of the specification. The instance is given
     by its ID, the operation by its qualified reference, the invocation by the ID the engine
@@ -136,9 +144,9 @@
     `<digest>#<name>`, the digest that identifies the unpublished package under SUB-008, written
     as PKG-004 writes a digest, then `#`, then the contract's name. No separate key names the
     package, so one request can name contracts of two unpublished packages. A start of later
-    work is sent the caller for whom the work was arranged, the Conduit to which the work is
-    tied, and the operation identity that the instance which asked for the start supplied, if it
-    supplied one, under ACC-040.
+    work is sent the caller for whom the work was arranged, the Conduit through which it is
+    dispatched, and the operation identity that the instance which asked for the start supplied,
+    if it supplied one, under ACC-040.
   vectors: []
 
 - id: IFC-007
@@ -423,17 +431,21 @@
   level: must
   when: >-
     An instance that is not an actor, which is to say neither an Interface nor an Agent, makes a
-    request, other than one for `start-later-work.v1`, that names no invocation in
-    `io.github.shrav-k.conduit/serving`.
+    request, other than one for `start-later-work.v1` or for `retrieve-result.v1`, that names no
+    invocation in `io.github.shrav-k.conduit/serving`.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
     A Resource's implementation that calls onward without naming the invocation it serves
     reports refused, whatever open Conduits the Resource is the consumer of. An Interface or an
     Agent that names none makes the request on its own behalf and is its caller. What a request
-    reports that names an invocation its sender does not serve is IFC-028. A request for
-    `start-later-work.v1` names no invocation in that key, whichever instance makes it: its
-    caller is that of the invocation that arranged the work, and ACC-040 decides it.
+    reports that names an invocation which the sending instance does not serve is IFC-028. A
+    request for `start-later-work.v1` names no invocation in that key, whichever instance makes
+    it: its caller is that of the invocation that arranged the work, and ACC-040 decides it. A
+    call to `retrieve-result.v1` that names none is made for the instance as its own caller,
+    under IFC-024, and is decided under OPS-015 and OPS-016. An instance that is not an actor is
+    the caller of no invocation, so such a call from one finds no invocation and reports refused
+    under OPS-015.
   vectors: []
 
 - id: IFC-022
@@ -480,16 +492,27 @@
     name before it. It is presented whether or not any Conduit of which the instance is the
     consumer is open, and a call to it needs no Conduit. A call names an invocation by
     `operationIdentity` and `target`, the operation identity the request carried and the target
-    it was sent to. The `structuredContent` of the result holds `state`, the invocation's state,
-    which is `inProgress`, `succeeded`, `failed` or `unknown`; `invocation`, the engine's ID for
-    that invocation; `withheld`, which is true where OPS-017 withholds the content; and
-    `outputs`, the invocation's outputs where they are delivered.
+    it was sent to. Where that request was an onward request, the call names, in
+    `io.github.shrav-k.conduit/serving`, the invocation that the request served, which need not
+    be in progress, and the caller of the retrieval is that invocation's caller. A call that
+    names none is made for the instance as its own caller. The `structuredContent` of the result
+    holds `state`, the invocation's state, which is `inProgress`, `succeeded`, `failed` or
+    `unknown`; `invocation`, the engine's ID for that invocation; `withheld`, which is true
+    where OPS-017 withholds the content; and `outputs`, the invocation's outputs where they are
+    delivered.
   observable: >-
     An instance with no open Conduit still lists the tool. A call to it is decided under OPS-015
-    to OPS-017 and not under ACC-001. An invocation that has not ended is reported with the
-    `state` `inProgress`, and one that has ended by its outcome. The outputs are delivered only
-    while the Conduit through which the invocation was dispatched is open, under OPS-017: a
-    result whose content is withheld carries `state`, `invocation` and `withheld: true`, and no
+    to OPS-017 and not under ACC-001. IFC-021 does not refuse a call that names no invocation in
+    `io.github.shrav-k.conduit/serving`, and IFC-028 does not refuse one for naming an
+    invocation that has ended: a Resource retrieves the result of an onward request after the
+    invocation that the request served has ended, and for the caller it sent the request for. A
+    call that names an invocation which was not dispatched to the instance that makes it reports
+    refused, under IFC-028. Where an instance sent requests under one identity to one target for
+    two callers, OPS-008 has two invocations, and the invocation that the call names in that key
+    says which is asked about. An invocation that has not ended is reported with the `state`
+    `inProgress`, and one that has ended by its outcome. The outputs are delivered only while
+    the Conduit through which the invocation was dispatched is open, under OPS-017: a result
+    whose content is withheld carries `state`, `invocation` and `withheld: true`, and no
     `outputs`. `invocation` is the ID by which `reconcile.v1` names the invocation, under
     OPS-014, so an instance that lost the result of its request learns it here. Where the engine
     no longer keeps the content, under OPS-016, the result carries `state` and `invocation`, and
@@ -519,8 +542,11 @@
     `io.github.shrav-k.conduit/invocation`, the engine's ID for that invocation. Where the
     content of a result is withheld under ACC-034 or OPS-017, the result carries its outcome and
     no `structuredContent`, and its `_meta` holds `io.github.shrav-k.conduit/withheld`, with the
-    value true. The result's `isError` is true in these cases and in no other, and in each of
-    them the result carries none of the operation's outputs, `diagnostics` apart: where the
+    value true. A result has content to withhold, or to keep, only where its operation declares
+    outputs: the result of an operation that declares none is never marked as withheld, and
+    where its outcome is succeeded its `isError` is not true, even where its Conduit was closed
+    before it ended. The result's `isError` is true in these cases and in no other, and in each
+    of them the result carries none of the operation's outputs, `diagnostics` apart: where the
     request ended with a reason, where its outcome is failed or unknown, where its content is
     withheld, and where it is a repeat of an invocation that has not ended, or of one that
     succeeded and whose outputs the engine no longer keeps.
@@ -536,36 +562,35 @@
     `io.github.shrav-k.conduit/state`. A result whose content is withheld still carries its
     outcome, which may be succeeded. One whose `isError` is true, whose outcome is succeeded and
     which holds neither `io.github.shrav-k.conduit/withheld` nor
-    `io.github.shrav-k.conduit/state` is a repeat whose outputs the engine no longer keeps. A
-    result has content to withhold, or to keep, only where its operation declares outputs: the
-    result of an operation that declares none is never marked as withheld, and where its outcome
-    is succeeded its `isError` is not true, even where its Conduit was closed before it ended.
-    The protocol's revision 2026-07-28 does not say whether a result whose `isError` is true
-    must conform to `outputSchema`. This specification takes it that it need not: such a result
-    carries no outputs, and may carry `diagnostics`. What a request that is not dispatched says
-    beyond its reason, and beyond the restriction it names, it says there: `diagnostics` in the
-    `structuredContent` of its result is a list of diagnostics, whether or not the operation's
-    contract declares an output of that name, as that of `register.v1` does. The result of a
-    rejected registration carries them under OBJ-023, and that of a request to retire a Pool
-    whose Resources are in the way names those Resources there, under LIF-020. A request that
-    reports refused says nothing there of the objects it names, under OPS-023. A request that
-    the engine does not dispatch because a filter or a policy forbids it, or cannot be evaluated
-    or applied, names that filter or policy in `io.github.shrav-k.conduit/restriction`, as
-    ACC-008, ACC-014 and ACC-015 require; for a composed requirement it names the constituent,
-    as IFC-018 sends it. The ID in `io.github.shrav-k.conduit/invocation` is the one by which
-    `reconcile.v1` names the invocation, under OPS-014, so a consumer learns it from the result.
-    For a call to the tool of IFC-024 the keys say how the retrieval itself ended, and the ID
-    among them is that of the retrieval. The state of the invocation it asks about, that
-    invocation's ID and whether its content is withheld are in the result's `structuredContent`,
-    as IFC-024 states, and that result is not an error. For a call to the tool of IFC-035 the
-    keys are those of the invocation it started. A call that names a tool the engine does not
-    present is answered with no tool result: the reason is then in the `data` of the protocol's
-    error, as IFC-012 states. IFC-032 names the other request that has none. The `content`
-    member is always present in a tool result, as the protocol requires, and may be an empty
-    list. This specification gives it no meaning: an operation's outputs are in
-    `structuredContent`. A result whose content is withheld holds nothing in `content` that the
-    implementation returned. What the engine puts there otherwise is DL12 of the
-    implementation-defined list.
+    `io.github.shrav-k.conduit/state` is a repeat whose outputs the engine no longer keeps. The
+    result of `retire-with-resources.v1`, which declares no outputs and whose Conduit CON-008
+    closes before it ends, carries the outcome succeeded and is neither an error nor marked as
+    withheld, as ACC-034 states. The protocol's revision 2026-07-28 does not say whether a
+    result whose `isError` is true must conform to `outputSchema`. This specification takes it
+    that it need not: such a result carries no outputs, and may carry `diagnostics`. What a
+    request that is not dispatched says beyond its reason, and beyond the restriction it names,
+    it says there: `diagnostics` in the `structuredContent` of its result is a list of
+    diagnostics, whether or not the operation's contract declares an output of that name, as
+    that of `register.v1` does. The result of a rejected registration carries them under
+    OBJ-023, and that of a request to retire a Pool whose Resources are in the way names those
+    Resources there, under LIF-020. A request that reports refused says nothing there of the
+    objects it names, under OPS-023. A request that the engine does not dispatch because a
+    filter or a policy forbids it, or cannot be evaluated or applied, names that filter or
+    policy in `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015 require;
+    for a composed requirement it names the constituent, as IFC-018 sends it. The ID in
+    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the
+    invocation, under OPS-014, so a consumer learns it from the result. For a call to the tool
+    of IFC-024 the keys say how the retrieval itself ended, and the ID among them is that of the
+    retrieval. The state of the invocation it asks about, that invocation's ID and whether its
+    content is withheld are in the result's `structuredContent`, as IFC-024 states, and that
+    result is not an error. For a call to the tool of IFC-035 the keys are those of the
+    invocation it started. A call that names a tool the engine does not present is answered with
+    no tool result: the reason is then in the `data` of the protocol's error, as IFC-012 states.
+    IFC-032 names the other request that has none. The `content` member is always present in a
+    tool result, as the protocol requires, and may be an empty list. This specification gives it
+    no meaning: an operation's outputs are in `structuredContent`. A result whose content is
+    withheld holds nothing in `content` that the implementation returned. What the engine puts
+    there otherwise is DL12 of the implementation-defined list.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
@@ -612,14 +637,17 @@
   level: must
   when: >-
     A request names, in `io.github.shrav-k.conduit/serving`, an invocation that was not
-    dispatched to the instance that sends the request, or one that is no longer in progress.
+    dispatched to the instance that sends the request, or, where the request is not a call to
+    `retrieve-result.v1`, one that is no longer in progress.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
-    Only the instance an invocation was dispatched to can name it, and only while it is in
-    progress. This holds for an Interface and an Agent as for any other instance: a request from
-    one of them that names such an invocation reports refused, and is not taken as made on its
-    own behalf.
+    Only the instance an invocation was dispatched to can name it, and, a retrieval apart, only
+    while it is in progress. This holds for an Interface and an Agent as for any other instance:
+    a request from one of them that names such an invocation reports refused, and is not taken
+    as made on its own behalf. A call to `retrieve-result.v1` may name an invocation that has
+    ended, under IFC-024, because the result of an onward request can be lost after the
+    invocation it served has ended.
   vectors: []
 
 # --- The names a version assigns (plan-audit ruling 35).

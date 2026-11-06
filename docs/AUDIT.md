@@ -84,7 +84,7 @@ these sets reuses the earlier R, I, C or M ruling sets of the archived reviews.
 | Secrets | Not in the specification. Ruling 38 gave the direction and ruling 39 asked for research first: [research packet](research/SECRETS.md), [proposal](proposals/secrets/README.md), not ruled. |
 | Documents outside the specification | Nothing outside `spec/` binds. What the specification superseded was removed from the tree by ruling 39; the [archive's index](archive/README.md#removed-from-the-tree) lists it, with links to its last version. The historical sections of this tracker are in [its history](archive/plan-audit-history.md). |
 | Language defects | 167 recorded in the [first sweep](LANGUAGE_DEFECTS.md), of the protocol topics. Triage by layer: 48 language, 39 shared convention, 30 type contract, 50 runtime profile. Of the 87 in the first two layers, three are closed and 84 are ruled. Of the 50 in the runtime profile, 49 are answered by an item of the implementation-defined list and one is ruled. The 30 type-contract defects wait for their contracts. None has a vector. |
-| Readiness gate | G1 to G11, with G7 as ruling 38 restated it. An assessed state for each is in the [build process](implementation/INDEPENDENT_BUILDS.md), for the owner to confirm (ruling 39, point 8). |
+| Readiness gate | G1 to G11, with G7 as ruling 38 restated it. None is met; G1 and G3 are partly met. The state of each, assessed under ruling 39 and confirmed by the owner, is in the [build process](implementation/INDEPENDENT_BUILDS.md). |
 | Vocabulary | Ruled ([record](proposals/vocabulary/README.md)) and applied in `spec/` and the overview. The record of old and new spellings (A29) is not written. |
 | Build process and brief | Drafted: [independent builds](implementation/INDEPENDENT_BUILDS.md), [engine build brief](implementation/ENGINE_BUILD_BRIEF.md). Not issued. |
 | Code | [Experiment 004](../experiments/004-stateright-evaluation/README.md), a Rust model-checking evaluation. No engine and no reference model. |
@@ -192,7 +192,6 @@ on 2026-11-06 ([record](proposals/ruling-39/README.md)).
 | What | Where it is recorded |
 | --- | --- |
 | The secret type: the decisions of the revised proposal, written after the research that ruling 39, point 1, asked for. Until they are ruled the specification says nothing of secrets. | [Proposal](proposals/secrets/README.md); [research](research/SECRETS.md) |
-| Confirm, on pull request 7, the coordinator's assessed state of each readiness condition (ruling 39, point 8). | [Build process](implementation/INDEPENDENT_BUILDS.md) |
 
 ## Purpose
 

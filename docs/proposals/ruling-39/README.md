@@ -48,3 +48,14 @@ owner's words.
 13. Nothing changes in the repository.
 14. The sentence is struck.
 15. The ruling log says so above its first row.
+
+## After the ruling
+
+Two further answers of the owner, on 2026-11-06:
+
+| What was put | The owner's answer |
+| --- | --- |
+| Confirm the coordinator's assessed state of each readiness condition (point 8): none met; G1 and G3 partly met; the other nine not met. | "Confirm" |
+| The name "Sealmesh" in an archived collaborator proposal, which links a public repository of that name: leave it, as it is not one of the private names that point 11 removed. | "Agree, leave it" |
+
+The owner will rule on the secret type once the research of point 1 is finished.

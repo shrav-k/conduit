@@ -117,8 +117,8 @@ immature language spends its effort rediscovering defects that cheaper methods f
 ### State on 2026-11-06
 
 This is the coordinator's assessment of each condition, written under
-[ruling 39](../proposals/ruling-39/README.md), point 8, for the owner to confirm on the pull
-request. It is not the owner's until the owner confirms it. A condition is met only where its
+[ruling 39](../proposals/ruling-39/README.md), point 8. The owner confirmed it on 2026-11-06
+([record](../proposals/ruling-39/README.md#after-the-ruling)). A condition is met only where its
 own words are satisfied. It is partly met where some of what it requires is satisfied in full
 and the rest is not, and otherwise it is not met. Each state is of the repository as it stood
 on that day.

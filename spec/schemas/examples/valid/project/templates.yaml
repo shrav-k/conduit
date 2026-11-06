@@ -116,7 +116,7 @@ spec:
 ---
 # A composite Conduit template (CON-019). It has components and no capability of its own.
 # The two components show two of the four forms of `from`: the name of a template that
-# exists, and `#` and a name. In a project that is not published, as this one is, the second
+# exists, and `#` and a name. In a submitted project, as this one is, the second
 # resolves as the first does, among the templates that exist, of which this project's own
 # are part (INS-025); in a package it would name a template of the package.
 apiVersion: github.com/shrav-k/conduit/v0

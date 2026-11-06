@@ -7,6 +7,15 @@
 # round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed SCH-001, SCH-008
 # to SCH-010, SCH-014, SCH-016 and SCH-019, and its closing pass reworded one sentence of
 # SCH-008. No promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# SCH-009: the default of a property is filled in every value that a schema governs, before the
+# value is validated or compared. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: SCH-001
   layer: language
@@ -120,18 +129,33 @@
   layer: language
   level: must
   when: >-
-    A template is instantiated and a property that has a `default` is absent from a map that is
-    present.
+    A value is supplied where a schema governs it, and a property that has a `default` in that
+    schema is absent from a map that is present in the value. The schema is that of a type, for
+    the `config` of a template that is instantiated, or that of an input of a template, of an
+    Operation contract or of a Requirement contract, for an argument.
   then: >-
     The property takes its default.
+    It is filled before the value is validated against the schema and before the value is
+    compared with another, and the filled value is what is stored or sent.
   observable: >-
-    The resolved instance holds the default value there. An absent map is not made in order to
-    hold its properties' defaults. A map that is an item of a list is present when the list
-    holds it: each such item takes the defaults of its own properties, and no item is added to a
-    list. The `config` of a template that writes none is present and empty, under INS-024, so
-    the defaults of the type's schema apply to it. A `default` that is reached only through a
-    `$ref` written inside `allOf`, `anyOf` or `oneOf` is not applied: SCH-008 accepts it where
-    it is written, and none of those three keywords gives a default.
+    The resolved instance holds the default value there, and so does the request that an
+    implementation receives and the `arguments` of a restriction that it is sent. This is one
+    rule for every schema that governs a supplied value: the configuration of an instance, the
+    argument of a template's input under INS-006, the argument of an applied requirement or of a
+    policy under NAM-019 and ACC-042, and the argument of an operation's input, whether a
+    request or a step of a graph supplies it, under OPS-026. With the schema `{type: object,
+    properties: {depth: {type: integer, default: 1}}, required: [depth]}`, the supplied value
+    `{}` is valid, is equal under SCH-007 to a supplied `{depth: 1}`, and is stored or sent as
+    `{depth: 1}`. An absent map is not made in order to hold its properties' defaults. A map
+    that is an item of a list is present when the list holds it: each such item takes the
+    defaults of its own properties, and no item is added to a list. The `config` of a template
+    that writes none is present and empty, under INS-024, so the defaults of the type's schema
+    apply to it. A `default` that is reached only through a `$ref` written inside `allOf`,
+    `anyOf` or `oneOf` is not applied: SCH-008 accepts it where it is written, and none of those
+    three keywords gives a default. The `default` of an input that is left out altogether is
+    another rule: INS-007 for a template's input, OPS-026 for an operation's and NAM-019 for a
+    requirement's, and SCH-010 says what then holds for a default that is a map. An output is
+    not a supplied value, and no default is filled into a result.
   vectors: []
 
 - id: SCH-010

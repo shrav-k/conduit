@@ -1,15 +1,17 @@
 # Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
 # ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
-# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
 # decisions, which the owner has not ruled on. See README.md in this directory.
 #
-# The templates of the first-start objects (FST-005). At first start the engine instantiates
-# them under the names FST-001 gives: the Pool `system` from `system`; the location `local`
-# from `location`; the Resources `management` and `access`, owned by `system`, from the
-# templates of those names; and the Interface `root` from `root`, whose two declared Conduits
-# are made from `root-management` and `root-access`. The instance documents are written out,
-# as an example, in spec/schemas/examples/valid/first-start/: they show what first start
-# makes, and a submission that held them would be rejected (FST-006, OBJ-002).
+# The templates that first start instantiates (FST-005): those of the five first-start objects
+# and of the two Conduits of `root`, which are not first-start objects (FST-002). At first start
+# the engine instantiates them under the names FST-001 gives: the Pool `system` from
+# `system`; the location `local` from `location`; the Resources `management` and `access`,
+# owned by `system`, from the templates of those names; and the Interface `root` from `root`,
+# whose two declared Conduits are made from `root-management` and `root-access`. The instance
+# documents are written out, as an example, in spec/schemas/examples/valid/first-start/: they
+# show what first start makes, and a submission that held them would be rejected (FST-006,
+# OBJ-002).
 #
 # Promises encoded:
 #   system           FST-001, FST-005, PLC-003 (it holds the default-location setting, which

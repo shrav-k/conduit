@@ -13,6 +13,15 @@
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed REC-002 and REC-004: a purge also keeps the operation, the instance
 # and the target of an invocation. It removed none.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed REC-003
+# and REC-004: a purge also keeps the caller and the Conduit of an invocation and, for a step
+# that names a runtime, the name of that runtime. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: REC-001
   layer: convention
@@ -59,6 +68,9 @@
   observable: >-
     The record can still be read after the engine has restarted and after the objects it names
     are unregistered. A reconciliation adds a record and alters none.
+    Inspecting an object lists the records that name it, under LIF-013, and an object that has
+    been unregistered is no longer inspected. How the records that name no object that still
+    exists are read is DL8 of the implementation-defined list.
   vectors: []
 
 - id: REC-004
@@ -70,8 +82,9 @@
     The request is dispatched only if the actor is the root Interface. A purge removes the
     records made before a time that the request names. It keeps, for every invocation, its
     operation identity, as OPS-008 scopes it, the engine's ID for it, its outcome, a digest of
-    its contents, its operation, the instance it was dispatched to and the target that
-    authorized it, and a record is kept stating which records were purged and when.
+    its contents, its operation, its caller, the instance it was dispatched to, the Conduit it
+    was dispatched through, the target that authorized it and, for a step that names a runtime,
+    the name of that runtime, and a record is kept stating which records were purged and when.
   observable: >-
     A request from any other actor is not dispatched and reports refused. Records made at or
     after the time the request names are not removed. After a purge, a request that repeats the
@@ -85,10 +98,18 @@
     is unknown can still be reconciled under OPS-014. The operation, the instance and the target
     are kept because a reconciliation needs them: ACC-033 fixes the target that authorizes it
     from them, LIF-028 the instance whose state or shutdown it changes, and REV-010 the control
-    and its `changes`. They are kept for an invocation that carried no operation identity as for
-    any other. What a purge keeps of an invocation is read as records of that instance:
-    inspecting the instance still lists it among the records that name the instance, under
-    LIF-013.
+    and its `changes`. The caller and the Conduit are kept because later requests are decided
+    from them: ACC-040 dispatches a start of later work for the caller of the arranging
+    invocation and through its Conduit, IFC-024 takes the caller of a retrieval from the
+    invocation that it names as served, and OPS-017 delivers a retained result only while the
+    Conduit of its invocation is open. The name of the runtime is kept because TPL-015 gives the
+    handle of a reconciled start to that runtime, and two runtimes of one instance may share a
+    start operation. All of them are kept for an invocation that carried no operation identity
+    as for any other. A purge removes records and nothing else: the Conduits to which later work
+    is tied under ACC-019, what an instance holds and the content of a retained result are not
+    records, and a purge does not touch them. What a purge keeps of an invocation is read as
+    records of that instance: inspecting the instance still lists it among the records that name
+    the instance, under LIF-013.
   vectors: []
 
 - id: REC-005

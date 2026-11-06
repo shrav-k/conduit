@@ -1,6 +1,6 @@
 # Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
 # ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
-# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
 # decisions, which the owner has not ruled on. See README.md in this directory.
 #
 # The Type contracts of the core package.

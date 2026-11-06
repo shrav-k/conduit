@@ -17,6 +17,15 @@
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed SUB-009: a manifest handed to `replace.v1` may
 # hold `packages` alone.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed SUB-008
+# to SUB-010: the digest of an unpublished package hashes the manifest as it was handed over,
+# and SUB-009 names the output `revision` of `replace.v1`. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: SUB-001
   layer: language
@@ -131,29 +140,32 @@
     SHA-256, written as PKG-004 writes a digest, of the JSON Canonicalization Scheme form, RFC
     8785, of one map with two members: `documents`, a list of the project's contract documents
     ordered by `kind` and then by `metadata.name`, each compared by the bytes of its UTF-8
-    string, and `manifest`, the project's manifest, which is left out when the project has none.
-    Where a contract of the project needs a package that the manifest lists and that is not
-    installed, the submission is accepted, and the missing package is reported.
+    string, and `manifest`, the project's manifest as it was handed over, before any relative
+    `fetch` and any program given as a relative path is resolved, which is left out when the
+    project has none. Where a contract of the project needs a package that the manifest lists
+    and that is not installed, the submission is accepted, and the missing package is reported.
   observable: >-
-    A document of the same project can refer to such a contract as `#name` under NAM-022. No
-    object exists for the contract after the submission, and no document outside the project can
-    refer to it. A template registered by the submission keeps that digest under NAM-009, as it
-    keeps the version and digest of any package, so the contracts it resolved against stay
-    available to it and to its instances. Two submissions whose contract documents and manifest
-    are equal under SCH-007 give the same digest, however their files are written, and the
-    manifest is part of it because it fixes what the contracts' references to other packages
-    mean. Ordered by the bytes of their UTF-8 strings, the kinds stand `Capability`,
-    `Operation`, `Requirement`, `Schema`, `Type`, and the name `a.v10` stands before `a.v2`. A
-    project whose manifest lists implementations and that has no contract document has an
-    unpublished package too, with an empty `documents` list: its digest is what names those
-    implementations as `<digest>#<name>` under ACC-038. A contract that needs a package which is
-    not installed, such as a Type that offers a capability of that package or a schema with a
-    `$ref` into it, does not make the submission rejected: the result lists the missing package
-    as a diagnostic that did not prevent the registration, as PKG-006 does for a template and
-    PKG-028 for a package. A check on the contract that needs the missing package, such as those
-    of CTR-006 and SCH-015, is made when a template that uses the contract is instantiated, with
-    the checks of INS-022, and an instance document whose template needs a package that is not
-    installed is rejected under PKG-007.
+    A document of the same submitted project can refer to such a contract as `#name` under
+    NAM-022. No object exists for the contract after the submission, and no document outside the
+    project can refer to it. A template registered by the submission keeps that digest under
+    NAM-009, as it keeps the version and digest of any package, so the contracts it resolved
+    against stay available to it and to its instances. Two submissions whose contract documents
+    and manifest are equal under SCH-007 give the same digest, however their files are written
+    and from whatever directory they are read: a relative `fetch` or program is hashed as the
+    manifest writes it, and not as SUB-010 resolves it against the directory. The manifest is
+    part of the digest because it fixes what the contracts' references to other packages mean.
+    Ordered by the bytes of their UTF-8 strings, the kinds stand `Capability`, `Operation`,
+    `Requirement`, `Schema`, `Type`, and the name `a.v10` stands before `a.v2`. A project whose
+    manifest lists implementations and that has no contract document has an unpublished package
+    too, with an empty `documents` list: its digest is what names those implementations as
+    `<digest>#<name>` under ACC-038. A contract that needs a package which is not installed,
+    such as a Type that offers a capability of that package or a schema with a `$ref` into it,
+    does not make the submission rejected: the result lists the missing package as a diagnostic
+    that did not prevent the registration, as PKG-006 does for a template and PKG-028 for a
+    package. A check on the contract that needs the missing package, such as those of CTR-006
+    and SCH-015, is made when a template that uses the contract is instantiated, with the checks
+    of INS-022, and an instance document whose template needs a package that is not installed is
+    rejected under PKG-007.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
@@ -174,10 +186,11 @@
     rejected. A replacing document that refers to a package other than the core package, where
     no manifest is handed over, is rejected under NAM-007. A request whose document or manifest
     is rejected, or whose document is of another kind or name than the template, is not
-    dispatched, and reports invalid. A request that leaves the template as it was, because its
-    document is equal to the template as stored and every package the document resolves through
-    has the version and the digest it had before, changes nothing, does not advance the revision
-    and has the outcome succeeded.
+    dispatched, and reports invalid. The output `revision` of the request is the template's
+    revision after it. A request that leaves the template as it was, because its document is
+    equal to the template as stored and every package the document resolves through has the
+    version and the digest it had before, changes nothing, does not advance the revision and has
+    the outcome succeeded: its `revision` is the one the template had.
   observable: >-
     After a replace that changed the template, its revision has advanced, under REV-003. One
     whose document is equal, under SCH-007, to the template as stored, and whose manifest gives
@@ -215,17 +228,22 @@
     what it reads as one submission, with the same result as a request for `register.v1` that is
     given the values read, once each relative `fetch` and each program given as a relative path
     is resolved against the directory.
+    The digest of the unpublished package is taken as SUB-008 states, from the manifest as it
+    was read.
   observable: >-
     The objects that exist afterwards, and the diagnostics, are those that `register.v1` gives
     for the same documents as its input `documents` and the same manifest as its input
     `manifest`. The rules on a file are applied as the files are read, under SUB-005. A relative
     `fetch` or program is resolved against the directory, under MAN-006 and MAN-010, before the
     values are compared with what `register.v1` takes: a registration that hands over values has
-    no directory, and rejects a relative one. Every engine can be handed a directory, and not
-    only values through `register.v1`, because the rules on files are promises of the language
-    and a conformance vector is made of files. How a directory is handed to an engine, such as
-    by a command or a call, is DL7 of the implementation-defined list. So is whether the engine
-    then installs the packages that the manifest lists, by a request for `install.v1` for each,
+    no directory, and rejects a relative one. The one thing that does not follow the resolved
+    values is the digest that identifies the project's unpublished package: SUB-008 hashes the
+    manifest as the file writes it, so one directory gives one digest wherever it lies, and a
+    conformance vector can state it. Every engine can be handed a directory, and not only values
+    through `register.v1`, because the rules on files are promises of the language and a
+    conformance vector is made of files. How a directory is handed to an engine, such as by a
+    command or a call, is DL7 of the implementation-defined list. So is whether the engine then
+    installs the packages that the manifest lists, by a request for `install.v1` for each,
     before it registers; where it does not, PKG-006 says what the registration reports. In an
     engine that keeps the conventions the registration is a request like any other, made for an
     actor that DL7 has the engine name, and is authorized under ACC-033.

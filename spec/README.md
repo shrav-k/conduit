@@ -8,13 +8,14 @@ Some parts say that the owner accepted them, as [the core package](core/README.m
 [the schemas](schemas/README.md) do. The two words do not conflict, and "accepted" covers less
 than the part as it now stands. The owner accepted each part as it stood at the ruling that
 its status line or the comment at the head of its file names, by the number of the ruling in
-the [ruling log](../docs/AUDIT.md#ruling-log). What the documents audit and rounds 2 and 3 of
+the [ruling log](../docs/AUDIT.md#ruling-log). What the documents audit and rounds 2 to 4 of
 the re-audit changed since then rests on the decisions of the session that coordinates the
 re-audit, which ruling 37 lets settle a reader's finding without a ruling on each
 ([who decides what](../docs/AUDIT.md#who-decides-what-since-ruling-37)). Those decisions are
 logged, in [GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
-[round 2](../docs/proposals/reaudit/round-2/DECISIONS.md) and of
-[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md). The owner has not ruled on them and
+[round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
+[round 3](../docs/proposals/reaudit/round-3/DECISIONS.md) and of
+[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md). The owner has not ruled on them and
 can strike any of them, so no text that they changed or added is a choice the owner accepted.
 The comment at the head of each file says which pass changed which promise. The specification
 as a whole is a draft until it has conformance vectors and two audit rounds in a row that find
@@ -54,12 +55,12 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [promises/schemas.yaml](promises/schemas.yaml) | Schemas, document syntax and numbers | Draft; 21 promises; no vectors |
 | [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the schema keywords in the profile and the formats that are checked | Draft |
 | [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 24 promises; no vectors |
-| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, runtimes, retirement and controls | Draft; 15 promises; no vectors |
+| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, runtimes, retirement and controls | Draft; 16 promises; no vectors |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 11 promises; no vectors |
-| [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 27 promises; no vectors |
+| [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 28 promises; no vectors |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, its keys, how a re-export is written, which files of a project are its documents, and the layout of a package's archive | Draft; 14 promises; no vectors |
-| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a project that is not published, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
+| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a submitted project, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; no vectors |
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: locations, default placement, requirements on placement and values tied to a location | Draft; 20 promises; no vectors |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 27 promises; no vectors |
@@ -73,7 +74,7 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1` | Draft; 2 contracts |
 | [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference | Draft; 11 contracts |
 | [core/results.yaml](core/results.yaml) | The Schema contracts `object.v1` and `diagnostic.v1`, which the outputs of the operations share | Draft; 2 contracts |
-| [core/templates.yaml](core/templates.yaml) | The templates of the first-start objects | Draft; 7 templates |
+| [core/templates.yaml](core/templates.yaml) | The templates that first start instantiates: those of the five first-start objects and of the two Conduits of `root` | Draft; 7 templates |
 | [schemas/](schemas/README.md) | The JSON Schemas of every document and of the manifest, each a Schema contract of the core package; which schema to use; and what a schema cannot express | Draft; 45 contracts in 9 files |
 | [schemas/document.yaml](schemas/document.yaml) | `document.v1`: any template, instance or contract document | Draft; 1 contract |
 | [schemas/envelope.yaml](schemas/envelope.yaml) | `apiVersion`, what every document carries, and `metadata` | Draft; 5 contracts |
@@ -84,28 +85,29 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [schemas/schema.yaml](schemas/schema.yaml) | `schema.v1`: the schema profile written as a schema | Draft; 1 contract |
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item | Draft; 2 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions and digests | Draft; 12 contracts |
-| [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a project that is not published, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 61 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 20 files |
-| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, unregistration and what reconciling a setup or a retirement changes | Draft; 32 promises; no vectors |
+| [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a submitted project, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 62 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 24 files |
+| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, unregistration and what reconciling a setup or a retirement changes | Draft; 34 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 36 promises; no vectors |
 | [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 31 promises; no vectors |
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 13 promises; no vectors |
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 7 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
 | [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 12 promises; no vectors |
-| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 35 promises; no vectors |
+| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 36 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 15 items |
 
-Every area has been written as promises, 437 in all, and the rulings of the
+Every area has been written as promises, 442 in all, and the rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
 [ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
 [decisions of the docs audit](../docs/proposals/docs-audit/GAPS.md), which converted the
 behaviors that the older text accepted and the specification did not state, the
-[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md)
-and the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md)
-have been applied to them. The last three sets of decisions are the coordinator's, as the
+[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md),
+the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md) and the
+[decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md)
+have been applied to them. The last four sets of decisions are the coordinator's, as the
 paragraph on "accepted" above says. The JSON Schemas of documents, contracts and manifests,
 the core package
 as documents and the manifest's file format now exist: they are `schemas/`, `core/` and
@@ -157,7 +159,7 @@ implementation, claims the Implementation level.
 | --- | --- | --- |
 | Language | An engine | Every promise whose layer is `language`: documents in, resolved objects or diagnostics out. |
 | Engine | An engine | The Language level, plus every promise whose layer is `convention` or `interface`, plus a runtime profile that documents a choice for every item of the implementation-defined list. |
-| Implementation | An implementation | Every promise whose layer is `interface` and that binds an implementation: one whose obligation falls on the implementation and not on the engine, such as IFC-008, IFC-009, IFC-019 and IFC-031. |
+| Implementation | An implementation | Every promise whose layer is `interface` and that binds an implementation: one whose obligation falls on the implementation and not on the engine, such as IFC-008, IFC-009, IFC-019, IFC-026 and IFC-031. |
 
 An engine that is given a document it cannot honor rejects the document and says why in a
 diagnostic. It never accepts a document and ignores part of it.

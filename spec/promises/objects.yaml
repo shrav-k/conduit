@@ -17,6 +17,14 @@
 # has not ruled on, changed OBJ-005, which is now of the layer `convention`, OBJ-009, OBJ-010,
 # which is worded as what resolving reads, and OBJ-026, and added OBJ-027 and OBJ-028, of the
 # layer `convention`, which took their rules from the observable of OBJ-026. It removed none.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# OBJ-026: `rename.v1` returns the object's revision. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: OBJ-001
   layer: language
@@ -462,9 +470,10 @@
     A template or an instance is renamed.
   then: >-
     It is done by the operation `rename.v1`, which names the object's current revision and
-    changes only its name. The revision advances, as it does for any stored change. A request
-    that gives an object the name it already has changes nothing, does not advance the revision
-    and has the outcome succeeded.
+    changes only its name. The revision advances, as it does for any stored change, and the
+    output `revision` of the request is the object's revision after it. A request that gives an
+    object the name it already has changes nothing, does not advance the revision and has the
+    outcome succeeded: its `revision` is the one the object had.
   observable: >-
     After the rename the object has the new name, the ID, the definition and the configuration
     it had, and a later revision, under REV-003. A request that names a revision that is not

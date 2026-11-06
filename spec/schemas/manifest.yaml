@@ -1,6 +1,6 @@
 # The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
 # core package and the manifest's promises; the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 and 3 of the
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
 # re-audit changed since rests on the coordinator's logged decisions, which the owner has
 # not ruled on.
 #
@@ -22,32 +22,39 @@
 #                           gives no `tools`, and an item that states `graph` is never
 #                           plain and states no `supports`), TPL-003
 #
-# The first two forms below are the manifest of a project that is not published and the
-# manifest of a package. The third is the core package's own manifest, whose implementations
-# are the engine itself and so state no `command`, `url` or `graph`, the exception to
-# PKG-019 that MAN-012 states.
+# The first form below is a manifest that states neither `address` nor `version`, and the
+# second one that states both. A package's manifest states both (PKG-017). The manifest of a
+# submitted project may state both or neither, and the two keys change nothing there
+# (MAN-004). The third form is the core package's own manifest, whose implementations are the
+# engine itself and so state no `command`, `url` or `graph`, the exception to PKG-019 that
+# MAN-012 states. It is for that one manifest, which is built into the engine: a manifest that
+# is handed over for registration and states the core package's address as its own is
+# rejected, and so is a package installed at that address (NAM-021).
 #
 # Not expressed here, and checked by the engine: the rule for a key of `packages` and of
 # `implementations` (NAM-001, NAM-004), and for a key of an item's `placement` (MAN-010,
-# OBJ-022), because the profile has no keyword that constrains the keys of a map; that a package
-# holds no instance document (MAN-011); that `fetch` is a URI reference (MAN-006), because the
-# profile has no format for one, so the schema accepts any string that is not empty; that a
-# relative `fetch` or program has a directory to be resolved against, which a manifest handed
-# over as a value has not (MAN-006, MAN-010); that the core package's address is not listed
-# (NAM-021); that the address a package states is the one it was listed or fetched under
-# (PKG-017); that every export names a document of the package (PKG-018), though `uniqueItems`
-# does reject a name that `exports` writes twice (PKG-012); re-export cycles (PKG-014); that a
-# plain item's `tools` has a key for each operation in `implements` (PKG-020); that a `graph`
-# item implements exactly the one operation it lists (GRA-014); that no two documents of the
-# project or package share a name (NAM-027); everything about digests and installed packages
-# (PKG-003, PKG-021, PKG-022); and that there is one manifest, in the right place (MAN-001,
-# MAN-002).
+# OBJ-022), because the profile has no keyword that constrains the keys of a map; that a
+# package holds no instance document (MAN-011); that `fetch` is a URI reference (MAN-006),
+# because the profile has no format for one, so the schema accepts any string that is not
+# empty; that a relative `fetch` or program has a directory to be resolved against, which a
+# manifest handed over as a value has not (MAN-006, MAN-010); that the core package's address
+# is not listed, and is not stated as its own by a manifest that is handed over (NAM-021); that
+# a manifest handed to `replace.v1` holds `packages` alone (SUB-009); that the address a
+# package states is the one it was listed or fetched under (PKG-017); that every export names a
+# document of the package (PKG-018), though `uniqueItems` does reject a name that `exports`
+# writes twice (PKG-012); re-export cycles (PKG-014); that a plain item's `tools` has a key for
+# each operation in `implements` (PKG-020); that a `graph` item implements exactly the one
+# operation it lists (GRA-014); that no two documents of the project or package share a name
+# (NAM-027); everything about digests and installed packages (PKG-003, PKG-021, PKG-022); and
+# that there is one manifest, in the right place (MAN-001, MAN-002).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: manifest.v1
-  description: The manifest of a project or of a package.
+  description: >-
+    The manifest of a project or of a package. The form that the core package's address
+    selects is for the core package's own manifest alone.
 spec:
   anyOf:
     - $ref: '#/$defs/project'

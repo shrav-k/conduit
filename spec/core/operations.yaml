@@ -1,22 +1,23 @@
 # Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
 # ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
-# and rounds 2 and 3 of the re-audit changed since rests on the coordinator's logged
+# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
 # decisions, which the owner has not ruled on. See README.md in this directory.
 #
-# The Operation contracts of the core package: every management verb the promises mention
-# (OPS-019), the tool that retrieves one's own results (IFC-024), the tool that asks for a
-# start of later work (IFC-035, ACC-040), the control that designates the default location
-# (PLC-016) and the control that changes a location's facts (PLC-021).
+# The Operation contracts of the core package: every management verb (OPS-019), which is
+# every operation here but the two tools and the two controls; the tool that retrieves one's
+# own results (IFC-024); the tool that asks for a start of later work (IFC-035, ACC-040); the
+# control that designates the default location (PLC-016); and the control that changes a
+# location's facts (PLC-021).
 # Which capability includes each is in capabilities.yaml, and which open Conduit authorizes
 # each is ACC-033.
 #
 # Read with these rules. The record lists the ones that the owner accepted with the batch. Those
-# that the docs audit and rounds 2 and 3 of the re-audit added or changed since are the
+# that the docs audit and rounds 2 to 4 of the re-audit added or changed since are the
 # coordinator's logged decisions, which the owner has not ruled on; README.md in this directory
 # names the logs. Among the later ones are that `reconcile.v1` is in the capability of `access`
 # and takes `handle`, that an instance is set up by one invocation of `set-up.v1`, that a
-# control's `changes` is a map, the tool `start-later-work.v1`, and that `apply-policy.v1` takes
-# `version`.
+# control's `changes` is a map, the tool `start-later-work.v1`, that `apply-policy.v1` takes
+# `version`, and that `rename.v1` returns `revision`.
 #   - One contract for one verb. `register.v1`, `register-replacement.v1`, `inspect.v1`,
 #     `set-up.v1`, `retire.v1` and `reconcile.v1` are included both in the capability of
 #     `management` and in the capability of a Pool; ACC-033 says which of the two targets
@@ -39,9 +40,10 @@
 #     and "the retire operation" of an instance mean these invocations.
 #   - An operation that changes a stored object takes the object's current `revision` as an
 #     input (REV-002, REV-011), because a request's `arguments` are exactly the operation's
-#     inputs (IFC-001). Setting up, retiring, retiring a Pool with its Resources, opening and
-#     closing name no revision and advance none (REV-012); nor do applying and removing a
-#     policy, because a policy is not configuration (ACC-031).
+#     inputs (IFC-001). `replace.v1` and `rename.v1` return the revision after the request in
+#     the output `revision` (SUB-009, OBJ-026). Setting up, retiring, retiring a Pool with
+#     its Resources, opening and closing name no revision and advance none (REV-012); nor do
+#     applying and removing a policy, because a policy is not configuration (ACC-031).
 #   - A control declares the input `revision` and the output `settings`, and its `changes`
 #     is a map from the name of an input to the pointer, into the configuration, of the
 #     setting that input sets (CTR-006). `revision` is the one input that must always be
@@ -49,7 +51,9 @@
 #     keyed by those pointers, with one member for each place confirmed, holding the value
 #     now stored there (REV-007). Its other inputs are optional, and one that is not supplied
 #     leaves its setting as stored: the settings a control addressed are those of the inputs
-#     it was sent. The input `settings` of `reconcile.v1` has the same shape.
+#     it was sent. The input `settings` of `reconcile.v1` has the same shape. A reconciliation
+#     states `revision` and `settings` only where it stores settings, and `handle` only where
+#     it stores one; stated anywhere else, each reports invalid (REV-010, TPL-015, OPS-031).
 #   - No input of a core operation states a `default` (CTR-002, OPS-026): each is supplied or
 #     is optional.
 #   - `reservedToRoot: true` marks an operation reserved to the root Interface (ACC-032).
@@ -87,7 +91,8 @@
 #     withheld, and a repeat of an invocation that has not ended, or of one that succeeded
 #     and whose outputs the engine no longer keeps (IFC-025). An operation that declares no
 #     outputs has no content to withhold: its result is never marked as withheld, and is not
-#     an error where its outcome is succeeded (ACC-034, IFC-025).
+#     an error where its outcome is succeeded, and then holds an empty map as its
+#     `structuredContent` (ACC-034, IFC-025).
 
 # --- Operations of `management`, some of them also operations of a Pool.
 
@@ -151,7 +156,9 @@ metadata:
     over. A request whose document or manifest is rejected, or whose document is of another kind
     or name, reports invalid. A request whose document is equal to the template as stored, and
     whose packages have the versions and the digests that the template keeps, changes nothing
-    and succeeds, and the revision does not advance. Authorized against `management`.
+    and succeeds, and the revision does not advance. `revision` among the outputs is the
+    template's revision after the request, which is the one it had where nothing changed.
+    Authorized against `management`.
 spec:
   inputs:
     template:
@@ -181,19 +188,23 @@ metadata:
   description: >-
     Give a template or an instance a new name. Its ID and its definition are unchanged, and its
     revision advances, as for any stored change. A request that gives an object the name it
-    already has changes nothing and succeeds, and the revision does not advance. One whose new
-    name another object of that kind has reports conflict, and one whose new name is not a name
-    reports invalid. Authorized against `management`. A rename of a Conduit that would make one
-    of its tool names equal to another tool's name, or longer than 128 characters, reports
-    conflict. A first-start object is not renamed, and nor is either of the two Conduits of
-    `root` that exist from first start: the request reports refused. A request that names an
-    object that does not exist reports invalid.
+    already has changes nothing and succeeds, and the revision does not advance. The output
+    `revision` is the object's revision after the request, which is the one it had where nothing
+    changed. One whose new name another object of that kind has reports conflict, and one whose
+    new name is not a name reports invalid. Authorized against `management`. A rename of a
+    Conduit that would make one of its tool names equal to another tool's name, or longer than
+    128 characters, reports conflict. A first-start object is not renamed, and nor is either of
+    the two Conduits of `root` that exist from first start: the request reports refused. A
+    request that names an object that does not exist reports invalid.
 spec:
   inputs:
     object:
       schema: {$ref: github.com/shrav-k/conduit/core#reference.v1}
     name:
       schema: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
     revision:
       schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
   effect: Changes the name of the object and, where the name changed, advances its revision.
@@ -234,10 +245,10 @@ metadata:
     and `digest`; the core package's item has no `digest`, and an unpublished package's has
     `digest` alone. `declared` shows each reference in its resolved form, `{kind, id}`.
     Inspecting an open Conduit shows, under each requirement it applies, the implementation that
-    applies it, named by its qualified reference or, for an implementation of a project that is
-    not published, as `<digest>#<name>`. The status of `access` also lists the policies in
-    force, each with the ID `apply-policy.v1` returned for it, with the actors and targets it
-    names, and with the version and the digest of the requirement's package that it keeps.
+    applies it, named by its qualified reference or, for an implementation of a submitted
+    project, as `<digest>#<name>`. The status of `access` also lists the policies in force, each
+    with the ID `apply-policy.v1` returned for it, with the actors and targets it names, and
+    with the version and the digest of the requirement's package that it keeps.
 spec:
   inputs:
     object:
@@ -305,10 +316,13 @@ metadata:
     selected in an `implementation` map, and it has no inputs of its own. A step that opens a
     declared Conduit or sets up the Resource of an entry is authorized exactly as this request
     was, by the Conduits of the instance that sent it, which for an onward request is the
-    sending instance and not the caller it serves. Setting up a Resource is authorized against
-    the Pool that owns it, and setting up an Agent, an Interface or a Pool against `management`.
-    A Conduit is set up with `open.v1`: a request that names a Conduit or a template reports
-    invalid, and so does one that names an object that does not exist.
+    sending instance and not the caller it serves. A declared Conduit that is made from a
+    composite template is one step, and is opened as a whole or not at all: where one of its
+    component Conduits is not opened, those that the step opened are closed again and the step
+    has the outcome failed. Setting up a Resource is authorized against the Pool that owns it,
+    and setting up an Agent, an Interface or a Pool against `management`. A Conduit is set up
+    with `open.v1`: a request that names a Conduit or a template reports invalid, and so does
+    one that names an object that does not exist.
 spec:
   inputs:
     instance:
@@ -363,25 +377,32 @@ metadata:
     dispatched to: the Pool that owns a Resource, and `management` for an Agent, an Interface or
     a Pool. Where the Pool that owns a Resource is retired, `management` authorizes in its
     place, and so it does where the instance of the invocation has been unregistered: the
-    reconciliation then records the outcome and stores nothing, and for a control it names no
-    `revision` and states no `settings`: one that does reports invalid. A request that names an
+    reconciliation then records the outcome and stores nothing, and it names no `revision` and
+    states no `settings` or `handle`: one that does reports invalid. A request that names an
     invocation whose outcome is not unknown reports conflict, and one whose ID names no
     invocation reports invalid. Recording that a setup or an open occurred gives it the outcome
     succeeded and makes the instance ready or the Conduit open. Recording that a retirement or a
-    close occurred confirms the shutdown. Recording that the effect did not occur gives the
-    outcome failed and changes nothing else: the instance or the Conduit is as a failed setup,
-    open, retirement or close leaves it. For a control of an instance that exists, `revision` is
-    required. Where the control took effect, `settings` states the settings that took effect, in
-    the shape of the control's output `settings`, a map keyed by the pointers of the control's
-    `changes`, and they are stored in the instance's current configuration. Where it did not,
-    nothing is stored. For the start of a runtime that occurred, `handle` is required: it states
-    the handle of the runtime, which the instance then holds, and a request that records the
-    start as having occurred and states none reports invalid. This holds for a retired instance
-    too: it then holds the runtime, its shutdown is pending, and a further retirement stops the
-    runtime. While the outcome of a start of one of an instance's runtimes is unknown, the
-    shutdown of the instance is not confirmed. `handle` stated for an invocation that is not the
-    start of a runtime reports invalid. Recording that a stop of a runtime occurred ends the
-    holding, and recording that a start or a stop did not occur leaves the instance as it was.
+    close occurred confirms the shutdown, unless the outcome of a start of one of the instance's
+    runtimes is still unknown. The retirement of an instance that holds a runtime is not
+    recorded as having occurred: the request reports conflict, and the stop of the runtime is
+    reconciled, or the instance retired again, first. Recording that the effect did not occur
+    gives the outcome failed and changes nothing else: the instance or the Conduit is as a
+    failed setup, open, retirement or close leaves it. Where a control of an instance that
+    exists took effect, `revision` is required, and `settings` states the settings that took
+    effect, in the shape of the control's output `settings`, a map keyed by the pointers of the
+    control's `changes`: they are stored in the instance's current configuration. Where the
+    control did not take effect nothing is stored, and the request names no `revision` and
+    states no `settings`. Either of the two stated where the reconciliation stores no settings,
+    as for an invocation that is not of a control, reports invalid. For the start of a runtime
+    that occurred, on an instance that exists, `handle` is required: it states the handle of the
+    runtime, which the instance then holds, and a request that records the start as having
+    occurred and states none reports invalid. This holds for a retired instance too: it then
+    holds the runtime, its shutdown is not confirmed while it does, and a further retirement
+    stops the runtime. While the outcome of a start of one of an instance's runtimes is unknown,
+    the shutdown of the instance is not confirmed. `handle` stated for an invocation that is not
+    the start of a runtime, or for a start that the request records as not having occurred,
+    reports invalid. Recording that a stop of a runtime occurred ends the holding, and recording
+    that a start or a stop did not occur leaves the instance as it was.
 spec:
   inputs:
     invocation:
@@ -417,18 +438,22 @@ metadata:
     Conduit, a component Conduit made for a declared Conduit whose template is a composite, or
     the Resource of a Pool's entry. The request names the retired instance. The new instance has
     a new ID, a newly generated name and the state registered, and the retired instance keeps
-    its own name; nothing is set up or opened. A request that names an instance that is not
-    retired is not dispatched and reports conflict, for a declared Conduit and a component as
-    for the Resource of an entry. A component of a composite Conduit that was instantiated by
-    its own document is not covered, because no instance holds its nested instantiation: a
-    request that names it is not dispatched and reports invalid, and a new Conduit is
-    instantiated by a new document. Authorized as registering that instance would be, with this
-    operation in the place of `register.v1`: against `management`, and for the Resource of a
-    Pool's entry also by an open Conduit to that Pool that lists this operation. The request is
-    a registration, so one that is rejected still carries `diagnostics`. A request for a new
-    instance that a rule on instantiation does not make reports invalid, as the registration of
-    a document that the rule rejects does: one for a declared Conduit whose target is retired,
-    for example, or for a new Resource for an entry of a retired Pool.
+    its own name; nothing is set up or opened. It is made from the template that the `from` of
+    the nested instantiation names, as that template stands when the request is made: where that
+    template no longer exists, the request reports invalid. A request that names an instance
+    that is not retired is not dispatched and reports conflict, for a declared Conduit and a
+    component as for the Resource of an entry. An instance that no nested instantiation made is
+    not covered, because no instance holds a nested instantiation for it: a request that names
+    one is not dispatched and reports invalid. That is so for an instance that a document of its
+    own made, and for a component of a composite Conduit that was instantiated by its own
+    document, for which a new Conduit is instantiated by a new document. Authorized as
+    registering that instance would be, with this operation in the place of `register.v1`:
+    against `management`, and for the Resource of a Pool's entry also by an open Conduit to that
+    Pool that lists this operation. The request is a registration, so one that is rejected still
+    carries `diagnostics`. A request for a new instance that a rule on instantiation does not
+    make reports invalid, as the registration of a document that the rule rejects does: one for
+    a declared Conduit whose target is retired, for example, or for a new Resource for an entry
+    of a retired Pool.
 spec:
   inputs:
     instance:
@@ -454,14 +479,14 @@ metadata:
     archive whose digest is not `digest`, and a manifest that states another address or version,
     are among the causes. It reports unavailable where the archive cannot be fetched now, and
     conflict where that address and version is already installed with another digest. Where it
-    is already installed with the same digest the request changes nothing and succeeds. Those
-    two are decided from what is installed: nothing is fetched for an address and version that
-    is already installed. A package whose manifest lists a package that is not installed is
-    installed, and `diagnostics` reports the missing one. `fetch` is a URI reference, and a
-    relative one is rejected, because a request has no directory to resolve it against. A
-    package is installed only by this operation: registering a project installs none of the
-    packages its manifest lists, and `fetch` in an item of `packages` is the value an
-    installation of that item gives here.
+    is already installed with the same digest the request is decided like any other, changes
+    nothing and succeeds. Those two are decided from what is installed: nothing is fetched for
+    an address and version that is already installed. A package whose manifest lists a package
+    that is not installed is installed, and `diagnostics` reports the missing one. `fetch` is a
+    URI reference, and a relative one is rejected, because a request has no directory to resolve
+    it against. A package is installed only by this operation: registering a project installs
+    none of the packages its manifest lists, and `fetch` in an item of `packages` is the value
+    an installation of that item gives here.
 spec:
   inputs:
     address:
@@ -509,10 +534,12 @@ metadata:
   name: purge.v1
   description: >-
     Remove the records made before a given time. For every invocation its operation identity,
-    the engine's ID for it, its outcome, a digest of its contents, its operation, the instance
-    it was dispatched to and the target that authorized it are kept, and are read as records of
-    that instance. A record of the purge is kept. Reserved to the root Interface, and authorized
-    against `management`.
+    the engine's ID for it, its outcome, a digest of its contents, its operation, its caller,
+    the instance it was dispatched to, the Conduit it was dispatched through, the target that
+    authorized it and, for a step that names a runtime, the name of that runtime are kept, and
+    are read as records of that instance. Records are removed and nothing else: what an instance
+    holds, and the Conduits to which later work is tied, are untouched. A record of the purge is
+    kept. Reserved to the root Interface, and authorized against `management`.
 spec:
   inputs:
     before:
@@ -530,18 +557,21 @@ metadata:
   name: retire-with-resources.v1
   description: >-
     Retire the Pool that is the target of the request together with the Resources it owns. Each
-    Resource is retired, in the reverse of the order of setup: a Resource before any Resource
-    that it refers to, or to which it is the consumer of a Conduit, among those the Pool owns.
-    Among Resources that depend on each other in a cycle the order is the engine's. Once the
-    retirement of one Resource has ended without its shutdown confirmed, no further retirement
-    is dispatched. The Pool is retired only if the shutdown of every one of them is confirmed.
-    Authorized against that Pool, by a Conduit that need list only this operation: the
-    retirements of the Resources are part of it, so the Conduit need not list `retire.v1`. Each
-    of those retirements is an invocation of `retire.v1` of its own, with its own outcome, and
-    so is the Pool's. Where Resources remain whose shutdown is not confirmed, the Pool's
-    retirement is not dispatched, the outcome of this request is failed, and the diagnostics of
-    its result name each of them, those whose retirement was not dispatched among them: a result
-    whose outcome is failed holds no outputs, so the operation declares none.
+    Resource whose shutdown is not confirmed is retired, in the reverse of the order of setup: a
+    Resource before any Resource that it refers to, or to which it is the consumer of a Conduit,
+    among those the Pool owns. Among Resources that depend on each other in a cycle the order is
+    the engine's. A Resource that is already retired, with its shutdown not confirmed, is
+    retired again, by a further retirement, and none is dispatched for a Resource whose shutdown
+    is confirmed. Once a retirement that this request dispatched has ended without the shutdown
+    of its Resource confirmed, no further retirement is dispatched. The Pool is retired only if
+    the shutdown of every one of them is confirmed. Authorized against that Pool, by a Conduit
+    that need list only this operation: the retirements of the Resources are part of it, so the
+    Conduit need not list `retire.v1`. Each of those retirements is an invocation of `retire.v1`
+    of its own, with its own outcome, and so is the Pool's. Where Resources remain whose
+    shutdown is not confirmed, the Pool's retirement is not dispatched, the outcome of this
+    request is failed, and the diagnostics of its result name each of them, those whose
+    retirement was not dispatched among them: a result whose outcome is failed holds no outputs,
+    so the operation declares none.
 spec:
   effect: >-
     Retires the Pool, once the shutdown of every Resource it owns is confirmed. The retirement
@@ -612,10 +642,14 @@ metadata:
     whose `actors` names it reports refused. The policy is stored by `access`, which returns an
     ID for it. A policy is not configuration, so the request names no revision. `requirement` is
     a qualified reference: a policy names a Requirement contract of a published package only. A
-    qualified reference carries no version, so `version` may name the version of that package.
-    Where it is left out, exactly one installed version of the package must export the
-    requirement, and otherwise the request reports invalid. The policy keeps the version and its
-    digest. Dispatched only if every actor and target named is covered by the bound of the
+    qualified reference carries no version, so `version` may name a version of the package whose
+    address the reference writes. Where it is left out, exactly one installed version of that
+    package must export the requirement, and otherwise the request reports invalid. The policy
+    keeps that version of that package and its digest, also where the package re-exports the
+    requirement from another. A policy is never dropped: a request to which it applies, and
+    whose implementation does not support the requirement, reports unavailable, and that is so
+    for every request for an operation of this package, because `engine` supports `bound.v1`
+    alone. Dispatched only if every actor and target named is covered by the bound of the
     actor's own Conduit to `access`. A requirement that does not narrow requests, or that does
     not apply as a policy, reports invalid, and so do `arguments` that do not fit the
     requirement's inputs, a `version` that is not installed or does not export the requirement,
@@ -683,13 +717,13 @@ metadata:
     give `target` in the resolved form `{kind, id}`, which is the only form an implementation
     holds. Needs no Conduit. `state` is the invocation's state, and `invocation` is the engine's
     ID for the invocation, which is the ID `reconcile.v1` takes. A retained result belongs to
-    the Conduit its invocation was dispatched through: its content is delivered only while that
-    Conduit is open, and never under another one. `withheld` is true where content exists and is
-    not delivered; `outputs` holds the operation's outputs where they are delivered, and is
-    absent, with `withheld` not true, where the engine no longer keeps them. Once the target is
-    unregistered it can no longer be named, and the request reports refused, as for any identity
-    under which the sending instance can reach no invocation; the records of the invocation
-    remain.
+    the Conduit its invocation was dispatched through, which for an invocation with several
+    attempts is that of the latest: its content is delivered only while that Conduit is open,
+    and never under another one. `withheld` is true where content exists and is not delivered;
+    `outputs` holds the operation's outputs where they are delivered, and is absent, with
+    `withheld` not true, where the engine no longer keeps them. Once the target is unregistered
+    the request reports refused, however it names the target, as for any identity under which
+    the sending instance can reach no invocation; the records of the invocation remain.
 spec:
   inputs:
     operationIdentity:
@@ -729,17 +763,17 @@ metadata:
     work of that start is tied, and each start of it carries the filters that the arranging
     start carried. The engine does so only if the arranging invocation was dispatched to the
     instance that asks, is of an operation marked `arrangesLaterWork` and has ended with the
-    outcome succeeded, that Conduit and every other Conduit to which the work is tied are open,
-    that Conduit lists the operation to start, and, where that operation starts model work, the
-    arranging operation is marked `startsModelWork` too. Where one of these does not hold, the
-    request reports refused. Needs no Conduit of the instance that asks, and names no invocation
-    that it serves. The result is that of the started invocation: its outcome is the outcome of
-    the request, the engine's ID for it is in the result's `_meta`, and `outputs` holds the
-    outputs of the operation that was started, where it succeeded and they are delivered. A
-    repeat under one operation identity is the same start. The consumer that arranged the work
-    did not request the start, so `retrieve-result.v1` does not return its result to that
-    consumer: the operation that arranges the work says in its contract how the results are
-    read.
+    outcome succeeded, that Conduit and every other Conduit to which the work is tied are open
+    and the consumer of none of them is retired, that Conduit lists the operation to start, and,
+    where that operation starts model work, the arranging operation is marked `startsModelWork`
+    too. Where one of these does not hold, the request reports refused. Needs no Conduit of the
+    instance that asks, and names no invocation that it serves. The result is that of the
+    started invocation: its outcome is the outcome of the request, the engine's ID for it is in
+    the result's `_meta`, and `outputs` holds the outputs of the operation that was started,
+    where it succeeded and they are delivered. A repeat under one operation identity is the same
+    start. The consumer that arranged the work did not request the start, so
+    `retrieve-result.v1` does not return its result to that consumer: the operation that
+    arranges the work says in its contract how the results are read.
 spec:
   inputs:
     invocation:

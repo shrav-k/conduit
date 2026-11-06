@@ -1,0 +1,72 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# the declared Conduit `checkout` is made from a composite template in which two components,
+# `read` and `audit`, list `directory.read.v1`. The step `peek` writes `conduit: checkout`
+# with that operation, and nothing says through which of the two Conduits, and so with which
+# filters, the request would go. The step `read` names the component by a dotted path,
+# `checkout.read`, and is accepted, and so is the step `list`, whose operation only `audit`
+# lists. A schema cannot tell: which operations a component lists is in another document.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    rate:
+      requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: 5
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-audit
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+    - example.org/files#directory.list.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-review
+spec:
+  components:
+    read:
+      from: directory-read
+    audit:
+      from: directory-audit
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: mirror
+spec:
+  type: example.org/files#local-directory.v1
+  config:
+    path: /srv/mirror
+  conduits:
+    checkout:
+      from: directory-review
+      target: {kind: Resource, name: scratch}
+  setup:
+    steps:
+      list:
+        operation: example.org/files#directory.list.v1
+        conduit: checkout
+        arguments:
+          path: {source: config, pointer: /path}
+      read:
+        operation: example.org/files#directory.read.v1
+        conduit: checkout.read
+        arguments:
+          path: {source: config, pointer: /path}
+      peek:
+        operation: example.org/files#directory.read.v1
+        conduit: checkout
+        arguments:
+          path: {source: config, pointer: /path}

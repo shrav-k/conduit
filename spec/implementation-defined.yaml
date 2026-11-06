@@ -13,7 +13,15 @@
 # which CON-004 and ACC-006 decide, and added to DL7 how an engine is handed a directory. The
 # follow-up to the fix pass of the third round (docs/proposals/reaudit/round-3/log-fixes.md),
 # on a decision of the coordinator that the owner has not ruled on, added to DL1 the order in
-# which a Pool's Resources are retired where LIF-021 fixes none.
+# which a Pool's Resources are retired where LIF-021 fixes none. The fix pass of the fourth
+# round (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, added to DL1 the order in which the component
+# Conduits of a composite declared Conduit are opened, to DL8 how the records of objects that
+# no longer exist are read, and to DL12 the serialized copy of a result's structured content.
+# Standing: the owner accepted this list as it stood at the rulings that the second line
+# names. Every change listed above for the conversion of the older text (the docs audit) and
+# for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37, logged in
+# the records named, and the owner has not ruled on it.
 
 - id: DL1
   subject: Graph execution
@@ -21,8 +29,9 @@
     The order among steps that do not depend on each other; how many run at once; cancellation;
     the states a step passes through; what happens to the remaining steps after one fails; what
     a re-run of setup or retire does with steps that already ran; when a graph's outputs become
-    available; and the order in which `retire-with-resources.v1` retires Resources that depend
-    on each other in a cycle, or not at all, under LIF-021.
+    available; the order in which `retire-with-resources.v1` retires Resources that depend on
+    each other in a cycle, or not at all, under LIF-021; and the order in which the setup step
+    of a composite declared Conduit opens its component Conduits, under CON-004.
 - id: DL2
   subject: Dispatch records
   document: >-
@@ -63,7 +72,9 @@
 - id: DL8
   subject: Delivery of observations and records
   document: >-
-    Feeds, positions within them, and snapshots.
+    Feeds, positions within them, and snapshots. Also how the records that name no object
+    that still exists are read, once every object they name has been unregistered and no
+    request for `inspect.v1` returns them, under LIF-019 and REC-003.
 - id: DL9
   subject: Controls and busy instances
   document: >-
@@ -85,7 +96,9 @@
     The transport used for each implementation, who starts its process, how many instances
     share one, which revisions of the Model Context Protocol are supported beyond the baseline,
     and what the engine puts in the `content` member of a result it returns to a consumer,
-    within what IFC-025 states of a result whose content is withheld.
+    within what IFC-025 states of a result whose content is withheld: among it, whether a
+    result that holds `structuredContent` also carries it serialized there, as the protocol
+    recommends.
 - id: DL13
   subject: Identifying consumers
   document: >-

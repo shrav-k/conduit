@@ -13,8 +13,18 @@
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed INS-020, which is now of the layer `convention`, and INS-025, whose
-# `then` now says what `#name` written as `from` reaches in a project that is not published. It
-# removed none.
+# `then` now says what `#name` written as `from` reaches in a submitted project. It removed
+# none.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# INS-006, INS-013, INS-019, INS-020 and INS-025: an argument is held with the defaults of its
+# input's schema filled in, and a project that is handed over for registration is called a
+# submitted project. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: INS-001
   layer: language
@@ -86,10 +96,11 @@
   then: >-
     The whole value is assigned to each destination the input names.
   observable: >-
-    In the resolved instance each destination holds exactly the supplied value. Nothing is
-    merged with what the template had there. Where the input's schema is a reference schema that
-    fixes the kind, a bare name is accepted as the argument, and each destination receives the
-    reference with its kind: an input governed by
+    In the resolved instance each destination holds the supplied value, with the defaults of the
+    properties of the input's schema filled in under SCH-009 and nothing else changed. Nothing
+    is merged with what the template had there. Where the input's schema is a reference schema
+    that fixes the kind, a bare name is accepted as the argument, and each destination receives
+    the reference with its kind: an input governed by
     `github.com/shrav-k/conduit/core#resource-reference.v1` that is given `scratch` and has a
     declared Conduit's `target` as its destination puts `{kind: Resource, name: scratch}` there,
     although `target` itself accepts several kinds.
@@ -203,7 +214,10 @@
     Inspecting the instance returns its definition and configuration with every destination
     filled, and nothing that says which values came from arguments other than the template it
     came from. A replacement for one of its nested instances, made under LIF-009, is made from
-    the nested instantiation as the instance holds it.
+    the nested instantiation as the instance holds it, and from the template that its `from`
+    names as that template then stands. Every value that a schema governed is held as SCH-009
+    filled it, so the declared part of an inspection result shows `{depth: 1}` where an argument
+    gave `{}` for an input whose schema states that default.
   vectors: []
 
 - id: INS-014
@@ -273,7 +287,9 @@
   observable: >-
     An argument overrides the input's default; the input's default overrides the template's
     value; and the type schema's default, applied under SCH-009, fills only what is still
-    absent. Controls apply no default, as REV-006 states.
+    absent. The defaults of the properties of an input's own schema are filled into the
+    argument, or into the input's default, before it is assigned, under SCH-009 and SCH-010.
+    A control applies no default to a setting whose input is not supplied, as REV-006 states.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -290,6 +306,10 @@
     A request to unregister a template that has instances does not report conflict on their
     account. Afterwards each instance inspects as it did before, and an instance document whose
     `from` names the unregistered template is rejected under INS-002.
+    A replacement that is made afterwards under LIF-009 for one of an instance's nested
+    instances is a new instance: it is made from the nested instantiation as the instance holds
+    it, and from the template that the nested instantiation's `from` names as that template then
+    stands.
   vectors: []
 
 - id: INS-021
@@ -368,9 +388,9 @@
     It is one of four: a bare name, or `{kind: <Kind>, name: <name>}`, for a template that
     exists; a qualified reference, for a template that a package exports; or `#` followed by a
     name. In a document of a package, `#name` names a template of the same package, as NAM-022
-    gives that form. In a project that is not published, whose templates are registered, it
-    resolves as the bare name does: among the templates that exist, of which the templates that
-    the same submission registers are part.
+    gives that form. In a submitted project, whose templates are registered, it resolves as the
+    bare name does: among the templates that exist, of which the templates that the same
+    submission registers are part.
   observable: >-
     A bare name, and the form with a kind, resolve among the objects that exist, under NAM-003,
     and a template that the same submission registers is one of them, under SUB-002. A document

@@ -1,8 +1,11 @@
 # Schema and syntax profile
 
-Draft. Plan-audit rulings 23, 24, 32, 33 and 37 of 2026-11-05, decision DA3 of the
-[docs audit](../docs/proposals/docs-audit/GAPS.md), and the
-[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md).
+Draft. The owner accepted this profile as it stood at plan-audit rulings 23, 24, 32, 33 and 37
+of 2026-11-05. What decision DA3 of the [docs audit](../docs/proposals/docs-audit/GAPS.md), the
+[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md)
+and the [decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md) changed
+since rests on the coordinator's logged decisions under ruling 37, which the owner has not
+ruled on. The fourth round changed what this page says of when a `default` is applied.
 
 Graphs and schemas are not what distinguishes Conduit. This part of the specification invents
 nothing: it selects existing standards and narrows them. Where a standard defines a meaning,
@@ -36,9 +39,12 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | Internationalized host names | IDNA, RFC 5890 | An internationalized name is written in its ASCII form, with `xn--` labels (NAM-001). |
 | The implementation interface | Model Context Protocol, revision 2026-07-28 | The wire between an engine, its implementations and its consumers, and the baseline revision of this version of the specification (IFC-002). The protocol is adopted as it is: an engine and an implementation keep every requirement of the revision in use, and this specification repeats none of them (IFC-001). The protocol's tasks extension is outside the baseline revision, and may be used too (IFC-016). |
 
-Two rules follow an existing practice rather than a standard. Applying `default` values when a
-template is instantiated, and rejecting a `default` placed inside `allOf`, `anyOf` or `oneOf`,
-both follow the way Kubernetes treats defaults in structural schemas. So does a `default` on a
+Two rules follow an existing practice rather than a standard. Applying `default` values to a
+value that is supplied, before it is validated, and rejecting a `default` placed inside `allOf`,
+`anyOf` or `oneOf`, both follow the way Kubernetes treats defaults in structural schemas. The
+first is one rule for every schema that governs a supplied value: the configuration of an
+instance, and the argument of an input of a template, of an operation or of a requirement. The
+filled value is what is validated, compared, stored and sent (SCH-009). So does a `default` on a
 property of a map inside `items`: it is accepted and applies to each item that is present,
 while a `default` on `items` itself is not accepted (SCH-008, SCH-009). A `default` that is a
 map is checked against its schema after the defaults of its own properties are filled in

@@ -1,6 +1,6 @@
 # The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
 # core package and the manifest's promises; the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 and 3 of the
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
 # re-audit changed since rests on the coordinator's logged decisions, which the owner has
 # not ruled on.
 #
@@ -17,8 +17,10 @@
 #                       in an `implementation` map, and it has no inputs)
 #   step.v1             GRA-017 (exactly one of `operation` and `runtime`, which names a
 #                       runtime of the template or of its type; `conduit` only with
-#                       `operation`), GRA-015 (`arguments`, never `inputs`), GRA-018
-#                       (`dependsOn`), OBJ-015, OBJ-019, TPL-003 (no `implementation` on a step)
+#                       `operation`), GRA-024 (`conduit` is the name of a declared Conduit,
+#                       or that name and the names of components, joined by dots),
+#                       GRA-015 (`arguments`, never `inputs`), GRA-018 (`dependsOn`),
+#                       OBJ-015, OBJ-019, TPL-003 (no `implementation` on a step)
 #   value-binding.v1    GRA-019 (exactly one of four forms; a bare value is rejected)
 #   value-reference.v1  GRA-020 (five sources and what each may hold; `from` is rejected),
 #                       OBJ-016 (`pointer`)
@@ -29,9 +31,12 @@
 #
 # Not expressed here, and checked by the engine: the rule for the name of a step (OBJ-022),
 # because the profile has no keyword that constrains the keys of a map; that a step, a
-# runtime, an input, an output or a declared Conduit that is named exists (GRA-004, GRA-006,
-# GRA-017, GRA-024); cycles (GRA-005); that every required input has a value and every
-# literal satisfies its input's schema (GRA-007, GRA-008); which sources a graph may use
+# runtime, an input, an output, a declared Conduit or a component that is named exists
+# (GRA-004, GRA-006, GRA-017, GRA-024); that exactly one Conduit that a step's `conduit` names
+# lists the step's operation (GRA-024); that no step names, as its `operation`, the start or the
+# stop operation of a runtime of its own instance (TPL-016); cycles (GRA-005); that every
+# required input has a value and every literal satisfies its input's schema (GRA-007,
+# GRA-008); which sources a graph may use
 # (GRA-010, GRA-020: `config` only in `setup` and `retire`, `input` never there); a `pointer`
 # on a handle (GRA-011); that a step is not named as a declared Conduit or an entry is
 # (GRA-022); that the outputs match the operation's contract (GRA-021); that no value
@@ -96,13 +101,17 @@ metadata:
     its type declares, and invokes that runtime's start operation. A step without `conduit`
     invokes the implementation selected for its own instance, and carries the restrictions of
     the invocation its graph is serving. A step with `conduit` is an onward request through
-    that declared Conduit.
+    that declared Conduit. `conduit` is the name of a declared Conduit of the template or, for
+    one that is made from a composite template, that name followed by the name of each
+    component on the way to a component, joined by dots, as in `checkout.read`.
 spec:
   oneOf:
     - type: object
       properties:
         operation: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-        conduit: {$ref: github.com/shrav-k/conduit/core#name.v1}
+        conduit:
+          type: string
+          pattern: '^[a-z][a-z0-9-]{0,62}(\.[a-z][a-z0-9-]{0,62})*$'
         arguments: {$ref: '#/$defs/arguments'}
         dependsOn: {$ref: '#/$defs/dependsOn'}
         optional: {type: boolean}

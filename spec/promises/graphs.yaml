@@ -20,6 +20,16 @@
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed GRA-005, which now covers every selection of a
 # graph.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# GRA-003, GRA-008, GRA-022 and GRA-024: the `conduit` of a step may name a component of a
+# composite declared Conduit by a dotted path, and must where more than one component lists the
+# operation. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: GRA-001
   layer: language
@@ -57,9 +67,11 @@
     If any such step failed, has an unknown outcome or did not run, the instance does not become
     ready by that run, as LIF-004 states. A declared Conduit that is not opened and an entry
     whose Resource is not set up are such steps under GRA-022: setup does not succeed if one of
-    them is required, and reports it as not opened or not set up if it is optional. A step for
-    something that is already done is left as succeeded: a declared Conduit that is open under
-    CON-004, a Resource that is ready under POOL-013, and a runtime that is held under TPL-007.
+    them is required, and reports it as not opened or not set up if it is optional. A declared
+    Conduit that is made from a composite template is opened as a whole or not at all, under
+    CON-004. A step for something that is already done is left as succeeded: a declared Conduit
+    that is open under CON-004, a Resource that is ready under POOL-013, and a runtime that is
+    held under TPL-007.
   vectors: []
 
 - id: GRA-004
@@ -135,6 +147,8 @@
   observable: >-
     Resolving returns a diagnostic naming the step, the input and the part of the schema the
     literal fails.
+    The literal is checked as a supplied value is: after the defaults of the properties of the
+    input's schema are filled in, under SCH-009.
   vectors: []
 
 - id: GRA-009
@@ -311,6 +325,8 @@
   observable: >-
     A step that depends on the declared Conduit `checkout` runs only after that Conduit is open.
     A step written under the name `checkout` is rejected.
+    A declared Conduit that is made from a composite template is one step, under the declared
+    Conduit's name, however many components it has: CON-004 says when that step has succeeded.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -335,15 +351,39 @@
     A step names an `operation`.
   then: >-
     Without `conduit`, the step invokes the implementation selected for its own instance. With
-    `conduit`, whose value is the name of one of the template's declared Conduits, the step is
-    a request through that Conduit to its target, and it depends on the step that GRA-022 gives
-    that declared Conduit, exactly as if the dependency had been stated.
+    `conduit`, the step is a request through a declared Conduit of the template to its target,
+    and it depends on the step that GRA-022 gives that declared Conduit, exactly as if the
+    dependency had been stated. The value of `conduit` is the name of one of the template's
+    declared Conduits or, for one that is made from a composite template, that name followed by
+    the name of each component on the way to a component, outermost first, joined by dots, as
+    IFC-012 writes them in a tool's name. The request goes through the one Conduit, among those
+    that the value names, that lists the operation. A step whose `conduit` names a declared
+    Conduit that is made from a composite template, or a component that is itself made from one,
+    in which more than one component Conduit lists the operation, is rejected when the template
+    is registered.
   observable: >-
-    A step whose `conduit` names no declared Conduit of the template, or whose operation is not
-    one that Conduit lists, is rejected with a diagnostic naming the step. The resolved setup
+    A step whose `conduit` names no declared Conduit of the template and no component of one, or
+    whose operation is not one that a Conduit it names lists, is rejected with a diagnostic
+    naming the step. With the declared Conduit `checkout` made from a composite whose components
+    `read` and `audit` both list `directory.read.v1`, `conduit: checkout.read` names the
+    component `read`, and `conduit: checkout` with that operation is rejected, because nothing
+    would say through which of the two Conduits, and so with which filters, the request goes.
+    Where only one of the components lists the operation, `conduit: checkout` is accepted and
+    means that component's Conduit. The implementation that receives the request is sent the ID
+    of that Conduit in `io.github.shrav-k.conduit/conduit`, under IFC-006. The resolved setup
     graph lists the declared Conduit's step among the dependencies of a step that carries
     `conduit`, whether or not `dependsOn` also names it, so that step runs only after the
-    Conduit is open.
+    Conduit is open, which for a composite is after every one of its component Conduits is open,
+    under CON-004. `dependsOn` names the declared Conduit by its name alone. Where the template
+    of the declared Conduit could not be read when the template was registered, because it did
+    not exist yet under OBJ-008 or its package was not installed under PKG-006, or where an
+    input fills the `operations` of a component under INS-023, the check is made when the
+    template is instantiated, under INS-022.
+    Resolving fixes which Conduit a step goes through: the resolved graph that an instance
+    holds, under INS-013, names the one component. A replacement that is made later under
+    LIF-009, from a template that has changed since, does not change which component the step
+    means, and where the Conduit of that component no longer lists the operation the step
+    reports refused under ACC-001.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP8, GP9

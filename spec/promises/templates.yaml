@@ -22,6 +22,16 @@
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed TPL-007, TPL-009 and TPL-015: an instance holds
 # a runtime until a stop of it has succeeded or has been reconciled as having occurred.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# TPL-007, TPL-009, TPL-011 and TPL-015, and added TPL-016, of the layer `language`: no step
+# invokes the start or the stop operation of a runtime of its own instance by naming it as its
+# `operation`. It removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: TPL-001
   layer: language
@@ -152,6 +162,8 @@
     stops the runtime again. A start whose outcome is unknown returned no handle, so the
     instance does not hold the runtime: TPL-015 says how the start is reconciled, and LIF-024
     what the shutdown of the instance reports meanwhile.
+    A step does not start or stop a runtime by naming its start or its stop operation as its
+    `operation`: TPL-016 rejects the template.
   vectors: []
 
 - id: TPL-008
@@ -193,8 +205,10 @@
     left a runtime running that the instance does not hold. The stops are part of the
     invocation, which succeeds only if the steps of the graph did, as OPS-022 counts them, and
     every stop succeeded. A further invocation for an instance whose shutdown is confirmed runs
-    no step and stops nothing, under LIF-030. When the Conduits of which the instance is the
-    consumer are closed, and what they permit meanwhile, is CON-008 and ACC-039.
+    no step and stops nothing, under LIF-030: such an instance holds no runtime, because LIF-024
+    never has the shutdown of an instance that holds one confirmed. When the Conduits of which
+    the instance is the consumer are closed, and what they permit meanwhile, is CON-008 and
+    ACC-039.
   vectors: []
 
 - id: TPL-010
@@ -221,9 +235,11 @@
   then: >-
     The value given for that input must satisfy both the schema the control's contract gives
     the input and the schema the template added.
+    A request whose value fails either is not dispatched, and reports invalid.
   observable: >-
-    A request whose value the contract would accept and the template's schema rejects is not
-    dispatched and reports invalid.
+    A request whose value the contract would accept and the template's schema rejects leaves the
+    configuration and the revision as they were, and no implementation receives a call. Where
+    the actor is not permitted, OPS-023 gives refused first.
   vectors: []
 
 - id: TPL-012
@@ -296,10 +312,12 @@
   then: >-
     A reconciliation that records the start as having occurred states the handle, in the input
     `handle` of `reconcile.v1`, and the instance then holds the runtime with that handle. This
-    holds for a retired instance as for any other. One that records the start as having occurred
-    and states no handle is not dispatched, and reports invalid. A reconciliation that records a
-    stop as having occurred ends the holding. One that records that the start or the stop did
-    not occur gives the outcome failed, and leaves the instance as it was.
+    holds for a retired instance as for any other. On an instance that exists, one that records
+    the start as having occurred and states no handle is not dispatched, and reports invalid.
+    Where the instance no longer exists, a reconciliation of the start or of the stop states no
+    handle: it records the outcome and stores nothing. A reconciliation that records a stop as
+    having occurred ends the holding. One that records that the start or the stop did not occur
+    gives the outcome failed, and leaves the instance as it was.
   observable: >-
     After a start is reconciled as having occurred, inspecting the instance lists the runtime as
     held, a value reference with the source `runtime` yields the handle that the reconciliation
@@ -316,9 +334,49 @@
     outcome is unknown is reconciled, OPS-021 keeps the step from being dispatched again, except
     as a new attempt under OPS-012. LIF-015 admits these reconciliations on a retired instance,
     the one that stores a handle among them. A start reconciled as having occurred on a retired
-    instance leaves it holding the runtime with its shutdown pending, under LIF-024, and a
-    further retirement under LIF-026 stops the runtime. A request that states `handle` for an
-    invocation that is not the start of a runtime reports invalid, under OPS-031. The
-    reconciliation is authorized under ACC-033 against the target that manages the instance the
-    invocation was dispatched to.
+    instance leaves it holding the runtime, so its shutdown is not confirmed, under LIF-024, and
+    a further retirement under LIF-026 stops the runtime. A stop reconciled as having occurred
+    on a retired instance ends the holding, and only then can the retirement within which the
+    stop was dispatched be reconciled as having occurred, under LIF-028: while the instance
+    holds the runtime that reconciliation reports conflict. Once the instance has been
+    unregistered, as LIF-017 allows where its location was declared lost, nothing is left to
+    hold a handle: the reconciliation is authorized against `management`, under ACC-033, and
+    records the outcome alone. A request that states `handle` for an invocation that is not the
+    start of a runtime, for a start that it records as not having occurred, or for the start of
+    a runtime of an instance that no longer exists, reports invalid, under OPS-031. Which
+    runtime a start was for is told by the name of the runtime that its step names, which a
+    purge keeps under REC-004. The reconciliation is authorized under ACC-033 against the target
+    that manages the instance the invocation was dispatched to.
+  vectors: []
+
+# --- Added by the fix pass of the fourth round of the re-audit
+# --- (docs/proposals/reaudit/round-4/log-fixes.md; finding 4C-12). It is a rule on documents
+# --- and has the layer `language`.
+
+- id: TPL-016
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which a step with no `conduit` names, as its `operation`, an
+    operation that a runtime of the template or of its type names as its `start` or as its
+    `stop`. The step is one of the template's `setup` graph, of its `retire` graph or of a graph
+    selected for its instances, however the selection was made.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step, the operation and the runtime. A runtime is
+    started only by a step that names it under `runtime`, under TPL-007, and stopped only by the
+    engine, under TPL-009 or OBS-007: those are the invocations after which the instance holds
+    the handle or no longer holds it, and the ones that TPL-015 reconciles. A step that invoked
+    the stop operation itself, with the handle that a value reference with the source `runtime`
+    yields, would stop the runtime while the instance still held it, and the engine's own stop
+    would then fail with a handle that the implementation no longer recognizes, under IFC-011. A
+    step that invoked the start operation itself would start a runtime that the instance does
+    not hold. A step that carries `conduit` is a request to another instance, whose operations
+    are not this instance's runtimes, and is not counted. A selected graph counts however the
+    selection was made, as under GRA-005: in the template's `implementation` map, as a default
+    of its type or of an operation's own contract, written in place or given by an
+    implementation item of a manifest. Where the template was registered while a package it
+    needs was not installed, as PKG-006 allows, the check is made when the template is
+    instantiated, under INS-022.
   vectors: []

@@ -31,6 +31,15 @@
 # none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed MAN-009.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# MAN-004: `address` and `version` change nothing in the manifest of a submitted project. It
+# added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: MAN-001
   layer: language
@@ -90,9 +99,15 @@
     either both `address` and `version` or neither. There are no other keys.
   observable: >-
     A manifest with any other top-level key, or with one of `address` and `version` and not
-    the other, is rejected with a diagnostic naming the key. A manifest that states `address`
-    and `version` is the manifest of a package, as PKG-017 states. One that states neither is
-    the manifest of a project that is not published.
+    the other, is rejected with a diagnostic naming the key. The manifest of a package, which is
+    read from the package's archive when it is installed, states both, as PKG-017 requires. The
+    manifest of a submitted project, which is handed over for registration, may state both or
+    neither, and the two keys change nothing there: a project that is handed over for
+    registration is never published, whatever its manifest states. Its contracts are kept as an
+    unpublished package under SUB-008, a reference written `#name` in it means what NAM-022
+    gives it in any submitted project, and a qualified reference that uses the address its
+    manifest states is rejected under NAM-007, because that address is not among its `packages`.
+    The one address that such a manifest may not state is the core package's, under NAM-021.
   vectors: []
 
 - id: MAN-005

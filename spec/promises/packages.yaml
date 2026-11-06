@@ -25,6 +25,15 @@
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed PKG-019 and PKG-020: an item that states
 # `graph` states no `supports`.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# PKG-017, PKG-018, PKG-023 and PKG-027: a request to install what is already installed is
+# decided like any other. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: PKG-001
   layer: language
@@ -173,8 +182,9 @@
     It states the package's own `address` and `version`, beside the `packages` it uses.
   observable: >-
     A package whose manifest states an address or a version other than the one it was listed,
-    asked for or fetched under is rejected when it is installed. A project that is not published
-    needs neither key, and MAN-004 says that a manifest states both or neither.
+    asked for or fetched under is rejected when it is installed. A submitted project needs
+    neither key, and MAN-004 says that a manifest states both or neither, and what the two mean
+    in a manifest that is handed over for registration.
   vectors: []
 
 - id: PKG-018
@@ -188,7 +198,8 @@
     NAM-022 gives.
   observable: >-
     A qualified reference from outside to a document that exists in the package but is not
-    exported is unresolved, with a diagnostic naming it. How the list is written is MAN-007.
+    exported is unresolved, with a diagnostic naming it, and the document that holds the
+    reference is rejected under NAM-028. How the list is written is MAN-007.
   vectors: []
 
 - id: PKG-019
@@ -278,7 +289,8 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to install a package, and the package is rejected.
+    An actor asks to install a package, and the package is rejected, or the request gives a
+    `fetch` that is a relative reference.
   then: >-
     The request is not dispatched, and reports invalid.
   observable: >-
@@ -289,9 +301,10 @@
     MAN-011, MAN-014 and CTR-011, and for a request to install a package at the core package's
     address, under NAM-021. An archive that cannot be fetched now is PKG-024, a package already
     installed with another digest is PKG-025, and one already installed with the same digest is
-    PKG-027. A request whose `fetch` is a relative reference reports invalid too, under MAN-006.
-    Where the actor is not permitted, or another reason also applies, OPS-023 says which is
-    reported.
+    PKG-027. A request has no directory to resolve a relative `fetch` against, as MAN-006
+    states, and one that gives a relative `fetch` reports invalid whether or not the package is
+    already installed. Where the actor is not permitted, or another reason also applies, OPS-023
+    says which is reported.
   vectors: []
 
 - id: PKG-024
@@ -353,13 +366,19 @@
     An actor asks to install a package that is already installed at that address and version
     with the same digest.
   then: >-
-    The request changes nothing, and its outcome is succeeded. It is decided from what is
-    installed: nothing is fetched for an address and version that is already installed.
+    The request is decided like any other, changes nothing and has the outcome succeeded. It is
+    decided from what is installed: nothing is fetched for an address and version that is
+    already installed.
   observable: >-
     The packages that are installed are the same before and after the request, and the effect
     that `install.v1` describes has occurred. Two versions are the same as PKG-003 states. The
     request succeeds whether or not the archive can be fetched now, so PKG-024 does not apply to
     it. A request that names another digest for that address and version is PKG-025.
+    Being decided like any other, the request is not dispatched where another promise has a
+    request to install not dispatched: one that is not permitted reports refused under ACC-033,
+    and one whose `fetch` is a relative reference reports invalid under PKG-023, although
+    nothing would have been fetched. The same holds for PKG-025, where OPS-023 puts invalid
+    before conflict.
   vectors: []
 
 - id: PKG-028

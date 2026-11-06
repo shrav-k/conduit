@@ -27,6 +27,15 @@
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed CON-008 and CON-022: no graph states
 # `supports`, wherever it is written.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# CON-004, CON-008 and CON-024: a declared Conduit that is made from a composite template is
+# opened as a whole or not at all. It added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: CON-001
   layer: language
@@ -90,11 +99,32 @@
   then: >-
     The step that GRA-022 gives each declared Conduit opens the Conduit made for it if its state
     is registered. Where the Conduit is already open nothing is dispatched, and the step is left
-    as succeeded. Setup instantiates no Conduit.
+    as succeeded. For a declared Conduit that is made from a composite template, the one step
+    opens every component Conduit whose state is registered, and succeeds only where every
+    component Conduit is then open. Where one of them is not opened, the component Conduits that
+    the step opened are closed again, and the step's outcome is failed: a composite declared
+    Conduit is opened as a whole or not at all. Setup instantiates no Conduit.
   observable: >-
     After setup runs a second time, inspection shows the same Conduit IDs and the same number of
     Conduits as before. A replacement registered under LIF-009 is in the state registered, so
     the next setup opens it. Whose Conduit to `access` authorizes the step is ACC-005.
+    For a composite, each component Conduit is opened by a request for `open.v1` of its own,
+    decided under ACC-005, and the order among them is DL1 of the implementation-defined list. A
+    component Conduit is not opened where that request is not dispatched, as where the bound of
+    the instance's Conduit to `access` does not name an operation that the component lists, or
+    where its outcome is not succeeded. The step then closes the component Conduits that it
+    opened in this run, with no request, as CON-008 closes a Conduit: each is retired for good
+    under LIF-006, its status says that the step closed it, and LIF-027 excepts it. The step's
+    outcome is failed, whatever the reason or the outcome of the request that did not open its
+    Conduit, a diagnostic names the component Conduit that was not opened and why, and OPS-022
+    counts the step as one that failed. A declared Conduit marked optional is then reported as
+    not opened, under GRA-003. A closed Conduit is never opened again, so a later setup opens
+    the composite only after a replacement has been registered under LIF-009 for each component
+    Conduit that the step closed, and until then the step reports conflict, under LIF-008. For
+    the same reason, where a component Conduit is closed when the step is reached, the step
+    opens nothing and reports conflict under LIF-008. A component Conduit that was open before
+    the step is left as it was. Where every component Conduit is already open nothing is
+    dispatched, and the step is left as succeeded.
   vectors: []
 
 - id: CON-006
@@ -143,13 +173,15 @@
     state. A consumer's shutdown is confirmed as LIF-024 states: when an invocation of
     `retire.v1` for it succeeds, at once where no setup of it was ever dispatched, or when a
     reconciliation records that its retirement occurred, under LIF-028. It is not confirmed
-    while the outcome of a start of one of its runtimes is unknown. From the moment the consumer
-    is retired until then, the Conduit's state is as it was, and the Conduit permits only the
-    requests of the consumer's retirement, as ACC-039 states: a step of the consumer's `retire`
-    graph can make a request through the consumer's own Conduit, in a further retirement under
-    LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the Conduit
-    stays so until the shutdown is confirmed, the consumer is declared lost, or an actor closes
-    the Conduit under ACC-012.
+    while the outcome of a start of one of its runtimes is unknown, or while it holds a runtime.
+    From the moment the consumer is retired until then, the Conduit's state is as it was, and
+    the Conduit permits only the requests of the consumer's retirement, as ACC-039 states: a
+    step of the consumer's `retire` graph can make a request through the consumer's own Conduit,
+    in a further retirement under LIF-026 as in the first. Where the consumer's shutdown stays
+    pending or unknown, the Conduit stays so until the shutdown is confirmed, the consumer is
+    declared lost, or an actor closes the Conduit under ACC-012.
+    CON-004 names one more event that closes a Conduit: the step of a composite declared Conduit
+    that did not open as a whole closes the component Conduits that it had opened.
   vectors: []
 
 - id: CON-011
@@ -364,10 +396,13 @@
   observable: >-
     The target's implementation receives no call for such a request while the target's state is
     registered. A request made once the target is ready is decided as any other. A management
-    verb is an operation of `object-management.v1`, `access-control.v1` or `pool-management.v1`,
-    under OPS-019: the ones that ACC-033 authorizes against a Pool, such as setting up a
-    Resource the Pool owns, are dispatched while the Pool's state is registered, so that a
-    Pool's own setup can set up its entries. A control is not a management verb.
+    verb is an operation of the core package other than its two controls and the two tools that
+    the engine always presents, `retrieve-result.v1` and `start-later-work.v1`. That is every
+    operation of `object-management.v1`, `access-control.v1` and `pool-management.v1`,
+    `inspect.v1` and `purge.v1` among them, under OPS-019. The ones that ACC-033 authorizes
+    against a Pool, such as setting up a Resource the Pool owns, are dispatched while the Pool's
+    state is registered, so that a Pool's own setup can set up its entries. A control is not a
+    management verb.
   vectors: []
 
 - id: CON-025

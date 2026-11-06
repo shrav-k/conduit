@@ -11,6 +11,16 @@
 # state for model work, stated for later work. The follow-up to that pass changed IMP-006,
 # IMP-010 and IMP-011, and added IMP-012, of the layer `language`: what IMP-005 and IMP-009
 # state for model work. No promise of this file has been removed. Draft: no vector exists yet.
+# The fix pass of the fourth round of the re-audit
+# (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
+# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# IMP-004, IMP-006, IMP-010 and IMP-012: the rules on a graph that starts model work or arranges
+# later work cover every graph selected for a template's instances, however it was selected. It
+# added none and removed none.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: IMP-001
   layer: convention
@@ -56,12 +66,23 @@
   layer: language
   level: must
   when: >-
-    A template is registered in which a graph contains a step whose operation is marked as
-    starting model work, and the operation the graph implements is not so marked.
+    A template is registered, and a graph selected for its instances contains a step whose
+    operation is marked as starting model work, while the operation that the graph implements is
+    not so marked. Every selection counts, however it was made: in the template's
+    `implementation` map, as a default of its type, or as the default of an operation's own
+    contract, and whether it writes a graph in place or names an implementation item whose
+    manifest gives a `graph`.
   then: >-
     The template is rejected.
   observable: >-
     Resolving returns a diagnostic naming the step and the operation the graph implements.
+    A step counts whether or not it carries `conduit`. The rule covers the graphs that GRA-005
+    covers: a graph that a manifest lists, or that a Type contract or an Operation contract
+    states as a default, starts no model work within an operation whose contract carries no
+    mark, any more than one written in the template does. Where the template was registered
+    while a package it needs was not installed, as PKG-006 allows, the check is made when the
+    template is instantiated, under INS-022. IMP-005 and IMP-009 state the rule for a `setup`
+    and a `retire` graph.
   vectors: []
 
 - id: IMP-005
@@ -85,21 +106,23 @@
     A start of model work is to be dispatched at a later time, or repeatedly.
   then: >-
     It was arranged by an operation whose contract is marked both `arrangesLaterWork: true` and
-    `startsModelWork: true`. The starts are tied to the Conduit through which they were
-    arranged, and to every Conduit of its chain under ACC-019: each start is recorded against
-    the caller for whom it was arranged, and is dispatched only if those Conduits are open and
-    the access they carry permits the start at that moment.
+    `startsModelWork: true`. The work is tied, under ACC-019, to the Conduit through which it
+    was arranged and to every Conduit of the arranging invocation's chain. Each start is
+    recorded against the caller for whom it was arranged, and is dispatched only on the
+    conditions of ACC-040: among them, that every one of those Conduits is open, that the
+    consumer of none of them is retired, and that the Conduit through which the work was
+    arranged lists the operation to be started.
   observable: >-
-    A start that falls after that Conduit was closed is not dispatched and reports refused, and
-    a record of that exists. Once that Conduit is closed no start of the work is ever dispatched
-    again, whatever Conduits are opened later. Each start is an invocation that the engine
-    dispatches when the implementation that holds the work asks for it with
-    `start-later-work.v1`, as ACC-040 states: a request for a start of an operation marked
-    `startsModelWork: true`, where the operation that arranged the work is not so marked,
-    reports refused under IMP-008. ACC-019 says what the requests of work already started
-    report. Later work that starts no model work may be arranged by any operation whose contract
-    is marked `arrangesLaterWork: true`, and an operation without that mark arranges none, under
-    CTR-002.
+    A start that falls after one of those Conduits was closed, or after the consumer of one of
+    them was retired, is not dispatched and reports refused under ACC-040, and a record of that
+    exists. Once one of them is closed no start of the work is ever dispatched again, whatever
+    Conduits are opened later. Each start is an invocation that the engine dispatches when the
+    implementation that holds the work asks for it with `start-later-work.v1`, as ACC-040
+    states: a request for a start of an operation marked `startsModelWork: true`, where the
+    operation that arranged the work is not so marked, reports refused under IMP-008. ACC-019
+    says what the requests of work already started report. Later work that starts no model work
+    may be arranged by any operation whose contract is marked `arrangesLaterWork: true`, and an
+    operation without that mark arranges none, under CTR-002.
   vectors: []
 
 - id: IMP-007
@@ -160,16 +183,22 @@
   layer: language
   level: must
   when: >-
-    A template is registered in which a graph contains a step whose operation is marked
-    `arrangesLaterWork: true`, and the operation the graph implements is not so marked.
+    A template is registered, and a graph selected for its instances contains a step whose
+    operation is marked `arrangesLaterWork: true`, while the operation that the graph implements
+    is not so marked. Every selection counts, however it was made: in the template's
+    `implementation` map, as a default of its type, or as the default of an operation's own
+    contract, and whether it writes a graph in place or names an implementation item whose
+    manifest gives a `graph`.
   then: >-
     The template is rejected.
   observable: >-
     Resolving returns a diagnostic naming the step and the operation the graph implements, as
-    IMP-004 does for a step that starts model work. A `setup` or a `retire` graph implements no
-    operation, under TPL-008, and one that holds such a step is rejected under IMP-012. Work
-    that a step with no `conduit` arranges is tied to the Conduit of the invocation that the
-    step's graph serves, under ACC-019.
+    IMP-004 does for a step that starts model work, and for the same graphs: every one that
+    GRA-005 covers, with the check made under INS-022 where a package was not installed when the
+    template was registered. A `setup` or a `retire` graph implements no operation, under
+    TPL-008, and one that holds such a step is rejected under IMP-012. Work that a step with no
+    `conduit` arranges is tied to the Conduit of the invocation that the step's graph serves,
+    under ACC-019.
   vectors: []
 
 - id: IMP-011
@@ -206,4 +235,8 @@
     within whose invocations the engine runs the steps of those graphs, carry no such mark, as
     they carry none for model work under IMP-005 and IMP-009. Setting an instance up, and
     retiring it, arranges no later work.
+    A graph that a step of `setup` or of `retire` invokes, as the implementation selected for
+    the step's operation, implements an operation that carries no mark, or the step itself would
+    break this rule. IMP-010 rejects the template where such a graph holds a marked step,
+    however the graph was selected, and IMP-004 does so for model work.
   vectors: []

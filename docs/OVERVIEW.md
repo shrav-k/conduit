@@ -3,7 +3,7 @@
 Not binding. This is a short tour of the language in ordinary words, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
 last read against the specification on 2026-11-06, as the fix pass of
-[round 3 of the re-audit](proposals/reaudit/round-3/log-fixes.md) left it. The
+[round 4 of the re-audit](proposals/reaudit/round-4/log-fixes.md) left it. The
 [specification](../spec/README.md) alone binds, and it governs where this page differs. Each
 section links the files that state its rules. A code such as `CON-001` is the identifier of
 one promise in them.
@@ -101,15 +101,29 @@ permission. Two tools of the core package are the exception and need no Conduit:
 IFC-035).
 
 A Conduit comes to exist in one of two ways. A template of an Interface, an Agent or a Resource
-can declare it; one Conduit is then made with each instance of that template (CON-002), and
-opening it is a step of that instance's setup (GRA-022, CON-004). Or a Conduit document names
+can declare it; one Conduit is then made with each instance of that template, or one for each
+component where the Conduit's own template is a composite (CON-002), and opening it is a step
+of that instance's setup (GRA-022, CON-004). Or a Conduit document names
 an existing instance as its consumer and another as its target (CON-012).
 
 A request can be limited by restrictions. A filter is carried by one Conduit and narrows what
 may pass through it. A policy is not carried by a Conduit: it is applied by a request that
 names actors, targets or both. It applies to each request whose
 caller is one of those actors, where any are named, and whose target is one of those targets,
-where any are named (ACC-031). A restriction only narrows (ACC-008).
+where any are named (ACC-031). No policy applies to a request whose caller is `root`
+(ACC-035). A restriction only narrows (ACC-008).
+
+The engine does not apply most restrictions itself. It decides whether an open Conduit lists the
+operation, and it checks the two requirements of the core package, a bound and the shared-host
+requirement. Every other filter, and every policy, it sends with each request to the
+implementation of the target, which applies it (IFC-018, IFC-019). So that implementation must
+state the restriction's requirement under `supports` in its manifest, and one marked `plain`
+supports none (CON-022, PKG-020). A restriction is never dropped: a request that carries one
+which the target's implementation does not support reports unavailable (ACC-015). The operations
+of the core package are implemented by the engine itself, which supports only the bound. A
+policy that names an actor therefore makes every request of that actor to `management`, to
+`access` or to a Pool for one of those operations unavailable, the request to remove the policy
+among them, and `root` can still remove it (ACC-015, ACC-026).
 
 Inspecting a Conduit reports, for each restriction, whether it is enforced or only mediated
 (ACC-027). Mediated means that the restriction applies to requests that pass through the
@@ -126,7 +140,10 @@ unlimited (ACC-029). A right to open is passed on only as it is or narrower (ACC
 Access begins at first start. Five objects then exist: the Pool `system`, the location `local`,
 the Resources `management` and `access`, and the Interface `root`, which has an open Conduit to
 each of those two Resources (FST-001, FST-002). Any other Interface has no access until a
-Conduit of which it is the consumer is opened (ACC-023).
+Conduit of which it is the consumer is opened (ACC-023). These objects are set apart. None of
+the five is retired, unregistered or renamed (LIF-022), no request closes a Conduit of which
+`root` is the consumer (ACC-024), and two operations, declaring a location lost and purging
+records, are dispatched only when `root` asks (ACC-032).
 
 Closing a Conduit ends all the access it carried, and it is never opened again (ACC-011,
 LIF-006).
@@ -211,8 +228,13 @@ verbs are open and close, in place of set up and retire, and the operations are 
 to be confirmed or its location to have been declared lost (LIF-017).
 
 Retiring an instance also closes its Conduits. Those of which it is the target are closed at
-once. Those of which it is the consumer are closed once its shutdown is confirmed, and until
-then they permit only the requests of its retirement (CON-008, ACC-039).
+once. Those of which it is the consumer are closed once its shutdown is confirmed, or at once
+where it is declared lost, and until then they permit only the requests of its retirement
+(CON-008, ACC-039). Shutdown is the stopping and releasing of what the retired instance
+itself holds. It is confirmed once a retirement of the instance has succeeded, and never
+while the instance holds a runtime or a start of one of its runtimes has an unknown outcome
+(LIF-024). Declaring a location lost, which only `root` may do, retires the location and
+every instance placed on it without their shutdown being confirmed (PLC-017).
 
 Whether an instance is running, paused or idle is not a lifecycle state. A type may define such
 conditions, and they are reported beside the state (LIF-011).
@@ -222,7 +244,10 @@ Inspecting an instance returns what was declared, its status and the records abo
 acts to remove it without an explicit request (OBS-004). There is one exception: an
 implementation may restore its own runtime, where its type's contract allows it. To restore a
 runtime is to keep alive what is behind the handle that the instance holds. The handle stays
-valid, and nothing is dispatched because of it (OBS-005).
+valid, and nothing is dispatched because of it (OBS-005). Where the type's contract does not
+allow the restoring, the engine treats the handle as no longer held and stops the runtime
+itself. It dispatches that stop for no actor and through no Conduit: it is the one request
+that has no caller (OBS-007).
 
 ## Operations, outcomes and reasons
 
@@ -235,7 +260,10 @@ management verb, such as register, set up, open, close and retire, is itself an 
 
 A request asks for one operation on one target. The engine makes its own access decision before
 any implementation is invoked (ACC-002). A request that passes the engine's checks is
-dispatched, which begins an invocation. Every request ends in one of seven ways
+dispatched, which begins an invocation. The implementation then applies the restrictions it
+was sent, and answers refused or unavailable, having performed nothing, where one of them
+forbids the request or cannot be applied (IFC-019, IFC-026). Every request ends in one of
+seven ways
 ([definitions](../spec/definitions.md#how-a-request-ends)):
 
 - With an **outcome**: succeeded, failed or unknown. Unknown means it cannot be confirmed that
@@ -258,7 +286,7 @@ is itself an operation, `reconcile.v1`, and needs an open Conduit that lists it.
 invocation of a management verb, that Conduit is to the target that authorized the request
 being reconciled. For any other invocation it is to the target that manages the instance the
 invocation was dispatched to: the Pool that owns it where it is a Resource, and `management`
-otherwise (ACC-033).
+otherwise, or where that Pool is retired or the instance has been unregistered (ACC-033).
 
 A control is an operation that changes stored settings. A request to change an object names the
 object's current revision, and one that names another reports conflict (REV-002).
@@ -266,11 +294,13 @@ object's current revision, and one that names another reports conflict (REV-002)
 Model work starts only as the effect of an operation whose contract is marked as starting it,
 dispatched through an open Conduit that lists it (IMP-001). Setup never starts it.
 
-Not every invocation begins with a consumer's request. An operation whose contract is marked
+Not every invocation begins with a consumer's request. The stop of OBS-007 is one case, and
+later work is the other. An operation whose contract is marked
 as arranging later work may arrange work that starts after its own invocation has ended. The
 implementation that holds the work asks for each start with `start-later-work.v1`, and the
 engine dispatches it for the caller that arranged the work, through the Conduit it was
-arranged through, and only while every Conduit the work is tied to is open (ACC-019, ACC-040).
+arranged through, and only while every Conduit the work is tied to is open and the consumer
+of none of them is retired (ACC-019, ACC-040).
 Such work starts model work only if the operation that arranged it is marked as starting it
 too (IMP-006). Every access decision and every invocation is recorded (REC-001).
 
@@ -303,8 +333,8 @@ is the Model Context Protocol. An operation is one tool, and the engine presents
 consumer, as tools, the operations its open Conduits list and the two tools that need no
 Conduit (IFC-012).
 
-The core package is built into every engine. It exports the templates of the first-start
-objects, the contracts of the management verbs and the schemas of documents. It needs no item
+The core package is built into every engine. It exports the templates that first start
+instantiates, the contracts of the management verbs and the schemas of documents. It needs no item
 of `packages` in any manifest and cannot be replaced.
 
 ## Three layers, and what is outside them

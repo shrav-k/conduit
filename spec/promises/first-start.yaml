@@ -7,6 +7,10 @@
 # FST-002 and FST-005: the templates are in spec/core/templates.yaml. The second round of the
 # re-audit (docs/proposals/reaudit/round-2/reader-3.md, finding 8) changed FST-001 and added
 # FST-006, and its closing pass changed FST-002 and FST-006. Draft: no vector exists yet.
+# Standing: the owner accepted these promises as they stood at the rulings that this comment
+# names by number. Every change listed above for the conversion of the older text (the docs
+# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
+# logged in the records named, and the owner has not ruled on it.
 
 - id: FST-001
   layer: language

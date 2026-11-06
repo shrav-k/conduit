@@ -1,6 +1,6 @@
-# Example. The manifest of a project that is not published: it states
-# no `address` and no `version` (PKG-017). Every name under example.org is invented, and each
-# digest is illustrative: it is not the digest of a real archive.
+# Example. The manifest of a submitted project. It states no `address` and no `version`,
+# which only a package's manifest must state (PKG-017, MAN-004). Every name under example.org
+# is invented, and each digest is illustrative: it is not the digest of a real archive.
 #
 # The core package is not listed, and may not be (NAM-020, NAM-021).
 

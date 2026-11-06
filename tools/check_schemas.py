@@ -29,7 +29,7 @@ What it checks, and reports under these numbers:
      inputs it declares to places its type's schema describes and declares the input
      `revision` and the output `settings` (CTR-006), every other input of a control is
      optional (REV-006, as the record settled it), the operations of REV-012 take no
-     `revision`, no implementation has the name of a document of its project or package
+     `revision`, `replace.v1` and `rename.v1` return one (SUB-009, OBJ-026), no implementation has the name of a document of its project or package
      (NAM-027), and the
      tables of spec/core/README.md and spec/schemas/README.md list exactly the files and the
      exports there are, each export with its kind and with promises that exist. The same
@@ -40,7 +40,8 @@ What it checks, and reports under these numbers:
      below with the promise it comes from. The core package and every directory under
      examples/valid/ break none of them. Every file under examples/invalid-by-rule/ is one
      set of documents, each of them valid against the schemas, that the rule its file is
-     named for rejects. The rule for SCH-019 validates a `default` against its schema, so it
+     named for rejects. A file there with `-manifest-` in its name holds a manifest, which is
+     valid against `manifest.v1` and which a rule on manifests rejects. The rule for SCH-019 validates a `default` against its schema, so it
      needs jsonschema; without it the rule is not applied, and the tool says so.
 
 What it does not check: anything that needs an engine. It does not resolve references to
@@ -100,6 +101,9 @@ PRIVATE = frozenset()
 # The operations that REV-012 says name no revision and advance none.
 NO_REVISION = ("set-up.v1", "retire.v1", "retire-with-resources.v1", "open.v1", "close.v1")
 
+# The operations that return the revision of the object they changed (SUB-009, OBJ-026).
+RETURNS_REVISION = ("replace.v1", "rename.v1")
+
 # The rules of step 6, each with the promise it comes from. A file under
 # examples/invalid-by-rule/ is named for one of these promises.
 RULES = {
@@ -122,6 +126,10 @@ RULES = {
     "bound-constituent": "CTR-011",
     "runtime-step-output": "GRA-028",
     "graph-invokes-itself": "GRA-005",
+    "names-nothing": "NAM-028",
+    "runtime-operation-step": "TPL-016",
+    "conduit-names-one": "GRA-024",
+    "core-address": "NAM-021",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -449,10 +457,14 @@ def check_references(role, doc, packages, local_kinds, counts):
     """Return what is wrong with the references of one document, as (rule, message) pairs.
     `packages` maps an address to what that package exports, name -> kind, and `local_kinds`
     does the same for the project or package the document belongs to, which `#name` reaches
-    (NAM-022). The rule is "ref" for a `$ref` (SCH-015) and None for any other reference."""
+    (NAM-022). The rule is "ref" for a `$ref` (SCH-015), "names-nothing" for a selection, or a
+    `from` written as a qualified reference, that names nothing in a package this tool has or
+    in the document's own project or package (NAM-028), and None for any other fault. A `from`
+    written `#name` is not such a selection: in a submitted project it resolves among the
+    templates that exist (NAM-022)."""
     found = []
 
-    def one(ref, want, where, rule=None):
+    def one(ref, want, where, rule=None, absent="names-nothing"):
         if not isinstance(ref, str):
             return
         local = LOCAL_REF.match(ref)
@@ -466,7 +478,7 @@ def check_references(role, doc, packages, local_kinds, counts):
             return
         counts["checked"] += 1
         if got is None:
-            found.append((rule, f"{where}: {ref} names nothing"))
+            found.append((rule or absent, f"{where}: {ref} names nothing"))
         elif got != want:
             found.append((rule, f"{where}: {ref} names something of the kind {got}, and the kind "
                                 f"{want} is expected"))
@@ -490,7 +502,7 @@ def check_references(role, doc, packages, local_kinds, counts):
         place makes. A bare name or `{kind, name}` names a template that exists, which only
         an engine can look up, and is not checked here."""
         if isinstance(ref, str) and "#" in ref:
-            one(ref, want, where)
+            one(ref, want, where, absent=None if ref.startswith("#") else "names-nothing")
 
     if role == "instance":
         template(doc.get("from"), doc.get("kind"), "from")
@@ -1374,6 +1386,101 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                               f"invokes that operation again, itself or through other "
                               f"graphs"))
 
+    # runtime-operation-step (TPL-016): no step with no `conduit` names, as its `operation`, an
+    # operation that a runtime of the template or of its type names as its `start` or `stop`.
+    # Applied to the graphs a template writes, with the runtimes of its type where the tool has
+    # the type's contract. A graph that a selection reaches in another document is not followed.
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        if kind == "Conduit":
+            continue
+        type_key = canon(spec.get("type"), here)
+        type_doc = lookup(type_key, "Type")
+        declared = [(spec, here)]
+        if type_doc is not None and isinstance(type_doc.get("spec"), dict):
+            declared.append((type_doc["spec"], type_key[0]))
+        of_runtime = {}
+        for holder, home in declared:
+            for runtime, held in members(holder.get("runtimes")):
+                for role in ("start", "stop"):
+                    key = canon(held.get(role), home) if isinstance(held, dict) else None
+                    if key is not None:
+                        of_runtime.setdefault(key, (runtime, role))
+        for label, _, graph in graphs_of(spec, here):
+            for step, held in graph["steps"].items():
+                if not isinstance(held, dict) or "conduit" in held:
+                    continue
+                key = canon(held.get("operation"), here)
+                if key in of_runtime:
+                    runtime, role = of_runtime[key]
+                    found.append(("runtime-operation-step",
+                                  f"in {label} of the template {name}, the step {step} names "
+                                  f"{key[1]}, the `{role}` operation of the runtime {runtime}"))
+
+    # conduit-names-one (GRA-024): the `conduit` of a step names a declared Conduit of the
+    # template or, by a dotted path, a component of one, and exactly one of the Conduits it
+    # names lists the step's operation. Applied where the tool has the Conduit templates that
+    # the declared Conduit and its components are made from, and each of them writes its
+    # `operations`; where one does not, nothing is said of that step.
+    def listing(template, visited=()):
+        """The `operations` of each Conduit that one Conduit template makes, as a list of
+        (path, set of operations), or None where the tool cannot tell."""
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        if "components" not in spec:
+            listed = spec.get("operations")
+            if not isinstance(listed, list):
+                return None
+            return [((), {canon(ref, here) for ref in listed})]
+        out = []
+        for component, held in members(spec.get("components")):
+            below = template_of(held.get("from"), "Conduit", templates, package_docs) \
+                if isinstance(held, dict) else None
+            if below is None or id(below) in visited:
+                return None
+            inner = listing(below, visited + (id(template),))
+            if inner is None:
+                return None
+            out += [((component,) + path, ops) for path, ops in inner]
+        return out
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        conduits = spec.get("conduits") if isinstance(spec.get("conduits"), dict) else {}
+        for label, _, graph in graphs_of(spec, here):
+            for step, held in graph["steps"].items():
+                value = held.get("conduit") if isinstance(held, dict) else None
+                if not isinstance(value, str):
+                    continue
+                first, *rest = value.split(".")
+                at = f"in {label} of the template {name}, the step {step}"
+                if first not in conduits:
+                    found.append(("conduit-names-one",
+                                  f"{at} names the Conduit {first}, which the template does "
+                                  f"not declare"))
+                    continue
+                made_from = template_of((conduits[first] or {}).get("from"), "Conduit",
+                                        templates, package_docs) \
+                    if isinstance(conduits[first], dict) else None
+                made = listing(made_from) if made_from is not None else None
+                if made is None:
+                    continue
+                under = [(path, ops) for path, ops in made if path[:len(rest)] == tuple(rest)]
+                if not under:
+                    found.append(("conduit-names-one",
+                                  f"{at} names {value}, and the declared Conduit {first} has "
+                                  f"no such component"))
+                    continue
+                lists = [path for path, ops in under
+                         if canon(held.get("operation"), here) in ops]
+                if len(lists) > 1:
+                    found.append(("conduit-names-one",
+                                  f"{at} names {value}, in which {len(lists)} component "
+                                  f"Conduits list its operation: "
+                                  f"{' and '.join('.'.join((first,) + p) for p in lists)}"))
+                elif not lists:
+                    found.append(("conduit-names-one",
+                                  f"{at} names {value}, and no Conduit it names lists the "
+                                  f"step's operation"))
+
     # default-valid (SCH-019): a `default` satisfies the schema that states it, and an input's
     # `default` the input's own `schema`. Applied where every `$ref` of the schema can be
     # followed inside this repository; the others are counted and not validated.
@@ -1381,6 +1488,23 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
         for doc in docs:
             for message in defaults.faults(doc, scope or {}):
                 found.append(("default-valid", message))
+    return found
+
+
+def manifest_rules(manifest, core):
+    """Return (rule, message) for each rule on manifests that one manifest breaks. There is
+    one: core-address (NAM-021), that a manifest neither lists the core package under
+    `packages` nor states its address as its own. The core package's own manifest, which is
+    built into the engine, is not given to this function."""
+    found = []
+    if not isinstance(manifest, dict):
+        return found
+    if manifest.get("address") == core:
+        found.append(("core-address", f"the manifest states the core package's address, "
+                                      f"{core}, as its own"))
+    if isinstance(manifest.get("packages"), dict) and core in manifest["packages"]:
+        found.append(("core-address", f"the manifest lists the core package, {core}, under "
+                                      f"`packages`"))
     return found
 
 
@@ -1577,6 +1701,11 @@ def main():
             fail(f"core package: {name} is not an Operation contract")
         elif "revision" in inputs:
             fail(f"core package: {name} takes `revision`, and REV-012 says it names none")
+    for name in RETURNS_REVISION:
+        outputs = ((operations.get(name) or {}).get("spec") or {}).get("outputs") or {}
+        if "revision" not in outputs or outputs["revision"].get("optional"):
+            fail(f"core package: {name} does not declare the output `revision`, which SUB-009 "
+                 f"and OBJ-026 have it return")
     controls = check_controls("core package", [d for _, ds in core_files for d in ds],
                               package_docs, core)
     for directory, files in by_dir.items():
@@ -1624,7 +1753,7 @@ def main():
           f"is also an export. Checked {counts['checked']} references for the kind they name; "
           f"{counts['skipped']} name packages that are not in this repository and were not "
           f"checked. Checked {controls} controls, the {len(NO_REVISION)} operations that "
-          f"take no `revision`, the tables of the two READMEs, and {cited} citations of "
+          f"take no `revision`, the {len(RETURNS_REVISION)} that return one, the tables of the two READMEs, and {cited} citations of "
           f"promises in {len(cited_in)} files. The example packages keep {private} documents "
           f"private.")
 
@@ -1644,6 +1773,12 @@ def main():
     for label, docs, is_core, scope in sets:
         for rule, message in apply_rules(docs, is_core, core, package_docs, checker, scope):
             fail(f"{label}: {message} ({RULES[rule]})")
+    for directory, files in by_dir.items():
+        for path, docs in files:
+            if path.name == "conduit.yaml":
+                for doc in docs:
+                    for rule, message in manifest_rules(doc, core):
+                        fail(f"{rel(path)}: {message} ({RULES[rule]})")
     in_place = (checker.checked, checker.skipped) if checker else (0, 0)
     turned_away, valid_first, not_run = 0, 0, 0
     for path in groups["by-rule"]:
@@ -1660,23 +1795,27 @@ def main():
             not_run += 1
             print(f"   NOT RUN {path.name}: the rule for {promise} needs jsonschema")
             continue
+        is_manifest = "-manifest-" in path.name
         if validating:
             for index, doc in enumerate(docs):
-                why = validate(bundled, doc, False)
+                why = validate(bundled, doc, is_manifest)
                 if why:
                     fail(f"{rel(path)} document {index + 1}: not valid against the schemas, "
                          f"so no rule is what rejects it: {why}")
                 else:
                     valid_first += 1
-        scope = checker.add(None, docs) if checker else None
-        if checker:
-            checker.close()
-        found = apply_rules(docs, False, core, package_docs, checker, scope)
-        kinds, _ = kinds_in([(path, docs)])
-        for doc in docs:
-            if isinstance(doc, dict):
-                found += check_references(role_of(doc, False), doc, packages, kinds,
-                                          {"checked": 0, "skipped": 0})
+        if is_manifest:
+            found = [fault for doc in docs for fault in manifest_rules(doc, core)]
+        else:
+            scope = checker.add(None, docs) if checker else None
+            if checker:
+                checker.close()
+            found = apply_rules(docs, False, core, package_docs, checker, scope)
+            kinds, _ = kinds_in([(path, docs)])
+            for doc in docs:
+                if isinstance(doc, dict):
+                    found += check_references(role_of(doc, False), doc, packages, kinds,
+                                              {"checked": 0, "skipped": 0})
         mine = [message for rule, message in found if rule and RULES[rule] == promise]
         if not mine:
             fail(f"{rel(path)}: no rule of this tool for {promise} rejects it, and it must be "

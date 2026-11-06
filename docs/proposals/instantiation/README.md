@@ -3,7 +3,7 @@
 Status: owner rulings of 2026-11-05 for
 [plan-audit item A36](../../AUDIT.md#p0--make-the-language-concrete-and-complete) (question Q12).
 The decisions below are accepted. Their spellings were illustrative when this was written, under
-a [vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
+a [vocabulary boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
 since ended. They are now written as numbered promises in the specification:
 [instantiation](../../../spec/promises/instantiation.yaml), INS-001 to INS-023, less those the
 comment at the head of that file says were folded elsewhere. Nothing here has been executed.

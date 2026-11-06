@@ -10,8 +10,8 @@
 
 Status: research and recommendations for discussion, 2026-11-04. No replacement names or field
 spellings are adopted here. The five settled families remain **Interface, Agent, Resource, Pool
-and Conduit**. The [vocabulary map](../../VOCABULARY.md) links the accepted meanings; its `Vxx`
-identifiers remain stable documentation hooks. The [current review](../../REVIEW.md#future-vocabulary-pr)
+and Conduit**. The [vocabulary map](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) links the accepted meanings; its `Vxx`
+identifiers remain stable documentation hooks. The [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#future-vocabulary-pr)
 is still the only decision queue.
 
 The behavior/structure and documentation work is preserved on main through

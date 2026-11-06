@@ -21,7 +21,7 @@ batch under [proposals/](#records-of-rulings).
 | Understand a ruling | [Ruling log](AUDIT.md#ruling-log) → the [record](#records-of-rulings) of that batch → [research](research/README.md) for the evidence. |
 | Contribute | [AGENTS.md](../AGENTS.md) → [contributor guide](../CONTRIBUTING.md). |
 | Build an engine | Not from this branch. See [independent builds](implementation/INDEPENDENT_BUILDS.md). Builders work from a separate branch, which is not yet published. |
-| See how the design got here | [protocol/](protocol/README.md), superseded → [archive](archive/README.md). |
+| See how the design got here | The [archive](archive/README.md), whose index lists, with links, the documents that the specification superseded and that ruling 39 removed from the tree, and the [history of the plan audit](archive/plan-audit-history.md). |
 
 ## What each document is
 
@@ -40,15 +40,15 @@ batch under [proposals/](#records-of-rulings).
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | Where each kind of work belongs, the checks, the license and project ownership. |
 | [AUDIT.md](AUDIT.md) | The plan audit. The one tracker: where things stand, the owner's ruling log, priorities, action items and the experiment program. Not a specification: a ruling changes nothing until it is applied to the documents it affects. |
 | [OVERVIEW.md](OVERVIEW.md) | A plain-language overview of the language, written from the specification. Not binding. |
-| [LANGUAGE_DEFECTS.md](LANGUAGE_DEFECTS.md) | The register of the first sweep: 167 places where `docs/protocol/` would have let two engine builders diverge, and what became of each. Findings against `spec/` are in the [re-audit record](proposals/reaudit/README.md). |
+| [LANGUAGE_DEFECTS.md](LANGUAGE_DEFECTS.md) | The register of the first sweep: 167 places where the protocol topics, since removed, would have let two engine builders diverge, and what became of each. Findings against `spec/` are in the [re-audit record](proposals/reaudit/README.md). |
 | [../tools/](../tools) | The checkers: `check_docs.py` for links and anchors, `set_names.py` for the names `spec/names.yaml` defines, `check_schemas.py` for the schemas, the core package and the examples, and `check_doc_migration.py`, the record of one past migration. The first three are the checks run before each commit; [what each needs](../CONTRIBUTING.md#checks) is in the contributor guide. |
 
 ### Records of rulings
 
 Each record says what was proposed, what was decided, by whom and why. Most hold rulings of
-the owner. Four, the documents audit and rounds 2 to 4 of the re-audit, hold what the
-coordinator decided under ruling 37; their ruling column names the ruling that asked for the
-work, not a ruling on its content. They are listed in the order
+the owner. The documents audit and rounds 2 to 4 of the re-audit hold what the coordinator
+decided under ruling 37, which ruling 39 accepted; their ruling column names the ruling that
+asked for the work. They are listed in the order
 of the rulings. Where a record and the specification differ, the specification governs.
 
 | Location | Ruling | What it records |
@@ -73,7 +73,8 @@ of the rulings. Where a record and the specification differ, the specification g
 | [proposals/reaudit/round-3/](proposals/reaudit/round-3/README.md) | 30, 37 | Round 3 of the re-audit: the same four readers' roles, on the specification as round 2 left it. Their reports, the decisions, and the log of the fix pass. |
 | [proposals/reaudit/round-4/](proposals/reaudit/round-4/README.md) | 30, 37 | Round 4 of the re-audit: the reports, the second check of the interface against the Model Context Protocol, the decisions, and the log of the fix pass. |
 | [proposals/ruling-38/](proposals/ruling-38/README.md) | 38 | The fourteen points put to the owner after round 4, with the ruling on each in the owner's words, and the log of what it changed in `spec/`. |
-| [proposals/secrets/](proposals/secrets/README.md) | 38 | Proposed, not ruled: the secret type that ruling 38 asked to be explored. |
+| [proposals/ruling-39/](proposals/ruling-39/README.md) | 39 | The fifteen points put to the owner before the cold read by Codex, with the ruling on each in the owner's words. |
+| [proposals/secrets/](proposals/secrets/README.md) | 38, 39 | Proposed, not ruled: the secret type, revised after the research that ruling 39 asked for ([research packet](research/SECRETS.md)). |
 
 ### Process for the builds
 
@@ -82,27 +83,13 @@ of the rulings. Where a record and the specification differ, the specification g
 | [implementation/INDEPENDENT_BUILDS.md](implementation/INDEPENDENT_BUILDS.md) | The process, the independence rules and the readiness gate for the two independent builds. The roles and rules are accepted (ruling 11). The builds have not started. |
 | [implementation/ENGINE_BUILD_BRIEF.md](implementation/ENGINE_BUILD_BRIEF.md) | The brief each builder receives. A draft; not issued. |
 
-### Superseded, kept for reference
-
-Nothing here binds. Each of these predates the specification and uses the words from before the
-vocabulary ruling.
-
-| Location | What it is |
-| --- | --- |
-| [protocol/](protocol/README.md) | The design as it stood before it was written as promises. Superseded. It is kept as source material for the type contracts still to be written, and because many links point into it. It is no longer edited. |
-| [REVIEW.md](REVIEW.md) | The earlier work queue. Superseded by the plan audit; kept for the links into it. |
-| [VOCABULARY.md](VOCABULARY.md) | The map of the working terms from before the vocabulary ruling, with stable `vxx` links into the protocol topics. The terms in force are in `spec/definitions.md`. |
-| [authoring/](authoring/README.md) | An authoring guide written against the protocol topics. For current documents see [spec/schemas/examples/](../spec/schemas/examples/). |
-| [proposals/authoring-syntax/](proposals/authoring-syntax/README.md) | Earlier alternatives for how documents are written, with long examples. Predates the rulings; the shapes in force are the schemas under `spec/schemas/`. |
-| [implementation/README.md](implementation/README.md), [ARCHITECTURE.md](implementation/ARCHITECTURE.md), [ORGANIZATION.md](implementation/ORGANIZATION.md) | Earlier proposals for a reference implementation: mechanisms, crates and milestones. Not an input for engine builders. |
-
 ### Evidence and history
 
 | Location | What it is |
 | --- | --- |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming research predates the specification. |
-| [archive/](archive/README.md) | Closed reviews, the accounting of one migration and attributed collaborator proposals, including dissent. History; nothing in it binds. |
-| [../experiments/](../experiments/README.md) | Exploratory plans, fixtures and measured evidence. Executed: library probes (003) and a Rust model-checking evaluation (004). Planned only: 002. No experiment has run a Conduit engine, because none exists. |
+| [archive/](archive/README.md) | Closed reviews, the accounting of one migration, attributed collaborator proposals including dissent, the [history of the plan audit](archive/plan-audit-history.md), and the [list of documents removed from the tree](archive/README.md#removed-from-the-tree) with links to their last versions. History; nothing in it binds. |
+| [../experiments/](../experiments/README.md) | Measured evidence. One experiment remains, a Rust model-checking evaluation (004); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. |
 
 ## Repository boundaries
 
@@ -121,8 +108,8 @@ one is made, renders these sources.
 Accepted behavior is a promise in `spec/`, in the terms of `spec/definitions.md`. A change needs
 an owner ruling, recorded in the [ruling log](AUDIT.md#ruling-log) of the plan audit with its
 record under `proposals/`. The one other way is a decision on a finding of the re-audit, under
-ruling 37, which is logged as the coordinator's and not the owner's
-([who decides what](AUDIT.md#who-decides-what-since-ruling-37)). `protocol/` is no longer edited.
+ruling 37, which is logged as the coordinator's
+([who decides what](AUDIT.md#who-decides-what)).
 
 Keep a proposal that is not yet ruled under `proposals/`, a source claim in `research/`, and a
 test or a result in `../experiments/`. After a ruling, change the promises, the definitions, the

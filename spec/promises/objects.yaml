@@ -13,20 +13,17 @@
 # pass (docs/proposals/reaudit/round-2/log-closing.md) changed OBJ-003, OBJ-015, OBJ-023 and
 # OBJ-026: a runtime is no longer marked optional. No promise of this file has been removed.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed OBJ-005, which is now of the layer `convention`, OBJ-009, OBJ-010,
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed OBJ-005, which is now of the layer `convention`, OBJ-009, OBJ-010,
 # which is worded as what resolving reads, and OBJ-026, and added OBJ-027 and OBJ-028, of the
 # layer `convention`, which took their rules from the observable of OBJ-026. It removed none.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # OBJ-026: `rename.v1` returns the object's revision. It added none and removed none.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 
 - id: OBJ-001
   layer: language

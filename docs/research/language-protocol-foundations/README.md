@@ -7,10 +7,10 @@ rechecks Kubernetes, workflow systems and the recent binding/graph rulings. It s
 semantic precedents from syntax preferences and authoring costs; it changes no accepted decision.
 
 Research date: **2026-11-02**. This is evidence and recommendations for the next authoring review,
-not an amendment to the [accepted protocol](../../protocol/README.md). No package spelling,
+not an amendment to the [accepted protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md). No package spelling,
 schema dialect, new language dependency or implementation has been selected by this research.
 The subsequent owner ruling accepts the YAML/JSON and JSON Schema 2020-12
-[foundation](../../protocol/CONFIGURATION.md#configuration-language); the remaining research
+[foundation](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#configuration-language); the remaining research
 recommendations retain their proposed status.
 
 **Recommendation:** retain typed YAML and MCP, and design Conduit's authoring contract around
@@ -28,8 +28,8 @@ Read this synthesis first, then the [worked comparisons](WALKTHROUGHS.md). The
 [source guide](SOURCES.md) identifies versions, sections, primary links and limitations.
 The [format and schema decision brief](FORMATS.md) compares YAML/JSON, JSON Schema, CUE,
 Dhall and interface-definition alternatives before the final foundation ruling.
-[Twenty offline probes](../../../experiments/003-language-probes/README.md) make several parsing/schema pitfalls reproducible.
-The [current review](../../REVIEW.md) remains the only ruling queue.
+[Twenty offline probes](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md) make several parsing/schema pitfalls reproducible.
+The [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) remains the only ruling queue.
 
 ## Scope and method
 
@@ -227,7 +227,7 @@ The local probes confirm practical consequences in the selected libraries:
 - `10.0` satisfies JSON Schema's mathematical integer type; string `"10"` does not.
 - A safe YAML loader may still accept aliases/merges, `.inf`, and implicit date objects.
 
-See [probe scope and results](../../../experiments/003-language-probes/README.md). These results support a staged implementation:
+See [probe scope and results](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md). These results support a staged implementation:
 parse the chosen strict surface, validate the supported schema vocabulary, resolve typed names,
 materialize unambiguous defaults, then check runtime prerequisites and current authority. The
 order and exact schema/default rules still need a public contract. A stock loader plus validator
@@ -355,7 +355,7 @@ them without reading the reference runtime.
 ## Suggested next discussion
 
 Start with the shared-history package used in the existing
-[package walkthrough](../../proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md), now viewed through
+[package walkthrough](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/PACKAGE_WALKTHROUGH.md), now viewed through
 the [three kinds of connection](WALKTHROUGHS.md#three-kinds-of-connection) and
 [package scope example](WALKTHROUGHS.md#case-1-one-resource-several-contributions).
 Agree what is imported, exported, configured and authorized before choosing field names.

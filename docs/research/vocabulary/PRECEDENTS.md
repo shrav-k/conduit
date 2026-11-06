@@ -5,7 +5,7 @@
 Research date: 2026-11-04. These comparisons concern terminology, not adopting another runtime.
 Source descriptions are attributed below; the “Conduit implication” column is our analysis.
 Candidate words remain unaccepted. See [source boundaries](SOURCES.md) and the
-[accepted vocabulary map](../../VOCABULARY.md).
+[accepted vocabulary map](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md).
 
 ## 1. Orchestration, deployment and packaging
 

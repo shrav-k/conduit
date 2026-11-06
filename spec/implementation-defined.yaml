@@ -12,18 +12,16 @@
 # PKG-022, PKG-004 and NAM-006 decide, and from DL11 the later opening of an optional Conduit,
 # which CON-004 and ACC-006 decide, and added to DL7 how an engine is handed a directory. The
 # follow-up to the fix pass of the third round (docs/proposals/reaudit/round-3/log-fixes.md),
-# on a decision of the coordinator that the owner has not ruled on, added to DL1 the order in
+# on a decision of the coordinator that ruling 39 accepted, added to DL1 the order in
 # which a Pool's Resources are retired where LIF-021 fixes none. The fix pass of the fourth
 # round (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
 # docs/proposals/reaudit/round-4/DECISIONS.md, added to DL8 how the records of objects that
 # no longer exist are read, and to DL12 the serialized copy of a result's structured content.
-# Standing: the owner accepted this list as it stood at the rulings that the second line
-# names. Every change listed above for the conversion of the older text (the docs audit) and
-# for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37, logged in
-# the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which. Ruling 38 took out of DL7 whether an engine that is handed a
-# directory installs the packages its manifest lists: it installs none (SUB-010).
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
+# Ruling 38 (2026-11-06) took out of DL7 whether an engine that is handed a directory installs
+# the packages its manifest lists: it installs none (SUB-010).
 
 - id: DL1
   subject: Graph execution

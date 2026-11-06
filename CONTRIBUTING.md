@@ -12,9 +12,9 @@ document. [AGENTS.md](AGENTS.md) states the same rules in short form.
 ## What binds
 
 The specification in [spec/](spec/README.md) alone binds. Nothing under `docs/` or
-`experiments/` does. [docs/protocol/](docs/protocol/README.md) is the design as it stood before
-the specification; it is superseded and is kept as source material for the type contracts still
-to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
+`experiments/` does. The design as it stood before the specification was removed from the tree
+by ruling 39; the [archive's index](docs/archive/README.md#removed-from-the-tree) links its
+last version, as source material for the type contracts still to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
 
 ## Where work belongs
 
@@ -22,18 +22,16 @@ to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
   [spec/definitions.md](spec/definitions.md). A change needs an owner ruling, recorded in the
   [ruling log](docs/AUDIT.md#ruling-log) of the plan audit with its record under
   `docs/proposals/`. The one other way is a decision on a finding of the re-audit, under
-  ruling 37, which is logged as the coordinator's and not the owner's
-  ([who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)). `docs/protocol/` is no longer edited.
+  ruling 37, which is logged as the coordinator's
+  ([who decides what](docs/AUDIT.md#who-decides-what)).
 - **A proposal for a ruling** is a record under `docs/proposals/`, with the options and a
   recommendation. The owner makes the rulings. Do not record a recommendation as accepted.
 - **A defect in the language** is fixed in the language, not around it. Findings against `spec/`
   are recorded with the [re-audit](docs/proposals/reaudit/README.md). The
-  [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read `docs/protocol/`.
+  [defect register](docs/LANGUAGE_DEFECTS.md) holds the first sweep, which read the protocol topics that ruling 39 removed.
 - **The state of the work** is tracked in one place, the [plan audit](docs/AUDIT.md).
-  [docs/REVIEW.md](docs/REVIEW.md) is superseded as a work queue.
 - **The build process** for the independent builds, and the brief each builder receives, are in
-  [docs/implementation/](docs/implementation/README.md). The architecture and organization
-  documents there are earlier proposals and do not bind.
+  [docs/implementation/](docs/implementation/INDEPENDENT_BUILDS.md).
 - **Research**, meaning sourced comparisons and the analysis of probe results, goes in
   [docs/research/](docs/research/README.md). Attribute source versions and distinguish inference
   from observed behavior. The content of existing research packets is not edited.
@@ -41,7 +39,7 @@ to be written. A behavior that is missing from `spec/` is a gap in `spec/`.
   scope, instructions and dated results. An expected outcome is never presented as a result.
 - **Code** is Rust, in its own directory under [experiments/](experiments/README.md) with a
   lockfile, a pinned toolchain and ignored build output. The only exceptions are the Python
-  checkers in `tools/` and [Experiment 003](experiments/003-language-probes/README.md), which
+  checkers in `tools/` and [Experiment 003](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md), which
   is Python and predates the rule.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
   dissent. It is not edited.
@@ -66,7 +64,7 @@ The vocabulary is ruled (rulings 17, 18 and 27 to 29 of the plan audit). The ter
 in [spec/definitions.md](spec/definitions.md). Write new text in them. Changing a term changes
 the specification, so it needs a ruling like any other change.
 
-[docs/VOCABULARY.md](docs/VOCABULARY.md) is the map of the working terms from before the
+[docs/VOCABULARY.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) is the map of the working terms from before the
 vocabulary ruling. Its `vxx` anchors are documentation references that other documents link to;
 keep them.
 
@@ -170,5 +168,5 @@ formal committee. Governance can evolve through an explicit project decision whe
 
 Public support/security contact details and any additional contribution procedures can be selected
 when distribution needs them. The earlier
-[review](docs/REVIEW.md#owner-decisions-before-public-distribution) records these boundaries.
+[review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md#owner-decisions-before-public-distribution) records these boundaries.
 This guide adds no promise about releases.

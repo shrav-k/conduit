@@ -6,8 +6,8 @@ Researched 2026-11-03, following the request to step back from individual syntax
 This records evidence and recommendations, with subsequent owner rulings identified explicitly.
 The owner accepted the direct-field `reference` layout after the walkthroughs; supporting names
 remain provisional. Previously accepted choices remain in force unless the owner revises them.
-See the [current review](../../REVIEW.md) and
-[lifecycle contract](../../protocol/LIFECYCLE.md#lifecycle-protocol).
+See the [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) and
+[lifecycle contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#lifecycle-protocol).
 
 Scope: the recent configuration, binding, graph and recovery decisions. This is not a fresh audit
 of every account, authorization, distribution or storage decision. Official specifications and

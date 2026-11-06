@@ -1,8 +1,10 @@
 # Definitions
 
-Draft. These are the terms the promises rely on, each with one meaning. The promises govern:
-where a row names a promise, that promise states the rule and the row only says what the word
-means. The history of the vocabulary is in the
+Draft. The owner accepted this file as it stands at
+[ruling 39](../docs/proposals/ruling-39/README.md), which accepted every logged decision of the
+coordinator and choice of an editor. These are the terms the promises rely on, each with one
+meaning. The promises govern: where a row names a promise, that promise states the rule and the
+row only says what the word means. The history of the vocabulary is in the
 [vocabulary record](../docs/proposals/vocabulary/README.md); where the
 [consolidation rulings](../docs/proposals/consolidation/README.md#rulings) or the
 [re-audit](../docs/proposals/reaudit/README.md) changed a word, this file has the current one.
@@ -43,11 +45,10 @@ attempts, of the default of a property, of a selection that names nothing, of th
 policy keeps for a re-export, of what a purge keeps, of the output `revision`, and of a tool
 for an operation that the target does not hold.
 The decisions of the docs audit and of the second, third and fourth rounds are the
-coordinator's, logged in those records, and the owner has not ruled on them, apart from those
-that [ruling 38](../docs/proposals/ruling-38/README.md) accepted, which
-[README.md](README.md) lists where it says what "accepted" covers. Ruling 38, of 2026-11-06,
-also made four decisions of its own, which are the owner's. They are behind the row for later
-work, which is now among the words the promises do not use, with everything the other rows
+coordinator's, logged in those records, and ruling 39 accepted them.
+[Ruling 38](../docs/proposals/ruling-38/README.md), of 2026-11-06, made four decisions of its
+own, which are the owner's. They are behind the row for later work, which is now among the
+words the promises do not use, with everything the other rows
 said of it and the row for the tool `start-later-work.v1` gone; and behind what the rows say
 of the warning that applying a policy gives, of a directory, which installs nothing when it is
 handed over, and of the step of a composite declared Conduit, which makes one request for

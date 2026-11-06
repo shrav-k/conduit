@@ -1,8 +1,9 @@
-# Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
-# ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
-# and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
-# decisions, which the owner has not ruled on, apart from those that ruling 38 accepted. See
-# README.md in this directory.
+# Part of the core package, first accepted by plan-audit ruling 37 (2026-11-05); the record is
+# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
+# re-audit changed since is logged in the records that README.md in this directory names.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 #
 # The two Requirement contracts of the core package.
 #

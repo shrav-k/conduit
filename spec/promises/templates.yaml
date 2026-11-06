@@ -17,24 +17,21 @@
 # added TPL-014. No promise of this file was removed before ruling 38. Draft: no vector exists
 # yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
 # on reconciling the start or the stop of a runtime. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed TPL-007, TPL-009 and TPL-015: an instance holds
 # a runtime until a stop of it has succeeded or has been reconciled as having occurred.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # TPL-007, TPL-009, TPL-011 and TPL-015, and added TPL-016, of the layer `language`: no step
 # invokes the start or the stop operation of a runtime of its own instance by naming it as its
 # `operation`. It removed none.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md. It removed TPL-014, on
 # later work, which is not part of this version. Those IDs are not reused.

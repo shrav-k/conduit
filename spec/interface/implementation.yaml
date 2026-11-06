@@ -29,8 +29,8 @@
 # with its outcome is unknown, and IFC-016 is about one invocation that outlasts its call. No
 # promise of this file was removed before ruling 38. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed IFC-006, IFC-021, IFC-024, IFC-025 and IFC-028: a retrieval names
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed IFC-006, IFC-021, IFC-024, IFC-025 and IFC-028: a retrieval names
 # the invocation that its request served, the stop that the engine dispatches under OBS-007
 # carries no caller, and the result of an operation that declares no outputs is never withheld.
 # It changed nothing that these promises say of the Model Context Protocol itself, and the
@@ -41,7 +41,7 @@
 # invocation may give its target in the resolved form.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # IFC-010, IFC-012, IFC-018, IFC-024 to IFC-027, IFC-029, IFC-032 and IFC-033, made IFC-026 a
 # `must`, and added IFC-036, on a request that the protocol has a server reject with an error of
 # its own. It applied the second check of these promises against the protocol
@@ -53,12 +53,9 @@
 # of the same file, which are the coordinator's too, changed IFC-018, IFC-032 and IFC-036: a
 # requirement is named on the wire by the package that originally exports it, and a request that
 # cannot be read is answered as the protocol states, whoever sent it.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md. It removed IFC-035, on
 # later work, which is not part of this version. Those IDs are not reused.

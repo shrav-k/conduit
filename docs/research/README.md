@@ -8,8 +8,8 @@ current design and the first proof layout are historical.
 The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
 and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources
 and library probes that informed it. Research does not change accepted semantics. The
-[current review](../REVIEW.md) and [vocabulary map](../VOCABULARY.md) organize remaining naming and
-representation work; [syntax examples](../proposals/authoring-syntax/README.md) remain provisional.
+[current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md) and [vocabulary map](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) organize remaining naming and
+representation work; [syntax examples](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/README.md) remain provisional.
 The [vocabulary research](vocabulary/README.md) compares naming across orchestration, contract,
 workflow, networking, messaging, authorization, observability and agent systems. Its candidate
 tables and walkthroughs were removed once the vocabulary was ruled (plan-audit ruling 36); the
@@ -36,13 +36,13 @@ to declared instance runtimes, with targets passed as declared typed inputs. Ref
 and other authoring details remain open.
 
 Research supported the design documents that came before the specification, chiefly the
-[protocol topics](../protocol/README.md), which are now superseded. It is not a set of
+[protocol topics](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md), which are now superseded. It is not a set of
 requirements. The specification is [`spec/`](../../spec/README.md), and the current worked
 example is [`spec/schemas/examples/valid/`](../../spec/schemas/examples/valid/).
 [Experiments](../../experiments/README.md) hold evidence. Completed ruling queues and duplicate
 configuration walkthroughs have been removed.
 
-The [v0 implementation proposal](../implementation/README.md) applies this evidence
+The [v0 implementation proposal](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/implementation/README.md) applies this evidence
 to concrete runtime and repository boundaries. Its pending decisions are separate from research
 findings and from the accepted protocol.
 The current design accepts code-optional MCP-backed plugins and independently accessible

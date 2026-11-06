@@ -9,6 +9,9 @@ settles the points that the editors who applied ruling 37 left open.
 Every row is a choice made by the coordinator from text that was already accepted. The owner
 can strike any of them.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 ## The nineteen behaviors
 
 | ID | Behavior the older text accepted | How the specification states it | Layer |

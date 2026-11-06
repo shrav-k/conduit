@@ -8,7 +8,7 @@
 # How Conduit can become a protocol
 
 **Status: proposal for discussion (2026-11-01).** Nothing here is accepted design.
-[SPEC](../../OVERVIEW.md) and [DESIGN](../../protocol/README.md) still govern.
+[SPEC](../../OVERVIEW.md) and [DESIGN](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) still govern.
 
 A protocol is a spec, not a program and not a language. Conduit becomes one when someone can
 read the spec, write a client in any language, and work with any conforming implementation
@@ -56,7 +56,7 @@ These parts of today's design already read like protocol rules.
 ## What v1 needs
 
 Four pieces, built in order. Each one uses the specs and the
-[001 YAML packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) as its source.
+[001 YAML packet](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) as its source.
 
 ### 1. Schema — what is valid
 

@@ -159,8 +159,9 @@ given as dropped. The only leftover of the gate of two clean rounds is H-3.
 
 ### H-8 minor: one private repository name stays in an entry document, and a count is off
 
-- `AGENTS.md:80`: "Do not edit the sibling directories `../agentwatch` and `../pi-reference`".
-  `agentwatch` is one of the two names that ruling 38, point 14, has removed;
+- `AGENTS.md:80`: "Do not edit the sibling directories [a private repository] and
+  `../pi-reference`". That directory's name is one of the two names that ruling 38, point 14,
+  has removed;
   `docs/proposals/ruling-38/README.md:50` says "The two names are removed from the documents."
   `docs/AUDIT.md:218` leaves the sibling directories to the owner, so this is known. The
   record is not true as written.

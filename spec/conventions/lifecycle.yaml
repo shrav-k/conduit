@@ -19,8 +19,8 @@
 # whose shutdown is confirmed. The follow-up to that pass changed LIF-009. No promise of this
 # file has been removed. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed LIF-007, LIF-009, LIF-012, LIF-015, LIF-021 and LIF-028, and added
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed LIF-007, LIF-009, LIF-012, LIF-015, LIF-021 and LIF-028, and added
 # LIF-031, on a request that holds the resolved form of a reference, and LIF-032, on a request
 # to set up or to retire a template or a Conduit. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
@@ -29,7 +29,7 @@
 # is not confirmed, and a retired instance takes the reconciliation of that start.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # LIF-001, LIF-009, LIF-017 to LIF-019, LIF-021 to LIF-024, LIF-027, LIF-028 and LIF-030, and
 # added LIF-033, on a request for a new instance in the place of one that no nested
 # instantiation made, and LIF-034, on the reason that a request to retire, unregister or rename
@@ -39,12 +39,9 @@
 # of the same file, which are the coordinator's too, changed LIF-023, LIF-027 and LIF-028: the
 # exceptions for the component Conduits of a composite declared Conduit were taken out again,
 # because such a Conduit is opened all together or not at all, with nothing closed.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
 

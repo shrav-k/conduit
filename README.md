@@ -23,25 +23,26 @@ This repository holds the design of the language. It holds no engine.
 
 | Part | State on 2026-11-06 |
 | --- | --- |
-| [Specification](spec/README.md) | A draft. Every area of the language is written as numbered promises. A promise is one rule, stated so that it can be checked. With them are the definitions of the terms, JSON Schemas of the documents, example documents and the core package, which is the package built into every engine. "Draft" means that the specification is not complete and is not a release: no promise is yet tested by a conformance vector, which is a test case that any engine can be run against. Some of its parts are also headed "accepted by the owner". That means the owner ruled on the part as it stood at the ruling named, and it is still part of the draft. What later passes changed rests on other decisions, and [spec/README.md](spec/README.md) says which. Three readers who were given only the specification read it once and reported what they found. Three more rounds, each with four readers, followed, and their findings are resolved. No round has been clean: the readers found 125 problems in the specification in the second round, 44 in the third and 38 in the fourth. What the last round's fixes changed has not been read cold. The owner then ruled on what was open (ruling 38): among other things, work that outlasts its invocation is left out of this version, and the next step is a cold read by another reviewer. The tracker ([docs/AUDIT.md](docs/AUDIT.md#where-things-stand), called the plan audit) says what followed each round and what waits for the owner. The contents table of [spec/README.md](spec/README.md#contents) gives the files and the counts. |
+| [Specification](spec/README.md) | A draft. Every area of the language is written as numbered promises, 434 of them. A promise is one rule, stated so that it can be checked. With them are the definitions of the terms, JSON Schemas of the documents, example documents and the core package, which is the package built into every engine. "Draft" means that the specification is not complete and is not a release: no promise is yet tested by a conformance vector, which is a test case that any engine can be run against. The owner accepted it as it stands at ruling 39. Five rounds of readers who were given only the specification, or the whole repository, have read it and reported what they found; every finding is resolved and logged ([re-audit](docs/proposals/reaudit/README.md)). Secrets are not in it yet: the owner asked for research first, and the [revised proposal](docs/proposals/secrets/README.md) waits for a ruling. The tracker ([docs/AUDIT.md](docs/AUDIT.md#where-things-stand), called the plan audit) says where the work stands and what waits for the owner. |
 | Reference model | An executable model of the language is planned. It does not exist. |
 | Engine | Does not exist. |
-| Code | Four Python tools in `tools/`: three checks that are run before each commit, and the record of one past migration. A model-checking evaluation in Rust ([Experiment 004](experiments/004-stateright-evaluation/README.md)) and a library probe in Python ([Experiment 003](experiments/003-language-probes/README.md)). None of it runs Conduit. |
+| Code | Four Python tools in `tools/`: three checks that are run before each commit, and the record of one past migration. A model-checking evaluation in Rust ([Experiment 004](experiments/004-stateright-evaluation/README.md)). None of it runs Conduit. |
 
 ## What binds
 
 The specification in [spec/](spec/README.md) alone binds. Nothing else in this repository does.
 
 - Everything under `docs/` and `experiments/` is explanation, record, research or evidence.
-- [docs/protocol/](docs/protocol/README.md) is the design as it stood before the specification.
-  It is superseded and is kept as source material for the type contracts, which say how each
-  type behaves and are still to be written.
+- The design as it stood before the specification, and the other documents that the
+  specification superseded, were removed from the tree. The
+  [archive's index](docs/archive/README.md#removed-from-the-tree) lists them, with a link to
+  each last version, as source material for the type contracts still to be written.
 - A behavior that is missing from `spec/` is a gap in `spec/`. It is not supplied by an older
   document.
 - Accepted behavior changes by a ruling of the project's owner, logged in the
-  [plan audit](docs/AUDIT.md#ruling-log). Since ruling 37 a finding of the re-audit may also be
-  settled without a ruling on it; each such decision is logged, is not the owner's, and can be
-  struck by the owner. [Who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)
+  [plan audit](docs/AUDIT.md#ruling-log). A finding of the re-audit may also be settled by the
+  session that coordinates the work, without a ruling on it, and each such decision is logged;
+  ruling 39 accepted every one made before it. [Who decides what](docs/AUDIT.md#who-decides-what)
   says which is which.
 
 ## Start here

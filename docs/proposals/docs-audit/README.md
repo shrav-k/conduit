@@ -31,6 +31,9 @@ The owner ruled that findings are resolved without a ruling on each (ruling 37).
 below follows a ruling already made; the last column names it. Each is the coordinator's and
 not the owner's, and the owner can strike any of them.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 | ID | Decision | Follows |
 | --- | --- | --- |
 | DA1 | The specification alone binds. Nothing under `docs/protocol/` binds; it is source material for the type contracts that are still to be written. A behavior missing from `spec/` is a gap in `spec/`. | Decision NS3 of the form of the specification (ruling 17): a converted topic is replaced by a pointer. Every area is now converted. |

@@ -3,7 +3,7 @@
 > Not binding. This research predates the specification in [`spec/`](../../spec/README.md); where it says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 Updated 2026-11-01. **Research evidence and proposed schema, not an executable specification.**
-Current contracts live in [SPEC.md](../OVERVIEW.md) and [DESIGN.md](../protocol/README.md). The five families
+Current contracts live in [SPEC.md](../OVERVIEW.md) and [DESIGN.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md). The five families
 are Interface, Agent, Resource, Pool and Conduit. Templates specify both complete establishment
 and permitted instance-configuration changes. Pools own Resources and normally establish shared
 service authentication; Conduits narrow each caller's access to those capabilities.
@@ -57,13 +57,13 @@ checking/enforcement where required. Keep code execution under the selected inst
 No automatic plugin loading, speculative Resource provisioning or broad new constraint DSL follows
 from a Conduit listing a requirement. Preserve fixed definitions, narrowing-only access and honest
 unknown/unavailable outcomes. Detailed proposed boundaries are in
-[implementation contracts](../proposals/authoring-syntax/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
+[implementation contracts](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/CONTRACTS.md#composable-relationship-requirements--proposed-contract).
 
 ## Concrete configuration
 
-The current [YAML packet](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) is the single worked
+The current [YAML packet](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) is the single worked
 configuration draft. It replaces earlier partial control and instance examples here. The accepted
-[control contract](../protocol/LIFECYCLE.md#template-defined-configuration-changes) distinguishes fixed
+[control contract](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/LIFECYCLE.md#template-defined-configuration-changes) distinguishes fixed
 definitions, confirmed settings, outstanding requests and observed state. The research below
 explains why those distinctions matter; it does not introduce a separate mutation protocol.
 
@@ -402,10 +402,10 @@ popularity alone.
 ## Proposed template and instance forms
 
 The current envelope, identity and editing contracts are maintained in
-[DESIGN.md](../protocol/CONFIGURATION.md#configuration-language). Family/form identify the contract; stable IDs
+[DESIGN.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/CONFIGURATION.md#configuration-language). Family/form identify the contract; stable IDs
 are distinct from names. Templates are reusable; instances retain resolved configuration and
 controls independently of later template edits. Setup graphs run at start, and instances manage
-ongoing behavior. The [walkthrough](https://github.com/shrav-k/conduit/blob/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access/README.md) gives the current graph YAML draft.
+ongoing behavior. The [walkthrough](https://github.com/shrav-k/conduit/blob/de6566ad8a2ea408876a66ab04930734c7b334de/experiments/001-shared-access/README.md) gives the current graph YAML draft.
 
 Templates now specify both establishment and allowed configuration changes. The walkthrough syntax is one possible expression; no generic full-spec write path for running instances follows
 from using YAML. Interface-mediated authoring and Conduit-mediated runtime interaction have

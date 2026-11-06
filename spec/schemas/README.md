@@ -1,18 +1,19 @@
 # The schemas of documents
 
-Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as it stood on that
-day, as one batch with [the core package](../core/README.md) and
-[the manifest's promises](../promises/manifest.yaml). **Changed since by decisions that the
-owner has not ruled on, apart from those that ruling 38 accepted or made.** It was written for decision G1 of the
+Status: **accepted by the owner as it stands at
+[ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
+logged decision of the coordinator and choice of an editor; see
+[the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
+2026-11-05, as one batch with [the core package](../core/README.md) and
+[the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
 [re-audit](../../docs/proposals/reaudit/README.md). The record of the batch is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
 the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
 
-What follows was changed after the owner's ruling, by the coordinator of the re-audit, whose
-decisions are logged and can be struck by the owner. None of it is a choice the owner accepted,
-except what [ruling 38](../../docs/proposals/ruling-38/README.md) accepted or made: a runtime
-with no `optional`, a control's `changes` as a map, and an Operation contract with no
-`arrangesLaterWork`.
+What follows was changed after ruling 37, on the logged decisions of the coordinator of the
+re-audit, and on [ruling 38](../../docs/proposals/ruling-38/README.md), which accepted a
+runtime with no `optional` and a control's `changes` as a map, and made an Operation contract
+hold no `arrangesLaterWork`.
 The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) added four things
 a contract may hold, which are listed under
 [Choices the schemas encode](#choices-the-schemas-encode). The
@@ -223,12 +224,12 @@ lists each. The owner accepted them all, and most are now stated by a promise: `
 holds `schema` and may hold `default` and `optional` (CTR-005); and an implementation item
 that is not marked `plain: true` holds no `tools` (PKG-020). One more choice of the schemas
 was not in that list and is now stated by a promise, on a decision of the third round of the
-re-audit that the owner has not ruled on: an implementation item that states `graph` is not
+re-audit that ruling 39 accepted: an implementation item that states `graph` is not
 marked `plain: true` and gives no `tools` (PKG-020). The follow-up to that round changed one
-shape, on a decision of the same standing: an item that states `graph` no longer states
+shape, on a decision that ruling 39 accepted too: an item that states `graph` no longer states
 `supports` (PKG-019). The
 [decisions of the fourth round](../../docs/proposals/reaudit/round-4/DECISIONS.md), which
-have the same standing, changed one more shape: the `conduit` of a step is the name of a
+ruling 39 accepted too, changed one more shape: the `conduit` of a step is the name of a
 declared Conduit or that name and the names of components, joined by dots, where it was a
 name alone (GRA-024). These remain choices of the
 schemas alone: `optional` is a boolean, so `optional: false` is accepted; and a Type's

@@ -1,11 +1,13 @@
 # Schema and syntax profile
 
-Draft. The owner accepted this profile as it stood at plan-audit rulings 23, 24, 32, 33 and 37
-of 2026-11-05. What decision DA3 of the [docs audit](../docs/proposals/docs-audit/GAPS.md), the
+Draft. The owner accepted this profile as it stands at
+[ruling 39](../docs/proposals/ruling-39/README.md), which accepted every logged decision of the
+coordinator and choice of an editor. Plan-audit rulings 23, 24, 32, 33 and 37 of 2026-11-05
+first accepted it. Decision DA3 of the [docs audit](../docs/proposals/docs-audit/GAPS.md), the
 [decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md)
-and the [decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md) changed
-since rests on the coordinator's logged decisions under ruling 37, which the owner has not
-ruled on. The fourth round changed what this page says of when a `default` is applied.
+and the [decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md), which
+are the coordinator's and which ruling 39 accepted, changed it since. The fourth round changed
+what this page says of when a `default` is applied.
 
 Graphs and schemas are not what distinguishes Conduit. This part of the specification invents
 nothing: it selects existing standards and narrows them. Where a standard defines a meaning,

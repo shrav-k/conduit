@@ -7,6 +7,9 @@ Model Context Protocol found", which settles what the [check](mcp-citations.md) 
 rules were those of [CONSOLIDATION.md](../CONSOLIDATION.md). The choices of the closing pass
 stand.
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 Edited: files under `spec/`, and `tools/check_schemas.py`. Nothing under `docs/` was edited
 apart from this log. Nothing was committed.
 

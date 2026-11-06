@@ -19,27 +19,24 @@
 # and added OPS-029, on a request that names what does not exist. The follow-up to that pass
 # changed OPS-007. No promise of this file has been removed.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed OPS-014, OPS-016, OPS-021, OPS-023, OPS-028 and OPS-029, and added
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed OPS-014, OPS-016, OPS-021, OPS-023, OPS-028 and OPS-029, and added
 # OPS-030, on reconciling an invocation whose outcome is not unknown. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed OPS-014 and added OPS-031, on an input of
 # `reconcile.v1` that does not belong to the invocation it names.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # OPS-005, OPS-006, OPS-009, OPS-010, OPS-012, OPS-015 to OPS-017, OPS-022, OPS-024, OPS-026 and
 # OPS-031: an invocation counts as dispatched through the Conduit of its latest attempt, a step
 # that a further run does not dispatch counts with the outcome it has, and the default of a
 # property is filled before a request is validated or compared. It added none and removed none.
 # The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
 # of the same file, which are the coordinator's too, changed OPS-005 and OPS-022.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
 

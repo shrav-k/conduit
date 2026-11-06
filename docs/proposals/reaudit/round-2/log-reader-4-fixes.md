@@ -4,6 +4,9 @@ Editor's log of 2026-11-06. It records what was changed to carry out the finding
 [fourth reader's report](reader-4.md), which read the whole repository cold. Finding numbers
 are that report's: a section letter and the number of the finding in it.
 
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 Rules followed. Nothing under `spec/` was edited, because three other readers were reading it.
 The four reader reports were not edited. The rows of the ruling log and the preservation tests
 in `docs/AUDIT.md` were not rewritten. Nothing was committed. Each change is the smallest one

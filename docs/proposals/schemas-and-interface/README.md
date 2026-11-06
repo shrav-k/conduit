@@ -23,7 +23,7 @@ where they differ. Amended by:
   reason in place of an outcome;
 - ruling 37: the core package, the JSON Schemas and the manifest's format are written; the
   core package's reference schemas carry a version segment, as in `resource-reference.v1`;
-- the coordinator, under ruling 37 and not ruled on by the owner: a runtime is no longer marked
+- the coordinator, under ruling 37 and accepted by ruling 39: a runtime is no longer marked
   `optional`, and the interface follows the Model Context Protocol where it had departed
   (round 2 of the re-audit).
 

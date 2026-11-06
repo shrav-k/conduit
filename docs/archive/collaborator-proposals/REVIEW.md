@@ -2,7 +2,7 @@
 
 Completed integration record. Both PRs were merged with source attribution preserved. The
 [archive index](README.md) records their sources; adopted rules live in the
-[active protocol reference](../../protocol/README.md), and remaining work in [current review](../../REVIEW.md).
+[active protocol reference](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md), and remaining work in [current review](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/REVIEW.md).
 
 Reviewed: 2026-11-02. Two PRs from `allocmemory` propose related directions. This document
 compares their submitted text with the reviewed design. Declared-capability conformance and the

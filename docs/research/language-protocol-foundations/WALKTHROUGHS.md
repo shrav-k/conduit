@@ -281,7 +281,7 @@ proof that a write did not happen.
 
 ## Turn these comparisons into a small conformance slice
 
-These are proposed fixtures within [Experiment 002](../../../experiments/002-runtime-plugins/README.md)'s
+These are proposed fixtures within [Experiment 002](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/002-runtime-plugins/README.md)'s
 accepted authoring/composition scope. They do not add new milestones or claim execution evidence.
 
 | Candidate fixture | What a conforming implementation must make distinguishable |

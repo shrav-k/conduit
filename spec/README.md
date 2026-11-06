@@ -4,32 +4,26 @@ Status: draft, begun 2026-11-05. Incomplete, and not a release. Every area has b
 promises, and the core package, the JSON Schemas of documents and the manifest's format have
 been written as documents; the parts still to come are listed under [Contents](#contents).
 
-Some parts say that the owner accepted them, as [the core package](core/README.md) and
-[the schemas](schemas/README.md) do. The two words do not conflict, and "accepted" covers less
-than the part as it now stands. The owner accepted each part as it stood at the ruling that
-its status line or the comment at the head of its file names, by the number of the ruling in
-the [ruling log](../docs/AUDIT.md#ruling-log). What the documents audit and rounds 2 to 4 of
-the re-audit changed since then rests on the decisions of the session that coordinates the
-re-audit, which ruling 37 lets settle a reader's finding without a ruling on each
-([who decides what](../docs/AUDIT.md#who-decides-what-since-ruling-37)). Those decisions are
-logged, in [GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
+The owner accepted the specification as it stands at
+[ruling 39](../docs/proposals/ruling-39/README.md), of 2026-11-06, which accepted every
+decision of the coordinator and every choice of an editor that the records log, before and
+since ruling 37. The records under `docs/proposals/` say who decided what and when: the
+owner's rulings, listed in the [ruling log](../docs/AUDIT.md#ruling-log), and the decisions of
+the session that coordinates the re-audit
+([who decides what](../docs/AUDIT.md#who-decides-what)), logged in
+[GAPS.md](../docs/proposals/docs-audit/GAPS.md) and in the decisions of
 [round 2](../docs/proposals/reaudit/round-2/DECISIONS.md), of
 [round 3](../docs/proposals/reaudit/round-3/DECISIONS.md) and of
-[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md). The owner has not ruled on them and
-can strike any of them, so no text that they changed or added is a choice the owner accepted,
-with the exceptions that [ruling 38](../docs/proposals/ruling-38/README.md) of 2026-11-06
-makes. That ruling accepted some of those decisions: a retired consumer's Conduits staying
-open for its own retirement, the resolved form in a step and in an onward request, the
-interface following the Model Context Protocol on errors, and the eight changes of its point
-12. It also made four changes of its own: later work is not part of this version, the
-result of `apply-policy.v1` warns of targets that cannot apply the policy, a directory handed
-to an engine installs no package, and the opening of a composite Conduit at setup is
-worded anew.
-The comment at the head of each file says which pass changed which promise. The specification
-as a whole is a draft until it has conformance vectors, a round of readers that finds nothing
-unsafe in it, and a reference model that agrees with it (ruling 38, point 4).
+[round 4](../docs/proposals/reaudit/round-4/DECISIONS.md). The comment at the head of each
+file says which pass changed which promise. Later work is left out of this version
+([ruling 38](../docs/proposals/ruling-38/README.md)), and the specification says nothing of
+secrets yet: the secret type is proposed and not ruled
+([docs/proposals/secrets](../docs/proposals/secrets/README.md)). The specification is still a
+draft, because it has no conformance vectors and no reference model; it stays one until it has
+them, the reference model agrees with it, and a round of readers finds nothing unsafe in it
+(ruling 38, point 4).
 
-The specification alone binds. Nothing under [docs/protocol](../docs/protocol/README.md) binds:
+The specification alone binds. Nothing under [docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) binds:
 it is the design as it stood before the specification, superseded, and kept as source material
 for the type contracts that are still to be written. A behavior that is missing from `spec/` is
 a gap in `spec/`, and no older document supplies it.
@@ -118,12 +112,12 @@ Every area has been written as promises, 434 in all, and the rulings of the
 behaviors that the older text accepted and the specification did not state, the
 [decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md),
 the [decisions of its third round](../docs/proposals/reaudit/round-3/DECISIONS.md), the
-[decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md) and
-[ruling 38](../docs/proposals/ruling-38/README.md) have been applied to them. The four sets of decisions before ruling 38 are the coordinator's, as the
-paragraph on "accepted" above says. The JSON Schemas of documents, contracts and manifests,
-the core package
-as documents and the manifest's file format now exist: they are `schemas/`, `core/` and
-`promises/manifest.yaml`. Still to come: the conformance vectors, and a reference model.
+[decisions of its fourth round](../docs/proposals/reaudit/round-4/DECISIONS.md),
+[ruling 38](../docs/proposals/ruling-38/README.md) and
+[ruling 39](../docs/proposals/ruling-39/README.md) have been applied to them. The JSON Schemas
+of documents, contracts and manifests, the core package as documents and the manifest's file
+format now exist: they are `schemas/`, `core/` and `promises/manifest.yaml`. Still to come:
+the conformance vectors, and a reference model.
 
 The core package is one package kept in two directories. `core/` holds its manifest and
 everything a promise says it exports. `schemas/` holds the schemas of documents, which are

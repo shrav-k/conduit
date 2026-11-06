@@ -14,6 +14,9 @@ governs. Rounds 2 to 4 changed some of what ruling 32 accepted, by decisions of 
 that the owner has not ruled on; the tracker lists them under
 [later amendments](../../AUDIT.md#later-amendments).
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 After the last batch of rulings (ruling 31) the owner asked for the promises to be consolidated
 and put back through the audit. Three cold readers each read all of `spec/`, and nothing else,
 as an engine builder would. Their reports are kept verbatim:

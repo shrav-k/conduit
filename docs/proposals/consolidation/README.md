@@ -63,6 +63,9 @@ the specification was rewritten for them once.
 These were needed to write the promises and follow from a ruling or an existing practice, but the
 owner did not rule on them one by one. Each can be changed by a ruling.
 
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
+
 > Later rulings changed two choices in the table below, and settled the paragraph after it.
 >
 > - The core package's address is now `github.com/shrav-k/conduit/core` (ruling 33;

@@ -28,7 +28,7 @@ where a removed ID went and which were added.
 This batch covers the four shared conventions that are still unwritten or partly written:
 ownership and lifecycle, declared against observed state, records, and that nothing starts model
 work or repeats an effect implicitly. Most of each already exists as accepted text in
-[docs/protocol](../../protocol/README.md) and only needs restating as promises. The decisions
+[docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) and only needs restating as promises. The decisions
 below are the points where that text is silent, or where the rulings of 2026-11-05 changed what it
 rests on.
 

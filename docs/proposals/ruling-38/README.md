@@ -33,8 +33,9 @@ owner's words.
    decisions with a recommendation for each, and waits for the owner. Until it is ruled, the
    specification says nothing of secrets, and GP3 of the
    [documents audit](../docs-audit/GAPS.md) stays unconverted.
-2. The six are dropped by this ruling. The
-   [tracker's section](../../AUDIT.md#behaviors-not-carried-into-the-specification) says so.
+2. The six are dropped by this ruling. The tracker's
+   [section](../../archive/plan-audit-history.md#behaviors-not-carried-into-the-specification)
+   says so.
 3. CON-004 is reworded. Applying it showed that only the decision to open is whole; each
    component is then opened by a request of its own, with its own outcome. The
    [log](log-spec.md) says why, and the tracker lists it for the owner.
@@ -56,6 +57,9 @@ owner's words.
 
 Every other decision that the coordinator made on a finding since ruling 37 keeps its standing:
 it is the coordinator's, it is logged, and the owner can strike it.
+
+Accepted by the owner in [ruling 39](../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
 
 ## Work order for the editor of `spec/`
 

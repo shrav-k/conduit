@@ -47,7 +47,10 @@ promises say about the protocol itself, as they stand after the changes of round
 
 Findings are resolved under ruling 37, without a ruling on each, and every choice is logged in
 this directory as the coordinator's and not the owner's
-([who decides what](../../../AUDIT.md#who-decides-what-since-ruling-37)).
+([who decides what](../../../AUDIT.md#who-decides-what)).
+
+Accepted by the owner in [ruling 39](../../ruling-39/README.md), with every other
+logged decision of the coordinator and choice of an editor.
 
 ## Known after the round
 

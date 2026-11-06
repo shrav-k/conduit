@@ -3,7 +3,7 @@
 Status: owner rulings of 2026-11-05 for
 [plan-audit item A31](../../AUDIT.md#p0--make-the-language-concrete-and-complete) (question Q11).
 Field and type spellings were illustrative when this was written, under a
-[vocabulary boundary](../../protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
+[vocabulary boundary](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#vocabulary-review-boundary) that ruling 16 has
 since ended. No runtime exists and none of this has been executed.
 
 This is the record of a ruling. The specification in [`spec/`](../../../spec/README.md) governs
@@ -47,7 +47,7 @@ PLC wording governs.
 
 The accepted model says objects should eventually run across systems, that one Pool can own
 Resources on several systems, and that Pool ownership is not a placement rule
-([distribution direction](../../protocol/MODEL.md#distribution-and-execution)). The language gives
+([distribution direction](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/MODEL.md#distribution-and-execution)). The language gives
 an author no way to say any of it. Five things cannot be written or are ambiguous today:
 
 1. A directory Resource stores an absolute path, but not whose filesystem the path belongs to.
@@ -73,7 +73,7 @@ or an existing Resource type "remains open".
 - Five families only; supporting concepts add no family.
 - Pool ownership is logical. Pool membership grants nothing.
 - Reusable templates do not embed one deployment's identity; composition supplies concrete
-  targets at instantiation ([dependency composition](../../protocol/POOLS.md#pools)).
+  targets at instantiation ([dependency composition](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/POOLS.md#pools)).
 - References use kind, form and name and are retained as stable IDs.
 - No generic labels or selectors in v0. Nothing is chosen by discovery order.
 - Fixed definitions: a changed definition means a replacement instance.
@@ -299,7 +299,7 @@ shared-host requirement. That is a separate gap in the existing examples.
 ## Promises this adds
 
 Each is written so that a fixture can fail it. They are the test list for the simulated-network
-engine ([audit option (b)](../../AUDIT.md#multi-system-options)).
+engine ([audit option (b)](../../archive/plan-audit-history.md#multi-system-options)).
 
 | ID | Promise |
 | --- | --- |

@@ -20,8 +20,8 @@
 # of its chain, and a start needs an arranging invocation that succeeded.
 # The round removed none. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed ACC-006, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-027, ACC-029,
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed ACC-006, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-027, ACC-029,
 # ACC-031, ACC-033 to ACC-035, ACC-037, ACC-038 and ACC-040, and added ACC-041, on what a start
 # of later work carries, ACC-042, on a request to apply a policy that reports invalid, and
 # ACC-043, on a policy that names the root Interface. It removed none.
@@ -30,7 +30,7 @@
 # no graph states `supports`.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # ACC-001, ACC-005, ACC-012, ACC-015, ACC-017 to ACC-019, ACC-024, ACC-026, ACC-031 to
 # ACC-034, ACC-038 and ACC-040 to ACC-042: a start of later work is refused once the consumer
 # of a Conduit of its chain is retired, a policy is judged for a step when the step is decided,
@@ -41,12 +41,9 @@
 # ACC-031, ACC-034 and ACC-039: an onward request that serves an invocation in whose chain a
 # Conduit has a retired consumer reports refused, that consumer's own retirement apart, and a
 # requirement is matched against `supports` by the package that originally exports it.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md. It removed ACC-040 and ACC-041, on
 # later work, which is not part of this version. Those IDs are not reused.

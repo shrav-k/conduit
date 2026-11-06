@@ -104,8 +104,8 @@ limits. This report does not repeat those studies or treat their conclusions as 
 
 ## Local experimental evidence
 
-See [probe instructions](../../../experiments/003-language-probes/README.md), [source](../../../experiments/003-language-probes/probe.py) and
-[recorded results](../../../experiments/003-language-probes/results.json). Twenty cases passed with Python 3.13.2,
+See [probe instructions](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md), [source](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/probe.py) and
+[recorded results](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/results.json). Twenty cases passed with Python 3.13.2,
 `jsonschema` 4.25.1 and `ruamel.yaml` 0.18.16. The recorded dependency list is provided for
 reproduction. These are selected library behaviors, not comprehensive standard conformance,
 Rust implementation evidence or proof that the Conduit language already exists.

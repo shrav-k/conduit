@@ -1,19 +1,18 @@
 # The core package
 
-Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as it stood on that
-day, as one batch with [the schemas](../schemas/README.md) and
-[the manifest's promises](../promises/manifest.yaml). **Changed since by decisions that the
-owner has not ruled on**, apart from those that ruling 38 accepted or made: see
-[what "accepted" covers](../README.md) in the specification's README. It was written for
-decision G1 of the
+Status: **accepted by the owner as it stands at
+[ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
+logged decision of the coordinator and choice of an editor; see
+[the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
+2026-11-05, as one batch with [the schemas](../schemas/README.md) and
+[the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
 [re-audit](../../docs/proposals/reaudit/README.md). The record of the batch, with every choice
 made here and its alternative, is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
 the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
 
-What follows was changed after the owner's ruling, by the coordinator of the re-audit, whose
-decisions are logged and can be struck by the owner. None of it is a choice the owner accepted,
-except what [ruling 38](../../docs/proposals/ruling-38/README.md) of 2026-11-06 accepted.
+What follows was changed after ruling 37, on the logged decisions of the coordinator of the
+re-audit, and on [ruling 38](../../docs/proposals/ruling-38/README.md) of 2026-11-06.
 The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) settled the points
 that batch left open and changed some descriptions here; they added no export. The
 [decisions of the second re-audit round](../../docs/proposals/reaudit/round-2/DECISIONS.md)
@@ -31,13 +30,13 @@ export either: they gave `rename.v1` the output `revision`, corrected the descri
 `object-management.v1` and changed other descriptions; what changed is in the
 [log of that pass](../../docs/proposals/reaudit/round-4/log-fixes.md).
 
-Ruling 38 made four changes here, which are the owner's decisions and not the coordinator's.
-Later work is not part of this version, so the export `start-later-work.v1` is removed and the
-package exports 98 documents, 20 of them Operation contracts. `apply-policy.v1` has the output
-`diagnostics`, which names the targets where a policy will make requests report unavailable
-(ACC-031). The description of `set-up.v1` says that the opening of a composite Conduit's
-components is decided as a whole and that each is then opened by a request of its own. And the
-note on installing says that a directory handed to an engine installs no package. What was changed is in the
+Ruling 38 made four changes here, which are the owner's own decisions. Later work is not part
+of this version, so the export `start-later-work.v1` is removed and the package exports 98
+documents, 20 of them Operation contracts. `apply-policy.v1` has the output `diagnostics`,
+which names the targets where a policy will make requests report unavailable (ACC-031). The
+description of `set-up.v1` says that the opening of a composite Conduit's components is decided
+as a whole and that each is then opened by a request of its own. And the note on installing
+says that a directory handed to an engine installs no package. What was changed is in the
 [log of that pass](../../docs/proposals/ruling-38/log-spec.md).
 
 The promises are the source of truth: where a document here and a promise differ, the document

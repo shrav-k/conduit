@@ -25,25 +25,22 @@
 # changed MAN-006: reading a manifest installs nothing. No promise of this file has been
 # removed. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed MAN-007 and MAN-009 to MAN-011: a package holds no instance
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed MAN-007 and MAN-009 to MAN-011: a package holds no instance
 # document, and the keys of an implementation item's `placement` follow OBJ-022. It removed
 # none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
 # file, which are the coordinator's too, changed MAN-009.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # MAN-004: `address` and `version` change nothing in the manifest of a submitted project. It
 # added none and removed none.
 # The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
 # of the same file, which are the coordinator's too, changed MAN-008.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 
 - id: MAN-001
   layer: language

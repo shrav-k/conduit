@@ -28,7 +28,7 @@ where they differ. Amended by:
 - ruling 33: the core package's address comes from the repository;
 - ruling 37: the manifest's format, and changes to PKG-005, PKG-013, PKG-017 to PKG-020 and
   PKG-022;
-- the coordinator, under ruling 37 and not ruled on by the owner: there are three conformance
+- the coordinator, under ruling 37 and accepted by ruling 39: there are three conformance
   levels, with Implementation (row GP16 of the documents audit).
 
 Promise IDs are as first written; the comment at the head of each spec file says where a removed

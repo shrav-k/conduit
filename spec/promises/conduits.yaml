@@ -20,8 +20,8 @@
 # constituents alone, and added CON-031, of the layer `convention`: a Conduit either of whose
 # ends is retired is not opened. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
 # place supports a requirement where the implementations of its steps do, and CON-031 is about a
 # Conduit that is not open. It removed none.
 # Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
@@ -29,19 +29,16 @@
 # `supports`, wherever it is written.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed
 # CON-004, CON-008 and CON-024: a declared Conduit that is made from a composite template is
 # opened as a whole or not at all. It added none and removed none.
 # The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
 # of the same file, which are the coordinator's too, changed CON-004, CON-008 and CON-022: the
 # opening of a composite declared Conduit is decided for every component before any is opened,
 # and nothing is closed where one cannot be.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
 

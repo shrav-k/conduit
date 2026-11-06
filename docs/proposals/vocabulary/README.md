@@ -229,6 +229,6 @@ These are not specification words and are settled with the type or profile that 
 ## Applying the names
 
 Names are applied as each area is converted into the specification, following the
-[vocabulary map's procedure](../../VOCABULARY.md#review-and-migration-procedure): the old and new
+[vocabulary map's procedure](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md#review-and-migration-procedure): the old and new
 spelling are recorded in the map, the stable topic anchors are kept, and research and archive
 text is left as written.

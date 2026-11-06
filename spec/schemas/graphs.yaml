@@ -1,8 +1,10 @@
-# The owner accepted this file as it stood on 2026-11-05 (plan-audit ruling 37), with the
-# core package and the manifest's promises; the record is
-# docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
-# re-audit changed since rests on the coordinator's logged decisions, which the owner has
-# not ruled on, apart from those that ruling 38 accepted or made; spec/README.md says which.
+# Plan-audit ruling 37 (2026-11-05) first accepted this file, with the core package and the
+# manifest's promises; the record is docs/proposals/core-and-schemas/README.md. What the docs
+# audit, rounds 2 to 4 of the re-audit and ruling 38 changed since is logged in the records
+# that README.md in this directory names.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 #
 # A graph, a step, a value binding and a value reference.
 # JSON Schema 2020-12, within spec/schema-profile.md.

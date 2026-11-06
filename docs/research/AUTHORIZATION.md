@@ -16,7 +16,7 @@ This reuses Conduit's contract/plugin machinery without a separate policy-rule l
 bindings remain independent authoritative state; it does not remove access checks or select an engine.
 The user also selected a dedicated access-management Resource in the system Pool for grant and
 governing-binding administration/inspection. This logical boundary need not add another process or store.
-The detailed structures in the [authorization proposal](../proposals/authoring-syntax/AUTHORIZATION.md)
+The detailed structures in the [authorization proposal](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/proposals/authoring-syntax/AUTHORIZATION.md)
 remain for joint review. This report supplies evidence, not additional rulings.
 
 Method: read primary specifications, project documentation and research papers. No authorization

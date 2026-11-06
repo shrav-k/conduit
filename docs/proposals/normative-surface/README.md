@@ -112,7 +112,7 @@ a topic is converted, its file under `docs/protocol/` is replaced by a pointer.
 
 > Where this stands: every area has been written as promises. The topic files keep their paths,
 > because about 200 links point at their headings, and each now opens with a banner that says it
-> is superseded. [`docs/protocol/README.md`](../../protocol/README.md) is the pointer
+> is superseded. [`docs/protocol/README.md`](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) is the pointer
 > ([docs audit](../docs-audit/README.md), decisions DA1 and DA2).
 
 The accepted rulings recorded in the [placement](../placement/README.md) and

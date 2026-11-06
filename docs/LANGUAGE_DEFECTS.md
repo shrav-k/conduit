@@ -10,7 +10,7 @@ This register feeds condition G7 of the
 [plan audit](AUDIT.md) tracks the surrounding work.
 
 **What this register covers.** It covers the first sweep, which read the protocol topics under
-[docs/protocol](protocol/README.md) before the [specification](../spec/README.md) existed. The
+[docs/protocol](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/protocol/README.md) before the [specification](../spec/README.md) existed. The
 table of defects stops there. Findings against `spec/` are not added here: they are in the
 [re-audit record](proposals/reaudit/README.md). Defect text keeps the words of the text it was
 found in, such as handler, plugin, grant, provision, host and join; the terms in force are in
@@ -21,7 +21,7 @@ asked where two engines could differ in any observable behavior. On 2026-11-05 t
 the [layered claim](AUDIT.md#layered-claim): the language determines what declarations mean, and
 behavior beyond a few shared conventions belongs to type contracts and a runtime profile. Each
 defect below was then re-triaged by layer, as the
-[defect closure plan](AUDIT.md#defect-closure-plan) describes. Only those assigned to the language
+[defect closure plan](archive/plan-audit-history.md#defect-closure-plan) describes. Only those assigned to the language
 or the shared conventions are language defects in the strict sense; the rest are decisions for
 a type contract or the runtime profile.
 

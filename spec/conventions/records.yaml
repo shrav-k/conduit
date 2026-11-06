@@ -10,23 +10,20 @@
 # REC-004: a purge keeps the engine's ID for an invocation, which `retrieve-result.v1` returns
 # and `reconcile.v1` names. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
-# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
-# has not ruled on, changed REC-002 and REC-004: a purge also keeps the operation, the instance
+# on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which ruling 39
+# accepted, changed REC-002 and REC-004: a purge also keeps the operation, the instance
 # and the target of an invocation. It removed none.
 # The fix pass of the fourth round of the re-audit
 # (docs/proposals/reaudit/round-4/log-fixes.md), on the coordinator's decisions in
-# docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed REC-003
+# docs/proposals/reaudit/round-4/DECISIONS.md, which ruling 39 accepted, changed REC-003
 # and REC-004: a purge also keeps the caller and the Conduit of an invocation and, for a step
 # that names a runtime, the name of that runtime. It added none and removed none.
 # The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
 # of the same file, which are the coordinator's too, changed REC-001: a request that cannot be
 # read, and from which no instance can be established, is not recorded.
-# Standing: the owner accepted these promises as they stood at the rulings that this comment
-# names by number. Every change listed above for the conversion of the older text (the docs
-# audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
-# logged in the records named, and the owner has not ruled on it.
-# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
-# spec/README.md says which.
+# Standing: the owner accepted this file as it stands at ruling 39
+# (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
+# and choice of an editor.
 # Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
 # what changed is in docs/proposals/ruling-38/log-spec.md.
 

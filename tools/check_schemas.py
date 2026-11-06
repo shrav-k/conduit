@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the proposed JSON Schemas, the core package and the example documents.
+"""Check the JSON Schemas of documents, the core package and the example documents.
 
     python3 tools/check_schemas.py
 
@@ -10,28 +10,43 @@ What it checks, and reports under these numbers:
      string; no number without a JSON form; no whole number outside the I-JSON range.
   2. Every Schema contract under spec/schemas/ and spec/core/ uses only the keywords and the
      formats that spec/schema-profile.md permits, places `default` only where SCH-008 accepts
-     it, and uses `$ref` only in the two forms of SCH-015, each of which resolves. `schema.v1`,
-     the profile written as a schema, lists exactly the profile's keywords and formats. A
-     schema written inside another document is checked through `schema.v1` in step 3, and a
-     qualified `$ref` in it is resolved in step 5.
+     it, and uses `$ref` only in the three forms of SCH-015, each of which resolves: `#` and a
+     JSON Pointer into the same schema, a qualified reference to a Schema contract, and
+     `#name` for a Schema contract of the same package. `schema.v1`, the profile written as a
+     schema, lists exactly the profile's keywords and formats. A schema written inside
+     another document is checked through `schema.v1` in step 3, and a `$ref` in it that is
+     not a pointer is resolved in step 5.
   3. Every document under spec/core/, spec/schemas/ and spec/schemas/examples/valid/ is valid
      against `document.v1`, and every manifest (a file named conduit.yaml) against
      `manifest.v1`, with a JSON Schema 2020-12 validator and format checking on.
-  4. Every document under spec/schemas/examples/invalid/ is rejected, and its file is named
-     for a promise that exists.
-  5. The core package agrees with itself: its manifest exports exactly its documents, no name
-     is used twice, names follow NAM-004 and OBJ-001, every reference into the core package
-     names an export of the kind the place expects, and the table "Every export" of
-     spec/core/README.md lists exactly what the package holds.
-     The same reference check is made on `#name` references inside each example directory.
+  4. Every document under spec/schemas/examples/invalid/ is rejected by a schema, or is
+     refused when its file is read, and its file is named for a promise that exists.
+  5. The core package agrees with itself: every export in its manifest is a document of the
+     package, every document is exported or is listed in PRIVATE below, no name is used
+     twice, names follow NAM-004, CTR-001 and OBJ-001, every reference into the core package
+     names an export of the kind the place expects, every control has `changes` that its
+     type's schema describes (CTR-006) and the shape the record settled for a control under
+     REV-006 and REV-007, the operations of REV-012 take no `revision`, and the
+     tables of spec/core/README.md and spec/schemas/README.md list exactly the files and the
+     exports there are, each export with its kind and with promises that exist. The same
+     reference check is made on every `#name`, a `$ref` among them, inside each example
+     directory, and every promise ID cited under spec/core/, spec/schemas/ and in
+     spec/promises/manifest.yaml is the ID of a promise that exists.
+  6. Rules that no schema can express and that this tool applies itself, each named in RULES
+     below with the promise it comes from. The core package and every directory under
+     examples/valid/ break none of them. Every file under examples/invalid-by-rule/ is one
+     set of documents, each of them valid against the schemas, that the rule its file is
+     named for rejects.
 
 What it does not check: anything that needs an engine. It does not resolve references to
 packages that are not in this repository, instantiate a template, or evaluate any of the
-cross-document rules that spec/schemas/README.md lists as checked by the engine.
+cross-document rules that spec/schemas/README.md lists as checked by the engine, other than
+the few of step 6. A rule of step 6 is applied as far as the documents in front of the tool
+show, which each rule's comment states; it is not the engine's check.
 
 It needs PyYAML and jsonschema. If the interpreter that runs it lacks either, it runs itself
 again under /usr/bin/python3. If PyYAML is still missing it stops and says that nothing was
-checked. If only jsonschema is missing it runs steps 1, 2 and 5, says in capitals that no
+checked. If only jsonschema is missing it runs steps 1, 2, 5 and 6, says in capitals that no
 document was validated against a schema, and exits with status 3. It never reports a check it
 did not run. `pattern` is evaluated by Python's `re`,
 not by an ECMA-262 engine (SCH-016); the patterns in these schemas use only syntax the two
@@ -67,8 +82,29 @@ CONTRACTS = ("Type", "Capability", "Operation", "Requirement", "Schema")
 SAFE_INT = 9007199254740991
 NAME = re.compile(r"^[a-z][a-z0-9-]*$")
 EXPORT = re.compile(r"^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$")
-VERSIONED = re.compile(r"^([a-z][a-z0-9-]*\.)*v[1-9][0-9]*$")
+VERSIONED = re.compile(r"^([a-z][a-z0-9-]*\.)+v[1-9][0-9]*$")
 LOCAL_REF = re.compile(r"^#([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)*)$")
+
+# Documents of the core package that it deliberately does not export. There is none: every
+# document of the core package is exported. A name listed here must be a document of the
+# package and must not be among its exports.
+PRIVATE = frozenset()
+
+# The operations that REV-012 says name no revision and advance none.
+NO_REVISION = ("set-up.v1", "retire.v1", "retire-with-resources.v1", "open.v1", "close.v1")
+
+# The rules of step 6, each with the promise it comes from. A file under
+# examples/invalid-by-rule/ is named for one of these promises.
+RULES = {
+    "one-name": "NAM-027",
+    "bound-once": "CON-028",
+    "bound-target": "CON-028",
+    "reserved-mark": "CTR-009",
+    "location-placement": "PLC-008",
+    "entry-reference": "POOL-005",
+    "operations-filled": "CON-016",
+    "ref": "SCH-015",
+}
 
 errors = []
 
@@ -213,7 +249,14 @@ def pointer(root, text):
     return True, value
 
 
+def is_pointer(ref):
+    """True for `#` and a JSON Pointer into the same schema, the first form of SCH-015."""
+    return ref == "#" or ref.startswith("#/")
+
+
 def check_profile(label, root, keywords, formats, core, schemas):
+    """`schemas` holds the Schema contracts of the package the schema belongs to, which is the
+    core package: a qualified reference to it and `#name` resolve among them."""
     def visit(schema, where, place):
         for keyword in schema:
             if keyword not in keywords:
@@ -228,23 +271,28 @@ def check_profile(label, root, keywords, formats, core, schemas):
             return
         if not isinstance(ref, str):
             fail(f"{where}: `$ref` is not a string")
-        elif ref == "#" or ref.startswith("#/"):
+        elif is_pointer(ref):
             if not pointer(root, ref)[0]:
                 fail(f"{where}: `$ref` {ref} does not resolve in the same schema (SCH-015)")
+        elif LOCAL_REF.match(ref):
+            if ref[1:] not in schemas:
+                fail(f"{where}: `$ref` {ref} is not a Schema contract of the same package "
+                     f"(SCH-015)")
         elif ref.startswith(core + "#"):
             if ref.split("#", 1)[1] not in schemas:
                 fail(f"{where}: `$ref` {ref} is not a Schema contract of the core package "
                      f"(SCH-015)")
         else:
-            fail(f"{where}: `$ref` {ref} is neither `#` and a JSON Pointer nor a qualified "
-                 f"reference this check can resolve (SCH-015)")
+            fail(f"{where}: `$ref` {ref} is not `#` and a JSON Pointer, `#name`, or a "
+                 f"qualified reference this check can resolve (SCH-015)")
     walk(root, label, visit)
 
 
 def bundle(schemas, core):
     """One JSON Schema that holds every Schema contract under `$defs`, with each `$ref`
-    rewritten to point inside it. A qualified reference stands for the `spec` of the contract
-    it names (SCH-015), which is what the rewriting does."""
+    rewritten to point inside it. A qualified reference, and `#name` within the package,
+    stands for the `spec` of the contract it names (SCH-015), which is what the rewriting
+    does."""
     defs = {}
     for name, spec in schemas.items():
         spec = copy.deepcopy(spec)
@@ -252,8 +300,10 @@ def bundle(schemas, core):
         def visit(schema, where, place, name=name):
             ref = schema.get("$ref")
             if isinstance(ref, str):
-                if ref == "#" or ref.startswith("#/"):
+                if is_pointer(ref):
                     schema["$ref"] = f"#/$defs/{name}{ref[1:]}"
+                elif LOCAL_REF.match(ref):
+                    schema["$ref"] = "#/$defs/" + ref[1:]
                 elif ref.startswith(core + "#"):
                     schema["$ref"] = "#/$defs/" + ref.split("#", 1)[1]
         before = len(errors)
@@ -366,9 +416,14 @@ def reach(value, path):
         yield from reach(value[path[0]], path[1:])
 
 
-def check_references(label, role, doc, packages, local_kinds, counts):
-    """`packages` maps an address to what that package exports, name -> kind."""
-    def one(ref, want, where):
+def check_references(role, doc, packages, local_kinds, counts):
+    """Return what is wrong with the references of one document, as (rule, message) pairs.
+    `packages` maps an address to what that package exports, name -> kind, and `local_kinds`
+    does the same for the project or package the document belongs to, which `#name` reaches
+    (NAM-022). The rule is "ref" for a `$ref` (SCH-015) and None for any other reference."""
+    found = []
+
+    def one(ref, want, where, rule=None):
         if not isinstance(ref, str):
             return
         local = LOCAL_REF.match(ref)
@@ -382,16 +437,17 @@ def check_references(label, role, doc, packages, local_kinds, counts):
             return
         counts["checked"] += 1
         if got is None:
-            fail(f"{label}: {where}: {ref} names nothing")
+            found.append((rule, f"{where}: {ref} names nothing"))
         elif got != want:
-            fail(f"{label}: {where}: {ref} is a {got}, and a {want} is expected")
+            found.append((rule, f"{where}: {ref} names something of the kind {got}, and the kind "
+                                f"{want} is expected"))
 
     def refs(value):
         """Every `$ref` that is not a pointer into its own schema names a Schema contract."""
         if isinstance(value, dict):
             ref = value.get("$ref")
-            if isinstance(ref, str) and not (ref == "#" or ref.startswith("#/")):
-                one(ref, "Schema", "$ref")
+            if isinstance(ref, str) and not is_pointer(ref):
+                one(ref, "Schema", "$ref", "ref")
             for item in value.values():
                 refs(item)
         elif isinstance(value, list):
@@ -412,6 +468,7 @@ def check_references(label, role, doc, packages, local_kinds, counts):
                         one(key, want, "/".join(path) + " key")
                         if path[-1] == "implementation" and isinstance(value, str):
                             one(value, "implementation", "/".join(path) + " value")
+    return found
 
 
 def role_of(doc, is_manifest):
@@ -423,24 +480,297 @@ def role_of(doc, is_manifest):
     return kind
 
 
+def named(doc):
+    metadata = doc.get("metadata")
+    return metadata.get("name") if isinstance(metadata, dict) else None
+
+
 def kinds_in(files):
-    """name -> kind for every document and implementation in these files."""
+    """name -> kind for everything in these files that `#name` reaches: every template, every
+    contract and every implementation. An instance is not reached by `#name`. Also returns
+    the names that an implementation shares with a document or with another implementation;
+    two documents that share a name are found by the rule "one-name" of step 6."""
     out, twice = {}, []
     for path, docs in files:
         for doc in docs:
             if not isinstance(doc, dict):
                 continue
             if path.name == "conduit.yaml":
-                entries = [(n, "implementation") for n in (doc.get("implementations") or {})]
-            elif "from" in doc:
-                continue                   # an instance is not reached by `#name`
-            else:
-                entries = [((doc.get("metadata") or {}).get("name"), doc.get("kind"))]
-            for name, kind in entries:
-                if name in out:
+                for name in (doc.get("implementations") or {}):
+                    if name in out:
+                        twice.append(name)
+                    out[name] = "implementation"
+            elif "from" not in doc:
+                name = named(doc)
+                if out.get(name) == "implementation":
                     twice.append(name)
-                out[name] = kind
+                out[name] = doc.get("kind")
     return out, twice
+
+
+def contents(files):
+    """name -> document, for every template and contract in these files."""
+    return {named(doc): doc for path, docs in files for doc in docs
+            if isinstance(doc, dict) and path.name != "conduit.yaml" and "from" not in doc}
+
+
+def check_controls(label, docs, package_docs, address):
+    """For every control that a Type in `docs` lists and whose contract is in this repository:
+    it is an Operation with `changes`, each pointer of which is a place the type's `schema`
+    describes through `properties` (CTR-006); and it has the shape that item D13 of the
+    record settled under REV-006 and REV-007, which is that it takes `revision`, which is not
+    optional, that every other input is optional, and that it returns `settings`. No promise
+    says that a control's contract must declare `revision` and `settings`: this is a check of
+    the documents in this repository against the record, not of a promise."""
+    count = 0
+    for doc in docs:
+        if not isinstance(doc, dict) or doc.get("kind") != "Type":
+            continue
+        spec = doc.get("spec") or {}
+        for ref in spec.get("controls") or []:
+            if not isinstance(ref, str):
+                continue
+            where, _, name = ref.partition("#")
+            control = package_docs.get(where or address, {}).get(name)
+            if control is None or control.get("kind") != "Operation":
+                continue                   # not in this repository, or reported by step 5
+            count += 1
+            at = f"{label}: {named(doc)} lists the control {ref}, which"
+            body = control.get("spec") or {}
+            changes = body.get("changes")
+            if not changes:
+                fail(f"{at} has no `changes` (CTR-006)")
+            for place in changes or []:
+                schema = spec.get("schema")
+                for token in place.split("/")[1:]:
+                    token = token.replace("~1", "/").replace("~0", "~")
+                    schema = (schema.get("properties") or {}).get(token) \
+                        if isinstance(schema, dict) else None
+                    if schema is None:
+                        fail(f"{at} changes {place}, a place the type's schema does not "
+                             f"describe (CTR-006)")
+                        break
+            inputs = body.get("inputs") or {}
+            if "revision" not in inputs or inputs["revision"].get("optional"):
+                fail(f"{at} does not take `revision` as an input that must be supplied "
+                     f"(REV-006, as item D13 of the record settled it)")
+            for other, member in inputs.items():
+                if other != "revision" and not member.get("optional"):
+                    fail(f"{at} has the input {other}, which is not optional (REV-006, as "
+                         f"item D13 of the record settled it)")
+            if "settings" not in (body.get("outputs") or {}):
+                fail(f"{at} does not return `settings` (REV-007, as item D13 of the record "
+                     f"settled it)")
+    return count
+
+
+def check_readmes(core_dir, schema_dir, core_kinds, groups, loaded):
+    """The tables of the two READMEs list exactly the files and the exports there are."""
+    readme = core_dir / "README.md"
+    if not readme.exists():
+        fail("spec/core/README.md is missing")
+        return
+    text = readme.read_text()
+    section = re.search(r"(?ms)^## Every export\n(.*?)(?=^## |\Z)", text)
+    rows = re.findall(r"(?m)^\| `([^`]+)` \| ([^|]+) \| (.+) \|$",
+                      section.group(1) if section else "")
+    listed = {name for name, _, _ in rows}
+    for name in sorted(set(core_kinds) - listed):
+        fail(f"spec/core/README.md: the table omits {name}")
+    for name in sorted(listed - set(core_kinds)):
+        fail(f"spec/core/README.md: the table lists {name}, which the package does not hold")
+    for name, cell, requires in rows:
+        kind = core_kinds.get(name)
+        want = None if kind is None else ("Implementation" if kind == "implementation"
+                                           else f"{kind} template" if kind in FAMILIES else kind)
+        if want and not cell.strip().startswith(want):
+            fail(f"spec/core/README.md: the table gives {name} the kind `{cell.strip()}`, and "
+                 f"its kind is {want}")
+        if not re.search(r"[A-Z]+-[0-9]{3}", requires) and "none" not in requires:
+            fail(f"spec/core/README.md: the table names no promise for {name}")
+    for path in groups["core"]:
+        if f"[{path.name}]({path.name})" not in text:
+            fail(f"spec/core/README.md: the table of files omits {path.name}")
+    for name in re.findall(r"(?m)^\| \[([^\]]+\.yaml)\]\(", text):
+        if not (core_dir / name).exists():
+            fail(f"spec/core/README.md: the table of files lists {name}, which does not exist")
+
+    readme = schema_dir / "README.md"
+    if not readme.exists():
+        fail("spec/schemas/README.md is missing")
+        return
+    section = re.search(r"(?ms)^## Files\n(.*?)(?=^## |\Z)", readme.read_text())
+    rows = dict(re.findall(r"(?m)^\| \[([^\]]+\.yaml)\]\([^)]*\) \| ([^|]+) \|",
+                           section.group(1) if section else ""))
+    for path in groups["schemas"]:
+        holds = {named(d) for d in loaded.get(path, []) if isinstance(d, dict)}
+        if path.name not in rows:
+            fail(f"spec/schemas/README.md: the table of files omits {path.name}")
+        elif set(re.findall(r"`([^`]+)`", rows[path.name])) != holds:
+            fail(f"spec/schemas/README.md: the row of {path.name} does not list exactly the "
+                 f"Schema contracts the file holds")
+    for name in sorted(set(rows) - {p.name for p in groups["schemas"]}):
+        fail(f"spec/schemas/README.md: the table of files lists {name}, which does not exist")
+
+
+# What the tool says of an implementation whose name something else in its package has.
+CLASH = ("PKG-012 where both are exported; no promise covers the name of a document that is "
+         "not exported, and this tool refuses it so that `#name` names one thing")
+
+
+# --- 6. Rules that no schema can express, applied as far as the documents show.
+
+ACCESS = {"kind": "Resource", "name": "access"}
+
+
+def template_of(ref, kind, templates, package_docs):
+    """The template that a `from` names, where this tool has it: a template of the same set,
+    by its name where the kind is fixed, by `{kind, name}` or by `#name`; or a template of a
+    package in this repository, by a qualified reference. None where the tool does not have
+    it, and then no rule is applied through it."""
+    if isinstance(ref, dict):
+        found = templates.get((ref.get("kind"), ref.get("name")))
+    elif not isinstance(ref, str):
+        found = None
+    elif ref.startswith("#"):
+        found = next((d for (_, name), d in templates.items() if name == ref[1:]), None)
+    elif "#" in ref:
+        address, _, name = ref.partition("#")
+        found = package_docs.get(address, {}).get(name)
+    else:
+        found = templates.get((kind, ref))
+    if isinstance(found, dict) and found.get("kind") in FAMILIES and "from" not in found:
+        return found
+    return None
+
+
+def apply_rules(docs, is_core, core, package_docs):
+    """Return (rule, message) for each rule of RULES that one set of documents breaks. The set
+    is the documents of one project or package, or of one file of examples/invalid-by-rule/.
+    Manifests are left out. Each rule says how far it goes."""
+    found = []
+    docs = [d for d in docs if isinstance(d, dict)]
+    templates = {(d.get("kind"), named(d)): d for d in docs
+                 if d.get("kind") in FAMILIES and "from" not in d}
+    instances = [d for d in docs if d.get("kind") in FAMILIES and "from" in d]
+    bound = {core + "#bound.v1"} | ({"#bound.v1"} if is_core else set())
+    location = {core + "#location.v1"} | ({"#location.v1"} if is_core else set())
+
+    def what(doc):
+        kind = doc.get("kind")
+        if kind in FAMILIES:
+            return f"{kind} instance" if "from" in doc else f"{kind} template"
+        return f"{kind} contract"
+
+    # one-name (NAM-027): no two documents of the set share a name, whatever their kinds.
+    seen = {}
+    for doc in docs:
+        name = named(doc)
+        if name is None:
+            continue
+        if name in seen:
+            found.append(("one-name", f"two documents are named {name}: a {seen[name]} and a "
+                                      f"{what(doc)}"))
+        seen.setdefault(name, what(doc))
+
+    def bounds(template, visited=()):
+        """The items of `requirements` by which a Conduit template applies `bound.v1`: its own
+        and, for a composite, those of the templates of its components that this tool has. A
+        bound applied through the `constituents` of another requirement is not followed."""
+        spec = template.get("spec") or {}
+        items = [name for name, item in (spec.get("requirements") or {}).items()
+                 if isinstance(item, dict) and item.get("requirement") in bound]
+        for component in (spec.get("components") or {}).values():
+            below = template_of(component.get("from"), "Conduit", templates, package_docs) \
+                if isinstance(component, dict) else None
+            if below is not None and id(below) not in visited:
+                items += bounds(below, visited + (id(template),))
+        return items
+
+    # bound-once (CON-028): one Conduit template applies `bound.v1` at most once.
+    for (kind, name), template in templates.items():
+        if kind == "Conduit":
+            items = [n for n, item in ((template.get("spec") or {}).get("requirements")
+                                       or {}).items()
+                     if isinstance(item, dict) and item.get("requirement") in bound]
+            if len(items) > 1:
+                found.append(("bound-once", f"the Conduit template {name} applies `bound.v1` "
+                                            f"{len(items)} times, as {' and '.join(items)}"))
+
+    # bound-target (CON-028): a Conduit whose template applies `bound.v1` has `access` as its
+    # target. Applied where a document writes the target in place, as a Conduit instance
+    # document and a declared Conduit may, and the tool has the template. The target is
+    # `access` when it is written `{kind: Resource, name: access}`.
+    def aims(label, ref, target):
+        template = template_of(ref, "Conduit", templates, package_docs)
+        if template is not None and bounds(template) and target != ACCESS:
+            found.append(("bound-target", f"{label} is made from the template "
+                                          f"{named(template)}, which applies `bound.v1`, and "
+                                          f"its target is not the Resource `access`"))
+    for doc in instances:
+        if doc.get("kind") == "Conduit":
+            aims(f"the Conduit {named(doc) or 'with no name'}", doc.get("from"),
+                 doc.get("target"))
+    for (kind, name), template in templates.items():
+        for local, declared in ((template.get("spec") or {}).get("conduits") or {}).items():
+            if isinstance(declared, dict) and "target" in declared:
+                aims(f"the declared Conduit {local} of the template {name}",
+                     declared.get("from"), declared["target"])
+
+    # reserved-mark (CTR-009): outside the core package no Operation contract is marked.
+    if not is_core:
+        for doc in docs:
+            if doc.get("kind") == "Operation" \
+                    and (doc.get("spec") or {}).get("reservedToRoot") is True:
+                found.append(("reserved-mark", f"the Operation contract {named(doc)} is marked "
+                                               f"`reservedToRoot: true` and is not a contract "
+                                               f"of the core package"))
+
+    # location-placement (PLC-008): a location's document states no placement. Applied where
+    # the tool has the template, whose type says whether the instance is a location.
+    for doc in instances:
+        if doc.get("kind") == "Resource" and "placement" in doc:
+            template = template_of(doc.get("from"), "Resource", templates, package_docs)
+            if template is not None and (template.get("spec") or {}).get("type") in location:
+                found.append(("location-placement",
+                              f"the Resource {named(doc) or 'with no name'} is a location, "
+                              f"made from the template {named(template)}, and its document "
+                              f"states a placement"))
+
+    # entry-reference (POOL-005): `{entry: name}` is written only in an entry of a Pool
+    # template. Applied to the places of a document that are never inside an entry and always
+    # hold a reference: the `placement`, `consumer` and `target` of an instance document and
+    # the `target` of a declared Conduit. A value inside `arguments` or `config` is not
+    # looked at, because only the schema that governs it says whether it is a reference.
+    def entry(value):
+        return isinstance(value, dict) and "entry" in value and "kind" not in value
+    for doc in instances:
+        for key in ("placement", "consumer", "target"):
+            if entry(doc.get(key)):
+                found.append(("entry-reference",
+                              f"the {doc.get('kind')} {named(doc) or 'with no name'} writes "
+                              f"its `{key}` as `{{entry: {doc[key]['entry']}}}`, outside an "
+                              f"entry of a Pool template"))
+    for (kind, name), template in templates.items():
+        for local, declared in ((template.get("spec") or {}).get("conduits") or {}).items():
+            if isinstance(declared, dict) and entry(declared.get("target")):
+                found.append(("entry-reference",
+                              f"the declared Conduit {local} of the template {name} writes "
+                              f"its `target` as `{{entry: {declared['target']['entry']}}}`, "
+                              f"outside an entry of a Pool template"))
+
+    # operations-filled (CON-016): a Conduit template that is not composed and writes no
+    # `operations` has an input whose destination is `/operations`.
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") or {}
+        if kind == "Conduit" and "capability" in spec and "operations" not in spec:
+            inputs = spec.get("inputs") if isinstance(spec.get("inputs"), dict) else {}
+            if not any(isinstance(i, dict) and "/operations" in (i.get("to") or [])
+                       for i in inputs.values()):
+                found.append(("operations-filled",
+                              f"the Conduit template {name} writes no `operations`, and no "
+                              f"input's destination is `/operations`"))
+    return found
 
 
 def main():
@@ -448,8 +778,8 @@ def main():
     validating = jsonschema is not None
     print(f"Python {sys.version.split()[0]} at {sys.executable}; PyYAML {yaml.__version__}; "
           f"jsonschema {metadata.version('jsonschema') if validating else 'NOT IMPORTABLE'}")
-    named = names()
-    core = named["corePackage"]
+    named_values = names()
+    core = named_values["corePackage"]
     keywords, formats = profile()
     if validating:
         checkers = jsonschema.Draft202012Validator.FORMAT_CHECKER.checkers
@@ -463,6 +793,15 @@ def main():
     schema_dir, core_dir = ROOT / "spec" / "schemas", ROOT / "spec" / "core"
     valid_dir = schema_dir / "examples" / "valid"
     invalid_dir = schema_dir / "examples" / "invalid"
+    by_rule_dir = schema_dir / "examples" / "invalid-by-rule"
+
+    promises = set()
+    for path in (ROOT / "spec").glob("*/*.yaml"):
+        promises.update(re.findall(r"(?m)^- id: ([A-Z]+-[0-9]+)$", path.read_text()))
+    for rule, promise in RULES.items():
+        if promise not in promises:
+            fail(f"tools/check_schemas.py: the rule {rule} is named for {promise}, which is "
+                 f"not a promise that exists")
 
     # 1. Strict YAML.
     loaded = {}
@@ -471,6 +810,7 @@ def main():
         "core": sorted(core_dir.glob("*.yaml")),
         "valid": sorted(valid_dir.rglob("*.yaml")),
         "invalid": sorted(invalid_dir.rglob("*.yaml")),
+        "by-rule": sorted(by_rule_dir.rglob("*.yaml")),
     }
     for group, paths in groups.items():
         for path in paths:
@@ -528,7 +868,7 @@ def main():
                 why = validate(bundled, doc, path.name == "conduit.yaml")
                 if why:
                     fail(f"{rel(path)} document {index + 1}: not valid: {why}")
-                if isinstance(doc, dict) and doc.get("apiVersion") != named["apiVersion"]:
+                if isinstance(doc, dict) and doc.get("apiVersion") != named_values["apiVersion"]:
                     fail(f"{rel(path)} document {index + 1}: apiVersion is not the one "
                          f"spec/names.yaml states")
     if validating:
@@ -536,9 +876,6 @@ def main():
               f"examples/valid/.")
 
     # 4. Invalid documents.
-    promises = set()
-    for path in (ROOT / "spec").glob("*/*.yaml"):
-        promises.update(re.findall(r"(?m)^- id: ([A-Z]+-[0-9]+)$", path.read_text()))
     rejected = 0
     for path in groups["invalid"]:
         match = re.match(r"^([A-Z]+-[0-9]+)-", path.name)
@@ -560,49 +897,52 @@ def main():
                 print(f"   rejected {path.name}: {why}")
     if validating:
         print(f"4. {rejected} invalid documents in {len(groups['invalid'])} files were each "
-              f"rejected.")
+              f"rejected by a schema, or refused when read.")
 
     # 5. The core package and the references that can be checked here.
-    core_files = [(p, loaded[p]) for g in ("schemas", "core") for p in groups[g]]
+    core_files = [(p, loaded.get(p, [])) for g in ("schemas", "core") for p in groups[g]]
     core_kinds, twice = kinds_in(core_files)
     for name in twice:
-        fail(f"core package: the name {name} is used twice (PKG-012)")
-    manifest = next((d[0] for p, d in core_files if p.name == "conduit.yaml"), {})
+        fail(f"core package: an implementation and something else are both named {name} "
+             f"({CLASH})")
+    manifest = next((d[0] for p, d in core_files if p.name == "conduit.yaml" and d), {})
     exports = list(manifest.get("exports") or [])
     documents = {n for n, k in core_kinds.items() if k != "implementation"}
+    for name in sorted(n for n in exports if exports.count(n) > 1):
+        fail(f"spec/core/conduit.yaml: exports {name} twice (PKG-012)")
     for name in sorted(set(exports) - documents):
-        fail(f"spec/core/conduit.yaml: exports {name}, which is not a document of the package")
-    for name in sorted(documents - set(exports)):
-        fail(f"spec/core/conduit.yaml: does not export the document {name}")
+        fail(f"spec/core/conduit.yaml: exports {name}, which is not a document of the package "
+             f"(MAN-007)")
+    for name in sorted(documents - set(exports) - PRIVATE):
+        fail(f"spec/core/conduit.yaml: does not export the document {name}, and PRIVATE in "
+             f"this tool does not list it as deliberately private")
+    for name in sorted(PRIVATE):
+        if name not in documents or name in exports:
+            fail(f"tools/check_schemas.py: PRIVATE lists {name}, which is not a document of "
+                 f"the core package that it does not export")
     for name, kind in core_kinds.items():
         if not EXPORT.match(name or "") or len(name) > 63:
             fail(f"core package: {name} is not an export name (NAM-004)")
         elif kind in CONTRACTS and not VERSIONED.match(name):
-            fail(f"core package: the contract {name} has no version segment (CTR-001)")
+            fail(f"core package: the contract {name} does not have a segment and then a "
+                 f"version segment (CTR-001)")
         elif kind in FAMILIES and not NAME.match(name):
             fail(f"core package: the template {name} breaks OBJ-001")
-    readme = core_dir / "README.md"
-    if readme.exists():
-        section = re.search(r"(?ms)^## Every export\n(.*?)(?=^## |\Z)", readme.read_text())
-        listed = set(re.findall(r"(?m)^\| `([^`]+)` \|", section.group(1) if section else ""))
-        for name in sorted(set(core_kinds) - listed):
-            fail(f"spec/core/README.md: the table omits {name}")
-        for name in sorted(listed - set(core_kinds)):
-            fail(f"spec/core/README.md: the table lists {name}, which the package does not hold")
-    else:
-        fail("spec/core/README.md is missing")
+    check_readmes(core_dir, schema_dir, core_kinds, groups, loaded)
 
     # Each directory under examples/valid/ is one project. One whose manifest states an
     # `address` is a package, and what it exports can be referred to from the others.
     packages = {core: core_kinds}
+    package_docs = {core: contents(core_files)}
     by_dir = {}
     for path in groups["valid"]:
         by_dir.setdefault(path.parent, []).append((path, loaded.get(path, [])))
-    local = {}
+    local, private = {}, 0
     for directory, files in by_dir.items():
         local[directory], twice = kinds_in(files)
         for name in twice:
-            fail(f"{rel(directory)}: the name {name} is used twice")
+            fail(f"{rel(directory)}: an implementation and something else are both named "
+                 f"{name} ({CLASH})")
         for path, docs in files:
             if path.name == "conduit.yaml" and docs and isinstance(docs[0], dict):
                 address = docs[0].get("address")
@@ -610,31 +950,119 @@ def main():
                 if address:
                     packages[address] = {n: k for n, k in local[directory].items()
                                          if n in listed or k == "implementation"}
+                    package_docs[address] = contents(files)
+                    private += sum(1 for n, k in local[directory].items()
+                                   if k != "implementation" and n not in listed)
                     for name in sorted(n for n in listed if "#" not in n
                                        and n not in local[directory]):
                         fail(f"{rel(path)}: exports {name}, which is not a document of the "
-                             f"package")
+                             f"package (MAN-007)")
+
+    # The operations of REV-012, and the controls.
+    operations = package_docs[core]
+    for name in NO_REVISION:
+        inputs = ((operations.get(name) or {}).get("spec") or {}).get("inputs") or {}
+        if operations.get(name, {}).get("kind") != "Operation":
+            fail(f"core package: {name} is not an Operation contract")
+        elif "revision" in inputs:
+            fail(f"core package: {name} takes `revision`, and REV-012 says it names none")
+    controls = check_controls("core package", [d for _, ds in core_files for d in ds],
+                              package_docs, core)
+    for directory, files in by_dir.items():
+        address = next((d[0].get("address") for p, d in files
+                        if p.name == "conduit.yaml" and d and isinstance(d[0], dict)), None)
+        if address:
+            controls += check_controls(rel(directory), [d for _, ds in files for d in ds],
+                                       package_docs, address)
+
     counts = {"checked": 0, "skipped": 0}
     for path, docs in core_files:
         for doc in docs:
             if isinstance(doc, dict):
-                check_references(rel(path), role_of(doc, path.name == "conduit.yaml"), doc,
-                                 packages, {}, counts)
+                role = role_of(doc, path.name == "conduit.yaml")
+                for _, message in check_references(role, doc, packages, core_kinds, counts):
+                    fail(f"{rel(path)}: {message}")
     for directory, files in by_dir.items():
         for path, docs in files:
             for doc in docs:
                 if isinstance(doc, dict):
-                    check_references(rel(path), role_of(doc, path.name == "conduit.yaml"), doc,
-                                     packages, local[directory], counts)
+                    role = role_of(doc, path.name == "conduit.yaml")
+                    for _, message in check_references(role, doc, packages, local[directory],
+                                                       counts):
+                        fail(f"{rel(path)}: {message}")
     used = set()
     for path in list(loaded):
         used.update(re.findall(re.escape(core) + r"#([a-z0-9.-]*[a-z0-9])", path.read_text()))
     for name in sorted(used - set(core_kinds)):
         fail(f"a file refers to {core}#{name}, which the core package does not hold")
-    print(f"5. Core package: {len(exports)} exports and {len(core_kinds) - len(documents)} "
-          f"implementation. Checked {counts['checked']} references for the kind they name; "
-          f"{counts['skipped']} name packages that are not in this repository and were not "
-          f"checked.")
+
+    # Every promise cited by the files this tool covers exists.
+    prefixes = "|".join(sorted({p.split("-")[0] for p in promises}))
+    cited_in = [p for p in list(core_dir.rglob("*")) + list(schema_dir.rglob("*"))
+                if p.is_file() and p.suffix in (".yaml", ".md")]
+    cited_in.append(ROOT / "spec" / "promises" / "manifest.yaml")
+    cited = 0
+    for path in cited_in:
+        ids = set(re.findall(rf"\b((?:{prefixes})-[0-9]{{3}})\b",
+                             path.name + "\n" + path.read_text()))
+        cited += len(ids)
+        for promise in sorted(ids - promises):
+            fail(f"{rel(path)}: cites {promise}, which is not a promise that exists")
+    print(f"5. Core package: {len(exports)} exports, {len(PRIVATE)} documents deliberately "
+          f"private and {len(core_kinds) - len(documents)} implementation. Checked "
+          f"{counts['checked']} references for the kind they name; {counts['skipped']} name "
+          f"packages that are not in this repository and were not checked. Checked "
+          f"{controls} controls, the {len(NO_REVISION)} operations that take no `revision`, "
+          f"the tables of the two READMEs, and {cited} citations of promises in "
+          f"{len(cited_in)} files. The example packages keep {private} documents private.")
+
+    # 6. Rules that no schema can express.
+    sets = [("the core package", [d for p, ds in core_files if p.name != "conduit.yaml"
+                                  for d in ds], True)]
+    for directory, files in by_dir.items():
+        sets.append((rel(directory), [d for p, ds in files if p.name != "conduit.yaml"
+                                      for d in ds], False))
+    for label, docs, is_core in sets:
+        for rule, message in apply_rules(docs, is_core, core, package_docs):
+            fail(f"{label}: {message} ({RULES[rule]})")
+    turned_away, valid_first = 0, 0
+    for path in groups["by-rule"]:
+        match = re.match(r"^([A-Z]+-[0-9]+)-", path.name)
+        promise = match.group(1) if match else None
+        if promise not in promises or promise not in RULES.values():
+            fail(f"{rel(path)}: not named for a promise that a rule of this tool comes from")
+            continue
+        docs = loaded.get(path)
+        if not isinstance(docs, list):
+            continue                       # not strict YAML: already reported in step 1
+        if validating:
+            for index, doc in enumerate(docs):
+                why = validate(bundled, doc, False)
+                if why:
+                    fail(f"{rel(path)} document {index + 1}: not valid against the schemas, "
+                         f"so no rule is what rejects it: {why}")
+                else:
+                    valid_first += 1
+        found = apply_rules(docs, False, core, package_docs)
+        kinds, _ = kinds_in([(path, docs)])
+        for doc in docs:
+            if isinstance(doc, dict):
+                found += check_references(role_of(doc, False), doc, packages, kinds,
+                                          {"checked": 0, "skipped": 0})
+        mine = [message for rule, message in found if rule and RULES[rule] == promise]
+        if not mine:
+            fail(f"{rel(path)}: no rule of this tool for {promise} rejects it, and it must be "
+                 f"rejected")
+        else:
+            turned_away += 1
+            print(f"   rejected {path.name}: by this tool's rule for {promise}: {mine[0]}")
+    shown = (f"each of their {valid_first} documents is valid against the schemas"
+             if validating else "THEIR DOCUMENTS WERE NOT VALIDATED AGAINST A SCHEMA")
+    print(f"6. Applied {len(RULES)} rules of this tool, which come from "
+          f"{len(set(RULES.values()))} promises, to the core package and "
+          f"{len(by_dir)} example directories. {turned_away} sets of documents in "
+          f"{len(groups['by-rule'])} files under examples/invalid-by-rule/ were each rejected "
+          f"by the rule they are named for; {shown}.")
     return finish(validating)
 
 

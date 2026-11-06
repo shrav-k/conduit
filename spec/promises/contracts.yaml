@@ -2,9 +2,11 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). A contract is a document with the
 # same envelope as any other, as a Kubernetes resource definition is itself a resource. Every
 # field below is one that an existing promise already relies on. The JSON Schemas of these
-# documents are still to be written. Consolidation pass 1 took PLC-014 and part of PKG-011 into
-# CTR-004, and added CTR-007. The follow-up decisions (ruling 33) added CTR-008, the kind
-# `Schema`. No promise of this file has been removed. Draft: no vector exists yet.
+# documents are in spec/schemas/contracts.yaml. Consolidation pass 1 took PLC-014 and part of
+# PKG-011 into CTR-004, and added CTR-007. The follow-up decisions (ruling 33) added CTR-008,
+# the kind `Schema`. The ruling on the core package and the schemas (ruling 37) changed CTR-001
+# to CTR-004 and CTR-008, and added CTR-009. No promise of this file has been removed. Draft:
+# no vector exists yet.
 
 - id: CTR-001
   layer: language
@@ -14,10 +16,12 @@
   then: >-
     It has `apiVersion`, a `kind` that is one of `Type`, `Capability`, `Operation`,
     `Requirement` and `Schema`, `metadata` and `spec`. Its name is its export name, which
-    follows NAM-004 and whose last segment is its compatibility version.
+    follows NAM-004. The last segment of the name is its compatibility version, written `v` and
+    a whole number from 1, and at least one segment comes before it.
   observable: >-
-    A contract whose name has no version segment such as `.v1`, or that has any other top-level
-    key, is rejected when its package is installed or its project is submitted.
+    A contract whose name has no version segment, such as `directory-access`, or is its version
+    segment alone, such as `v1`, or that has any other top-level key, is rejected when its
+    package is installed or its project is submitted. `directory-access.v1` is accepted.
   vectors: []
 
 - id: CTR-002
@@ -27,18 +31,19 @@
     An Operation contract is read.
   then: >-
     Its `spec` may hold `inputs` and `outputs`, each a map from a name, which may be any
-    non-empty string, to a member that holds either a `schema` or, for a handle,
-    `handle: true`, and may hold `optional: true`; `effect`, a statement of what it changes
-    outside itself; `startsModelWork`; `deduplicates`; `implementation`, its default
-    implementation, which is one qualified reference; and, for a control, `changes`, as CTR-006
-    states.
+    non-empty string, to a member that holds either a `schema` or, for a handle, `handle: true`,
+    and may hold `optional: true`; `effect`, a statement of what it changes outside itself;
+    `startsModelWork`; `deduplicates`; `reservedToRoot`, the mark of an operation reserved to
+    the root Interface; `implementation`, its default implementation, which is one selection;
+    and, for a control, `changes`, as CTR-006 states.
   observable: >-
-    An operation with no `effect` changes nothing outside itself. `startsModelWork` and
-    `deduplicates` are booleans, and one that is absent is false; IMP-003 and OPS-012 state what
-    each mark means. An input or output with both `schema` and `handle`, or with neither, or
-    whose name is the empty string, is rejected when the contract's package is installed. A
-    name such as `maxResults` or `max_results` is accepted: the rule OBJ-022 gives for other
-    names a document chooses does not apply to these.
+    An operation with no `effect` changes nothing outside itself. `startsModelWork`,
+    `deduplicates` and `reservedToRoot` are booleans, and one that is absent is false; IMP-003,
+    OPS-012 and ACC-032 state what each mark means, and CTR-009 says where `reservedToRoot` may
+    be written. An input or output with both `schema` and `handle`, or with neither, or whose
+    name is the empty string, is rejected when the contract's package is installed. A name such
+    as `maxResults` or `max_results` is accepted: the rule OBJ-022 gives for other names a
+    document chooses does not apply to these.
   vectors: []
 
 - id: CTR-003
@@ -47,10 +52,11 @@
   when: >-
     A Capability contract is read.
   then: >-
-    Its `spec` holds `operations`, a list of qualified references to the operations it includes.
+    Its `spec` holds `operations`, a list of selections of the operations it includes.
   observable: >-
-    A capability outside the core package that lists an operation reserved to the root Interface
-    is rejected when its package is installed.
+    A capability outside the core package that lists an operation reserved to the root
+    Interface, which is one whose contract is marked `reservedToRoot: true`, is rejected when
+    its package is installed.
   vectors: []
 
 - id: CTR-004
@@ -62,9 +68,9 @@
     Its `spec` holds `family`; `schema`, the schema of an instance's `config`; `offers`, the
     capabilities its instances offer; `requires`, the operations its instances must have
     implemented; `runtimes`; `implementation`, its default implementations, a map in the form
-    TPL-003 gives for a template; `controls`, a list of qualified references to its controls;
-    `placement`, a map of applied requirements on placement; and `conditions`, the names of the
-    further conditions it reports.
+    TPL-003 gives for a template; `controls`, a list of selections of its controls; `placement`,
+    a map of applied requirements on placement; and `conditions`, the names of the further
+    conditions it reports.
   observable: >-
     A Type contract with no `family`, or with no `placement` key, is rejected when its package
     is installed. A type with no requirements on placement writes an empty map. A type whose
@@ -131,7 +137,26 @@
     member of it.
   observable: >-
     A `spec` that uses a keyword or a format outside the profile is rejected under SCH-002 and
-    SCH-003. A `$ref` that is a qualified reference resolves to a Schema contract that a
-    package exports, as SCH-015 states. The core package's reference schemas are Schema
-    contracts.
+    SCH-003. A `$ref` that is a qualified reference resolves to a Schema contract that a package
+    exports, and one that is `#name` to a Schema contract of the same project or package, as
+    SCH-015 states. The core package's reference schemas are Schema contracts, and so are the
+    schemas of documents under spec/schemas/.
+  vectors: []
+
+# --- Added with the core package (plan-audit ruling 37; change X4 of the ruling on the core
+# --- package and the schemas).
+
+- id: CTR-009
+  layer: language
+  level: must
+  when: >-
+    An Operation contract that does not belong to the core package is marked
+    `reservedToRoot: true`.
+  then: >-
+    The contract is rejected: a package that holds it is rejected when it is installed, and a
+    project that holds it is rejected when it is submitted.
+  observable: >-
+    Installation or resolving returns a diagnostic naming the contract. Only an Operation
+    contract of the core package carries the mark, as `declare-lost.v1` and `purge.v1` do, and
+    ACC-032 says what it means.
   vectors: []

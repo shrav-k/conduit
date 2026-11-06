@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # `consumer` accepts more than one kind, so it is written with its kind.
 
 apiVersion: github.com/shrav-k/conduit/v0

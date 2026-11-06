@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # a value binding is never a bare value.
 
 apiVersion: github.com/shrav-k/conduit/v0

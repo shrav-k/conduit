@@ -1,0 +1,17 @@
+# Example. It must be rejected:
+# an input's destination is never a place under `inputs`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1
+  inputs:
+    title:
+      schema: {type: string}
+      to: [/config/title]
+    fallback:
+      schema: {type: string}
+      to: [/inputs/title/default]
+  config: {}

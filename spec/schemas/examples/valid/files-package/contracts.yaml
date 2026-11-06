@@ -1,8 +1,9 @@
-# PROPOSED example, not accepted. One contract of each of the five kinds, and the further
-# contracts the example project needs. Every name under example.org is invented.
+# Example. One contract of each of the five kinds, and the further contracts the example
+# project needs. Every name under example.org is invented.
 #
-# Inside the package, one document refers to another as `#name` (NAM-022). A `$ref` cannot yet
-# do that: whether it may is one of the open points the record settles with a recommendation.
+# Inside the package, one document refers to another as `#name` (NAM-022). A `$ref` does the
+# same for a Schema contract of the package (SCH-015): `directory.read.v1` and
+# `set-read-limit.v1` each state an input with `#read-limit.v1`.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -40,7 +41,7 @@ spec:
     path:
       schema: {type: string, minLength: 1}
     maxEntries:
-      schema: {type: integer, minimum: 1, maximum: 100}
+      schema: {$ref: '#read-limit.v1'}
       optional: true
   outputs:
     entries:
@@ -100,7 +101,7 @@ metadata:
 spec:
   inputs:
     limit:
-      schema: {type: integer, minimum: 1, maximum: 100}
+      schema: {$ref: '#read-limit.v1'}
       optional: true
     revision:
       schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}

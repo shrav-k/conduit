@@ -1,9 +1,17 @@
-# The core package, the schemas of documents and the manifest's format — proposed
+# The core package, the schemas of documents and the manifest's format
 
-Status: **proposed, not accepted.** Drafted on 2026-11-05 for decision G1 of the
-[re-audit](../reaudit/README.md), which asked for three things to be written as normative parts
-of `spec/` and brought to the owner as one batch. Everything listed here is a proposal. Nothing
-in it binds, and no recommendation below is recorded anywhere as accepted.
+Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37). Every choice C1 to C56,
+every name N1 to N42 and every recommendation P1 to P14 below was accepted as written, with
+the five changes X1 to X5 and the settlements of the open points and disagreements that
+[APPLY.md](APPLY.md) lists. The section [Outcome](#outcome) says, for each item, how it was
+settled and what it changed in the documents, and [log-documents.md](log-documents.md) logs
+what was done to each file of the batch after the ruling.
+
+Sections (a) to (e), and the section after them, are kept as they were proposed. They were
+drafted on 2026-11-05 for decision G1 of the [re-audit](../reaudit/README.md), which asked for
+three things to be written as normative parts of `spec/` and brought to the owner as one
+batch. They describe the batch before the ruling: where they say "proposed", "recommendation"
+or "guess", or give a count, read [Outcome](#outcome) for what holds now.
 
 Two rules governed the drafting. Existing paradigms first: for anything that is not what
 distinguishes Conduit, an existing standard or practice is adopted and named. And the promises
@@ -334,3 +342,196 @@ batch is accepted they need to follow:
   reserved mark.
 - `schema-profile.md`: RFC 8785, if P1 is accepted.
 - `implementation-defined.yaml`: a line under DL2, if P2 is accepted.
+
+## Outcome
+
+Owner ruling of 2026-11-05 (plan-audit ruling 37). The batch was accepted as drafted, with the
+changes below. [APPLY.md](APPLY.md) is the instruction set for the ruling. "In the documents"
+says what the ruling changed under `spec/core/`, `spec/schemas/` and in
+`spec/promises/manifest.yaml`; "—" means nothing there had to change.
+
+### The five changes
+
+| ID | Change | Promise | In the documents |
+| --- | --- | --- | --- |
+| X1 | A location's facts change only by a control (D11) | PLC-008 | The control `set-facts.v1`, with `changes: [/facts]`, the inputs `revision` and `facts` and the output `settings`; the capability `location-settings.v1`, which the type `location.v1` offers; both exported |
+| X2 | Requests name an object by reference only (D10) | LIF-007 | — ; every core operation already named an object by a reference |
+| X3 | A bound in the wrong place (D29) | CON-028 | Two examples under `examples/invalid-by-rule`, and a valid Conduit to `access` that applies `bound.v1` |
+| X4 | The reserved mark (D30) | CTR-009; CTR-002 names the key | `operation-spec.v1` documents `reservedToRoot`; one example under `examples/invalid-by-rule` |
+| X5 | `#name` carries no kind (D19) | NAM-027 | One example under `examples/invalid-by-rule` |
+
+### The open points
+
+Every recommendation in (c) was accepted as written.
+
+| ID | Where it is promised | In the documents |
+| --- | --- | --- |
+| P1 | SUB-008, NAM-009; RFC 8785 in the schema profile | — |
+| P2 | REC-004; entry DL2 | — |
+| P3 | SCH-015 | `schema.v1` accepts `#name` in a `$ref`; both example packages use it; two invalid examples |
+| P4 | INS-012 | Each of the three schemas of a template's `spec` carries the closed list as one pattern; four invalid examples |
+| P5 | PKG-023 to PKG-025 | `install.v1` states the three reasons; MAN-013 and MAN-014 cite PKG-023 |
+| P6 | NAM-001 | `address.v1` and `qualified-reference.v1` limit a label of the host to 63 characters; three invalid examples |
+| P7 | CON-003, OBJ-003 | — |
+| P8 | CON-026 | `rename.v1` states it |
+| P9 | IFC-009 | — |
+| P10 | OPS-025 | — |
+| P11 | IFC-026 | — ; no schema and no output of a core operation describes a result's `_meta` |
+| P12 | OPS-009, IFC-025 | — ; the core package's README names the key beside `retrieve-result.v1` |
+| P13 | ACC-034, IFC-025 | — ; as P12 |
+| P14 | REV-012 | Confirmed: `set-up.v1`, `retire.v1`, `retire-with-resources.v1`, `open.v1` and `close.v1` take no `revision`, and the checker now checks it |
+
+### The disagreements
+
+| ID | How it was settled | In the documents |
+| --- | --- | --- |
+| D1 | Accepted as the batch does: MAN-012, and the third form of `manifest.v1` for the core package only | — |
+| D2 | NAM-009 and PKG-005: for the core package a template and an instance hold its address and version alone | MAN-012 cites the two and no longer says it itself |
+| D3 | IFC-012's observable: a tool name ends in the operation's version segment, as in `checkout.directory.read.v1` | — |
+| D4, D5 | OBJ-013, OBJ-014, POOL-012 and CON-018: `arguments` may be left out and then means none; an instance document may leave out `metadata` | — ; choice C7 |
+| D6 | OBJ-019: inside a schema the names of properties are the author's, and the keywords are closed by SCH-002 | — |
+| D7 | Accepted as the batch does: left to the engine, and listed in the schemas' README | — |
+| D8 | ACC-033: registering a Resource into a Pool that exists needs a Conduit to `management` and a Conduit to that Pool, each listing `register.v1`; asking for a new instance for a nested instantiation needs the same two for `register-replacement.v1` | `register-replacement.v1` says so |
+| D9, D20 | TPL-003, TPL-010, PKG-020, CTR-002, NAM-018 and OBJ-019: wherever a selection or such a key is "a qualified reference", `#name` is accepted for something in the same project or package | The descriptions of `implementation-map.v1` and `template-controls.v1`, and the READMEs, speak of selections |
+| D10 | Change X2 | — |
+| D11 | Change X1 | See X1 |
+| D12 | ACC-031: a policy is not configuration. Applying one returns its ID, removing one names that ID, neither names a revision, and inspecting `access` lists the policies in its status | The status of `inspect.v1` may hold `policies`, each with an `id` |
+| D13 | REV-006 and REV-007: a control's result states the settings it confirmed in the output `settings`; `revision` is the one input that must always be supplied | `set-facts.v1` follows it, and the checker checks every control |
+| D14 | OBJ-021: a value is a reference where the schema that governs it is a reference schema, directly, as the `items` of a list, or as a branch of `anyOf` or `oneOf` | — |
+| D15 | POOL-005: `{entry: name}` anywhere other than in an entry of a Pool template is rejected | Listed for the engine; one example under `examples/invalid-by-rule` |
+| D16 | INS-006, which OBJ-006 cites: where an input's schema fixes the kind, a bare name is accepted for it, and the destination receives the reference with its kind | — |
+| D17 | INS-014: a template with no `config` is checked against its type's schema as an empty map | — |
+| D18 | NAM-022: a document refers to something in its own project or package by `#name`; its own full address is not in its manifest and is rejected under NAM-007. The core package's own documents are the exception | — |
+| D19 | Change X5 | See X5 |
+| D21 | IFC-025: a result that ends with a reason may carry `diagnostics` in its `structuredContent`, as a rejected registration does | `register.v1` and the core package's README say so |
+| D22 | OPS-016 and IFC-024: a caller asks for its result by operation identity and target | — ; how to name a target that has been unregistered stays open |
+| D23 | REC-004: a purge removes the records made before a time the request names | — |
+| D24 | PKG-019: `supports` and `placement` may be left out, and then the implementation supports no requirement and has no requirement on placement | MAN-009 cites PKG-019 and no longer says it itself |
+| D25 | CON-016: a Conduit template that is not composed requires `capability`; `operations` is required unless an input's destination fills it; `requirements` may be left out | `conduit-template-spec.v1` requires `operations` or `inputs`; one invalid example, and one under `examples/invalid-by-rule` |
+| D26 | SCH-008: whether a `default` is allowed is judged where it is written, in the schema that holds it | — ; `schema.v1` already judged it so |
+| D27 | CTR-001: a contract's name has at least one segment before its version segment | `contract-name.v1` requires it; one invalid example |
+| D28 | SUB-005, with MAN-011: submitting a directory reads the `.yaml` and `.json` files in that directory itself and nothing below it | MAN-011 names `.yml` as an ending that is not read |
+| D29 | Change X3 | See X3 |
+| D30 | Change X4 | See X4 |
+| D31 | PLC-008: a location's document that states a placement is rejected | Listed for the engine; one example under `examples/invalid-by-rule` |
+| D32 | Accepted as the batch does: `resource-reference.v1`, and the engine checks that the Resource is a location | — |
+
+### What the batch holds now
+
+| Part | Where | What |
+| --- | --- | --- |
+| The schemas of documents | [spec/schemas](../../../spec/schemas/README.md) | 9 files holding 45 Schema contracts, as before |
+| Examples | [spec/schemas/examples](../../../spec/schemas/examples) | 3 valid directories holding 7 files; 50 invalid documents that a schema rejects, or that are refused when read; and 8 sets of documents under `invalid-by-rule`, each valid against the schemas and rejected by a rule the checker applies itself |
+| The core package | [spec/core](../../../spec/core/README.md) | 8 YAML files: its manifest; 20 Operation, 5 Capability, 6 Type and 2 Requirement contracts; 11 reference schemas and 2 schemas of results; and the 7 templates. 98 exports, 58 of them schemas, and one implementation |
+| The manifest's format | [spec/promises/manifest.yaml](../../../spec/promises/manifest.yaml) | MAN-001 to MAN-014. None was added or removed |
+| The checker | [tools/check_schemas.py](../../../tools/check_schemas.py) | Six steps. Step 6 is new: the rules no schema can express that the tool applies itself |
+
+### Choices made while applying the ruling
+
+Neither the record nor APPLY.md states these. Each is the smallest reading found, and each is
+for the owner to strike or keep.
+
+| ID | Choice | Why |
+| --- | --- | --- |
+| A1 | `set-facts.v1` replaces the whole of `facts`, its input `facts` is optional, it declares `deduplicates: true`, and it is not reserved to the root Interface | `changes: [/facts]` is what X1 gives; D13 makes every input but `revision` optional; C22 for a change to what the engine stores |
+| A2 | In the status that `inspect.v1` returns, `policies` is a list of objects, and only `id` is fixed | C38 fixed no more of an inspection result than it had to |
+| A3 | The name of a declared Conduit, an entry, a requirement or a component inside a destination follows the name rule of OBJ-022; `target` and `placement` are reached whole and never inside | INS-011 needs the parent to be present, and INS-012 says "a declared Conduit's `target`" |
+| A4 | `#name` in a `$ref` has the form of `#name` in a selection | NAM-022 gives one form |
+| A5 | `conduit-template-spec.v1` rejects a template that is not composed and has neither `operations` nor `inputs`; that an input does fill `operations` is left to the engine | The profile cannot say that some member of a map holds a value |
+| A6 | The rules the engine must check and that the checker also applies have their own examples, under `examples/invalid-by-rule`, apart from the documents a schema rejects | So that the report never says a schema rejected what a schema accepts |
+| A7 | MAN-010 says that `plain: false` means the same as leaving `plain` out; MAN-012 says that the core package's manifest lists no `packages` | C8, and the third form of `manifest.v1`, were accepted and no promise said either |
+
+### Found while applying it, and not settled
+
+- **`#name` and implementations.** NAM-022 says `#name` "refers to the document of that name".
+  An implementation is not a document, yet NAM-018 lets the selection of one be `#name`, and
+  the example package writes `'#files-server'`. NAM-027 makes the names of documents differ,
+  and PKG-012 the names of exports; nothing makes the name of an implementation differ from
+  the name of a document its package does not export, so `#name` could still name two things.
+  No promise was added for it. The checker refuses the clash in the files it reads and says
+  that no promise covers it.
+- **D22.** A caller names its invocation by operation identity and target. A target that has
+  been unregistered can no longer be named, and no promise says how its result is retrieved.
+
+### Verified after the ruling was applied
+
+Run from the repository's root on 2026-11-05, after the last change to any file of the batch
+and after Editor P's log of the promise side was written.
+
+`python3 tools/check_schemas.py`, which ran itself again under `/usr/bin/python3` because the
+first interpreter lacks PyYAML and jsonschema. The 58 lines that begin "rejected" are left
+out here; each names a file and says why it was rejected:
+
+```text
+Python 3.9.6 at /Applications/Xcode.app/Contents/Developer/usr/bin/python3; PyYAML 6.0.1; jsonschema 4.20.0
+Profile: 27 keywords, 5 formats. Format checkers available for all of them.
+1. Read 82 files holding 194 documents as strict YAML.
+2. Checked 58 Schema contracts against the profile, and every `$ref`.
+3. Validated 134 documents under spec/schemas/, spec/core/ and examples/valid/.
+4. 50 invalid documents in 50 files were each rejected by a schema, or refused when read.
+5. Core package: 98 exports, 0 documents deliberately private and 1 implementation. Checked 392 references for the kind they name; 1 name packages that are not in this repository and were not checked. Checked 3 controls, the 5 operations that take no `revision`, the tables of the two READMEs, and 649 citations of promises in 85 files. The example packages keep 0 documents private.
+6. Applied 8 rules of this tool, which come from 7 promises, to the core package and 3 example directories. 8 sets of documents in 8 files under examples/invalid-by-rule/ were each rejected by the rule they are named for; each of their 11 documents is valid against the schemas.
+Errors: 0
+```
+
+`python3 tools/check_docs.py` and `python3 tools/set_names.py --check`:
+
+```text
+Checked 104 Markdown files and 1355 local links (offline).
+Errors: 21
+Names: corePackage x398, apiVersion x197, metaPrefix x51. Errors: 0
+```
+
+The docs check reported 21 errors in this run. None is in a file of this batch: every one is a
+link to `experiments/001-shared-access`, a directory that another editor removed while this
+pass was being finished, from `docs/VOCABULARY.md`,
+`docs/archive/collaborator-proposals/PR-002-protocol.md`,
+`docs/archive/reviews/AUTHORING-2026-11-04.md`, `docs/archive/reviews/CONCEPTUAL.md`,
+`experiments/README.md`. Earlier runs in this pass, before that removal, reported no error.
+Other editors were changing the repository at the same time, so the counts of files, links and
+names include their work.
+
+A YAML load of `spec/promises/manifest.yaml`: 14 promises, each with exactly the keys `id`,
+`layer`, `level`, `when`, `then`, `observable` and `vectors`, in that order, and no ID twice.
+The validation command of the [consolidation instructions](../reaudit/CONSOLIDATION.md) over
+every promise file: 376 promises. Every promise ID that this section and
+`spec/promises/manifest.yaml` cite exists.
+
+What the lines mean, beyond what (e) says of steps 1 to 4:
+
+- **Step 4** counts only documents that a schema rejects, or that are refused when read. Each
+  of the 10 new files was read in the report and is rejected for the reason it is named for.
+- **Step 5** now also checks that every export exists and every document is exported; that
+  the five operations of REV-012 take no `revision`; that each of the three controls in the
+  repository has `changes` its type's schema describes, takes `revision`, has every other
+  input optional and returns `settings`; that the tables of the two READMEs list exactly the
+  files and the exports there are, each export with its kind; and that every promise cited
+  under `spec/core/`, `spec/schemas/` and in `spec/promises/manifest.yaml` exists.
+- **Step 6** applies eight rules of the tool's own. The core package and the three valid
+  directories break none. Each of the 8 sets under `examples/invalid-by-rule` is rejected by
+  the rule it is named for, and each of their 11 documents was first shown to be valid
+  against the schemas, so no schema is what rejects them.
+
+Also run, and not kept in the repository:
+
+- 182 values were tried against single schemas: host labels of 63 and 64 characters, the
+  forms of an address, of a contract's name and of a `$ref`, every accepted and rejected
+  destination for each kind of template, and the forms of a Conduit template's `spec`. All
+  behaved as intended.
+- 16 deliberate faults were put, one at a time, into a copy of `spec/` and `tools/`: an
+  export removed, a `revision` added to `open.v1`, a control's input made required, two
+  documents given one name, a promise ID that does not exist, a wrong kind in a README, a
+  document in `invalid-by-rule` made invalid against its schema, and others. The checker
+  reported each. It reported nothing for a seventeenth change that is not a fault: a `$ref`
+  of the core package rewritten as `#name`.
+- The path without jsonschema was run by hiding the module. It ran steps 1, 2, 5 and 6, said
+  that no document was validated against a schema, and exited with status 3.
+
+Checked by reading, not by a tool: in the additions to the valid project, the operations
+`team-access` lists are in its capability; the Resource `access` offers that capability; the
+engine states `bound.v1` under `supports`; the bound's arguments fit its inputs; and the two
+tools presented to `operator` have different names.
+
+Not verified, as before: no engine exists; `pattern` was evaluated by Python's `re` and not
+by an ECMA-262 engine; no archive was built; and the rules of step 6 are applied only as far
+as the documents in front of the tool show, so they are not the engine's checks.

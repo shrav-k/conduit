@@ -1,11 +1,13 @@
 # The core package
 
-Status: **proposed, not accepted.** Written for decision G1 of the
-[re-audit](../../docs/proposals/reaudit/README.md) and awaiting the owner's review as one batch
-with [the schemas](../schemas/README.md) and [the manifest's promises](../promises/manifest.yaml).
-The record of the batch, with every choice made here and its alternative, is
-[docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md). Nothing in
-this directory binds until it is accepted.
+Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as one batch with
+[the schemas](../schemas/README.md) and [the manifest's promises](../promises/manifest.yaml).
+It was written for decision G1 of the [re-audit](../../docs/proposals/reaudit/README.md). The
+record of the batch, with every choice made here and its alternative, is
+[docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
+the owner changed is in
+[APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md). The promises are the source of
+truth: where a document here and a promise differ, the document is wrong.
 
 ## What this is
 
@@ -17,8 +19,8 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 19 Operation contracts: every management verb, the tool that retrieves one's own results, and the control that designates the default location |
-| [capabilities.yaml](capabilities.yaml) | The 4 Capability contracts: what `management`, `access`, a Pool and the `system` Pool offer |
+| [operations.yaml](operations.yaml) | The 20 Operation contracts: every management verb, the tool that retrieves one's own results, the control that designates the default location and the control that changes a location's facts |
+| [capabilities.yaml](capabilities.yaml) | The 5 Capability contracts: what `management`, `access`, a Pool, the `system` Pool and a location offer |
 | [types.yaml](types.yaml) | The 6 Type contracts: the plain Interface and Pool types, and the types of `system`, of a location, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 11 reference schemas: the Schema contracts that make a value a reference (OBJ-021) |
@@ -27,8 +29,13 @@ everything the promises say it exports, and everything first start needs.
 
 The package also exports the 45 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
-from one schema to another must be a qualified reference to a Schema contract that a package
-exports (SCH-015), and because `register.v1` states its inputs with them.
+from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
+its inputs with them. In all the package exports 98 names, 58 of them Schema contracts, and
+has one implementation.
+
+A document of the core package refers to another by its full address, as
+`github.com/shrav-k/conduit/core#name`. That is the one exception to the rule that a document
+refers to something in its own package as `#name` (NAM-022).
 
 Every document here validates against those schemas, and `python3 tools/check_schemas.py`
 checks it.
@@ -77,27 +84,56 @@ request through a Conduit to the other target reports refused.
 | `remove-policy.v1` | `access-control.v1` | — | yes | — | ACC-031 |
 | `retrieve-result.v1` | No capability: presented to every consumer | — | — | — | IFC-024, OPS-016 |
 | `set-default-location.v1` | `system-settings.v1` | required | yes | — | PLC-016 |
+| `set-facts.v1` | `location-settings.v1` | required | yes | — | PLC-008 |
 
 How to read the columns:
 
 - **`revision` input.** A request's `arguments` are exactly the operation's inputs (IFC-001), so
   an operation that changes a stored object takes the object's current revision as an input.
   One that names a revision that is not current reports conflict (REV-002), and one that names
-  none reports invalid (REV-011). Setting up, retiring, opening and closing name no revision:
-  they change an instance's lifecycle state, not its definition or configuration.
+  none reports invalid (REV-011). Setting up, retiring, retiring a Pool together with its
+  Resources, opening and closing name no revision and advance none: they change an instance's
+  lifecycle state, not its definition or configuration (REV-012). Applying and removing a
+  policy name none either, because a policy is not configuration (ACC-031).
+- **Controls.** `set-default-location.v1` and `set-facts.v1` are controls: each states
+  `changes`, is listed under `controls` by its type, and is included in a capability so that a
+  Conduit to the instance can list it (OPS-020, CON-017). `revision` is the one input that must
+  always be supplied. Every other input is optional, and one that is not supplied leaves its
+  setting as stored (REV-006). The result states the settings it confirmed in the output
+  `settings` (REV-007).
 - **`deduplicates`.** Declared where the whole effect is a change to what the engine itself
   stores, which the engine recognizes by the operation identity, so a repeat after an unknown
   outcome can be dispatched as a new attempt (OPS-012). Not declared where the operation runs
   the graphs of other implementations. `inspect.v1` and `retrieve-result.v1` state no `effect`.
-- **Reserved to `root`.** Written `reservedToRoot: true` in the contract. No promise names
-  this key; it is a proposal. ACC-032 and CTR-003 say what the mark means.
+- **Reserved to `root`.** Written `reservedToRoot: true` in the contract (CTR-002). ACC-032
+  says what the mark means, and only an Operation contract of the core package carries it: any
+  other package that holds one is rejected when it is installed, and a project that holds one
+  when it is submitted (CTR-009).
+- **How a request names things.** An object is named by a reference and never by an ID, and a
+  retired instance's name still resolves until the instance is unregistered (LIF-007). An
+  invocation and a policy are not objects: `reconcile.v1` names an invocation, and
+  `remove-policy.v1` a policy, by the ID the engine gave it.
+- **Diagnostics.** `register.v1`, `replace.v1` and `install.v1` declare the output
+  `diagnostics`. A request for one of them that ends with a reason carries its diagnostics
+  too, in the `structuredContent` of its result (OBJ-023, IFC-025). A rejected installation
+  reports invalid, unavailable or conflict as PKG-023 to PKG-025 state.
 - No core operation starts model work (IMP-002), so none carries `startsModelWork`.
 - Every core operation states `github.com/shrav-k/conduit/core#engine` as its default
   implementation. The engine performs it; no process is started and no request crosses the
   implementation interface.
 
 The tool that IFC-024 always presents is named `retrieve-result.v1`, with no Conduit's name
-before it.
+before it. A caller names its invocation by `operationIdentity` and `target` (OPS-016). The
+two words of its result are also what a direct answer carries in its `_meta`:
+`io.github.shrav-k.conduit/state` with the value `inProgress` for a repeat of an invocation
+that has not ended (OPS-009), and `io.github.shrav-k.conduit/withheld` with the value true
+where content is withheld (ACC-034). IFC-025 states both, and IFC-026 states the third key of
+a result, `io.github.shrav-k.conduit/restriction`. No operation of the core package declares
+any of the three as an output, because `_meta` is not part of an operation's outputs.
+
+`inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records`
+(LIF-013). The status of `access` lists the policies in force under `policies`, each with the
+`id` that `apply-policy.v1` returned (ACC-031).
 
 ## First start
 
@@ -121,12 +157,15 @@ gets a generated name (OBJ-003), and FST-001 fixes these two names.
 
 A location's stored facts (PLC-007, PLC-008, PLC-013) are the value of `facts` in its
 configuration. The two facts the definitions name are `host` and `localPaths`; a location may
-state others.
+state others. The argument `facts` sets them when the location is instantiated. After that
+they are changed only by the control `set-facts.v1`, which is in the capability
+`location-settings.v1` that the location type offers, and so is requested through an open
+Conduit to the location that lists it. A location's document states no placement (PLC-008).
 
 ## Every export
 
 "Requires" names the promise that needs the export to exist. Where it says "none", the export
-is a choice of this batch and the record lists it.
+is a choice of the batch that the owner accepted, and the record lists it.
 
 | Export | Kind | Requires |
 | --- | --- | --- |
@@ -140,13 +179,14 @@ is a choice of this batch and the record lists it.
 | `interface.v1` | Type | TPL-002: the template `root` needs a type; the plain Interface type |
 | `pool.v1` | Type | TPL-002: a Pool template needs a type; the plain Pool type |
 | `system-pool.v1` | Type | TPL-002, PLC-003, PLC-016 |
-| `location.v1` | Type | PLC-008 |
+| `location.v1` | Type | PLC-008, CTR-006 |
 | `management.v1` | Type | TPL-002, ACC-033 |
 | `access.v1` | Type | TPL-002, ACC-006, ACC-031 |
 | `object-management.v1` | Capability | OPS-019, ACC-033 |
 | `access-control.v1` | Capability | OPS-019, ACC-006, ACC-012, ACC-031 |
 | `pool-management.v1` | Capability | OPS-019, ACC-033, ACC-028 |
 | `system-settings.v1` | Capability | PLC-016, CON-017 |
+| `location-settings.v1` | Capability | PLC-008, CON-017 |
 | `register.v1` | Operation | OPS-019, ACC-033, SUB-006 |
 | `replace.v1` | Operation | SUB-007 |
 | `rename.v1` | Operation | OBJ-011 |
@@ -166,6 +206,7 @@ is a choice of this batch and the record lists it.
 | `remove-policy.v1` | Operation | ACC-031 |
 | `retrieve-result.v1` | Operation | IFC-024, OPS-016 |
 | `set-default-location.v1` | Operation, a control | PLC-016 |
+| `set-facts.v1` | Operation, a control | PLC-008 |
 | `bound.v1` | Requirement | ACC-029, ACC-030 |
 | `shared-host.v1` | Requirement | PLC-013, CON-006 |
 | `reference.v1` | Schema, a reference schema | OBJ-021, OBJ-006 |
@@ -188,12 +229,12 @@ is a choice of this batch and the record lists it.
 | `qualified-reference.v1` | Schema of a document's part | NAM-002 |
 | `selection.v1` | Schema of a document's part | NAM-018, NAM-022 |
 | `pointer.v1` | Schema of a document's part | OBJ-016 |
-| `destination.v1` | Schema of a document's part | OBJ-016, INS-021 |
+| `destination.v1` | Schema of a document's part | OBJ-016, INS-021, INS-012 |
 | `version.v1` | Schema of a document's part | PKG-001 |
 | `digest.v1` | Schema of a document's part | PKG-004 |
 | `id.v1` | Schema of a document's part | none |
 | `revision.v1` | Schema of a document's part | none |
-| `schema.v1` | Schema of a document's part | CTR-008, SCH-002 |
+| `schema.v1` | Schema of a document's part | CTR-008, SCH-002, SCH-008, SCH-015 |
 | `api-version.v1` | Schema of a document's part | OBJ-017 |
 | `envelope.v1` | Schema of a document's part | OBJ-017, OBJ-020 |
 | `template-metadata.v1` | Schema of a document's part | OBJ-018 |
@@ -205,9 +246,9 @@ is a choice of this batch and the record lists it.
 | `value-binding.v1` | Schema of a document's part | GRA-019 |
 | `value-reference.v1` | Schema of a document's part | GRA-020 |
 | `template.v1` | Schema of a document | OBJ-012 |
-| `template-spec.v1` | Schema of a document's part | TPL-001 |
-| `pool-template-spec.v1` | Schema of a document's part | TPL-001 |
-| `conduit-template-spec.v1` | Schema of a document's part | CON-016 |
+| `template-spec.v1` | Schema of a document's part | TPL-001, INS-012 |
+| `pool-template-spec.v1` | Schema of a document's part | TPL-001, INS-012 |
+| `conduit-template-spec.v1` | Schema of a document's part | CON-016, INS-012 |
 | `template-input.v1` | Schema of a document's part | INS-021 |
 | `implementation-map.v1` | Schema of a document's part | TPL-003 |
 | `runtime.v1` | Schema of a document's part | TPL-006 |
@@ -220,7 +261,7 @@ is a choice of this batch and the record lists it.
 | `contract.v1` | Schema of a document | CTR-001 |
 | `type-spec.v1` | Schema of a document's part | CTR-004 |
 | `capability-spec.v1` | Schema of a document's part | CTR-003 |
-| `operation-spec.v1` | Schema of a document's part | CTR-002, CTR-006 |
+| `operation-spec.v1` | Schema of a document's part | CTR-002, CTR-006, CTR-009 |
 | `requirement-spec.v1` | Schema of a document's part | CTR-005 |
 | `applied-requirement.v1` | Schema of a document's part | NAM-019 |
 | `manifest.v1` | Schema of the manifest | NAM-006, PKG-017 to PKG-020, MAN-003 to MAN-012 |
@@ -231,10 +272,10 @@ is a choice of this batch and the record lists it.
 ## What this package does not settle
 
 - The full shape of an inspection result and of a diagnostic. `inspect.v1` fixes only the names
-  of its outputs and the two values every status carries; `diagnostic.v1` fixes only `message`.
-- A control that changes a location's facts. PLC-008 says they are changed only by a control,
-  and no promise names one, so this batch writes none.
-- How an ID is written in a request. Every operation here names an object by a reference.
+  of its outputs, the two values every status carries, and that a policy listed in the status
+  of `access` has an `id`; `diagnostic.v1` fixes only `message`.
+- How a caller retrieves the result of an invocation whose target has been unregistered, and
+  so can no longer be named (item D22 of the record).
 
 Each is listed, with the promises concerned, in the
 [record](../../docs/proposals/core-and-schemas/README.md).

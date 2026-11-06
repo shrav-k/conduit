@@ -1,7 +1,8 @@
 # Submissions: handing the engine several documents at once.
 # Owner rulings of 2026-11-05 (plan-audit rulings 21, 22, 32 and 33). Draft: no vector exists
 # yet. Consolidation pass 1: SUB-007 was reduced to the replace operation; the rejection it
-# shared with OBJ-011 is OBJ-002. SUB-008 was added. No promise of this file has been removed.
+# shared with OBJ-011 is OBJ-002. SUB-008 was added. The ruling on the core package and the
+# schemas (ruling 37) changed SUB-005 and SUB-008. No promise of this file has been removed.
 
 - id: SUB-001
   layer: language
@@ -63,7 +64,10 @@
   then: >-
     The submission is rejected.
   observable: >-
-    The diagnostic names the item, and nothing is registered.
+    The diagnostic names the item, and nothing is registered. Where a directory is submitted,
+    what is read is the files in the directory itself whose names end in `.yaml` or `.json`, the
+    manifest among them, as MAN-001 and MAN-011 state. Nothing below the directory is read, and
+    a file with any other ending is not read, so neither is part of the submission.
   vectors: []
 
 - id: SUB-006
@@ -102,12 +106,19 @@
   when: >-
     A submission contains contract documents.
   then: >-
-    They are made available to the documents of that project, and are not registered. The
-    engine keeps them as an unpublished package, identified by a digest of its documents.
+    They are made available to the documents of that project, and are not registered. The engine
+    keeps them as an unpublished package, identified by a digest. The digest is the SHA-256,
+    written as PKG-004 writes a digest, of the JSON Canonicalization Scheme form, RFC 8785, of
+    one object with two members: `documents`, a list of the project's contract documents ordered
+    by `kind` and then by `metadata.name`, and `manifest`, the project's manifest, which is left
+    out when the project has none.
   observable: >-
     A document of the same project can refer to such a contract as `#name` under NAM-022. No
-    object exists for the contract after the submission, and no document outside the project
-    can refer to it. A template registered by the submission keeps that digest under NAM-009,
-    as it keeps the version and digest of any package, so the contracts it resolved against
-    stay available to it and to its instances.
+    object exists for the contract after the submission, and no document outside the project can
+    refer to it. A template registered by the submission keeps that digest under NAM-009, as it
+    keeps the version and digest of any package, so the contracts it resolved against stay
+    available to it and to its instances. Two submissions whose contract documents and manifest
+    are equal under SCH-007 give the same digest, however their files are written, and the
+    manifest is part of it because it fixes what the contracts' references to other packages
+    mean.
   vectors: []

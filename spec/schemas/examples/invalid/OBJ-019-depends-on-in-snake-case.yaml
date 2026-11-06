@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # the key is `dependsOn`; `depends_on` is not defined.
 
 apiVersion: github.com/shrav-k/conduit/v0

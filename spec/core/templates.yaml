@@ -1,5 +1,5 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # The templates of the first-start objects (FST-005). At first start the engine instantiates
 # them under the names FST-001 gives: the Pool `system` from `system`; the location `local`
@@ -11,7 +11,10 @@
 # Promises encoded:
 #   system           FST-001, FST-005, PLC-003 (it holds the default-location setting, which
 #                    names nothing until the control sets it)
-#   location         FST-001, FST-005, PLC-008, NAM-020 (the one export a promise names)
+#   location         FST-001, FST-005, PLC-008, NAM-020 (the one export a promise names). The
+#                    argument `facts` sets a location's facts when it is instantiated; after
+#                    that only the control `set-facts.v1` changes them. The template has no
+#                    `controls` map, so every control of its type is available (TPL-010)
 #   management       FST-001, FST-005
 #   access           FST-001, FST-005
 #   root             FST-001, FST-002 (one Conduit to `management` and one to `access`),

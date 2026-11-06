@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. The manifest of a project that is not published: it states
+# Example. The manifest of a project that is not published: it states
 # no `address` and no `version` (PKG-017). Every name under example.org is invented, and each
 # digest is illustrative: it is not the digest of a real archive.
 #

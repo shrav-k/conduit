@@ -5,8 +5,9 @@
 # experiments/004-stateright-evaluation.
 # A record is a log entry (conventions/records.yaml). What is kept for an operation identity is
 # the invocation's state, which is in progress or its outcome and is read from the records about
-# the invocation. ACC-020 and ACC-021 were folded into OPS-005 and REC-001. No promise of this
-# file has been removed.
+# the invocation. ACC-020 and ACC-021 were folded into OPS-005 and REC-001. The ruling on the
+# core package and the schemas (ruling 37) changed OPS-007, OPS-009, OPS-014, OPS-016 and
+# OPS-019, and added OPS-025. No promise of this file has been removed.
 
 - id: OPS-001
   layer: convention
@@ -91,8 +92,8 @@
   when: >-
     No result arrives; the implementation stops before returning one; a result from an
     implementation that carries Conduit's keys states neither an outcome nor a reason under
-    IFC-026; or a declared output in a result fails validation, whether or not the
-    implementation is marked `plain`.
+    IFC-026, or states both; or a declared output in a result fails validation, whether or not
+    the implementation is marked `plain`.
   then: >-
     The invocation's outcome is unknown.
   observable: >-
@@ -125,9 +126,11 @@
     The request is a repeat, not a new request. Nothing is dispatched, and the response gives
     the invocation's state: in progress, or succeeded.
   observable: >-
-    The implementation receives no further call for the invocation, and the response matches
-    the state read from the invocation's records. Two requests have the same contents when they
-    name the same operation and their arguments are equal under SCH-007.
+    The implementation receives no further call for the invocation, and the response matches the
+    state read from the invocation's records. Two requests have the same contents when they name
+    the same operation and their arguments are equal under SCH-007. The answer to a repeat of an
+    invocation that has not ended carries neither an outcome nor a reason, and its `_meta` holds
+    `io.github.shrav-k.conduit/state` with the value `inProgress`, as IFC-025 states.
   vectors: []
 
 - id: OPS-010
@@ -198,7 +201,8 @@
   observable: >-
     A record states the new outcome, the actor that reconciled it and what the actor checked.
     The earlier record that the outcome was unknown is kept. An actor with no such Conduit
-    reports refused.
+    reports refused. The request is the operation `reconcile.v1`, which names the invocation by
+    the ID the engine gave it.
   vectors: []
 
 - id: OPS-015
@@ -217,14 +221,16 @@
   layer: convention
   level: must
   when: >-
-    The original caller asks, by operation identity, for the result of its own invocation.
+    The original caller asks, by operation identity and target, for the result of its own
+    invocation.
   then: >-
     It is told the invocation's state: in progress, or its outcome. The request needs no open
     Conduit.
   observable: >-
     The response states the outcome even if the caller's Conduit was closed after the invocation
-    was dispatched. The request is made with the tool that IFC-024 says is always presented, and
-    the state is in that tool's result as IFC-024 states.
+    was dispatched. The request names the target as well as the identity, because OPS-008 scopes
+    an identity to a caller and a target. It is made with the tool `retrieve-result.v1`, which
+    IFC-024 says is always presented, and the state is in that tool's result as IFC-024 states.
   vectors: []
 
 - id: OPS-017
@@ -267,7 +273,11 @@
   observable: >-
     Such a request needs an open Conduit that lists it, may carry an operation identity, ends in
     one of the ways the definitions list, and leaves a record. Without an operation identity it
-    is a new invocation each time, under OPS-011.
+    is a new invocation each time, under OPS-011. The capabilities are those of the core
+    package: `object-management.v1`, which `management` offers, `access-control.v1`, which
+    `access` offers, and `pool-management.v1`, which every Pool offers. Each verb is an
+    Operation contract of the core package, such as `register.v1`, `set-up.v1`, `open.v1`,
+    `apply-policy.v1` and `install.v1`.
   vectors: []
 
 - id: OPS-020
@@ -347,4 +357,23 @@
     The implementation receives a further call. The invocation's state is then in progress, and
     afterwards the outcome of the new attempt. The records of the failed attempt are kept. Like
     any dispatch, the new attempt needs the request to be permitted under ACC-001.
+  vectors: []
+
+# --- Added with the core package (plan-audit ruling 37; point P10 of the ruling on the core
+# --- package and the schemas).
+
+- id: OPS-025
+  layer: convention
+  level: must
+  when: >-
+    A request arrives with the same caller, target, operation identity and contents as an
+    earlier request that ended with a reason and no outcome.
+  then: >-
+    It is a new request, and is decided afresh. It is not answered with the earlier reason.
+  observable: >-
+    The earlier request has no outcome and began no invocation that OPS-008 keeps, whether the
+    engine did not dispatch it or the implementation answered with a reason under IFC-026,
+    having performed nothing. The later request is checked as if the earlier one had not been
+    made: it may be dispatched, or may end with a reason again, and each has its own record.
+    Nothing is applied twice, because the earlier request performed nothing.
   vectors: []

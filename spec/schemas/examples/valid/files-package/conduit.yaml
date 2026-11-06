@@ -1,6 +1,6 @@
-# PROPOSED example, not accepted. The manifest of a package, in the form
-# spec/promises/manifest.yaml proposes. Every name under example.org is invented, and each
-# digest is illustrative: it is not the digest of a real archive.
+# Example. The manifest of a package, in the form spec/promises/manifest.yaml gives. Every
+# name under example.org is invented, and each digest is illustrative: it is not the digest
+# of a real archive.
 #
 # It shows: the package's own `address` and `version` (PKG-017); a package it uses, with
 # `fetch` (NAM-006, NAM-012); `exports`, with one re-export (PKG-018, MAN-008); and the three

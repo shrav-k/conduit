@@ -1,10 +1,11 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # The reference schemas: the Schema contracts that make a value a reference (OBJ-021). A
 # value inside `config` or `arguments` is resolved to an ID only where the schema that
-# governs its place is one of these. The document schemas under spec/schemas/ use the same
-# contracts for `owner`, `placement`, `consumer` and `target`.
+# governs its place is one of these: directly, as the `items` of a list, or as a branch of
+# `anyOf` or `oneOf`. The document schemas under spec/schemas/ use the same contracts for
+# `owner`, `placement`, `consumer` and `target`.
 #
 # Promises encoded:
 #   reference.v1             OBJ-006 (`{kind: <Kind>, name: <name>}`), OBJ-020
@@ -23,7 +24,9 @@
 # Not expressed here, and checked by the engine: that the object exists (OBJ-008, OBJ-009),
 # that it is a template or an instance as the place expects (OBJ-007), and that
 # `{entry: name}` is written inside an entry of a Pool template and names another entry of
-# the same Pool (POOL-005).
+# the same Pool. Written anywhere else it is rejected (POOL-005). These schemas accept it
+# wherever a Resource is accepted, because an entry's argument is checked against the
+# schema of the Resource template's input.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

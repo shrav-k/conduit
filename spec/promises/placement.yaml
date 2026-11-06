@@ -3,7 +3,8 @@
 # an implementation needs of a location is a requirement on placement: a schema that the
 # location's stored facts must satisfy. Removed by consolidation pass 1: PLC-010 was folded into
 # OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
-# The follow-up rulings removed nothing. Draft: no vector exists yet.
+# The follow-up rulings removed nothing. The ruling on the core package and the schemas (ruling
+# 37) changed PLC-008 and PLC-016. Draft: no vector exists yet.
 
 - id: PLC-001
   layer: language
@@ -100,12 +101,18 @@
     A location is instantiated.
   then: >-
     It is a Resource instance of the location type, owned by the system Pool, and it is its own
-    placement. Its facts, including its host, are stored configuration of the location, and are
-    changed only by a control.
+    placement. Its facts, including its host, are stored configuration of the location, held
+    under `facts` in its configuration. Once the location is instantiated they are changed only
+    by the control `set-facts.v1` of the core package.
   observable: >-
     Inspecting a location shows the kind Resource, the location type, the system Pool as owner,
-    its own ID as placement, and its facts in its configuration. Nothing observed of the
-    location changes a stored fact.
+    its own ID as placement, and its facts under `facts` in its configuration. A location's
+    document states no placement: one that states a `placement` is rejected. A document made
+    from the core package's template `location` supplies the facts as the argument `facts`. The
+    control is in the capability `location-settings.v1`, which the location type offers, so it
+    is requested through an open Conduit to the location that lists it, like any control. It
+    takes the location's current `revision` and `facts`, and its result states the settings it
+    confirmed in `settings`. Nothing observed of the location changes a stored fact.
   vectors: []
 
 - id: PLC-009
@@ -183,9 +190,11 @@
     It is done by a control of the `system` Pool, permitted and checked like any other control,
     and the setting names a location that exists or nothing.
   observable: >-
-    A value that is not the name of a location that exists reports invalid. After the control
-    succeeds, an instance instantiated without a placement takes the named location under
-    PLC-003.
+    The control is `set-default-location.v1` of the core package, in the capability
+    `system-settings.v1` that the type of the `system` Pool offers. It takes `location`, a
+    reference to a Resource or null, and null clears the setting. A value other than null that
+    does not refer to a location that exists reports invalid. After the control succeeds, an
+    instance instantiated without a placement takes the named location under PLC-003.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).

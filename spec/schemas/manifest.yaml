@@ -1,9 +1,9 @@
-# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
-# docs/proposals/core-and-schemas/README.md.
+# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
+# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
 #
 # The manifest of a project or a package, and one item of its `implementations`. The file's
-# name, its keys and the layout of an archive are proposed as promises in
-# spec/promises/manifest.yaml. JSON Schema 2020-12, within spec/schema-profile.md.
+# name, its keys and the layout of an archive are promised in spec/promises/manifest.yaml.
+# JSON Schema 2020-12, within spec/schema-profile.md.
 #
 # Promises encoded:
 #   manifest.v1             MAN-003 (`apiVersion`; no `kind`, `metadata` or `spec`), MAN-004
@@ -19,8 +19,8 @@
 #
 # The first two forms below are the manifest of a project that is not published and the
 # manifest of a package. The third is the core package's own manifest, whose implementations
-# are the engine itself and so state no `command`, `url` or `graph`: PKG-019 has no way to
-# write that, and the record lists it.
+# are the engine itself and so state no `command`, `url` or `graph`, the exception to
+# PKG-019 that MAN-012 states.
 #
 # Not expressed here, and checked by the engine: the rule for a key of `packages` and of
 # `implementations` (NAM-001, NAM-004), because the profile has no keyword that constrains
@@ -28,8 +28,9 @@
 # export names a document of the package and no name is exported twice (PKG-012, PKG-018);
 # re-export cycles (PKG-014); that a plain item's `tools` has a key for each operation in
 # `implements` (PKG-020); that a `graph` item implements exactly the one operation it lists
-# (GRA-014); everything about digests and installed packages (PKG-003, PKG-021, PKG-022);
-# and that there is one manifest, in the right place (MAN-001, MAN-002).
+# (GRA-014); that no two documents of the project or package share a name (NAM-027);
+# everything about digests and installed packages (PKG-003, PKG-021, PKG-022); and that
+# there is one manifest, in the right place (MAN-001, MAN-002).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -116,7 +117,8 @@ metadata:
   description: >-
     One member of a manifest's `implementations`. It is reached by exactly one of `command`,
     `url` and `graph`. An existing server that knows nothing of this specification is marked
-    `plain: true`, gives `tools` and states no `supports`.
+    `plain: true`, gives `tools` and states no `supports`. `supports` and `placement` may each
+    be left out.
 spec:
   oneOf:
     - type: object

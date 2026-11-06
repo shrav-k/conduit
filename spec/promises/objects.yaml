@@ -3,7 +3,9 @@
 # exists yet. Consolidation pass 1: OBJ-011 was reduced to the rename operation; the rejection
 # it shared with SUB-007 is OBJ-002, which also took in FST-004. INS-015 was folded into
 # OBJ-013. OBJ-020 to OBJ-022 were added. The follow-up decisions (ruling 33) added OBJ-023,
-# which is of the layer `convention`. No promise of this file has been removed.
+# which is of the layer `convention`. The ruling on the core package and the schemas (plan-audit
+# ruling 37) changed OBJ-003, OBJ-006, OBJ-013, OBJ-014, OBJ-018, OBJ-019, OBJ-021 and OBJ-023
+# and added none. No promise of this file has been removed.
 
 - id: OBJ-001
   layer: language
@@ -49,9 +51,10 @@
     OBJ-002. A template's name follows OBJ-001 and so holds no dot, whether or not a package
     exports the template; the dots NAM-004 allows occur only in the names of exports that are
     not templates, such as a contract's. A component Conduit is not named in this way: its name
-    is given by the naming of a composite's components, in conduits.yaml. From outside its
-    Pool, the Resource of an entry is reached by the reference to a Pool's entry that POOL-014
-    gives, whatever name was generated for it.
+    is given by CON-003, which shortens the generated part further so that the whole name of
+    the component Conduit is no longer than 63 characters. From outside its Pool, the Resource
+    of an entry is reached by the reference to a Pool's entry that POOL-014 gives, whatever
+    name was generated for it.
   vectors: []
 
 - id: OBJ-004
@@ -88,6 +91,8 @@
   observable: >-
     `{kind: Pool, name: shared}` refers to the Pool `shared`. A reference that gives only a name
     in a field that accepts more than one kind is rejected with a diagnostic naming the field.
+    Where a bare name is the argument of an input whose schema fixes the kind, INS-006 says
+    what the input's destination receives.
   vectors: []
 
 - id: OBJ-007
@@ -155,8 +160,8 @@
     submitted under the name of an existing instance is rejected under OBJ-002.
   vectors: []
 
-# --- The shape of a document (plan-audit ruling 28). The schemas of each family's `spec` are
-# --- still to be written.
+# --- The shape of a document (plan-audit ruling 28). The JSON Schemas of these shapes are the
+# --- Schema contracts under spec/schemas/.
 
 - id: OBJ-012
   layer: language
@@ -177,18 +182,20 @@
   when: >-
     An instance document is read.
   then: >-
-    It has `apiVersion`, `kind`, `metadata`, `from`, the standard arguments of its family as
-    top-level keys, and the values for its template's inputs under `arguments`. The standard
-    arguments are `owner` for a Resource, `placement` for an Agent and a Resource, and
-    `consumer` and `target` for a Conduit. A Conduit's `consumer` is a reference to an instance
-    of the kind Interface, Agent or Resource, and its `target` is a reference to an instance of
-    the kind Interface, Agent, Resource or Pool.
+    It has `apiVersion`, `kind`, `from` and the standard arguments of its family as top-level
+    keys, and it may have `metadata` and, under `arguments`, the values for its template's
+    inputs. The standard arguments are `owner` for a Resource, `placement` for an Agent and a
+    Resource, and `consumer` and `target` for a Conduit. A Conduit's `consumer` is a reference
+    to an instance of the kind Interface, Agent or Resource, and its `target` is a reference to
+    an instance of the kind Interface, Agent, Resource or Pool.
   observable: >-
-    A standard argument is accepted whatever inputs the template declares. An `owner`, a
-    `placement`, a `consumer` or a `target` written under `arguments`, a standard argument of
-    another family, a value for an input written at the top level, or values written under
-    `inputs`, are each rejected with a diagnostic naming the key. `consumer` and `target` each
-    accept more than one kind, so each is written with its kind, as OBJ-006 requires.
+    An instance document that leaves out `arguments` supplies no arguments, exactly as one that
+    writes an empty map. One that leaves out `metadata` gives no name, and the instance is named
+    under OBJ-003. A standard argument is accepted whatever inputs the template declares. An
+    `owner`, a `placement`, a `consumer` or a `target` written under `arguments`, a standard
+    argument of another family, a value for an input written at the top level, or values written
+    under `inputs`, are each rejected with a diagnostic naming the key. `consumer` and `target`
+    each accept more than one kind, so each is written with its kind, as OBJ-006 requires.
   vectors: []
 
 - id: OBJ-014
@@ -198,15 +205,17 @@
     A document holds a nested instantiation: a declared Conduit, a Pool's entry or a component
     of a composite Conduit.
   then: >-
-    It has no `kind`, no `metadata` and no `spec`. A declared Conduit holds `from` and
-    `arguments`, and may hold `target` and `optional: true`. A Pool's entry holds `from` and
-    `arguments`, and may hold `optional: true`. A component holds `from` and `arguments`.
+    It has no `kind`, no `metadata` and no `spec`. A declared Conduit holds `from`, and may hold
+    `arguments`, `target` and `optional: true`. A Pool's entry holds `from`, and may hold
+    `arguments` and `optional: true`. A component holds `from`, and may hold `arguments`.
   observable: >-
     A nested instantiation that carries `kind`, `metadata` or `spec` is rejected with a
-    diagnostic naming it. So is a declared Conduit or a component that carries `consumer`, a
-    component that carries `target`, and an entry that carries `owner` or `placement`. An
-    entry's placement is the destination of one of the Pool template's inputs, or else is given
-    by the default rules PLC-002 to PLC-004, as for any instance.
+    diagnostic naming it, and so is one with no `from`. One that leaves out `arguments` supplies
+    no arguments, exactly as one that writes an empty map. A declared Conduit or a component
+    that carries `consumer`, a component that carries `target`, and an entry that carries
+    `owner` or `placement`, are each rejected. An entry's placement is the destination of one of
+    the Pool template's inputs, or else is given by the default rules PLC-002 to PLC-004, as for
+    any instance.
   vectors: []
 
 - id: OBJ-015
@@ -266,7 +275,7 @@
   observable: >-
     A template or a contract with no `name` is rejected. Two documents that differ only in
     `description` or `annotations` resolve to the same object. Any other key in `metadata` is
-    rejected.
+    rejected. An instance document may leave out `metadata` altogether, as OBJ-013 states.
   vectors: []
 
 - id: OBJ-019
@@ -274,17 +283,21 @@
   level: must
   when: >-
     A document contains a key that this specification does not define, other than: a key inside
-    `config`, `annotations`, a literal value or a schema; a key inside the `arguments` of an
-    instance, a nested instantiation or an applied requirement; a name that keys a member of a
-    map this specification says is keyed by name, such as `inputs`, `steps` or `outputs`, or a
-    member of an `object` value binding; and a qualified reference that keys an
-    `implementation`, `controls` or `tools` map.
+    `config`, `annotations` or a literal value; inside a schema, a name the author gives a
+    member of `properties` or of `$defs`, and a key inside a value the schema states under
+    `const`, `enum`, `default` or `examples`; a key inside the `arguments` of an instance, a
+    nested instantiation or an applied requirement; a name that keys a member of a map this
+    specification says is keyed by name, such as `inputs`, `steps` or `outputs`, or a member of
+    an `object` value binding; and a selection, which is a qualified reference or `#name` under
+    NAM-018, that keys an `implementation`, `controls` or `tools` map.
   then: >-
     The document is rejected. Every key this specification defines is written in camelCase.
   observable: >-
     Resolving returns a diagnostic naming the key. `depends_on`, a policy written in a template,
     and a family-specific key on an Interface or an Agent are each rejected in this way. A
     step's `arguments` hold value bindings, and an undefined key in one of those is rejected.
+    Inside a schema only the names are the author's: its keywords are closed by the profile, and
+    one outside it is rejected under SCH-002.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -309,13 +322,17 @@
   when: >-
     A value is written inside `config` or `arguments`.
   then: >-
-    It is a reference only where the schema that governs that place is one of the core
-    package's reference schemas, which are Schema contracts that package exports. Any other
-    value is data.
+    It is a reference only where the schema that governs that place is one of the core package's
+    reference schemas, which are Schema contracts that package exports. A reference schema
+    governs a place where it is the schema of that place directly, where it is the `items` of a
+    list that holds the value, or where it is a branch of `anyOf` or `oneOf` that the value
+    satisfies. Any other value is data.
   observable: >-
-    A value governed by a reference schema is resolved to an ID under OBJ-009. A map with the
-    keys `kind` and `name` in a place governed by any other schema is kept exactly as written,
-    and is never rewritten to an ID.
+    A value governed by a reference schema is resolved to an ID under OBJ-009. Each item of a
+    list whose `items` is `github.com/shrav-k/conduit/core#pool-reference.v1` is a reference,
+    and under `anyOf` with a reference schema and the type null, a name is a reference and null
+    is not. A map with the keys `kind` and `name` in a place governed by any other schema is
+    kept exactly as written, and is never rewritten to an ID.
   vectors: []
 
 - id: OBJ-022
@@ -348,9 +365,10 @@
   then: >-
     The registration is not dispatched, and reports invalid.
   observable: >-
-    The response carries the diagnostics that resolving returned, and nothing is registered, as
-    SUB-003 states. A clash with an existing name reports conflict under OBJ-002. Where both
-    causes are present, or the actor is not permitted, OPS-023 says which reason is reported.
+    The response carries the diagnostics that resolving returned, in the `diagnostics` of its
+    `structuredContent` as IFC-025 states, and nothing is registered, as SUB-003 states. A clash
+    with an existing name reports conflict under OBJ-002. Where both causes are present, or the
+    actor is not permitted, OPS-023 says which reason is reported.
   vectors: []
 
 # --- The names a version assigns (plan-audit rulings 33 to 35). They are defined once, in

@@ -1,5 +1,5 @@
-# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
-# docs/proposals/core-and-schemas/README.md.
+# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
+# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
 #
 # Any document an author writes: a template, an instance or a contract. The manifest is not a
 # document of one of the ten kinds and has its own schema, `manifest.v1`.

@@ -5,8 +5,11 @@
 # the protocol's own per-request negotiation picks one. Handles follow the protocol's guidance
 # for stateful tools. The protocol's own fields are named as its revision 2026-07-28 names them.
 # Promises here have the layer `interface`, except IFC-014, which is a rule on documents and has
-# the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings. No promise of
-# this file has been removed. Draft: no vector exists yet.
+# the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings. The ruling on
+# the core package and the schemas (ruling 37) changed IFC-009, IFC-012, IFC-014, IFC-016,
+# IFC-019 and IFC-024 to IFC-027, which gained three keys of a result's `_meta`: `restriction`,
+# `state` and `withheld`. No promise of this file has been removed. Draft: no vector exists
+# yet.
 
 - id: IFC-001
   layer: interface
@@ -137,8 +140,11 @@
     failed or unknown, unless it holds `io.github.shrav-k.conduit/reason` in place of an outcome
     under IFC-026.
   observable: >-
-    A result that holds neither key, or that holds for either key a value other than those named
-    for it, has the outcome unknown, as OPS-007 states.
+    A result that holds neither key, or that holds both, or that holds for either key a value
+    other than those named for it, has the outcome unknown, as OPS-007 states. A result that
+    carries both an outcome and a reason is recorded as unknown, and its reason is not reported:
+    the implementation has contradicted itself, so its statement that it performed nothing is
+    not relied on.
   vectors: []
 
 - id: IFC-010
@@ -188,18 +194,20 @@
   observable: >-
     The instance's tool list holds one tool for each operation of each of its open Conduits, the
     tool of IFC-024, and nothing else. A call to a Conduit's tool is a request through that
-    Conduit and is decided under the access convention. The declared Conduit `checkout` that
-    lists an operation exported as `directory.read` gives the tool `checkout.directory.read`.
-    Where `checkout` is made from a composite template, its component `files` gives the tool
-    `checkout.files.directory.read`, and where a component is itself made from a composite the
-    name of each component on the way is written, outermost first. A Conduit `review-read` that
-    was instantiated on its own as the component `read` of a composite gives
-    `review-read.read.directory.read`. Such a name uses only characters the protocol allows in a
-    tool name, which are letters, digits, `_`, `-` and `.`. The protocol limits a tool name to
-    128 characters. The local name of a Conduit that is not made from a composite is at most 63
-    characters under OBJ-001 and OBJ-022, and an export name at most 63 under NAM-004, so only a
-    Conduit made from a composite can pass the limit. A Conduit one of whose tool names would be
-    longer, or would equal another tool's name, is not instantiated, under IFC-014.
+    Conduit and is decided under the access convention. A tool name ends in the operation's
+    version segment, because that segment is part of the export name under CTR-001. The declared
+    Conduit `checkout` that lists an operation exported as `directory.read.v1` gives the tool
+    `checkout.directory.read.v1`. Where `checkout` is made from a composite template, its
+    component `files` gives the tool `checkout.files.directory.read.v1`, and where a component
+    is itself made from a composite the name of each component on the way is written, outermost
+    first. A Conduit `review-read` that was instantiated on its own as the component `read` of a
+    composite gives `review-read.read.directory.read.v1`. Such a name uses only characters the
+    protocol allows in a tool name, which are letters, digits, `_`, `-` and `.`. The protocol
+    limits a tool name to 128 characters. The local name of a Conduit that is not made from a
+    composite is at most 63 characters under OBJ-001 and OBJ-022, and an export name at most 63
+    under NAM-004, so only a Conduit made from a composite can pass the limit. A Conduit one of
+    whose tool names would be longer, or would equal another tool's name, is not instantiated,
+    under IFC-014.
   vectors: []
 
 - id: IFC-013
@@ -229,7 +237,7 @@
     instantiated on its own under the local name of one of its consumer's declared Conduits is
     not instantiated where the two would have a tool name in common. No two tools presented to
     one consumer share a name, and none is longer than the protocol allows. A rename that would
-    make two tool names equal is CON-026.
+    make a tool name longer than 128 characters, or two tool names equal, is CON-026.
   vectors: []
 
 - id: IFC-015
@@ -255,7 +263,8 @@
     operations convention. The protocol's tasks extension, `io.modelcontextprotocol/tasks`, may
     also be used, and never stands in for the operation identity.
   observable: >-
-    The retained result is found by the operation identity whichever facility delivered it.
+    The retained result is found by the caller's operation identity and target, under OPS-016,
+    whichever facility delivered it.
   vectors: []
 
 - id: IFC-017
@@ -305,7 +314,8 @@
   observable: >-
     No request is performed with a restriction it was sent left unapplied. The answer gives the
     reason refused where a restriction forbids the request, and unavailable where the
-    implementation cannot apply one, and it names the restriction. Which requirements an
+    implementation cannot apply one, and it names the restriction in
+    `io.github.shrav-k.conduit/restriction`, as IFC-026 states. Which requirements an
     implementation can apply is stated by `supports` in its manifest under PKG-019, and an
     implementation marked `plain` states none under PKG-020.
   vectors: []
@@ -377,17 +387,20 @@
   when: >-
     The engine presents its server to an instance.
   then: >-
-    The server always has a tool the core package names, with which the instance retrieves the
-    caller's own results by operation identity. The tool is presented whether or not any Conduit
-    of which the instance is the consumer is open, and a call to it needs no Conduit. The
-    `structuredContent` of its result states the invocation's state, which is in progress,
-    succeeded, failed or unknown, and states that content is withheld where OPS-017 withholds
-    it.
+    The server always has the tool `retrieve-result.v1`, an operation of the core package that
+    is in no capability, with which the instance retrieves the caller's own results. The tool is
+    named by that export name alone, with no Conduit's name before it. It is presented whether
+    or not any Conduit of which the instance is the consumer is open, and a call to it needs no
+    Conduit. A call names an invocation by `operationIdentity` and `target`, the operation
+    identity the caller gave it and the target it was sent to. The `structuredContent` of the
+    result holds `state`, the invocation's state, which is `inProgress`, `succeeded`, `failed`
+    or `unknown`; `withheld`, which is true where OPS-017 withholds the content; and `outputs`,
+    the invocation's outputs where they are delivered.
   observable: >-
     An instance with no open Conduit still lists the tool. A call to it is decided under OPS-015
-    to OPS-017 and not under ACC-001. An invocation that has not ended is reported as in
-    progress, and one that has ended by its outcome. A result whose content is withheld carries
-    the state and that statement, and no content.
+    to OPS-017 and not under ACC-001. An invocation that has not ended is reported with the
+    `state` `inProgress`, and one that has ended by its outcome. A result whose content is
+    withheld carries `state` and `withheld: true`, and no `outputs`.
   vectors: []
 
 - id: IFC-025
@@ -401,12 +414,19 @@
     ended with a reason, whether the engine did not dispatch it or the implementation gave the
     reason under IFC-026, the result's `_meta` holds `io.github.shrav-k.conduit/reason`, with
     the value refused, invalid, conflict or unavailable, and the result's `isError` is true.
+    When the request is a repeat of an invocation that has not ended, under OPS-009, the
+    result's `_meta` holds neither of the two and holds `io.github.shrav-k.conduit/state`, with
+    the value `inProgress`. Where the content of a result is withheld under ACC-034, the result
+    carries its outcome and no `structuredContent`, and its `_meta` holds
+    `io.github.shrav-k.conduit/withheld`, with the value true.
   observable: >-
     A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
     and a result for one that ended with a reason never carries
-    `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. For a call
-    to the tool of IFC-024 the two keys say how the retrieval itself ended, and the state of the
-    invocation it asks about is in the result's `structuredContent`.
+    `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. A result
+    that ended with a reason may carry `diagnostics` in its `structuredContent`, as the result
+    of a rejected registration does under OBJ-023. For a call to the tool of IFC-024 the keys
+    say how the retrieval itself ended, and the state of the invocation it asks about, and
+    whether its content is withheld, are in the result's `structuredContent`.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
@@ -422,12 +442,16 @@
   then: >-
     It answers, in place of an outcome, with `io.github.shrav-k.conduit/reason` in the result's
     `_meta`. The value is refused where a restriction forbids the request, and unavailable where
-    the implementation cannot apply one.
+    the implementation cannot apply one. The result's `_meta` also holds
+    `io.github.shrav-k.conduit/restriction`, whose value is the item of the list it was sent in
+    `io.github.shrav-k.conduit/restrictions` that forbade the request or could not be applied,
+    with its `requirement` and its `arguments`, and the result's `isError` is true.
   observable: >-
     A result that holds `io.github.shrav-k.conduit/reason` holds no
-    `io.github.shrav-k.conduit/outcome`. An implementation gives a reason only in those two
-    cases and only with those two values, and never after it has performed any part of the
-    request. IFC-019 says when it must answer so.
+    `io.github.shrav-k.conduit/outcome`; one that holds both has the outcome unknown under
+    IFC-009. An implementation gives a reason only in those two cases and only with those two
+    values, and never after it has performed any part of the request. IFC-019 says when it must
+    answer so.
   vectors: []
 
 - id: IFC-027
@@ -435,7 +459,7 @@
   level: must
   when: >-
     The result of an implementation holds `io.github.shrav-k.conduit/reason`, with the value
-    refused or unavailable, as IFC-026 permits.
+    refused or unavailable, and no `io.github.shrav-k.conduit/outcome`, as IFC-026 permits.
   then: >-
     The request ends with that reason and has no outcome.
   observable: >-

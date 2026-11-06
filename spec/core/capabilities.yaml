@@ -1,8 +1,9 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
-# The Capability contracts of the core package: what `management`, `access` and a Pool offer
-# through a Conduit (OPS-019, CTR-003). The operations are in operations.yaml.
+# The Capability contracts of the core package: what `management`, `access`, a Pool, the
+# `system` Pool and a location offer through a Conduit (OPS-019, CTR-003). The operations
+# are in operations.yaml.
 #
 # Promises encoded:
 #   object-management.v1  ACC-033 (what is authorized against `management`), OPS-019,
@@ -13,6 +14,8 @@
 #                         operations), LIF-021, LIF-009
 #   system-settings.v1    PLC-016, OPS-020 and CON-017 (a Conduit lists a control like any
 #                         operation, so a capability includes it)
+#   location-settings.v1  PLC-008 (a location's facts are changed only by a control), OPS-020
+#                         and CON-017
 #
 # `retrieve-result.v1` is in no capability: IFC-024 presents it to every consumer, and a call
 # to it needs no Conduit.
@@ -81,3 +84,13 @@ metadata:
 spec:
   operations:
     - github.com/shrav-k/conduit/core#set-default-location.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: location-settings.v1
+  description: >-
+    What a location offers: the control that changes its stored facts.
+spec:
+  operations:
+    - github.com/shrav-k/conduit/core#set-facts.v1

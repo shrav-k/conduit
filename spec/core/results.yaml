@@ -1,9 +1,9 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # Two small Schema contracts that the outputs of the core operations share. No promise gives
-# either shape; both are choices the record lists, kept as small as the promises allow. The
-# full format of a diagnostic and of an inspection result is not settled by this batch.
+# either shape; both are choices the record lists (C16), kept as small as the promises
+# allow. The full format of a diagnostic and of an inspection result is not settled.
 #
 # Promises relied on:
 #   object.v1      OBJ-003 (a generated name is learned from the result), OBJ-005 (the ID)

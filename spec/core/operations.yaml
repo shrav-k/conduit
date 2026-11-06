@@ -1,29 +1,40 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # The Operation contracts of the core package: every management verb the promises mention
-# (OPS-019), the tool that retrieves one's own results (IFC-024), and the control that
-# designates the default location (PLC-016). Which capability includes each is in
-# capabilities.yaml, and which open Conduit authorizes each is ACC-033.
+# (OPS-019), the tool that retrieves one's own results (IFC-024), the control that designates
+# the default location (PLC-016) and the control that changes a location's facts (PLC-008).
+# Which capability includes each is in capabilities.yaml, and which open Conduit authorizes
+# each is ACC-033.
 #
-# Read with these rules, each of which the record lists as a choice:
+# Read with these rules, each of which the record lists as a choice the owner accepted:
 #   - One contract for one verb. `register.v1`, `register-replacement.v1`, `inspect.v1`,
 #     `set-up.v1`, `retire.v1` and `reconcile.v1` are included both in the capability of
 #     `management` and in the capability of a Pool; ACC-033 says which of the two targets
 #     authorizes a request, from the object the request names.
 #   - An operation that changes a stored object takes the object's current `revision` as an
 #     input (REV-002, REV-011), because a request's `arguments` are exactly the operation's
-#     inputs (IFC-001).
-#   - `reservedToRoot: true` marks an operation reserved to the root Interface (ACC-032). No
-#     promise names that key.
+#     inputs (IFC-001). Setting up, retiring, retiring a Pool with its Resources, opening and
+#     closing name no revision and advance none (REV-012); nor do applying and removing a
+#     policy, because a policy is not configuration (ACC-031).
+#   - A control takes `revision`, the one input that must always be supplied, and returns
+#     `settings`, the settings it confirmed (REV-006, REV-007). Its other inputs are
+#     optional, and one that is not supplied leaves its setting as stored.
+#   - `reservedToRoot: true` marks an operation reserved to the root Interface (ACC-032).
+#     Only an Operation contract of the core package carries the mark (CTR-009).
 #   - `deduplicates: true` is declared where the whole effect is a change to what the engine
 #     itself stores, which the engine can recognize by the operation identity. It is not
 #     declared where the operation runs the graphs of other implementations.
 #   - No core operation starts model work (IMP-002), so none carries `startsModelWork`.
 #   - Every core operation is implemented by the engine itself, written as the default
 #     implementation `github.com/shrav-k/conduit/core#engine`.
-#   - An object is named in a request by a reference, which the engine resolves when it
-#     decides the request.
+#   - An object is named in a request by a reference and never by an ID. The engine resolves
+#     the reference when it decides the request, and a retired instance's name still resolves
+#     until the instance is unregistered (LIF-007). An invocation and a policy are not
+#     objects, and each is named by the ID the engine gave it.
+#   - Where an operation declares `diagnostics`, a request that ends with a reason carries
+#     them too, in its result's `structuredContent`, as a rejected registration does
+#     (OBJ-023, IFC-025).
 
 # --- Operations of `management`, some of them also operations of a Pool.
 
@@ -36,7 +47,8 @@ metadata:
     that exist, registering an instance document instantiates its template, and contracts are
     made available to the project. Nothing is set up or opened. Authorized against
     `management`; registering a Resource into a Pool that already exists also needs an open
-    Conduit to that Pool that lists this operation.
+    Conduit to that Pool that lists this operation. A registration that is rejected is not
+    dispatched, and its result still carries `diagnostics`.
 spec:
   inputs:
     documents:
@@ -94,7 +106,9 @@ metadata:
   name: rename.v1
   description: >-
     Give a template or an instance a new name. Its ID, its definition and its revision are
-    unchanged. Authorized against `management`.
+    unchanged. Authorized against `management`. A rename of a Conduit that would make one of
+    its tool names equal to another tool's name, or longer than 128 characters, reports
+    conflict.
 spec:
   inputs:
     object:
@@ -112,9 +126,10 @@ kind: Operation
 metadata:
   name: unregister.v1
   description: >-
-    Remove a template, or an instance that is retired and whose shutdown is confirmed, from the
-    objects that exist. Its name and its ID no longer resolve. Records are kept. Authorized
-    against `management`.
+    Remove a template, or a retired instance, from the objects that exist. An instance is
+    removed only if its shutdown is confirmed or it was retired because its location was
+    declared lost; otherwise the request reports conflict. Its name and its ID no longer
+    resolve. Records are kept. Authorized against `management`.
 spec:
   inputs:
     object:
@@ -132,7 +147,9 @@ metadata:
   description: >-
     Read a template or an instance: what was declared, its status and the records about it.
     Inspecting a Resource is authorized against the Pool that owns it; inspecting anything
-    else is authorized against `management`.
+    else is authorized against `management`. The status of `access` also lists the policies
+    in force, each with the ID `apply-policy.v1` returned for it and with the actors or
+    targets it applies to.
 spec:
   inputs:
     object:
@@ -152,6 +169,13 @@ spec:
         properties:
           state: {enum: [registered, ready, retired]}
           shutdown: {enum: [confirmed, pending, unknown]}
+          policies:
+            type: array
+            items:
+              type: object
+              properties:
+                id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+              required: [id]
         required: [state]
       optional: true
     records:
@@ -233,7 +257,9 @@ metadata:
     Ask for a new instance for a nested instantiation whose instance is retired: a declared
     Conduit, the Resource of a Pool's entry or a component of a composite Conduit. The request
     names the retired instance. The new instance has a new ID and the state registered;
-    nothing is set up or opened. Authorized as registering that instance would be.
+    nothing is set up or opened. Authorized as registering that instance would be, with this
+    operation in the place of `register.v1`: against `management`, and for the Resource of a
+    Pool's entry also by an open Conduit to that Pool that lists this operation.
 spec:
   inputs:
     instance:
@@ -251,7 +277,9 @@ metadata:
   name: install.v1
   description: >-
     Make one version of a package available. Nothing is registered. Authorized against
-    `management`.
+    `management`. An installation that is rejected is not dispatched and reports invalid. It
+    reports unavailable where the archive cannot be fetched now, and conflict where that
+    address and version is already installed with another digest.
 spec:
   inputs:
     address:
@@ -370,8 +398,9 @@ metadata:
   name: apply-policy.v1
   description: >-
     Apply a requirement, as a policy, to chosen actors or targets wherever they appear. The
-    policy is stored by `access`, which returns an ID for it. Dispatched only if every actor
-    and target named is covered by the bound of the actor's own Conduit to `access`.
+    policy is stored by `access`, which returns an ID for it. A policy is not configuration,
+    so the request names no revision. Dispatched only if every actor and target named is
+    covered by the bound of the actor's own Conduit to `access`.
 spec:
   inputs:
     requirement:
@@ -401,9 +430,9 @@ kind: Operation
 metadata:
   name: remove-policy.v1
   description: >-
-    Remove a policy, named by the ID `apply-policy.v1` returned. Dispatched only if every actor
-    and target the policy applies to is covered by the bound of the actor's own Conduit to
-    `access`.
+    Remove a policy, named by the ID `apply-policy.v1` returned. The request names no
+    revision. Dispatched only if every actor and target the policy applies to is covered by
+    the bound of the actor's own Conduit to `access`.
 spec:
   inputs:
     policy:
@@ -465,5 +494,35 @@ spec:
       schema: {type: object}
   effect: Changes the default-location setting of the `system` Pool.
   changes: [/defaultLocation]
+  deduplicates: true
+  implementation: github.com/shrav-k/conduit/core#engine
+
+# --- The control of a location.
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-facts.v1
+  description: >-
+    Change the stored facts of a location. A control of a location, authorized by an open
+    Conduit to that location that lists it. `facts` is the whole of what the location is to
+    state about itself; where it is not supplied, the facts are left as stored. A location's
+    facts are changed in no other way.
+spec:
+  inputs:
+    facts:
+      schema:
+        type: object
+        properties:
+          host: {type: string, minLength: 1}
+          localPaths: {type: boolean}
+      optional: true
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
+    settings:
+      schema: {type: object}
+  effect: Changes the stored facts of the location.
+  changes: [/facts]
   deduplicates: true
   implementation: github.com/shrav-k/conduit/core#engine

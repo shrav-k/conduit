@@ -1,0 +1,15 @@
+# Example. It must be rejected:
+# an input's destination may be `operations`, never an item of it.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  inputs:
+    first:
+      schema: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+      to: [/operations/0]
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1

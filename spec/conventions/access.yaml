@@ -5,7 +5,9 @@
 # right to open Conduits is itself an open Conduit, to the `access` Resource. Ownership permits
 # nothing. Removed by consolidation pass 1: ACC-004 was folded into ACC-003; ACC-007 into
 # ACC-006; ACC-013 into CON-022; ACC-020 and ACC-021 into REC-001 and OPS-005; ACC-025 into
-# ACC-033. ACC-010 was removed earlier and folded into LIF-008. Draft: no vector exists yet.
+# ACC-033. ACC-010 was removed earlier and folded into LIF-008. The ruling on the core package
+# and the schemas (ruling 37) changed ACC-029 and ACC-031 to ACC-034. Draft: no vector exists
+# yet.
 
 - id: ACC-001
   layer: convention
@@ -319,7 +321,12 @@
   observable: >-
     The consumer of a Conduit to `access` whose bound names a Pool can open a Conduit to that
     Pool, and to a Resource instantiated in that Pool afterwards, and reports refused for a
-    Resource that another Pool owns unless the bound names that Resource or its Pool.
+    Resource that another Pool owns unless the bound names that Resource or its Pool. The bound
+    is written as the core package's requirement `bound.v1`, applied in the `requirements` of
+    the Conduit's template with the arguments `pools`, `targets` and `operations`, each a list
+    that is empty where it is left out. A bound that names nothing covers nothing, and a Conduit
+    to `access` that applies no `bound.v1` has no bound. CON-028 says where a bound may be
+    applied.
   vectors: []
 
 - id: ACC-030
@@ -358,12 +365,14 @@
     The request is an operation of the `access` Resource. It is dispatched only if the actor is
     the consumer of an open Conduit to `access` that lists the operation and every actor and
     target the policy applies to is covered by that Conduit's bound, as ACC-029 states. The
-    policy is stored by `access`.
+    policy is stored by `access`, and is not part of its configuration.
   observable: >-
-    Inspecting `access` lists the policies in force and the actors or targets each applies to.
-    An actor with no open Conduit to `access` listing the operation, or whose bound does not
-    cover one of those actors or targets, reports refused, and the policies in force are as they
-    were.
+    Applying a policy returns an ID for it, and removing a policy names that ID. Neither request
+    names a revision, and neither changes the configuration or the revision of `access`.
+    Inspecting `access` lists, in its status, the policies in force and the actors or targets
+    each applies to. An actor with no open Conduit to `access` listing the operation, or whose
+    bound does not cover one of those actors or targets, reports refused, and the policies in
+    force are as they were. The two operations are `apply-policy.v1` and `remove-policy.v1`.
   vectors: []
 
 - id: ACC-032
@@ -377,7 +386,9 @@
     another consumer lists such an operation.
   observable: >-
     A request for a reserved operation from any other actor reports refused, and so does a
-    request to open a Conduit that lists one for a consumer other than the root Interface.
+    request to open a Conduit that lists one for a consumer other than the root Interface. An
+    operation is reserved where its contract is marked `reservedToRoot: true`. Under CTR-009
+    only an operation of the core package is so marked: `declare-lost.v1` and `purge.v1` are.
   vectors: []
 
 - id: ACC-033
@@ -392,22 +403,26 @@
     The request is authorized by an open Conduit from the actor that lists the operation, to a
     target fixed as follows. Registering, replacing, renaming and unregistering any object are
     authorized against `management`. Registering a Resource whose owner is a Pool that already
-    exists also needs an open Conduit from the actor to that Pool that lists registering a
-    Resource into it. Where the Pool is registered in the same submission, which includes the
-    Resources of its own entries, nothing more is needed. Setting up, retiring and inspecting a
-    Resource are authorized against the Pool that owns it. Setting up, retiring and inspecting
-    an Agent, an Interface or a Pool, and inspecting a Conduit or a template, are authorized
-    against `management`. Retiring a Pool together with the Resources it owns, in the one
-    operation of LIF-021, is authorized against that Pool. Installing a package, and every
-    operation reserved to the root Interface under ACC-032, are operations of `management` and
-    are authorized against it. Opening and closing a Conduit are authorized against `access`,
-    under ACC-006 and ACC-012. Reconciling an invocation is authorized against the same target
-    as setting up and retiring the instance the invocation was dispatched to. A control is
-    authorized by an open Conduit to the instance itself that lists the control.
+    exists also needs an open Conduit from the actor to that Pool, and each of the two Conduits
+    lists `register.v1`. Where the Pool is registered in the same submission, which includes the
+    Resources of its own entries, nothing more is needed. A request under LIF-009 for a new
+    instance for a nested instantiation is authorized as registering that instance would be, by
+    the same Conduits, each listing `register-replacement.v1` in place of `register.v1`. Setting
+    up, retiring and inspecting a Resource are authorized against the Pool that owns it. Setting
+    up, retiring and inspecting an Agent, an Interface or a Pool, and inspecting a Conduit or a
+    template, are authorized against `management`. Retiring a Pool together with the Resources
+    it owns, in the one operation of LIF-021, is authorized against that Pool. Installing a
+    package, and every operation reserved to the root Interface under ACC-032, are operations of
+    `management` and are authorized against it. Opening and closing a Conduit are authorized
+    against `access`, under ACC-006 and ACC-012. Reconciling an invocation is authorized against
+    the same target as setting up and retiring the instance the invocation was dispatched to. A
+    control is authorized by an open Conduit to the instance itself that lists the control.
   observable: >-
     An actor with an open Conduit to that target listing the operation is permitted, and any
     other actor reports refused. Except for a control, a Conduit to the object itself, or to any
-    other target, does not permit the request.
+    other target, does not permit the request. An actor that registers a Resource into a Pool
+    that exists, or asks for a new Resource for one of its entries, with a Conduit to
+    `management` that lists the operation and none to the Pool that lists it, reports refused.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decisions U6 and U7).
@@ -423,9 +438,11 @@
     onward request it makes after the close is not dispatched, and reports refused.
   observable: >-
     The record of the invocation states its outcome. A caller that is no longer permitted the
-    content receives the outcome and the statement that content is withheld. No onward request
-    that names the invocation in `io.github.shrav-k.conduit/serving` is dispatched after the
-    close.
+    content receives the outcome and the statement that content is withheld: the result carries
+    its outcome and no `structuredContent`, and its `_meta` holds
+    `io.github.shrav-k.conduit/withheld` with the value true, as IFC-025 states. No onward
+    request that names the invocation in `io.github.shrav-k.conduit/serving` is dispatched after
+    the close.
   vectors: []
 
 - id: ACC-035

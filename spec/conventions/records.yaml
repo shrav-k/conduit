@@ -3,7 +3,8 @@
 # fields follow Kubernetes audit events and AWS CloudTrail, which record who, what, when and how
 # it ended, and cannot be deleted through the interface they record. A record is a log entry: it
 # is added and never altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No
-# promise of this file has been removed. Draft: no vector exists yet.
+# promise of this file has been removed. The ruling on the core package and the schemas (ruling
+# 37) changed REC-004. Draft: no vector exists yet.
 
 - id: REC-001
   layer: convention
@@ -53,16 +54,19 @@
   when: >-
     An actor asks to purge records.
   then: >-
-    The request is dispatched only if the actor is the root Interface. A purge keeps, for every
-    invocation, its operation identity, as OPS-008 scopes it, its outcome, and a digest of its
-    contents, and a record is kept stating which records were purged and when.
+    The request is dispatched only if the actor is the root Interface. A purge removes the
+    records made before a time that the request names. It keeps, for every invocation, its
+    operation identity, as OPS-008 scopes it, its outcome, and a digest of its contents, and a
+    record is kept stating which records were purged and when.
   observable: >-
-    A request from any other actor is not dispatched and reports refused. After a purge, a
-    request that repeats the operation identity of a purged invocation is still answered under
-    OPS-009 to OPS-012 and OPS-024, and no effect is applied a second time. Two requests with
-    the same contents, as OPS-009 defines them, give the same digest, so a request with that
-    identity and different contents still reports conflict under OPS-010. The record of the
-    purge can be read, and no later purge removes it.
+    A request from any other actor is not dispatched and reports refused. Records made at or
+    after the time the request names are not removed. After a purge, a request that repeats the
+    operation identity of a purged invocation is still answered under OPS-009 to OPS-012 and
+    OPS-024, and no effect is applied a second time. Two requests with the same contents, as
+    OPS-009 defines them, give the same digest, so a request with that identity and different
+    contents still reports conflict under OPS-010. How the digest is computed is DL2 of the
+    implementation-defined list. The record of the purge can be read, and no later purge removes
+    it. The operation is `purge.v1`, and the time is its input `before`.
   vectors: []
 
 - id: REC-005

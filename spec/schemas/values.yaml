@@ -1,5 +1,5 @@
-# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
-# docs/proposals/core-and-schemas/README.md.
+# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
+# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
 #
 # The small values that the other schemas share. Each document below is a Schema contract of
 # the core package (CTR-008), so that another schema can refer to it with a `$ref` that is a
@@ -8,18 +8,22 @@
 # Promises encoded:
 #   name.v1                 OBJ-001, OBJ-022
 #   export-name.v1          NAM-004
-#   contract-name.v1        CTR-001, NAM-004 (the pattern of a version segment is a choice)
-#   address.v1              NAM-001
+#   contract-name.v1        CTR-001 (at least one segment, then the version segment), NAM-004
+#                           (the pattern of a version segment is choice C5 of the record)
+#   address.v1              NAM-001 (a label of the host is at most 63 characters)
 #   qualified-reference.v1  NAM-002, NAM-001, NAM-004, NAM-005
 #   selection.v1            NAM-018, NAM-022
 #   pointer.v1              OBJ-016
-#   destination.v1          OBJ-016 (a destination does not use the `-` token), INS-021
+#   destination.v1          OBJ-016 (a destination does not use the `-` token), INS-021. It
+#                           checks the form only: the places a destination may reach are a
+#                           closed list (INS-012), carried by the schema of each kind of
+#                           template `spec` in templates.yaml
 #   version.v1              PKG-001
 #   digest.v1               PKG-004
 #   id.v1, revision.v1      OBJ-005, REV-001 (their types are choices)
 #
-# Not expressed here, and checked by the engine: that a label of a host is at most 63
-# characters (NAM-001, through RFC 1123), and everything about what a reference resolves to.
+# Not expressed here, and checked by the engine: everything about what a reference resolves
+# to.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -48,11 +52,11 @@ kind: Schema
 metadata:
   name: contract-name.v1
   description: >-
-    The name of a contract. It is an export name whose last segment is the contract's
-    compatibility version, written `v` and a whole number from 1.
+    The name of a contract. It is an export name of two or more segments whose last segment
+    is the contract's compatibility version, written `v` and a whole number from 1.
 spec:
   type: string
-  pattern: '^([a-z][a-z0-9-]*\.)*v[1-9][0-9]*$'
+  pattern: '^([a-z][a-z0-9-]*\.)+v[1-9][0-9]*$'
   maxLength: 63
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -61,11 +65,13 @@ metadata:
   name: address.v1
   description: >-
     The address of a package. A host name as RFC 1123 gives it, in lowercase, with at least one
-    dot, no port and no trailing dot, whose last label is not a number; then path segments.
+    dot, no port and no trailing dot, whose labels are each at most 63 characters and whose
+    last label is not a number; then path segments. An internationalized name is written with
+    its `xn--` labels.
 spec:
   type: string
-  pattern: "^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+(?![0-9]+(/|$))\
-    [a-z0-9]([a-z0-9-]*[a-z0-9])?(/[a-z0-9._-]+)*$"
+  pattern: "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+(?![0-9]+(/|$))\
+    [a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9._-]+)*$"
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -74,8 +80,8 @@ metadata:
   description: A package's address, then `#`, then the name of one of its exports.
 spec:
   type: string
-  pattern: "^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+(?![0-9]+([/#]|$))\
-    [a-z0-9]([a-z0-9-]*[a-z0-9])?(/[a-z0-9._-]+)*\
+  pattern: "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+(?![0-9]+([/#]|$))\
+    [a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(/[a-z0-9._-]+)*\
     #(?=.{1,63}$)[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -108,7 +114,8 @@ metadata:
   name: destination.v1
   description: >-
     A destination of a template's input. A JSON Pointer whose root is the template's `spec`. It
-    has at least one token, and no token is `-`.
+    has at least one token, and no token is `-`. Which places it may reach depends on the kind
+    of template and is stated by the schema of that template's `spec`.
 spec:
   type: string
   pattern: '^(/(?!-(/|$))([^/~]|~[01])*)+$'

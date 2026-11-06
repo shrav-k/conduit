@@ -1,7 +1,8 @@
 # Instantiation: how a template and its arguments become an instance.
 # Owner rulings of 2026-11-05 (plan-audit rulings 8, 18, 21, 28, 29, 32 and 33). Draft: no
 # vector exists yet. Consolidation pass 1: INS-015 was folded into OBJ-013. INS-020 to INS-022
-# were added. The follow-up decisions (ruling 33) added INS-023.
+# were added. The follow-up decisions (ruling 33) added INS-023. The ruling on the core package
+# and the schemas (ruling 37) changed INS-006, INS-012 and INS-014.
 
 - id: INS-001
   layer: language
@@ -74,7 +75,12 @@
     The whole value is assigned to each destination the input names.
   observable: >-
     In the resolved instance each destination holds exactly the supplied value. Nothing is
-    merged with what the template had there.
+    merged with what the template had there. Where the input's schema is a reference schema that
+    fixes the kind, a bare name is accepted as the argument, and each destination receives the
+    reference with its kind: an input governed by
+    `github.com/shrav-k/conduit/core#resource-reference.v1` that is given `scratch` and has a
+    declared Conduit's `target` as its destination puts `{kind: Resource, name: scratch}` there,
+    although `target` itself accepts several kinds.
   vectors: []
 
 - id: INS-007
@@ -141,20 +147,27 @@
   layer: language
   level: must
   when: >-
-    A template is registered in which an input's destination is, or is inside, `type`,
-    `implementation`, `runtimes`, `setup`, `retire`, `controls` or a Conduit template's
-    `capability`, or is the `from` or the `optional` of a nested instantiation.
+    A template is registered in which an input's destination is none of these: `config` as a
+    whole, or a place inside it; a declared Conduit's `target`; the `arguments` of a declared
+    Conduit as a whole, or a place inside them; an entry's `placement`; the `arguments` of an
+    entry as a whole, or a place inside them; and, in a Conduit template, `operations` as a
+    whole, the `arguments` of an applied requirement as a whole or a place inside them, and the
+    `arguments` of a component as a whole or a place inside them.
   then: >-
-    The template is rejected.
+    The template is rejected. The list is closed: a destination that reaches any other place is
+    not accepted.
   observable: >-
-    Resolving returns a diagnostic naming the input and the key its destination reaches. These
-    destinations are accepted: a place inside `config`; a declared Conduit's `target`, and a
-    place inside its `arguments`; an entry's `placement`, and a place inside its `arguments`;
-    and, in a Conduit template, `operations`, a place inside the `arguments` of an applied
-    requirement, and a place inside the `arguments` of a component. Examples are
-    `/config/model`, `/conduits/checkout/target`, `/entries/cache/placement`, `/operations`,
-    `/requirements/rate/arguments/limit` and `/components/read/arguments/root`. What is
-    required of an `operations` that an input fills is INS-023.
+    Resolving returns a diagnostic naming the input and the key its destination reaches.
+    Accepted, for example, are `/config`, `/config/model`, `/conduits/checkout/target`,
+    `/conduits/checkout/arguments`, `/entries/cache/placement`, `/operations`,
+    `/requirements/rate/arguments/limit` and `/components/read/arguments/root`. Rejected, with
+    every other place the list does not name, are: `type`, `implementation`, `runtimes`,
+    `setup`, `retire`, `controls` and a Conduit template's `capability`, and any place inside
+    one of them; the `from` or the `optional` of a nested instantiation; a whole nested
+    instantiation, such as `/conduits/checkout`; an item of `operations`, such as
+    `/operations/0`; the `requirement` of an applied requirement, such as
+    `/requirements/rate/requirement`; and anything under `/inputs`. What is required of an
+    `operations` that an input fills is INS-023.
   vectors: []
 
 - id: INS-013
@@ -182,7 +195,8 @@
     No instance is made, and the instance document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the type and what fails. A template can narrow what
-    its type allows and cannot widen it.
+    its type allows and cannot widen it. A template that has no `config` is checked against its
+    type's schema as an empty map.
   vectors: []
 
 - id: INS-016

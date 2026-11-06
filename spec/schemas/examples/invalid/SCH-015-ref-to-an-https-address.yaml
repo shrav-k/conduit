@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # a `$ref` is `#` and a JSON Pointer, or a qualified reference.
 
 apiVersion: github.com/shrav-k/conduit/v0

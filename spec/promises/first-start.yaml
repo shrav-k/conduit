@@ -3,7 +3,9 @@
 # practice of a small fixed set of well-known names. What first start does when it is
 # interrupted or repeated, and how repair works, belong to the runtime profile. The objects are
 # instances of templates the core package exports. Removed by consolidation pass 1: FST-004 was
-# folded into OBJ-002. Draft: no vector exists yet.
+# folded into OBJ-002. The ruling on the core package and the schemas (ruling 37) changed
+# FST-002 and FST-005: the templates are in spec/core/templates.yaml. Draft: no vector exists
+# yet.
 
 - id: FST-001
   layer: language
@@ -28,7 +30,8 @@
     every first-start object is ready.
   observable: >-
     Inspection lists those two Conduits, with `root` as consumer, and the five objects of
-    FST-001, each in the state ready.
+    FST-001, each in the state ready. The two are the declared Conduits `management` and
+    `access` of the template `root`, instantiated with it under CON-002.
   vectors: []
 
 - id: FST-003
@@ -53,5 +56,7 @@
     It is an instance of a template that the core package exports, like any other instance.
   observable: >-
     Each of the objects of FST-001 and FST-002 reports a `from` that is a qualified reference
-    into `github.com/shrav-k/conduit/core`.
+    into `github.com/shrav-k/conduit/core`. The templates are `system`, `location`,
+    `management`, `access` and `root`, and for the two Conduits `root-management` and
+    `root-access`.
   vectors: []

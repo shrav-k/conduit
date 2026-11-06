@@ -1,5 +1,5 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # The two Requirement contracts of the core package.
 #
@@ -22,9 +22,11 @@
 #         targets: [{kind: Agent, name: reviewer-1}]
 #         operations: [example.org/files#directory.read.v1]
 #
-# Each value in `pools` and `targets` is governed by a reference schema, and so is resolved
-# to an ID when the Conduit is instantiated (OBJ-021). A Conduit to `access` with no bound
-# requirement has no bound; one whose bound names nothing covers nothing.
+# Each value in `pools` and `targets` is an item of a list whose `items` is a reference
+# schema, and so is resolved to an ID when the Conduit is instantiated (OBJ-021). A Conduit
+# to `access` with no bound requirement has no bound; one whose bound names nothing covers
+# nothing. A Conduit that applies `bound.v1` and whose target is not `access`, or that
+# applies it more than once, is not instantiated (CON-028).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement

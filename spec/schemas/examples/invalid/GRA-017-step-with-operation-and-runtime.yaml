@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # a step has exactly one of `operation` and `runtime`.
 
 apiVersion: github.com/shrav-k/conduit/v0

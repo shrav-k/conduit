@@ -1,0 +1,27 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# a `$ref` written `#name` names a Schema contract of the same project or package. Here
+# `#directory.read.v1` names an Operation contract.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.read.v1
+  description: Read the names of the entries of a directory.
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+  outputs:
+    entries:
+      schema:
+        type: array
+        items: {type: string}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: listing.v1
+spec:
+  type: object
+  properties:
+    entries: {$ref: '#directory.read.v1'}

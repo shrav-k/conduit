@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # an implementation is reached by exactly one of `command`, `url` and `graph`.
 
 apiVersion: github.com/shrav-k/conduit/v0

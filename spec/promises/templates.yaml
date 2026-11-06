@@ -3,8 +3,10 @@
 # Terraform, which picks a provider from a resource's type and lets one line override it. A
 # runtime as a pair of operations that pass a handle follows the Model Context Protocol's
 # guidance for stateful tools. A Conduit template's own keys are in conduits.yaml and a Pool's
-# entries in pools.yaml. The JSON Schemas of these shapes are still to be written.
+# entries in pools.yaml. The JSON Schemas of these shapes are in spec/schemas/templates.yaml.
 # Consolidation pass 1 took PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004.
+# The ruling on the core package and the schemas (plan-audit ruling 37) changed TPL-002,
+# TPL-003, TPL-006 and TPL-010.
 # Draft: no vector exists yet.
 
 - id: TPL-001
@@ -29,8 +31,8 @@
   when: >-
     An Interface, Agent, Resource or Pool template is registered.
   then: >-
-    Its `type` is a qualified reference to a Type contract of the same family. A Conduit
-    template has no `type`.
+    Its `type` is the selection of a Type contract of the same family, written as NAM-018 gives
+    a selection. A Conduit template has no `type`.
   observable: >-
     A template with no `type`, with a type of another family, or a Conduit template that gives
     one, is rejected with a diagnostic.
@@ -42,9 +44,10 @@
   when: >-
     A template selects an implementation.
   then: >-
-    It does so in the one `implementation` map of its `spec`. Each key is the qualified
-    reference of an operation. Each value is either a string, which is a qualified reference to
-    an implementation, or a map, which is a graph written in place.
+    It does so in the one `implementation` map of its `spec`. Each key is the selection of an
+    operation, written as NAM-018 gives one: a qualified reference, or `#name` for an operation
+    of the same project or package. Each value is either a string, which is the selection of an
+    implementation, or a map, which is a graph written in place.
   observable: >-
     A step, a runtime or a control that carries its own `implementation` key is rejected with a
     diagnostic naming it. The map holds one selection for an operation; the same operation
@@ -87,9 +90,9 @@
     A template or a Type contract declares a runtime.
   then: >-
     It is a member of a `runtimes` map, keyed by its name, that holds `start` and `stop`, each
-    a qualified reference to an operation, and may hold `optional: true`. The start operation's
-    contract declares exactly one output that is a handle, and the stop operation's contract
-    takes exactly one required input that is a handle.
+    the selection of an operation, and may hold `optional: true`. The start operation's contract
+    declares exactly one output that is a handle, and the stop operation's contract takes
+    exactly one required input that is a handle.
   observable: >-
     A runtime whose start or stop operation does not have that shape is rejected with a
     diagnostic naming the runtime and the operation.
@@ -145,13 +148,14 @@
   when: >-
     A template's `controls` map is read.
   then: >-
-    Each key is the qualified reference of a control that the template's type lists. Each value
-    may hold `inputs`, a map from the name of one of that control's inputs to a `schema` that
-    further narrows that input.
+    Each key is the selection of a control that the template's type lists, written as NAM-018
+    gives one. Each value may hold `inputs`, a map from the name of one of that control's inputs
+    to a member that holds `schema`, a schema that further narrows that input.
   observable: >-
     A key the type does not list, or an input name the control does not declare, is rejected. A
     control the map does not list is not available on the template's instances. A template with
     no `controls` map makes every control of its type available.
+    `inputs: {limit: {schema: {maximum: 50}}}` narrows the input `limit`.
   vectors: []
 
 - id: TPL-011

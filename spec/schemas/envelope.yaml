@@ -1,5 +1,5 @@
-# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
-# docs/proposals/core-and-schemas/README.md.
+# Accepted by the owner on 2026-11-05 (plan-audit ruling 37), with the core package and the
+# manifest's promises; the record is docs/proposals/core-and-schemas/README.md.
 #
 # The envelope every template, instance and contract document has, and `metadata`.
 # JSON Schema 2020-12, within spec/schema-profile.md.

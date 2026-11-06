@@ -1,0 +1,20 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a Conduit template that is not composed writes `operations` unless the destination of one
+# of its inputs fills it. This one writes none, and its one input fills something else.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1}
+      to: [/requirements/rate/arguments/limit]
+      default: 20
+  capability: example.org/files#directory-access.v1
+  requirements:
+    rate:
+      requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: 20

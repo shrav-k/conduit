@@ -3,7 +3,7 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 14, 23, 24, 28, 32 and 33). Draft: no vector
 # exists yet. Consolidation pass 1: GRA-013 was folded into GRA-019 and GRA-016 into GRA-020.
 # GRA-002 and GRA-003, the two invariants, are of the layer `convention`. GRA-023 and GRA-024
-# were added.
+# were added. The ruling on the core package and the schemas (ruling 37) changed GRA-017.
 
 - id: GRA-001
   layer: language
@@ -188,10 +188,10 @@
   when: >-
     A step is read.
   then: >-
-    It has exactly one of `operation`, a qualified reference, and `runtime`, the name of a
-    runtime the template declares, which invokes that runtime's start operation. It may also
-    have `arguments`, `dependsOn` and `optional`, and a step that has `operation` may have
-    `conduit`.
+    It has exactly one of `operation`, the selection of an operation as NAM-018 gives one, and
+    `runtime`, the name of a runtime the template declares, which invokes that runtime's start
+    operation. It may also have `arguments`, `dependsOn` and `optional`, and a step that has
+    `operation` may have `conduit`.
   observable: >-
     A step with both, with neither, or with a runtime name the template does not declare, is
     rejected with a diagnostic naming the step. So is a step that has `runtime` and carries

@@ -6,7 +6,9 @@
 # and removal waits for shutdown to be confirmed, as a Kubernetes object is marked for deletion
 # at once and removed when its finalizers finish. Which Conduit permits each of these operations
 # is ACC-033. Consolidation pass 1 folded in CON-010, CON-015, POOL-010 and PLC-010, and split
-# LIF-014 into LIF-014, LIF-024, LIF-025 and LIF-026. Draft: no vector exists yet.
+# LIF-014 into LIF-014, LIF-024, LIF-025 and LIF-026. The ruling on the core package and the
+# schemas (ruling 37) changed LIF-007, LIF-009, LIF-013 and LIF-015. Draft: no vector exists
+# yet.
 
 - id: LIF-001
   layer: convention
@@ -90,8 +92,10 @@
   then: >-
     It still exists, in the state retired, until it is unregistered.
   observable: >-
-    The retired instance can still be inspected by its ID, and its name cannot be given to
-    another object of its kind, until an unregister operation removes it.
+    The retired instance can still be inspected, and its name cannot be given to another object
+    of its kind, until an unregister operation removes it. A request names an object by a
+    reference and never by an ID, and a reference to the retired instance by its name still
+    resolves until it is unregistered.
   vectors: []
 
 - id: LIF-008
@@ -120,7 +124,8 @@
     A new instance is instantiated from the nested instantiation as the instance it belongs to
     holds it in its resolved definition, with a new ID, in the state registered. The retired
     instance is not changed. The request is a registration: it is authorized under ACC-033 as
-    registering that instance would be, and it sets nothing up and opens nothing.
+    registering that instance would be, and it sets nothing up and opens nothing. It is the
+    operation `register-replacement.v1`, and it names the retired instance.
   observable: >-
     Inspection shows two instances for the nested instantiation: the earlier one retired with
     its original ID, and a later one with a different ID. Instances that held the retired one's
@@ -180,7 +185,9 @@
   observable: >-
     The declared part is the resolved definition and configuration. The status holds the
     lifecycle state and what has been observed. The records are the log entries that name the
-    instance.
+    instance. In the result of `inspect.v1` the three parts are the outputs `declared`, `status`
+    and `records`, and they stand beside the object's `id`, its `revision` and the `packages` it
+    holds.
   vectors: []
 
 # --- Retirement and unregistration (plan-audit rulings 30 and 32).
@@ -206,9 +213,10 @@
     The request is not dispatched, and reports conflict.
   observable: >-
     The instance is as it was. The only requests that address a retired instance and can be
-    dispatched are to inspect it, to retire it again, to reconcile its retirement and to
-    unregister it. Requests through the Conduits of which it was an end are requests through
-    closed Conduits, which ACC-011 covers.
+    dispatched are to inspect it, to retire it again, to reconcile its retirement, to unregister
+    it and, where a nested instantiation made it, to ask under LIF-009 for a new instance in its
+    place. Requests through the Conduits of which it was an end are requests through closed
+    Conduits, which ACC-011 covers.
   vectors: []
 
 - id: LIF-016

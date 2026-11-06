@@ -1,4 +1,4 @@
-# PROPOSED example, not accepted. It must be rejected:
+# Example. It must be rejected:
 # a version is one Semantic Versioning 2.0.0 version, not a range.
 
 apiVersion: github.com/shrav-k/conduit/v0

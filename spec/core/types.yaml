@@ -1,5 +1,5 @@
-# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
-# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# Part of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling 37); the
+# record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # The Type contracts of the core package.
 #
@@ -9,8 +9,9 @@
 #   pool.v1         the plain Pool type (TPL-002); ACC-028, ACC-033 (a Pool's own operations)
 #   system-pool.v1  the type of `system` (FST-001); PLC-003, PLC-016 (the default-location
 #                   setting and its control); CTR-006
-#   location.v1     the location type (PLC-008): a location's facts are stored configuration;
-#                   PLC-007, PLC-013 (the facts a requirement is checked against)
+#   location.v1     the location type (PLC-008): a location's facts are stored configuration,
+#                   changed only by its control `set-facts.v1`; PLC-007, PLC-013 (the facts a
+#                   requirement is checked against); CTR-006
 #   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
 #   access.v1       the type of `access` (FST-001, ACC-006, ACC-012, ACC-031)
 #
@@ -98,7 +99,8 @@ metadata:
   name: location.v1
   description: >-
     The location type. A location is where an Agent or a Resource runs. It is a Resource owned
-    by the `system` Pool, it is its own placement, and its facts are stored configuration.
+    by the `system` Pool, it is its own placement, and its facts are stored configuration,
+    which only the control `set-facts.v1` changes.
 spec:
   family: Resource
   schema:
@@ -111,8 +113,12 @@ spec:
           localPaths: {type: boolean}
         additionalProperties: true
     additionalProperties: false
-  offers: []
-  requires: []
+  offers:
+    - github.com/shrav-k/conduit/core#location-settings.v1
+  requires:
+    - github.com/shrav-k/conduit/core#set-facts.v1
+  controls:
+    - github.com/shrav-k/conduit/core#set-facts.v1
   placement: {}
 ---
 apiVersion: github.com/shrav-k/conduit/v0

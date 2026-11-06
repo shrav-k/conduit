@@ -1,6 +1,7 @@
 # Implementation-defined behavior: what this specification deliberately leaves to each engine.
-# Owner rulings of 2026-11-05 (plan-audit rulings 31, 32 and 33). An engine documents its choice
-# for every entry, and that document is its runtime profile. A choice must keep every promise.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31, 32, 33 and 37). An engine documents its
+# choice for every entry, and that document is its runtime profile. A choice must keep every
+# promise.
 
 - id: DL1
   entry: Graph execution
@@ -12,7 +13,9 @@
   entry: Dispatch records
   document: >-
     Where the record is written before an implementation is called; how attempts are numbered;
-    and what is done with a result that arrives late.
+    what is done with a result that arrives late; and how the digest of an invocation's contents
+    is computed, which a purge keeps under REC-004. The SHA-256 of the RFC 8785 form of the
+    operation and its arguments is one way that gives equal contents the same digest.
 - id: DL3
   entry: A request that waits for an actor's answer
   document: >-
@@ -34,17 +37,18 @@
 - id: DL7
   entry: Packages
   document: >-
-    Where packages are stored, how they are fetched and removed, and any editing mode.
+    Where packages are stored, how they are fetched and removed, which schemes of `fetch` are
+    accepted, and any editing mode.
 - id: DL8
   entry: Delivery of observations and records
   document: >-
     Feeds, positions within them, and snapshots.
 - id: DL9
-  entry: Controls
+  entry: Controls and busy instances
   document: >-
-    What happens to a request for a busy instance, which is one that has a change in progress
-    under REV-012, and the order in which several failed checks that give the same reason are
-    reported.
+    What happens to a request for a busy instance, which is one that has a setup, a retirement
+    or a change in progress under REV-012, and the order in which several failed checks that
+    give the same reason are reported.
 - id: DL10
   entry: Limits
   document: >-

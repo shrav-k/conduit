@@ -1,5 +1,6 @@
-# PROPOSED, not accepted. The manifest of the core package, written for decision G1 of the
-# re-audit; see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+# The manifest of the core package. Accepted by the owner on 2026-11-05 (plan-audit ruling
+# 37); the record is docs/proposals/core-and-schemas/README.md. See README.md in this
+# directory.
 #
 # The core package is built into every engine (NAM-020) and is never installed, listed or
 # fetched (NAM-021), so it has no archive and no digest. Its documents are the files of this
@@ -8,8 +9,9 @@
 # `supports` lists `bound.v1`, because a bound is a filter on a Conduit to `access` and
 # CON-022 asks the implementation behind `access` to state the filters it can apply.
 #
-# The version is a proposal. It is the version of the package, not of any contract: each
-# contract carries its own compatibility version in its name (NAM-015).
+# The version is the version of the package, not of any contract: each contract carries its
+# own compatibility version in its name (NAM-015). A template or an instance that uses the
+# core package holds this address and this version, and no digest.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: github.com/shrav-k/conduit/core
@@ -36,6 +38,7 @@ exports:
   - access-control.v1
   - pool-management.v1
   - system-settings.v1
+  - location-settings.v1
   # Operations (operations.yaml).
   - register.v1
   - replace.v1
@@ -56,6 +59,7 @@ exports:
   - remove-policy.v1
   - retrieve-result.v1
   - set-default-location.v1
+  - set-facts.v1
   # Requirements (requirements.yaml).
   - bound.v1
   - shared-host.v1
@@ -143,6 +147,7 @@ implementations:
       - github.com/shrav-k/conduit/core#remove-policy.v1
       - github.com/shrav-k/conduit/core#retrieve-result.v1
       - github.com/shrav-k/conduit/core#set-default-location.v1
+      - github.com/shrav-k/conduit/core#set-facts.v1
     supports:
       - github.com/shrav-k/conduit/core#bound.v1
     placement: {}

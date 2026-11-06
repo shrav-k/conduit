@@ -1,7 +1,8 @@
 # Schemas and document syntax. See ../schema-profile.md for the standards these refer to.
 # Owner rulings of 2026-11-05 (plan-audit rulings 23, 24, 32 and 33) and earlier accepted
 # syntax rules. Consolidation pass 1 added SCH-015 to SCH-017. The follow-up decisions (ruling
-# 33) added SCH-018. No promise of this file has been removed. Draft: no vector exists yet.
+# 33) added SCH-018. The ruling on the core package and the schemas (ruling 37) changed SCH-008
+# and SCH-015. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: SCH-001
   layer: language
@@ -99,11 +100,16 @@
     directly, reached through `$ref`, or be the schema that `items` gives.
   then: >-
     The document that holds the schema is rejected, when its package is installed or when it is
-    submitted.
+    submitted. Whether a `default` is allowed is judged where it is written, in the schema that
+    holds it.
   observable: >-
-    A `default` inside `allOf`, `anyOf` or `oneOf`, and a `default` on `items` itself, each
-    produce a diagnostic naming its position. A `default` on a property of an object inside
-    `items` is accepted, as Kubernetes structural defaulting accepts it.
+    A `default` is accepted where the schema that states it is written as a member of
+    `properties` and is not inside `allOf`, `anyOf` or `oneOf`. A `default` inside `allOf`,
+    `anyOf` or `oneOf`, and a `default` on `items` itself, each produce a diagnostic naming its
+    position. A `default` on a property of an object inside `items` is accepted, as Kubernetes
+    structural defaulting accepts it. A `default` that a member of `$defs` states on itself is
+    rejected, even where the only `$ref` to that member is written as a property: what refers to
+    a schema does not change the answer.
   vectors: []
 
 - id: SCH-009
@@ -191,13 +197,16 @@
   when: >-
     A schema written in a contract or a template uses `$ref`.
   then: >-
-    Its value is either `#` followed by a JSON Pointer into the same schema, such as
-    `#/$defs/name`, or a qualified reference, which resolves to a Schema contract that a
-    package exports and stands for the schema that is that contract's `spec`.
+    Its value is one of three: `#` followed by a JSON Pointer into the same schema, such as
+    `#/$defs/name`; a qualified reference, which resolves to a Schema contract that a package
+    exports; or `#` followed by a name, which resolves under NAM-022 to a Schema contract of the
+    same project or package as the document that holds the schema. Each of the last two stands
+    for the schema that is that contract's `spec`.
   observable: >-
-    A `$ref` of any other form, such as an `https` address, is rejected like a keyword outside
-    the profile, under SCH-002. So is a qualified reference to an export that is not a Schema
-    contract.
+    The three cannot be confused: a JSON Pointer is empty or starts with `/`, and a name starts
+    with a letter. A `$ref` of any other form, such as an `https` address, is rejected like a
+    keyword outside the profile, under SCH-002. So is a qualified reference, or a `#name`, that
+    resolves to something other than a Schema contract.
   vectors: []
 
 - id: SCH-016

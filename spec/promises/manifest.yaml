@@ -1,7 +1,7 @@
 # The manifest: its file, its keys and the layout of a package's archive.
-# PROPOSED, not accepted. Written for decision G1 of the re-audit (plan-audit ruling 32) and
-# awaiting the owner's review as one batch with spec/core/ and spec/schemas/; see
-# docs/proposals/core-and-schemas/README.md. No promise below binds until it is accepted.
+# Owner ruling of 2026-11-05 (plan-audit ruling 37), which accepted these promises as one
+# batch with spec/core/ and spec/schemas/. They were written for decision G1 of the re-audit
+# (plan-audit ruling 32), and the record is docs/proposals/core-and-schemas/README.md.
 # Each rule follows an existing practice: one project file with a fixed name, as Go's
 # `go.mod` and Cargo's `Cargo.toml` are; a format version inside the file, as a Helm chart's
 # `Chart.yaml` carries `apiVersion`; the files of one directory and not of those below it, as
@@ -9,8 +9,12 @@
 # writes `export ... from`; a program and its arguments as a list, as Kubernetes and Docker
 # write `command`; and an archive with the project file at its root, refusing members that
 # would be written outside it, as npm and Cargo do. What naming.yaml and packages.yaml
-# already promise is cited and not restated. The JSON Schema of these shapes is
-# spec/schemas/manifest.yaml. Draft: no vector exists yet.
+# promise is cited and not restated: what an item of `packages` must state is NAM-006 and
+# NAM-012; a package's own address and version PKG-017; which documents are exports PKG-018;
+# what an implementation states PKG-019 and PKG-020; what a template or an instance holds
+# for a package NAM-009 and PKG-005; and which reason a rejected installation reports
+# PKG-023. The JSON Schema of these shapes is spec/schemas/manifest.yaml. No promise of
+# this file has been removed. Draft: no vector exists yet.
 
 - id: MAN-001
   layer: language
@@ -77,13 +81,14 @@
   when: >-
     A manifest lists the packages its project uses.
   then: >-
-    `packages` is a map keyed by each package's address. Each item holds `version` and
-    `digest`, and may hold `fetch`. An item has no other keys.
+    `packages` is a map keyed by each package's address. Each item states what NAM-006
+    requires under the keys `version` and `digest`, and may hold `fetch`, the key of NAM-012.
+    An item has no other keys.
   observable: >-
     `packages` written as a list, and an item with any other key, are each rejected with a
-    diagnostic naming it. What an item must state is NAM-006, the form of a version is
-    PKG-001 and the form of a digest is PKG-004. An address written twice is a duplicate key,
-    rejected under SCH-012.
+    diagnostic naming it. The form of an address is NAM-001, the form of a version is PKG-001
+    and the form of a digest is PKG-004. An address written twice is a duplicate key, rejected
+    under SCH-012.
   vectors: []
 
 - id: MAN-006
@@ -108,13 +113,14 @@
   when: >-
     A manifest lists `exports`.
   then: >-
-    `exports` is a list, and each item is either the name of a document of the package or a
-    qualified reference, which is a re-export under MAN-008.
+    `exports` is a list, and each item is either the name of a document of the package, which
+    PKG-018 makes an export, or a qualified reference, which is a re-export under MAN-008.
   observable: >-
     An item that is neither, and a name that no document of the package has, are each rejected
-    with a diagnostic naming the item. An implementation is not listed in `exports`: its item
-    under `implementations` is what exports it, as PKG-019 states. A name written twice, and a
-    name that an implementation also has, are rejected under PKG-012.
+    with a diagnostic naming the item. A name is the name of one document, because no two
+    documents of a package share a name under NAM-027. An implementation is not listed in
+    `exports`: its item under `implementations` is what exports it, as PKG-019 states. A name
+    written twice, and a name that an implementation also has, are rejected under PKG-012.
   vectors: []
 
 - id: MAN-008
@@ -139,15 +145,15 @@
   when: >-
     A manifest lists `implementations`.
   then: >-
-    `implementations` is a map keyed by each implementation's name. Each item holds
-    `implements` and exactly one of `command`, `url` and `graph`, and may hold `plain`,
-    `tools`, `supports` and `placement`. An item has no other keys.
+    `implementations` is a map keyed by each implementation's name. An item holds the keys
+    that PKG-019 and PKG-020 name, and no other: `implements`; exactly one of `command`, `url`
+    and `graph`; and, where they are given, `plain`, `tools`, `supports` and `placement`.
   observable: >-
     An item with two of `command`, `url` and `graph`, with none of them, or with any other
-    key, is rejected with a diagnostic naming the item. An item with no `supports` can apply
-    no requirement, and one with no `placement` has no requirement on placement. What `plain`
-    and `tools` require of each other is PKG-020, and the name follows NAM-004. The one
-    exception is the core package's own manifest, under MAN-012.
+    key, is rejected with a diagnostic naming the item. What leaving out `supports` or
+    `placement` means is PKG-019, what `plain` and `tools` require of each other is PKG-020,
+    and the name follows NAM-004. The one exception is the core package's own manifest, under
+    MAN-012.
   vectors: []
 
 - id: MAN-010
@@ -156,17 +162,18 @@
   when: >-
     The keys of an implementation item are read.
   then: >-
-    `implements` is a list of selections of operations. `command` is a list of one or more
-    strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in
-    place, as TPL-003 gives one. `supports` is a list of selections of requirements.
-    `placement` is a map of applied requirements, as CTR-004 gives a Type. `plain` is a
-    boolean. `tools` is a map from the selection of an operation to the name of a tool.
+    `implements` is a list of selections of operations, and `supports` a list of selections
+    of requirements, each written as NAM-018 gives a selection. `command` is a list of one or
+    more strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in
+    place, as TPL-003 gives one. `placement` is a map of applied requirements, as CTR-004
+    gives a Type. `plain` is a boolean. `tools` is the map of PKG-020, and each of its values
+    is a non-empty string.
   observable: >-
     A `command` written as one string, a `url` with no scheme, and a `graph` item whose
     `implements` does not list exactly one operation, as GRA-014 requires, are each rejected
-    with a diagnostic naming the item. A program given as a relative path is taken from the
-    root of the package's archive, and no shell reads the list. Who starts the program is DL12
-    of the implementation-defined list.
+    with a diagnostic naming the item. `plain: false` means the same as leaving `plain` out. A
+    program given as a relative path is taken from the root of the package's archive, and no
+    shell reads the list. Who starts the program is DL12 of the implementation-defined list.
   vectors: []
 
 - id: MAN-011
@@ -182,8 +189,8 @@
     A project keeps the programs of its implementations, and any other file, in directories
     below its own. A file in the directory itself that has one of the two endings and holds
     something other than templates, instances or contracts is rejected under SUB-005. A file
-    with any other ending is not a document and is not read. Documents in a directory below
-    are another project, with a manifest of its own if it uses packages.
+    with any other ending, `.yml` among them, is not a document and is not read. Documents in
+    a directory below are another project, with a manifest of its own if it uses packages.
   vectors: []
 
 - id: MAN-012
@@ -197,9 +204,10 @@
     `supports` and `placement`, and states none of `command`, `url` and `graph`.
   observable: >-
     An item of any other package that states none of the three is rejected under MAN-009. The
-    core package is built into the engine under NAM-020, so it has no archive and no digest: a
-    template or an instance that refers to it holds its address and its version, and no
-    digest, where NAM-009 and PKG-005 speak of a digest.
+    core package is built into the engine under NAM-020, so it has no archive and no digest,
+    and its manifest lists no `packages`. What a template or an instance that refers to it
+    then holds is NAM-009 and PKG-005. The engine states under `supports` the requirements it
+    can apply, as PKG-019 has any implementation do, and `bound.v1` is one.
   vectors: []
 
 - id: MAN-013
@@ -214,7 +222,8 @@
     An archive whose root holds no manifest, or holds one only inside a directory, is rejected
     when the package is installed, with a diagnostic naming the archive. Unpacking the archive
     into an empty directory gives the project's directory as it was published. What the
-    archive file itself must be is PKG-022.
+    archive file itself must be is PKG-022, and which reason the installation reports is
+    PKG-023.
   vectors: []
 
 - id: MAN-014
@@ -227,5 +236,6 @@
     The package is rejected.
   observable: >-
     Installation returns a diagnostic naming the member, and nothing is written outside the
-    place where the engine keeps the package.
+    place where the engine keeps the package. Which reason the installation reports is
+    PKG-023.
   vectors: []

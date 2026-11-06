@@ -7,6 +7,7 @@
 # dependency order, as `docker compose up` does. POOL-008 was removed earlier: entries are
 # instantiated together.
 # Removed by consolidation pass 1: POOL-010 was folded into LIF-009.
+# The ruling on the core package and the schemas (ruling 37) changed POOL-005 and POOL-012.
 # Draft: no vector exists yet.
 
 - id: POOL-001
@@ -69,7 +70,10 @@
     same Pool has that name. A bare name in that place is an ordinary reference to an object
     that exists and never means an entry.
   observable: >-
-    Resolving returns a diagnostic naming the entry and the name it refers to.
+    Resolving returns a diagnostic naming the entry and the name it refers to. `{entry: name}`
+    written anywhere other than in an entry of a Pool template is rejected, with a diagnostic
+    naming where it is written, although a reference schema that accepts a Resource accepts its
+    form.
   vectors: []
 
 - id: POOL-006
@@ -128,10 +132,11 @@
   when: >-
     An entry of a Pool template is read.
   then: >-
-    It is a nested instantiation of a Resource template: `from`, `arguments`, and optionally
+    It is a nested instantiation of a Resource template: `from`, and optionally `arguments` and
     `optional: true`. It gives no owner, because its owner is the Pool.
   observable: >-
-    An entry that carries `owner` is rejected with a diagnostic naming it.
+    An entry that carries `owner` is rejected with a diagnostic naming it. An entry with no
+    `arguments` supplies none, as OBJ-014 states.
   vectors: []
 
 - id: POOL-013

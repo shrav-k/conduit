@@ -4,7 +4,8 @@
 # and to close one is to retire it. CON-005 was removed as a duplicate of PLC-006, and CON-009
 # was folded into LIF-007. Removed by consolidation pass 1: CON-010 was folded into LIF-008, and
 # CON-015 into LIF-001, LIF-003, LIF-005 and LIF-006. The follow-up rulings removed nothing.
-# Draft: no vector exists yet.
+# The ruling on the core package and the schemas (ruling 37) changed CON-003, CON-016 to
+# CON-018 and CON-026, and added CON-028. Draft: no vector exists yet.
 
 - id: CON-001
   layer: language
@@ -52,7 +53,11 @@
     for a nested instantiation, which has none, the name is generated as OBJ-003 generates one
     for an instance, and the hyphen and the component's name follow it. Where a component is
     itself made from a composite template, the rule applies again to its components, with the
-    name so formed in place of the given or generated one.
+    name so formed in place of the given or generated one. A component Conduit's name is never
+    longer than 63 characters. Where the part before the hyphen was generated, the template's
+    part of it is shortened further than OBJ-003 alone requires, so that the whole name fits.
+    Where an instance document gave that part and the whole name would be longer than 63
+    characters, the document is rejected.
   vectors: []
 
 - id: CON-004
@@ -175,10 +180,14 @@
   when: >-
     The `spec` of a Conduit template is read.
   then: >-
-    It holds `inputs` and either `capability`, `operations` and `requirements`, or `components`.
-    There are no other keys.
+    It may hold `inputs`, and it holds either `capability`, `operations` and `requirements`, or
+    `components`. There are no other keys. A template that is not composed requires
+    `capability`. It requires `operations` unless one of its inputs has `operations` as a
+    destination, and it may leave out `requirements`, and then applies none.
   observable: >-
-    A Conduit template with both `capability` and `components`, or with neither, is rejected.
+    A Conduit template with both `capability` and `components`, or with neither, is rejected. So
+    is one that has `capability`, no `operations` and no input whose destination is
+    `/operations`. What is required of an `operations` that an input fills is INS-023.
   vectors: []
 
 - id: CON-017
@@ -187,9 +196,8 @@
   when: >-
     A Conduit template is registered.
   then: >-
-    Its `capability` is one qualified reference to a Capability contract, and its `operations`
-    is a list of qualified references, each to an operation that capability includes. The list
-    may be empty.
+    Its `capability` is the selection of one Capability contract, and its `operations` is a list
+    of selections, each of an operation that capability includes. The list may be empty.
   observable: >-
     An operation the capability does not include is rejected with a diagnostic naming it. A list
     that an input supplies is checked in the same way when the Conduit is instantiated, under
@@ -202,12 +210,15 @@
   when: >-
     A Conduit template applies requirements.
   then: >-
-    They are a map under `requirements`. Each item has a name, a `requirement`, which is a
-    qualified reference, and `arguments`. A filter and the shared-host requirement are both
-    written there.
+    They are a map under `requirements`. Each item has a name and holds `requirement`, which is
+    the selection of a Requirement contract, and may hold `arguments`. A filter and the
+    shared-host requirement are both written there.
   observable: >-
-    An item with no `requirement` is rejected with a diagnostic naming the item. Whether a
-    requirement may be applied to a Conduit at all is decided by its contract, under CTR-005.
+    An item with no `requirement` is rejected with a diagnostic naming the item. An item with no
+    `arguments` supplies none, as NAM-019 states. Whether a requirement may be applied to a
+    Conduit at all is decided by its contract, under CTR-005. The shared-host requirement is
+    `github.com/shrav-k/conduit/core#shared-host.v1`, and the bound of a Conduit to `access` is
+    written there too, under ACC-029.
   vectors: []
 
 - id: CON-019
@@ -314,15 +325,17 @@
   level: must
   when: >-
     An actor asks to rename a Conduit, and under the new name one of the tool names it would
-    have under IFC-012 equals the name of another tool that the engine presents, or would
-    present once its Conduit is opened, to the same consumer.
+    have under IFC-012 is longer than 128 characters, or equals the name of another tool that
+    the engine presents, or would present once its Conduit is opened, to the same consumer.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
     The Conduit keeps its name, and every tool presented to the consumer keeps its name. A
     rename of a Conduit that was instantiated on its own onto the local name of one of its
     consumer's declared Conduits reports conflict in this way where the two would have a tool
-    name in common. The same collision when a Conduit is instantiated is IFC-014.
+    name in common. So does a rename of a component Conduit to a name long enough to take one of
+    its tool names past the limit. The same collision, and the same length, when a Conduit is
+    instantiated is IFC-014.
   vectors: []
 
 - id: CON-027
@@ -337,4 +350,21 @@
   observable: >-
     Resolving returns a diagnostic naming the end and the kind that was given. A Pool given as a
     consumer, and a Conduit given as either end, are each rejected in this way.
+  vectors: []
+
+# --- Added with the core package (plan-audit ruling 37; change X3 of the ruling on the core
+# --- package and the schemas).
+
+- id: CON-028
+  layer: language
+  level: must
+  when: >-
+    A Conduit is instantiated that applies the core package's requirement `bound.v1` and whose
+    target is not the `access` Resource, or that applies `bound.v1` more than once.
+  then: >-
+    The Conduit is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the Conduit and each item of its `requirements` that
+    applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried only by a Conduit to
+    `access`, as ACC-029 states, and such a Conduit carries at most one.
   vectors: []

@@ -24,6 +24,9 @@
 # has not ruled on, changed CON-008, CON-022, CON-028, CON-030 and CON-031: a graph written in
 # place supports a requirement where the implementations of its steps do, and CON-031 is about a
 # Conduit that is not open. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed CON-008 and CON-022: no graph states
+# `supports`, wherever it is written.
 
 - id: CON-001
   layer: language
@@ -139,13 +142,14 @@
     retired target has no open Conduit to be made through, which is the case ACC-001 and ACC-011
     state. A consumer's shutdown is confirmed as LIF-024 states: when an invocation of
     `retire.v1` for it succeeds, at once where no setup of it was ever dispatched, or when a
-    reconciliation records that its retirement occurred, under LIF-028. From the moment the
-    consumer is retired until then, the Conduit's state is as it was, and the Conduit permits
-    only the requests of the consumer's retirement, as ACC-039 states: a step of the consumer's
-    `retire` graph can make a request through the consumer's own Conduit, in a further
-    retirement under LIF-026 as in the first. Where the consumer's shutdown stays pending or
-    unknown, the Conduit stays so until the shutdown is confirmed, the consumer is declared
-    lost, or an actor closes the Conduit under ACC-012.
+    reconciliation records that its retirement occurred, under LIF-028. It is not confirmed
+    while the outcome of a start of one of its runtimes is unknown. From the moment the consumer
+    is retired until then, the Conduit's state is as it was, and the Conduit permits only the
+    requests of the consumer's retirement, as ACC-039 states: a step of the consumer's `retire`
+    graph can make a request through the consumer's own Conduit, in a further retirement under
+    LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the Conduit
+    stays so until the shutdown is confirmed, the consumer is declared lost, or an actor closes
+    the Conduit under ACC-012.
   vectors: []
 
 - id: CON-011
@@ -301,31 +305,37 @@
     A Conduit is instantiated that carries a filter, and an implementation that must support the
     filter's requirement does not support it.
   then: >-
-    The Conduit is not instantiated. An implementation supports a requirement where it states
-    the requirement in `supports`. A graph written in place states no `supports`: it supports a
-    requirement where the implementation selected for each of its steps that has no `conduit`
-    supports it.
+    The Conduit is not instantiated. An implementation that is reached by `command` or `url`
+    supports a requirement where it states the requirement in `supports`, and the requirement is
+    matched by its address and its export name. No graph states `supports`, wherever it is
+    written: a graph supports a requirement where the implementation selected for each of its
+    steps that has no `conduit` supports it.
   observable: >-
     Resolving returns a diagnostic naming the filter, the operation and the implementation. It
     is decided from the manifest under PKG-019, without starting anything. The implementations
-    that the target has selected for the operations the Conduit lists must always state the
+    that the target has selected for the operations the Conduit lists must always support the
     requirement: they are sent every filter on the Conduit under IFC-018, and apply it under
     IFC-019. Where the filter obliges the consumer, under CTR-005, every implementation selected
-    for the consumer must state it too, and IFC-034 says how it is told which filters it is to
+    for the consumer must support it too, and IFC-034 says how it is told which filters it is to
     keep to. A filter obliges the consumer where `obliges` in its requirement's contract names
     `consumer` or, for a composition, where the contract of any of its constituents that narrows
     requests does. `obliges` never takes the obligation from the target. An implementation
     supports a composed requirement where its `supports` lists the composition or every one of
     its constituents. An implementation marked `plain` states no `supports` under PKG-020, so no
-    Conduit is instantiated with a filter that an instance it serves must apply. A graph written
-    in place as a value of an `implementation` map has no implementation item, and so nowhere to
-    state `supports`: the implementations selected, for the graph's own instance, for the
+    Conduit is instantiated with a filter that an instance it serves must apply. The rule for a
+    graph holds for one written in place as a value of an `implementation` map and for one that
+    an implementation item of a manifest gives as `graph`, which is rejected under PKG-019 where
+    it states `supports`: the implementations selected, for the graph's own instance, for the
     operations of its steps that have no `conduit` are what is checked, and where one of those
-    is again a graph written in place the rule applies to its steps. A step with `conduit` is an
-    onward request to another target, and is not counted here: it carries the filter under
-    ACC-017, and ACC-015 checks it against the implementation that its own target has selected.
-    A graph that has no step without `conduit` supports every requirement, because no
-    implementation of its instance is invoked through it.
+    is again a graph the rule applies to its steps. Where another promise says that an
+    implementation states a requirement in `supports`, it means, for a graph, that the graph
+    supports the requirement in this sense. A requirement is matched by its address and its
+    export name alone: the contract's own version is the last segment of that name, and the
+    version of the package plays no part, because a later release may only add optional inputs
+    under NAM-024. A step with `conduit` is an onward request to another target, and is not
+    counted here: it carries the filter under ACC-017, and ACC-015 checks it against the
+    implementation that its own target has selected. A graph that has no step without `conduit`
+    supports every requirement, because no implementation of its instance is invoked through it.
   vectors: []
 
 - id: CON-023

@@ -14,6 +14,9 @@
 # has not ruled on, changed SUB-008 and SUB-009: a contract of a project may need a package that
 # is not installed, and SUB-009 says what a manifest handed to `replace.v1` may state. It
 # removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed SUB-009: a manifest handed to `replace.v1` may
+# hold `packages` alone.
 
 - id: SUB-001
   layer: language
@@ -166,30 +169,36 @@
     gives the document that takes its place, a template of the same kind and name. A reference
     written `#name` in the replacing document reaches the contracts and the implementations of
     the unpublished package that the template being replaced holds under NAM-009. A manifest
-    handed over with the document lists packages only: one that states `implementations` or
-    `exports` is rejected. A replacing document that refers to a package other than the core
-    package, where no manifest is handed over, is rejected under NAM-007. A request whose
-    document or manifest is rejected, or whose document is of another kind or name than the
-    template, is not dispatched, and reports invalid. A request that leaves the template's
-    stored definition as it was changes nothing, does not advance the revision and has the
-    outcome succeeded.
+    handed over with the document may hold `packages` alone, beside its `apiVersion`: one that
+    holds any other member, such as `implementations`, `exports`, `address` or `version`, is
+    rejected. A replacing document that refers to a package other than the core package, where
+    no manifest is handed over, is rejected under NAM-007. A request whose document or manifest
+    is rejected, or whose document is of another kind or name than the template, is not
+    dispatched, and reports invalid. A request that leaves the template as it was, because its
+    document is equal to the template as stored and every package the document resolves through
+    has the version and the digest it had before, changes nothing, does not advance the revision
+    and has the outcome succeeded.
   observable: >-
-    After a replace that changed the template's stored definition, its revision has advanced,
-    under REV-003. One whose document is equal, under SCH-007, to the template as stored is
-    decided like any other and stores no change, so REV-004 keeps the revision as it was. The
-    instances made before a replace are as INS-020 states, and instances made after it come from
-    the template as replaced. A request that names a revision that is not current reports
-    conflict under REV-002, and one that names none reports invalid under REV-011. The request
-    is authorized against `management`, under ACC-033. A request to replace a template is not a
-    submission, and makes no unpublished package under SUB-008: the replacing document is handed
-    over with no contracts, and `#name` in it resolves in the unpublished package that the
-    template already holds, whether it selects a contract or an implementation, so instances
-    made afterwards run the implementations that the template's project listed when it was
-    registered. What `#name` written as `from` reaches in a nested instantiation is NAM-022. The
-    request may hand over a manifest with the document, as the input `manifest` of `replace.v1`:
-    the document's references to packages resolve through its `packages` under NAM-007, and the
-    template as replaced keeps the packages it gives, under NAM-009. The result of a request
-    that reports invalid carries the diagnostics, as IFC-025 states.
+    After a replace that changed the template, its revision has advanced, under REV-003. One
+    whose document is equal, under SCH-007, to the template as stored, and whose manifest gives
+    every package the document refers to the version and the digest that the template keeps for
+    it under NAM-009, is decided like any other and stores no change, so REV-004 keeps the
+    revision as it was. An equal document handed over with a manifest that gives one of those
+    packages another version or digest is a change: the template as replaced keeps the new one,
+    and the revision advances. The instances made before a replace are as INS-020 states, and
+    instances made after it come from the template as replaced. A request that names a revision
+    that is not current reports conflict under REV-002, and one that names none reports invalid
+    under REV-011. The request is authorized against `management`, under ACC-033. A request to
+    replace a template is not a submission, and makes no unpublished package under SUB-008: the
+    replacing document is handed over with no contracts, and `#name` in it resolves in the
+    unpublished package that the template already holds, whether it selects a contract or an
+    implementation, so instances made afterwards run the implementations that the template's
+    project listed when it was registered. What `#name` written as `from` reaches in a nested
+    instantiation is NAM-022. The request may hand over a manifest with the document, as the
+    input `manifest` of `replace.v1`: the document's references to packages resolve through its
+    `packages` under NAM-007, and the template as replaced keeps the packages it gives, under
+    NAM-009. The result of a request that reports invalid carries the diagnostics, as IFC-025
+    states.
   vectors: []
 
 # --- Added by the last pass of the second round of the re-audit

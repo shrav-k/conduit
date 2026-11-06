@@ -22,6 +22,9 @@
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed OPS-014, OPS-016, OPS-021, OPS-023, OPS-028 and OPS-029, and added
 # OPS-030, on reconciling an invocation whose outcome is not unknown. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed OPS-014 and added OPS-031, on an input of
+# `reconcile.v1` that does not belong to the invocation it names.
 
 - id: OPS-001
   layer: convention
@@ -254,7 +257,8 @@
     under OPS-030. One that names an ID which the engine gave to no invocation reports invalid,
     under OPS-029. What the reconciliation of a setup, an open, a retirement or a close changes
     beside the outcome is LIF-028, what that of a control changes is REV-010, and what that of
-    the start or the stop of a runtime changes is TPL-015.
+    the start or the stop of a runtime changes is TPL-015. OPS-031 says which inputs of
+    `reconcile.v1` make a request invalid where they do not belong.
   vectors: []
 
 - id: OPS-015
@@ -602,4 +606,24 @@
     recorded the effect. One that names an ID which the engine gave to no invocation reports
     invalid, under OPS-029. Where the actor is not permitted under OPS-014, OPS-023 gives
     refused first.
+  vectors: []
+
+- id: OPS-031
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to reconcile an invocation, and the request states `handle` for an invocation
+    that is not the start of a runtime, or names `revision` or states `settings` for a control
+    whose instance no longer exists.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The invocation's outcome is still unknown, and nothing is stored. `handle` belongs to the
+    reconciliation of a runtime's start, under TPL-015: stated for a stop, for a control or for
+    any other invocation, it makes the request invalid. `revision` and `settings` belong to the
+    reconciliation of a control of an instance that exists, under REV-010: once the instance has
+    been unregistered, a reconciliation of the control names neither. What a reconciliation of a
+    control of an instance that exists reports where it names no revision is REV-011, and where
+    its settings are not valid, REV-013. Where the actor is not permitted, OPS-023 gives refused
+    first.
   vectors: []

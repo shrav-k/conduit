@@ -25,6 +25,9 @@
 # ACC-031, ACC-033 to ACC-035, ACC-037, ACC-038 and ACC-040, and added ACC-041, on what a start
 # of later work carries, ACC-042, on a request to apply a policy that reports invalid, and
 # ACC-043, on a policy that names the root Interface. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed ACC-015, ACC-018, ACC-031, ACC-033 and ACC-038:
+# no graph states `supports`.
 
 - id: ACC-001
   layer: convention
@@ -223,7 +226,7 @@
     applies or the implementation supports its requirement. An implementation supports a
     requirement where it states it in `supports`, and a composed requirement where it states the
     composition or every one of its constituents, under CON-022. An implementation marked
-    `plain` states none, under PKG-020. A graph written in place states none either: it supports
+    `plain` states none, under PKG-020. No graph states any, wherever it is written: it supports
     a requirement where the implementation selected for each of its steps that has no `conduit`
     does, as CON-022 states, and a step that names a Conduit is an onward request, which is
     checked here at its own target. The filters of a request's own Conduit need no such check
@@ -231,8 +234,12 @@
     onward request carries was never checked against the onward target, so it is checked here:
     an onward request that carries a filter to a target whose selected implementation is marked
     `plain` reports unavailable, although the Conduit it is made through carries no filter. The
-    reason is the one ACC-014 gives for a restriction that cannot be evaluated. Requests to
-    which no such restriction applies are decided as before.
+    reason is the one ACC-014 gives for a restriction that cannot be evaluated. A requirement is
+    matched against `supports` by its address and its export name, whatever version of its
+    package the policy keeps or the implementation holds, as CON-022 states. A policy's
+    arguments are sent as the policy stores them, and an implementation that cannot evaluate
+    them answers unavailable, as ACC-014 states. Requests to which no such restriction applies
+    are decided as before.
   vectors: []
 
 - id: ACC-016
@@ -301,10 +308,10 @@
     that implements the operation. A step with no `conduit` whose implementation does not
     support the requirement of one of those restrictions, as one marked `plain` supports none,
     is not dispatched and reports unavailable, under ACC-015. Where the step's implementation is
-    itself a graph written in place, it supports a requirement where the implementations of its
-    own steps do, as CON-022 states. An implementation that finds it cannot apply a restriction
-    it was sent answers unavailable, as ACC-014 states. A step that names a Conduit is checked
-    at that Conduit's target in the same way.
+    itself a graph, it supports a requirement where the implementations of its own steps do, as
+    CON-022 states. An implementation that finds it cannot apply a restriction it was sent
+    answers unavailable, as ACC-014 states. A step that names a Conduit is checked at that
+    Conduit's target in the same way.
   vectors: []
 
 - id: ACC-019
@@ -520,12 +527,14 @@
     names no `version` while more than one installed version of the package exports the
     requirement. A policy keeps its version and digest as a template keeps those of its packages
     under NAM-009: installing another version of the package afterwards does not change the
-    policy, and its `arguments` were checked against the inputs that its own version declares. A
-    policy's requirement narrows requests, as a filter's does: it is sent to implementations
-    under IFC-018, and one that does not narrow is never sent. A requirement of an unpublished
-    package has no qualified reference, and cannot be applied as a policy. A request that names
-    an actor or a target that does not exist, and a request to remove a policy whose ID names no
-    policy in force, report invalid under OPS-029.
+    policy, and its `arguments` were checked against the inputs that its own version declares.
+    They are sent to implementations as stored, and a requirement is matched against an
+    implementation's `supports` by its address and its export name, under ACC-015. A policy's
+    requirement narrows requests, as a filter's does: it is sent to implementations under
+    IFC-018, and one that does not narrow is never sent. A requirement of an unpublished package
+    has no qualified reference, and cannot be applied as a policy. A request that names an actor
+    or a target that does not exist, and a request to remove a policy whose ID names no policy
+    in force, report invalid under OPS-029.
   vectors: []
 
 - id: ACC-032
@@ -611,11 +620,12 @@
     through such a Conduit too: the Pool authorized them, and it is retired from the moment its
     retirement is dispatched. While the Pool is not retired, a Conduit to `management` does not
     permit those requests: at any moment one target authorizes a request. Every other request
-    that this promise authorizes against a Pool has no Conduit to be made through once the Pool
-    is retired, and one made through a Conduit to `management` reports refused: setting up or
-    retiring a Resource that the Pool owns, and `retire-with-resources.v1`, which has no input
-    that could name the Pool. A retired Pool whose shutdown is not confirmed is retired again
-    with `retire.v1`, which names the Pool and is authorized against `management`, under
+    that this promise authorizes against a Pool reports refused once the Pool is retired,
+    because every Conduit to it is closed and a request through a closed Conduit reports refused
+    under ACC-011, and one made through a Conduit to `management` reports refused too: setting
+    up or retiring a Resource that the Pool owns, and `retire-with-resources.v1`, which has no
+    input that could name the Pool. A retired Pool whose shutdown is not confirmed is retired
+    again with `retire.v1`, which names the Pool and is authorized against `management`, under
     LIF-026. Registering a Resource whose owner is a retired Pool, and asking under LIF-009 for
     a new Resource for an entry of one, need the Conduit to `management` alone, and a permitted
     request for either reports invalid: POOL-004 rejects the document, and POOL-017 gives the
@@ -719,19 +729,19 @@
     implementation that applies it: by its qualified reference or, for an implementation that
     the manifest of a project that is not published lists, by `<digest>#<name>`.
   observable: >-
-    For a filter they are the implementations that must state the filter's requirement in
-    `supports` under CON-022. Those that the target has selected for the operations the Conduit
-    lists are always among them: they are sent the filter under IFC-018 and apply it under
-    IFC-019. Where the filter obliges the consumer, under CTR-005, the implementations selected
-    for the consumer are named as well. Where there is more than one, each is named. Where the
-    implementation selected is a graph written in place, which has no name and supports a
-    requirement through the implementations of its steps under CON-022, the implementations
-    named are those selected for its steps that have no `conduit`. For a requirement that the
-    engine itself checks, as it checks the shared-host requirement under PLC-013, the result
-    names the engine, `github.com/shrav-k/conduit/core#engine`. In `<digest>#<name>` the digest
-    is the one that identifies the unpublished package under SUB-008, written as PKG-004 writes
-    a digest, and the name is the implementation's: it is the form IFC-006 gives a contract of
-    such a package.
+    For a filter they are the implementations that must support the filter's requirement under
+    CON-022. Those that the target has selected for the operations the Conduit lists are always
+    among them: they are sent the filter under IFC-018 and apply it under IFC-019. Where the
+    filter obliges the consumer, under CTR-005, the implementations selected for the consumer
+    are named as well. Where there is more than one, each is named. Where the implementation
+    selected is a graph, whether a template writes it in place or a manifest lists it, it states
+    no `supports` and supports a requirement through the implementations of its steps, under
+    CON-022: the implementations named are those selected for its steps that have no `conduit`.
+    For a requirement that the engine itself checks, as it checks the shared-host requirement
+    under PLC-013, the result names the engine, `github.com/shrav-k/conduit/core#engine`. In
+    `<digest>#<name>` the digest is the one that identifies the unpublished package under
+    SUB-008, written as PKG-004 writes a digest, and the name is the implementation's: it is the
+    form IFC-006 gives a contract of such a package.
   vectors: []
 
 # --- Added by the last pass of the second round of the re-audit

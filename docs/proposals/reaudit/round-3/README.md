@@ -1,6 +1,6 @@
 # Re-audit, round 3
 
-Status: read, and the fixes are being applied, 2026-11-06 (plan-audit action A59). Four cold
+Status: done, 2026-11-06 (plan-audit action A59), and [round 4](../round-4/README.md) is next. Four cold
 readers read the repository as it stood after [round 2](../round-2/README.md) and its passes, at
 commit `b1d3fb4`.
 
@@ -18,7 +18,7 @@ been clean. Whether the readiness condition G7 is judged on these rounds is
 | Step | Record |
 | --- | --- |
 | The decisions on the findings | [DECISIONS.md](DECISIONS.md) |
-| The fix pass | `log-fixes.md`, when the pass ends |
+| The fix pass and its follow-up, with the choices the editor made | [log-fixes.md](log-fixes.md) |
 
 | Reader | Sees | Looks for | Report |
 | --- | --- | --- | --- |

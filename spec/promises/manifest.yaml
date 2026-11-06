@@ -29,6 +29,8 @@
 # has not ruled on, changed MAN-007 and MAN-009 to MAN-011: a package holds no instance
 # document, and the keys of an implementation item's `placement` follow OBJ-022. It removed
 # none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed MAN-009.
 
 - id: MAN-001
   layer: language
@@ -180,8 +182,9 @@
     An item with two of `command`, `url` and `graph`, with none of them, or with any other key,
     is rejected with a diagnostic naming the item. What leaving out `supports` or `placement`
     means is PKG-019, what `plain` and `tools` require of each other is PKG-020, which also says
-    that an item that states `graph` is never plain and lists no `tools`, and the name follows
-    NAM-004. The one exception is the core package's own manifest, under MAN-012.
+    that an item that states `graph` is never plain and lists no `tools`, as PKG-019 says that
+    it states no `supports`, and the name follows NAM-004. The one exception is the core
+    package's own manifest, under MAN-012.
   vectors: []
 
 - id: MAN-010

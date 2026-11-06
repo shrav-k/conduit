@@ -5,7 +5,7 @@ decision below as recommended (plan-audit ruling 32). They are applied by
 [consolidation pass 1](CONSOLIDATION.md).
 
 This page is the record of round 1. Round 2, with four readers, is done and has
-[its own record](round-2/README.md), and round 3 is [in progress](round-3/README.md). Counts of promises on this page are as they stood when
+[its own record](round-2/README.md), as does [round 3](round-3/README.md), and round 4 is [in progress](round-4/README.md). Counts of promises on this page are as they stood when
 each pass ended; the current counts are in the
 [contents table of the specification](../../../spec/README.md#contents).
 
@@ -116,7 +116,8 @@ These four steps were written when the findings were recorded. Each now has its 
    and the manifest's format, accepted with five changes by plan-audit ruling 37
    ([record](../core-and-schemas/README.md)).
 4. A second round of cold readers. Done: [round 2](round-2/README.md), which was not clean.
-   [Round 3](round-3/README.md) is in progress. The done-when of action A59 asks for two
+   [Round 3](round-3/README.md) is done and was not clean either, and
+   [round 4](round-4/README.md) is in progress. The done-when of action A59 asks for two
    rounds in a row with no finding. Whether the readiness condition G7 is judged on these
    rounds is [for the owner](../../AUDIT.md#waiting-for-the-owner).
 

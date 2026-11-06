@@ -35,6 +35,9 @@
 # carries no caller, and the result of an operation that declares no outputs is never withheld.
 # It changed nothing that these promises say of the Model Context Protocol itself, and what they
 # say of it has not been checked against the protocol since the pass. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed IFC-024: a retrieval that names a served
+# invocation may give its target in the resolved form.
 
 - id: IFC-001
   layer: interface
@@ -507,18 +510,20 @@
     invocation that has ended: a Resource retrieves the result of an onward request after the
     invocation that the request served has ended, and for the caller it sent the request for. A
     call that names an invocation which was not dispatched to the instance that makes it reports
-    refused, under IFC-028. Where an instance sent requests under one identity to one target for
-    two callers, OPS-008 has two invocations, and the invocation that the call names in that key
-    says which is asked about. An invocation that has not ended is reported with the `state`
-    `inProgress`, and one that has ended by its outcome. The outputs are delivered only while
-    the Conduit through which the invocation was dispatched is open, under OPS-017: a result
-    whose content is withheld carries `state`, `invocation` and `withheld: true`, and no
-    `outputs`. `invocation` is the ID by which `reconcile.v1` names the invocation, under
-    OPS-014, so an instance that lost the result of its request learns it here. Where the engine
-    no longer keeps the content, under OPS-016, the result carries `state` and `invocation`, and
-    neither `outputs` nor `withheld: true`. A call that names an identity and a target under
-    which the instance has no invocation reports refused, under OPS-015. Once the target is
-    unregistered it can no longer be named, and the call reports refused in the same way.
+    refused, under IFC-028. A call that names a served invocation may give `target` in the
+    resolved form of a reference, under LIF-031. Where an instance sent requests under one
+    identity to one target for two callers, OPS-008 has two invocations, and the invocation that
+    the call names in that key says which is asked about. An invocation that has not ended is
+    reported with the `state` `inProgress`, and one that has ended by its outcome. The outputs
+    are delivered only while the Conduit through which the invocation was dispatched is open,
+    under OPS-017: a result whose content is withheld carries `state`, `invocation` and
+    `withheld: true`, and no `outputs`. `invocation` is the ID by which `reconcile.v1` names the
+    invocation, under OPS-014, so an instance that lost the result of its request learns it
+    here. Where the engine no longer keeps the content, under OPS-016, the result carries
+    `state` and `invocation`, and neither `outputs` nor `withheld: true`. A call that names an
+    identity and a target under which the instance has no invocation reports refused, under
+    OPS-015. Once the target is unregistered it can no longer be named, and the call reports
+    refused in the same way.
   vectors: []
 
 - id: IFC-025

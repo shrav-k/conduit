@@ -22,7 +22,7 @@ the operation `start-later-work.v1`. The
 [decisions of the third round](../../docs/proposals/reaudit/round-3/DECISIONS.md) added no
 export: they gave `reconcile.v1` the input `handle` and `apply-policy.v1` the input `version`,
 and changed descriptions; what changed is in the
-[log of that pass](../../docs/proposals/reaudit/round-3/log-fixes.md). The promises are the
+[log of that pass](../../docs/proposals/reaudit/round-3/log-fixes.md) and of its follow-up. The promises are the
 source of truth: where a document here and a promise differ, the document is wrong.
 
 ## What this is
@@ -96,7 +96,7 @@ these invocations. A Conduit is set up by `open.v1` and retired by `close.v1` in
 | `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
 | `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, POOL-013 |
 | `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009 |
-| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control | yes | — | OPS-014, ACC-033, LIF-028, REV-010, TPL-015 |
+| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control | yes | — | OPS-014, ACC-033, LIF-028, REV-010, TPL-015, OPS-031 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019 |
 | `declare-lost.v1` | `object-management.v1` | — | yes | yes | PLC-017, ACC-032 |
@@ -156,8 +156,12 @@ How to read the columns:
   current configuration, or nothing is (REV-010). The start of a runtime is recorded as
   having occurred only with the handle, in the input `handle`, and the instance then holds
   the runtime; a request that states none reports invalid. Recording that a stop occurred
-  ends the holding (TPL-015). A request that names an invocation whose outcome is not
-  unknown reports conflict (OPS-030). A consumer learns the ID that names the
+  ends the holding (TPL-015). A retired instance takes these reconciliations too, and while
+  the outcome of a start of one of its runtimes is unknown its shutdown is not confirmed
+  (LIF-015, LIF-024). `handle` stated for any other invocation, and `revision` or `settings`
+  for a control whose instance no longer exists, report invalid (OPS-031). A request that
+  names an invocation whose outcome is not unknown reports conflict (OPS-030). A consumer
+  learns the ID that names the
   invocation from the `io.github.shrav-k.conduit/invocation` of its result (IFC-025), or
   from the output `invocation` of `retrieve-result.v1` (IFC-024).
 - **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
@@ -207,7 +211,9 @@ How to read the columns:
   confirmed, and until then permit only the requests of its retirement (CON-008, ACC-039).
   `retire-with-resources.v1` retires the Resources in the reverse of the order of setup: a
   Resource before any Resource that it refers to, or to which it is the consumer of a
-  Conduit, among those the Pool owns. Where Resources remain whose shutdown is not confirmed,
+  Conduit, among those the Pool owns. Among Resources that depend on each other in a cycle
+  the order is the engine's, and once one retirement has ended without its shutdown confirmed
+  no further retirement is dispatched. Where Resources remain whose shutdown is not confirmed,
   it has the outcome failed, and the diagnostics of its result name them (LIF-021). It
   declares no output, because a result whose outcome is failed holds none (IFC-025).
 - **Installing.** A package is installed only by `install.v1`. A registration installs none

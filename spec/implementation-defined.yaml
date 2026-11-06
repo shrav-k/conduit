@@ -10,15 +10,19 @@
 # last pass (docs/proposals/reaudit/round-2/log-tail.md) reworded DL3 in the terms of an
 # invocation, took from DL7 the use of a package from files that are still being edited, which
 # PKG-022, PKG-004 and NAM-006 decide, and from DL11 the later opening of an optional Conduit,
-# which CON-004 and ACC-006 decide, and added to DL7 how an engine is handed a directory.
+# which CON-004 and ACC-006 decide, and added to DL7 how an engine is handed a directory. The
+# follow-up to the fix pass of the third round (docs/proposals/reaudit/round-3/log-fixes.md),
+# on a decision of the coordinator that the owner has not ruled on, added to DL1 the order in
+# which a Pool's Resources are retired where LIF-021 fixes none.
 
 - id: DL1
   subject: Graph execution
   document: >-
     The order among steps that do not depend on each other; how many run at once; cancellation;
     the states a step passes through; what happens to the remaining steps after one fails; what
-    a re-run of setup or retire does with steps that already ran; and when a graph's outputs
-    become available.
+    a re-run of setup or retire does with steps that already ran; when a graph's outputs become
+    available; and the order in which `retire-with-resources.v1` retires Resources that depend
+    on each other in a cycle, or not at all, under LIF-021.
 - id: DL2
   subject: Dispatch records
   document: >-

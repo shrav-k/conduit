@@ -19,6 +19,9 @@
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
 # on reconciling the start or the stop of a runtime. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed TPL-007, TPL-009 and TPL-015: an instance holds
+# a runtime until a stop of it has succeeded or has been reconciled as having occurred.
 
 - id: TPL-001
   layer: language
@@ -137,15 +140,18 @@
     A step names a runtime.
   then: >-
     If the instance does not hold that runtime, the step invokes its start operation, and once
-    that succeeds the instance holds the handle it returned, under the runtime's name, until the
-    runtime is stopped. If the instance already holds it, the start operation is not invoked
-    again and the step is left as succeeded.
+    that succeeds the instance holds the handle it returned, under the runtime's name, until a
+    stop of the runtime has succeeded or has been reconciled as having occurred, or the engine
+    treats the handle as no longer held under OBS-007. If the instance already holds it, the
+    start operation is not invoked again and the step is left as succeeded.
   observable: >-
     Inspecting the instance lists the runtime as held. A value reference with the source
     `runtime` and that name yields the handle. Setting the instance up again starts no second
-    runtime of that name, and the instance holds the same handle as before. A start whose
-    outcome is unknown returned no handle, so the instance does not hold the runtime: TPL-015
-    says how the start is reconciled, and what reconciling a stop does.
+    runtime of that name, and the instance holds the same handle as before. A stop that failed,
+    or whose outcome is unknown, does not end the holding: a further retirement under LIF-026
+    stops the runtime again. A start whose outcome is unknown returned no handle, so the
+    instance does not hold the runtime: TPL-015 says how the start is reconciled, and LIF-024
+    what the shutdown of the instance reports meanwhile.
   vectors: []
 
 - id: TPL-008
@@ -182,11 +188,13 @@
   observable: >-
     An instance for which no setup was ever dispatched does not run its `retire` graph, as
     LIF-025 states. With no `retire` graph to run and no runtime held, the invocation succeeds
-    at once. The stops are part of the invocation, which succeeds only if the steps of the graph
-    did, as OPS-022 counts them, and every stop succeeded. A further invocation for an instance
-    whose shutdown is confirmed runs no step and stops nothing, under LIF-030. When the Conduits
-    of which the instance is the consumer are closed, and what they permit meanwhile, is CON-008
-    and ACC-039.
+    at once. Where the outcome of a start of one of the instance's runtimes is unknown, an
+    invocation that succeeds does not confirm the shutdown, under LIF-024: the start may have
+    left a runtime running that the instance does not hold. The stops are part of the
+    invocation, which succeeds only if the steps of the graph did, as OPS-022 counts them, and
+    every stop succeeded. A further invocation for an instance whose shutdown is confirmed runs
+    no step and stops nothing, under LIF-030. When the Conduits of which the instance is the
+    consumer are closed, and what they permit meanwhile, is CON-008 and ACC-039.
   vectors: []
 
 - id: TPL-010
@@ -287,11 +295,11 @@
     runtime, or of a stop under TPL-009 or OBS-007.
   then: >-
     A reconciliation that records the start as having occurred states the handle, in the input
-    `handle` of `reconcile.v1`, and the instance then holds the runtime with that handle. One
-    that records the start as having occurred and states no handle is not dispatched, and
-    reports invalid. A reconciliation that records a stop as having occurred ends the holding.
-    One that records that the start or the stop did not occur gives the outcome failed, and
-    leaves the instance as it was.
+    `handle` of `reconcile.v1`, and the instance then holds the runtime with that handle. This
+    holds for a retired instance as for any other. One that records the start as having occurred
+    and states no handle is not dispatched, and reports invalid. A reconciliation that records a
+    stop as having occurred ends the holding. One that records that the start or the stop did
+    not occur gives the outcome failed, and leaves the instance as it was.
   observable: >-
     After a start is reconciled as having occurred, inspecting the instance lists the runtime as
     held, a value reference with the source `runtime` yields the handle that the reconciliation
@@ -302,11 +310,15 @@
     and the step is dispatched in a later run as a new invocation, under OPS-028. After a stop
     is reconciled as having occurred, the instance no longer holds the runtime, and a later
     retirement does not stop it again. After one is reconciled as not having occurred, the
-    instance is as it was: where it still holds the runtime, as after a stop within a retirement
-    whose outcome was unknown, a further retirement under LIF-026 stops it, and where OBS-007
-    had the engine treat the handle as no longer held, it stays so. Until a start whose outcome
-    is unknown is reconciled, OPS-021 keeps the step from being dispatched again, except as a
-    new attempt under OPS-012. The reconciliation is authorized under ACC-033 against the target
-    that manages the instance the invocation was dispatched to, and LIF-015 says which
-    reconciliations a retired instance takes.
+    instance is as it was: it still holds the runtime after a stop within a retirement whose
+    outcome was unknown, under TPL-007, and a further retirement under LIF-026 stops it; where
+    OBS-007 had the engine treat the handle as no longer held, it stays so. Until a start whose
+    outcome is unknown is reconciled, OPS-021 keeps the step from being dispatched again, except
+    as a new attempt under OPS-012. LIF-015 admits these reconciliations on a retired instance,
+    the one that stores a handle among them. A start reconciled as having occurred on a retired
+    instance leaves it holding the runtime with its shutdown pending, under LIF-024, and a
+    further retirement under LIF-026 stops the runtime. A request that states `handle` for an
+    invocation that is not the start of a runtime reports invalid, under OPS-031. The
+    reconciliation is authorized under ACC-033 against the target that manages the instance the
+    invocation was dispatched to.
   vectors: []

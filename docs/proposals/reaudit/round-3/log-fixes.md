@@ -210,50 +210,16 @@ each still occurs in its file character for character.
 
 ## Still needs a decision
 
-Nothing here was decided by the editor. Where the text had to say something, it says what the
-decision or the existing promises give, and the point is listed.
+The ten points that this section listed after the fix pass were settled by the coordinator in
+the section "The fix pass, and what it left" of [the decisions](DECISIONS.md), and applied in
+the [follow-up](#follow-up) below. What remains:
 
-1. **A runtime's start reconciled on a retired instance.** LIF-015 lets a retired instance
-   take a reconciliation only where it "stores nothing in it". Recording a start as having
-   occurred stores the handle, so on a retired instance it reports conflict, and the runtime
-   that the start left running is never stopped through the engine. This is the second half
-   of the scenario of 3C-2. Whether LIF-015 should admit that reconciliation is open.
-2. **`handle` on a reconciliation of anything but a runtime's start**, and `revision` or
-   `settings` on the reconciliation of a control whose instance is unregistered. The decisions
-   say what each such request names. No promise says what one that names more reports.
-3. **3A-8, the reason.** See the choice above: refused, where the decision's words point at
-   LIF-015 and so at conflict.
-4. **3A-10, a `graph` item of a manifest.** See the choice above. If the decision's "a graph
-   states none" was meant for every graph, PKG-019, the schema of an implementation item and
-   the example package's `listing` change.
-5. **3C-6, a cycle.** Two Resources of one Pool can each be the consumer of a Conduit to the
-   other, or refer to each other in their configuration. No order then satisfies LIF-021. Also
-   open: whether the remaining retirements are still dispatched once one has not confirmed
-   its shutdown. The text keeps "a request to retire each Resource is dispatched".
-6. **3C-15, a default of the operation's own contract.** GRA-005 names, as the decision does,
-   the graphs selected in the template's `implementation` map and in its type's defaults. A
-   graph that an Operation contract states as its own default implementation is selected
-   under TPL-004 too, and a cycle through one is not named.
-7. **3C-7, the implementation's side.** A policy keeps a version, and IFC-018 sends its
-   requirement by a qualified reference, which carries none. An implementation that holds
-   another version of the package is not told which contract the arguments were checked
-   against, and ACC-015 does not say against which version "supports" is read.
-8. **3C-11, what else a manifest handed to `replace.v1` may state.** The decision rejects
-   `implementations` and `exports`. It does not speak of `address` and `version`. Also open:
-   whether a replace whose document is equal to the stored one, and whose manifest gives
-   other packages, "leaves the stored definition as it was".
-9. **3B-2, a retrieval.** LIF-031 binds a request that an actor makes on its own behalf. A
-   call to `retrieve-result.v1` that names a served invocation is made for that invocation's
-   caller, so it may hold the resolved form in `target`. That follows from the decision's
-   words and was not decided as such. The decision itself asks the owner to look at 3B-2.
-10. **A stop whose outcome is unknown.** TPL-015 leaves the instance "as it was" when a stop
-    is reconciled as not having occurred. Whether the instance still holds the runtime after
-    a stop that failed or is unknown rests on reading "until the runtime is stopped" in
-    TPL-007 as "until a stop succeeds", as reader 3 did. No promise says it.
+- For the owner, as before: how a value is marked as secret.
+- With the conformance vectors: the shape of a diagnostic beyond `message`, and the full
+  shape of an inspection result.
 
-Still for the owner, as before: how a value is marked as secret. Still with the conformance
-vectors: the shape of a diagnostic beyond `message`, and the full shape of an inspection
-result.
+The follow-up found nothing new that needs a decision. Two things it had to word are in its
+table of choices, for the coordinator to confirm or strike.
 
 ## Not done, and not verified
 
@@ -324,3 +290,99 @@ Also checked, by scripts that are not kept in the repository:
   templates under `spec/core/`, 45 Schema contracts in 9 files, and 7, 60 and 20 example
   files.
 - No trailing whitespace in the new files.
+
+## Follow-up
+
+Done on 2026-11-06 by the same editor, on the ten decisions of the section "The fix pass, and
+what it left" of [the decisions](DECISIONS.md). They are the coordinator's, and the owner has
+not ruled on them. Same rules, same files. Nothing was committed or staged, and no sub-reader
+was started.
+
+Result: 436 promises became 437, with 221 of the layer `language`, 181 of the layer
+`convention` and 35 of the layer `interface`. Added: OPS-031, of the layer `convention`.
+Changed, 24: ACC-015, ACC-018, ACC-031, ACC-033, ACC-038; LIF-015, LIF-018, LIF-021, LIF-024,
+LIF-028, LIF-031; OPS-014; REV-010; IFC-024; CON-008, CON-022; GRA-005; MAN-009; PKG-019,
+PKG-020; SUB-009; TPL-007, TPL-009, TPL-015. No promise changed layer or level, and none was
+removed. `operations.yaml` now holds 31 promises. The implementation-defined list still has 15
+items, and DL1 gained a point. One schema changed shape: `implementation-item.v1` no longer
+lets an item that states `graph` state `supports`. Examples: 61 files under `examples/invalid`,
+one more, `PKG-019-manifest-graph-with-supports.yaml`; 20 under `examples/invalid-by-rule` and
+7 under `examples/valid`, as before. The checker still applies 19 rules, from 17 promises. The
+core package still exports 99 documents, and no contract of it gained or lost an input.
+
+| Point | Promises | Other documents |
+| --- | --- | --- |
+| 1. A start of unknown outcome, and its reconciliation on a retired instance | LIF-024 (`then`: the shutdown is unknown while such a start is unknown, and pending once it is reconciled as having occurred on a retired instance), LIF-015 (admits the reconciliation of a start or a stop), LIF-018, LIF-028, TPL-015, TPL-007, TPL-009, CON-008 | `reconcile.v1`; definitions (shutdown, reconcile); core README |
+| 2. Inputs of `reconcile.v1` that do not belong | New OPS-031; OPS-014, REV-010 and TPL-015 point to it | `reconcile.v1`; definitions (reconcile); core README |
+| 3. A request to a retired Pool | ACC-033 (the observable now gives the reason through ACC-011) | — |
+| 4. No graph states `supports` | PKG-019 (`then`), CON-022 (`then`), PKG-020, MAN-009, ACC-015, ACC-018, ACC-038 | `implementation-item.v1` and the head of `spec/schemas/manifest.yaml`; a comment on `listing` in the example package, which stated none already; new invalid example; schemas README; definitions (`supports`) |
+| 5. The order of retirements, and stopping | LIF-021 (`then`) | DL1; `retire-with-resources.v1`; core README |
+| 6. Every selection of a graph | GRA-005 (`when`) | A comment in `tools/check_schemas.py` |
+| 7. How a requirement is matched | CON-022 (`then`: by its address and its export name), ACC-015, ACC-031 | Definitions (`supports`) |
+| 8. The manifest handed to `replace.v1` | SUB-009 (`then`) | `replace.v1`; definitions (replace) |
+| 9. The resolved form in a retrieval | LIF-031, IFC-024 | `retrieve-result.v1`; definitions (resolved form) |
+| 10. Until when an instance holds a runtime | TPL-007 (`then`), TPL-015 | Definitions (hold) |
+
+Choices made in the follow-up:
+
+| Choice | Why |
+| --- | --- |
+| Point 1: LIF-015 admits the reconciliation of a stop of a runtime on a retired instance, as well as that of a start. | A stop is dispatched within a retirement, so its reconciliation is always on a retired instance, and point 10 has that reconciliation end the holding. |
+| Point 1: TPL-009 says that an invocation of `retire.v1` that succeeds does not confirm the shutdown while such a start is unknown. | It follows from LIF-024 as changed, and TPL-009 said that such an invocation "succeeds at once". |
+| Point 2: the rule is a new promise, OPS-031, beside OPS-030. | It names one reason, and covers inputs of two kinds of reconciliation. |
+| Point 2: a reconciliation that records a start as **not** having occurred and states `handle` is not made invalid. | The decision speaks of an invocation that is not the start of a runtime. TPL-015 already gives this request its end: the outcome becomes failed and the instance is as it was. For the coordinator to confirm or strike. |
+| Point 4: for every graph, inspecting an open Conduit names the implementations selected for its steps that have no `conduit` (ACC-038), also where a manifest lists the graph under a name. | Those implementations apply the filter, and the promises now say one thing for every graph. |
+| Point 4: CON-022 says that where another promise speaks of an implementation that "states a requirement in `supports`", it means for a graph that the graph supports it. | CTR-005, IFC-018 and IFC-034 use those words, and were not reworded. |
+| Point 5: DL1 also takes the order among Resources that neither relation joins, not only the order within a cycle. | The decision names the cycle. Once a request stops at the first retirement that is not confirmed, the order among unrelated Resources shows as well, and DL1 already leaves the like order among steps to the engine. For the coordinator to confirm or strike. |
+| Point 7: the rule is in the `then` of CON-022, where "supports" is defined, and the sentence on a policy's arguments in the observables of ACC-015 and ACC-031. | One place defines the match. |
+| Point 8: "may hold `packages` alone" is written "beside its `apiVersion`". | MAN-003 requires `apiVersion` of every manifest. |
+
+Read again after the edits: the promises touched and their neighbours LIF-014, LIF-017,
+LIF-020, LIF-025, LIF-026, LIF-030, PLC-017, OPS-013, OPS-021, OPS-030, MAN-010, MAN-012,
+IFC-019, CTR-005, NAM-009 and NAM-024. One thing was found and fixed: the observable of LIF-024
+said that an instance with such a start is not unregistered until the start is reconciled,
+and a location declared lost also frees it, under LIF-017.
+
+Checks after the follow-up, run from the root of the repository:
+
+```text
+$ /usr/bin/python3 - <<'PY'   (the validation script of CONSOLIDATION.md)
+437 promises ok
+
+$ python3 tools/check_schemas.py
+Python 3.9.6 at <path of the system interpreter>; PyYAML 6.0.1; jsonschema 4.20.0
+Profile: 27 keywords, 5 formats. Format checkers available for all of them.
+1. Read 105 files holding 231 documents as strict YAML.
+2. Checked 58 Schema contracts against the profile, and every `$ref`.
+3. Validated 138 documents under spec/schemas/, spec/core/ and examples/valid/.
+4. 61 invalid documents in 61 files were each rejected by a schema, or rejected when read.
+5. Core package: 99 documents exported, 0 documents deliberately private and 1 implementation,
+   which is also an export. Checked 439 references for the kind they name; 1 name packages
+   that are not in this repository and were not checked. Checked 3 controls, the 5 operations
+   that take no `revision`, the tables of the two READMEs, and 852 citations of promises in
+   108 files. The example packages keep 0 documents private.
+6. Applied 19 rules of this tool, which come from 17 promises, to the core package and 3
+   example directories. 20 sets of documents in 20 files under examples/invalid-by-rule/ were
+   each rejected by the rule they are named for; each of their 33 documents is valid against
+   the schemas.
+   SCH-019: validated 10 defaults of the core package and the valid examples against their
+   schemas; 0 were not validated, because a `$ref` in the schema leads outside this repository.
+Errors: 0
+
+$ python3 tools/set_names.py --check
+Names: corePackage x436, apiVersion x234, metaPrefix x96. Errors: 0
+
+$ python3 tools/check_docs.py
+Files: listed by Git (tracked, and untracked but not ignored).
+Checked 127 Markdown files and 1613 local links (offline).
+Errors: 0
+
+$ git diff --check
+(no output)
+```
+
+No line of a YAML file under `spec/` is longer than 96 characters, every promise ID and DL
+item cited under `spec/` and in `docs/OVERVIEW.md` exists (4181 citations), and the counts in
+`spec/README.md` and the schemas README were recounted. `docs/OVERVIEW.md` was read against
+the ten decisions and not changed: none bears on what it says. Nothing was checked against the
+Model Context Protocol, and no cold reader has read the result.

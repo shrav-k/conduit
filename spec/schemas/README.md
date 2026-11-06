@@ -20,8 +20,9 @@ changed seven shapes, which are listed in the same place; what changed in each f
 [last pass of that round](../../docs/proposals/reaudit/round-2/log-tail.md) changed no shape:
 it added three rules that no schema can express, with an example of each. The
 [decisions of the third round](../../docs/proposals/reaudit/round-3/DECISIONS.md) changed no
-shape either: they added three more such rules, with an example of each, and one example of
-a manifest that a schema rejects; the
+shape of a document: they added three more such rules, with an example of each, and two
+examples of a manifest that a schema rejects, and their follow-up took `supports` from an
+implementation item that states `graph`; the
 [log of that pass](../../docs/proposals/reaudit/round-3/log-fixes.md) says what changed in
 each file. The promises are the source of truth: where a schema and a
 promise differ, the schema is wrong.
@@ -184,13 +185,13 @@ documents in front of it show, in its step 6; an example under
 | That a location's document states no `placement` | PLC-008 | Only the type of the template says that an instance is a location | Yes, where the tool has the template |
 | That `{entry: name}` is written only in an entry of a Pool template | POOL-005 | A reference schema governs an entry's argument and every other place alike | Only in the `placement`, `consumer` and `target` of an instance document and the `target` of a declared Conduit |
 | The meaning of a graph: that what a step names exists, required inputs, literals against their schemas, declared outputs, which source is allowed in which graph, that no value reference reads an output of a step that names a runtime, handles, model work, later work | GRA-004, GRA-006 to GRA-008, GRA-010, GRA-011, GRA-014, GRA-020, GRA-021, GRA-022, GRA-024, GRA-028, TPL-006, IMP-004, IMP-005, IMP-009, IMP-010, IMP-012 | It needs the operations' contracts, and knowledge of which graph a step is in | GRA-028 only |
-| Rules that tie two keys of one map together beyond "exactly one of": a requirement on placement states `schema` and no `inputs`; `tools` has a key for each operation in `implements`; a `graph` item implements exactly one operation, and, which the schema does express, is not marked `plain: true` and gives no `tools`; each key of a control's `changes` is an input the control declares and each pointer a place its type's schema describes, and a control declares the input `revision` and the output `settings` | CTR-005, PKG-020, GRA-014, CTR-006 | The profile has no `if`, `not` or dependent keyword, and none that constrains the keys of a map | CTR-006 only, in step 5, for a control whose contract is in this repository |
+| Rules that tie two keys of one map together beyond "exactly one of": a requirement on placement states `schema` and no `inputs`; `tools` has a key for each operation in `implements`; a `graph` item implements exactly one operation, and, which the schema does express, is not marked `plain: true`, gives no `tools` and states no `supports`; each key of a control's `changes` is an input the control declares and each pointer a place its type's schema describes, and a control declares the input `revision` and the output `settings` | CTR-005, PKG-020, GRA-014, CTR-006 | The profile has no `if`, `not` or dependent keyword, and none that constrains the keys of a map | CTR-006 only, in step 5, for a control whose contract is in this repository |
 | That a requirement is applied only where its `appliesTo` lists, and a composition only where the `appliesTo` of every constituent lists too | CTR-005 | It needs the requirement's contract and those of its constituents | Yes, for the `requirements` of a Conduit template and the `placement` of a Type, where the tool has the contracts |
 | That a requirement that is not a composition and does not narrow requests is applied to a Conduit, itself or as a constituent of a composition, only where it is a contract of the core package | CON-030 | It needs the requirement's contract and those of its constituents | Yes, for the `requirements` of a Conduit template, where the tool has the contracts |
 | That a requirement that does not narrow requests states no `obliges` | CTR-005 | The profile has no keyword that makes one key depend on another, and whether a composition narrows is in the contracts of its constituents | Yes, where the tool can tell that the requirement does not narrow |
 | That every operation which a template's type requires, which a capability the type offers includes, which the type lists as a control, or which a runtime or a step without `conduit` names has an implementation: one the template selects, or a default of the type or of the operation's contract | TPL-004 | It needs the type's contract, the capabilities' and the operations' | Yes, where the tool has the type's contract, for each operation whose contract it has |
 | That the implementation of an operation marked `arrangesLaterWork` is not marked `plain` | TPL-014 | It needs the operation's contract and the manifest that lists the implementation | — |
-| That the implementations the target has selected, and those selected for the consumer where `obliges` names `consumer`, state a filter in `supports`, which for a composition means the composition or every one of its constituents | CON-022, CTR-005 | It needs the target's type, the implementations selected and their manifests | — |
+| That the implementations the target has selected, and those selected for the consumer where `obliges` names `consumer`, support a filter: by stating it in `supports`, which for a composition means the composition or every one of its constituents, or, for a graph, through the implementations of its steps | CON-022, CTR-005, PKG-019 | It needs the target's type, the implementations selected and their manifests | — |
 | That no instance document is made from the core package's templates `system`, `management`, `access` or `root` | FST-006 | Only resolving `from` says which template it names. The documents of [examples/valid/first-start](examples/valid/first-start) are valid against the schemas for that reason, and a submission that held them is rejected | — |
 | Placement, ownership and state | POOL-001 (the owner is a Pool instance), PLC-001 to PLC-007, PLC-018, CON-006, CON-022, CON-025 | They need the objects that exist | — |
 | That the core package is not listed in a manifest | NAM-021 | The profile has no `not` | — |
@@ -215,7 +216,9 @@ holds `schema` and may hold `default` and `optional` (CTR-005); and an implement
 that is not marked `plain: true` holds no `tools` (PKG-020). One more choice of the schemas
 was not in that list and is now stated by a promise, on a decision of the third round of the
 re-audit that the owner has not ruled on: an implementation item that states `graph` is not
-marked `plain: true` and gives no `tools` (PKG-020). These remain choices of the
+marked `plain: true` and gives no `tools` (PKG-020). The follow-up to that round changed one
+shape, on a decision of the same standing: an item that states `graph` no longer states
+`supports` (PKG-019). These remain choices of the
 schemas alone: `optional` is a boolean, so `optional: false` is accepted; and a Type's
 `family` is one of the four families that have a type. No schema requires `optional`
 beside `default`: an input that states a `default` may be left out, whether or not it is
@@ -247,7 +250,12 @@ changed seven shapes:
 The [decisions of the third re-audit round](../../docs/proposals/reaudit/round-3/DECISIONS.md)
 changed no shape of a document. Two core operations gained an optional input, which
 `operation-spec.v1` already allowed: `reconcile.v1` the handle `handle` (TPL-015), and
-`apply-policy.v1` `version` (ACC-031).
+`apply-policy.v1` `version` (ACC-031). The decisions on what that pass left changed one shape
+of the manifest:
+
+| What | Schema | Decision |
+| --- | --- | --- |
+| An implementation item that states `graph` states no `supports`. No graph states it, wherever it is written | `implementation-item.v1` | Point 4 of "The fix pass, and what it left"; PKG-019, CON-022 |
 
 ## Examples
 
@@ -256,7 +264,7 @@ changed no shape of a document. Two core operations gained an optional input, wh
 | [examples/valid/project](examples/valid/project) | A small project that is not published: a manifest; a Schema contract of its own, which a template reaches with a `$ref` written `#name`; a Resource template with an input, a runtime of its own beside the one its type declares, a setup graph whose steps name both, and a narrowed control; a Pool template with two entries, one referring to the other; a Conduit template with two requirements; a composite Conduit template, one of whose components writes its `from` as `#name`; an Agent template with a required and an optional declared Conduit; an Interface template, which writes no `config`; a Conduit template that applies the bound of a right to open; and instance documents of every family, a Conduit to `access` among them |
 | [examples/valid/files-package](examples/valid/files-package) | A package: a manifest with `address`, `version`, `exports`, a re-export and three implementations, and one contract of each of the five kinds, two of which use a `$ref` written `#name`. Among them are an Operation whose input states a `default`, an Operation marked `arrangesLaterWork` and the operation that each start of that work invokes, a control whose `changes` maps its input to a setting, a Type that declares a runtime and states `restoresRuntimes` and `records`, a Requirement that states `obliges`, and a composed Requirement |
 | [examples/valid/first-start](examples/valid/first-start) | The instance documents of the five first-start objects, written out to show what first start makes. Each is valid against the schemas. The engine makes these objects itself and is handed no such document: submitting them is rejected, under FST-006 for the four made from the templates `system`, `management`, `access` and `root`, and under OBJ-002 because the five names are taken |
-| [examples/invalid](examples/invalid) | 60 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
+| [examples/invalid](examples/invalid) | 61 files, each holding one document that a schema rejects, or that is rejected when its file is read, and named for the promise it breaks. A file with `-manifest-` in its name is a manifest; the others are documents |
 | [examples/invalid-by-rule](examples/invalid-by-rule) | 20 files, each holding one set of one or more documents and named for the promise the set breaks. Every document in them is valid against the schemas. What rejects the set is a rule no schema can express, which the tool applies itself and which the table above marks |
 
 Every name under `example.org` is invented, and every digest in an example is illustrative.

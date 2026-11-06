@@ -145,12 +145,13 @@ metadata:
     written `#name` in it reaches a contract or an implementation of the unpublished package
     that the template being replaced holds. A manifest may be handed over with the document, and
     the document's references to packages then resolve through its `packages`. Such a manifest
-    lists packages only: one that states `implementations` or `exports` is rejected, and so is a
+    may hold `packages` alone, beside its `apiVersion`: one that holds any other member,
+    `implementations`, `exports`, `address` and `version` among them, is rejected, and so is a
     document that refers to a package other than the core package where no manifest is handed
     over. A request whose document or manifest is rejected, or whose document is of another kind
-    or name, reports invalid. A request that leaves the template's stored definition as it was,
-    as one whose document is equal to the template does, changes nothing and succeeds, and the
-    revision does not advance. Authorized against `management`.
+    or name, reports invalid. A request whose document is equal to the template as stored, and
+    whose packages have the versions and the digests that the template keeps, changes nothing
+    and succeeds, and the revision does not advance. Authorized against `management`.
 spec:
   inputs:
     template:
@@ -363,20 +364,24 @@ metadata:
     a Pool. Where the Pool that owns a Resource is retired, `management` authorizes in its
     place, and so it does where the instance of the invocation has been unregistered: the
     reconciliation then records the outcome and stores nothing, and for a control it names no
-    `revision` and states no `settings`. A request that names an invocation whose outcome is not
-    unknown reports conflict, and one whose ID names no invocation reports invalid. Recording
-    that a setup or an open occurred gives it the outcome succeeded and makes the instance ready
-    or the Conduit open. Recording that a retirement or a close occurred confirms the shutdown.
-    Recording that the effect did not occur gives the outcome failed and changes nothing else:
-    the instance or the Conduit is as a failed setup, open, retirement or close leaves it. For a
-    control of an instance that exists, `revision` is required. Where the control took effect,
-    `settings` states the settings that took effect, in the shape of the control's output
-    `settings`, a map keyed by the pointers of the control's `changes`, and they are stored in
-    the instance's current configuration. Where it did not, nothing is stored. For the start of
-    a runtime that occurred, `handle` is required: it states the handle of the runtime, which
-    the instance then holds, and a request that records the start as having occurred and states
-    none reports invalid. Recording that a stop of a runtime occurred ends the holding, and
-    recording that a start or a stop did not occur leaves the instance as it was.
+    `revision` and states no `settings`: one that does reports invalid. A request that names an
+    invocation whose outcome is not unknown reports conflict, and one whose ID names no
+    invocation reports invalid. Recording that a setup or an open occurred gives it the outcome
+    succeeded and makes the instance ready or the Conduit open. Recording that a retirement or a
+    close occurred confirms the shutdown. Recording that the effect did not occur gives the
+    outcome failed and changes nothing else: the instance or the Conduit is as a failed setup,
+    open, retirement or close leaves it. For a control of an instance that exists, `revision` is
+    required. Where the control took effect, `settings` states the settings that took effect, in
+    the shape of the control's output `settings`, a map keyed by the pointers of the control's
+    `changes`, and they are stored in the instance's current configuration. Where it did not,
+    nothing is stored. For the start of a runtime that occurred, `handle` is required: it states
+    the handle of the runtime, which the instance then holds, and a request that records the
+    start as having occurred and states none reports invalid. This holds for a retired instance
+    too: it then holds the runtime, its shutdown is pending, and a further retirement stops the
+    runtime. While the outcome of a start of one of an instance's runtimes is unknown, the
+    shutdown of the instance is not confirmed. `handle` stated for an invocation that is not the
+    start of a runtime reports invalid. Recording that a stop of a runtime occurred ends the
+    holding, and recording that a start or a stop did not occur leaves the instance as it was.
 spec:
   inputs:
     invocation:
@@ -527,14 +532,16 @@ metadata:
     Retire the Pool that is the target of the request together with the Resources it owns. Each
     Resource is retired, in the reverse of the order of setup: a Resource before any Resource
     that it refers to, or to which it is the consumer of a Conduit, among those the Pool owns.
-    The Pool is retired only if the shutdown of every one of them is confirmed. Authorized
-    against that Pool, by a Conduit that need list only this operation: the retirements of the
-    Resources are part of it, so the Conduit need not list `retire.v1`. Each of those
-    retirements is an invocation of `retire.v1` of its own, with its own outcome, and so is the
-    Pool's. Where Resources remain whose shutdown is not confirmed, the Pool's retirement is not
-    dispatched, the outcome of this request is failed, and the diagnostics of its result name
-    each of them: a result whose outcome is failed holds no outputs, so the operation declares
-    none.
+    Among Resources that depend on each other in a cycle the order is the engine's. Once the
+    retirement of one Resource has ended without its shutdown confirmed, no further retirement
+    is dispatched. The Pool is retired only if the shutdown of every one of them is confirmed.
+    Authorized against that Pool, by a Conduit that need list only this operation: the
+    retirements of the Resources are part of it, so the Conduit need not list `retire.v1`. Each
+    of those retirements is an invocation of `retire.v1` of its own, with its own outcome, and
+    so is the Pool's. Where Resources remain whose shutdown is not confirmed, the Pool's
+    retirement is not dispatched, the outcome of this request is failed, and the diagnostics of
+    its result name each of them, those whose retirement was not dispatched among them: a result
+    whose outcome is failed holds no outputs, so the operation declares none.
 spec:
   effect: >-
     Retires the Pool, once the shutdown of every Resource it owns is confirmed. The retirement
@@ -672,15 +679,17 @@ metadata:
     no invocation reports refused. Where the request was an onward request, the call names the
     invocation that the request served, in the `_meta` key `serving`, and is made for that
     invocation's caller, whether or not that invocation is still in progress; a call that names
-    none is made for the instance as its own caller. Needs no Conduit. `state` is the
-    invocation's state, and `invocation` is the engine's ID for the invocation, which is the ID
-    `reconcile.v1` takes. A retained result belongs to the Conduit its invocation was dispatched
-    through: its content is delivered only while that Conduit is open, and never under another
-    one. `withheld` is true where content exists and is not delivered; `outputs` holds the
-    operation's outputs where they are delivered, and is absent, with `withheld` not true, where
-    the engine no longer keeps them. Once the target is unregistered it can no longer be named,
-    and the request reports refused, as for any identity under which the sending instance can
-    reach no invocation; the records of the invocation remain.
+    none is made for the instance as its own caller. A call that names a served invocation may
+    give `target` in the resolved form `{kind, id}`, which is the only form an implementation
+    holds. Needs no Conduit. `state` is the invocation's state, and `invocation` is the engine's
+    ID for the invocation, which is the ID `reconcile.v1` takes. A retained result belongs to
+    the Conduit its invocation was dispatched through: its content is delivered only while that
+    Conduit is open, and never under another one. `withheld` is true where content exists and is
+    not delivered; `outputs` holds the operation's outputs where they are delivered, and is
+    absent, with `withheld` not true, where the engine no longer keeps them. Once the target is
+    unregistered it can no longer be named, and the request reports refused, as for any identity
+    under which the sending instance can reach no invocation; the records of the invocation
+    remain.
 spec:
   inputs:
     operationIdentity:

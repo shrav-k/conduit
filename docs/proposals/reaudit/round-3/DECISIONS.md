@@ -87,3 +87,28 @@ The findings outside `spec/` were fixed when the report came in (commit `d3ae339
 - How a value is marked as secret. For the owner.
 - The shape of a diagnostic beyond `message`, and the full shape of an inspection result.
   Settled with the conformance vectors.
+
+## The fix pass, and what it left
+
+Done on 2026-11-06 by one editor ([log](log-fixes.md)). 424 promises became 436. The pass left
+ten points. The coordinator settles them here, as above, and the same editor applies them (the
+log gains a section). The choices that the pass made itself are in its log and stand unless the
+owner strikes them.
+
+| Point | Decision |
+| --- | --- |
+| 1. A runtime's start reconciled as having occurred on a retired instance | Two rules. While the outcome of a start of one of an instance's runtimes is unknown, the instance's shutdown is not confirmed: it reports unknown. And LIF-015 admits the reconciliation of such a start with its handle on a retired instance: the instance then holds the runtime, its shutdown is pending, and a further retirement under LIF-026 stops it. |
+| 2. `handle` given for an invocation that is not the start of a runtime; `revision` or `settings` given for a control whose instance is unregistered | The request reports invalid. |
+| 3. A request to a retired Pool other than the two that move to `management` | Refused, as the editor chose: every Conduit to a retired Pool is closed, and a request through a closed Conduit reports refused under ACC-011. |
+| 4. Whether a graph that a manifest lists states `supports` | No graph states `supports`, wherever it is written. A graph supports a requirement where the implementation of each of its steps that has no `conduit` does. A `graph` item of a manifest that states `supports` is rejected. |
+| 5. A cycle among a Pool's Resources, and what follows a retirement that is not confirmed | Among Resources that depend on each other in a cycle the order is the engine's, under DL1. Once the retirement of one Resource has ended without its shutdown confirmed, no further retirement is dispatched by the request, and its diagnostics name every Resource that remains. |
+| 6. A graph that an Operation contract states as its own default | GRA-005 covers every selection, however it was made: the template's map, the type's default and the default of the operation's own contract. |
+| 7. Which version an implementation's `supports` is read against for a policy | A requirement is matched by its address and its export name. The contract's version is in the export name, and a later version of the package may only add optional inputs (NAM-024). The policy's arguments are sent as stored, and an implementation that cannot evaluate them reports what ACC-014 states. |
+| 8. `address` and `version` in a manifest handed to `replace.v1`; an equal document with another manifest | A manifest handed to `replace.v1` may hold `packages` alone, and any other member is rejected. A replacement is equal, in the sense of 3A-9, only where the document is equal and every package it resolves through has the same version and digest as before. |
+| 9. The resolved form in the `target` of a retrieval | Allowed where the retrieval names a served invocation, since an implementation holds only that form. |
+| 10. Until when an instance holds a runtime | TPL-007 says it: until a stop of the runtime has succeeded or has been reconciled as having occurred. |
+
+The follow-up is applied: 436 promises became 437. The editor flagged two of its own choices,
+and both stand: a reconciliation that records a start as not having occurred and states
+`handle` ends as failed under TPL-015 and is not made invalid; and DL1 takes the order among
+Resources that neither relation joins, as well as the order within a cycle.

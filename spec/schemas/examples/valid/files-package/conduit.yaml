@@ -53,6 +53,8 @@ implementations:
     placement:
       local-paths:
         requirement: '#local-paths.v1'
+  # A graph states no `supports` (PKG-019). `listing` supports `rate-limit.v1` wherever the
+  # implementation selected for its one step does, as `files-server` does (CON-022).
   listing:
     implements:
       - '#directory.list.v1'

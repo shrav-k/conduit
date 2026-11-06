@@ -17,6 +17,9 @@
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed GRA-005, GRA-020 and GRA-026, and added GRA-028: a value reference
 # does not read an output of a step that names a runtime. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed GRA-005, which now covers every selection of a
+# graph.
 
 - id: GRA-001
   layer: language
@@ -78,7 +81,9 @@
     A template is registered whose graph contains a cycle, counting both stated dependencies and
     uses of outputs; or in which a graph invokes the operation it implements, by a step with no
     `conduit` that names that operation, or does so through other graphs, among the graphs
-    selected in the template's `implementation` map and in its type's defaults.
+    selected for the template's instances, however each selection was made: in the template's
+    `implementation` map, as a default of its type, or as the default of an operation's own
+    contract.
   then: >-
     The template is rejected.
   observable: >-
@@ -88,8 +93,10 @@
     `directory.list.v1` and holds such a step for `directory.list.v1` would invoke itself
     without end, and so would two graphs of one template each of which names the other's
     operation. A step that names a Conduit is a request to another instance and is not counted.
-    Where the template was registered while its type's package was not installed, as PKG-006
-    allows, the check is made when the template is instantiated, under INS-022.
+    Every selection under TPL-003 and TPL-004 counts, whether it writes a graph in place or
+    names an implementation item whose manifest gives a `graph`. Where the template was
+    registered while its type's package was not installed, as PKG-006 allows, the check is made
+    when the template is instantiated, under INS-022.
   vectors: []
 
 - id: GRA-006

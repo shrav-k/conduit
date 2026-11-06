@@ -85,11 +85,11 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item | Draft; 2 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions and digests | Draft; 12 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a project that is not published, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 60 files |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 61 files |
 | [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 20 files |
 | [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, unregistration and what reconciling a setup or a retirement changes | Draft; 32 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 36 promises; no vectors |
-| [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 30 promises; no vectors |
+| [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 31 promises; no vectors |
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 13 promises; no vectors |
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 7 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
@@ -97,7 +97,7 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 35 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 15 items |
 
-Every area has been written as promises, 436 in all, and the rulings of the
+Every area has been written as promises, 437 in all, and the rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
 [ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the

@@ -20,7 +20,7 @@
 #                           `command`, `url` and `graph`), PKG-019, PKG-020 (a plain item
 #                           gives `tools` and no `supports`, an item that is not plain
 #                           gives no `tools`, and an item that states `graph` is never
-#                           plain), TPL-003
+#                           plain and states no `supports`), TPL-003
 #
 # The first two forms below are the manifest of a project that is not published and the
 # manifest of a package. The third is the core package's own manifest, whose implementations
@@ -129,9 +129,11 @@ metadata:
     One member of a manifest's `implementations`. It is reached by exactly one of `command`,
     `url` and `graph`. An existing server that knows nothing of this specification is marked
     `plain: true`, gives `tools` and states no `supports`; it is reached by `command` or `url`,
-    and an item that states `graph` is never plain and gives no `tools`. `supports` and
-    `placement` may each be left out. An implementation supports a composed requirement when its
-    `supports` lists the composition or every one of its constituents.
+    and an item that states `graph` is never plain, gives no `tools` and states no `supports`: a
+    graph supports a requirement where the implementation selected for each of its steps that
+    has no `conduit` does. `supports` and `placement` may each be left out. An implementation
+    supports a composed requirement when its `supports` lists the composition or every one of
+    its constituents.
 spec:
   oneOf:
     - type: object
@@ -157,7 +159,6 @@ spec:
         implements: {$ref: '#/$defs/references'}
         graph: {$ref: github.com/shrav-k/conduit/core#graph.v1}
         plain: {const: false}
-        supports: {$ref: '#/$defs/references'}
         placement: {$ref: '#/$defs/placement'}
       required: [implements, graph]
       additionalProperties: false

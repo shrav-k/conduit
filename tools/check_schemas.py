@@ -1339,9 +1339,11 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                                       f"a runtime"))
 
     # graph-invokes-itself (GRA-005): no graph invokes the operation it implements, by a step
-    # with no `conduit`, itself or through other graphs. Applied to the graphs written in
-    # place in a template's `implementation` map and, where the tool has the type's contract,
-    # in the type's; a graph that an implementation item of a manifest gives is not followed.
+    # with no `conduit`, itself or through other graphs, however each graph was selected.
+    # Applied to the graphs written in place in a template's `implementation` map and, where
+    # the tool has the type's contract, in the type's. A graph that an implementation item of
+    # a manifest gives, which a selection in either map or the default of an operation's own
+    # contract may name, is not followed: this step is given no manifest.
     for (kind, name), template in templates.items():
         spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
         calls = {}

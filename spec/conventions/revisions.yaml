@@ -13,6 +13,8 @@
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed REV-010: a control of an instance that no longer exists is
 # reconciled with no revision and no settings. It removed none.
+# Its follow-up, on the decisions of the section "The fix pass, and what it left" of the same
+# file, which are the coordinator's too, changed REV-010.
 
 - id: REV-001
   layer: convention
@@ -171,7 +173,8 @@
     itself, as the control was. Once the instance has been unregistered there is no current
     revision to name and no configuration to store settings in: the reconciliation is authorized
     against `management`, under ACC-033, and records that the effect occurred or that it did
-    not, and nothing else.
+    not, and nothing else. One that names a revision or states settings all the same reports
+    invalid, under OPS-031.
   vectors: []
 
 - id: REV-011

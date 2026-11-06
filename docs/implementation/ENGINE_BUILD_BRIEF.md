@@ -1,6 +1,7 @@
 # Build brief
 
-Status: draft, 2026-11-05, revised for layer decision LD4. **Not issued.** This is the text a
+Status: draft, 2026-11-05, revised for layer decision LD4, and on 2026-11-06 for the provider
+contracts of rulings 40 and 41. **Not issued.** This is the text a
 builder receives as `BUILD.md` on the build base once the
 [readiness gate](INDEPENDENT_BUILDS.md#readiness-gate) passes. Of the paths it names, `spec/` and
 `tools/` exist; `conformance/` does not exist yet, and the build base is not yet published.
@@ -80,10 +81,10 @@ Put everything under `impl/` as one Cargo workspace, with a pinned toolchain fil
    is compared.
 5. **Your own tests**, runnable offline with `cargo test`.
 
-Out of scope, and not to be built: anything the language assigns to a type contract, anything
-it leaves to the runtime profile beyond the choices your minimal engine needs, user interfaces,
-integrations with real model providers or external services, and performance work. If a promise
-seems to need one of these, record it as a defect.
+Out of scope, and not to be built: anything the language assigns to a type contract or to a
+provider's contract, anything it leaves to the runtime profile beyond the choices your minimal
+engine needs, user interfaces, integrations with real models or other external services, and
+performance work. If a promise seems to need one of these, record it as a defect.
 
 ## How to work
 

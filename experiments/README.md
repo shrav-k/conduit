@@ -3,9 +3,10 @@
 Experiments are evidence. Nothing here binds: the [specification](../spec/README.md) alone states
 accepted behavior. No experiment has run a Conduit engine, because none exists.
 
-Direction since 2026-11-05: experiment code is Rust only, and the nine-scenario program in the
-[plan audit](../docs/AUDIT.md#experiment-program) replaces Experiments 001 to 003, which are
-removed.
+Direction since 2026-11-05: experiment code is Rust only, and the program of scenarios S1 to
+S10 in the [plan audit](../docs/AUDIT.md#experiment-program) replaces Experiments 001 to 003,
+which are removed. A provider package is not an experiment: it goes under a top-level
+`packages/` directory, one crate per provider (ruling 40).
 
 Experiments live outside `docs/`. Each directory keeps its documentation, configuration examples,
 expected outcomes and validation record together.

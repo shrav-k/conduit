@@ -48,24 +48,27 @@ batch under [proposals/](#records-of-rulings).
 Each record says what was proposed, what was decided, by whom and why. Most hold rulings of
 the owner. The documents audit and rounds 2 to 4 of the re-audit hold what the coordinator
 decided under ruling 37, which ruling 39 accepted; their ruling column names the ruling that
-asked for the work. They are listed in the order
-of the rulings. Where a record and the specification differ, the specification governs.
+asked for the work. The record of ruling 41 also holds the work order of the rewrite, whose
+planner's choices the owner accepted with P2 changed, and the logs of its editors. The editors'
+choices came after ruling 39, no ruling has accepted them, and the owner can strike any of them.
+They are listed in the order of the rulings. Where a record and the specification differ, the
+specification governs.
 
 | Location | Ruling | What it records |
 | --- | --- | --- |
-| [proposals/placement/](proposals/placement/README.md) | 7 | Where an instance runs. Accepted; written as promises in `spec/promises/placement.yaml`. |
+| [proposals/placement/](proposals/placement/README.md) | 7 | Where an instance runs. Accepted; written as promises in `spec/promises/placement.yaml`. Changed by rulings 40 and 41: the machines provider reports the machines and their labels, and places an instance that is given no placement. |
 | [proposals/instantiation/](proposals/instantiation/README.md) | 8 | What a template lets its instantiator supply. Accepted; written as promises in `spec/promises/instantiation.yaml`. |
 | [proposals/normative-surface/](proposals/normative-surface/README.md) | 17 | The form of the specification: what it contains and the form of a promise. Accepted; the form as it now stands is in `spec/README.md`. |
 | [proposals/vocabulary/](proposals/vocabulary/README.md) | 17, 18 | The vocabulary. Accepted and applied in `spec/`; the terms in force are in `spec/definitions.md`. Not applied to the documents written before it. |
 | [proposals/relationships/](proposals/relationships/README.md) | 19, 20 | First batch of fixes: Conduits and access. Accepted; written as promises in `spec/promises/conduits.yaml` and `spec/conventions/access.yaml`. |
 | [proposals/operations/](proposals/operations/README.md) | 20 | Second batch of fixes: operation identity, outcomes and revisions. Accepted; written as promises in `spec/conventions/operations.yaml` and `spec/conventions/revisions.yaml`. |
 | [proposals/declarations/](proposals/declarations/README.md) | 21, 22 | Third batch of fixes: references, instantiation details, submissions and Pool entries. Accepted; written as promises under `spec/promises/`. |
-| [proposals/graphs-and-schemas/](proposals/graphs-and-schemas/README.md) | 23 | Fourth batch of fixes: the static meaning of graphs and the schema profile. Accepted; written as promises that cite existing standards, in `spec/promises/graphs.yaml` and `spec/promises/schemas.yaml`. |
+| [proposals/graphs-and-schemas/](proposals/graphs-and-schemas/README.md) | 23 | Fourth batch of fixes: the static meaning of graphs and the schema profile. Accepted; the schema profile is written as promises that cite existing standards, in `spec/promises/schemas.yaml`. The graph promises were in `spec/promises/graphs.yaml`, which ruling 41 removed: an instance's own setup and retirement work is a setup hook and a retire hook. [spec/README.md](../spec/README.md#promise-files-that-rulings-removed) lists the IDs that file held. |
 | [proposals/packages-and-start/](proposals/packages-and-start/README.md) | 24 | Fifth batch of fixes: packages, first start and conformance. Accepted; the one point held back, how a package's exports are named, was settled by rulings 25 and 27. |
 | [proposals/naming/](proposals/naming/README.md) | 25, 27 | How packages, their exports and contracts are named and referred to. Accepted; written as promises in `spec/promises/naming.yaml`. Evidence in [research/naming/](research/naming/README.md). |
 | [proposals/consolidation/](proposals/consolidation/README.md) | 27 to 29 | The audit for one idea with several notations, or one key with several meanings: 26 findings, the owner's rulings on all of them, and the choices made while writing them. Applied to the specification. |
 | [proposals/conventions/](proposals/conventions/README.md) | 30 | The four remaining shared conventions: fourteen decisions. Accepted; written as promises under `spec/conventions/`. |
-| [proposals/schemas-and-interface/](proposals/schemas-and-interface/README.md) | 31 | The shape of documents and contracts, the implementation interface and the implementation-defined list. Accepted, with the owner's amendment on protocol revisions. |
+| [proposals/schemas-and-interface/](proposals/schemas-and-interface/README.md) | 31 | The shape of documents and contracts, the implementation interface and the implementation-defined list. Accepted, with the owner's amendment on protocol revisions. Its runtimes declared in templates and its `retire` graph were replaced under rulings 40 and 41, by a runtime provider and a retire hook. |
 | [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification, round 1, by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. Rounds 2 to 4 are rows of this table, below. |
 | [proposals/core-and-schemas/](proposals/core-and-schemas/README.md) | 37 | The core package as documents, the JSON Schemas of every document, and the manifest's format. Accepted with five changes; [how each is applied](proposals/core-and-schemas/APPLY.md). |
 | [proposals/docs-audit/](proposals/docs-audit/README.md) | 37 | The audit of the documents outside `spec/`, asked for in ruling 37: two readers' reports and the thirteen decisions taken to make the repository ready for a cold read, all applied. With it are the [list](proposals/docs-audit/GAPS.md) of the behaviors that the older text accepted and the specification lacked, and the logs of the edits: [entry points](proposals/docs-audit/log-entry-points.md), [older text](proposals/docs-audit/log-older-text.md) and [the specification](proposals/docs-audit/log-gaps.md). |
@@ -74,7 +77,12 @@ of the rulings. Where a record and the specification differ, the specification g
 | [proposals/reaudit/round-4/](proposals/reaudit/round-4/README.md) | 30, 37 | Round 4 of the re-audit: the reports, the second check of the interface against the Model Context Protocol, the decisions, and the log of the fix pass. |
 | [proposals/ruling-38/](proposals/ruling-38/README.md) | 38 | The fourteen points put to the owner after round 4, with the ruling on each in the owner's words, and the log of what it changed in `spec/`. |
 | [proposals/ruling-39/](proposals/ruling-39/README.md) | 39 | The fifteen points put to the owner before the cold read by Codex, with the ruling on each in the owner's words. |
-| [proposals/secrets/](proposals/secrets/README.md) | 38, 39 | Proposed, not ruled: the secret type, revised after the research that ruling 39 asked for ([research packet](research/SECRETS.md)). |
+| [proposals/ruling-40/](proposals/ruling-40/README.md) | 40 | Conduit innovates only on connection and access, and everything else is a provider behind a contract: the points put to the owner, with the ruling on each in the owner's words, and the owner's answers on where provider packages live and on Experiment 005. |
+| [proposals/principles-review/](proposals/principles-review/README.md) | 40, 41 | The review of the whole design against ruling 40: 31 decisions, the alignments the coordinator would make, and the secret type reduced to a contract that any store implements (section 4). Accepted as recommended by ruling 41, and applied in the rewrite of `spec/`. |
+| [proposals/secrets/](proposals/secrets/README.md) | 38, 39, 41 | The secret type, revised after the research that ruling 39 asked for ([research packet](research/SECRETS.md)). Settled by ruling 41 as section 4 of the principles review reduces it, and where the two differ, section 4 governs; written as promises in `spec/promises/secrets.yaml`. The proposal is the reasoning and the record of the options. |
+| [proposals/ruling-41/](proposals/ruling-41/README.md) | 41 | The ruling on the principles review and the secret type, in the owner's words, and the owner's answer on the planner's choices for the rewrite. With it are the [work order](proposals/ruling-41/PLAN.md) of the rewrite, the logs of its editors and the [integration log](proposals/ruling-41/log-integration.md), whose coverage check lists what waits on a decision. |
+| [proposals/vocabulary-audit/](proposals/vocabulary-audit/README.md) | 42 | The vocabulary audit of the rewritten specification, which ruling 41 asked for: twenty names with their precedents, accepted by ruling 42, and the editorial fixes. |
+| [proposals/ruling-42/](proposals/ruling-42/README.md) | 42 | The ruling on the questions the rewrite left open ([open questions](proposals/ruling-41/open-decisions.md)) and on the names, in the owner's words, with the logs of the pass that applies it. |
 
 ### Process for the builds
 
@@ -89,7 +97,7 @@ of the rulings. Where a record and the specification differ, the specification g
 | --- | --- |
 | [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming and secrets research predates the specification. |
 | [archive/](archive/README.md) | Closed reviews, the accounting of one migration, attributed collaborator proposals including dissent, the [history of the plan audit](archive/plan-audit-history.md), and the [list of documents removed from the tree](archive/README.md#removed-from-the-tree) with links to their last versions. History; nothing in it binds. |
-| [../experiments/](../experiments/README.md) | Measured evidence. One experiment remains, a Rust model-checking evaluation (004); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. |
+| [../experiments/](../experiments/README.md) | Measured evidence. Two experiments, both in Rust: a model-checking evaluation (004) and a probe of the macOS keychain, a candidate store for the first providers (005); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. |
 
 ## Repository boundaries
 
@@ -98,8 +106,9 @@ naming remains deferred under the
 [publication policy](../CONTRIBUTING.md#project-ownership-and-publication).
 
 The repository holds no engine code and no release scheme. The top-level directories
-`conformance/` and `reference-model/` are planned and do not exist yet; see
+`conformance/`, `reference-model/` and `packages/` are planned and do not exist yet; see
 [independent builds](implementation/INDEPENDENT_BUILDS.md#repository-layout-and-isolation).
+`packages/` is to hold the first providers, one Rust crate per provider (ruling 40).
 There is one specification, `spec/`, and nothing else is to become a second one. A website, if
 one is made, renders these sources.
 

@@ -37,12 +37,12 @@ last version, as source material for the type contracts still to be written. A b
   from observed behavior. The content of existing research packets is not edited.
 - **Evidence** goes in its own directory under [experiments/](experiments/README.md), with its
   scope, instructions and dated results. An expected outcome is never presented as a result.
-- **Code** is Rust, in its own directory under [experiments/](experiments/README.md) with a
-  lockfile, a pinned toolchain and ignored build output. The only exceptions are the Python
-  checkers in `tools/` and [Experiment 003](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/experiments/003-language-probes/README.md), which
-  is Python and predates the rule.
+- **Code** is Rust, with a lockfile, a pinned toolchain and ignored build output: a probe or an
+  evaluation in its own directory under [experiments/](experiments/README.md), and a provider
+  package, one crate per provider, under a top-level `packages/` directory (ruling 40), which
+  does not exist yet. The only exception is the Python checkers in `tools/`.
 - **History** is in [docs/archive/](docs/archive/README.md): completed reviews, attribution and
-  dissent. It is not edited.
+  dissent. What it holds is not edited; new material may be added, with a line in its index.
 
 ## Review discipline
 
@@ -62,11 +62,12 @@ draft and not a release.
 
 The vocabulary is ruled (rulings 17, 18 and 27 to 29 of the plan audit). The terms in force are
 in [spec/definitions.md](spec/definitions.md). Write new text in them. Changing a term changes
-the specification, so it needs a ruling like any other change.
+the specification, so it needs a ruling like any other change. Ruling 41 asked for a vocabulary
+audit of the rewritten specification, and the names it proposes wait for the owner's ruling.
 
-[docs/VOCABULARY.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) is the map of the working terms from before the
-vocabulary ruling. Its `vxx` anchors are documentation references that other documents link to;
-keep them.
+[docs/VOCABULARY.md](https://github.com/shrav-k/conduit/blob/e271d1c711c9baa799c8d3e55708aedbd9be7fd1/docs/VOCABULARY.md) was the map of the working terms from before the
+vocabulary ruling. Ruling 39 removed it from the tree, and the link is to its last version. Its
+`vxx` anchors are reached through links pinned to that version.
 
 Do not rename terms across the older documents, research or archives. They keep the words they
 were written in. Terms that belong to JSON Schema, YAML or the Model Context Protocol keep
@@ -105,7 +106,8 @@ What each check needs:
   first line of output names the interpreter and the package versions it used.
 - `git diff --check` needs Git and a Git working tree.
 
-Run `cargo test --release` in each Rust experiment directory you change.
+Run `cargo test --release` in each Rust directory you change, under `experiments/` or
+`packages/`.
 
 What the checks cover:
 

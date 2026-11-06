@@ -19,9 +19,9 @@ started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md).
 
 The language is the core and the engine keeps its promises. Conduit is a configuration language,
 not a behavioral specification: the language fully determines what a set of documents means,
-and behavior beyond a few shared conventions belongs to type contracts and a runtime profile. See
-the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim). Work that makes the language more
-concise, concrete and provable comes first.
+and behavior beyond a few shared conventions belongs to type contracts, providers and a runtime
+profile. See the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim). Work that makes
+the language more concise, concrete and provable comes first.
 
 The relationship is the product: an agent decides for itself, so the language declares what it may
 reach, under which limits, and who answers for what it did. Conduit innovates only on connection
@@ -42,8 +42,9 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   bind nothing.
 - The records under `docs/proposals/` say what was decided, by whom and why: the owner's
   rulings, and for the documents audit and the rounds of the re-audit the decisions of the
-  coordinating session under ruling 37, which ruling 39 accepted. Where a record and the
-  specification differ, the specification governs.
+  coordinating session under ruling 37. Ruling 39 accepted those made before it; the choices
+  of the editors of the rewrite under ruling 41 came after it, and the owner can strike any of
+  them. Where a record and the specification differ, the specification governs.
 - If you were asked to read or audit this repository cold, start at
   [for the next reader](docs/AUDIT.md#for-the-next-reader): what to read, what is known to be
   open, what to look at first, and where findings go.
@@ -55,7 +56,8 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   was written.
 - The vocabulary is ruled (rulings 17, 18 and 27 to 29). The terms in force are in
   [spec/definitions.md](spec/definitions.md); write new text in them. Older documents keep the
-  earlier words; do not mass-rename them.
+  earlier words; do not mass-rename them. Ruling 41 asked for a vocabulary audit of the
+  rewritten specification, and the names it proposes wait for the owner's ruling.
 
 ## Where things go
 
@@ -90,9 +92,10 @@ against the purpose and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purp
   is for the sessions the owner has asked to write the language, not for a reviewer or any
   other session: the owner's instruction of 2026-11-05 is that this work is tracked on a pull request
   (ruling 36), and the owner confirmed in ruling 38 that those sessions commit and push to its
-  branch at each milestone. Pull request 6 was merged by squashing after ruling 38. The work of
-  ruling 39 is on the branch `docs/pre-codex`, pull request 7. Merges to `main` are squashed,
-  with a message written by hand.
+  branch at each milestone. Pull request 6 was merged by squashing after ruling 38. Pull
+  request 7, on the branch `docs/pre-codex`, carries the work of rulings 39 to 42, the
+  rewrite of the specification around provider contracts and the vocabulary audit; round 5 of
+  the readers comes before it is merged. Merges to `main` are squashed, with a message written by hand.
 
 ## Checks
 
@@ -132,4 +135,5 @@ its `_meta` keys) are defined once, in `spec/names.yaml`. Never edit one by hand
 `python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
 rewrite every occurrence together.
 
-Run `cargo test --release` in each Rust experiment directory you change.
+Run `cargo test --release` in each Rust directory you change, under `experiments/` or
+`packages/`.

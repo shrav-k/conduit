@@ -28,7 +28,8 @@ a defect in the language, and is fixed in the language.
 
 The builds are not full engines. Behavior that belongs to a type contract or to the runtime
 profile is outside them; it is built once, in the reference engine, and may legitimately differ
-in any other engine.
+in any other engine. What a provider does behind its contract is outside them too (ruling 40):
+the first providers are built apart, as packages (action A63 of the plan audit).
 
 ## Roles
 
@@ -80,6 +81,7 @@ exist. The others are proposed and do not exist yet.
 | `conformance/` | Public conformance vectors and the adapter contract | No | Yes |
 | `conformance-held-out/` | Vectors withheld from builders, run only by the comparer | No | No |
 | `reference-model/` | The executable reference model in Rust | No | No |
+| `packages/` | The first providers, one Rust crate per provider (ruling 40) | No | No |
 | `docs/`, `experiments/` | Explanation, research, history, proposals, exploratory code | Yes | No |
 | The reference engine, its standard library of type contracts and its runtime profile | The one full engine | No | No |
 
@@ -125,6 +127,22 @@ on that day.
 
 None of the eleven is met. G1 and G3 are partly met, and the other nine are not met. The gate
 does not pass, and the brief is not issued.
+
+The assessment was made and confirmed before rulings 40 and 41, of the same day, and is kept
+as the owner confirmed it. It has not been made again since the specification was rewritten
+under those rulings. These changes since bear on the rows below: the secret type is ruled and
+written, in [secrets.yaml](../../spec/promises/secrets.yaml), which settles point 1 of ruling
+39 (G1, G2, G8, G9); `spec/` holds 432 promises, 38 of them in
+[interface/implementation.yaml](../../spec/interface/implementation.yaml) (G2, G9); a
+diagnostic is SARIF's `result`, reduced, and a condition and a record have core schemas, so
+only the full shape of an inspection result is left to the vectors (G2, G8); ruling 41 closed
+action A19, and with it E8 and D6 (G8); a runtime provider runs an implementation and its run
+returns the endpoint at which it is reached, or the engine's own runner reaches it over stdio
+(PRV-007), so DL12 no longer leaves to each engine who starts a process or over which transport
+it is reached (G9); the schemas cover `from` and two nested instantiations, not three
+(G3); the experiment program has ten scenarios, S1 to S10 (G3); of the 87 defects in the
+language and the shared conventions, 13 are closed and 74 are ruled (G7); and the rewrite has
+not been read cold (G7).
 
 | # | State | Evidence | What would meet it |
 | --- | --- | --- | --- |

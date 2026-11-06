@@ -71,7 +71,7 @@ of the rulings. Where a record and the specification differ, the specification g
 | [proposals/docs-audit/](proposals/docs-audit/README.md) | 37 | The audit of the documents outside `spec/`, asked for in ruling 37: two readers' reports and the thirteen decisions taken to make the repository ready for a cold read, all applied. With it are the [list](proposals/docs-audit/GAPS.md) of the behaviors that the older text accepted and the specification lacked, and the logs of the edits: [entry points](proposals/docs-audit/log-entry-points.md), [older text](proposals/docs-audit/log-older-text.md) and [the specification](proposals/docs-audit/log-gaps.md). |
 | [proposals/reaudit/round-2/](proposals/reaudit/round-2/README.md) | 30, 37 | Round 2 of the re-audit, done, with its fixes applied. Ruling 30 asked for the specification to be audited again, and ruling 37 says how the findings are resolved. Four cold readers, three of the specification alone and one of the whole repository: their reports, the decisions, the logs of what was done about them, and the check of the interface against the Model Context Protocol. |
 | [proposals/reaudit/round-3/](proposals/reaudit/round-3/README.md) | 30, 37 | Round 3 of the re-audit: the same four readers' roles, on the specification as round 2 left it. Their reports, the decisions, and the log of the fix pass. |
-| [proposals/reaudit/round-4/](proposals/reaudit/round-4/README.md) | 30, 37 | Round 4 of the re-audit, in progress. |
+| [proposals/reaudit/round-4/](proposals/reaudit/round-4/README.md) | 30, 37 | Round 4 of the re-audit: the reports, the second check of the interface against the Model Context Protocol, the decisions, and the log of the fix pass. |
 
 ### Process for the builds
 

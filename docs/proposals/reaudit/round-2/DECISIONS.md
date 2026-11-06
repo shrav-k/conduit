@@ -74,3 +74,27 @@ Editor P owns every promise file under `spec/promises/` except `manifest.yaml`,
 
 Editor S owns `spec/core/`, `spec/schemas/`, `spec/promises/manifest.yaml` and
 `tools/check_schemas.py`.
+
+## The fix pass, and what it left
+
+Done on 2026-11-06 by two editors: [promises](log-promises.md) and
+[core package, schemas and checker](log-documents.md). 395 promises became 406, and the
+implementation-defined list 15 items. The editors left the points below, which the coordinator
+settles here in the same way. A closing pass applies them.
+
+| Point | Decision |
+| --- | --- |
+| Which Conduit permits reconciling an operation that is not a management operation | An invocation of a management operation is reconciled through the target that authorized it. Any other invocation, of an ordinary operation or a control requested of an instance, is reconciled through the target that manages that instance under ACC-033: its Pool for a Resource, `management` otherwise. No type has to offer `reconcile.v1`; it is removed from `location-settings.v1` and from the example capability. |
+| A filter that obliges only the consumer, against sending every filter to the target | The target's implementation must always state a requirement that narrows requests in `supports`, and is always sent it. `obliges` naming `consumer` adds that the consumer's selected implementation must state it too. |
+| Naming the implementation that applies a requirement when it has no address | By qualified reference, or by `<digest>#<name>` for one of an unpublished package. |
+| How an operation says that it arranges later work | An Operation contract may hold `arrangesLaterWork: true`. Without it the operation arranges none. |
+| Renaming one of `root`'s two Conduits | Refused, as renaming a first-start object is. |
+| The example that writes out the first-start objects, which a submission would be refused | It stays, valid against the schemas, with a header that says it shows what first start makes and that submitting it is rejected. |
+| A consumer that lost a result cannot learn the engine's ID to reconcile | `retrieve-result.v1` also returns the engine's ID for the invocation. |
+| What `optional` means on a runtime and on a graph's output | A runtime is no longer marked optional; a step that starts it can be. An optional output is one the graph may leave without a value. |
+| What `actors` and `targets` of a policy do | A policy applies to a request whose caller is one of `actors`, when the list is given, and whose target is one of `targets`, when it is given. At least one of the two is given. |
+| Retiring a Pool with its Resources | The Conduit need list only `retire-with-resources.v1`. |
+| A re-exported operation in a bound | A bound that names an operation by either the re-export or its origin covers both. |
+| A relative `fetch` or `command` when documents are handed over without a directory | Rejected. A relative one is resolved against the directory the manifest was read from. |
+| "Plain" for the built-in Interface and Pool types | They are called basic. "Plain" keeps its one meaning, an implementation that knows nothing of Conduit. |
+| Every other finding an editor did not apply for want of a decision | The closing pass takes the reader's own suggested fix, or where there is none the choice that changes least and adds no behavior, and logs it. |

@@ -32,6 +32,10 @@
 # docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed
 # CON-004, CON-008 and CON-024: a declared Conduit that is made from a composite template is
 # opened as a whole or not at all. It added none and removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed CON-004, CON-008 and CON-022: the
+# opening of a composite declared Conduit is decided for every component before any is opened,
+# and nothing is closed where one cannot be.
 # Standing: the owner accepted these promises as they stood at the rulings that this comment
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
@@ -100,31 +104,34 @@
     The step that GRA-022 gives each declared Conduit opens the Conduit made for it if its state
     is registered. Where the Conduit is already open nothing is dispatched, and the step is left
     as succeeded. For a declared Conduit that is made from a composite template, the one step
-    opens every component Conduit whose state is registered, and succeeds only where every
-    component Conduit is then open. Where one of them is not opened, the component Conduits that
-    the step opened are closed again, and the step's outcome is failed: a composite declared
-    Conduit is opened as a whole or not at all. Setup instantiates no Conduit.
+    opens every component Conduit whose state is registered, together: the opening is decided
+    for every one of them before any is opened. Where the opening of any component Conduit would
+    not be dispatched, none is opened, nothing is closed, and the step reports that component's
+    reason. Otherwise all of them are opened, in one invocation with one outcome. Setup
+    instantiates no Conduit.
   observable: >-
     After setup runs a second time, inspection shows the same Conduit IDs and the same number of
     Conduits as before. A replacement registered under LIF-009 is in the state registered, so
     the next setup opens it. Whose Conduit to `access` authorizes the step is ACC-005.
-    For a composite, each component Conduit is opened by a request for `open.v1` of its own,
-    decided under ACC-005, and the order among them is DL1 of the implementation-defined list. A
-    component Conduit is not opened where that request is not dispatched, as where the bound of
-    the instance's Conduit to `access` does not name an operation that the component lists, or
-    where its outcome is not succeeded. The step then closes the component Conduits that it
-    opened in this run, with no request, as CON-008 closes a Conduit: each is retired for good
-    under LIF-006, its status says that the step closed it, and LIF-027 excepts it. The step's
-    outcome is failed, whatever the reason or the outcome of the request that did not open its
-    Conduit, a diagnostic names the component Conduit that was not opened and why, and OPS-022
-    counts the step as one that failed. A declared Conduit marked optional is then reported as
-    not opened, under GRA-003. A closed Conduit is never opened again, so a later setup opens
-    the composite only after a replacement has been registered under LIF-009 for each component
-    Conduit that the step closed, and until then the step reports conflict, under LIF-008. For
-    the same reason, where a component Conduit is closed when the step is reached, the step
-    opens nothing and reports conflict under LIF-008. A component Conduit that was open before
-    the step is left as it was. Where every component Conduit is already open nothing is
-    dispatched, and the step is left as succeeded.
+    For a composite, the opening of each component Conduit is decided as a request of the
+    sending instance to open that Conduit is decided, under ACC-005 and ACC-006: the bound of
+    that instance's Conduit to `access` covers its target and names every operation it lists. A
+    component Conduit that is closed is not opened again, under LIF-015, so the step then
+    reports conflict, as LIF-008 has it until a replacement is registered. Where the opening of
+    more than one component Conduit would not be dispatched, OPS-023 says which reason the step
+    reports, and a diagnostic names each of those components. A step that reports a reason has
+    not succeeded: GRA-003 keeps the setup from succeeding where the declared Conduit is
+    required, and has it reported as not opened where it is optional. No component Conduit has
+    changed state, so nothing is closed and LIF-027 needs no exception. Where all are opened,
+    the opening is one invocation of `open.v1`, which the engine makes for the step and which
+    stands for every component Conduit that the step opens: it has one ID and one outcome. Where
+    that outcome is unknown it is unknown for the whole, the state of every one of those
+    Conduits is as it was, under LIF-004, and the reconciliation of the invocation under LIF-028
+    records every one of them as open or every one of them as not open. A component Conduit that
+    was open before the step is left as it was, and where every one is already open nothing is
+    dispatched and the step is left as succeeded. This is the rule for the step of a setup. A
+    component Conduit is an instance of its own under CON-003, and a request for `open.v1` or
+    for `close.v1` that an actor makes names one Conduit, under ACC-006 and ACC-012.
   vectors: []
 
 - id: CON-006
@@ -180,8 +187,6 @@
     in a further retirement under LIF-026 as in the first. Where the consumer's shutdown stays
     pending or unknown, the Conduit stays so until the shutdown is confirmed, the consumer is
     declared lost, or an actor closes the Conduit under ACC-012.
-    CON-004 names one more event that closes a Conduit: the step of a composite declared Conduit
-    that did not open as a whole closes the component Conduits that it had opened.
   vectors: []
 
 - id: CON-011
@@ -338,10 +343,12 @@
     filter's requirement does not support it.
   then: >-
     The Conduit is not instantiated. An implementation that is reached by `command` or `url`
-    supports a requirement where it states the requirement in `supports`, and the requirement is
-    matched by its address and its export name. No graph states `supports`, wherever it is
-    written: a graph supports a requirement where the implementation selected for each of its
-    steps that has no `conduit` supports it.
+    supports a requirement where it states the requirement in `supports`. The requirement is
+    matched by the address and the export name of the package that originally exports it: an
+    item of `supports` states it where it names that package, or any package that re-exports the
+    requirement from it. No graph states `supports`, wherever it is written: a graph supports a
+    requirement where the implementation selected for each of its steps that has no `conduit`
+    supports it.
   observable: >-
     Resolving returns a diagnostic naming the filter, the operation and the implementation. It
     is decided from the manifest under PKG-019, without starting anything. The implementations
@@ -361,13 +368,16 @@
     operations of its steps that have no `conduit` are what is checked, and where one of those
     is again a graph the rule applies to its steps. Where another promise says that an
     implementation states a requirement in `supports`, it means, for a graph, that the graph
-    supports the requirement in this sense. A requirement is matched by its address and its
-    export name alone: the contract's own version is the last segment of that name, and the
-    version of the package plays no part, because a later release may only add optional inputs
-    under NAM-024. A step with `conduit` is an onward request to another target, and is not
-    counted here: it carries the filter under ACC-017, and ACC-015 checks it against the
-    implementation that its own target has selected. A graph that has no step without `conduit`
-    supports every requirement, because no implementation of its instance is invoked through it.
+    supports the requirement in this sense. A requirement is matched by its origin, as ACC-029
+    has a bound name an operation: a reference to the package that originally exports it and a
+    reference to a re-export of it resolve to one requirement, under PKG-013, on either side. It
+    is matched by that address and that export name alone: the contract's own version is the
+    last segment of that name, and the version of the package plays no part, because a later
+    release may only add optional inputs under NAM-024. A step with `conduit` is an onward
+    request to another target, and is not counted here: it carries the filter under ACC-017, and
+    ACC-015 checks it against the implementation that its own target has selected. A graph that
+    has no step without `conduit` supports every requirement, because no implementation of its
+    instance is invoked through it.
   vectors: []
 
 - id: CON-023

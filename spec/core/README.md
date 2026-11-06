@@ -219,7 +219,9 @@ How to read the columns:
   retirement (LIF-026), and one to retire an instance whose shutdown is confirmed changes
   nothing and succeeds (LIF-030). The Conduits of which a retired instance is the target are
   closed at once. Those of which it is the consumer are closed once its shutdown is confirmed,
-  and until then permit only the requests of its retirement (CON-008, ACC-039).
+  and until then permit only the requests of its retirement (CON-008, ACC-039). An onward
+  request that serves an invocation which came through one of them is refused from the same
+  moment, unless it belongs to that retirement (ACC-039).
   `retire-with-resources.v1` retires the Resources in the reverse of the order of setup: a
   Resource before any Resource that it refers to, or to which it is the consumer of a Conduit,
   among those the Pool owns. Among Resources that depend on each other in a cycle the order is

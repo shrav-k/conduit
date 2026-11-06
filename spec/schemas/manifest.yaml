@@ -42,7 +42,8 @@
 # a manifest handed to `replace.v1` holds `packages` alone (SUB-009); that the address a
 # package states is the one it was listed or fetched under (PKG-017); that every export names a
 # document of the package (PKG-018), though `uniqueItems` does reject a name that `exports`
-# writes twice (PKG-012); re-export cycles (PKG-014); that a plain item's `tools` has a key for
+# writes twice (PKG-012); that a re-export names something the other package exports
+# (NAM-028); re-export cycles (PKG-014); that a plain item's `tools` has a key for
 # each operation in `implements` (PKG-020); that a `graph` item implements exactly the one
 # operation it lists (GRA-014); that no two documents of the project or package share a name
 # (NAM-027); everything about digests and installed packages (PKG-003, PKG-021, PKG-022); and

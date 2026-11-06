@@ -30,6 +30,9 @@
 # NAM-009, NAM-019, NAM-021 to NAM-023 and NAM-026, and added NAM-028, on a selection that names
 # nothing where the package is at hand. A manifest that is handed over for registration and
 # states the core package's address is rejected. It removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed NAM-028, which now covers a
+# re-export that names nothing in an installed package.
 # Standing: the owner accepted these promises as they stood at the rulings that this comment
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
@@ -488,13 +491,14 @@
   layer: language
   level: must
   when: >-
-    A document holds a selection, or a `from` written as a qualified reference, that names
-    nothing which the package at that address exports, in the version through which the document
-    resolves it, and that version of the package is installed. Or a document holds a reference
-    written `#name`, other than a `from` in a submitted project, and no document and no
-    implementation of its own project or package has the name.
+    A document holds a selection, or a `from` written as a qualified reference, or a manifest
+    holds a re-export among its `exports`, that names nothing which the package at that address
+    exports, in the version through which the document or the manifest resolves it, and that
+    version of the package is installed. Or a document holds a reference written `#name`, other
+    than a `from` in a submitted project, and no document and no implementation of its own
+    project or package has the name.
   then: >-
-    The document is rejected.
+    The document, or the manifest, is rejected.
   observable: >-
     Resolving returns a diagnostic naming the reference, and so does installation where the
     document is a package's. Everything that could give the name a meaning is at hand, so
@@ -504,12 +508,16 @@
     of that name. The same holds for a step's `operation`, a value of an `implementation` map, a
     `capability`, a `requirement`, a `$ref` under SCH-015 and every other place that NAM-018
     names, and for the qualified `from` of an instance document or of a nested instantiation.
-    Only a package that is not installed defers the check: PKG-006 registers the template with a
-    diagnostic, and INS-022 makes the check when the template is instantiated. `#name` written
-    as `from` in a submitted project is not covered, because NAM-022 has it resolve among the
-    templates that exist: where none has the name, OBJ-008 registers a template whose nested
-    instantiation writes it, and INS-002 rejects an instance document that writes it. A local
-    reference to an object that does not exist is OBJ-008 too. The registration of a rejected
-    document reports invalid under OBJ-023, and a request to install a package that holds one
-    reports invalid under PKG-023.
+    It holds for every reference into an installed package that names nothing there, a re-export
+    included: a manifest whose `exports` lists `example.org/common#rate.v1`, where the version
+    of `example.org/common` that it lists is installed and exports no such name, is rejected,
+    and a package that holds such a manifest is rejected when it is installed. Only a package
+    that is not installed defers the check: PKG-006 registers the template with a diagnostic,
+    and INS-022 makes the check when the template is instantiated. `#name` written as `from` in
+    a submitted project is not covered, because NAM-022 has it resolve among the templates that
+    exist: where none has the name, OBJ-008 registers a template whose nested instantiation
+    writes it, and INS-002 rejects an instance document that writes it. A local reference to an
+    object that does not exist is OBJ-008 too. The registration of a rejected document reports
+    invalid under OBJ-023, and a request to install a package that holds one reports invalid
+    under PKG-023.
   vectors: []

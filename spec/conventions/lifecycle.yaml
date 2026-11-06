@@ -35,6 +35,10 @@
 # instantiation made, and LIF-034, on the reason that a request to retire, unregister or rename
 # a first-start object reports. The shutdown of an instance that holds a runtime is never
 # confirmed. It removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed LIF-023, LIF-027 and LIF-028: the
+# exceptions for the component Conduits of a composite declared Conduit were taken out again,
+# because such a Conduit is opened all together or not at all, with nothing closed.
 # Standing: the owner accepted these promises as they stood at the rulings that this comment
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
@@ -451,10 +455,8 @@
   observable: >-
     The only retirements without a request naming the instance are those of a Conduit whose
     consumer or target is retired or declared lost, of the instances on a location that is
-    declared lost, of the component Conduits that CON-004 closes again where a composite
-    declared Conduit does not open as a whole, and of the Resources that a Pool owns when it is
-    retired together with them under LIF-021. Nothing is collected for being unused,
-    unreferenced or old.
+    declared lost, and of the Resources that a Pool owns when it is retired together with them
+    under LIF-021. Nothing is collected for being unused, unreferenced or old.
   vectors: []
 
 # --- Split from LIF-014 by consolidation pass 1 (plan-audit ruling 32, decision G12).
@@ -557,14 +559,12 @@
   then: >-
     A Conduit that the setup opened is closed, or an instance that it set up is retired, because
     of it.
-    The one exception is the component Conduits of a composite declared Conduit that did not
-    open as a whole, which CON-004 closes again.
   observable: >-
-    After a setup that did not succeed, each declared Conduit that it opened as a whole is still
-    open, and each Resource of an entry that it set up is still ready. The instance's own state
-    is unchanged under LIF-004. A later setup leaves what is already open or ready as it is,
-    under CON-004 and POOL-013. What the consumer of only some of its Conduits may do meanwhile
-    is DL11 of the implementation-defined list.
+    After a setup that did not succeed, each declared Conduit it opened is still open, and each
+    Resource of an entry that it set up is still ready. The instance's own state is unchanged
+    under LIF-004. A later setup leaves what is already open or ready as it is, under CON-004
+    and POOL-013. What the consumer of only some of its Conduits may do meanwhile is DL11 of the
+    implementation-defined list.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
@@ -578,11 +578,13 @@
     `close.v1` whose outcome is unknown.
   then: >-
     Recording that a setup or an open occurred makes the instance ready or the Conduit open.
-    Recording that a retirement or a close occurred confirms the shutdown, unless the outcome of
-    a start of one of the instance's runtimes is still unknown, under LIF-024. A reconciliation
-    that would record as having occurred the retirement of an instance that holds a runtime is
-    not dispatched, and reports conflict, as LIF-024 states. Recording that it did not occur
-    gives the outcome failed, and changes nothing else.
+    For the one opening of a composite declared Conduit under CON-004, it makes every component
+    Conduit that the step was to open open, and recording that the opening did not occur leaves
+    every one of them as it was. Recording that a retirement or a close occurred confirms the
+    shutdown, unless the outcome of a start of one of the instance's runtimes is still unknown,
+    under LIF-024. A reconciliation that would record as having occurred the retirement of an
+    instance that holds a runtime is not dispatched, and reports conflict, as LIF-024 states.
+    Recording that it did not occur gives the outcome failed, and changes nothing else.
   observable: >-
     After a reconciliation that records a setup as having occurred, inspecting the instance
     reports the state ready, as after a setup that succeeded under LIF-003; an instance that was

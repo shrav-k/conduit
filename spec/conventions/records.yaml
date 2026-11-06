@@ -18,6 +18,9 @@
 # docs/proposals/reaudit/round-4/DECISIONS.md, which the owner has not ruled on, changed REC-003
 # and REC-004: a purge also keeps the caller and the Conduit of an invocation and, for a step
 # that names a runtime, the name of that runtime. It added none and removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed REC-001: a request that cannot be
+# read, and from which no instance can be established, is not recorded.
 # Standing: the owner accepted these promises as they stood at the rulings that this comment
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
@@ -36,7 +39,9 @@
     Each such event can be found by inspecting the objects it names. Every request can be found
     with how it ended: its outcome, or its reason where it has no outcome under OPS-005. The
     record of an access decision states that the request was permitted, or that it was not
-    dispatched and the reason. Nothing else is required to be recorded.
+    dispatched and the reason. One request is not recorded: one that cannot be read and from
+    which no instance can be established, under IFC-036. Nothing else is required to be
+    recorded.
   vectors: []
 
 - id: REC-002

@@ -79,8 +79,33 @@ hold, 1 is wrong as worded and 3 cannot be confirmed from the protocol.
 
 ## Reader 4, inside the specification and the overview
 
-The findings in the records were fixed when the report came in (commit `44ab30c`); the
-[log](log-fixes.md) has a row for each.
+The findings in the records were fixed by the coordinator when the report came in (commit
+`44ab30c`):
+
+| Finding | What was done |
+| --- | --- |
+| 4D-1 "Until ruling 37 every change was a ruling" | The tracker says that every decision put to the owner was ruled on, and names the choices that the applying passes made, with where each is logged. They are in the list for the owner. |
+| 4D-2 A third decider, and readers with no kept report | The tracker's table says that an editor's own choices stand unless struck, and names the three readers that editors started in round 2. The round-2 record says the same. |
+| 4D-3 Committing at each milestone given as the owner's instruction | `AGENTS.md` gives it as the coordinator's reading, which the owner has not confirmed. |
+| 4D-4 "Accepted by the owner" on the front page | Reworded to what `spec/README.md` says. |
+| 4D-5 "What the owner ruled" of every record | The documents index and `AGENTS.md` say whose decisions the last records hold. |
+| 4D-6 Two records that do not say whose decisions they hold | The documents audit and round 2 say that they are the coordinator's. |
+| 4D-7 Decisions that changed what the owner accepted | Six rows under "Later amendments" in the tracker, and a line in the five records concerned. |
+| 4D-8 Omissions from the list for the owner | Added: the earlier choices, the conversions of the documents audit, the choices made while ruling 37 was applied, the four protocol corrections, and two points of the documents audit. The first protocol report carries a note. |
+| 4D-9 Three pointers | Corrected. |
+| 4D-10 "A result with no outputs" | Reworded. |
+| 4D-11 The cold read by Codex | A step in "What happens next", and a clause in the status of A61. It is the owner's to start. |
+| 4D-12 No record of the round-3 fixes outside `spec/` | A row for each in the round-3 decisions. |
+| 4D-13 The status of A61, and "Round 3 is read" | Corrected. |
+| 4D-14 57 findings | 47. |
+| 4D-15 The counts of round 1 | "About 80" for reader 1, and the records say what "about 170" counts. |
+| 4D-16 Which passes changed the interface after the check | Corrected, and the second check is named. |
+| 4D-22 A second repository that answers "not found" | Left for the owner, in the list. |
+| 4D-23 The "Claude-Session" line on commits | Left for the owner, in the list. |
+| 4D-24 "Every packet predates the specification" | "Every packet but the naming research". |
+| 4D-25 The round-4 record named no commit | It names `f583469`. |
+
+The rest are in `spec/` and the overview, and belong to the fix pass:
 
 | Finding | Decision |
 | --- | --- |
@@ -92,3 +117,30 @@ The findings in the records were fixed when the report came in (commit `44ab30c`
 - How a value is marked as secret. For the owner.
 - The shape of a diagnostic beyond `message`, and the full shape of an inspection result.
   Settled with the conformance vectors.
+
+## The fix pass, and what it left
+
+Done on 2026-11-06 by one editor ([log](log-fixes.md)). 437 promises became 442. The pass left
+five points. The coordinator settles them here, as above, and the same editor applies them (the
+log gains a section). The choices that the pass made itself are in its log under "Choices";
+they are the editor's, and stand unless struck. One of them is struck here, in row 1.
+
+| Point | Decision |
+| --- | --- |
+| 1. A composite Conduit of which one component cannot be opened | The decision on 4C-3 is replaced, because applied to the letter it leaves the components that opened closed for good. The opening of a Conduit made from a composite template is decided for every component before any is opened. Where the opening of any component would not be dispatched, none is opened, nothing is closed, and the request reports that component's reason; a setup step is then failed, or left as it is where it is optional. Otherwise all are opened. Where the opening ends unknown, it is unknown for the whole, and its reconciliation records every component as open or every component as not open. The exceptions that the pass gave LIF-027 and LIF-023 are taken out again. |
+| 2. Onward requests that serve an invocation whose chain has a retired consumer | The rule of 4C-1 holds for them too. An onward request is dispatched only where each Conduit of its chain is open and would permit the request under ACC-039, so it reports refused once the consumer of any of them is retired, unless the invocation it serves belongs to that consumer's own retirement. |
+| 3. How a re-exported requirement is named on the wire and matched against `supports` | By its origin. `restrictions` names a requirement by the address and export name of the package that first exports it, and an implementation supports it where its `supports` names that origin or any re-export of it, as ACC-029 has it for a bound. |
+| 4. A re-export in `exports` that names nothing in an installed package | Rejected. NAM-028 covers every reference into an installed package that names nothing there, a re-export included. |
+| 5. A request that the protocol rejects, from a client that is not an instance | IFC-036 governs: a request that cannot be read is answered as the protocol states, whoever sent it, and IFC-032 is about a request that can be read. It is not recorded where no instance can be established. |
+
+The follow-up is applied, with no new promise: the specification stays at 442. The editor left
+two points for a later reader, and they are not decided:
+
+- `open.v1` names one Conduit in its input, while CON-004 now speaks of one invocation that
+  opens every component of a composite declared Conduit.
+- The rule that a composite is opened whole is stated for the setup step. A request that an
+  actor makes for `open.v1` or `close.v1` still names one component, so a composite can still
+  be left partly open outside setup.
+
+Nothing in the text that this round changed has been read by a cold reader, and the interface
+text that the fix pass changed has not been checked against the Model Context Protocol again.

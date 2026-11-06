@@ -90,7 +90,7 @@ in `spec/core/operations.yaml` unless another file is named.
 | 4B-10 | None | Core README (the keys of a request) |
 | 4B-11, 4D-26 | Head of each of the 22 promise files | Heads of `spec/implementation-defined.yaml`, of the files of `spec/core/` and `spec/schemas/`; status line of `spec/schema-profile.md`; opening of the definitions; `spec/README.md`; core README; schemas README |
 | 4C-2 | GRA-024 (`then`), ACC-018, GRA-022 | `step.v1` in `spec/schemas/graphs.yaml`; definitions (step, declared Conduit); schemas README; core README ("Every export"); two new examples and a checker rule |
-| 4C-3 | CON-004 (`then`), ACC-005, LIF-027 (`then`: the exception), LIF-023, GRA-003, OPS-022, CON-008 | Definitions (close, set up, declared Conduit); `set-up.v1`; DL1 |
+| 4C-3 | CON-004 (`then`), ACC-005, LIF-027 (`then`: the exception), LIF-023, GRA-003, OPS-022, CON-008. The decision was replaced afterwards: see the [follow-up](#follow-up), which took the exceptions out again | Definitions (close, set up, declared Conduit); `set-up.v1`; DL1 |
 | 4C-4 | OPS-024 (`then`), OPS-012, OPS-017, ACC-034, ACC-019 | Definitions (attempt); `retrieve-result.v1`; core README |
 | 4C-5 | LIF-009 (`then`), INS-013, INS-020 | Definitions (nested instance); `register-replacement.v1` |
 | 4C-6 | LIF-021 (`then`) | `retire-with-resources.v1`; core README ("Retiring") |
@@ -131,7 +131,7 @@ the coordinator's or the owner's, and each stands unless struck.
 | 4C-2: a path may stop at a component that is itself a composite, and the rule of one Conduit that lists the operation applies below it. A step whose Conduits list the operation in none is rejected, as before. | IFC-012 writes every component on the way, and the decision gives the rule for the ambiguous case alone. |
 | 4C-2: resolving fixes which component Conduit a step means, and a later replacement does not change it. | INS-013 has an instance hold its resolved definition. Without it, a replacement made under decision 4C-5 from a changed template could make a resolved step ambiguous. |
 | 4C-2: no use was added to the valid example project. | It declares no Conduit from a composite template. The dotted path is shown in the example for the ambiguous case, whose documents are each valid against the schemas, and a new example under `invalid/` shows a path the schema rejects. |
-| 4C-3: "closed again" is applied as written. The component Conduits that the step opened are closed, which retires them for good, so a later setup needs a replacement for each. LIF-027 and LIF-023 gained the exception. The step's outcome is failed whatever the request that opened none reported. A component Conduit that is closed when the step is reached makes the step report conflict before it opens any. | The decision governs. This is the first point under [Still needs a decision](#still-needs-a-decision). |
+| Struck by the coordinator, and undone in the [follow-up](#follow-up). 4C-3: "closed again" is applied as written. The component Conduits that the step opened are closed, which retires them for good, so a later setup needs a replacement for each. LIF-027 and LIF-023 gained the exception. The step's outcome is failed whatever the request that opened none reported. A component Conduit that is closed when the step is reached makes the step report conflict before it opens any. | The decision governs. This is the first point under [Still needs a decision](#still-needs-a-decision). |
 | 4C-5: a `from` that names a template of a package means that template in the version the instance holds. | PKG-005 has the instance hold the version, and a published version does not change. |
 | 4C-8: a purge removes records and nothing else. The Conduits to which later work is tied, what an instance holds and the content of a retained result are not records. | The decision adds three things to the list and not the chain. ACC-019 ties the work when it is arranged, and REC-004 removes records. |
 | 4C-10: a value that is supplied to a control is filled as any supplied value is. REV-006 still applies no default to an input that is left out. | The decision is one rule for every schema that governs a supplied value. |
@@ -140,7 +140,7 @@ the coordinator's or the owner's, and each stands unless struck.
 | 4C-15: DL8 gained a sentence that names the case. | The decision says that DL8 is where it is settled, and DL8 did not mention it. |
 | Protocol, row 26: a new promise, IFC-036, in place of a sentence in the observable of IFC-025. Where the engine could establish no instance, IFC-032 says what the request reports. | The decision gives a reason and a record, which belong in a `then`. |
 | Protocol, row 22: the tool of an operation that declares no outputs has an `outputSchema` of a map with no properties. | IFC-033 derives `outputSchema` "in the same way", and the decision has one rule for every tool. |
-| DL1 gained the order in which the component Conduits of a composite are opened, and DL12 the serialized copy of `structuredContent`. | CON-004 and IFC-025 now cite those items for them. |
+| DL1 gained the order in which the component Conduits of a composite are opened, and DL12 the serialized copy of `structuredContent`. The follow-up took the clause out of DL1 again, since the components are now opened together. | CON-004 and IFC-025 cited those items for them. |
 
 ## Found in the read-through and fixed
 
@@ -208,40 +208,17 @@ character for character.
 
 ## Still needs a decision
 
-- **4C-3, as written.** The decision has the step close again the component Conduits that it
-  opened. To close a Conduit is to retire it, and a retired Conduit is never opened again
-  (LIF-006). So one component that is refused, for example because a bound does not name one
-  of its operations, leaves the others retired for good, and the operator must correct the
-  cause and then ask for a replacement of each under LIF-009 before a setup can open the
-  composite. The rule also needed an exception in LIF-027, which is a `must not`. It was
-  applied as decided. The other way to the same end, which the editor did not choose because
-  the decision says otherwise, is that the engine decides the request for every component
-  before it opens any, and opens them together or opens none. Not settled either way: what
-  the step does where the outcome of opening one component is unknown. As written it closes
-  the others and has the outcome failed, and a later reconciliation of that one open as having
-  occurred would leave one component open alone.
-- **An onward request that serves an invocation whose chain has a retired consumer.**
-  Decision 4C-1 refuses a start of later work once the consumer of a Conduit of its chain is
-  retired. ACC-039 limits only requests through the retired consumer's own Conduits. An
-  invocation that is in progress when its caller is retired, and work that has already
-  started, can still make onward requests through the Conduits of the instances that serve
-  them, for as long as the caller's shutdown is not confirmed. The text determines this, and
-  it is the same exposure that 4C-1 closed for starts.
-- **How a re-exported requirement is named on the wire and matched against `supports`.**
-  Decision 4C-9 says which package's version a policy keeps. Whether the `requirement` of an
-  item of `restrictions`, and the match against an implementation's `supports`, use the
-  address that the reference writes or the address of the package that originally exports the
-  contract is said for a bound (ACC-029) and for nothing else. It is the same question for a
-  filter.
-- **A re-export that names nothing.** NAM-028 covers a selection and a qualified `from`. An
-  item of `exports` that is a qualified reference to something an installed package does not
-  export is neither, and no promise says that the manifest is rejected.
-- **A request that the protocol rejects, from a client that is no instance.** IFC-036 leaves
-  it to IFC-032, which reports refused. OPS-023 puts a request that cannot be read first,
-  with the reason invalid. The record differs by which is applied. Minor.
-- Carried from the decisions: decision 4A-7 is also listed for the owner; how a value is
-  marked as secret is for the owner; and the shape of a diagnostic beyond `message`, and the
-  full shape of an inspection result, wait for the conformance vectors.
+The five points that this section listed after the fix pass were settled by the coordinator in
+the section "The fix pass, and what it left" of [the decisions](DECISIONS.md), and applied in
+the [follow-up](#follow-up) below. What remains:
+
+- Decision 4A-7 is also listed for the owner.
+- For the owner, as before: how a value is marked as secret.
+- With the conformance vectors: the shape of a diagnostic beyond `message`, and the full
+  shape of an inspection result.
+
+The follow-up found nothing new that needs a decision. What it had to word is in its table of
+choices, for the coordinator to confirm or strike.
 
 ## Not done, and not verified
 
@@ -308,3 +285,74 @@ and in `tools/check_schemas.py` exists, apart from removed IDs, which appear onl
 comments at the heads of the promise files; every item of the implementation-defined list
 that is cited exists; and the counts of promises in the contents table of `spec/README.md`
 are the counts in the files.
+
+## Follow-up
+
+Done on 2026-11-06 by the same editor, on the five decisions of the section "The fix pass, and
+what it left" of [the decisions](DECISIONS.md). They are the coordinator's too. The rows are
+the editor's account of applying them. No promise was added or removed, so the counts of the
+table under [Result](#result) stand: 442 promises, 223 of the layer `language`, 183 of the
+layer `convention` and 36 of the layer `interface`.
+
+Changed in the follow-up, 21: ACC-005, ACC-015, ACC-017, ACC-019, ACC-031, ACC-034, ACC-039;
+LIF-023, LIF-027, LIF-028; OPS-005, OPS-022; REC-001; IFC-018, IFC-032, IFC-036; CON-004,
+CON-008, CON-022; MAN-008; NAM-028. LIF-023 and LIF-027 are again as they were before the fix
+pass, and ACC-039, REC-001, CON-022 and MAN-008 had not been changed by it. So against the
+specification as round 4 found it, 92 promises are changed and 5 are new. No export, no schema,
+no example and no rule of the checker changed, and `tools/check_schemas.py` was not edited.
+
+| Point | Promises | Other documents |
+| --- | --- | --- |
+| 1. A composite Conduit of which one component cannot be opened | CON-004 (`then` rewritten: the opening is decided for every component before any is opened; where one would not be dispatched none is opened, nothing is closed, and the step reports that component's reason; otherwise all are opened in one invocation with one outcome), ACC-005 (`then`), LIF-028 (`then`: the reconciliation of that opening records every component as open or every one as not open), LIF-027 and LIF-023 (the exceptions taken out), CON-008, OPS-022 | Definitions (declared Conduit, close, set up); `set-up.v1`; DL1 (the clause on the order of opening taken out) |
+| 2. Onward requests that serve an invocation whose chain has a retired consumer | ACC-039 (`when` and `then` widened to an onward request, through any Conduit, in whose chain a Conduit has a retired consumer; the exception for that consumer's own retirement kept, and said to hold directly or through others), ACC-019 (`then`: the requests of work already started), ACC-034, ACC-017 | Definitions (onward request, later work); core README ("Retiring"); overview |
+| 3. How a re-exported requirement is named on the wire and matched against `supports` | IFC-018 (`then`: `requirement` is the reference in the package that originally exports it), CON-022 (`then`: matched by that origin; an item of `supports` that names the origin or any re-export states it), ACC-015, ACC-031 | Definitions (restriction, `supports`) |
+| 4. A re-export in `exports` that names nothing in an installed package | NAM-028 (`when` and `then` cover a manifest's re-export), MAN-008 | Definitions (resolve); head of `spec/schemas/manifest.yaml` |
+| 5. A request that the protocol rejects, from a client that is not an instance | IFC-036 (`then`: answered so whoever sent it, and not recorded where no instance can be established), IFC-032 (`when` excepts the requests of IFC-036), REC-001, OPS-005 | Definitions (Conduit's keys) |
+
+Choices made in the follow-up, each the editor's and standing unless struck:
+
+| Choice | Why |
+| --- | --- |
+| Point 1: "a setup step is then failed" is written as the step reporting that component's reason and not having succeeded. GRA-003 then keeps the setup from succeeding where the declared Conduit is required, and has it reported as not opened where it is optional. | A step that is not dispatched has a reason and no outcome, as the step of a single declared Conduit has under ACC-005. The outcome failed belongs to something that was dispatched. |
+| Point 1: where the opening of more than one component would not be dispatched, OPS-023 says which reason the step reports, and a diagnostic names each. | The decision speaks of one component. |
+| Point 1: the one opening is called one invocation of `open.v1`, which the engine makes for the step and which stands for every component Conduit that the step opens. | The decision gives the opening one outcome and one reconciliation, and LIF-028 and ACC-033 reconcile an opening as an invocation of `open.v1` through `access`. The contract of `open.v1` names one Conduit in its input `conduit`, and was left as it is: no consumer makes this request, and what a record keeps of an operation's inputs is not settled. |
+| Point 1: the rule is stated for the step of a setup. A request for `open.v1` or `close.v1` that an actor makes still names one Conduit, a component Conduit among them. | No instance stands for a composite (CON-003), so no request can name one. An actor can therefore still open or close one component alone. |
+| Point 2: the rule stands in ACC-039, and ACC-034, ACC-017 and ACC-019 point to it. A step with no `conduit` is not an onward request and is not covered, as it is not under ACC-034. | ACC-039 is where the exception for the consumer's retirement is stated. |
+| Point 3: no example address is written in IFC-018. | `tools/set_names.py` reads a qualified reference in the interface file as a `_meta` key. |
+| Point 4: no rule was added to the checker for a re-export that names nothing. | The decision does not ask for one, and the pass was to be small. |
+| Point 5: IFC-032 excepts "a request that the protocol has a server reject with an error of its own under IFC-036", in place of the words "a request that can be read". | IFC-029 also calls a request with keys under two prefixes one that cannot be read, and that request is answered with a result. The two promises now divide every request between them. |
+
+Re-read for the follow-up: the 21 promises above and their neighbours, among them GRA-003,
+GRA-022, GRA-024, LIF-008, LIF-015, LIF-026, ACC-006, ACC-016, ACC-029, ACC-040, IFC-012,
+IFC-029, IFC-034, PKG-013, PKG-018 and REC-002. Nothing in them disagrees with the text as it
+now stands. The second sentence of what the fix pass wrote under "Not done" on the protocol
+still holds: nothing was checked against the Model Context Protocol, and IFC-036 now also says
+that such a request is answered as the protocol states whoever sent it, which is the
+protocol's own rule.
+
+Checks, run from the root of the repository after the last edit of the follow-up:
+
+```text
+$ /usr/bin/python3 - <<'PY'   (the validation script of CONSOLIDATION.md)
+442 promises ok
+
+$ python3 tools/check_schemas.py
+(steps 1 to 6 as above: 110 files, 240 documents, 58 Schema contracts, 138 documents
+validated, 62 invalid documents rejected, 23 rules from 21 promises, 24 sets rejected)
+Errors: 0
+
+$ python3 tools/set_names.py --check
+Names: corePackage x437, apiVersion x243, metaPrefix x98. Errors: 0
+
+$ python3 tools/check_docs.py
+Files: listed by Git (tracked, and untracked but not ignored).
+Checked 135 Markdown files and 1700 local links (offline).
+Errors: 0
+
+$ git diff --check
+(no output, exit status 0)
+```
+
+Also checked by script, as before: no line of a YAML file under `spec/` is longer than 96
+characters, and every promise ID and every item of the implementation-defined list that is
+cited under `spec/` and in `docs/OVERVIEW.md` exists.

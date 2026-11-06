@@ -317,12 +317,13 @@ metadata:
     declared Conduit or sets up the Resource of an entry is authorized exactly as this request
     was, by the Conduits of the instance that sent it, which for an onward request is the
     sending instance and not the caller it serves. A declared Conduit that is made from a
-    composite template is one step, and is opened as a whole or not at all: where one of its
-    component Conduits is not opened, those that the step opened are closed again and the step
-    has the outcome failed. Setting up a Resource is authorized against the Pool that owns it,
-    and setting up an Agent, an Interface or a Pool against `management`. A Conduit is set up
-    with `open.v1`: a request that names a Conduit or a template reports invalid, and so does
-    one that names an object that does not exist.
+    composite template is one step, and its component Conduits are opened all together or not at
+    all: the opening is decided for every one of them before any is opened, and where one would
+    not be opened none is, nothing is closed, and the step reports that component's reason.
+    Setting up a Resource is authorized against the Pool that owns it, and setting up an Agent,
+    an Interface or a Pool against `management`. A Conduit is set up with `open.v1`: a request
+    that names a Conduit or a template reports invalid, and so does one that names an object
+    that does not exist.
 spec:
   inputs:
     instance:

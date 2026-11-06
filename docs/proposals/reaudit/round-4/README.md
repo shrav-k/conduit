@@ -1,6 +1,8 @@
 # Re-audit, round 4
 
-Status: read, and the fixes are being applied, 2026-11-06 (plan-audit action A59). Four cold
+Status: done, 2026-11-06 (plan-audit action A59). No fifth round is started: whether to go on
+reading or to move to the reference model and the vectors is
+[for the owner](../../../AUDIT.md#waiting-for-the-owner). Four cold
 readers read the repository as it stood after [round 3](../round-3/README.md), its fix pass and
 the follow-up, at commit `f583469`.
 
@@ -29,7 +31,7 @@ condition G7 is judged on these rounds is
 | Step | Record |
 | --- | --- |
 | The decisions on the findings | [DECISIONS.md](DECISIONS.md) |
-| The fix pass | `log-fixes.md`, when the pass ends |
+| The fix pass and its follow-up, with the choices the editor made | [log-fixes.md](log-fixes.md) |
 
 | Reader | Sees | Looks for | Report |
 | --- | --- | --- | --- |
@@ -45,6 +47,16 @@ promises say about the protocol itself, as they stand after the changes of round
 Findings are resolved under ruling 37, without a ruling on each, and every choice is logged in
 this directory as the coordinator's and not the owner's
 ([who decides what](../../../AUDIT.md#who-decides-what-since-ruling-37)).
+
+## Known after the round
+
+Open when the round ended, for whoever reads next:
+
+- The two points at the end of [DECISIONS.md](DECISIONS.md), on opening a composite Conduit.
+- The text that the fix pass of this round changed, 92 promises and 5 new ones, has been read by
+  its editor alone.
+- The interface promises that the fix pass changed have not been checked against the Model
+  Context Protocol again. The [second check](mcp-recheck.md) read them as round 3 left them.
 
 ## Known before the round
 

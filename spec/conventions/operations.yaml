@@ -32,6 +32,8 @@
 # OPS-031: an invocation counts as dispatched through the Conduit of its latest attempt, a step
 # that a further run does not dispatch counts with the outcome it has, and the default of a
 # property is filled before a request is validated or compared. It added none and removed none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed OPS-005 and OPS-022.
 # Standing: the owner accepted these promises as they stood at the rulings that this comment
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
@@ -101,8 +103,9 @@
     a request that is not dispatched says beyond its reason, it says in diagnostics, as IFC-025
     states. A call that names a tool the engine does not present is answered with no result: its
     reason, refused, is in the protocol's error, as IFC-012 states.
-    So is a request that the protocol has the engine reject with an error of its own, whose
-    reason is invalid, under IFC-036.
+    So is a request that the protocol has the engine reject with an error of its own: where the
+    engine could establish the instance that sent it, its reason is invalid and is in that
+    error, under IFC-036.
   vectors: []
 
 - id: OPS-006
@@ -438,7 +441,7 @@
     succeeded with an effect or ended unknown on an operation that has one. The steps of
     `set-up.v1` are those of the instance's `setup` graph, its declared Conduits and, for a
     Pool, its entries. The step of a declared Conduit that is made from a composite template is
-    one step, whose outcome CON-004 gives. The steps of `retire.v1` are those of its `retire`
+    one step, and CON-004 says how it ends. The steps of `retire.v1` are those of its `retire`
     graph, and each stop of a runtime counts as a step that is not optional. A further run under
     LIF-026, or a further setup, in which a step that is not optional is left with the outcome
     unknown under OPS-021, on an operation that has an effect, has the outcome unknown, even

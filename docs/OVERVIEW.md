@@ -230,7 +230,8 @@ to be confirmed or its location to have been declared lost (LIF-017).
 Retiring an instance also closes its Conduits. Those of which it is the target are closed at
 once. Those of which it is the consumer are closed once its shutdown is confirmed, or at once
 where it is declared lost, and until then they permit only the requests of its retirement
-(CON-008, ACC-039). Shutdown is the stopping and releasing of what the retired instance
+(CON-008, ACC-039). An onward request that serves an invocation which came through one of
+them is refused from the same moment, unless it belongs to that retirement. Shutdown is the stopping and releasing of what the retired instance
 itself holds. It is confirmed once a retirement of the instance has succeeded, and never
 while the instance holds a runtime or a start of one of its runtimes has an unknown outcome
 (LIF-024). Declaring a location lost, which only `root` may do, retires the location and

@@ -49,6 +49,10 @@
 # round left them: what the changes of this pass say of the protocol itself is the wording of
 # that report, and nothing else that these promises say of the protocol was changed. It removed
 # none.
+# The follow-up to that pass, on the decisions of the section "The fix pass, and what it left"
+# of the same file, which are the coordinator's too, changed IFC-018, IFC-032 and IFC-036: a
+# requirement is named on the wire by the package that originally exports it, and a request that
+# cannot be read is answered as the protocol states, whoever sent it.
 # Standing: the owner accepted these promises as they stood at the rulings that this comment
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
@@ -393,16 +397,18 @@
   when: >-
     An engine sends `io.github.shrav-k.conduit/restrictions` to an implementation under IFC-006.
   then: >-
-    It is a list. Each item holds `requirement`, which is the qualified reference of a
-    requirement or, for a requirement of an unpublished package, `<digest>#<name>` as IFC-006
-    states, and its `arguments`. The list holds every restriction that applies to the request:
-    the requirements of the request's own Conduit that narrow requests, every policy that
-    applies, and the restrictions carried from the served invocation under ACC-017. For a step
-    that has no `conduit`, it holds the restrictions of the invocation that the step's graph is
-    serving, under ACC-018. For a start of later work it holds the restrictions that ACC-041 has
-    the start carry. A composed requirement is sent as one item for each of its constituents
-    that narrows requests, with that constituent's arguments bound as CTR-010 states. The list
-    is empty when no restriction applies.
+    It is a list. Each item holds `requirement` and its `arguments`. `requirement` is the
+    qualified reference of the requirement in the package that originally exports it, which is
+    that package's address and the export's name, whatever re-export the Conduit's template or
+    the policy named it through. For a requirement of an unpublished package it is
+    `<digest>#<name>`, as IFC-006 states. The list holds every restriction that applies to the
+    request: the requirements of the request's own Conduit that narrow requests, every policy
+    that applies, and the restrictions carried from the served invocation under ACC-017. For a
+    step that has no `conduit`, it holds the restrictions of the invocation that the step's
+    graph is serving, under ACC-018. For a start of later work it holds the restrictions that
+    ACC-041 has the start carry. A composed requirement is sent as one item for each of its
+    constituents that narrows requests, with that constituent's arguments bound as CTR-010
+    states. The list is empty when no restriction applies.
   observable: >-
     Each filter on the Conduit named in `io.github.shrav-k.conduit/conduit`, each policy that
     applies, and each restriction carried from the invocation that an onward request serves
@@ -419,6 +425,11 @@
     the filter's contract names: CON-022 has it state each one in `supports`. Two restrictions
     that have the same requirement and equal arguments, as a filter and a policy may, are two
     equal items, and nothing in an item says which it is.
+    A requirement that a package re-exports is named by its origin, to which PKG-013 leads: a
+    filter that a Conduit's template names through the re-exporting package is sent with the
+    address of the package that originally exports the contract, and so is a policy, whichever
+    of the two its request named. An implementation therefore sees one name for one requirement,
+    and CON-022 matches its `supports` against the same origin.
   vectors: []
 
 - id: IFC-019
@@ -757,7 +768,8 @@
   layer: interface
   level: must
   when: >-
-    The engine receives a request on a server it presents under IFC-012, and cannot establish
+    The engine receives a request on a server it presents under IFC-012, other than one that the
+    protocol has a server reject with an error of its own under IFC-036, and cannot establish
     from what the request presents that it comes from an instance.
   then: >-
     The request is not dispatched, and reports refused.
@@ -772,6 +784,8 @@
     credential is missing or invalid is answered as the protocol requires, with the HTTP status
     it prescribes, which is 401 for a credential that is missing or invalid, and with no tool
     result. It is recorded as refused all the same.
+    A request that the protocol has a server reject with an error of its own, because it cannot
+    be read as a request for a tool, is IFC-036, whoever sent it.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md,
@@ -886,17 +900,20 @@
     `_meta`, one whose parameters do not have the form of a `tools/call` request, or one whose
     headers on an HTTP transport are missing or disagree with its body.
   then: >-
-    The engine answers it as the protocol states, with that error and with no tool result. Where
-    the engine could establish, under IFC-022, the instance that sent the request, the request
-    is not dispatched, and reports invalid: it is recorded so, and the error's `data` holds
-    `io.github.shrav-k.conduit/reason` with the value invalid.
+    The engine answers it as the protocol states, with that error and with no tool result,
+    whoever sent it. Where the engine could establish, under IFC-022, the instance that sent the
+    request, the request is not dispatched, and reports invalid: it is recorded so, and the
+    error's `data` holds `io.github.shrav-k.conduit/reason` with the value invalid. Where it
+    could establish none, the request is not recorded.
   observable: >-
     No implementation receives a call. Such a request cannot be read as a request for an
     operation, which is the first case in the order of OPS-023. The error, its code and, on an
     HTTP transport, the status are the protocol's, and this specification repeats none of them,
     under IFC-001. An error's `data` may hold what the server defines, as it holds the reason
-    refused in the error of IFC-012. Where the engine could establish no instance, IFC-032 says
-    what the request reports. A request at a revision of the protocol that the engine does not
+    refused in the error of IFC-012. IFC-032 is about a request that can be read as the protocol
+    requires: one that cannot is answered here, whether or not an instance can be established
+    from it. Where none can, the error holds no reason of Conduit's, and no record is kept,
+    which REC-001 excepts. A request at a revision of the protocol that the engine does not
     support is answered with the protocol's error for an unsupported version, and with no tool
     result either. That error is part of the negotiation of IFC-003: the consumer's client sends
     the request again at a revision both sides support, so the first is not a request that

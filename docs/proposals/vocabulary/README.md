@@ -12,7 +12,7 @@ registered, ready and retired; and "owner" is used only for a Pool.
 
 It combines three inputs:
 
-- the [candidate research](../../research/vocabulary/CANDIDATES.md) for topics V01 to V37;
+- the [candidate research](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md) for topics V01 to V37;
 - the reviewer's [simplification pass](../../research/vocabulary/SIMPLIFICATION.md) and review of
   pull request 5, which proposes dropping about 20 terms;
 - the owner's rulings of 2026-11-05 on the [layers](../../AUDIT.md#layered-claim),

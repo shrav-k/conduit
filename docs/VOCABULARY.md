@@ -119,6 +119,6 @@ No replacement vocabulary has been accepted in this map yet. The
 [audit record](archive/migrations/2026-11-vocabulary-audit.md) records its initial coverage and preservation checks.
 
 The [naming research packet](research/vocabulary/README.md) supplies sourced precedents,
-[candidates for every topic](research/vocabulary/CANDIDATES.md) and
-[complete examples](research/vocabulary/WALKTHROUGHS.md). Its recommendations remain proposals;
+[candidates for every topic](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md) and
+[complete examples](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/WALKTHROUGHS.md). Its recommendations remain proposals;
 record accepted choices here through the procedure above, not in a parallel research decision ledger.

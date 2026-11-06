@@ -1,8 +1,18 @@
 # Simplification pass
 
-Status: reviewer feedback on the [candidates](CANDIDATES.md), 2026-11-05. Nothing here is adopted;
+Status: reviewer feedback on the [candidates](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md), 2026-11-05. Nothing here is adopted;
 rulings still go through the [vocabulary map](../../VOCABULARY.md#review-and-migration-procedure).
 This proposes fewer names for the same accepted behavior. It does not merge any behavior.
+
+**Outcome.** The owner adopted this pass as the base of the final vocabulary on 2026-11-05
+(plan-audit rulings 17 and 18, decision V1 of the
+[vocabulary record](../../proposals/vocabulary/README.md#decisions)). The record marks each word
+that came from here with the source **S**, and lists the five places where the ruling went
+another way under
+[where this differs from the simplification pass](../../proposals/vocabulary/README.md#where-this-differs-from-the-simplification-pass).
+Later rulings changed a few of the words again; the [specification](../../../spec/definitions.md)
+has the current ones. This file is kept as written, as the record of the reviewer's
+contribution (commit `2890ef7`, [PR #5](https://github.com/shrav-k/conduit/pull/5)).
 
 The candidate list keeps several words for one idea, and reuses one word for several ideas. Three
 patterns cover most of it. Solid boxes are the words to keep; dashed boxes are the ones to drop.

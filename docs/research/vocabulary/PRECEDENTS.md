@@ -114,5 +114,5 @@ values. Words become less portable as they approach lifecycle or authority. “R
 The theme works when it reinforces an actual relationship: endpoints connect through a Conduit;
 requests follow a route; filters narrow flow. It becomes misleading when a valve supposedly represents
 all distributed enforcement, a stream implies ordering that is absent, or a pump implies autonomous
-work. The [candidate analysis](CANDIDATES.md) applies these lessons without importing another system's
+work. The [candidate analysis](https://github.com/shrav-k/conduit/blob/2890ef78c902f2e550fe193396ab464f2db3debc/docs/research/vocabulary/CANDIDATES.md) applies these lessons without importing another system's
 semantics.

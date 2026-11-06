@@ -1,0 +1,234 @@
+# Placement: where an Agent or Resource runs.
+# Owner rulings of 2026-11-05 (plan-audit rulings 7, 8, 17, 28, 29, 32 and 33). What a type or
+# an implementation needs of a location is a requirement on placement: a schema that the
+# location's stored facts must satisfy. Removed by consolidation pass 1: PLC-010 was folded into
+# OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
+# The follow-up rulings removed nothing. Draft: no vector exists yet.
+
+- id: PLC-001
+  layer: language
+  level: must
+  when: >-
+    An Agent or a Resource is instantiated.
+  then: >-
+    It has exactly one placement, which is the ID of a location.
+  observable: >-
+    Inspecting the instance shows one placement. A document that gives two, or a
+    placement that is not a location, is rejected.
+  vectors: []
+
+- id: PLC-002
+  layer: language
+  level: must
+  when: >-
+    An Agent or Resource instance document, other than a location's, gives no placement, and
+    exactly one location exists that is not retired.
+  then: >-
+    Its placement is that location.
+  observable: >-
+    The resolved instance holds that location's ID. A retired location is not counted.
+  vectors: []
+
+- id: PLC-003
+  layer: language
+  level: must
+  when: >-
+    An Agent or Resource instance document, other than a location's, gives no placement,
+    several locations exist that are not retired, and the `system` Pool's default-location
+    setting names one of them.
+  then: >-
+    Its placement is the designated default.
+  observable: >-
+    The resolved instance holds the default location's ID.
+  vectors: []
+
+- id: PLC-004
+  layer: language
+  level: must
+  when: >-
+    An Agent or Resource instance document, other than a location's, gives no placement,
+    several locations exist that are not retired, and the `system` Pool's default-location
+    setting names none of them.
+  then: >-
+    The instance is not instantiated. No location is chosen by the order in which locations
+    were registered or found.
+  observable: >-
+    Resolving returns a diagnostic listing the locations that are not retired.
+  vectors: []
+
+- id: PLC-005
+  layer: language
+  level: must
+  when: >-
+    A template is registered that names a location.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the field that holds the location.
+  vectors: []
+
+- id: PLC-006
+  layer: language
+  level: must
+  when: >-
+    An instance document for an Interface, a Pool or a Conduit gives a placement.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the document and the placement field.
+  vectors: []
+
+- id: PLC-007
+  layer: language
+  level: must
+  when: >-
+    An instance's type, or an implementation selected for it, states a requirement on placement
+    whose schema the stored facts of the instance's location do not satisfy.
+  then: >-
+    The instance is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the type or the implementation, the requirement and
+    the location, before any effect. A fact that is absent from the location's stored facts
+    fails the requirement. The answer comes from the documents and the stored facts, without
+    reaching the location.
+  vectors: []
+
+- id: PLC-008
+  layer: language
+  level: must
+  when: >-
+    A location is instantiated.
+  then: >-
+    It is a Resource instance of the location type, owned by the system Pool, and it is its own
+    placement. Its facts, including its host, are stored configuration of the location, and are
+    changed only by a control.
+  observable: >-
+    Inspecting a location shows the kind Resource, the location type, the system Pool as owner,
+    its own ID as placement, and its facts in its configuration. Nothing observed of the
+    location changes a stored fact.
+  vectors: []
+
+- id: PLC-009
+  layer: language
+  level: must not
+  when: >-
+    An instance exists.
+  then: >-
+    Its placement is changed.
+  observable: >-
+    No operation changes the placement of an existing instance. Running it elsewhere means
+    instantiating another instance.
+  vectors: []
+
+- id: PLC-011
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to retire or to unregister a location that has other instances placed on it.
+  then: >-
+    The request is not dispatched and reports conflict. Only the declare-lost operation, which
+    is reserved to the root Interface, retires a location that still has instances.
+  observable: >-
+    The location and its instances still exist, in the states they had.
+  vectors: []
+
+- id: PLC-012
+  layer: convention
+  level: must not
+  when: >-
+    Two instances share a location or a host.
+  then: >-
+    Either gains access to the other because of it.
+  observable: >-
+    A request between them reports refused unless an open Conduit lists the operation, exactly
+    as for instances on different locations.
+  vectors: []
+
+- id: PLC-013
+  layer: convention
+  level: must
+  when: >-
+    A Conduit carries a shared-host requirement, and the stored facts of its consumer's and its
+    target's locations do not give the same host, either when the Conduit is being opened or
+    when a request is made through it.
+  then: >-
+    The request to open, or the request through the Conduit, is not dispatched and reports
+    unavailable. No other way of reaching the target is substituted.
+  observable: >-
+    A Conduit that was not opened is still in the state registered. A Conduit that is already
+    open stays open, and a request through it is dispatched only while the stored facts give
+    the same host. A host that is absent from the stored facts of either location does not
+    satisfy the requirement.
+  vectors: []
+
+- id: PLC-015
+  layer: language
+  level: must
+  when: >-
+    An instance is placed on a location.
+  then: >-
+    It depends on the location through its placement alone. No Conduit to the location is
+    needed or instantiated for that.
+  observable: >-
+    Resolving the instance yields no Conduit whose target is its location. This is one of the
+    three ways a location differs from other Resources; the others are PLC-008 and PLC-011.
+  vectors: []
+
+- id: PLC-016
+  layer: convention
+  level: must
+  when: >-
+    The default location is designated or cleared.
+  then: >-
+    It is done by a control of the `system` Pool, permitted and checked like any other control,
+    and the setting names a location that exists or nothing.
+  observable: >-
+    A value that is not the name of a location that exists reports invalid. After the control
+    succeeds, an instance instantiated without a placement takes the named location under
+    PLC-003.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).
+
+- id: PLC-017
+  layer: convention
+  level: must
+  when: >-
+    The root Interface declares a location lost.
+  then: >-
+    The location and every instance placed on it are retired. The status of each reports its
+    shutdown as unknown, and states that it could not be confirmed because the location was
+    declared lost. An instance for which no setup was ever dispatched reports confirmed, as
+    LIF-025 states.
+  observable: >-
+    Each of them can then be unregistered under LIF-017 without a reconciliation. The Conduits
+    of which any of them was an end are closed under CON-008.
+  vectors: []
+
+- id: PLC-018
+  layer: language
+  level: must
+  when: >-
+    An Agent or a Resource would be instantiated with a placement that is a retired location.
+  then: >-
+    The instance is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the location and stating that it is retired. A
+    location that is registered and not yet ready is accepted as a placement, and PLC-019 says
+    what a request to set up the instance then reports.
+  vectors: []
+
+# --- Added by the follow-up rulings (plan-audit ruling 33; decision F16 of the re-audit).
+
+- id: PLC-019
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to set up an instance, other than the location itself, whose location is in
+    the state registered and so is not ready.
+  then: >-
+    The request is not dispatched, and reports unavailable.
+  observable: >-
+    The instance is in the state it had, and no implementation receives a call for its setup.
+    Once the location is ready, a request to set up the instance is decided as any other.
+  vectors: []

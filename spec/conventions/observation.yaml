@@ -1,0 +1,85 @@
+# Declared against observed state: what is declared and what is seen are kept apart, and a
+# difference between them is reported, never repaired.
+# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). Reporting follows Kubernetes
+# conditions, which keep the time of the last successful observation beside an unknown status.
+# Acting only on an explicit request follows Compose and Terraform. PLC-010 was folded into
+# OBS-003 and LIF-010. No promise of this file has been removed. Draft: no vector exists yet.
+
+- id: OBS-001
+  layer: convention
+  level: must not
+  when: >-
+    Something is observed about an instance.
+  then: >-
+    The instance's declared definition, configuration or revision changes because of it.
+  observable: >-
+    The declared part of an inspection result is the same before and after any observation. It
+    changes only by an operation that an actor requested and that changes it, as the convention
+    on revisions states.
+  vectors: []
+
+- id: OBS-002
+  layer: convention
+  level: must
+  when: >-
+    An observation is reported.
+  then: >-
+    It carries the time it was made and its origin, which is where it was made.
+  observable: >-
+    Every observation in an inspection result has both.
+  vectors: []
+
+- id: OBS-003
+  layer: convention
+  level: must
+  when: >-
+    Something about an instance cannot be observed now, for example because its location cannot
+    be reached.
+  then: >-
+    It is reported as unknown, with the time of the last successful observation of it.
+  observable: >-
+    The earlier value is not shown as current. Where it was never observed, the report says
+    unknown with no time. When a location cannot be reached, this holds for every instance
+    placed on it, and instances on other locations report as before.
+  vectors: []
+
+- id: OBS-004
+  layer: convention
+  level: must not
+  when: >-
+    What is observed of an instance differs from what is declared for it.
+  then: >-
+    Anything acts to remove the difference without an explicit request, other than an
+    implementation restoring its own runtime, which OBS-005 governs.
+  observable: >-
+    The difference appears in the instance's status and stays until an actor asks for an
+    operation that removes it. No setup, control, open or retire is dispatched because of it.
+  vectors: []
+
+- id: OBS-005
+  layer: convention
+  level: must not
+  when: >-
+    An implementation restores its own runtime, as its type contract allows.
+  then: >-
+    The handle the instance holds for the runtime stops being valid, or the engine invokes the
+    runtime's `start` operation again, or any invocation is dispatched again because of it.
+  observable: >-
+    Restoring a runtime means that the implementation keeps alive what is behind the handle the
+    instance holds. Afterwards the same handle is accepted, and no record shows a `start` or any
+    other operation dispatched because of the restoring. That it starts no model work is
+    IMP-002.
+  vectors: []
+
+- id: OBS-006
+  layer: convention
+  level: must not
+  when: >-
+    An instance is inspected or observed.
+  then: >-
+    An effect occurs, or the actor that inspects it gains access to anything.
+  observable: >-
+    Inspecting leaves every instance's status and every Conduit as it was, and that actor's
+    requests are permitted or refused exactly as before. That it starts no model work is
+    IMP-002.
+  vectors: []

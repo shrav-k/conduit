@@ -1,0 +1,224 @@
+# Packages: versions, digests and the selection of implementations.
+# Owner rulings of 2026-11-05 (plan-audit rulings 24, 32 and 33). Each rule follows an existing
+# practice: Semantic Versioning for versions, one exact version for each package a manifest
+# lists, a digest of the distributed archive as OCI, npm and Cargo use, and a gzip-compressed
+# tar file as the archive, as npm and Cargo distribute. How a package and its exports are
+# named is in naming.yaml. Consolidation pass 1: PKG-002 was folded into NAM-006; PKG-008 into
+# NAM-011; PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004; and PKG-015 into
+# PLC-007. PKG-021 was added. The follow-up decisions (ruling 33) added PKG-022. Draft: no
+# vector exists yet.
+
+- id: PKG-001
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose version is not a valid Semantic Versioning 2.0.0 version.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the version, and the package is not available.
+  vectors: []
+
+- id: PKG-003
+  layer: language
+  level: must
+  when: >-
+    A manifest item names a version of a package, and the installed package at that address has
+    a different version.
+  then: >-
+    That package does not satisfy the item, however close the versions are. Two versions are
+    the same when neither precedes the other under Semantic Versioning 2.0.0, which sets build
+    metadata aside.
+  observable: >-
+    With only version 1.4.1 installed, an item that names 1.4.0 is unresolved. No newer or
+    compatible version is substituted. `1.4.0+a` and `1.4.0` are the same version, and the
+    digest decides whether they are the same package, under PKG-021.
+  vectors: []
+
+- id: PKG-004
+  layer: language
+  level: must
+  when: >-
+    A published package's digest is computed or written.
+  then: >-
+    It is the SHA-256 of the package's archive file exactly as distributed, written as `sha256:`
+    followed by the hash in lowercase hexadecimal.
+  observable: >-
+    Hashing the archive with any SHA-256 tool gives the digest the package reports. A digest
+    written in any other way, such as in uppercase or without `sha256:`, is rejected with a
+    diagnostic naming it.
+  vectors: []
+
+- id: PKG-005
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The instance holds, for each package its template uses, the version and digest that the
+    template holds under NAM-009.
+  observable: >-
+    Inspecting the instance lists those packages with the versions and digests that inspecting
+    its template listed when the instance was made. An unpublished package that the template
+    holds under NAM-009 is listed by its digest in the same way.
+  vectors: []
+
+- id: PKG-006
+  layer: language
+  level: must
+  when: >-
+    A template is registered that refers to a package its manifest lists but that is not
+    installed.
+  then: >-
+    The template is registered, and the missing package is reported.
+  observable: >-
+    The template exists after registration, and the result lists the missing package as a
+    diagnostic that did not prevent it. The checks that need the package are made when the
+    template is instantiated, under INS-022.
+  vectors: []
+
+- id: PKG-007
+  layer: language
+  level: must
+  when: >-
+    An instance document's template uses a package that is not installed.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the package and the version required.
+  vectors: []
+
+- id: PKG-012
+  layer: language
+  level: must
+  when: >-
+    A package exports two things under one name.
+  then: >-
+    The package is rejected when it is installed.
+  observable: >-
+    Installation returns a diagnostic naming the repeated export name.
+  vectors: []
+
+- id: PKG-013
+  layer: language
+  level: must
+  when: >-
+    A selection resolves to something a package re-exports from another package.
+  then: >-
+    It resolves to the package that originally exports it, and the instance holds that
+    package's version and digest.
+  observable: >-
+    Inspecting the instance lists the originating package for that selection.
+  vectors: []
+
+- id: PKG-014
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose re-exports, followed through other packages, lead back to
+    itself.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the packages in the cycle.
+  vectors: []
+
+- id: PKG-016
+  layer: interface
+  level: must not
+  when: >-
+    An implementation that is not marked `plain` serves an instance.
+  then: >-
+    Its behavior for that instance depends on its having served another instance.
+  observable: >-
+    The results such an implementation returns for one instance are the same whether or not it
+    has also served others, in one process or several.
+  vectors: []
+
+# --- The manifest of a package (plan-audit ruling 31). Go's `module` line states a module's own
+# --- address in the same way.
+
+- id: PKG-017
+  layer: language
+  level: must
+  when: >-
+    A package's manifest is read.
+  then: >-
+    It states the package's own `address` and `version`, beside the `packages` it uses.
+  observable: >-
+    A package whose manifest states an address other than the one it was listed or fetched under
+    is rejected when it is installed. A project that is not published needs neither key.
+  vectors: []
+
+- id: PKG-018
+  layer: language
+  level: must
+  when: >-
+    A package's manifest lists its `exports`.
+  then: >-
+    They are the names of the documents in the package that others may refer to. A document the
+    package does not export can be referred to only from inside the package, in the form
+    NAM-022 gives.
+  observable: >-
+    A qualified reference from outside to a document that exists in the package but is not
+    exported is unresolved, with a diagnostic naming it.
+  vectors: []
+
+- id: PKG-019
+  layer: language
+  level: must
+  when: >-
+    A package's manifest lists its `implementations`.
+  then: >-
+    Each has a name, which is an export, and states `implements`, the operations it implements;
+    how it is reached, which is one of `command`, `url` and `graph`; `supports`, the
+    requirements it can apply; and `placement`, its requirements on placement.
+  observable: >-
+    Whether an implementation implements an operation, supports a filter or can run on a
+    location is answered from the manifest, without starting it.
+  vectors: []
+
+- id: PKG-020
+  layer: language
+  level: must
+  when: >-
+    An implementation is an existing server that was not written for this specification.
+  then: >-
+    Its manifest item is marked `plain: true` and gives `tools`, a map from each operation it
+    implements to the name of the tool that serves it. It states no `supports`.
+  observable: >-
+    An operation in `implements` that is not a key of `tools`, and a plain implementation that
+    states `supports`, are each rejected when the package is installed. A plain implementation
+    supports no requirement, and never counts as deduplicating under OPS-012, whatever the
+    contracts of its operations declare.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: PKG-021
+  layer: language
+  level: must
+  when: >-
+    A manifest item gives a digest for a package, and the archive of the installed package at
+    that address and version has a different digest.
+  then: >-
+    That package does not satisfy the item.
+  observable: >-
+    The item is unresolved, exactly as under PKG-003. The archive is not used, and its digest
+    is not put in place of the one the manifest gives.
+  vectors: []
+
+# --- Added by the follow-up decisions (plan-audit ruling 33; decision F26 of the re-audit).
+
+- id: PKG-022
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose archive is not a gzip-compressed tar file.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the archive. The digest of PKG-004 is taken over
+    the gzip-compressed file exactly as distributed, not over the tar file inside it or over
+    the files that tar file holds.
+  vectors: []

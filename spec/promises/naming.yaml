@@ -1,0 +1,357 @@
+# Naming: how packages, their exports and contracts are named, and where versions live.
+# Owner rulings of 2026-11-05 (plan-audit rulings 25, 27, 32 and 33). Each rule follows an
+# existing practice: Go for address-like identity and a breaking version taking a new address,
+# and RFC 1123 for the host part of an address; Go and Cargo for one project file holding
+# versions; a URL fragment, as in JSON Schema's `$ref`, for naming one thing inside an address;
+# Kubernetes for a contract's own version being independent of the release that ships it; Go's
+# standard library for a built-in package that no project file lists. NAM-018 to NAM-021 were
+# added by the consolidation rulings (plan-audit ruling 28).
+# Consolidation pass 1 folded PKG-002 into NAM-006 and PKG-008 into NAM-011, and added NAM-022
+# to NAM-026. The follow-up decisions (ruling 33) made NAM-025 a `should`, and named `fetch`
+# the manifest key that says where a package is fetched from, so that `source` is the key of a
+# value reference only. No promise of this file has been removed. Draft: no vector exists yet.
+
+- id: NAM-001
+  layer: language
+  level: must
+  when: >-
+    A package's address does not begin with a host part that is a lowercase DNS name with a dot
+    in it and no port, or has a path segment containing anything other than lowercase letters,
+    digits, `-`, `_` and `.`.
+  then: >-
+    The address is rejected wherever it appears.
+  observable: >-
+    Installing such a package, or resolving a manifest or reference that uses the address,
+    returns a diagnostic naming it. The host part is a host name as RFC 1123 gives it, written
+    in lowercase: labels made of letters, digits and hyphens, separated by dots.
+    `GitHub.com/acme/history` and `github.com:443/acme/history` are each rejected.
+  vectors: []
+
+- id: NAM-002
+  layer: language
+  level: must
+  when: >-
+    A document refers to something exported by a package it does not belong to.
+  then: >-
+    The reference is the package's address, then `#`, then the export's name. There is no
+    shorter form and no alias.
+  observable: >-
+    `github.com/acme/conduit-history#shared-reviewer` resolves to that export. The export's name
+    alone, or a path with the export as a further segment, does not.
+  vectors: []
+
+- id: NAM-003
+  layer: language
+  level: must
+  when: >-
+    A reference contains neither `#` nor `/`.
+  then: >-
+    It is a reference to a local object, and is never looked up in a package.
+  observable: >-
+    A local name resolves only among the objects that exist. If no such object exists the
+    reference is unresolved, even when an installed package exports that name.
+  vectors: []
+
+- id: NAM-004
+  layer: language
+  level: must
+  when: >-
+    A package is installed in which an export's name is not made of segments separated by `.`,
+    each made only of lowercase letters, digits and hyphens and starting with a letter, or is
+    longer than 63 characters.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the export. `local-directory.v1` is accepted. The
+    63 characters are counted over the whole name, its dots and its version segment included.
+  vectors: []
+
+- id: NAM-005
+  layer: language
+  level: must
+  when: >-
+    A reference carries a version of the package.
+  then: >-
+    The document is rejected. A reference names an address and an export, never a release.
+  observable: >-
+    Resolving returns a diagnostic naming the reference.
+  vectors: []
+
+- id: NAM-006
+  layer: language
+  level: must
+  when: >-
+    A project's manifest is read.
+  then: >-
+    It lists each package the project uses by address, with exactly one version and that
+    version's digest. A package is used at exactly one version.
+  observable: >-
+    A manifest that lists an address twice, gives a version range, or omits a version or a
+    digest is rejected with a diagnostic naming the item.
+  vectors: []
+
+- id: NAM-007
+  layer: language
+  level: must
+  when: >-
+    A document refers to an address that the manifest of its project does not list, or is
+    submitted with no manifest.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the address.
+  vectors: []
+
+- id: NAM-008
+  layer: language
+  level: must
+  when: >-
+    A manifest lists a package that no document in the project refers to.
+  then: >-
+    The submission is accepted, and the unused package is reported.
+  observable: >-
+    The result lists the unused address as a diagnostic that did not prevent registration.
+  vectors: []
+
+- id: NAM-009
+  layer: language
+  level: must
+  when: >-
+    A template is registered.
+  then: >-
+    It keeps the address, version and digest of each package it refers to, as its project's
+    manifest gave them at that moment. Where it refers to a contract of its own unpublished
+    project, it keeps in the same way the digest that identifies the unpublished package of
+    SUB-008.
+  observable: >-
+    Inspecting the template lists those packages with their versions and digests, and the
+    unpublished package by its digest. Changing or removing the manifest afterwards, or
+    submitting the project again with other contracts, does not change them.
+  vectors: []
+
+- id: NAM-010
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The template's references resolve through the packages the template holds, not through any
+    manifest in force at that time.
+  observable: >-
+    Two instances made from one template at different times hold the same package versions and
+    digests, whatever manifests were submitted in between.
+  vectors: []
+
+- id: NAM-011
+  layer: language
+  level: must
+  when: >-
+    A second version of an installed package is installed, or an installed package is removed.
+  then: >-
+    A second version is installed beside the first. Each template and instance continues to
+    hold, and to use, the version and digest it held before.
+  observable: >-
+    Templates that hold different versions of one package can both be instantiated, and their
+    instances can be connected by a Conduit. If a version that a template or an instance holds
+    is no longer installed, inspecting it reports that package as not installed, and nothing is
+    substituted.
+  vectors: []
+
+- id: NAM-012
+  layer: language
+  level: must
+  when: >-
+    A manifest item gives `fetch`, a place to fetch the package from that differs from the
+    item's address.
+  then: >-
+    The package is fetched from that place, and is still identified by its address.
+  observable: >-
+    Documents that refer to the address resolve unchanged whether the package came from the
+    address itself or from the place `fetch` gives, provided the digest matches under PKG-021.
+  vectors: []
+
+- id: NAM-013
+  layer: language
+  level: must
+  when: >-
+    A package is installed.
+  then: >-
+    Nothing is registered. What it exports can be reached only by a qualified reference.
+  observable: >-
+    After installation the objects that exist are exactly those that existed before it.
+  vectors: []
+
+- id: NAM-014
+  layer: language
+  level: must
+  when: >-
+    A document that belongs to a package refers to another package.
+  then: >-
+    The reference resolves through that package's own manifest, not through the manifest of a
+    project that uses the package.
+  observable: >-
+    A project that lists a different version of the other package does not change what the
+    package's own documents resolve to.
+  vectors: []
+
+- id: NAM-015
+  layer: language
+  level: must
+  when: >-
+    Two exports of a package have names that differ only in a final version segment, such as
+    `.v1` and `.v2`.
+  then: >-
+    They are two different contracts. A reference to one never resolves to the other.
+  observable: >-
+    A Conduit that names the `.v1` capability is not satisfied by a target that offers only
+    `.v2`.
+  vectors: []
+
+- id: NAM-016
+  layer: convention
+  level: must
+  when: >-
+    A type lists more than one version of a capability among those it offers.
+  then: >-
+    An instance of that type offers each of them, and a Conduit that names any one of them can
+    be opened to it.
+  observable: >-
+    One target is the target of two open Conduits at once, one naming `.v1` and one naming
+    `.v2`.
+  vectors: []
+
+- id: NAM-017
+  layer: convention
+  level: must not
+  when: >-
+    A Conduit is opened between a consumer and a target whose implementations come from
+    different versions of a package, or from different packages.
+  then: >-
+    The Conduit is kept from opening for that reason.
+  observable: >-
+    Package versions are not compared when a Conduit is opened.
+  vectors: []
+
+- id: NAM-018
+  layer: language
+  level: must
+  when: >-
+    A document selects a type, a capability, an operation, a requirement or an implementation.
+  then: >-
+    The selection is a qualified reference, or the form NAM-022 gives for something in the same
+    project or package. The selection of an implementation is written under the key
+    `implementation`, whatever it implements, and may instead be a graph written in place, as
+    TPL-003 states.
+  observable: >-
+    A selection written as a group, name and version is rejected with a diagnostic naming it.
+  vectors: []
+
+- id: NAM-019
+  layer: language
+  level: must
+  when: >-
+    A document applies a requirement, as a filter, as a policy or as a requirement on placement.
+  then: >-
+    It is written as `requirement`, a qualified reference to the requirement, and `arguments`,
+    and the arguments are checked against the inputs the requirement declares exactly as in
+    instantiation.
+  observable: >-
+    An undeclared argument, a missing required one, or one that fails its input's schema is
+    rejected with the diagnostic that instantiation would give.
+  vectors: []
+
+- id: NAM-020
+  layer: language
+  level: must
+  when: >-
+    A document refers to the core package, whose address is `github.com/shrav-k/conduit/core`.
+  then: >-
+    The reference resolves without a manifest item, to the core package built into the engine.
+  observable: >-
+    A document that refers to `github.com/shrav-k/conduit/core#location` and to nothing else in
+    a package is accepted with no manifest. The Schema contracts the core package exports, its
+    reference schemas among them, resolve in the same way.
+  vectors: []
+
+- id: NAM-021
+  layer: language
+  level: must
+  when: >-
+    A package is installed whose address is `github.com/shrav-k/conduit/core`, or a manifest
+    lists that address or gives `fetch` for it.
+  then: >-
+    The package or the manifest is rejected. The core package cannot be replaced.
+  observable: >-
+    Installation or resolving returns a diagnostic naming the address.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: NAM-022
+  layer: language
+  level: must
+  when: >-
+    A reference is written as `#` followed by a name, with no address before the `#`.
+  then: >-
+    It refers to the document of that name in the same project, or the same package, as the
+    document that holds it.
+  observable: >-
+    In a package it reaches a document the package does not export as well as one it does, as
+    PKG-018 allows. In a submitted project it reaches a contract of that project, as SUB-008
+    states. Where no document of that project or package has the name, the reference is
+    unresolved; it is never looked up among the objects that exist or in another package.
+  vectors: []
+
+- id: NAM-023
+  layer: convention
+  level: must
+  when: >-
+    A request is made through a Conduit, and the target holds a different version of the
+    package that publishes the operation's contract than the Conduit or its consumer holds.
+  then: >-
+    The contract as the target holds it governs. The inputs of the request and the outputs of
+    its result are checked against that version.
+  observable: >-
+    A request that the target's version of the contract accepts is dispatched whatever the
+    other version says, and one that it does not accept reports invalid.
+  vectors: []
+
+- id: NAM-024
+  layer: language
+  level: must
+  when: >-
+    A later release of a package exports a contract under the name, version segment included,
+    that an earlier release at the same address gave it.
+  then: >-
+    The later contract may add optional things, such as an optional input of an operation or a
+    further operation of a capability. It does not remove or change anything the earlier one
+    held.
+  observable: >-
+    Comparing the two contracts shows only such additions. Any other change is made as a new
+    contract, under a name with another version segment, as NAM-015 states.
+  vectors: []
+
+- id: NAM-025
+  layer: language
+  level: should
+  when: >-
+    A release of a package breaks with the releases before it.
+  then: >-
+    It takes a new address.
+  observable: >-
+    A contract of one name means the same, apart from the additions NAM-024 allows, in every
+    release at one address.
+  vectors: []
+
+- id: NAM-026
+  layer: convention
+  level: must
+  when: >-
+    A request through a Conduit names an operation that the Conduit lists and that the
+    capability's contract, in the version the target holds, does not include.
+  then: >-
+    The request is not dispatched and reports unavailable.
+  observable: >-
+    The target's implementation receives no call. The same request to a target that holds a
+    version which includes the operation is decided like any other.
+  vectors: []

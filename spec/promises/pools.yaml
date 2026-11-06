@@ -1,0 +1,198 @@
+# Pools: ownership and entries.
+# Owner rulings of 2026-11-05 (plan-audit rulings 21, 28, 29, 31, 32 and 33). Ownership is one
+# stored fact, as a resource's group is in Azure and an object's namespace is in Kubernetes;
+# every power over a Pool or its Resources is a Conduit (conventions/access.yaml). The Resources
+# of a Pool's entries are instantiated with the Pool, as a template's declared Conduits are
+# instantiated with their consumer. Setting up a Pool sets up its entries' Resources in
+# dependency order, as `docker compose up` does. POOL-008 was removed earlier: entries are
+# instantiated together.
+# Removed by consolidation pass 1: POOL-010 was folded into LIF-009.
+# Draft: no vector exists yet.
+
+- id: POOL-001
+  layer: language
+  level: must
+  when: >-
+    A Resource is instantiated.
+  then: >-
+    It has exactly one owner, and the owner is a Pool instance. No operation changes it.
+  observable: >-
+    A Resource document with no owner, or with an owner that is not a Pool instance, is rejected
+    with a diagnostic. Inspecting a Resource at any later time reports the same owner.
+  vectors: []
+
+- id: POOL-002
+  layer: language
+  level: must
+  when: >-
+    A Pool is instantiated.
+  then: >-
+    One Resource is instantiated for each of its entries, owned by that Pool. If any of them
+    cannot be instantiated, the Pool is not instantiated.
+  observable: >-
+    The resolved objects contain the Pool and one Resource per entry. Registering the Pool's
+    template instantiates no Resource.
+  vectors: []
+
+- id: POOL-003
+  layer: convention
+  level: must
+  when: >-
+    An actor asks for a new Resource for an entry while the Resource instantiated from that
+    entry is not retired.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    The Pool owns one Resource for the entry before and after the request. Where the entry's
+    Resource is retired, the request is the one LIF-009 describes.
+  vectors: []
+
+- id: POOL-004
+  layer: language
+  level: must
+  when: >-
+    A Resource document names a Pool as owner and is not one of that Pool's entries.
+  then: >-
+    The Resource is instantiated like any other instance and is owned by that Pool.
+  observable: >-
+    The Pool owns the new Resource alongside any instantiated from its entries. No entry is
+    needed for it.
+  vectors: []
+
+- id: POOL-005
+  layer: language
+  level: must
+  when: >-
+    A Pool template is registered in which one entry refers to another entry.
+  then: >-
+    The reference is written as `{entry: name}`, and the template is rejected if no entry of the
+    same Pool has that name. A bare name in that place is an ordinary reference to an object
+    that exists and never means an entry.
+  observable: >-
+    Resolving returns a diagnostic naming the entry and the name it refers to.
+  vectors: []
+
+- id: POOL-006
+  layer: language
+  level: must
+  when: >-
+    A Pool is instantiated and one of its entries refers to another.
+  then: >-
+    The reference resolves to the Resource instantiated from the other entry.
+  observable: >-
+    The Resource holds the ID of that Resource where the reference was, whichever entry is
+    written first. The entry that refers depends on the entry it refers to.
+  vectors: []
+
+- id: POOL-007
+  layer: convention
+  level: must not
+  when: >-
+    A Resource instantiated from an entry is set up by a request that names that Resource.
+  then: >-
+    The Resource of any other entry is set up because of it.
+  observable: >-
+    After the setup, the other entries' Resources have the lifecycle states they had before. The
+    setup proceeds even where a Resource it refers to is not ready, and a request made to that
+    Resource through a Conduit meanwhile reports unavailable under CON-024.
+  vectors: []
+
+- id: POOL-009
+  layer: language
+  level: must
+  when: >-
+    A Pool template is registered in which an input has the placement of an entry as a
+    destination.
+  then: >-
+    The template is accepted, and the Resource of that entry takes the placement supplied for
+    the input. An entry's placement is written in no other way.
+  observable: >-
+    An entry that itself names a location is rejected under PLC-005, with a diagnostic naming
+    the entry. An entry whose placement no input supplies is placed under POOL-016.
+  vectors: []
+
+- id: POOL-011
+  layer: language
+  level: must
+  when: >-
+    A Pool template is registered in which the references among its entries form a cycle.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the entries in the cycle.
+  vectors: []
+
+- id: POOL-012
+  layer: language
+  level: must
+  when: >-
+    An entry of a Pool template is read.
+  then: >-
+    It is a nested instantiation of a Resource template: `from`, `arguments`, and optionally
+    `optional: true`. It gives no owner, because its owner is the Pool.
+  observable: >-
+    An entry that carries `owner` is rejected with a diagnostic naming it.
+  vectors: []
+
+- id: POOL-013
+  layer: convention
+  level: must
+  when: >-
+    A Pool is set up.
+  then: >-
+    The step that GRA-022 gives each entry sets up the Resource of that entry that is not
+    retired, after the Resources of the entries it refers to. A Resource that is already ready
+    is left as it is.
+  observable: >-
+    After the Pool's setup succeeds, the Resource of every entry not marked optional is ready,
+    and none was set up before a Resource it refers to.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32, decisions G3 and A1).
+
+- id: POOL-014
+  layer: language
+  level: must
+  when: >-
+    A document outside a Pool's template refers to the Resource of one of that Pool's entries.
+  then: >-
+    The reference is written `{kind: Pool, name: <pool>, entry: <entry>}`, and resolves to the
+    Resource of that entry that is not retired.
+  observable: >-
+    The resolved instance holds that Resource's ID. Where the Pool has no entry of that name,
+    or the entry has no Resource that is not retired, the reference names no existing object,
+    with the result that OBJ-008 and OBJ-009 state.
+  vectors: []
+
+- id: POOL-015
+  layer: convention
+  level: must
+  when: >-
+    A Pool's setup reaches the step that sets up the Resource of an entry.
+  then: >-
+    The step is a request to set up that Resource made by the actor that asked for the Pool's
+    setup, and it is authorized against the Pool under ACC-033 like any other request to set up
+    a Resource the Pool owns.
+  observable: >-
+    If that actor is not the consumer of an open Conduit to the Pool that lists the operation,
+    the step reports refused, the Resource is not set up and its state is as it was.
+  vectors: []
+
+# --- Added by the follow-up rulings (plan-audit ruling 33; decision F15 of the re-audit).
+
+- id: POOL-016
+  layer: language
+  level: must
+  when: >-
+    A Pool is instantiated, and no input of its template supplies the placement of one of its
+    entries.
+  then: >-
+    The Resource of that entry takes its placement under the default rules PLC-002 to PLC-004,
+    like any instance whose document gives no placement.
+  observable: >-
+    Where exactly one location exists that is not retired, the Resource is placed on it. Where
+    several do, it is placed on the location the `system` Pool's default-location setting names,
+    and where that setting names none of them the Resource is not instantiated, and so neither
+    is the Pool, under POOL-002. This holds whether the template has no input with that
+    destination or has an optional one that was not supplied.
+  vectors: []

@@ -1,0 +1,113 @@
+# Submissions: handing the engine several documents at once.
+# Owner rulings of 2026-11-05 (plan-audit rulings 21, 22, 32 and 33). Draft: no vector exists
+# yet. Consolidation pass 1: SUB-007 was reduced to the replace operation; the rejection it
+# shared with OBJ-011 is OBJ-002. SUB-008 was added. No promise of this file has been removed.
+
+- id: SUB-001
+  layer: language
+  level: must
+  when: >-
+    Several documents are submitted together.
+  then: >-
+    They are treated as a set. The order in which they appear, within a file or across files,
+    has no meaning.
+  observable: >-
+    Submitting the same documents in any order gives the same result: the same objects, or the
+    same diagnostics.
+  vectors: []
+
+- id: SUB-002
+  layer: language
+  level: must
+  when: >-
+    A document in a submission refers to an object that another document in the same
+    submission makes.
+  then: >-
+    The reference resolves to that object, exactly as it would to an object that already
+    exists.
+  observable: >-
+    An instance and the template it comes from can be submitted together, and so can a Conduit
+    and the instances it names. The result is the same as submitting them one after another in
+    a workable order.
+  vectors: []
+
+- id: SUB-003
+  layer: language
+  level: must
+  when: >-
+    Any document in a submission is rejected.
+  then: >-
+    Nothing in the submission is registered.
+  observable: >-
+    After a rejected submission the objects that exist are exactly those that existed before
+    it. The diagnostics name each rejected document.
+  vectors: []
+
+- id: SUB-004
+  layer: language
+  level: must
+  when: >-
+    Two documents in a submission would make objects with the same kind and name.
+  then: >-
+    The submission is rejected.
+  observable: >-
+    The diagnostic names both documents, and nothing is registered.
+  vectors: []
+
+- id: SUB-005
+  layer: language
+  level: must
+  when: >-
+    A submission contains something that is not a template, an instance, a contract or the
+    project's one manifest.
+  then: >-
+    The submission is rejected.
+  observable: >-
+    The diagnostic names the item, and nothing is registered.
+  vectors: []
+
+- id: SUB-006
+  layer: language
+  level: must
+  when: >-
+    A submission is accepted.
+  then: >-
+    Its templates and instances are registered, and its contracts are made available under
+    SUB-008. Nothing else happens.
+  observable: >-
+    After an accepted submission the new objects are those its documents make, and each new
+    instance is as INS-016 leaves it.
+  vectors: []
+
+- id: SUB-007
+  layer: language
+  level: must
+  when: >-
+    A template is replaced.
+  then: >-
+    It is done by a replace operation that names the template's current revision. Submitting a
+    document never replaces a template.
+  observable: >-
+    A document submitted under the kind and name of an existing template is rejected under
+    OBJ-002, and the template and its revision are unchanged. After a replace, the instances
+    made before it are as INS-020 states, and instances made after it come from the template as
+    replaced.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: SUB-008
+  layer: language
+  level: must
+  when: >-
+    A submission contains contract documents.
+  then: >-
+    They are made available to the documents of that project, and are not registered. The
+    engine keeps them as an unpublished package, identified by a digest of its documents.
+  observable: >-
+    A document of the same project can refer to such a contract as `#name` under NAM-022. No
+    object exists for the contract after the submission, and no document outside the project
+    can refer to it. A template registered by the submission keeps that digest under NAM-009,
+    as it keeps the version and digest of any package, so the contracts it resolved against
+    stay available to it and to its instances.
+  vectors: []

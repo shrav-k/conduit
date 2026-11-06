@@ -1,0 +1,367 @@
+# Ownership and lifecycle: the one set of states every instance has, what inspecting returns,
+# and how an instance is retired and unregistered.
+# Owner rulings of 2026-11-05 (plan-audit rulings 28, 29, 30, 32 and 33). The states only move
+# forward, as a Kubernetes Pod's phases do; a replacement is a new object. Whether an instance
+# is running, paused or idle is a matter for its type contract. Retirement takes effect at once
+# and removal waits for shutdown to be confirmed, as a Kubernetes object is marked for deletion
+# at once and removed when its finalizers finish. Which Conduit permits each of these operations
+# is ACC-033. Consolidation pass 1 folded in CON-010, CON-015, POOL-010 and PLC-010, and split
+# LIF-014 into LIF-014, LIF-024, LIF-025 and LIF-026. Draft: no vector exists yet.
+
+- id: LIF-001
+  layer: convention
+  level: must
+  when: >-
+    An instance of any family is inspected.
+  then: >-
+    It reports exactly one lifecycle state: registered, ready or retired.
+  observable: >-
+    The status of an Interface, Agent, Resource, Pool or Conduit instance holds one of those
+    three values and never any other, including unknown. No instance, a Conduit included, has a
+    suspended state: to limit access for a time without ending it, a policy is applied to the
+    consumer or the target.
+  vectors: []
+
+- id: LIF-002
+  layer: language
+  level: must
+  when: >-
+    An instance is instantiated.
+  then: >-
+    Its state is registered.
+  observable: >-
+    Inspecting the new instance reports the state registered.
+  vectors: []
+
+- id: LIF-003
+  layer: convention
+  level: must
+  when: >-
+    An instance's setup succeeds.
+  then: >-
+    Its state is ready.
+  observable: >-
+    Inspecting the instance after the setup reports the state ready. For a Conduit, setup is
+    being opened.
+  vectors: []
+
+- id: LIF-004
+  layer: convention
+  level: must
+  when: >-
+    An instance's setup fails, or has an unknown outcome, or is not dispatched.
+  then: >-
+    Its state is unchanged, and its status reports how that setup ended.
+  observable: >-
+    An instance that was registered is still registered, and one that was ready is still ready.
+    The status names the setup and its outcome, or the reason it was not dispatched.
+  vectors: []
+
+- id: LIF-005
+  layer: convention
+  level: must
+  when: >-
+    A request to retire an instance is dispatched.
+  then: >-
+    Its state is retired from that moment, whatever the outcome of the retire operation.
+  observable: >-
+    Inspecting the instance reports the state retired and what retired it, even while its
+    shutdown is not confirmed. For a Conduit, retiring is being closed.
+  vectors: []
+
+- id: LIF-006
+  layer: convention
+  level: must not
+  when: >-
+    An instance is ready or retired.
+  then: >-
+    Any operation returns it to an earlier state.
+  observable: >-
+    No operation moves a ready instance to registered, or a retired instance to ready or
+    registered. A request to set up a retired instance, which for a Conduit is a request to open
+    a closed one, is not dispatched and reports conflict.
+  vectors: []
+
+- id: LIF-007
+  layer: language
+  level: must
+  when: >-
+    An instance is retired.
+  then: >-
+    It still exists, in the state retired, until it is unregistered.
+  observable: >-
+    The retired instance can still be inspected by its ID, and its name cannot be given to
+    another object of its kind, until an unregister operation removes it.
+  vectors: []
+
+- id: LIF-008
+  layer: convention
+  level: must not
+  when: >-
+    An instance made by a nested instantiation, such as a declared Conduit or the Resource of a
+    Pool's entry, is retired.
+  then: >-
+    Setup, anything else that happens to the instance it belongs to, or anything other than an
+    explicit request under LIF-009, makes another instance in its place.
+  observable: >-
+    However often setup runs afterwards, the nested instantiation has only the retired instance
+    until a replacement is registered under LIF-009. Until then the step for it reports
+    conflict under LIF-006 and names the retired instance, and the consumer of a closed declared
+    Conduit has no access through it.
+  vectors: []
+
+- id: LIF-009
+  layer: convention
+  level: must
+  when: >-
+    An actor explicitly asks for a new instance for a nested instantiation whose instance is
+    retired.
+  then: >-
+    A new instance is instantiated from the nested instantiation as the instance it belongs to
+    holds it in its resolved definition, with a new ID, in the state registered. The retired
+    instance is not changed. The request is a registration: it is authorized under ACC-033 as
+    registering that instance would be, and it sets nothing up and opens nothing.
+  observable: >-
+    Inspection shows two instances for the nested instantiation: the earlier one retired with
+    its original ID, and a later one with a different ID. Instances that held the retired one's
+    ID still hold it. A replacement for the Resource of an entry is owned by the same Pool. A
+    replacement for a declared Conduit is opened by a separate request to `access`, or by a
+    later setup of its consumer under CON-004. That the template was replaced or unregistered in
+    the meantime changes none of this.
+  vectors: []
+
+- id: LIF-010
+  layer: convention
+  level: must
+  when: >-
+    What an instance is doing cannot be observed, for example because its location cannot be
+    reached.
+  then: >-
+    Its lifecycle state is unchanged.
+  observable: >-
+    Inspection shows the same lifecycle state and the same placement as before, with what could
+    not be observed reported as unknown under OBS-003. Instances on other locations report as
+    before.
+  vectors: []
+
+- id: LIF-011
+  layer: convention
+  level: must
+  when: >-
+    A type contract defines further conditions of its instances, such as running, paused or
+    idle.
+  then: >-
+    They are reported in the instance's status beside its lifecycle state, and never change
+    that state.
+  observable: >-
+    An Agent whose type reports it paused, or whose process has ended, is still ready. Only
+    setup and retirement change the lifecycle state.
+  vectors: []
+
+- id: LIF-012
+  layer: convention
+  level: must
+  when: >-
+    A template is registered.
+  then: >-
+    It exists until it is unregistered, and has no lifecycle state.
+  observable: >-
+    A request to set up or to retire a template is not dispatched and reports invalid.
+  vectors: []
+
+- id: LIF-013
+  layer: convention
+  level: must
+  when: >-
+    An instance is inspected.
+  then: >-
+    The result has three parts: what was declared, the instance's status, and the records
+    about it.
+  observable: >-
+    The declared part is the resolved definition and configuration. The status holds the
+    lifecycle state and what has been observed. The records are the log entries that name the
+    instance.
+  vectors: []
+
+# --- Retirement and unregistration (plan-audit rulings 30 and 32).
+
+- id: LIF-014
+  layer: convention
+  level: must
+  when: >-
+    An instance is retired.
+  then: >-
+    Its status reports its shutdown as exactly one of confirmed, pending or unknown.
+  observable: >-
+    Inspecting any retired instance shows one of those three values against its shutdown, and
+    never any other. Which of them it is follows LIF-024.
+  vectors: []
+
+- id: LIF-015
+  layer: convention
+  level: must
+  when: >-
+    A retired instance is addressed by a request to set it up or to change it.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    The instance is as it was. The only requests that address a retired instance and can be
+    dispatched are to inspect it, to retire it again, to reconcile its retirement and to
+    unregister it. Requests through the Conduits of which it was an end are requests through
+    closed Conduits, which ACC-011 covers.
+  vectors: []
+
+- id: LIF-016
+  layer: convention
+  level: must not
+  when: >-
+    An instance is retired.
+  then: >-
+    Anything is stopped or released other than what the instance itself holds, as its type
+    contract defines.
+  observable: >-
+    An external service, a shared Resource and every other instance are as they were, apart
+    from the Conduits of which the retired instance was an end, which are closed under CON-008.
+  vectors: []
+
+- id: LIF-017
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to unregister an instance.
+  then: >-
+    The request is dispatched only if the instance is retired and either its shutdown is
+    confirmed or it was retired because its location was declared lost.
+  observable: >-
+    Unregistering a registered or ready instance, or a retired one whose shutdown is pending or
+    unknown and whose location was not declared lost, reports conflict and the instance still
+    exists. Like any change, the request names the object's current revision.
+  vectors: []
+
+- id: LIF-018
+  layer: convention
+  level: must
+  when: >-
+    The shutdown of a retired instance can never be confirmed by its implementation.
+  then: >-
+    It stays unknown until an actor reconciles the retire operation under OPS-014. That request
+    is authorized against the same target as retiring the instance, as ACC-033 states.
+  observable: >-
+    After a reconciliation that records the shutdown as having happened, the status reports
+    confirmed and the instance can be unregistered. Nothing confirms it by the passing of time.
+    An instance retired because its location was declared lost has no retire operation to
+    reconcile, and is unregistered under LIF-017 while its shutdown is still unknown.
+  vectors: []
+
+- id: LIF-019
+  layer: convention
+  level: must not
+  when: >-
+    An object is unregistered.
+  then: >-
+    Records, backing files or service data are erased, or any object that refers to it is
+    changed, retired or unregistered.
+  observable: >-
+    The records about the object can still be read. Objects that referred to it hold the same
+    ID as before and report it as missing.
+  vectors: []
+
+- id: LIF-020
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to retire a Pool that owns a Resource whose shutdown is not confirmed, or to
+    unregister a Pool that owns a Resource that still exists.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    The Pool and its Resources are as they were, and the response names the Resources in the
+    way. A Resource that is registered or ready, or that is retired with its shutdown pending or
+    unknown, is in the way of retiring the Pool.
+  vectors: []
+
+- id: LIF-021
+  layer: convention
+  level: must
+  when: >-
+    An actor asks, in one explicit operation, to retire a Pool together with the Resources it
+    owns.
+  then: >-
+    A request to retire each Resource is dispatched, and the request to retire the Pool is
+    dispatched only once the shutdown of every one of those Resources is confirmed.
+  observable: >-
+    If the shutdown of any Resource is pending or unknown, no request to retire the Pool has
+    been dispatched, so its state is as it was under LIF-005, and the result lists what remains.
+    Retirements that did succeed are not undone.
+  vectors: []
+
+- id: LIF-022
+  layer: convention
+  level: must not
+  when: >-
+    An actor asks to retire or unregister a first-start object, which is the Pool `system`, the
+    location `local`, the Resource `management`, the Resource `access` or the Interface `root`,
+    or asks to declare the location `local` lost.
+  then: >-
+    The object is retired or unregistered.
+  observable: >-
+    The request reports refused, whoever makes it, and the object is as it was. It reports
+    refused even where the object's state, or what it owns or has placed on it, would make the
+    request report conflict under LIF-017, LIF-020 or PLC-011. Closing a Conduit of `root` is
+    refused under ACC-024.
+  vectors: []
+
+- id: LIF-023
+  layer: convention
+  level: must not
+  when: >-
+    No actor has asked for it.
+  then: >-
+    An instance is retired or unregistered.
+  observable: >-
+    The only retirements without a request naming the instance are those of a Conduit whose
+    consumer or target is retired or declared lost, and of the instances on a location that is
+    declared lost. Nothing is collected for being unused, unreferenced or old.
+  vectors: []
+
+# --- Split from LIF-014 by consolidation pass 1 (plan-audit ruling 32, decision G12).
+
+- id: LIF-024
+  layer: convention
+  level: must
+  when: >-
+    The shutdown of a retired instance is reported.
+  then: >-
+    It is confirmed when the retire operation succeeded, and at once for an instance that was
+    never set up, under LIF-025. It is unknown when the outcome of the retire operation is
+    unknown, and for an instance for which a setup was dispatched and that was retired because
+    its location was declared lost, under PLC-017. It is pending otherwise.
+  observable: >-
+    The status reports pending while the retire operation has not ended and after it failed.
+    What the retire operation does is TPL-009.
+  vectors: []
+
+- id: LIF-025
+  layer: convention
+  level: must
+  when: >-
+    An instance for which no setup was ever dispatched is retired.
+  then: >-
+    Its `retire` graph does not run, and its shutdown is confirmed at once.
+  observable: >-
+    No implementation receives a call because of the retirement. The status reports the state
+    retired and the shutdown confirmed.
+  vectors: []
+
+- id: LIF-026
+  layer: convention
+  level: may
+  when: >-
+    An instance is retired and its shutdown is not confirmed.
+  then: >-
+    It is retired again by a further request to retire it.
+  observable: >-
+    A request to retire an instance whose shutdown is pending or unknown is not stopped by
+    LIF-015. The operations convention decides which of its steps are dispatched again, and
+    the status then reports the shutdown under LIF-024.
+  vectors: []

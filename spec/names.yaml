@@ -1,0 +1,25 @@
+# The names this version of the specification assigns. This file is the one place they are
+# defined. Every other file under spec/ writes them out in full so that it can be read on its
+# own, and `python3 tools/set_names.py --check` verifies that each agrees with this file.
+#
+# Owner ruling of 2026-11-05 (plan-audit rulings 33 and 34): until there is a domain, the names
+# come from the repository. To change them, run `python3 tools/set_names.py` with the new
+# values; it rewrites every occurrence and this file together, and moves the old values to
+# `retired`, which the check then refuses anywhere under spec/.
+
+# Where the specification lives. The other names are derived from it.
+repository: github.com/shrav-k/conduit
+
+# The address of the core package, built into every engine.
+corePackage: github.com/shrav-k/conduit/core
+
+# The value of `apiVersion` in a document written for this version.
+apiVersion: github.com/shrav-k/conduit/v0
+
+# The prefix of the keys Conduit adds to a Model Context Protocol request's and result's
+# `_meta`. Reverse-DNS, as the protocol's own keys are.
+metaPrefix: io.github.shrav-k.conduit/
+
+# Names used before, one per line. None may appear anywhere under spec/.
+retired:
+  - conduit.dev

@@ -1,0 +1,137 @@
+# Contracts: the five kinds of published definition and what each holds.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). A contract is a document with the
+# same envelope as any other, as a Kubernetes resource definition is itself a resource. Every
+# field below is one that an existing promise already relies on. The JSON Schemas of these
+# documents are still to be written. Consolidation pass 1 took PLC-014 and part of PKG-011 into
+# CTR-004, and added CTR-007. The follow-up decisions (ruling 33) added CTR-008, the kind
+# `Schema`. No promise of this file has been removed. Draft: no vector exists yet.
+
+- id: CTR-001
+  layer: language
+  level: must
+  when: >-
+    A contract document is read.
+  then: >-
+    It has `apiVersion`, a `kind` that is one of `Type`, `Capability`, `Operation`,
+    `Requirement` and `Schema`, `metadata` and `spec`. Its name is its export name, which
+    follows NAM-004 and whose last segment is its compatibility version.
+  observable: >-
+    A contract whose name has no version segment such as `.v1`, or that has any other top-level
+    key, is rejected when its package is installed or its project is submitted.
+  vectors: []
+
+- id: CTR-002
+  layer: language
+  level: must
+  when: >-
+    An Operation contract is read.
+  then: >-
+    Its `spec` may hold `inputs` and `outputs`, each a map from a name, which may be any
+    non-empty string, to a member that holds either a `schema` or, for a handle,
+    `handle: true`, and may hold `optional: true`; `effect`, a statement of what it changes
+    outside itself; `startsModelWork`; `deduplicates`; `implementation`, its default
+    implementation, which is one qualified reference; and, for a control, `changes`, as CTR-006
+    states.
+  observable: >-
+    An operation with no `effect` changes nothing outside itself. `startsModelWork` and
+    `deduplicates` are booleans, and one that is absent is false; IMP-003 and OPS-012 state what
+    each mark means. An input or output with both `schema` and `handle`, or with neither, or
+    whose name is the empty string, is rejected when the contract's package is installed. A
+    name such as `maxResults` or `max_results` is accepted: the rule OBJ-022 gives for other
+    names a document chooses does not apply to these.
+  vectors: []
+
+- id: CTR-003
+  layer: language
+  level: must
+  when: >-
+    A Capability contract is read.
+  then: >-
+    Its `spec` holds `operations`, a list of qualified references to the operations it includes.
+  observable: >-
+    A capability outside the core package that lists an operation reserved to the root Interface
+    is rejected when its package is installed.
+  vectors: []
+
+- id: CTR-004
+  layer: language
+  level: must
+  when: >-
+    A Type contract is read.
+  then: >-
+    Its `spec` holds `family`; `schema`, the schema of an instance's `config`; `offers`, the
+    capabilities its instances offer; `requires`, the operations its instances must have
+    implemented; `runtimes`; `implementation`, its default implementations, a map in the form
+    TPL-003 gives for a template; `controls`, a list of qualified references to its controls;
+    `placement`, a map of applied requirements on placement; and `conditions`, the names of the
+    further conditions it reports.
+  observable: >-
+    A Type contract with no `family`, or with no `placement` key, is rejected when its package
+    is installed. A type with no requirements on placement writes an empty map. A type whose
+    default implementation cannot be resolved through its own package's manifest is rejected in
+    the same way.
+  vectors: []
+
+- id: CTR-005
+  layer: language
+  level: must
+  when: >-
+    A Requirement contract is read.
+  then: >-
+    Its `spec` holds `appliesTo`, a list drawn from `conduit`, `policy` and `placement`;
+    `inputs`; `narrows`, which is true for a requirement that limits requests and so can serve
+    as a filter; and, for a composition, `constituents`, a map of applied requirements. A
+    requirement whose `appliesTo` includes `placement` states `schema`, a schema that a
+    location's stored facts must satisfy, and declares no `inputs`.
+  observable: >-
+    Applying a requirement somewhere its `appliesTo` does not list is rejected. A composition
+    that reaches itself through its constituents, and a requirement that applies to placement
+    and states no `schema` or declares `inputs`, are rejected when the package is installed.
+  vectors: []
+
+- id: CTR-006
+  layer: language
+  level: must
+  when: >-
+    A control is defined.
+  then: >-
+    It is an Operation contract whose `spec` also holds `changes`, a list of JSON Pointers into
+    the configuration. A Type contract lists it under `controls`, and each pointer in its
+    `changes` addresses a place in the configuration that the type's `schema` describes.
+  observable: >-
+    A type that lists a control whose `changes` addresses a place its schema does not describe,
+    or that lists under `controls` an operation with no `changes`, is rejected when the package
+    is installed. An instance has only the controls its type lists.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: CTR-007
+  layer: language
+  level: must
+  when: >-
+    A Capability contract lists two operations that have the same export name, as operations of
+    two packages may.
+  then: >-
+    The contract is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the two operations. No capability gives two of its
+    operations one name.
+  vectors: []
+
+# --- Added by the follow-up decisions (plan-audit ruling 33; decision F21 of the re-audit).
+
+- id: CTR-008
+  layer: language
+  level: must
+  when: >-
+    A Schema contract is read.
+  then: >-
+    Its `spec` is a schema under the schema profile. The schema is the whole of `spec`, not a
+    member of it.
+  observable: >-
+    A `spec` that uses a keyword or a format outside the profile is rejected under SCH-002 and
+    SCH-003. A `$ref` that is a qualified reference resolves to a Schema contract that a
+    package exports, as SCH-015 states. The core package's reference schemas are Schema
+    contracts.
+  vectors: []

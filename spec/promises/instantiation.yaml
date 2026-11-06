@@ -1,0 +1,300 @@
+# Instantiation: how a template and its arguments become an instance.
+# Owner rulings of 2026-11-05 (plan-audit rulings 8, 18, 21, 28, 29, 32 and 33). Draft: no
+# vector exists yet. Consolidation pass 1: INS-015 was folded into OBJ-013. INS-020 to INS-022
+# were added. The follow-up decisions (ruling 33) added INS-023.
+
+- id: INS-001
+  layer: language
+  level: must
+  when: >-
+    A document whose kind is one of the five families is read.
+  then: >-
+    It is a template if it has no `from`, and an instance if it has `from`. There is no other
+    marker.
+  observable: >-
+    A document with `from` that also carries a `spec` is rejected, with a diagnostic naming the
+    `spec`. A document of the kind `Type`, `Capability`, `Operation`, `Requirement` or `Schema`
+    is a contract, and this test is not applied to it.
+  vectors: []
+
+- id: INS-002
+  layer: language
+  level: must
+  when: >-
+    An instance document's `from` does not resolve to a template of the same kind.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the `from` value and what it resolved to, if anything.
+    Every instance is made from a template: one that exists when the instance is made, or one
+    that an installed package exports.
+  vectors: []
+
+- id: INS-003
+  layer: language
+  level: must
+  when: >-
+    An instance document supplies, under `arguments`, a value for a name that is not an input
+    its template declares.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the undeclared argument.
+  vectors: []
+
+- id: INS-004
+  layer: language
+  level: must
+  when: >-
+    An instance document omits an input that its template declares with no `default` and
+    without marking it `optional: true`.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the missing input.
+  vectors: []
+
+- id: INS-005
+  layer: language
+  level: must
+  when: >-
+    An argument does not satisfy the `schema` its input declares.
+  then: >-
+    No instance is made, and the document that supplies the argument is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the input and the part of the schema the value fails.
+  vectors: []
+
+- id: INS-006
+  layer: language
+  level: must
+  when: >-
+    An argument is supplied for an input.
+  then: >-
+    The whole value is assigned to each destination the input names.
+  observable: >-
+    In the resolved instance each destination holds exactly the supplied value. Nothing is
+    merged with what the template had there.
+  vectors: []
+
+- id: INS-007
+  layer: language
+  level: must
+  when: >-
+    An input that declares a `default` is not supplied.
+  then: >-
+    The default is assigned to each of its destinations.
+  observable: >-
+    In the resolved instance each destination holds the default value.
+  vectors: []
+
+- id: INS-008
+  layer: language
+  level: must
+  when: >-
+    An optional input that declares no `default` is not supplied.
+  then: >-
+    Nothing is assigned. Each of its destinations keeps the value the template gives it, or is
+    absent if the template gives none.
+  observable: >-
+    In the resolved instance each destination equals the template's value there. Where the
+    template gives none, it holds a default of the type's schema under INS-019, or is absent.
+  vectors: []
+
+- id: INS-009
+  layer: language
+  level: must
+  when: >-
+    Null is supplied for an input.
+  then: >-
+    It is assigned as a value if the input's schema permits null, and is otherwise rejected
+    under INS-005. It is never treated as the input not being supplied.
+  observable: >-
+    Where null is permitted, each destination holds null and no default is applied.
+  vectors: []
+
+- id: INS-010
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which two inputs name the same destination, or one input's
+    destination lies inside another's.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming both inputs and the destinations that overlap.
+  vectors: []
+
+- id: INS-011
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which an input names a destination whose parent is not present
+    in the template.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the input and the destination.
+  vectors: []
+
+- id: INS-012
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which an input's destination is, or is inside, `type`,
+    `implementation`, `runtimes`, `setup`, `retire`, `controls` or a Conduit template's
+    `capability`, or is the `from` or the `optional` of a nested instantiation.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the input and the key its destination reaches. These
+    destinations are accepted: a place inside `config`; a declared Conduit's `target`, and a
+    place inside its `arguments`; an entry's `placement`, and a place inside its `arguments`;
+    and, in a Conduit template, `operations`, a place inside the `arguments` of an applied
+    requirement, and a place inside the `arguments` of a component. Examples are
+    `/config/model`, `/conduits/checkout/target`, `/entries/cache/placement`, `/operations`,
+    `/requirements/rate/arguments/limit` and `/components/read/arguments/root`. What is
+    required of an `operations` that an input fills is INS-023.
+  vectors: []
+
+- id: INS-013
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The instance holds the complete resolved definition and configuration, including the nested
+    instantiations its template declared. The arguments are not kept as a separate layer.
+  observable: >-
+    Inspecting the instance returns its definition and configuration with every destination
+    filled, and nothing that says which values came from arguments other than the template it
+    came from. A replacement for one of its nested instances, made under LIF-009, is made from
+    the nested instantiation as the instance holds it.
+  vectors: []
+
+- id: INS-014
+  layer: language
+  level: must
+  when: >-
+    The configuration that instantiation would produce does not satisfy the `schema` of the
+    instance's type.
+  then: >-
+    No instance is made, and the instance document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the type and what fails. A template can narrow what
+    its type allows and cannot widen it.
+  vectors: []
+
+- id: INS-016
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    The only objects made are the instance and its nested instances, which are the Conduits its
+    template declares and, for a Pool, the Resources of its entries. A composite Conduit
+    template makes one Conduit for each component and none for the composition, as CON-003
+    states. Nothing is set up or opened.
+  observable: >-
+    After instantiation no setup has run, no Conduit is open, and no implementation has
+    received a call.
+  vectors: []
+
+- id: INS-017
+  layer: language
+  level: must
+  when: >-
+    The same template is instantiated twice with the same arguments while the same objects
+    exist.
+  then: >-
+    The two results are the same, apart from generated names and IDs.
+  observable: >-
+    The two resolved instances are equal field by field once names and IDs are set aside.
+  vectors: []
+
+- id: INS-018
+  layer: language
+  level: must not
+  when: >-
+    An argument is a relative path.
+  then: >-
+    It is joined to a working directory or to any other base.
+  observable: >-
+    The value reaches its destination exactly as supplied. Whether a relative path is then valid
+    is decided by the schema of the type that receives it.
+  vectors: []
+
+- id: INS-019
+  layer: language
+  level: must
+  when: >-
+    A destination could take its value from an argument, from the input's default, from the
+    template, or from a default in the type's schema.
+  then: >-
+    The first of those that exists is used, in that order.
+  observable: >-
+    An argument overrides the input's default; the input's default overrides the template's
+    value; and the type schema's default, applied under SCH-009, fills only what is still
+    absent. Controls apply no default, as REV-006 states.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: INS-020
+  layer: language
+  level: must
+  when: >-
+    A template from which instances have been made is replaced or unregistered.
+  then: >-
+    Each of those instances keeps the definition and configuration it resolved when it was
+    made. Having instances does not prevent a template from being replaced or unregistered.
+  observable: >-
+    A request to unregister a template that has instances does not report conflict on their
+    account. Afterwards each instance inspects as it did before, and an instance document whose
+    `from` names the unregistered template is rejected under INS-002.
+  vectors: []
+
+- id: INS-021
+  layer: language
+  level: must
+  when: >-
+    A template declares an input.
+  then: >-
+    It is a member of the `inputs` map of the template's `spec`, keyed by the input's name. It
+    holds `schema`, the schema of the value, and `to`, a list of one or more destinations, and
+    may hold `default` and `optional: true`.
+  observable: >-
+    An input with no `schema`, or with no `to` or an empty one, is rejected with a diagnostic
+    naming the input. `to: [/config/model]` assigns the value to the `model` member of `config`.
+  vectors: []
+
+- id: INS-022
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated.
+  then: >-
+    Every check that resolving makes on a template is made again, against the packages the
+    template holds.
+  observable: >-
+    A template that was registered while one of its packages was not installed, as PKG-006
+    allows, is checked in full before any instance is made. If a check fails, no instance is
+    made and the instance document is rejected with the diagnostic that resolving the template
+    would have returned.
+  vectors: []
+
+# --- Added by the follow-up decisions (plan-audit ruling 33; decision F18 of the re-audit).
+
+- id: INS-023
+  layer: language
+  level: must
+  when: >-
+    A Conduit is instantiated, and the `operations` that an input's argument or default gives
+    it holds an operation that its capability does not include.
+  then: >-
+    The instance document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the operation. An input may have a Conduit template's
+    `operations` as its destination under INS-012, and the check that CON-017 makes on a list
+    the template writes is then made on the resolved list, when the Conduit is instantiated.
+  vectors: []

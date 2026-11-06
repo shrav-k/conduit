@@ -1,0 +1,180 @@
+# Templates: what the `spec` of a template holds.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). One `implementation` map follows
+# Terraform, which picks a provider from a resource's type and lets one line override it. A
+# runtime as a pair of operations that pass a handle follows the Model Context Protocol's
+# guidance for stateful tools. A Conduit template's own keys are in conduits.yaml and a Pool's
+# entries in pools.yaml. The JSON Schemas of these shapes are still to be written.
+# Consolidation pass 1 took PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004.
+# Draft: no vector exists yet.
+
+- id: TPL-001
+  layer: language
+  level: must
+  when: >-
+    The `spec` of an Interface, Agent, Resource or Pool template is read.
+  then: >-
+    It may hold `type`, `inputs`, `config`, `implementation`, `runtimes`, `setup`, `retire` and
+    `controls`; for an Interface, Agent or Resource also `conduits`; and for a Pool `entries`.
+    There are no other keys, and no family has keys of its own beyond these. `inputs`,
+    `conduits`, `runtimes` and `entries` are maps keyed by name, as OBJ-022 states.
+  observable: >-
+    An account, a model, a frontend or an isolation setting is written inside `config`, where
+    the type's schema checks it. A Pool template that declares Conduits is rejected, because a
+    Pool is never the consumer of a Conduit.
+  vectors: []
+
+- id: TPL-002
+  layer: language
+  level: must
+  when: >-
+    An Interface, Agent, Resource or Pool template is registered.
+  then: >-
+    Its `type` is a qualified reference to a Type contract of the same family. A Conduit
+    template has no `type`.
+  observable: >-
+    A template with no `type`, with a type of another family, or a Conduit template that gives
+    one, is rejected with a diagnostic.
+  vectors: []
+
+- id: TPL-003
+  layer: language
+  level: must
+  when: >-
+    A template selects an implementation.
+  then: >-
+    It does so in the one `implementation` map of its `spec`. Each key is the qualified
+    reference of an operation. Each value is either a string, which is a qualified reference to
+    an implementation, or a map, which is a graph written in place.
+  observable: >-
+    A step, a runtime or a control that carries its own `implementation` key is rejected with a
+    diagnostic naming it. The map holds one selection for an operation; the same operation
+    written twice is a duplicate key, rejected under SCH-012.
+  vectors: []
+
+- id: TPL-004
+  layer: language
+  level: must
+  when: >-
+    An operation that a template's type requires, or that one of its runtimes or one of its
+    steps without `conduit` names, is not a key of the template's `implementation` map.
+  then: >-
+    The implementation is the default the type states for that operation, or else the default
+    the operation's own contract states. If there is neither, the template is rejected.
+  observable: >-
+    The resolved template shows one implementation for each such operation and where it came
+    from: the template, the type or the operation's contract. A default resolves through the
+    manifest of the package that publishes the contract stating it, as NAM-014 states. A step
+    that carries `conduit` is a request to another instance under GRA-024 and needs no
+    implementation here.
+  vectors: []
+
+- id: TPL-005
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which an implementation is selected for an operation that the
+    implementation's package does not say it implements.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the operation and the implementation.
+  vectors: []
+
+- id: TPL-006
+  layer: language
+  level: must
+  when: >-
+    A template or a Type contract declares a runtime.
+  then: >-
+    It is a member of a `runtimes` map, keyed by its name, that holds `start` and `stop`, each
+    a qualified reference to an operation, and may hold `optional: true`. The start operation's
+    contract declares exactly one output that is a handle, and the stop operation's contract
+    takes exactly one required input that is a handle.
+  observable: >-
+    A runtime whose start or stop operation does not have that shape is rejected with a
+    diagnostic naming the runtime and the operation.
+  vectors: []
+
+- id: TPL-007
+  layer: convention
+  level: must
+  when: >-
+    A step names a runtime.
+  then: >-
+    If the instance does not hold that runtime, the step invokes its start operation, and once
+    that succeeds the instance holds the handle it returned, under the runtime's name, until the
+    runtime is stopped. If the instance already holds it, the start operation is not invoked
+    again and the step is left as succeeded.
+  observable: >-
+    Inspecting the instance lists the runtime as held. A value reference with the source
+    `runtime` and that name yields the handle. Running setup again starts no second runtime of
+    that name, and the instance holds the same handle as before.
+  vectors: []
+
+- id: TPL-008
+  layer: language
+  level: must
+  when: >-
+    A template declares a `retire` graph.
+  then: >-
+    The graph implements the retire operation of its instances, as `setup` implements their
+    setup operation.
+  observable: >-
+    A `retire` graph may refer to the instance's configuration and to the handles of its
+    runtimes, as GRA-010 and GRA-020 state.
+  vectors: []
+
+- id: TPL-009
+  layer: convention
+  level: must
+  when: >-
+    An instance is retired.
+  then: >-
+    The steps of its `retire` graph run, if it has one and a setup of the instance was ever
+    dispatched, and then the stop operation of each runtime the instance still holds is
+    invoked. Nothing else is done, apart from the closing of its Conduits under CON-008.
+  observable: >-
+    An instance that was never set up does not run its `retire` graph. With no `retire` graph
+    to run and no runtime held, the retire operation succeeds at once. The stops are part of
+    the retire operation, which succeeds only if the graph and every stop succeeded.
+  vectors: []
+
+- id: TPL-010
+  layer: language
+  level: must
+  when: >-
+    A template's `controls` map is read.
+  then: >-
+    Each key is the qualified reference of a control that the template's type lists. Each value
+    may hold `inputs`, a map from the name of one of that control's inputs to a `schema` that
+    further narrows that input.
+  observable: >-
+    A key the type does not list, or an input name the control does not declare, is rejected. A
+    control the map does not list is not available on the template's instances. A template with
+    no `controls` map makes every control of its type available.
+  vectors: []
+
+- id: TPL-011
+  layer: convention
+  level: must
+  when: >-
+    A control is requested on an instance whose template narrowed one of its inputs.
+  then: >-
+    The value given for that input must satisfy both the schema the control's contract gives
+    the input and the schema the template added.
+  observable: >-
+    A request whose value the contract would accept and the template's schema rejects is not
+    dispatched and reports invalid.
+  vectors: []
+
+- id: TPL-012
+  layer: language
+  level: must
+  when: >-
+    A template has no `setup` graph.
+  then: >-
+    Its instances' setup consists only of opening their declared Conduits and, for a Pool,
+    setting up the Resources of its entries.
+  observable: >-
+    Setting up such an instance invokes no operation of any implementation beyond those.
+  vectors: []

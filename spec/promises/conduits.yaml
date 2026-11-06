@@ -1,0 +1,340 @@
+# Conduits: what a Conduit is, when it exists, and when it is open.
+# Owner rulings of 2026-11-05 (plan-audit rulings 17 to 20, 28, 29, 32 and 33). A Conduit has
+# the lifecycle every instance has (conventions/lifecycle.yaml): to open one is to set it up,
+# and to close one is to retire it. CON-005 was removed as a duplicate of PLC-006, and CON-009
+# was folded into LIF-007. Removed by consolidation pass 1: CON-010 was folded into LIF-008, and
+# CON-015 into LIF-001, LIF-003, LIF-005 and LIF-006. The follow-up rulings removed nothing.
+# Draft: no vector exists yet.
+
+- id: CON-001
+  layer: language
+  level: must
+  when: >-
+    A Conduit template is instantiated.
+  then: >-
+    Each resulting Conduit has exactly one consumer, exactly one target and exactly one
+    capability.
+  observable: >-
+    Resolving yields one Conduit, or for a composite template one Conduit per component under
+    CON-003, each with one consumer reference, one target reference and one capability. A
+    document that supplies more or fewer of any of them is rejected with a diagnostic, and no
+    Conduit is produced.
+  vectors: []
+
+- id: CON-002
+  layer: language
+  level: must
+  when: >-
+    A template that declares Conduits is instantiated.
+  then: >-
+    One Conduit is instantiated for each declared Conduit, or one for each component where the
+    declared Conduit is made from a composite template, with the new instance as its consumer.
+  observable: >-
+    The resolved objects contain the new instance and those Conduits, each naming the new
+    instance as consumer.
+  vectors: []
+
+- id: CON-003
+  layer: language
+  level: must
+  when: >-
+    A Conduit template that is composed of other Conduit templates is instantiated.
+  then: >-
+    One Conduit is instantiated for each component, and no instance represents the composition
+    itself. Each component Conduit is named by the name given to, or generated for, the instance
+    document or nested instantiation that names the composite template, then a hyphen, then the
+    component's name.
+  observable: >-
+    The resolved objects contain one Conduit per component and no additional Conduit. Each
+    component Conduit can be inspected and referenced on its own, by that name. An instance
+    document named `review`, from a template whose components are `read` and `write`, yields the
+    Conduits `review-read` and `review-write`. Where the instance document gives no name, and
+    for a nested instantiation, which has none, the name is generated as OBJ-003 generates one
+    for an instance, and the hyphen and the component's name follow it. Where a component is
+    itself made from a composite template, the rule applies again to its components, with the
+    name so formed in place of the given or generated one.
+  vectors: []
+
+- id: CON-004
+  layer: convention
+  level: must
+  when: >-
+    Setup runs for an instance that declares Conduits.
+  then: >-
+    The step that GRA-022 gives each declared Conduit opens the Conduit made for it if its state
+    is registered, and leaves it as it is if it is already open. Setup instantiates no Conduit.
+  observable: >-
+    After setup runs a second time, inspection shows the same Conduit IDs and the same number of
+    Conduits as before. A replacement registered under LIF-009 is in the state registered, so
+    the next setup opens it.
+  vectors: []
+
+- id: CON-006
+  layer: language
+  level: must
+  when: >-
+    A Conduit carries a shared-host requirement and its consumer or its target is an instance
+    that has no placement.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the Conduit, the requirement and the end that has no
+    placement, and produces no objects.
+  vectors: []
+
+- id: CON-007
+  layer: convention
+  level: must
+  when: >-
+    Anything happens to the consumer of an open Conduit other than its being retired or
+    declared lost, including a crash, a condition its type defines such as paused, or its
+    location becoming unreachable.
+  then: >-
+    The Conduit stays open.
+  observable: >-
+    Inspecting the Conduit after the event reports the state ready and the same operations as
+    before.
+  vectors: []
+
+- id: CON-008
+  layer: convention
+  level: must
+  when: >-
+    An actor permitted under ACC-012 closes a Conduit, or its consumer or its target is retired
+    or declared lost.
+  then: >-
+    The Conduit is closed. A Conduit whose target is retired, or either of whose ends is
+    declared lost, is closed at once. A Conduit whose consumer is retired is closed when the
+    consumer's `retire` graph and the stops of its runtimes have ended, or at once where none of
+    them runs.
+  observable: >-
+    Inspecting the Conduit reports the state retired and which of those events closed it. A step
+    of the consumer's `retire` graph can make a request through the consumer's own Conduit, and
+    a request to a retired target reports refused from the moment its retirement is dispatched.
+  vectors: []
+
+- id: CON-011
+  layer: convention
+  level: must
+  when: >-
+    A Conduit is closed while its consumer is ready.
+  then: >-
+    Its consumer remains ready, and its status reports that the Conduit is closed.
+  observable: >-
+    Inspecting the consumer reports the state ready, and names the closed Conduit and the
+    capability it carried as no longer reachable through it.
+  vectors: []
+
+# --- Conduits to live instances. The owner ruled on 2026-11-05 that this is a core part of the
+# --- language (plan-audit rulings 19 and 20).
+
+- id: CON-012
+  layer: language
+  level: must
+  when: >-
+    A Conduit template is instantiated on its own, naming an existing instance as its consumer
+    and an existing instance as its target.
+  then: >-
+    The Conduit is instantiated. The consumer need not have declared it, and the consumer's
+    definition is not changed.
+  observable: >-
+    The resolved objects contain the new Conduit, naming both instances. The consumer's
+    definition and revision are the same as before.
+  vectors: []
+
+- id: CON-013
+  layer: convention
+  level: must
+  when: >-
+    A Conduit whose consumer is ready is opened.
+  then: >-
+    It is opened without setting up the consumer again or interrupting it, and the consumer's
+    next request through it is permitted.
+  observable: >-
+    The consumer's status is unchanged across the open. A request through the new Conduit made
+    after the open is permitted.
+  vectors: []
+
+- id: CON-014
+  layer: convention
+  level: must
+  when: >-
+    A Conduit whose consumer is ready is closed.
+  then: >-
+    The consumer is not retired or interrupted.
+  observable: >-
+    The consumer's lifecycle state is unchanged across the close. What its later requests
+    through the closed Conduit report is ACC-011.
+  vectors: []
+
+# --- The Conduit template (plan-audit ruling 31).
+
+- id: CON-016
+  layer: language
+  level: must
+  when: >-
+    The `spec` of a Conduit template is read.
+  then: >-
+    It holds `inputs` and either `capability`, `operations` and `requirements`, or `components`.
+    There are no other keys.
+  observable: >-
+    A Conduit template with both `capability` and `components`, or with neither, is rejected.
+  vectors: []
+
+- id: CON-017
+  layer: language
+  level: must
+  when: >-
+    A Conduit template is registered.
+  then: >-
+    Its `capability` is one qualified reference to a Capability contract, and its `operations`
+    is a list of qualified references, each to an operation that capability includes. The list
+    may be empty.
+  observable: >-
+    An operation the capability does not include is rejected with a diagnostic naming it. A list
+    that an input supplies is checked in the same way when the Conduit is instantiated, under
+    INS-023.
+  vectors: []
+
+- id: CON-018
+  layer: language
+  level: must
+  when: >-
+    A Conduit template applies requirements.
+  then: >-
+    They are a map under `requirements`. Each item has a name, a `requirement`, which is a
+    qualified reference, and `arguments`. A filter and the shared-host requirement are both
+    written there.
+  observable: >-
+    An item with no `requirement` is rejected with a diagnostic naming the item. Whether a
+    requirement may be applied to a Conduit at all is decided by its contract, under CTR-005.
+  vectors: []
+
+- id: CON-019
+  layer: language
+  level: must
+  when: >-
+    A Conduit template is composed of others.
+  then: >-
+    Its `components` is a map of nested instantiations of Conduit templates, and each component
+    Conduit takes the consumer and the target given to the composition.
+  observable: >-
+    A composition that reaches itself through its components is rejected with a diagnostic
+    naming the templates in the cycle.
+  vectors: []
+
+- id: CON-020
+  layer: language
+  level: must
+  when: >-
+    A Conduit template, or a component of one, names a consumer or a target; or a declared
+    Conduit names a consumer.
+  then: >-
+    The template is rejected. A consumer and a target are supplied only when a Conduit is
+    instantiated, and a declared Conduit's consumer is always the instance being instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the key.
+  vectors: []
+
+- id: CON-021
+  layer: language
+  level: must
+  when: >-
+    A Conduit is instantiated whose target's type does not offer the Conduit's capability.
+  then: >-
+    The Conduit is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the capability and the target's type.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32, decisions G9 and G6).
+
+- id: CON-022
+  layer: language
+  level: must
+  when: >-
+    A Conduit is instantiated that carries a filter, and the implementation its target has
+    selected for an operation the Conduit lists does not state that filter's requirement in
+    `supports`.
+  then: >-
+    The Conduit is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the filter, the operation and the implementation. The
+    answer comes from the manifest under PKG-019, without starting anything. An implementation
+    marked `plain` states no `supports` under PKG-020, so no Conduit that carries a filter is
+    instantiated to a target it serves.
+  vectors: []
+
+- id: CON-023
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to open a Conduit whose target is in the state registered.
+  then: >-
+    The Conduit is opened as it would be to a target that is ready. A Conduit may be opened to
+    any target that is not retired.
+  observable: >-
+    After the open the Conduit is ready while its target is still registered, so setup does not
+    depend on the order in which objects are set up. A Conduit whose target is retired is
+    already closed under CON-008, and is never opened.
+  vectors: []
+
+- id: CON-024
+  layer: convention
+  level: must
+  when: >-
+    A request is made through an open Conduit whose target is not ready, for an operation other
+    than one that manages an object.
+  then: >-
+    The request is not dispatched, and reports unavailable.
+  observable: >-
+    The target's implementation receives no call for such a request while the target's state is
+    registered. A request made once the target is ready is decided as any other. The operations
+    that ACC-033 authorizes against a Pool, such as setting up a Resource the Pool owns, are
+    dispatched while the Pool's state is registered, so that a Pool's own setup can set up its
+    entries.
+  vectors: []
+
+- id: CON-025
+  layer: language
+  level: must
+  when: >-
+    A Conduit is instantiated whose consumer or target is retired.
+  then: >-
+    The Conduit is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the retired instance.
+  vectors: []
+
+# --- Added by the follow-up rulings (plan-audit ruling 33; decisions F5 and F20 of the
+# --- re-audit).
+
+- id: CON-026
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to rename a Conduit, and under the new name one of the tool names it would
+    have under IFC-012 equals the name of another tool that the engine presents, or would
+    present once its Conduit is opened, to the same consumer.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    The Conduit keeps its name, and every tool presented to the consumer keeps its name. A
+    rename of a Conduit that was instantiated on its own onto the local name of one of its
+    consumer's declared Conduits reports conflict in this way where the two would have a tool
+    name in common. The same collision when a Conduit is instantiated is IFC-014.
+  vectors: []
+
+- id: CON-027
+  layer: language
+  level: must
+  when: >-
+    A Conduit instance document gives a `consumer`, or a Conduit instance document or a declared
+    Conduit gives a `target`, that is an instance of a kind OBJ-013 does not accept for that
+    end.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the end and the kind that was given. A Pool given as a
+    consumer, and a Conduit given as either end, are each rejected in this way.
+  vectors: []

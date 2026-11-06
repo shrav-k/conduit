@@ -1,0 +1,133 @@
+# Nothing starts model work or repeats an effect implicitly.
+# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). Whether an operation starts
+# model work is declared in its contract, as the Model Context Protocol's tool annotations
+# declare that a tool is read-only or destructive, so "who may cause whom to spend" can be read
+# from the documents. Repeating an invocation is governed by conventions/operations.yaml.
+# IMP-003 to IMP-005 and IMP-009 are rules on documents and have the layer `language`. No
+# promise of this file has been removed. Draft: no vector exists yet.
+
+- id: IMP-001
+  layer: convention
+  level: must
+  when: >-
+    Model work starts.
+  then: >-
+    It is the effect of an operation whose contract declares that it starts model work,
+    dispatched through an open Conduit that lists that operation.
+  observable: >-
+    Every record of model work starting names such an invocation, its caller and its Conduit.
+  vectors: []
+
+- id: IMP-002
+  layer: convention
+  level: must not
+  when: >-
+    An object is registered, instantiated, set up, retired, inspected or observed; a Conduit is
+    opened or closed; a policy changes; an operation not marked as starting model work is
+    invoked on an Agent, whatever it delivers to the Agent; an implementation restores a
+    runtime; a location is reached again; or the engine restarts.
+  then: >-
+    Model work starts because of it.
+  observable: >-
+    No record of model work starting follows any of those events, unless a separate invocation
+    of an operation that declares it is also recorded.
+  vectors: []
+
+- id: IMP-003
+  layer: language
+  level: must
+  when: >-
+    An operation's contract is read.
+  then: >-
+    It starts model work only if the contract marks it so, with `startsModelWork: true`. An
+    operation without the mark does not start model work.
+  observable: >-
+    Reading the contracts of the operations a Conduit lists tells whether its consumer can
+    start model work on its target.
+  vectors: []
+
+- id: IMP-004
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which a graph contains a step whose operation is marked as
+    starting model work, and the operation the graph implements is not so marked.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step and the operation the graph implements.
+  vectors: []
+
+- id: IMP-005
+  layer: language
+  level: must
+  when: >-
+    A template declares a `setup` graph.
+  then: >-
+    The setup operation the graph implements is never marked as starting model work, so IMP-004
+    rejects the template if the graph contains a step whose operation is so marked.
+  observable: >-
+    Resolving such a template returns a diagnostic naming the step. A ready instance has started
+    no model work by becoming ready.
+  vectors: []
+
+- id: IMP-006
+  layer: convention
+  level: must
+  when: >-
+    Work is to start at a later time, or repeatedly.
+  then: >-
+    It was arranged by an operation that is marked as starting model work. The work is bound to
+    the Conduit through which it was arranged, and each start is recorded against the actor that
+    arranged it and permitted only if that Conduit is open and that actor's access through it
+    permits the start at that moment.
+  observable: >-
+    A start that falls after that Conduit was closed is not dispatched and reports refused, and
+    a record of that exists. Once that Conduit is closed no start of the work is ever dispatched
+    again, whatever Conduits the actor is later the consumer of.
+  vectors: []
+
+- id: IMP-007
+  layer: convention
+  level: must not
+  when: >-
+    An invocation fails, has an unknown outcome or was in progress when the engine restarted.
+  then: >-
+    It is dispatched again without a repeat of the request from its caller.
+  observable: >-
+    An invocation is dispatched at most once per attempt, and a new attempt is made only for a
+    repeat that OPS-012 or OPS-024 dispatches. An invocation that was in progress across a
+    restart has the outcome unknown.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32; decision U3 of the re-audit).
+
+- id: IMP-008
+  layer: convention
+  level: must
+  when: >-
+    A request for an operation marked as starting model work names, in
+    `io.github.shrav-k.conduit/serving`, an invocation of an operation that is not so marked.
+  then: >-
+    The request is not dispatched, and reports refused.
+  observable: >-
+    A request for a marked operation is dispatched only when the invocation it serves is itself
+    of a marked operation, or when it serves none and an actor makes it on its own behalf. Code
+    that implements an unmarked operation, or a step of a setup or retire graph, cannot start
+    model work by an onward request.
+  vectors: []
+
+# --- Added by the follow-up rulings (plan-audit ruling 33; decision F8 of the re-audit).
+
+- id: IMP-009
+  layer: language
+  level: must
+  when: >-
+    A template declares a `retire` graph.
+  then: >-
+    The retire operation the graph implements is never marked as starting model work, so IMP-004
+    rejects the template if the graph contains a step whose operation is so marked.
+  observable: >-
+    Resolving such a template returns a diagnostic naming the step. Retiring an instance starts
+    no model work.
+  vectors: []

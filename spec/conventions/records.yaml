@@ -1,0 +1,91 @@
+# Records: what is always recorded, what a record holds and how long it is kept.
+# Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). The list of events and the
+# fields follow Kubernetes audit events and AWS CloudTrail, which record who, what, when and how
+# it ended, and cannot be deleted through the interface they record. A record is a log entry: it
+# is added and never altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No
+# promise of this file has been removed. Draft: no vector exists yet.
+
+- id: REC-001
+  layer: convention
+  level: must
+  when: >-
+    Any of these happens: an access decision; a request ends without being dispatched; an
+    invocation is dispatched; an invocation ends; an instance's lifecycle state changes; an
+    object is registered or unregistered; an object's revision changes.
+  then: >-
+    A record of it is kept.
+  observable: >-
+    Each such event can be found by inspecting the objects it names. Every request can be found
+    with how it ended: its outcome, or its reason where it has no outcome under OPS-005. The
+    record of an access decision states that the request was permitted, or that it was not
+    dispatched and the reason. Nothing else is required to be recorded.
+  vectors: []
+
+- id: REC-002
+  layer: convention
+  level: must
+  when: >-
+    A record is kept.
+  then: >-
+    It holds the caller, the instance that acted for the caller if there was one, the Conduit
+    used, the target, the operation, the engine's ID for the invocation, the operation identity
+    if the caller supplied one, the time, and how it ended.
+  observable: >-
+    Each of those is present in every record to which it applies. The inputs and outputs of
+    the operation need not be; what content is kept is stated by each type's contract.
+  vectors: []
+
+- id: REC-003
+  layer: convention
+  level: must not
+  when: >-
+    A record exists.
+  then: >-
+    It is removed or altered by anything other than a purge.
+  observable: >-
+    The record can still be read after the engine has restarted and after the objects it names
+    are unregistered. A reconciliation adds a record and alters none.
+  vectors: []
+
+- id: REC-004
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to purge records.
+  then: >-
+    The request is dispatched only if the actor is the root Interface. A purge keeps, for every
+    invocation, its operation identity, as OPS-008 scopes it, its outcome, and a digest of its
+    contents, and a record is kept stating which records were purged and when.
+  observable: >-
+    A request from any other actor is not dispatched and reports refused. After a purge, a
+    request that repeats the operation identity of a purged invocation is still answered under
+    OPS-009 to OPS-012 and OPS-024, and no effect is applied a second time. Two requests with
+    the same contents, as OPS-009 defines them, give the same digest, so a request with that
+    identity and different contents still reports conflict under OPS-010. The record of the
+    purge can be read, and no later purge removes it.
+  vectors: []
+
+- id: REC-005
+  layer: convention
+  level: must
+  when: >-
+    Records made at one origin are read.
+  then: >-
+    They are in the order in which they were made at that origin. No order is promised between
+    records from different origins.
+  observable: >-
+    Reading one origin's records twice gives the same order. An actor that reads records from
+    several origins is not told which of two records from different origins came first, unless
+    one names the other. An origin is where a record was made, such as one location.
+  vectors: []
+
+- id: REC-006
+  layer: convention
+  level: must
+  when: >-
+    Records that should exist cannot be read, or were lost.
+  then: >-
+    The result of reading them says that there is a gap, and where.
+  observable: >-
+    A result that omits records says so. It is never presented as complete.
+  vectors: []

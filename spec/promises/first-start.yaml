@@ -1,0 +1,57 @@
+# First start: the objects that exist before an author declares anything.
+# Owner rulings of 2026-11-05 (plan-audit rulings 24, 28 and 32), following Kubernetes's
+# practice of a small fixed set of well-known names. What first start does when it is
+# interrupted or repeated, and how repair works, belong to the runtime profile. The objects are
+# instances of templates the core package exports. Removed by consolidation pass 1: FST-004 was
+# folded into OBJ-002. Draft: no vector exists yet.
+
+- id: FST-001
+  layer: language
+  level: must
+  when: >-
+    The engine has been started for the first time.
+  then: >-
+    These objects exist, with these names: the Pool `system`; the location `local`; the
+    Resources `management` and `access`, owned by `system`; and the Interface `root`.
+  observable: >-
+    Inspection lists exactly those five objects, apart from Conduits, and each has the name
+    given.
+  vectors: []
+
+- id: FST-002
+  layer: convention
+  level: must
+  when: >-
+    The engine has been started for the first time.
+  then: >-
+    The Interface `root` has one Conduit to `management` and one to `access`, each open, and
+    every first-start object is ready.
+  observable: >-
+    Inspection lists those two Conduits, with `root` as consumer, and the five objects of
+    FST-001, each in the state ready.
+  vectors: []
+
+- id: FST-003
+  layer: convention
+  level: must not
+  when: >-
+    The engine has been started for the first time.
+  then: >-
+    Any other Pool, Resource, Agent, Interface or Conduit exists, or any implementation other
+    than those behind the first-start objects has received a call.
+  observable: >-
+    No object beyond those of FST-001 and FST-002 exists, and no record shows a call to any
+    other implementation.
+  vectors: []
+
+- id: FST-005
+  layer: language
+  level: must
+  when: >-
+    A first-start object is inspected.
+  then: >-
+    It is an instance of a template that the core package exports, like any other instance.
+  observable: >-
+    Each of the objects of FST-001 and FST-002 reports a `from` that is a qualified reference
+    into `github.com/shrav-k/conduit/core`.
+  vectors: []

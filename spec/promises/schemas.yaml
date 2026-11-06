@@ -1,0 +1,242 @@
+# Schemas and document syntax. See ../schema-profile.md for the standards these refer to.
+# Owner rulings of 2026-11-05 (plan-audit rulings 23, 24, 32 and 33) and earlier accepted
+# syntax rules. Consolidation pass 1 added SCH-015 to SCH-017. The follow-up decisions (ruling
+# 33) added SCH-018. No promise of this file has been removed. Draft: no vector exists yet.
+
+- id: SCH-001
+  layer: language
+  level: must
+  when: >-
+    A schema uses a keyword the profile permits.
+  then: >-
+    The keyword means what JSON Schema 2020-12 defines it to mean.
+  observable: >-
+    A value is valid against the schema exactly when a conforming JSON Schema 2020-12 validator,
+    with format checking on, says it is. For a format the profile lists, the grammar SCH-004
+    cites is the one that is checked.
+  vectors: []
+
+- id: SCH-002
+  layer: language
+  level: must
+  when: >-
+    A schema written in a contract or a template uses a keyword outside the profile's list.
+  then: >-
+    The document that holds the schema is rejected, when its package is installed or when it is
+    submitted. The keyword is never ignored.
+  observable: >-
+    Installation or resolving returns a diagnostic naming the keyword and where it appears.
+    A misspelled keyword is rejected in the same way.
+  vectors: []
+
+- id: SCH-003
+  layer: language
+  level: must
+  when: >-
+    A schema written in a contract or a template names a format outside the profile's list.
+  then: >-
+    The document that holds the schema is rejected, when its package is installed or when it is
+    submitted.
+  observable: >-
+    Installation or resolving returns a diagnostic naming the format.
+  vectors: []
+
+- id: SCH-004
+  layer: language
+  level: must
+  when: >-
+    A value is checked against a schema that names a format in the profile's list.
+  then: >-
+    The value is valid only if it matches the grammar cited for that format.
+  observable: >-
+    A string that does not match the cited grammar fails validation. Checking a `uri` makes no
+    request to it.
+  vectors: []
+
+- id: SCH-005
+  layer: language
+  level: must
+  when: >-
+    A number with no fractional part is checked against the type integer.
+  then: >-
+    It is an integer however it is written, as JSON Schema defines.
+  observable: >-
+    The values 15, 15.0 and 1.5e1 are each valid for the type integer. The value 15.5 is not.
+  vectors: []
+
+- id: SCH-006
+  layer: language
+  level: must
+  when: >-
+    A document contains a number with no fractional part outside the range from
+    −9,007,199,254,740,991 to 9,007,199,254,740,991.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the value. It is not rounded into the range.
+  vectors: []
+
+- id: SCH-007
+  layer: language
+  level: must
+  when: >-
+    Two values are compared for equality.
+  then: >-
+    They are equal exactly when JSON Schema's definition of equality says so: numbers by value,
+    strings character by character, lists in order, and maps by their keys and values
+    regardless of key order.
+  observable: >-
+    1 equals 1.0. Two maps with the same keys and values in different orders are equal. Two
+    lists with the same items in different orders are not.
+  vectors: []
+
+- id: SCH-008
+  layer: language
+  level: must
+  when: >-
+    A schema written in a contract or a template places `default` anywhere other than on a
+    property reached through `properties`. The object that holds the property may be written
+    directly, reached through `$ref`, or be the schema that `items` gives.
+  then: >-
+    The document that holds the schema is rejected, when its package is installed or when it is
+    submitted.
+  observable: >-
+    A `default` inside `allOf`, `anyOf` or `oneOf`, and a `default` on `items` itself, each
+    produce a diagnostic naming its position. A `default` on a property of an object inside
+    `items` is accepted, as Kubernetes structural defaulting accepts it.
+  vectors: []
+
+- id: SCH-009
+  layer: language
+  level: must
+  when: >-
+    A template is instantiated and a property that has a `default` is absent from an object
+    that is present.
+  then: >-
+    The property takes its default.
+  observable: >-
+    The resolved instance holds the default value there. An absent object is not made in order
+    to hold its properties' defaults. An object that is an item of a list is present when the
+    list holds it: each such item takes the defaults of its own properties, and no item is
+    added to a list.
+  vectors: []
+
+- id: SCH-010
+  layer: language
+  level: must
+  when: >-
+    A default supplies an object.
+  then: >-
+    The defaults of that object's own properties then apply to it, as they would to an object
+    that a document supplied.
+  observable: >-
+    The resolved instance holds the default object with each of its absent defaulted properties
+    filled.
+  vectors: []
+
+- id: SCH-011
+  layer: language
+  level: must not
+  when: >-
+    A value does not satisfy its schema.
+  then: >-
+    It is converted to a value that does.
+  observable: >-
+    The string "15" is invalid for the type integer, and the word yes is invalid for the type
+    boolean. Neither is converted.
+  vectors: []
+
+- id: SCH-012
+  layer: language
+  level: must
+  when: >-
+    A document contains a duplicate key, an anchor, an alias, a merge key, a tag, or a key that
+    is not a string.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the feature and its position.
+  vectors: []
+
+- id: SCH-013
+  layer: language
+  level: must
+  when: >-
+    A document is written in JSON.
+  then: >-
+    It means the same as the equivalent YAML document.
+  observable: >-
+    Resolving the JSON form and the YAML form of one document gives the same objects or the same
+    diagnostics.
+  vectors: []
+
+- id: SCH-014
+  layer: language
+  level: must not
+  when: >-
+    A schema published by an existing Model Context Protocol server uses a keyword or format
+    outside the profile.
+  then: >-
+    It is rejected for that reason.
+  observable: >-
+    The server's tools remain available, and its schema is checked by the rules of its own
+    dialect.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: SCH-015
+  layer: language
+  level: must
+  when: >-
+    A schema written in a contract or a template uses `$ref`.
+  then: >-
+    Its value is either `#` followed by a JSON Pointer into the same schema, such as
+    `#/$defs/name`, or a qualified reference, which resolves to a Schema contract that a
+    package exports and stands for the schema that is that contract's `spec`.
+  observable: >-
+    A `$ref` of any other form, such as an `https` address, is rejected like a keyword outside
+    the profile, under SCH-002. So is a qualified reference to an export that is not a Schema
+    contract.
+  vectors: []
+
+- id: SCH-016
+  layer: language
+  level: must
+  when: >-
+    A schema uses `pattern`.
+  then: >-
+    The pattern is a regular expression of the ECMA-262 dialect, as JSON Schema recommends.
+  observable: >-
+    Whether a string matches is what an ECMA-262 regular expression gives, whichever
+    regular-expression library the engine is built with.
+  vectors: []
+
+- id: SCH-017
+  layer: language
+  level: must
+  when: >-
+    A YAML document contains a number that has no JSON form: an infinity or a not-a-number,
+    such as `.inf` or `.nan`, or an integer written in hexadecimal or octal, such as `0x1F` or
+    `0o17`.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the value. It is not turned into a decimal number or
+    a string.
+  vectors: []
+
+# --- Added by the follow-up decisions (plan-audit ruling 33; decision F26 of the re-audit).
+
+- id: SCH-018
+  layer: language
+  level: must
+  when: >-
+    Documents are written in a JSON file.
+  then: >-
+    The file holds one document, or one array each of whose items is a document.
+  observable: >-
+    A JSON file that holds an array is read as the documents that are its items, and means the
+    same as a YAML file that holds those documents. The order of the items has no meaning, as
+    SUB-001 states.
+  vectors: []

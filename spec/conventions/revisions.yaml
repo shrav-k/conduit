@@ -1,0 +1,178 @@
+# Revisions: the shared convention on revision-checked change.
+# Owner rulings of 2026-11-05 (plan-audit rulings 20, 32 and 33). Draft: no vector exists yet.
+# No promise of this file has been removed.
+
+- id: REV-001
+  layer: convention
+  level: must
+  when: >-
+    A template or an instance exists.
+  then: >-
+    It has exactly one revision.
+  observable: >-
+    Inspecting any template or instance returns a single revision value. There is no second
+    counter for its settings.
+  vectors: []
+
+- id: REV-002
+  layer: convention
+  level: must
+  when: >-
+    A request to change an object names a revision that is not the object's current revision.
+  then: >-
+    The change is not dispatched, and reports conflict.
+  observable: >-
+    The object's stored definition, configuration and revision are unchanged, and the
+    implementation receives no call.
+  vectors: []
+
+- id: REV-003
+  layer: convention
+  level: must
+  when: >-
+    An object's stored definition or configuration changes.
+  then: >-
+    Its revision advances.
+  observable: >-
+    The revision after the change differs from the revision before it.
+  vectors: []
+
+- id: REV-004
+  layer: convention
+  level: must not
+  when: >-
+    An object's stored definition and configuration do not change.
+  then: >-
+    Its revision advances.
+  observable: >-
+    A change that failed, a change whose outcome is unknown, and a change that confirmed the
+    values already stored each leave the revision as it was.
+  vectors: []
+
+- id: REV-005
+  layer: convention
+  level: must not
+  when: >-
+    An object's revision advances.
+  then: >-
+    It takes a value the object has had before.
+  observable: >-
+    Changing a setting from one value to another and back yields three distinct revisions.
+  vectors: []
+
+- id: REV-006
+  layer: convention
+  level: must
+  when: >-
+    A control is requested and one of its inputs is not supplied.
+  then: >-
+    The setting that input governs is left as stored. No default is applied to it.
+  observable: >-
+    After the control succeeds, every setting whose input was not supplied has the value it had
+    before.
+  vectors: []
+
+- id: REV-007
+  layer: convention
+  level: must
+  when: >-
+    A control succeeds.
+  then: >-
+    Its result states the settings it confirmed, and exactly those settings are stored.
+  observable: >-
+    The stored configuration after the control equals the configuration before it with the
+    confirmed settings applied, and nothing else changed. A control whose confirmed settings
+    cannot be stored has not succeeded: REV-008 gives its outcome.
+  vectors: []
+
+- id: REV-008
+  layer: convention
+  level: must
+  when: >-
+    The settings a control's result confirms would make the stored configuration fail its
+    schema.
+  then: >-
+    The control's outcome is unknown, and nothing is stored.
+  observable: >-
+    The stored configuration and revision are as before. The record of the invocation's end
+    states unknown and that the confirmed settings were not valid, and the settings are reported
+    as REV-009 states.
+  vectors: []
+
+- id: REV-009
+  layer: convention
+  level: must
+  when: >-
+    A control's outcome is unknown.
+  then: >-
+    The stored configuration and revision are unchanged, and the settings the control addressed
+    are reported as unknown.
+  observable: >-
+    Inspection shows the earlier stored values, the earlier revision, and the word unknown
+    against each setting the control addressed.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32; decision Q4 and finding 37 of the
+# --- re-audit's third reader).
+
+- id: REV-010
+  layer: convention
+  level: must
+  when: >-
+    A control whose outcome is unknown is reconciled under OPS-014 as having taken effect.
+  then: >-
+    The reconciliation names the instance's current revision and states the settings that took
+    effect, and exactly those settings are stored.
+  observable: >-
+    The stored configuration equals the configuration before the control with the stated
+    settings applied, the revision advances under REV-003 if anything changed, and those
+    settings are no longer reported as unknown. A reconciliation that records that the effect
+    did not occur stores nothing. Every reconciliation of a control names the instance's current
+    revision, whichever way it records the effect: one that names a revision that is not current
+    is not dispatched and reports conflict under REV-002, and one that names none reports
+    invalid under REV-011. One whose stated settings do not satisfy the schema is REV-013.
+  vectors: []
+
+- id: REV-011
+  layer: convention
+  level: must
+  when: >-
+    A request to change an object names no revision.
+  then: >-
+    The change is not dispatched, and reports invalid.
+  observable: >-
+    The object's stored definition, configuration and revision are unchanged, and the
+    implementation receives no call. No change is applied to whatever revision is current.
+  vectors: []
+
+- id: REV-012
+  layer: convention
+  level: must not
+  when: >-
+    A change to an instance has been dispatched and has not ended.
+  then: >-
+    Another change to the same instance is dispatched.
+  observable: >-
+    Changes to one instance are applied one at a time, so the revision that was current when a
+    change was dispatched is still current when its result is stored. Of several requests to
+    change one object that name the same revision, at most one is stored: once it is, the
+    revision has advanced under REV-003, and a request that still names the earlier revision is
+    not dispatched and reports conflict under REV-002. What happens to a request to change an
+    instance that arrives while another change to it has not ended is DL9 of the
+    implementation-defined list.
+  vectors: []
+
+# --- Added by the follow-up rulings (plan-audit ruling 33; decision F11 of the re-audit).
+
+- id: REV-013
+  layer: convention
+  level: must
+  when: >-
+    A reconciliation of a control states settings that would make the stored configuration fail
+    its schema.
+  then: >-
+    The reconciliation is not dispatched, and reports invalid.
+  observable: >-
+    The stored configuration and revision are as before. The control's outcome is still unknown,
+    and the settings it addressed are still reported as unknown under REV-009.
+  vectors: []

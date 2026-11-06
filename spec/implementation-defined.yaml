@@ -1,0 +1,67 @@
+# Implementation-defined behavior: what this specification deliberately leaves to each engine.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31, 32 and 33). An engine documents its choice
+# for every entry, and that document is its runtime profile. A choice must keep every promise.
+
+- id: DL1
+  entry: Graph execution
+  document: >-
+    The order among steps that do not depend on each other; how many run at once; cancellation;
+    the states a step passes through; what happens to the remaining steps after one fails; and
+    what a re-run of setup or retire does with steps that already ran.
+- id: DL2
+  entry: Dispatch records
+  document: >-
+    Where the record is written before an implementation is called; how attempts are numbered;
+    and what is done with a result that arrives late.
+- id: DL3
+  entry: A request that waits for an actor's answer
+  document: >-
+    When the wait expires, and what happens to an answer given twice or given while the engine
+    cannot receive it.
+- id: DL4
+  entry: Unreachable `access` or `management`
+  document: >-
+    Whether a request is not dispatched at once, reporting unavailable, or waits, and for how
+    long.
+- id: DL5
+  entry: Locations
+  document: >-
+    How it is detected that a location cannot be reached, and what happens when it returns.
+- id: DL6
+  entry: First start
+  document: >-
+    What triggers it, what an interrupted or repeated one does, and how repair works.
+- id: DL7
+  entry: Packages
+  document: >-
+    Where packages are stored, how they are fetched and removed, and any editing mode.
+- id: DL8
+  entry: Delivery of observations and records
+  document: >-
+    Feeds, positions within them, and snapshots.
+- id: DL9
+  entry: Controls
+  document: >-
+    What happens to a request for a busy instance, which is one that has a change in progress
+    under REV-012, and the order in which several failed checks that give the same reason are
+    reported.
+- id: DL10
+  entry: Limits
+  document: >-
+    Sizes, counts, the time allowed for a call, and behavior when storage is exhausted.
+- id: DL11
+  entry: Conduits during setup
+  document: >-
+    What a consumer with only some of its Conduits open may do, and how an optional Conduit
+    that failed to open is opened later.
+- id: DL12
+  entry: Transport, processes and protocol revisions
+  document: >-
+    The transport used for each implementation, who starts its process, how many instances
+    share one, and which revisions of the Model Context Protocol are supported beyond the
+    baseline.
+- id: DL13
+  entry: Identifying consumers
+  document: >-
+    What a request presents to show which instance its consumer is, and how the engine
+    establishes the instance from it for each request.

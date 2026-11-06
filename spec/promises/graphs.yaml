@@ -1,0 +1,302 @@
+# Graphs: their static meaning and two invariants. How an engine walks a graph, including
+# scheduling, retry and cancellation, belongs to that engine's runtime profile.
+# Owner rulings of 2026-11-05 (plan-audit rulings 14, 23, 24, 28, 32 and 33). Draft: no vector
+# exists yet. Consolidation pass 1: GRA-013 was folded into GRA-019 and GRA-016 into GRA-020.
+# GRA-002 and GRA-003, the two invariants, are of the layer `convention`. GRA-023 and GRA-024
+# were added.
+
+- id: GRA-001
+  layer: language
+  level: must
+  when: >-
+    A step's input takes its value from another step's output.
+  then: >-
+    The step depends on that other step, exactly as if the dependency had been stated.
+  observable: >-
+    The resolved graph lists the producing step among the step's dependencies, whether or not
+    the dependency was also stated.
+  vectors: []
+
+- id: GRA-002
+  layer: convention
+  level: must not
+  when: >-
+    A step depends on another step that has not succeeded.
+  then: >-
+    The step runs.
+  observable: >-
+    No record shows a step invoked before every step it depends on has the outcome succeeded. A
+    dependency that failed, or whose outcome is unknown, leaves the step not run.
+  vectors: []
+
+- id: GRA-003
+  layer: convention
+  level: must
+  when: >-
+    A setup graph ends.
+  then: >-
+    Setup has succeeded only if every step not marked optional has the outcome succeeded.
+    Otherwise its outcome is failed or unknown, as OPS-022 states.
+  observable: >-
+    If any such step failed, has an unknown outcome or did not run, the instance does not
+    become ready by that run, as LIF-004 states. A declared Conduit that is not opened and an
+    entry whose Resource is not set up are such steps under GRA-022: setup does not succeed if
+    one of them is required, and reports it as not opened or not set up if it is optional.
+  vectors: []
+
+- id: GRA-004
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose graph names, in a dependency or a value reference, a step
+    that the graph does not contain.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step that refers and the name it refers to.
+  vectors: []
+
+- id: GRA-005
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose graph contains a cycle, counting both stated dependencies
+    and uses of outputs.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the steps in the cycle.
+  vectors: []
+
+- id: GRA-006
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose graph refers to an output that the producing operation's
+    contract does not declare.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step, the output and the operation.
+  vectors: []
+
+- id: GRA-007
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose graph gives a step no value for an input that the step's
+    operation requires.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step and the input.
+  vectors: []
+
+- id: GRA-008
+  layer: language
+  level: must
+  when: >-
+    A template is registered whose graph gives a step a literal value that does not satisfy the
+    schema of the input it is given to.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the step, the input and the part of the schema the
+    literal fails.
+  vectors: []
+
+- id: GRA-009
+  layer: language
+  level: must
+  when: >-
+    A step states the same dependency twice, or states a dependency on a step whose output it
+    also uses.
+  then: >-
+    The template is accepted, and the repetition has no further meaning.
+  observable: >-
+    The resolved graph lists the dependency once.
+  vectors: []
+
+- id: GRA-010
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which a value reference with the source `config` appears in a
+    graph other than a setup or retire graph.
+  then: >-
+    The template is rejected. `config` is accepted only in a setup or retire graph.
+  observable: >-
+    Resolving returns a diagnostic naming the reference. The same reference in the
+    template's `setup` or `retire` graph is accepted.
+  vectors: []
+
+- id: GRA-011
+  layer: language
+  level: must
+  when: >-
+    A template is registered in which a value reference adds a `pointer` to a step's output, or
+    to an input, that is a handle.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the reference.
+  vectors: []
+
+- id: GRA-012
+  layer: language
+  level: must
+  when: >-
+    The steps of a graph are written in a different order.
+  then: >-
+    The graph means the same.
+  observable: >-
+    Resolving the two templates gives the same graph.
+  vectors: []
+
+# --- Added by the consolidation rulings (plan-audit ruling 28).
+
+- id: GRA-014
+  layer: language
+  level: must
+  when: >-
+    A graph is declared.
+  then: >-
+    It implements exactly one operation. A setup graph implements its instance's setup
+    operation.
+  observable: >-
+    A graph that is attached to no operation, or to more than one, is rejected with a
+    diagnostic naming it.
+  vectors: []
+
+- id: GRA-015
+  layer: language
+  level: must
+  when: >-
+    A step supplies values for its operation's inputs.
+  then: >-
+    They are written under `arguments`, a map that gives one value binding for each input,
+    keyed by the input's name.
+  observable: >-
+    A step that writes them under `inputs` is rejected with a diagnostic naming the step.
+  vectors: []
+
+# --- The shape of a step, a value binding and an output (plan-audit ruling 31).
+
+- id: GRA-017
+  layer: language
+  level: must
+  when: >-
+    A step is read.
+  then: >-
+    It has exactly one of `operation`, a qualified reference, and `runtime`, the name of a
+    runtime the template declares, which invokes that runtime's start operation. It may also
+    have `arguments`, `dependsOn` and `optional`, and a step that has `operation` may have
+    `conduit`.
+  observable: >-
+    A step with both, with neither, or with a runtime name the template does not declare, is
+    rejected with a diagnostic naming the step. So is a step that has `runtime` and carries
+    `conduit`.
+  vectors: []
+
+- id: GRA-018
+  layer: language
+  level: must
+  when: >-
+    A step states its dependencies.
+  then: >-
+    They are a list of step names under `dependsOn`.
+  observable: >-
+    A dependency written under any other key is rejected under OBJ-019.
+  vectors: []
+
+- id: GRA-019
+  layer: language
+  level: must
+  when: >-
+    A value binding is written.
+  then: >-
+    It is exactly one of: `{literal: value}`; a reference, which is a map with `source`;
+    `{object: {...}}`, whose members are value bindings; and `{list: [...]}`, whose items are
+    value bindings. No part of a string is ever substituted.
+  observable: >-
+    A bare value, an empty binding and a binding with two forms are each rejected with a
+    diagnostic naming where it is written. A string that contains `${...}` is passed on exactly
+    as written.
+  vectors: []
+
+- id: GRA-020
+  layer: language
+  level: must
+  when: >-
+    A value reference is written.
+  then: >-
+    Its `source` is one of five: `input`, with the `name` of an input of the operation the graph
+    implements; `config`; `step`, with the `step` and the `output`; `runtime`, with the `name`
+    of a runtime, which yields its handle; and `instance`, with the `name` `id` or `name`. All
+    but `runtime` and `instance` may add a `pointer`.
+  observable: >-
+    Any other source is rejected. So is a value reference written with `from` in place of
+    `source`: `from` names only the template of an instance or of a nested instantiation.
+    `input` is rejected in a setup or retire graph, which have no inputs, and `config` is
+    rejected elsewhere, as GRA-010 states. `step`, `runtime` and `instance` are accepted in
+    every graph.
+  vectors: []
+
+- id: GRA-021
+  layer: language
+  level: must
+  when: >-
+    A graph implements an operation whose contract declares outputs.
+  then: >-
+    It has an `outputs` map that gives each declared output a `value`, a value binding, and may
+    mark an output the contract makes optional as `optional: true`.
+  observable: >-
+    A graph that gives no value for a required output, or names an output the contract does not
+    declare, is rejected. A setup or retire graph with `outputs` is rejected.
+  vectors: []
+
+- id: GRA-022
+  layer: language
+  level: must
+  when: >-
+    A setup graph belongs to a template that declares Conduits or, for a Pool, entries.
+  then: >-
+    Each declared Conduit and each entry is a step of that graph under its own name. A step
+    written under `steps` may name it in `dependsOn`, and may not take the same name.
+  observable: >-
+    A step that depends on the declared Conduit `checkout` runs only after that Conduit is open.
+    A step written under the name `checkout` is rejected.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32).
+
+- id: GRA-023
+  layer: language
+  level: must
+  when: >-
+    A graph is written.
+  then: >-
+    It is a map that holds `steps`, a map from each step's name to the step, and, where GRA-021
+    requires them, `outputs`. A template's `setup` and its `retire` each hold `steps`.
+  observable: >-
+    Steps written as a list, or written directly under `setup` or `retire` without the key
+    `steps`, are rejected with a diagnostic naming the graph.
+  vectors: []
+
+- id: GRA-024
+  layer: language
+  level: must
+  when: >-
+    A step names an `operation`.
+  then: >-
+    Without `conduit`, the step invokes the implementation selected for its own instance. With
+    `conduit`, whose value is the name of one of the template's declared Conduits, the step is
+    a request through that Conduit to its target, and it depends on the step that GRA-022 gives
+    that declared Conduit, exactly as if the dependency had been stated.
+  observable: >-
+    A step whose `conduit` names no declared Conduit of the template, or whose operation is not
+    one that Conduit lists, is rejected with a diagnostic naming the step. The resolved setup
+    graph lists the declared Conduit's step among the dependencies of a step that carries
+    `conduit`, whether or not `dependsOn` also names it, so that step runs only after the
+    Conduit is open.
+  vectors: []

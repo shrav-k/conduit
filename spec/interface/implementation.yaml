@@ -1,0 +1,476 @@
+# The implementation interface: the shared wire between an engine and an implementation, and
+# between an engine and a consumer.
+# Owner rulings of 2026-11-05 (plan-audit rulings 31, 32 and 33). The wire is the Model Context
+# Protocol. One baseline revision is required of everyone; either side may support others, and
+# the protocol's own per-request negotiation picks one. Handles follow the protocol's guidance
+# for stateful tools. The protocol's own fields are named as its revision 2026-07-28 names them.
+# Promises here have the layer `interface`, except IFC-014, which is a rule on documents and has
+# the layer `language`. IFC-026 to IFC-028 were added by the follow-up rulings. No promise of
+# this file has been removed. Draft: no vector exists yet.
+
+- id: IFC-001
+  layer: interface
+  level: must
+  when: >-
+    An engine invokes an operation of an implementation that is reached by `command` or `url`.
+  then: >-
+    The implementation is a Model Context Protocol server and the engine is its client. The
+    operation is one tool, called with `tools/call`. The tool's `name` is the operation's export
+    name or, for an implementation marked `plain`, the name its `tools` map gives under PKG-020.
+    Its `arguments` are the operation's inputs, and the result's `structuredContent` is the
+    operation's outputs, keyed by name.
+  observable: >-
+    A `tools/call` request for the operation carries exactly the operation's inputs as its
+    `arguments`.
+  vectors: []
+
+- id: IFC-002
+  layer: interface
+  level: must
+  when: >-
+    An engine or an implementation that carries Conduit's keys is built for this version of the
+    specification.
+  then: >-
+    It supports the baseline revision of the Model Context Protocol, which for this version is
+    2026-07-28.
+  observable: >-
+    Any such engine and any such implementation can complete a request with each other at the
+    baseline revision.
+  vectors: []
+
+- id: IFC-003
+  layer: interface
+  level: may
+  when: >-
+    An engine and an implementation both support a revision other than the baseline.
+  then: >-
+    They use it. The revision is chosen by the protocol's own negotiation, which at the baseline
+    revision names it for each request in `io.modelcontextprotocol/protocolVersion` in the
+    request's `_meta`. The meaning of Conduit's keys and of an outcome is the same at every
+    revision.
+  observable: >-
+    A request that the implementation rejects for its revision, with the protocol's JSON-RPC
+    error for an unsupported version, is sent again at a revision both support, and is one
+    invocation, not two.
+  vectors: []
+
+- id: IFC-004
+  layer: interface
+  level: must
+  when: >-
+    A revision of the protocol is used under IFC-003.
+  then: >-
+    It provides what this interface relies on: `tools/call` with a `name` and `arguments`;
+    `_meta` on the request and on the result; `structuredContent`; and `isError`, the flag that
+    marks a result as an error.
+  observable: >-
+    A revision that lacks any of these is not used, whatever both sides support.
+  vectors: []
+
+- id: IFC-005
+  layer: interface
+  level: must
+  when: >-
+    The baseline revision is changed.
+  then: >-
+    It is changed only by a new version of this specification, which may name a later revision
+    as its baseline.
+  observable: >-
+    An engine states which version of this specification it implements, and that version fixes
+    the baseline it must support.
+  vectors: []
+
+- id: IFC-006
+  layer: interface
+  level: must
+  when: >-
+    An engine sends a request to an implementation that carries Conduit's keys.
+  then: >-
+    The request's `_meta` holds `io.github.shrav-k.conduit/interfaceVersion`,
+    `io.github.shrav-k.conduit/instance`, `io.github.shrav-k.conduit/operation`,
+    `io.github.shrav-k.conduit/invocation`, `io.github.shrav-k.conduit/caller` and
+    `io.github.shrav-k.conduit/restrictions`. It also holds
+    `io.github.shrav-k.conduit/operationIdentity` when the caller supplied an operation
+    identity, and `io.github.shrav-k.conduit/conduit` when the request came through a Conduit.
+    None of them appears in the `arguments`.
+  observable: >-
+    The interface version is `v0` for this version of the specification. The instance is given
+    by its ID, the operation by its qualified reference, the invocation by the ID the engine
+    gives every invocation, the caller by its ID, and the Conduit by its ID. The key
+    `io.github.shrav-k.conduit/conduit` is absent for a step that invokes the instance's own
+    implementation. What `io.github.shrav-k.conduit/restrictions` holds is IFC-018.
+  vectors: []
+
+- id: IFC-007
+  layer: interface
+  level: must not
+  when: >-
+    An engine sends a request to an implementation marked `plain`.
+  then: >-
+    The request carries Conduit's keys.
+  observable: >-
+    The request's `_meta` holds only what the protocol itself requires, such as
+    `io.modelcontextprotocol/protocolVersion`.
+  vectors: []
+
+- id: IFC-008
+  layer: interface
+  level: must
+  when: >-
+    An implementation receives a request whose `io.github.shrav-k.conduit/interfaceVersion` it
+    does not support.
+  then: >-
+    It performs nothing and answers with a tool result whose `isError` is true and that says
+    that it does not support the interface version.
+  observable: >-
+    The result states the outcome failed under IFC-009, so the invocation's outcome is failed,
+    and the record names the interface version.
+  vectors: []
+
+- id: IFC-009
+  layer: interface
+  level: must
+  when: >-
+    An implementation that carries Conduit's keys returns a result.
+  then: >-
+    The result's `_meta` holds `io.github.shrav-k.conduit/outcome`, with the value succeeded,
+    failed or unknown, unless it holds `io.github.shrav-k.conduit/reason` in place of an outcome
+    under IFC-026.
+  observable: >-
+    A result that holds neither key, or that holds for either key a value other than those named
+    for it, has the outcome unknown, as OPS-007 states.
+  vectors: []
+
+- id: IFC-010
+  layer: interface
+  level: must
+  when: >-
+    An implementation marked `plain` answers a `tools/call` request.
+  then: >-
+    A complete result that is not an error is the outcome succeeded. An error on an operation
+    whose contract declares no effect, and a JSON-RPC error that says the tool is unknown or the
+    request malformed, is failed. A result whose `resultType` is `input_required`, any other
+    error, and no answer, is unknown.
+  observable: >-
+    A result is complete when its `resultType` is `complete` or absent, and is an error when its
+    `isError` is true. A protocol error is a JSON-RPC error, and the one that says the tool is
+    unknown or the request malformed is the protocol's invalid-params error, code -32602. The
+    outcome the engine records for a plain server follows that table and nothing else, except
+    that a result in which a declared output fails validation is unknown under OPS-007.
+  vectors: []
+
+- id: IFC-011
+  layer: interface
+  level: must
+  when: >-
+    An operation's input or output is a handle.
+  then: >-
+    On the wire it is an opaque string that the implementation issued. The engine passes it back
+    unchanged and never interprets it. Holding one permits nothing, and the implementation
+    checks it on every call.
+  observable: >-
+    A call that carries a handle the implementation does not recognize has the outcome failed
+    and performs nothing.
+  vectors: []
+
+- id: IFC-012
+  layer: interface
+  level: must
+  when: >-
+    An instance is the consumer of an open Conduit.
+  then: >-
+    The engine presents to that instance a Model Context Protocol server whose tools are exactly
+    the operations its open Conduits list, and the one tool of IFC-024. A tool for an operation
+    is named by the Conduit's local name, then the name of each component for a Conduit made
+    from a composite template, then the operation's export name, joined by dots. The local name
+    of a declared Conduit is the name its consumer's template gives it, and that of a Conduit
+    instantiated on its own is the Conduit's own name.
+  observable: >-
+    The instance's tool list holds one tool for each operation of each of its open Conduits, the
+    tool of IFC-024, and nothing else. A call to a Conduit's tool is a request through that
+    Conduit and is decided under the access convention. The declared Conduit `checkout` that
+    lists an operation exported as `directory.read` gives the tool `checkout.directory.read`.
+    Where `checkout` is made from a composite template, its component `files` gives the tool
+    `checkout.files.directory.read`, and where a component is itself made from a composite the
+    name of each component on the way is written, outermost first. A Conduit `review-read` that
+    was instantiated on its own as the component `read` of a composite gives
+    `review-read.read.directory.read`. Such a name uses only characters the protocol allows in a
+    tool name, which are letters, digits, `_`, `-` and `.`. The protocol limits a tool name to
+    128 characters. The local name of a Conduit that is not made from a composite is at most 63
+    characters under OBJ-001 and OBJ-022, and an export name at most 63 under NAM-004, so only a
+    Conduit made from a composite can pass the limit. A Conduit one of whose tool names would be
+    longer, or would equal another tool's name, is not instantiated, under IFC-014.
+  vectors: []
+
+- id: IFC-013
+  layer: interface
+  level: must
+  when: >-
+    A Conduit is closed.
+  then: >-
+    Its tools are no longer presented to its consumer.
+  observable: >-
+    The consumer's next tool list omits them. What a call to one of them reports is ACC-011.
+  vectors: []
+
+- id: IFC-014
+  layer: language
+  level: must
+  when: >-
+    A Conduit would be instantiated, and one of the tool names it would have under IFC-012 is
+    longer than 128 characters, or equals the name of another tool that the engine presents, or
+    would present once its Conduit is opened, to the same consumer.
+  then: >-
+    The Conduit is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the tool name and, where two names are equal, the
+    Conduit that has the other. The other tools are those of the consumer's other Conduits that
+    are not closed, whether or not they are open yet, and the tool of IFC-024. A Conduit
+    instantiated on its own under the local name of one of its consumer's declared Conduits is
+    not instantiated where the two would have a tool name in common. No two tools presented to
+    one consumer share a name, and none is longer than the protocol allows. A rename that would
+    make two tool names equal is CON-026.
+  vectors: []
+
+- id: IFC-015
+  layer: interface
+  level: must
+  when: >-
+    An implementation makes an onward request on behalf of the instance it serves.
+  then: >-
+    It makes it as a client of the server the engine presents for that instance.
+  observable: >-
+    An implementation has no other way to reach another instance through the engine. Its onward
+    requests name the invocation they serve under IFC-020, and are decided under ACC-016 and
+    ACC-017.
+  vectors: []
+
+- id: IFC-016
+  layer: interface
+  level: must
+  when: >-
+    An operation's work finishes after its call returns.
+  then: >-
+    The call returns a reference among its outputs, and the result is retrieved later under the
+    operations convention. The protocol's tasks extension, `io.modelcontextprotocol/tasks`, may
+    also be used, and never stands in for the operation identity.
+  observable: >-
+    The retained result is found by the operation identity whichever facility delivered it.
+  vectors: []
+
+- id: IFC-017
+  layer: interface
+  level: may
+  when: >-
+    An engine chooses a transport for an implementation, who starts its process and how many
+    instances share it.
+  then: >-
+    It chooses among the protocol's transports as it sees fit, and documents the choice in its
+    runtime profile.
+  observable: >-
+    The promises of this file hold whatever the choice.
+  vectors: []
+
+# --- Added by consolidation pass 1 (plan-audit ruling 32; decisions U1, U2, U10 and Q7 of the
+# --- re-audit).
+
+- id: IFC-018
+  layer: interface
+  level: must
+  when: >-
+    An engine sends `io.github.shrav-k.conduit/restrictions` to an implementation under IFC-006.
+  then: >-
+    It is a list. Each item holds `requirement`, the qualified reference of a requirement, and
+    its `arguments`. The list holds every restriction that applies to the request: the
+    requirements of the request's own Conduit that narrow requests, every policy that applies,
+    and the restrictions carried from the served invocation under ACC-017. It is empty when none
+    applies.
+  observable: >-
+    Each filter on the Conduit named in `io.github.shrav-k.conduit/conduit`, each policy that
+    applies, and each restriction carried from the invocation that an onward request serves
+    appears as one item. A requirement that does not narrow requests, such as the shared-host
+    requirement, does not appear.
+  vectors: []
+
+- id: IFC-019
+  layer: interface
+  level: must
+  when: >-
+    An implementation receives a request whose `io.github.shrav-k.conduit/restrictions` is not
+    empty.
+  then: >-
+    It applies every restriction in the list to what the request does and to what it returns. If
+    one of them forbids the request, or it cannot apply one of them, it performs nothing and
+    answers with a reason in place of an outcome, as IFC-026 states.
+  observable: >-
+    No request is performed with a restriction it was sent left unapplied. The answer gives the
+    reason refused where a restriction forbids the request, and unavailable where the
+    implementation cannot apply one, and it names the restriction. Which requirements an
+    implementation can apply is stated by `supports` in its manifest under PKG-019, and an
+    implementation marked `plain` states none under PKG-020.
+  vectors: []
+
+- id: IFC-020
+  layer: interface
+  level: must
+  when: >-
+    An instance makes an onward request in order to serve an invocation it received.
+  then: >-
+    The request's `_meta` names that invocation in `io.github.shrav-k.conduit/serving`, by the
+    ID the engine sent as `io.github.shrav-k.conduit/invocation`. The engine takes the onward
+    request's caller, and the restrictions carried under ACC-017, from the served invocation.
+  observable: >-
+    The request that the onward target's implementation receives carries the served
+    invocation's caller in `io.github.shrav-k.conduit/caller` and its restrictions in
+    `io.github.shrav-k.conduit/restrictions`, whatever else the onward request states.
+  vectors: []
+
+- id: IFC-021
+  layer: interface
+  level: must
+  when: >-
+    An instance that is not an actor, which is to say neither an Interface nor an Agent, makes a
+    request that names no invocation in `io.github.shrav-k.conduit/serving`.
+  then: >-
+    The request is not dispatched, and reports refused.
+  observable: >-
+    A Resource's implementation that calls onward without naming the invocation it serves
+    reports refused, whatever open Conduits the Resource is the consumer of. An Interface or an
+    Agent that names none makes the request on its own behalf and is its caller. What a request
+    reports that names an invocation its sender does not serve is IFC-028.
+  vectors: []
+
+- id: IFC-022
+  layer: interface
+  level: must
+  when: >-
+    The engine receives a request on a server it presents to a consumer under IFC-012.
+  then: >-
+    The engine establishes which instance the consumer is for that request, from what that
+    request presents and not from the connection it arrived on. No consumer can present as
+    another.
+  observable: >-
+    Every request the engine accepts is attributed to exactly one instance, established for that
+    request alone and not from an earlier request on the same connection. Nothing that one
+    consumer is able to present attributes a request to another instance. What a request
+    presents, and how the engine establishes the instance from it, is DL13 of the
+    implementation-defined list.
+  vectors: []
+
+- id: IFC-023
+  layer: interface
+  level: may
+  when: >-
+    A consumer makes a request through the server the engine presents to it.
+  then: >-
+    It supplies an operation identity as `io.github.shrav-k.conduit/operationIdentity` in the
+    request's `_meta`.
+  observable: >-
+    The engine treats that value as the request's operation identity under OPS-008 and sends it
+    to the implementation under IFC-006. A request without the key carries no operation identity
+    and is a new invocation under OPS-011. The key does not appear in the `arguments`.
+  vectors: []
+
+- id: IFC-024
+  layer: interface
+  level: must
+  when: >-
+    The engine presents its server to an instance.
+  then: >-
+    The server always has a tool the core package names, with which the instance retrieves the
+    caller's own results by operation identity. The tool is presented whether or not any Conduit
+    of which the instance is the consumer is open, and a call to it needs no Conduit. The
+    `structuredContent` of its result states the invocation's state, which is in progress,
+    succeeded, failed or unknown, and states that content is withheld where OPS-017 withholds
+    it.
+  observable: >-
+    An instance with no open Conduit still lists the tool. A call to it is decided under OPS-015
+    to OPS-017 and not under ACC-001. An invocation that has not ended is reported as in
+    progress, and one that has ended by its outcome. A result whose content is withheld carries
+    the state and that statement, and no content.
+  vectors: []
+
+- id: IFC-025
+  layer: interface
+  level: must
+  when: >-
+    The engine answers a consumer's request.
+  then: >-
+    When the request has an outcome, the result's `_meta` holds
+    `io.github.shrav-k.conduit/outcome`, with the value succeeded, failed or unknown. When it
+    ended with a reason, whether the engine did not dispatch it or the implementation gave the
+    reason under IFC-026, the result's `_meta` holds `io.github.shrav-k.conduit/reason`, with
+    the value refused, invalid, conflict or unavailable, and the result's `isError` is true.
+  observable: >-
+    A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
+    and a result for one that ended with a reason never carries
+    `io.github.shrav-k.conduit/outcome`. The values are those of OPS-001 and OPS-005. For a call
+    to the tool of IFC-024 the two keys say how the retrieval itself ended, and the state of the
+    invocation it asks about is in the result's `structuredContent`.
+  vectors: []
+
+# --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
+# --- re-audit).
+
+- id: IFC-026
+  layer: interface
+  level: may
+  when: >-
+    An implementation that carries Conduit's keys has performed nothing of a request, because a
+    restriction it was sent forbids the request or because it cannot apply a restriction it was
+    sent.
+  then: >-
+    It answers, in place of an outcome, with `io.github.shrav-k.conduit/reason` in the result's
+    `_meta`. The value is refused where a restriction forbids the request, and unavailable where
+    the implementation cannot apply one.
+  observable: >-
+    A result that holds `io.github.shrav-k.conduit/reason` holds no
+    `io.github.shrav-k.conduit/outcome`. An implementation gives a reason only in those two
+    cases and only with those two values, and never after it has performed any part of the
+    request. IFC-019 says when it must answer so.
+  vectors: []
+
+- id: IFC-027
+  layer: interface
+  level: must
+  when: >-
+    The result of an implementation holds `io.github.shrav-k.conduit/reason`, with the value
+    refused or unavailable, as IFC-026 permits.
+  then: >-
+    The request ends with that reason and has no outcome.
+  observable: >-
+    The caller is told the reason, which a consumer receives as IFC-025 states, and the record
+    of the request states it. The engine's own access decision was made before the call and
+    permitted the request, as ACC-002 requires.
+  vectors: []
+
+- id: IFC-028
+  layer: interface
+  level: must
+  when: >-
+    A request names, in `io.github.shrav-k.conduit/serving`, an invocation that was not
+    dispatched to the instance that sends the request, or one that is no longer in progress.
+  then: >-
+    The request is not dispatched, and reports refused.
+  observable: >-
+    Only the instance an invocation was dispatched to can name it, and only while it is in
+    progress. This holds for an Interface and an Agent as for any other instance: a request from
+    one of them that names such an invocation reports refused, and is not taken as made on its
+    own behalf.
+  vectors: []
+
+# --- The names a version assigns (plan-audit ruling 35).
+
+- id: IFC-029
+  layer: interface
+  level: must
+  when: >-
+    A new version of this specification changes the prefix of Conduit's keys.
+  then: >-
+    A request or a result carries the keys of one version only, which its interface version
+    names. An engine or an implementation that supports both versions reads each by its own
+    prefix.
+  observable: >-
+    A request that mixes keys under two prefixes is answered as IFC-008 answers an unsupported
+    interface version. The prefix for this version is the one `names.yaml` states.
+  vectors: []

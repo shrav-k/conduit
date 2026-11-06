@@ -9,13 +9,18 @@ This page is the record of round 1. Round 2, with four readers, is done and has
 each pass ended; the current counts are in the
 [contents table of the specification](../../../spec/README.md#contents).
 
+This is the record of a ruling. Where it and the specification differ, the specification
+governs. Rounds 2 to 4 changed some of what ruling 32 accepted, by decisions of the coordinator
+that the owner has not ruled on; the tracker lists them under
+[later amendments](../../AUDIT.md#later-amendments).
+
 After the last batch of rulings (ruling 31) the owner asked for the promises to be consolidated
 and put back through the audit. Three cold readers each read all of `spec/`, and nothing else,
 as an engine builder would. Their reports are kept verbatim:
 
 | Reader | Looked for | Findings |
 | --- | --- | --- |
-| [1](reader-1-duplicates-and-contradictions.md) | Duplicate, contradictory, stale and misplaced promises | About 70: 24 groups of duplicates, 25 contradictions, 12 stale wordings, 10 misplaced, 10 to split |
+| [1](reader-1-duplicates-and-contradictions.md) | Duplicate, contradictory, stale and misplaced promises | About 80: 24 groups of duplicates, 25 contradictions, 12 stale wordings, 10 misplaced, 10 to split |
 | [2](reader-2-terms-and-shapes.md) | Undefined or double-meaning terms, and the keys of every document | 35 on terms, 26 on shapes, 8 on standards, and a reconstructed key table |
 | [3](reader-3-undetermined-behavior.md) | Anything two conforming engines could disagree on, by walking ten scenarios | 50: 11 unsafe, 26 divergent, 13 minor |
 

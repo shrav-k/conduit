@@ -126,6 +126,12 @@ Each is the least change of wording that makes the text true. Corrections B, C, 
 behavior or state a departure from the protocol, so each is for the owner to rule on. None of them
 has been applied.
 
+Note added by the coordinator after this report: the owner did not rule on B to E. The
+coordinator settled all of them under ruling 37, in the section "What the check against the
+Model Context Protocol found" of [DECISIONS.md](DECISIONS.md), by making the text follow the
+protocol, and they are applied. They are in the tracker's list of what waits for the owner. The
+text as changed was checked again in [round 4](../round-4/mcp-recheck.md).
+
 ### A. Row 17: the 128 characters are a recommendation (IFC-012, IFC-014)
 
 - In IFC-012, replace "The protocol limits a tool name to 128 characters." with "The protocol says

@@ -18,7 +18,11 @@ where they differ. Amended by:
 - ruling 33: changes to one instance are applied one at a time, and reconciling a control names
   the instance's current revision;
 - ruling 37: requests name objects by reference only; it changed OPS-007, OPS-009, OPS-014,
-  OPS-016 and OPS-019 and added OPS-025.
+  OPS-016 and OPS-019 and added OPS-025;
+- the coordinator, under ruling 37 and not ruled on by the owner: an identity is also scoped to
+  the instance that sent the request (round 2 of the re-audit), and where the decision on
+  access cannot be made, unavailable stands in the place of refused in the order of reasons
+  (round 3).
 
 Promise IDs are as first written; the comment at the head of each spec file says where a removed
 ID went.

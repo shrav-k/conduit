@@ -28,7 +28,8 @@ not the state now.
 ## Decisions taken to fix it
 
 The owner ruled that findings are resolved without a ruling on each (ruling 37). Each decision
-below follows a ruling already made; the last column names it.
+below follows a ruling already made; the last column names it. Each is the coordinator's and
+not the owner's, and the owner can strike any of them.
 
 | ID | Decision | Follows |
 | --- | --- | --- |
@@ -59,7 +60,9 @@ All thirteen decisions are applied. Each log lists the edits made, file by file.
 A later reader read the whole repository cold, as the fourth reader of round 2 of the
 re-audit. Its [report](../reaudit/round-2/reader-4.md) found the entry points consistent and
 the tracker two commits behind, and the [log of the fixes](../reaudit/round-2/log-reader-4-fixes.md)
-says what was done.
+says what was done. The fourth readers of rounds 3 and 4 read it again:
+[round 3](../reaudit/round-3/reader-4.md), 23 findings, and
+[round 4](../reaudit/round-4/reader-4.md), 26.
 
 ## Left for the owner
 

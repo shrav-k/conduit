@@ -1,6 +1,6 @@
 # Research
 
-> Not binding. Nothing under `docs/research/` binds. Every packet predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+> Not binding. Nothing under `docs/research/` binds. Every packet but the naming research predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 The [plan audit](../AUDIT.md) is the tracker. Statements below about the current queue, the
 current design and the first proof layout are historical.

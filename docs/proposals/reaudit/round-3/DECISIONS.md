@@ -73,7 +73,25 @@ One editor applies the rows and logs what it did in [log-fixes.md](log-fixes.md)
 
 ## Reader 4, inside the specification and the overview
 
-The findings outside `spec/` were fixed when the report came in (commit `d3ae339`).
+The findings outside `spec/` were fixed when the report came in (commit `d3ae339`), by the
+coordinator:
+
+| Finding | What was done |
+| --- | --- |
+| 3D-1 Accepted behavior "changes only by a ruling" | The front page, `AGENTS.md`, `CONTRIBUTING.md` and the documents index now name the second way, a coordinator's decision under ruling 37. |
+| 3D-3 Who the coordinator, editors and readers are | The tracker gained the section "Who decides what since ruling 37". |
+| 3D-4 A test attributed to ruling 37 | The round-3 record and the tracker give it as the coordinator's reading, which the owner has not confirmed. |
+| 3D-5 "Checked against the published protocol" | The tracker and the round-3 record say which promises were checked and that later text was not. Checked again in round 4. |
+| 3D-6 Two clean rounds stated as the readiness condition | The records give it as the done-when of A59 and say that G7 is for the owner. |
+| 3D-7, 3D-8 Round 2 "in progress"; the last row of the index | Corrected. |
+| 3D-9 Seven or eight unsafe findings | The records say that a reader marked 7 and the coordinator classed 1 more. |
+| 3D-10 No single list for the owner | The tracker gained the section "Waiting for the owner". |
+| 3D-18 Addresses on commits | Left for the owner, in that list. |
+| 3D-19 Who made the external audit | Left for the owner, in that list. |
+| 3D-20 Experiment 004 and the at-most-once promises | The status of A13 says what the experiment modelled. |
+| 3D-21 "A common package envelope"; "existing task authorizations" | Reworded in `CONTRIBUTING.md`. |
+| 3D-22 A line range | Corrected to lines 216 to 221. |
+| 3D-23 Eleven or fourteen points | The round-2 decisions say fourteen, of which eleven were new. |
 
 | Finding | Decision |
 | --- | --- |

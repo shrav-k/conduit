@@ -45,7 +45,10 @@ batch under [proposals/](#records-of-rulings).
 
 ### Records of rulings
 
-Each record says what was proposed, what the owner ruled and why. They are listed in the order
+Each record says what was proposed, what was decided, by whom and why. Most hold rulings of
+the owner. The last four, the documents audit and rounds 2 to 4 of the re-audit, hold what the
+coordinator decided under ruling 37; their ruling column names the ruling that asked for the
+work, not a ruling on its content. They are listed in the order
 of the rulings. Where a record and the specification differ, the specification governs.
 
 | Location | Ruling | What it records |
@@ -95,7 +98,7 @@ vocabulary ruling.
 
 | Location | What it is |
 | --- | --- |
-| [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet predates the specification. |
+| [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming research predates the specification. |
 | [archive/](archive/README.md) | Closed reviews, the accounting of one migration and attributed collaborator proposals, including dissent. History; nothing in it binds. |
 | [../experiments/](../experiments/README.md) | Exploratory plans, fixtures and measured evidence. Executed: library probes (003) and a Rust model-checking evaluation (004). Planned only: 002. No experiment has run a Conduit engine, because none exists. |
 

@@ -35,7 +35,9 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 - A behavior that is missing from `spec/` is a gap in `spec/`. No older document supplies it.
 - Nothing under `docs/protocol/` binds. It is the design as it stood before the specification,
   kept as source material for the type contracts still to be written.
-- The records under `docs/proposals/` say what the owner ruled and why. Where a record and the
+- The records under `docs/proposals/` say what was decided, by whom and why: the owner's
+  rulings, and for the documents audit and rounds 2 to 4 of the re-audit the decisions of the
+  coordinating session under ruling 37. Where a record and the
   specification differ, the specification governs.
 - Also not binding: `docs/OVERVIEW.md`, `docs/REVIEW.md`, `docs/VOCABULARY.md`,
   `docs/authoring/`, `docs/proposals/authoring-syntax/`, `docs/implementation/`,
@@ -78,8 +80,9 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 - Commit or push only when asked, and work on a branch. One standing instruction exists, and it
   is for the sessions the owner has asked to write the language, not for a reviewer or any
   other session: the owner's instruction of 2026-11-05 is that this work is tracked on
-  [pull request #6](https://github.com/shrav-k/conduit/pull/6), and those sessions commit and
-  push to its branch, `docs/plan-audit`, at each milestone.
+  [pull request #6](https://github.com/shrav-k/conduit/pull/6) (ruling 36). The coordinating
+  session reads that as committing and pushing to its branch, `docs/plan-audit`, at each
+  milestone. The owner has not confirmed that reading.
 
 ## Checks
 

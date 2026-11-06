@@ -1,10 +1,13 @@
 # Re-audit, round 4
 
 Status: in progress, 2026-11-06 (plan-audit action A59). Four cold readers read the repository
-as it stands after [round 3](../round-3/README.md) and its fix pass. The done-when of action A59
+as it stands after [round 3](../round-3/README.md), its fix pass and the follow-up, at commit
+`f583469`. The done-when of action A59
 asks for two consecutive rounds with no finding in the language, the conventions or the
-interface. None of the first three rounds was clean: the readers of `spec/` reported about 170
-findings, then 125, then 44. Whether the readiness condition G7 is judged on these rounds is
+interface. None of the first three rounds was clean. Rounds 2 and 3 are counted alike, as the sum of
+the findings in the three reports on `spec/`: 125, then 44. Round 1 is counted otherwise, as
+about 170 problems by class after duplicates among the reports were merged; its three reports
+hold about 200 items. Whether the readiness condition G7 is judged on these rounds is
 [for the owner](../../../AUDIT.md#waiting-for-the-owner).
 
 | Reader | Sees | Looks for | Report |

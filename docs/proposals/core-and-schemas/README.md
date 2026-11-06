@@ -7,6 +7,15 @@ the five changes X1 to X5 and the settlements of the open points and disagreemen
 settled and what it changed in the documents, and [log-documents.md](log-documents.md) logs
 what was done to each file of the batch after the ruling.
 
+This is the record of a ruling. Where it and the specification differ, the specification
+governs. Changed since by the coordinator, under ruling 37 and not ruled on by the owner: the
+owner's change X1 wrote a control's `changes` as a list of pointers, and it is now a map from an
+input's name to a pointer (round 2 of the re-audit); requests name objects by reference only,
+and a step or an onward request may now hold the resolved form (round 3); the core package
+gained `start-later-work.v1`, and `reconcile.v1`, `apply-policy.v1` and `retrieve-result.v1`
+gained inputs or outputs (rounds 2 and 3). The choices made while the ruling was applied, in
+the section Outcome, are for the owner to strike or keep.
+
 Sections (a) to (e), and the section after them, are kept as they were proposed. They were
 drafted on 2026-11-05 for decision G1 of the [re-audit](../reaudit/README.md), which asked for
 three things to be written as normative parts of `spec/` and brought to the owner as one

@@ -8,7 +8,7 @@ commit `b1d3fb4`.
 | --- | --- | --- |
 | Findings in `spec/`, three readers | 125 | 44 |
 | Of them classed as unsafe | 8 | 4 |
-| Findings of the reader of the whole repository | 57 | 23 |
+| Findings of the reader of the whole repository | 47 | 23 |
 
 The round was not clean. The done-when of action A59 asks for two consecutive rounds with no
 finding in the language, the conventions or the interface, and none of the three rounds has

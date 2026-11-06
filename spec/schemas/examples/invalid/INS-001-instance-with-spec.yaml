@@ -1,0 +1,10 @@
+# PROPOSED example, not accepted. It must be rejected:
+# a document with `from` is an instance and carries no `spec`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: operator
+from: console
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1

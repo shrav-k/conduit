@@ -1,0 +1,11 @@
+# PROPOSED example, not accepted. It must be rejected:
+# an implementation is reached by exactly one of `command`, `url` and `graph`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  files-server:
+    implements: ['#directory.read.v1']
+    command: [bin/files-server]
+    url: https://files.example.org/mcp

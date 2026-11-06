@@ -1,0 +1,164 @@
+# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
+# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+#
+# The Type contracts of the core package.
+#
+# Promises encoded:
+#   interface.v1    the plain Interface type (TPL-002: every Interface template has a type);
+#                   the type of `root` (FST-001)
+#   pool.v1         the plain Pool type (TPL-002); ACC-028, ACC-033 (a Pool's own operations)
+#   system-pool.v1  the type of `system` (FST-001); PLC-003, PLC-016 (the default-location
+#                   setting and its control); CTR-006
+#   location.v1     the location type (PLC-008): a location's facts are stored configuration;
+#                   PLC-007, PLC-013 (the facts a requirement is checked against)
+#   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
+#   access.v1       the type of `access` (FST-001, ACC-006, ACC-012, ACC-031)
+#
+# Every type writes `placement: {}`: none has a requirement on placement (CTR-004). Each
+# lists under `requires` the operations of the capabilities it offers, and each of those
+# operations states the engine as its default implementation (TPL-004).
+#
+# A location's stored facts are the value of `facts` in its configuration. `host` and
+# `localPaths` are the two facts the definitions name; `facts` is open, so that a location
+# may state others for a requirement on placement to test. The shared-host requirement
+# compares `host`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: interface.v1
+  description: The plain Interface type. It has no settings and offers nothing.
+spec:
+  family: Interface
+  schema:
+    type: object
+    additionalProperties: false
+  offers: []
+  requires: []
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: pool.v1
+  description: The plain Pool type. It has no settings and offers a Pool's own operations.
+spec:
+  family: Pool
+  schema:
+    type: object
+    additionalProperties: false
+  offers:
+    - github.com/shrav-k/conduit/core#pool-management.v1
+  requires:
+    - github.com/shrav-k/conduit/core#register.v1
+    - github.com/shrav-k/conduit/core#register-replacement.v1
+    - github.com/shrav-k/conduit/core#inspect.v1
+    - github.com/shrav-k/conduit/core#set-up.v1
+    - github.com/shrav-k/conduit/core#retire.v1
+    - github.com/shrav-k/conduit/core#retire-with-resources.v1
+    - github.com/shrav-k/conduit/core#reconcile.v1
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: system-pool.v1
+  description: >-
+    The type of the `system` Pool. Beyond a plain Pool it holds the default-location setting,
+    which names a location that exists or nothing.
+spec:
+  family: Pool
+  schema:
+    type: object
+    properties:
+      defaultLocation:
+        anyOf:
+          - $ref: github.com/shrav-k/conduit/core#resource-reference.v1
+          - type: 'null'
+    additionalProperties: false
+  offers:
+    - github.com/shrav-k/conduit/core#pool-management.v1
+    - github.com/shrav-k/conduit/core#system-settings.v1
+  requires:
+    - github.com/shrav-k/conduit/core#register.v1
+    - github.com/shrav-k/conduit/core#register-replacement.v1
+    - github.com/shrav-k/conduit/core#inspect.v1
+    - github.com/shrav-k/conduit/core#set-up.v1
+    - github.com/shrav-k/conduit/core#retire.v1
+    - github.com/shrav-k/conduit/core#retire-with-resources.v1
+    - github.com/shrav-k/conduit/core#reconcile.v1
+    - github.com/shrav-k/conduit/core#set-default-location.v1
+  controls:
+    - github.com/shrav-k/conduit/core#set-default-location.v1
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: location.v1
+  description: >-
+    The location type. A location is where an Agent or a Resource runs. It is a Resource owned
+    by the `system` Pool, it is its own placement, and its facts are stored configuration.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      facts:
+        type: object
+        properties:
+          host: {type: string, minLength: 1}
+          localPaths: {type: boolean}
+        additionalProperties: true
+    additionalProperties: false
+  offers: []
+  requires: []
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: management.v1
+  description: The type of the `management` Resource.
+spec:
+  family: Resource
+  schema:
+    type: object
+    additionalProperties: false
+  offers:
+    - github.com/shrav-k/conduit/core#object-management.v1
+  requires:
+    - github.com/shrav-k/conduit/core#register.v1
+    - github.com/shrav-k/conduit/core#replace.v1
+    - github.com/shrav-k/conduit/core#rename.v1
+    - github.com/shrav-k/conduit/core#unregister.v1
+    - github.com/shrav-k/conduit/core#inspect.v1
+    - github.com/shrav-k/conduit/core#set-up.v1
+    - github.com/shrav-k/conduit/core#retire.v1
+    - github.com/shrav-k/conduit/core#reconcile.v1
+    - github.com/shrav-k/conduit/core#register-replacement.v1
+    - github.com/shrav-k/conduit/core#install.v1
+    - github.com/shrav-k/conduit/core#declare-lost.v1
+    - github.com/shrav-k/conduit/core#purge.v1
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: access.v1
+  description: >-
+    The type of the `access` Resource. It stores the policies in force, which inspecting it
+    lists in its status.
+spec:
+  family: Resource
+  schema:
+    type: object
+    additionalProperties: false
+  offers:
+    - github.com/shrav-k/conduit/core#access-control.v1
+  requires:
+    - github.com/shrav-k/conduit/core#open.v1
+    - github.com/shrav-k/conduit/core#close.v1
+    - github.com/shrav-k/conduit/core#apply-policy.v1
+    - github.com/shrav-k/conduit/core#remove-policy.v1
+  placement: {}

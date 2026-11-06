@@ -1,0 +1,37 @@
+# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
+# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+#
+# Two small Schema contracts that the outputs of the core operations share. No promise gives
+# either shape; both are choices the record lists, kept as small as the promises allow. The
+# full format of a diagnostic and of an inspection result is not settled by this batch.
+#
+# Promises relied on:
+#   object.v1      OBJ-003 (a generated name is learned from the result), OBJ-005 (the ID)
+#   diagnostic.v1  OBJ-008, NAM-008, PKG-006 (a result lists the diagnostics that did not
+#                  prevent it)
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: object.v1
+  description: How a result names an object, by its kind, its name and its ID.
+spec:
+  type: object
+  properties:
+    kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    id: {$ref: github.com/shrav-k/conduit/core#id.v1}
+  required: [kind, name, id]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: diagnostic.v1
+  description: >-
+    One diagnostic. Only `message` is fixed here; an engine may add what it names, such as the
+    document, the key or the promise.
+spec:
+  type: object
+  properties:
+    message: {type: string, minLength: 1}
+  required: [message]

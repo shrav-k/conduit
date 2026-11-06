@@ -1,0 +1,6 @@
+# PROPOSED example, not accepted. It must be rejected:
+# the host part of an address has no port.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: github.com:443/acme/history
+version: 1.0.0

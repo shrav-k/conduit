@@ -1,0 +1,9 @@
+# PROPOSED example, not accepted. It must be rejected:
+# `id` is a field the engine owns.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: operator
+id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+from: console

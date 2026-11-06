@@ -1,0 +1,18 @@
+# PROPOSED example, not accepted. It must be rejected:
+# a setup graph has no `outputs`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-directory
+spec:
+  type: example.org/files#local-directory.v1
+  setup:
+    steps:
+      establish:
+        operation: example.org/files#directory.establish.v1
+        arguments:
+          path: {literal: /srv/checkout}
+    outputs:
+      directory:
+        value: {source: step, step: establish, output: directory}

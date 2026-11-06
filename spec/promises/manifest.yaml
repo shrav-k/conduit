@@ -1,0 +1,231 @@
+# The manifest: its file, its keys and the layout of a package's archive.
+# PROPOSED, not accepted. Written for decision G1 of the re-audit (plan-audit ruling 32) and
+# awaiting the owner's review as one batch with spec/core/ and spec/schemas/; see
+# docs/proposals/core-and-schemas/README.md. No promise below binds until it is accepted.
+# Each rule follows an existing practice: one project file with a fixed name, as Go's
+# `go.mod` and Cargo's `Cargo.toml` are; a format version inside the file, as a Helm chart's
+# `Chart.yaml` carries `apiVersion`; the files of one directory and not of those below it, as
+# Terraform reads a module; a re-export written among the exports, as a JavaScript module
+# writes `export ... from`; a program and its arguments as a list, as Kubernetes and Docker
+# write `command`; and an archive with the project file at its root, refusing members that
+# would be written outside it, as npm and Cargo do. What naming.yaml and packages.yaml
+# already promise is cited and not restated. The JSON Schema of these shapes is
+# spec/schemas/manifest.yaml. Draft: no vector exists yet.
+
+- id: MAN-001
+  layer: language
+  level: must
+  when: >-
+    A project's manifest is read.
+  then: >-
+    It is the one file named `conduit.yaml`, or `conduit.json` for the JSON form that SCH-013
+    allows, that lies in the project's directory itself, and it holds exactly one document.
+  observable: >-
+    A file of that name is read as the manifest and never as a template, an instance or a
+    contract. A manifest that holds two documents, or a JSON manifest that holds an array, is
+    rejected with a diagnostic naming the file. Where several files are submitted without a
+    directory, the manifest is the one among them that has that name.
+  vectors: []
+
+- id: MAN-002
+  layer: language
+  level: must
+  when: >-
+    A project's directory holds both `conduit.yaml` and `conduit.json`, or several files
+    submitted without a directory include more than one file with either name.
+  then: >-
+    The submission is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the files, and nothing is registered. A project has
+    at most one manifest.
+  vectors: []
+
+- id: MAN-003
+  layer: language
+  level: must
+  when: >-
+    A manifest is read.
+  then: >-
+    It carries `apiVersion`, as OBJ-017 requires of a document, and has no `kind`, no
+    `metadata` and no `spec`.
+  observable: >-
+    A manifest with no `apiVersion`, or with one the engine does not know, is rejected with a
+    diagnostic naming it, and so is a manifest that carries `kind`, `metadata` or `spec`. The
+    `apiVersion` says which version's names apply to the manifest, as OBJ-024 states for a
+    document. The rules on syntax of SCH-012, SCH-017 and SCH-006 apply to a manifest as to
+    any document.
+  vectors: []
+
+- id: MAN-004
+  layer: language
+  level: must
+  when: >-
+    A manifest is read.
+  then: >-
+    Beside `apiVersion` it may hold `packages`, `exports` and `implementations`, and it holds
+    either both `address` and `version` or neither. There are no other keys.
+  observable: >-
+    A manifest with any other top-level key, or with one of `address` and `version` and not
+    the other, is rejected with a diagnostic naming the key. A manifest that states `address`
+    and `version` is the manifest of a package, as PKG-017 states. One that states neither is
+    the manifest of a project that is not published.
+  vectors: []
+
+- id: MAN-005
+  layer: language
+  level: must
+  when: >-
+    A manifest lists the packages its project uses.
+  then: >-
+    `packages` is a map keyed by each package's address. Each item holds `version` and
+    `digest`, and may hold `fetch`. An item has no other keys.
+  observable: >-
+    `packages` written as a list, and an item with any other key, are each rejected with a
+    diagnostic naming it. What an item must state is NAM-006, the form of a version is
+    PKG-001 and the form of a digest is PKG-004. An address written twice is a duplicate key,
+    rejected under SCH-012.
+  vectors: []
+
+- id: MAN-006
+  layer: language
+  level: must
+  when: >-
+    A manifest item gives `fetch`.
+  then: >-
+    Its value is a URI reference, as RFC 3986 gives one, to the package's archive file. A
+    relative reference is resolved against the place of the manifest that holds it.
+  observable: >-
+    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and
+    `fetch: ../history/history-1.4.0.tar.gz` each name one archive file. The package is still
+    identified by its address, as NAM-012 states, and the digest decides whether what was
+    fetched satisfies the item, under PKG-021. Which schemes an engine can fetch from is DL7
+    of the implementation-defined list.
+  vectors: []
+
+- id: MAN-007
+  layer: language
+  level: must
+  when: >-
+    A manifest lists `exports`.
+  then: >-
+    `exports` is a list, and each item is either the name of a document of the package or a
+    qualified reference, which is a re-export under MAN-008.
+  observable: >-
+    An item that is neither, and a name that no document of the package has, are each rejected
+    with a diagnostic naming the item. An implementation is not listed in `exports`: its item
+    under `implementations` is what exports it, as PKG-019 states. A name written twice, and a
+    name that an implementation also has, are rejected under PKG-012.
+  vectors: []
+
+- id: MAN-008
+  layer: language
+  level: must
+  when: >-
+    An item of `exports` is a qualified reference.
+  then: >-
+    The package re-exports that export of another package, under the name the other package
+    gives it.
+  observable: >-
+    With `github.com/acme/base#shared-reviewer` among the exports of
+    `github.com/acme/starter`, the reference `github.com/acme/starter#shared-reviewer`
+    resolves as PKG-013 states. The address before the `#` is one the manifest lists under
+    `packages`, or the item is rejected under NAM-007. A re-export never gives the export
+    another name.
+  vectors: []
+
+- id: MAN-009
+  layer: language
+  level: must
+  when: >-
+    A manifest lists `implementations`.
+  then: >-
+    `implementations` is a map keyed by each implementation's name. Each item holds
+    `implements` and exactly one of `command`, `url` and `graph`, and may hold `plain`,
+    `tools`, `supports` and `placement`. An item has no other keys.
+  observable: >-
+    An item with two of `command`, `url` and `graph`, with none of them, or with any other
+    key, is rejected with a diagnostic naming the item. An item with no `supports` can apply
+    no requirement, and one with no `placement` has no requirement on placement. What `plain`
+    and `tools` require of each other is PKG-020, and the name follows NAM-004. The one
+    exception is the core package's own manifest, under MAN-012.
+  vectors: []
+
+- id: MAN-010
+  layer: language
+  level: must
+  when: >-
+    The keys of an implementation item are read.
+  then: >-
+    `implements` is a list of selections of operations. `command` is a list of one or more
+    strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in
+    place, as TPL-003 gives one. `supports` is a list of selections of requirements.
+    `placement` is a map of applied requirements, as CTR-004 gives a Type. `plain` is a
+    boolean. `tools` is a map from the selection of an operation to the name of a tool.
+  observable: >-
+    A `command` written as one string, a `url` with no scheme, and a `graph` item whose
+    `implements` does not list exactly one operation, as GRA-014 requires, are each rejected
+    with a diagnostic naming the item. A program given as a relative path is taken from the
+    root of the package's archive, and no shell reads the list. Who starts the program is DL12
+    of the implementation-defined list.
+  vectors: []
+
+- id: MAN-011
+  layer: language
+  level: must
+  when: >-
+    A project's directory is read, whether it was submitted or is the content of a package's
+    archive.
+  then: >-
+    Its documents are the files whose names end in `.yaml` or `.json` and that lie in the
+    directory itself, apart from the manifest. Nothing in a directory below it is read.
+  observable: >-
+    A project keeps the programs of its implementations, and any other file, in directories
+    below its own. A file in the directory itself that has one of the two endings and holds
+    something other than templates, instances or contracts is rejected under SUB-005. A file
+    with any other ending is not a document and is not read. Documents in a directory below
+    are another project, with a manifest of its own if it uses packages.
+  vectors: []
+
+- id: MAN-012
+  layer: language
+  level: must
+  when: >-
+    The manifest of the core package, whose address is `github.com/shrav-k/conduit/core`, is
+    read.
+  then: >-
+    Its implementations are the engine itself. Each item states `implements`, may state
+    `supports` and `placement`, and states none of `command`, `url` and `graph`.
+  observable: >-
+    An item of any other package that states none of the three is rejected under MAN-009. The
+    core package is built into the engine under NAM-020, so it has no archive and no digest: a
+    template or an instance that refers to it holds its address and its version, and no
+    digest, where NAM-009 and PKG-005 speak of a digest.
+  vectors: []
+
+- id: MAN-013
+  layer: language
+  level: must
+  when: >-
+    A package's archive is read.
+  then: >-
+    The manifest lies at the root of the archive, with no directory around it, and the
+    package's documents lie beside it, as MAN-011 states.
+  observable: >-
+    An archive whose root holds no manifest, or holds one only inside a directory, is rejected
+    when the package is installed, with a diagnostic naming the archive. Unpacking the archive
+    into an empty directory gives the project's directory as it was published. What the
+    archive file itself must be is PKG-022.
+  vectors: []
+
+- id: MAN-014
+  layer: language
+  level: must
+  when: >-
+    A package's archive holds a member whose path is absolute or has a `..` segment, or a
+    member that is a link to a place outside the archive.
+  then: >-
+    The package is rejected.
+  observable: >-
+    Installation returns a diagnostic naming the member, and nothing is written outside the
+    place where the engine keeps the package.
+  vectors: []

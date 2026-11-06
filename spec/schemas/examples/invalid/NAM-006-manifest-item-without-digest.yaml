@@ -1,0 +1,7 @@
+# PROPOSED example, not accepted. It must be rejected:
+# each package is listed with one version and its digest.
+
+apiVersion: github.com/shrav-k/conduit/v0
+packages:
+  example.org/files:
+    version: 0.3.0

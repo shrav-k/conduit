@@ -1,0 +1,47 @@
+# PROPOSED example, not accepted. The instance documents of the five first-start objects
+# (FST-001), written out. An engine makes these objects at first start; it is not handed this
+# file, and what triggers first start is DL6 of the implementation-defined list. They refer
+# only to the core package, so no manifest is needed (NAM-020).
+#
+# The two Conduits of FST-002 are not written here: they are the declared Conduits of the
+# template `root`, and are instantiated with it (CON-002).
+#
+# The facts of `local` are the engine's to supply. The values below are an example.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: system
+from: github.com/shrav-k/conduit/core#system
+---
+# A location is its own placement (PLC-008), so its document gives none.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: local
+from: github.com/shrav-k/conduit/core#location
+owner: system
+arguments:
+  facts:
+    host: workstation-1
+    localPaths: true
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: management
+from: github.com/shrav-k/conduit/core#management
+owner: system
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: access
+from: github.com/shrav-k/conduit/core#access
+owner: system
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: root
+from: github.com/shrav-k/conduit/core#root

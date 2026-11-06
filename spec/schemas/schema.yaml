@@ -1,0 +1,165 @@
+# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
+# docs/proposals/core-and-schemas/README.md.
+#
+# The schema of a schema: what spec/schema-profile.md permits, written within that profile.
+# Every place in a document that holds a schema refers to this contract. JSON Schema 2020-12.
+#
+# Promises encoded:
+#   SCH-002  only the profile's keywords; a misspelled keyword is rejected
+#   SCH-003  only the profile's formats
+#   SCH-008  `default` only on a property reached through `properties`, never on `items`
+#            itself and never anywhere inside `allOf`, `anyOf` or `oneOf`
+#   SCH-015  the two forms of `$ref`
+#   CTR-008  the `spec` of a Schema contract is a schema under the profile
+#   OBJ-019  the names under `properties` and `$defs`, and the values of `const`, `enum`,
+#            `default` and `examples`, are the author's and are not checked
+#
+# Three definitions carry SCH-008. `schema` is a schema in a place where `default` is not
+# accepted. `property` is a schema that is a member of `properties`, where it is. `combined`
+# is a schema anywhere inside `allOf`, `anyOf` or `oneOf`, where it is accepted nowhere below.
+# A schema is an object or a boolean, as JSON Schema 2020-12 defines.
+#
+# Not expressed here, and checked by the engine: that a `$ref` resolves (SCH-015); that a
+# `pattern` is a regular expression of ECMA-262 (SCH-016); that a `default` reached only
+# through a `$ref` is in an accepted place (SCH-008); and that a number is within the range of
+# SCH-006.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: schema.v1
+  description: A schema under the schema profile of this specification.
+spec:
+  $ref: '#/$defs/schema'
+  $defs:
+    typeName:
+      enum: [object, array, string, number, integer, boolean, 'null']
+    type:
+      anyOf:
+        - $ref: '#/$defs/typeName'
+        - type: array
+          items: {$ref: '#/$defs/typeName'}
+          minItems: 1
+          uniqueItems: true
+    count: {type: integer, minimum: 0}
+    names: {type: array, items: {type: string}, uniqueItems: true}
+    format:
+      enum: [date-time, date, duration, uri, uuid]
+    ref:
+      anyOf:
+        - type: string
+          pattern: '^#(/([^/~]|~[01])*)*$'
+        - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+    schema:
+      anyOf:
+        - type: boolean
+        - type: object
+          properties:
+            type: {$ref: '#/$defs/type'}
+            enum: {type: array}
+            const: {}
+            properties:
+              type: object
+              additionalProperties: {$ref: '#/$defs/property'}
+            required: {$ref: '#/$defs/names'}
+            additionalProperties: {$ref: '#/$defs/schema'}
+            items: {$ref: '#/$defs/schema'}
+            minItems: {$ref: '#/$defs/count'}
+            maxItems: {$ref: '#/$defs/count'}
+            uniqueItems: {type: boolean}
+            minimum: {type: number}
+            maximum: {type: number}
+            exclusiveMinimum: {type: number}
+            exclusiveMaximum: {type: number}
+            minLength: {$ref: '#/$defs/count'}
+            maxLength: {$ref: '#/$defs/count'}
+            pattern: {type: string}
+            format: {$ref: '#/$defs/format'}
+            title: {type: string}
+            description: {type: string}
+            examples: {type: array}
+            $ref: {$ref: '#/$defs/ref'}
+            $defs:
+              type: object
+              additionalProperties: {$ref: '#/$defs/schema'}
+            allOf: {$ref: '#/$defs/branches'}
+            anyOf: {$ref: '#/$defs/branches'}
+            oneOf: {$ref: '#/$defs/branches'}
+          additionalProperties: false
+    property:
+      anyOf:
+        - type: boolean
+        - type: object
+          properties:
+            type: {$ref: '#/$defs/type'}
+            enum: {type: array}
+            const: {}
+            properties:
+              type: object
+              additionalProperties: {$ref: '#/$defs/property'}
+            required: {$ref: '#/$defs/names'}
+            additionalProperties: {$ref: '#/$defs/schema'}
+            items: {$ref: '#/$defs/schema'}
+            minItems: {$ref: '#/$defs/count'}
+            maxItems: {$ref: '#/$defs/count'}
+            uniqueItems: {type: boolean}
+            minimum: {type: number}
+            maximum: {type: number}
+            exclusiveMinimum: {type: number}
+            exclusiveMaximum: {type: number}
+            minLength: {$ref: '#/$defs/count'}
+            maxLength: {$ref: '#/$defs/count'}
+            pattern: {type: string}
+            format: {$ref: '#/$defs/format'}
+            default: {}
+            title: {type: string}
+            description: {type: string}
+            examples: {type: array}
+            $ref: {$ref: '#/$defs/ref'}
+            $defs:
+              type: object
+              additionalProperties: {$ref: '#/$defs/schema'}
+            allOf: {$ref: '#/$defs/branches'}
+            anyOf: {$ref: '#/$defs/branches'}
+            oneOf: {$ref: '#/$defs/branches'}
+          additionalProperties: false
+    branches:
+      type: array
+      items: {$ref: '#/$defs/combined'}
+      minItems: 1
+    combined:
+      anyOf:
+        - type: boolean
+        - type: object
+          properties:
+            type: {$ref: '#/$defs/type'}
+            enum: {type: array}
+            const: {}
+            properties:
+              type: object
+              additionalProperties: {$ref: '#/$defs/combined'}
+            required: {$ref: '#/$defs/names'}
+            additionalProperties: {$ref: '#/$defs/combined'}
+            items: {$ref: '#/$defs/combined'}
+            minItems: {$ref: '#/$defs/count'}
+            maxItems: {$ref: '#/$defs/count'}
+            uniqueItems: {type: boolean}
+            minimum: {type: number}
+            maximum: {type: number}
+            exclusiveMinimum: {type: number}
+            exclusiveMaximum: {type: number}
+            minLength: {$ref: '#/$defs/count'}
+            maxLength: {$ref: '#/$defs/count'}
+            pattern: {type: string}
+            format: {$ref: '#/$defs/format'}
+            title: {type: string}
+            description: {type: string}
+            examples: {type: array}
+            $ref: {$ref: '#/$defs/ref'}
+            $defs:
+              type: object
+              additionalProperties: {$ref: '#/$defs/combined'}
+            allOf: {$ref: '#/$defs/branches'}
+            anyOf: {$ref: '#/$defs/branches'}
+            oneOf: {$ref: '#/$defs/branches'}
+          additionalProperties: false

@@ -1,0 +1,155 @@
+# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
+# docs/proposals/core-and-schemas/README.md.
+#
+# The small values that the other schemas share. Each document below is a Schema contract of
+# the core package (CTR-008), so that another schema can refer to it with a `$ref` that is a
+# qualified reference (SCH-015). JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   name.v1                 OBJ-001, OBJ-022
+#   export-name.v1          NAM-004
+#   contract-name.v1        CTR-001, NAM-004 (the pattern of a version segment is a choice)
+#   address.v1              NAM-001
+#   qualified-reference.v1  NAM-002, NAM-001, NAM-004, NAM-005
+#   selection.v1            NAM-018, NAM-022
+#   pointer.v1              OBJ-016
+#   destination.v1          OBJ-016 (a destination does not use the `-` token), INS-021
+#   version.v1              PKG-001
+#   digest.v1               PKG-004
+#   id.v1, revision.v1      OBJ-005, REV-001 (their types are choices)
+#
+# Not expressed here, and checked by the engine: that a label of a host is at most 63
+# characters (NAM-001, through RFC 1123), and everything about what a reference resolves to.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: name.v1
+  description: >-
+    The name of a template or an instance of one of the five families, and a name a document
+    chooses for a member of a named map.
+spec:
+  type: string
+  pattern: '^[a-z][a-z0-9-]*$'
+  maxLength: 63
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: export-name.v1
+  description: The name of something a package exports.
+spec:
+  type: string
+  pattern: '^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$'
+  maxLength: 63
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: contract-name.v1
+  description: >-
+    The name of a contract. It is an export name whose last segment is the contract's
+    compatibility version, written `v` and a whole number from 1.
+spec:
+  type: string
+  pattern: '^([a-z][a-z0-9-]*\.)*v[1-9][0-9]*$'
+  maxLength: 63
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: address.v1
+  description: >-
+    The address of a package. A host name as RFC 1123 gives it, in lowercase, with at least one
+    dot, no port and no trailing dot, whose last label is not a number; then path segments.
+spec:
+  type: string
+  pattern: "^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+(?![0-9]+(/|$))\
+    [a-z0-9]([a-z0-9-]*[a-z0-9])?(/[a-z0-9._-]+)*$"
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: qualified-reference.v1
+  description: A package's address, then `#`, then the name of one of its exports.
+spec:
+  type: string
+  pattern: "^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+(?![0-9]+([/#]|$))\
+    [a-z0-9]([a-z0-9-]*[a-z0-9])?(/[a-z0-9._-]+)*\
+    #(?=.{1,63}$)[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$"
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: selection.v1
+  description: >-
+    How a document selects a type, a capability, an operation, a requirement or an
+    implementation. A qualified reference, or `#` and a name for something in the same project
+    or package.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+    - type: string
+      pattern: '^#[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*$'
+      maxLength: 64
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: pointer.v1
+  description: A JSON Pointer in the string form of RFC 6901, section 3.
+spec:
+  type: string
+  pattern: '^(/([^/~]|~[01])*)*$'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: destination.v1
+  description: >-
+    A destination of a template's input. A JSON Pointer whose root is the template's `spec`. It
+    has at least one token, and no token is `-`.
+spec:
+  type: string
+  pattern: '^(/(?!-(/|$))([^/~]|~[01])*)+$'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: version.v1
+  description: A version of a package, as Semantic Versioning 2.0.0 gives it.
+spec:
+  type: string
+  pattern: "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\
+    (-(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)\
+    (\\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*)?\
+    (\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$"
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: digest.v1
+  description: A SHA-256 digest, written `sha256:` and 64 lowercase hexadecimal digits.
+spec:
+  type: string
+  pattern: '^sha256:[0-9a-f]{64}$'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: id.v1
+  description: >-
+    An ID the engine gave: of an object, an invocation or a policy. It is opaque to whoever
+    receives it.
+spec:
+  type: string
+  minLength: 1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: revision.v1
+  description: The revision of a template or an instance.
+spec:
+  type: integer
+  minimum: 0

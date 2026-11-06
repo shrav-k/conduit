@@ -1,0 +1,174 @@
+# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
+# docs/proposals/core-and-schemas/README.md.
+#
+# A graph, a step, a value binding and a value reference.
+# JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   graph.v1            GRA-023 (`steps` is a map by name), GRA-021 (`outputs`, each with a
+#                       `value` and perhaps `optional`), OBJ-015
+#   lifecycle-graph.v1  GRA-023 (`setup` and `retire` each hold `steps`), GRA-021 (neither has
+#                       `outputs`)
+#   step.v1             GRA-017 (exactly one of `operation` and `runtime`; `conduit` only with
+#                       `operation`), GRA-015 (`arguments`, never `inputs`), GRA-018
+#                       (`dependsOn`), OBJ-015, OBJ-019, TPL-003 (no `implementation` on a step)
+#   value-binding.v1    GRA-019 (exactly one of four forms; a bare value is rejected)
+#   value-reference.v1  GRA-020 (five sources and what each may hold; `from` is rejected),
+#                       OBJ-016 (`pointer`)
+#
+# Open, as OBJ-019 exempts: the value of `literal`. The keys of `steps`, of `outputs`, of a
+# step's `arguments` and of an `object` binding are names, not keys this specification
+# defines.
+#
+# Not expressed here, and checked by the engine: the rule for the name of a step (OBJ-022),
+# because the profile has no keyword that constrains the keys of a map; that a step, a
+# runtime, an input, an output or a declared Conduit that is named exists (GRA-004, GRA-006,
+# GRA-017, GRA-024); cycles (GRA-005); that every required input has a value and every
+# literal satisfies its input's schema (GRA-007, GRA-008); which sources a graph may use
+# (GRA-010, GRA-020: `config` only in `setup` and `retire`, `input` never there); a `pointer`
+# on a handle (GRA-011); that a step is not named as a declared Conduit or an entry is
+# (GRA-022); that the outputs match the operation's contract (GRA-021); and model work
+# (IMP-004, IMP-005, IMP-009).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: graph.v1
+  description: >-
+    A graph that implements one operation: written in place in an `implementation` map, or
+    under `graph` in a manifest's implementation item.
+spec:
+  type: object
+  properties:
+    steps:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#step.v1}
+    outputs:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          value: {$ref: github.com/shrav-k/conduit/core#value-binding.v1}
+          optional: {type: boolean}
+        required: [value]
+        additionalProperties: false
+  required: [steps]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: lifecycle-graph.v1
+  description: The graph under a template's `setup` or `retire`. It has steps and no outputs.
+spec:
+  type: object
+  properties:
+    steps:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#step.v1}
+  required: [steps]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: step.v1
+  description: One operation call in a graph.
+spec:
+  oneOf:
+    - type: object
+      properties:
+        operation: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+        conduit: {$ref: github.com/shrav-k/conduit/core#name.v1}
+        arguments: {$ref: '#/$defs/arguments'}
+        dependsOn: {$ref: '#/$defs/dependsOn'}
+        optional: {type: boolean}
+      required: [operation]
+      additionalProperties: false
+    - type: object
+      properties:
+        runtime: {$ref: github.com/shrav-k/conduit/core#name.v1}
+        arguments: {$ref: '#/$defs/arguments'}
+        dependsOn: {$ref: '#/$defs/dependsOn'}
+        optional: {type: boolean}
+      required: [runtime]
+      additionalProperties: false
+  $defs:
+    arguments:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#value-binding.v1}
+    dependsOn:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#name.v1}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: value-binding.v1
+  description: How a step's argument, or a graph's output, gets its value.
+spec:
+  $ref: '#/$defs/binding'
+  $defs:
+    binding:
+      oneOf:
+        - type: object
+          properties:
+            literal: {}
+          required: [literal]
+          additionalProperties: false
+        - $ref: github.com/shrav-k/conduit/core#value-reference.v1
+        - type: object
+          properties:
+            object:
+              type: object
+              additionalProperties: {$ref: '#/$defs/binding'}
+          required: [object]
+          additionalProperties: false
+        - type: object
+          properties:
+            list:
+              type: array
+              items: {$ref: '#/$defs/binding'}
+          required: [list]
+          additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: value-reference.v1
+  description: A value binding that takes its value from somewhere else.
+spec:
+  oneOf:
+    - type: object
+      properties:
+        source: {const: input}
+        name: {type: string, minLength: 1}
+        pointer: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+      required: [source, name]
+      additionalProperties: false
+    - type: object
+      properties:
+        source: {const: config}
+        pointer: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+      required: [source]
+      additionalProperties: false
+    - type: object
+      properties:
+        source: {const: step}
+        step: {$ref: github.com/shrav-k/conduit/core#name.v1}
+        output: {type: string, minLength: 1}
+        pointer: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+      required: [source, step, output]
+      additionalProperties: false
+    - type: object
+      properties:
+        source: {const: runtime}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [source, name]
+      additionalProperties: false
+    - type: object
+      properties:
+        source: {const: instance}
+        name: {enum: [id, name]}
+      required: [source, name]
+      additionalProperties: false

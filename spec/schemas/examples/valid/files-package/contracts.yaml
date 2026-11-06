@@ -1,0 +1,185 @@
+# PROPOSED example, not accepted. One contract of each of the five kinds, and the further
+# contracts the example project needs. Every name under example.org is invented.
+#
+# Inside the package, one document refers to another as `#name` (NAM-022). A `$ref` cannot yet
+# do that: whether it may is one of the open points the record settles with a recommendation.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: read-limit.v1
+  description: How many entries one read may return.
+spec:
+  type: integer
+  minimum: 1
+  maximum: 100
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.establish.v1
+  description: Make sure the directory exists, and return its resolved path.
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+  outputs:
+    directory:
+      schema: {type: string}
+  effect: Creates the directory if it is absent.
+  deduplicates: true
+  implementation: '#files-server'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.read.v1
+  description: Read the names of the entries of a directory.
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+    maxEntries:
+      schema: {type: integer, minimum: 1, maximum: 100}
+      optional: true
+  outputs:
+    entries:
+      schema:
+        type: array
+        items: {type: string}
+  implementation: '#files-server'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.list.v1
+  description: List a directory. Implemented by a graph that calls `directory.read.v1`.
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+  outputs:
+    entries:
+      schema:
+        type: array
+        items: {type: string}
+  implementation: '#listing'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: watcher.start.v1
+  description: Start watching a directory. The start operation of the runtime `watcher`.
+spec:
+  inputs:
+    directory:
+      schema: {type: string, minLength: 1}
+  outputs:
+    watcher:
+      handle: true
+  effect: Starts a process that watches the directory.
+  implementation: '#files-server'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: watcher.stop.v1
+  description: Stop watching. The stop operation of the runtime `watcher`.
+spec:
+  inputs:
+    watcher:
+      handle: true
+  effect: Stops the process that watches the directory.
+  implementation: '#files-server'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: set-read-limit.v1
+  description: A control. Change how many entries one read may return.
+spec:
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1, maximum: 100}
+      optional: true
+    revision:
+      schema: {$ref: github.com/shrav-k/conduit/core#revision.v1}
+  outputs:
+    settings:
+      schema: {type: object}
+  effect: Changes the read limit of the directory.
+  changes: [/readLimit]
+  deduplicates: true
+  implementation: '#files-server'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: directory-access.v1
+  description: Reading a directory, and changing its read limit.
+spec:
+  operations:
+    - '#directory.read.v1'
+    - '#directory.list.v1'
+    - '#set-read-limit.v1'
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: local-directory.v1
+  description: A directory on the host of its location.
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+      readLimit: {type: integer, minimum: 1, maximum: 100, default: 10}
+      cache: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+    required: [path]
+    additionalProperties: false
+  offers:
+    - '#directory-access.v1'
+  requires:
+    - '#directory.establish.v1'
+    - '#directory.read.v1'
+    - '#directory.list.v1'
+    - '#set-read-limit.v1'
+  runtimes:
+    watcher:
+      start: '#watcher.start.v1'
+      stop: '#watcher.stop.v1'
+      optional: true
+  implementation:
+    '#directory.list.v1': '#listing'
+  controls:
+    - '#set-read-limit.v1'
+  placement:
+    local-paths:
+      requirement: '#local-paths.v1'
+  conditions: [watching]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: local-paths.v1
+  description: A requirement on placement. The location gives access to local paths.
+spec:
+  appliesTo: [placement]
+  schema:
+    type: object
+    properties:
+      localPaths: {const: true}
+    required: [localPaths]
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: rate-limit.v1
+  description: A filter or a policy. No more than `limit` requests in a minute.
+spec:
+  appliesTo: [conduit, policy]
+  narrows: true
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1}

@@ -1,0 +1,181 @@
+# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
+# docs/proposals/core-and-schemas/README.md.
+#
+# The manifest of a project or a package, and one item of its `implementations`. The file's
+# name, its keys and the layout of an archive are proposed as promises in
+# spec/promises/manifest.yaml. JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   manifest.v1             MAN-003 (`apiVersion`; no `kind`, `metadata` or `spec`), MAN-004
+#                           (the keys; `address` and `version` together), MAN-005
+#                           (`packages` is a map by address; each item holds `version`,
+#                           `digest` and perhaps `fetch`), MAN-007 and MAN-008 (`exports`, and
+#                           a re-export), MAN-009 (`implementations` is a map by name),
+#                           MAN-012 (the core package's own items), NAM-006, PKG-001,
+#                           PKG-004, PKG-017, PKG-018
+#   implementation-item.v1  MAN-009 and MAN-010 (the keys and their values; exactly one of
+#                           `command`, `url` and `graph`), PKG-019, PKG-020 (a plain item
+#                           gives `tools` and no `supports`), TPL-003
+#
+# The first two forms below are the manifest of a project that is not published and the
+# manifest of a package. The third is the core package's own manifest, whose implementations
+# are the engine itself and so state no `command`, `url` or `graph`: PKG-019 has no way to
+# write that, and the record lists it.
+#
+# Not expressed here, and checked by the engine: the rule for a key of `packages` and of
+# `implementations` (NAM-001, NAM-004), because the profile has no keyword that constrains
+# the keys of a map; that the core package's address is not listed (NAM-021); that every
+# export names a document of the package and no name is exported twice (PKG-012, PKG-018);
+# re-export cycles (PKG-014); that a plain item's `tools` has a key for each operation in
+# `implements` (PKG-020); that a `graph` item implements exactly the one operation it lists
+# (GRA-014); everything about digests and installed packages (PKG-003, PKG-021, PKG-022);
+# and that there is one manifest, in the right place (MAN-001, MAN-002).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: manifest.v1
+  description: The manifest of a project or of a package.
+spec:
+  anyOf:
+    - $ref: '#/$defs/project'
+    - $ref: '#/$defs/package'
+    - $ref: '#/$defs/core'
+  $defs:
+    packages:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          version: {$ref: github.com/shrav-k/conduit/core#version.v1}
+          digest: {$ref: github.com/shrav-k/conduit/core#digest.v1}
+          fetch: {type: string, minLength: 1}
+        required: [version, digest]
+        additionalProperties: false
+    exports:
+      type: array
+      items:
+        anyOf:
+          - $ref: github.com/shrav-k/conduit/core#export-name.v1
+          - $ref: github.com/shrav-k/conduit/core#qualified-reference.v1
+      uniqueItems: true
+    implementations:
+      type: object
+      additionalProperties:
+        $ref: github.com/shrav-k/conduit/core#implementation-item.v1
+    project:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        packages: {$ref: '#/$defs/packages'}
+        exports: {$ref: '#/$defs/exports'}
+        implementations: {$ref: '#/$defs/implementations'}
+      required: [apiVersion]
+      additionalProperties: false
+    package:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        address: {$ref: github.com/shrav-k/conduit/core#address.v1}
+        version: {$ref: github.com/shrav-k/conduit/core#version.v1}
+        packages: {$ref: '#/$defs/packages'}
+        exports: {$ref: '#/$defs/exports'}
+        implementations: {$ref: '#/$defs/implementations'}
+      required: [apiVersion, address, version]
+      additionalProperties: false
+    core:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        address: {const: github.com/shrav-k/conduit/core}
+        version: {$ref: github.com/shrav-k/conduit/core#version.v1}
+        exports: {$ref: '#/$defs/exports'}
+        implementations:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              implements: {$ref: '#/$defs/references'}
+              supports: {$ref: '#/$defs/references'}
+              placement:
+                type: object
+                additionalProperties:
+                  $ref: github.com/shrav-k/conduit/core#applied-requirement.v1
+            required: [implements]
+            additionalProperties: false
+      required: [apiVersion, address, version]
+      additionalProperties: false
+    references:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: implementation-item.v1
+  description: >-
+    One member of a manifest's `implementations`. It is reached by exactly one of `command`,
+    `url` and `graph`. An existing server that knows nothing of this specification is marked
+    `plain: true`, gives `tools` and states no `supports`.
+spec:
+  oneOf:
+    - type: object
+      properties:
+        implements: {$ref: '#/$defs/references'}
+        command: {$ref: '#/$defs/command'}
+        plain: {const: false}
+        supports: {$ref: '#/$defs/references'}
+        placement: {$ref: '#/$defs/placement'}
+      required: [implements, command]
+      additionalProperties: false
+    - type: object
+      properties:
+        implements: {$ref: '#/$defs/references'}
+        url: {$ref: '#/$defs/url'}
+        plain: {const: false}
+        supports: {$ref: '#/$defs/references'}
+        placement: {$ref: '#/$defs/placement'}
+      required: [implements, url]
+      additionalProperties: false
+    - type: object
+      properties:
+        implements: {$ref: '#/$defs/references'}
+        graph: {$ref: github.com/shrav-k/conduit/core#graph.v1}
+        plain: {const: false}
+        supports: {$ref: '#/$defs/references'}
+        placement: {$ref: '#/$defs/placement'}
+      required: [implements, graph]
+      additionalProperties: false
+    - type: object
+      properties:
+        implements: {$ref: '#/$defs/references'}
+        command: {$ref: '#/$defs/command'}
+        plain: {const: true}
+        tools: {$ref: '#/$defs/tools'}
+        placement: {$ref: '#/$defs/placement'}
+      required: [implements, command, plain, tools]
+      additionalProperties: false
+    - type: object
+      properties:
+        implements: {$ref: '#/$defs/references'}
+        url: {$ref: '#/$defs/url'}
+        plain: {const: true}
+        tools: {$ref: '#/$defs/tools'}
+        placement: {$ref: '#/$defs/placement'}
+      required: [implements, url, plain, tools]
+      additionalProperties: false
+  $defs:
+    references:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    command:
+      type: array
+      items: {type: string, minLength: 1}
+      minItems: 1
+    url: {type: string, format: uri}
+    tools:
+      type: object
+      additionalProperties: {type: string, minLength: 1}
+    placement:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#applied-requirement.v1}

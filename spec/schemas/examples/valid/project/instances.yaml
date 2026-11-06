@@ -1,0 +1,69 @@
+# PROPOSED example, not accepted. One instance document of each family, made from the
+# templates in templates.yaml. The location `local` exists from first start (FST-001).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: team
+from: workspace
+arguments:
+  location: local
+---
+# A Resource states its owner (POOL-001). The kind of `owner` and of `placement` is fixed, so
+# the name alone is written (OBJ-006).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: scratch
+  description: A directory outside the entries of the Pool `team`, and owned by it (POOL-004).
+from: project-directory
+owner: team
+placement: local
+arguments:
+  path: /tmp/scratch
+---
+# The reference to the Resource of a Pool's entry, from outside the Pool (POOL-014).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: reviewer-1
+from: reviewer
+placement: {kind: Resource, name: local}
+arguments:
+  checkout: {kind: Pool, name: team, entry: checkout}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: operator
+from: console
+---
+# A Conduit instantiated on its own (CON-012). `consumer` and `target` each accept more than
+# one kind, so each is written with its kind (OBJ-013).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: reviewer-scratch
+from: directory-read
+consumer: {kind: Agent, name: reviewer-1}
+target: {kind: Resource, name: scratch}
+arguments:
+  limit: 10
+---
+# An instance document from a composite template. It makes the Conduits `review-read` and
+# `review-settings`, and none named `review` (CON-003).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: review
+from: directory-review
+consumer: {kind: Agent, name: reviewer-1}
+target: {kind: Pool, name: team, entry: cache}
+---
+# An instance with no name: the engine generates one (OBJ-003).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+from: {kind: Resource, name: project-directory}
+owner: {kind: Pool, name: team}
+arguments:
+  path: /tmp/unnamed

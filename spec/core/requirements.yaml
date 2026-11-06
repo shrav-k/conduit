@@ -1,0 +1,67 @@
+# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
+# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+#
+# The two Requirement contracts of the core package.
+#
+# Promises encoded:
+#   bound.v1        ACC-029 (a bound names Pools, individual targets and operations), ACC-006,
+#                   ACC-012, ACC-030, ACC-031 (what a bound must cover), ACC-022 (the root
+#                   Interface's Conduit to `access` applies no bound), CTR-005, and the
+#                   definitions of right to open and bound (the bound is a filter)
+#   shared-host.v1  PLC-013, CON-006, CON-018, IFC-018 (it does not narrow requests, so it is
+#                   never sent to an implementation; the engine checks it)
+#
+# A bound is written in the `requirements` map of a Conduit template whose capability is
+# `access-control.v1`, like any filter:
+#
+#   requirements:
+#     bound:
+#       requirement: github.com/shrav-k/conduit/core#bound.v1
+#       arguments:
+#         pools: [shared]
+#         targets: [{kind: Agent, name: reviewer-1}]
+#         operations: [example.org/files#directory.read.v1]
+#
+# Each value in `pools` and `targets` is governed by a reference schema, and so is resolved
+# to an ID when the Conduit is instantiated (OBJ-021). A Conduit to `access` with no bound
+# requirement has no bound; one whose bound names nothing covers nothing.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: bound.v1
+  description: >-
+    The bound of a right to open: the Pools, the individual targets and the operations of the
+    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool
+    covers the Pool itself and every Resource it owns.
+spec:
+  appliesTo: [conduit]
+  narrows: true
+  inputs:
+    pools:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#pool-reference.v1}
+      default: []
+    targets:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
+      default: []
+    operations:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
+      default: []
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: shared-host.v1
+  description: >-
+    The consumer and the target of the Conduit run on the same host: the stored facts of their
+    two locations give the same `host`. Checked when the Conduit is opened and on each request
+    through it.
+spec:
+  appliesTo: [conduit]
+  narrows: false

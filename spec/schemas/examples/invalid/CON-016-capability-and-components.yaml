@@ -1,0 +1,14 @@
+# PROPOSED example, not accepted. It must be rejected:
+# a Conduit template has `capability` or `components`, never both.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-review
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  components:
+    read:
+      from: directory-read

@@ -1,0 +1,11 @@
+# PROPOSED example, not accepted. It must be rejected:
+# `patternProperties` is outside the profile.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: labels.v1
+spec:
+  type: object
+  patternProperties:
+    '^[a-z]+$': {type: string}

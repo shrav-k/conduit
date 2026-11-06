@@ -1,0 +1,10 @@
+# PROPOSED example, not accepted. It must be rejected:
+# the last segment of a contract's name is its version.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Capability
+metadata:
+  name: directory-access
+spec:
+  operations:
+    - example.org/files#directory.read.v1

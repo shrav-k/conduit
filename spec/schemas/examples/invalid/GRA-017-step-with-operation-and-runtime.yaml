@@ -1,0 +1,20 @@
+# PROPOSED example, not accepted. It must be rejected:
+# a step has exactly one of `operation` and `runtime`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-directory
+spec:
+  type: example.org/files#local-directory.v1
+  runtimes:
+    watcher:
+      start: example.org/files#watcher.start.v1
+      stop: example.org/files#watcher.stop.v1
+  setup:
+    steps:
+      watch:
+        operation: example.org/files#watcher.start.v1
+        runtime: watcher
+        arguments:
+          directory: {literal: /srv/checkout}

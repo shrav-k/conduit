@@ -1,0 +1,16 @@
+# PROPOSED example, not accepted. The manifest of a project that is not published: it states
+# no `address` and no `version` (PKG-017). Every name under example.org is invented, and each
+# digest is illustrative: it is not the digest of a real archive.
+#
+# The core package is not listed, and may not be (NAM-020, NAM-021).
+
+apiVersion: github.com/shrav-k/conduit/v0
+
+packages:
+  example.org/files:
+    version: 0.3.0
+    digest: sha256:0f3a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4
+  example.org/harness:
+    version: 1.4.0
+    digest: sha256:5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f
+    fetch: https://example.org/downloads/harness-1.4.0.tar.gz

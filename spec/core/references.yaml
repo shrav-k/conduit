@@ -1,0 +1,201 @@
+# PROPOSED, not accepted. Part of the core package, written for decision G1 of the re-audit;
+# see docs/proposals/core-and-schemas/README.md and README.md in this directory.
+#
+# The reference schemas: the Schema contracts that make a value a reference (OBJ-021). A
+# value inside `config` or `arguments` is resolved to an ID only where the schema that
+# governs its place is one of these. The document schemas under spec/schemas/ use the same
+# contracts for `owner`, `placement`, `consumer` and `target`.
+#
+# Promises encoded:
+#   reference.v1             OBJ-006 (`{kind: <Kind>, name: <name>}`), OBJ-020
+#   interface-reference.v1, agent-reference.v1, pool-reference.v1, conduit-reference.v1
+#                            OBJ-006 (where the kind is fixed, the name alone may be written)
+#   resource-reference.v1    OBJ-006, POOL-014, POOL-005
+#   pool-entry-reference.v1  POOL-014 (`{kind: Pool, name: <pool>, entry: <entry>}`)
+#   entry-reference.v1       POOL-005 (`{entry: name}`)
+#   actor-reference.v1       the definition of actor: an Interface or an Agent
+#   consumer-reference.v1    OBJ-013, CON-027 (an Interface, an Agent or a Resource)
+#   target-reference.v1      OBJ-013, CON-027 (an Interface, an Agent, a Resource or a Pool)
+#
+# A reference that accepts a Resource also accepts the two forms that name the Resource of a
+# Pool's entry. A bare name is accepted only where one kind is accepted (OBJ-006).
+#
+# Not expressed here, and checked by the engine: that the object exists (OBJ-008, OBJ-009),
+# that it is a template or an instance as the place expects (OBJ-007), and that
+# `{entry: name}` is written inside an entry of a Pool template and names another entry of
+# the same Pool (POOL-005).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: entry-reference.v1
+  description: >-
+    One entry's reference to another entry of the same Pool template. It resolves to the
+    Resource instantiated from that entry.
+spec:
+  type: object
+  properties:
+    entry: {$ref: github.com/shrav-k/conduit/core#name.v1}
+  required: [entry]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: pool-entry-reference.v1
+  description: >-
+    A reference, from outside a Pool's template, to the Resource of one of that Pool's
+    entries. It resolves to the Resource of that entry that is not retired.
+spec:
+  type: object
+  properties:
+    kind: {const: Pool}
+    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+    entry: {$ref: github.com/shrav-k/conduit/core#name.v1}
+  required: [kind, name, entry]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: reference.v1
+  description: A reference to an object of any family, written with its kind.
+spec:
+  anyOf:
+    - type: object
+      properties:
+        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: interface-reference.v1
+  description: A reference to an Interface. The name alone, or the kind and the name.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#name.v1
+    - type: object
+      properties:
+        kind: {const: Interface}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: agent-reference.v1
+  description: A reference to an Agent. The name alone, or the kind and the name.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#name.v1
+    - type: object
+      properties:
+        kind: {const: Agent}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: resource-reference.v1
+  description: >-
+    A reference to a Resource. The name alone, the kind and the name, or one of the two forms
+    that name the Resource of a Pool's entry. A location is a Resource and is referred to in
+    this way.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#name.v1
+    - type: object
+      properties:
+        kind: {const: Resource}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: pool-reference.v1
+  description: A reference to a Pool. The name alone, or the kind and the name.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#name.v1
+    - type: object
+      properties:
+        kind: {const: Pool}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: conduit-reference.v1
+  description: A reference to a Conduit. The name alone, or the kind and the name.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#name.v1
+    - type: object
+      properties:
+        kind: {const: Conduit}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: actor-reference.v1
+  description: A reference to an actor, which is an Interface or an Agent, written with its kind.
+spec:
+  type: object
+  properties:
+    kind: {enum: [Interface, Agent]}
+    name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+  required: [kind, name]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: consumer-reference.v1
+  description: >-
+    A reference to an instance that may be the consumer of a Conduit: an Interface, an Agent or
+    a Resource, written with its kind.
+spec:
+  anyOf:
+    - type: object
+      properties:
+        kind: {enum: [Interface, Agent, Resource]}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: target-reference.v1
+  description: >-
+    A reference to an instance that may be the target of a Conduit: an Interface, an Agent, a
+    Resource or a Pool, written with its kind.
+spec:
+  anyOf:
+    - type: object
+      properties:
+        kind: {enum: [Interface, Agent, Resource, Pool]}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+    - $ref: github.com/shrav-k/conduit/core#pool-entry-reference.v1
+    - $ref: github.com/shrav-k/conduit/core#entry-reference.v1

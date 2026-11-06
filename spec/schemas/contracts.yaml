@@ -1,0 +1,225 @@
+# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
+# docs/proposals/core-and-schemas/README.md.
+#
+# The five kinds of contract document, and an applied requirement.
+# JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   contract.v1             CTR-001 (the four top-level keys and no other; a name that ends in
+#                           a version segment), OBJ-018, OBJ-020, CTR-008 (the `spec` of a
+#                           Schema contract is the schema itself)
+#   type-spec.v1            CTR-004 (`family` and `placement` are required), TPL-002 (a type
+#                           is of one of the four families that have one), TPL-006
+#   capability-spec.v1      CTR-003
+#   operation-spec.v1       CTR-002 (an input or output holds exactly one of `schema` and
+#                           `handle: true`), CTR-006 (`changes`), IMP-003, OPS-012, OBJ-015
+#   requirement-spec.v1     CTR-005
+#   applied-requirement.v1  NAM-019, CON-018 (`requirement` is required)
+#
+# One key is proposed here that no promise names: `reservedToRoot` on an Operation contract,
+# the mark of an operation reserved to the root Interface (ACC-032, CTR-003). See the record.
+#
+# Open, as OBJ-019 exempts: the `arguments` of an applied requirement, and the value of a
+# Requirement input's `default`. The keys of an Operation's `inputs` and `outputs` are any
+# non-empty string (CTR-002); the keys of a Type's `runtimes` and `placement` and of a
+# Requirement's `inputs` and `constituents` are names.
+#
+# Not expressed here, and checked by the engine: the rule for the name of a member of a named
+# map (OBJ-022) and that an Operation's input or output name is not empty (CTR-002), because
+# the profile has no keyword that constrains the keys of a map; that every reference
+# resolves to a contract of the right kind; that a capability lists no two operations with
+# one export name (CTR-007) and, outside the core package, none that is reserved (CTR-003);
+# that a type's controls have `changes` its schema describes (CTR-006); default
+# implementations (CTR-004, TPL-004); that a requirement on placement states `schema` and no
+# `inputs`, and that a composition does not reach itself (CTR-005); and compatibility
+# between releases (NAM-024).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: contract.v1
+  description: A contract document of any of the five kinds.
+spec:
+  anyOf:
+    - $ref: '#/$defs/type'
+    - $ref: '#/$defs/capability'
+    - $ref: '#/$defs/operation'
+    - $ref: '#/$defs/requirement'
+    - $ref: '#/$defs/schema'
+  $defs:
+    type:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Type}
+        metadata: {$ref: github.com/shrav-k/conduit/core#contract-metadata.v1}
+        spec: {$ref: github.com/shrav-k/conduit/core#type-spec.v1}
+      required: [apiVersion, kind, metadata, spec]
+      additionalProperties: false
+    capability:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Capability}
+        metadata: {$ref: github.com/shrav-k/conduit/core#contract-metadata.v1}
+        spec: {$ref: github.com/shrav-k/conduit/core#capability-spec.v1}
+      required: [apiVersion, kind, metadata, spec]
+      additionalProperties: false
+    operation:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Operation}
+        metadata: {$ref: github.com/shrav-k/conduit/core#contract-metadata.v1}
+        spec: {$ref: github.com/shrav-k/conduit/core#operation-spec.v1}
+      required: [apiVersion, kind, metadata, spec]
+      additionalProperties: false
+    requirement:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Requirement}
+        metadata: {$ref: github.com/shrav-k/conduit/core#contract-metadata.v1}
+        spec: {$ref: github.com/shrav-k/conduit/core#requirement-spec.v1}
+      required: [apiVersion, kind, metadata, spec]
+      additionalProperties: false
+    schema:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Schema}
+        metadata: {$ref: github.com/shrav-k/conduit/core#contract-metadata.v1}
+        spec: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+      required: [apiVersion, kind, metadata, spec]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: type-spec.v1
+  description: The `spec` of a Type contract.
+spec:
+  type: object
+  properties:
+    family: {enum: [Interface, Agent, Resource, Pool]}
+    schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+    offers:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    requires:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    runtimes:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#runtime.v1}
+    implementation: {$ref: github.com/shrav-k/conduit/core#implementation-map.v1}
+    controls:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    placement:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#applied-requirement.v1}
+    conditions:
+      type: array
+      items: {type: string, minLength: 1}
+      uniqueItems: true
+  required: [family, placement]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: capability-spec.v1
+  description: The `spec` of a Capability contract.
+spec:
+  type: object
+  properties:
+    operations:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+  required: [operations]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: operation-spec.v1
+  description: The `spec` of an Operation contract. A control also holds `changes`.
+spec:
+  type: object
+  properties:
+    inputs:
+      type: object
+      additionalProperties: {$ref: '#/$defs/member'}
+    outputs:
+      type: object
+      additionalProperties: {$ref: '#/$defs/member'}
+    effect: {type: string, minLength: 1}
+    startsModelWork: {type: boolean}
+    deduplicates: {type: boolean}
+    reservedToRoot: {type: boolean}
+    implementation: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    changes:
+      type: array
+      items: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+  additionalProperties: false
+  $defs:
+    member:
+      oneOf:
+        - type: object
+          properties:
+            schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+            optional: {type: boolean}
+          required: [schema]
+          additionalProperties: false
+        - type: object
+          properties:
+            handle: {const: true}
+            optional: {type: boolean}
+          required: [handle]
+          additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: requirement-spec.v1
+  description: The `spec` of a Requirement contract.
+spec:
+  type: object
+  properties:
+    appliesTo:
+      type: array
+      items: {enum: [conduit, policy, placement]}
+      uniqueItems: true
+    inputs:
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+          default: {}
+          optional: {type: boolean}
+        required: [schema]
+        additionalProperties: false
+    narrows: {type: boolean}
+    constituents:
+      type: object
+      additionalProperties: {$ref: github.com/shrav-k/conduit/core#applied-requirement.v1}
+    schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+  required: [appliesTo]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: applied-requirement.v1
+  description: >-
+    A requirement applied somewhere: on a Conduit, as a constituent of another requirement, or
+    on placement.
+spec:
+  type: object
+  properties:
+    requirement: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+    arguments: {type: object}
+  required: [requirement]
+  additionalProperties: false

@@ -1,0 +1,15 @@
+# PROPOSED example, not accepted. It must be rejected:
+# an input is required unless it is marked `optional: true`; `required` is not a key.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1
+  inputs:
+    title:
+      schema: {type: string}
+      to: [/config/title]
+      required: true
+  config: {}

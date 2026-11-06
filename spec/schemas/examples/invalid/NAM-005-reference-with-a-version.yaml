@@ -1,0 +1,9 @@
+# PROPOSED example, not accepted. It must be rejected:
+# a reference names an address and an export, never a release.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-directory
+spec:
+  type: example.org/files@0.3.0#local-directory.v1

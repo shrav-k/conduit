@@ -1,0 +1,157 @@
+# PROPOSED example, not accepted. The templates of a small project. Every name under
+# example.org is invented; the contracts of `example.org/files` are in ../files-package/, and
+# `example.org/harness` is not in this repository.
+
+# A Resource template with an input, a runtime, a setup graph and a narrowed control.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-directory
+  description: A directory that Agents share.
+  annotations:
+    example.org/team: platform
+spec:
+  type: example.org/files#local-directory.v1
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+      to: [/config/path]
+    cache:
+      schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      to: [/config/cache]
+      optional: true
+  config:
+    readLimit: 10
+  runtimes:
+    watcher:
+      start: example.org/files#watcher.start.v1
+      stop: example.org/files#watcher.stop.v1
+      optional: true
+  setup:
+    steps:
+      establish:
+        operation: example.org/files#directory.establish.v1
+        arguments:
+          path: {source: config, pointer: /path}
+      watch:
+        runtime: watcher
+        arguments:
+          directory: {source: step, step: establish, output: directory}
+        optional: true
+  controls:
+    example.org/files#set-read-limit.v1:
+      inputs:
+        limit:
+          schema: {maximum: 50}
+---
+# A Pool template with two entries, one of which refers to the other (POOL-005). The input
+# `location` supplies the placement of both entries (POOL-009).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Pool
+metadata:
+  name: workspace
+spec:
+  type: github.com/shrav-k/conduit/core#pool.v1
+  config: {}
+  inputs:
+    location:
+      schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      to: [/entries/cache/placement, /entries/checkout/placement]
+      optional: true
+  entries:
+    cache:
+      from: project-directory
+      arguments:
+        path: /var/cache/workspace
+    checkout:
+      from: project-directory
+      arguments:
+        path: /srv/checkout
+        cache: {entry: cache}
+---
+# A Conduit template with two requirements: the shared-host requirement and a filter. The
+# input `limit` fills an argument of the filter (INS-012).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1}
+      to: [/requirements/rate/arguments/limit]
+      default: 20
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    same-machine:
+      requirement: github.com/shrav-k/conduit/core#shared-host.v1
+    rate:
+      requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: 20
+---
+# A Conduit template that lists a control, like any operation (OPS-020).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-settings
+spec:
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#set-read-limit.v1
+---
+# A composite Conduit template (CON-019). It has components and no capability of its own.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-review
+spec:
+  components:
+    read:
+      from: directory-read
+      arguments:
+        limit: 5
+    settings:
+      from: directory-settings
+---
+# An Agent template that declares a required and an optional Conduit. The target of the first
+# is supplied by an input; the second names its target.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Agent
+metadata:
+  name: reviewer
+spec:
+  type: example.org/harness#coding-agent.v1
+  inputs:
+    checkout:
+      schema: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      to: [/conduits/checkout/target]
+    model:
+      schema: {type: string, minLength: 1}
+      to: [/config/model]
+      default: standard
+    max-entries:
+      schema: {$ref: example.org/files#read-limit.v1}
+      to: [/config/maxEntries]
+      optional: true
+  config: {}
+  conduits:
+    checkout:
+      from: directory-read
+    notes:
+      from: directory-read
+      target: {kind: Resource, name: scratch}
+      arguments:
+        limit: 5
+      optional: true
+---
+# An Interface template. An Interface has no keys of its own: its settings are in `config`.
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Interface
+metadata:
+  name: console
+spec:
+  type: github.com/shrav-k/conduit/core#interface.v1
+  config: {}

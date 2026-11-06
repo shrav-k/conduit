@@ -1,0 +1,169 @@
+# PROPOSED, not accepted. Part of the batch written for decision G1 of the re-audit; see
+# docs/proposals/core-and-schemas/README.md.
+#
+# An instance document of each family, and the three nested instantiations.
+# JSON Schema 2020-12, within spec/schema-profile.md.
+#
+# Promises encoded:
+#   instance.v1            OBJ-013 (`from`, the standard arguments of the family as top-level
+#                          keys, and `arguments`), INS-001 (no `spec`), OBJ-018, OBJ-004,
+#                          POOL-001 (a Resource states its `owner`), PLC-006 (no `placement`
+#                          on an Interface, a Pool or a Conduit), CON-001 (a Conduit states
+#                          one `consumer` and one `target`), OBJ-006 (`consumer` and `target`
+#                          are written with their kind), CON-027
+#   template-reference.v1  OBJ-006, NAM-002, NAM-022, FST-005 (`from` names a template that
+#                          exists, or one a package exports)
+#   declared-conduit.v1    OBJ-014, CON-020 (no `consumer`), OBJ-015
+#   pool-entry.v1          OBJ-014, POOL-012 (no `owner`), POOL-009 (no `placement`), OBJ-015
+#   conduit-component.v1   OBJ-014, CON-019, CON-020 (no `consumer`, no `target`)
+#
+# Open, as OBJ-019 exempts: everything inside `arguments`. Because of that, a standard
+# argument written under `arguments` (OBJ-013) is not caught here.
+#
+# Two guesses, listed in the record: `metadata` and `arguments` may each be left out, and
+# then mean an instance with no given name and with no arguments.
+#
+# Not expressed here, and checked by the engine: that `from` resolves to a template of the
+# right kind (INS-002, OBJ-007); that the arguments fit the template's inputs (INS-003 to
+# INS-005, INS-009) and the resulting configuration its type (INS-014); that a reference
+# resolves (OBJ-009), and to an instance of an accepted kind (CON-027); placement (PLC-001
+# to PLC-004, PLC-007, PLC-018); that the target offers the capability (CON-021); the
+# shared-host requirement and filters (CON-006, CON-022); retired ends (CON-025); tool names
+# (IFC-014); and that `{entry: name}` is written only in an entry of a Pool template
+# (POOL-005).
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: instance.v1
+  description: An instance document of any of the five families.
+spec:
+  anyOf:
+    - $ref: '#/$defs/interface'
+    - $ref: '#/$defs/agent'
+    - $ref: '#/$defs/resource'
+    - $ref: '#/$defs/pool'
+    - $ref: '#/$defs/conduit'
+  $defs:
+    interface:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Interface}
+        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
+        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+        arguments: {type: object}
+      required: [apiVersion, kind, from]
+      additionalProperties: false
+    agent:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Agent}
+        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
+        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+        placement: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+        arguments: {type: object}
+      required: [apiVersion, kind, from]
+      additionalProperties: false
+    resource:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Resource}
+        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
+        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+        owner: {$ref: github.com/shrav-k/conduit/core#pool-reference.v1}
+        placement: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+        arguments: {type: object}
+      required: [apiVersion, kind, from, owner]
+      additionalProperties: false
+    pool:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Pool}
+        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
+        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+        arguments: {type: object}
+      required: [apiVersion, kind, from]
+      additionalProperties: false
+    conduit:
+      type: object
+      properties:
+        apiVersion: {$ref: github.com/shrav-k/conduit/core#api-version.v1}
+        kind: {const: Conduit}
+        metadata: {$ref: github.com/shrav-k/conduit/core#instance-metadata.v1}
+        from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+        consumer: {$ref: github.com/shrav-k/conduit/core#consumer-reference.v1}
+        target: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
+        arguments: {type: object}
+      required: [apiVersion, kind, from, consumer, target]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: template-reference.v1
+  description: >-
+    The value of `from`: the template an instance or a nested instantiation is made from. The
+    name of a template that exists, alone or with its kind; a qualified reference to a
+    template a package exports; or `#` and a name for a template of the same package.
+spec:
+  anyOf:
+    - $ref: github.com/shrav-k/conduit/core#name.v1
+    - $ref: github.com/shrav-k/conduit/core#selection.v1
+    - type: object
+      properties:
+        kind: {enum: [Interface, Agent, Resource, Pool, Conduit]}
+        name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+      required: [kind, name]
+      additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: declared-conduit.v1
+  description: >-
+    One member of the `conduits` of an Interface, an Agent or a Resource template. Its consumer
+    is the instance being made.
+spec:
+  type: object
+  properties:
+    from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+    target: {$ref: github.com/shrav-k/conduit/core#target-reference.v1}
+    arguments: {type: object}
+    optional: {type: boolean}
+  required: [from]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: pool-entry.v1
+  description: >-
+    One member of the `entries` of a Pool template: a nested instantiation of a Resource
+    template. Its owner is the Pool.
+spec:
+  type: object
+  properties:
+    from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+    arguments: {type: object}
+    optional: {type: boolean}
+  required: [from]
+  additionalProperties: false
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: conduit-component.v1
+  description: >-
+    One member of the `components` of a composite Conduit template. It takes the consumer and
+    the target given to the composition.
+spec:
+  type: object
+  properties:
+    from: {$ref: github.com/shrav-k/conduit/core#template-reference.v1}
+    arguments: {type: object}
+  required: [from]
+  additionalProperties: false

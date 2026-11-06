@@ -95,7 +95,8 @@ metadata:
     item of `packages` whose `fetch` is a relative reference, and an implementation item whose
     program is a relative path, are rejected. A registration fetches and installs no package:
     one that the manifest lists and that is not installed is reported in `diagnostics`, and
-    `fetch` in an item is the place an installation of that item fetches from.
+    `fetch` in an item is the place an installation of that item fetches from. A request that
+    would register a Resource whose owner is a retired Pool reports conflict.
 spec:
   inputs:
     documents:
@@ -388,7 +389,8 @@ metadata:
     Authorized as registering that instance would be, with this operation in the place of
     `register.v1`: against `management`, and for the Resource of a Pool's entry also by an
     open Conduit to that Pool that lists this operation. The request is a registration, so
-    one that is rejected still carries `diagnostics`.
+    one that is rejected still carries `diagnostics`. A request for a new Resource for an
+    entry of a retired Pool reports conflict.
 spec:
   inputs:
     instance:
@@ -514,8 +516,9 @@ metadata:
     one to `access`, ACC-030 states the condition in place of this one: its bound is within
     the actor's own, and the actor's bound need not cover `access` as a target. A request to
     open a Conduit that is already open changes nothing and succeeds, and one to open a
-    closed Conduit reports conflict. A request that names a Conduit that does not exist
-    reports invalid, whatever the bound.
+    closed Conduit reports conflict. So does one to open a Conduit whose consumer or whose
+    target is retired, whatever its shutdown. A request that names a Conduit that does not
+    exist reports invalid, whatever the bound.
 spec:
   inputs:
     conduit:
@@ -659,17 +662,24 @@ metadata:
     operation to start, by its qualified reference or, for an operation of an unpublished
     package, as `<digest>#<name>`, and `arguments` holds that operation's inputs. The engine
     dispatches an invocation of that operation to the instance that asks, for the caller of
-    the arranging invocation and through the Conduit that invocation was dispatched through,
-    with the restrictions as they then stand. It does so only if the arranging invocation was
-    dispatched to the instance that asks and is of an operation marked `arrangesLaterWork`,
-    that Conduit is open and lists the operation to start, and, where that operation starts
-    model work, the arranging operation is marked `startsModelWork` too. Where one of these
-    does not hold, the request reports refused. Needs no Conduit of the instance that asks,
-    and names no invocation that
-    it serves. The result is that of the started invocation: its outcome is the outcome of
-    the request, the engine's ID for it is in the result's `_meta`, and `outputs` holds the
-    outputs of the operation that was started, where it succeeded and they are delivered. A
-    repeat under one operation identity is the same start.
+    the arranging invocation and through the Conduit to which the work is tied: the one the
+    arranging invocation was dispatched through or, where that invocation was a step with no
+    `conduit`, the one of the invocation that the step's graph serves. The start carries the
+    restrictions of that Conduit, the policies that apply, and the restrictions that the
+    arranging request carried from the invocations it served, as they then stand. The engine
+    does so only if the arranging invocation was dispatched to the instance that asks, is of
+    an operation marked `arrangesLaterWork` and has ended with the outcome succeeded, that
+    Conduit and every Conduit that the invocations it served came through are open, that
+    Conduit lists the operation to start, and, where that operation starts model work, the
+    arranging operation is marked `startsModelWork` too. Where one of these does not hold,
+    the request reports refused. Needs no Conduit of the instance that asks, and names no
+    invocation that it serves. The result is that of the started invocation: its outcome is
+    the outcome of the request, the engine's ID for it is in the result's `_meta`, and
+    `outputs` holds the outputs of the operation that was started, where it succeeded and
+    they are delivered. A repeat under one operation identity is the same start. The
+    consumer that arranged the work did not request the start, so `retrieve-result.v1` does
+    not return its result to that consumer: the operation that arranges the work says in its
+    contract how the results are read.
 spec:
   inputs:
     invocation:

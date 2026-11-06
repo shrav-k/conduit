@@ -15,8 +15,10 @@
 # for a composed requirement. Its last pass (docs/proposals/reaudit/round-2/log-tail.md)
 # changed CON-008, CON-018 and CON-022, and added CON-030: a Conduit whose consumer is retired
 # is closed once the consumer's shutdown is confirmed, and a requirement that does not narrow
-# requests is applied to a Conduit only where it is the core package's. Draft: no vector exists
-# yet.
+# requests is applied to a Conduit only where it is the core package's. The follow-up to that
+# pass changed CON-018, CON-022, CON-023 and CON-030, which judges a composition by its
+# constituents alone, and added CON-031, of the layer `convention`: a Conduit either of whose
+# ends is retired is not opened. Draft: no vector exists yet.
 
 - id: CON-001
   layer: language
@@ -239,9 +241,9 @@
     `arguments` supplies none, as NAM-019 states. Whether a requirement may be applied to a
     Conduit at all is decided by its contract, under CTR-005. The shared-host requirement is
     `github.com/shrav-k/conduit/core#shared-host.v1`, and the bound of a Conduit to `access` is
-    written there too, under ACC-029. A requirement that does not narrow requests is applied to
-    a Conduit only where it is a contract of the core package, as the shared-host requirement
-    is, under CON-030.
+    written there too, under ACC-029. A requirement that does not narrow requests and is not a
+    composition is applied to a Conduit, itself or as a constituent, only where it is a contract
+    of the core package, as the shared-host requirement is, under CON-030.
   vectors: []
 
 - id: CON-019
@@ -298,13 +300,14 @@
     is decided from the manifest under PKG-019, without starting anything. The implementations
     that the target has selected for the operations the Conduit lists must always state the
     requirement: they are sent every filter on the Conduit under IFC-018, and apply it under
-    IFC-019. Where `obliges` in the requirement's contract names `consumer`, under CTR-005,
-    every implementation selected for the consumer must state it too, and IFC-034 says how it is
-    told which filters it is to keep to. `obliges` never takes the obligation from the target.
-    An implementation supports a composed requirement where its `supports` lists the composition
-    or every one of its constituents. An implementation marked `plain` states no `supports`
-    under PKG-020, so no Conduit is instantiated with a filter that an instance it serves must
-    apply.
+    IFC-019. Where the filter obliges the consumer, under CTR-005, every implementation selected
+    for the consumer must state it too, and IFC-034 says how it is told which filters it is to
+    keep to. A filter obliges the consumer where `obliges` in its requirement's contract names
+    `consumer` or, for a composition, where the contract of any of its constituents that narrows
+    requests does. `obliges` never takes the obligation from the target. An implementation
+    supports a composed requirement where its `supports` lists the composition or every one of
+    its constituents. An implementation marked `plain` states no `supports` under PKG-020, so no
+    Conduit is instantiated with a filter that an instance it serves must apply.
   vectors: []
 
 - id: CON-023
@@ -318,7 +321,8 @@
   observable: >-
     After the open the Conduit is ready while its target is still registered, so setup does not
     depend on the order in which objects are set up. A Conduit whose target is retired is
-    already closed under CON-008, and is never opened.
+    already closed under CON-008, and is never opened. Nor is one whose consumer is retired,
+    under CON-031.
   vectors: []
 
 - id: CON-024
@@ -430,9 +434,9 @@
   layer: language
   level: must
   when: >-
-    A Conduit template applies, in its `requirements`, a requirement that does not narrow
-    requests and is not a contract of the core package, or a composition that has such a
-    requirement among its constituents, directly or through other compositions.
+    A Conduit template applies, in its `requirements`, a requirement that is not a composition,
+    does not narrow requests and is not a contract of the core package, or a composition that
+    has such a requirement among its constituents, directly or through other compositions.
   then: >-
     The template is rejected.
   observable: >-
@@ -440,11 +444,35 @@
     engine itself checks only the requirements it knows, which are those of the core package, as
     it checks `shared-host.v1` under PLC-013. Every other requirement on a Conduit is applied by
     implementations, and they are sent only the requirements that narrow requests, under
-    IFC-018, so one that does not narrow would be applied by nothing. A composition narrows
-    requests exactly where one of its constituents does, under CTR-005, so a composition none of
-    whose constituents narrows is itself such a requirement. `shared-host.v1` may be applied
-    itself, and may be a constituent of a composition that narrows. Where the template was
+    IFC-018, so one that does not narrow would be applied by nothing. Nothing else is rejected
+    here. A composition is judged by its constituents alone: one made only of requirements of
+    the core package that do not narrow, such as one whose single constituent is
+    `shared-host.v1`, is accepted, and the engine checks each such constituent. `shared-host.v1`
+    may be applied itself, and may be a constituent of any composition. Where the template was
     registered while the requirement's package was not installed, as PKG-006 allows, the check
     is made when a Conduit is instantiated from it, under INS-022. The requirement of a policy
     narrows requests too, under ACC-031.
+  vectors: []
+
+# --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
+# --- decision 8 of "The last pass, and what it left" in DECISIONS.md). It is of the layer
+# --- `convention`.
+
+- id: CON-031
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to open a Conduit whose consumer or whose target is retired.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    This holds whatever the shutdown of the retired end reports. A Conduit whose target is
+    retired is closed already, under CON-008, and a request to open a closed Conduit reports
+    conflict under LIF-015. A Conduit in the state registered whose consumer is retired stays
+    registered until CON-008 closes it, once the consumer's shutdown is confirmed, and is never
+    opened: CON-025 does not instantiate a Conduit for a retired end, and this is the same rule
+    for opening one. A Conduit that was open when its consumer was retired is as ACC-039 states.
+    The step of a setup that would open a declared Conduit of a retired consumer does not arise,
+    because a request to set up a retired instance reports conflict under LIF-015. Where the
+    actor is not permitted, OPS-023 gives refused first.
   vectors: []

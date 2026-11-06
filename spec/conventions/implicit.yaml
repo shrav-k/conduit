@@ -8,8 +8,9 @@
 # IMP-006 and IMP-009, and its closing pass named the mark `arrangesLaterWork` in IMP-006. Its
 # last pass (docs/proposals/reaudit/round-2/log-tail.md) changed IMP-006 and IMP-008, and added
 # IMP-010, a rule on documents of the layer `language`, and IMP-011: what IMP-004 and IMP-008
-# state for model work, stated for later work. No promise of this file has been removed. Draft:
-# no vector exists yet.
+# state for model work, stated for later work. The follow-up to that pass changed IMP-006,
+# IMP-010 and IMP-011, and added IMP-012, of the layer `language`: what IMP-005 and IMP-009
+# state for model work. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: IMP-001
   layer: convention
@@ -85,9 +86,9 @@
   then: >-
     It was arranged by an operation whose contract is marked both `arrangesLaterWork: true` and
     `startsModelWork: true`. The starts are tied to the Conduit through which they were
-    arranged: each start is recorded against the caller for whom it was arranged, and is
-    dispatched only if that Conduit is open and the access it carries permits the start at that
-    moment.
+    arranged, and to every Conduit of its chain under ACC-019: each start is recorded against
+    the caller for whom it was arranged, and is dispatched only if those Conduits are open and
+    the access they carry permits the start at that moment.
   observable: >-
     A start that falls after that Conduit was closed is not dispatched and reports refused, and
     a record of that exists. Once that Conduit is closed no start of the work is ever dispatched
@@ -166,10 +167,9 @@
   observable: >-
     Resolving returns a diagnostic naming the step and the operation the graph implements, as
     IMP-004 does for a step that starts model work. A `setup` or a `retire` graph implements no
-    operation, under TPL-008, and is not rejected here. `set-up.v1` and `retire.v1` carry no
-    mark, so a step of such a graph that names a Conduit and asks for a marked operation reports
-    refused under IMP-011. Work that a step with no `conduit` arranges came through no Conduit,
-    so no start of it is dispatched, under ACC-040.
+    operation, under TPL-008, and one that holds such a step is rejected under IMP-012. Work
+    that a step with no `conduit` arranges is tied to the Conduit of the invocation that the
+    step's graph serves, under ACC-019.
   vectors: []
 
 - id: IMP-011
@@ -184,7 +184,26 @@
     A request for a marked operation is dispatched only when the invocation it serves is itself
     of a marked operation, when it serves none and an actor makes it on its own behalf, or when
     it is a start of later work under ACC-040, whose arranging operation carries the mark. Code
-    that implements an unmarked operation, and a step of a `setup` or `retire` graph that names
-    a Conduit, cannot arrange later work by an onward request. IMP-008 states the same for model
-    work, and IMP-010 rejects the graph that would do it.
+    that implements an unmarked operation, the implementation of a step of a `setup` or `retire`
+    graph among it, cannot arrange later work by an onward request. IMP-008 states the same for
+    model work, and IMP-010 and IMP-012 reject the graph that would do it.
+  vectors: []
+
+# --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
+# --- decision 5 of "The last pass, and what it left" in DECISIONS.md). It is a rule on
+# --- documents and has the layer `language`.
+
+- id: IMP-012
+  layer: language
+  level: must
+  when: >-
+    A template declares a `setup` graph or a `retire` graph that contains a step whose operation
+    is marked `arrangesLaterWork: true`.
+  then: >-
+    The template is rejected.
+  observable: >-
+    Resolving such a template returns a diagnostic naming the step. `set-up.v1` and `retire.v1`,
+    within whose invocations the engine runs the steps of those graphs, carry no such mark, as
+    they carry none for model work under IMP-005 and IMP-009. Setting an instance up, and
+    retiring it, arranges no later work.
   vectors: []

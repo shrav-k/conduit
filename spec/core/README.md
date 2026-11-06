@@ -239,17 +239,25 @@ The engine always presents a second tool, `start-later-work.v1`, also with no Co
 before it (IFC-035). The implementation that holds later work asks with it for each start,
 naming the engine's ID for the invocation that arranged the work, the operation to start
 and its arguments. The engine dispatches the start for the caller of the arranging
-invocation and through the Conduit that invocation was dispatched through, where that
-invocation was dispatched to the instance that asks and is of an operation marked
-`arrangesLaterWork`, that Conduit is open and lists the operation, and, where the operation
-starts model work, the arranging operation is marked `startsModelWork` too. Where one of
-these does not hold, the request reports refused (ACC-040). The result is that of the started invocation, with the
-started operation's outputs in `outputs`.
+invocation and through the Conduit to which the work is tied, where that invocation was
+dispatched to the instance that asks, is of an operation marked `arrangesLaterWork` and has
+ended with the outcome succeeded, that Conduit lists the operation, and, where the operation
+starts model work, the arranging operation is marked `startsModelWork` too. The work is
+tied to the Conduit the arranging request came through and to every Conduit that the
+invocations it served came through, and a start is dispatched only while all of them are
+open; work that a step with no `conduit` arranged is tied to the Conduit of the invocation
+that the step's graph serves (ACC-019). Where one of these does not hold, the request
+reports refused (ACC-040). The result is that of the started invocation, with the started
+operation's outputs in `outputs`. The consumer that arranged the work did not request the
+start, so `retrieve-result.v1` does not return its result to that consumer: an operation
+that arranges later work says in its contract how the results are read.
 
 The definition of a tool that the engine presents for an operation of a Conduit holds
 `io.github.shrav-k.conduit/restrictions` in its `_meta` where the Conduit carries a filter
-whose contract names `consumer` in `obliges`: the list of those filters, in the form a
-request's `restrictions` has (IFC-034).
+that obliges the consumer: the list of those filters, in the form a request's `restrictions`
+has (IFC-034). A filter obliges the consumer where its contract names `consumer` in
+`obliges` or, for a composition, where the contract of any constituent that narrows requests
+does (CTR-005).
 
 The keys of a request's `_meta` are those of IFC-006: `interfaceVersion`, `instance`,
 `operation`, `invocation`, `caller` and `restrictions`, with `operationIdentity` and `conduit`
@@ -450,6 +458,7 @@ No contract of the core package states `restoresRuntimes`, `records` or `obliges
 a composition (CTR-004, CTR-005, CTR-010). No core type declares a runtime. `bound.v1` is a
 filter, and the implementation of the target must always state a filter in `supports`
 (CON-022): `engine`, which is the implementation behind `access`, does. `shared-host.v1` does
-not narrow requests, and the engine itself checks it (PLC-013). It is the one requirement
-that does not narrow requests and may be applied to a Conduit: one that is not a contract of
-the core package is rejected (CON-030).
+not narrow requests, and the engine itself checks it (PLC-013). A requirement of another
+package that does not narrow requests and is not a composition is rejected where it is
+applied to a Conduit, itself or as a constituent, and a composition made only of
+`shared-host.v1` is accepted (CON-030).

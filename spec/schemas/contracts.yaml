@@ -301,8 +301,9 @@ spec:
       type: boolean
       description: >-
         True for a requirement that limits requests and so can serve as a filter. Absent means
-        false. A requirement that does not narrow requests is applied to a Conduit only where
-        it is a contract of the core package, and is never applied as a policy.
+        false. A requirement that is not a composition and does not narrow requests is
+        applied to a Conduit, itself or as a constituent, only where it is a contract of the
+        core package, and one that does not narrow is never applied as a policy.
     obliges:
       type: array
       description: >-
@@ -310,7 +311,8 @@ spec:
         must state the requirement in `supports`, as those of its target always must for a
         requirement that narrows requests. Left out, empty, or naming `target` alone, it adds
         nothing: the implementation of the target must. A requirement that does not narrow
-        requests states no `obliges`.
+        requests states no `obliges`. A composition obliges the consumer where its own
+        contract, or the contract of any constituent that narrows requests, names `consumer`.
       items: {enum: [consumer, target]}
       uniqueItems: true
     constituents:

@@ -10,7 +10,9 @@
 # The ruling on the core package and the schemas (ruling 37) changed POOL-005 and POOL-012.
 # The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
 # POOL-003, POOL-006, POOL-009 and POOL-012 to POOL-015. POOL-012 now leaves the shape of an
-# entry to OBJ-014. Its closing pass changed POOL-016. Draft: no vector exists yet.
+# entry to OBJ-014. Its closing pass changed POOL-016. The follow-up to its last pass
+# (docs/proposals/reaudit/round-2/log-tail.md) changed POOL-004 and added POOL-017, of the layer
+# `convention`: no Resource is registered into a retired Pool. Draft: no vector exists yet.
 
 - id: POOL-001
   layer: language
@@ -60,7 +62,7 @@
     The Resource is instantiated like any other instance and is owned by that Pool.
   observable: >-
     The Pool owns the new Resource alongside any instantiated from its entries. No entry is
-    needed for it.
+    needed for it. A request to register a Resource into a retired Pool is POOL-017.
   vectors: []
 
 - id: POOL-005
@@ -213,4 +215,25 @@
     replacement for that entry under LIF-009 is placed by the same rules as they stand when it
     is made. A placement that an input supplied is part of the entry the Pool holds, and a
     replacement takes it.
+  vectors: []
+
+# --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
+# --- decision 2 of "The last pass, and what it left" in DECISIONS.md). It is of the layer
+# --- `convention`.
+
+- id: POOL-017
+  layer: convention
+  level: must
+  when: >-
+    An actor asks to register a Resource whose owner is a retired Pool, or asks under LIF-009
+    for a new Resource for an entry of a retired Pool.
+  then: >-
+    The request is not dispatched, and reports conflict.
+  observable: >-
+    The Pool owns the same Resources before and after the request, and nothing in the submission
+    is registered. A diagnostic names the Resource and the Pool, as IFC-025 states. A retired
+    instance is not changed, under LIF-015, and a retired Pool gains no Resource, as a retired
+    location is given no instance under PLC-018 and a retired end no Conduit under CON-025.
+    Where the actor is not permitted, OPS-023 gives refused first: with the Pool retired,
+    ACC-033 authorizes the request against `management` alone.
   vectors: []

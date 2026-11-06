@@ -24,8 +24,10 @@
 # protocol, a call to a tool that is not presented is answered with the protocol's error, whose
 # `data` holds the key `reason`, and `isError` is true on every result that the engine gives a
 # consumer and that carries none of the operation's outputs. It also put the key `restrictions`
-# in the `_meta` of a tool's definition, and added the tool `start-later-work.v1`. No promise
-# of this file has been removed. Draft: no vector exists yet.
+# in the `_meta` of a tool's definition, and added the tool `start-later-work.v1`. The follow-up
+# to that pass changed IFC-006, IFC-009, IFC-016 and IFC-034: a result whose `isError` disagrees
+# with its outcome is unknown, and IFC-016 is about one invocation that outlasts its call. No
+# promise of this file has been removed. Draft: no vector exists yet.
 
 - id: IFC-001
   layer: interface
@@ -134,9 +136,9 @@
     `<digest>#<name>`, the digest that identifies the unpublished package under SUB-008, written
     as PKG-004 writes a digest, then `#`, then the contract's name. No separate key names the
     package, so one request can name contracts of two unpublished packages. A start of later
-    work is sent the caller for whom the work was arranged, the Conduit through which it was
-    arranged, and the operation identity that the instance which asked for the start supplied,
-    if it supplied one, under ACC-040.
+    work is sent the caller for whom the work was arranged, the Conduit to which the work is
+    tied, and the operation identity that the instance which asked for the start supplied, if it
+    supplied one, under ACC-040.
   vectors: []
 
 - id: IFC-007
@@ -183,9 +185,11 @@
     unknown, as the protocol has a tool report its own errors, as IFC-008 states for one such
     result and as IFC-026 states for a result that gives a reason. That result need not hold the
     operation's outputs: OPS-007 checks the declared outputs of a result that states succeeded.
-    The engine takes the outcome from `io.github.shrav-k.conduit/outcome` and not from
-    `isError`. The `isError` of the result that the engine gives a consumer is the engine's own,
-    as IFC-025 states.
+    A result whose `isError` disagrees with the outcome it states, which is one that states
+    succeeded with `isError` true or one that states failed or unknown with `isError` not true,
+    has the outcome unknown, as one that holds both an outcome and a reason has: a result that
+    contradicts itself is trusted in neither part. The `isError` of the result that the engine
+    gives a consumer is the engine's own, as IFC-025 states.
   vectors: []
 
 - id: IFC-010
@@ -311,16 +315,22 @@
   layer: interface
   level: must
   when: >-
-    An operation's work finishes after its call returns.
+    One invocation outlasts its call: the operation's work finishes after its call returns.
   then: >-
     The call returns, among its outputs, a value that names the work, as the operation's
-    contract declares it, and the result is retrieved later under the operations convention. The
-    protocol's tasks extension, `io.modelcontextprotocol/tasks`, which is an official extension
-    outside the baseline revision, may also be used, and never stands in for the operation
-    identity.
+    contract declares it, and the result of that invocation is retrieved later under the
+    operations convention. The protocol's tasks extension, `io.modelcontextprotocol/tasks`,
+    which is an official extension outside the baseline revision, may also be used, and never
+    stands in for the operation identity.
   observable: >-
     The retained result is found by the operation identity and the target of the request, under
-    OPS-016, whichever facility delivered it.
+    OPS-016, by the instance that sent the request, whichever facility delivered it. This is one
+    invocation, whose result is its own. It is not later work: work that an operation arranges
+    to start or to run after its own invocation has ended is under ACC-019, and each start of it
+    is an invocation of its own, under ACC-040. The consumer that arranged such work did not
+    request its starts, so no result of a start is retrieved in this way. The record of a start
+    holds how it ended, and the contract of the operation that arranged the work says how its
+    results are read.
   vectors: []
 
 - id: IFC-017
@@ -719,23 +729,25 @@
   level: must
   when: >-
     The engine presents a tool for an operation of a Conduit to the Conduit's consumer, under
-    IFC-012, and the Conduit carries a filter whose contract names `consumer` in `obliges`.
+    IFC-012, and the Conduit carries a filter that obliges the consumer.
   then: >-
     The tool's definition holds `io.github.shrav-k.conduit/restrictions` in its `_meta`: a list
     of those filters, each item in the form IFC-018 gives, with `requirement` and `arguments`.
   observable: >-
-    The list holds the filters of that Conduit whose contract obliges the consumer, under
-    CTR-005, and nothing else: no filter that obliges the target alone, no policy, and nothing
-    carried from an invocation. A composed filter whose contract obliges the consumer is written
-    as IFC-018 sends it, as one item for each constituent that narrows requests, and an argument
-    that is a reference is in the resolved form of OBJ-009. Every tool of the Conduit carries
-    the same list, and where the Conduit carries no such filter the definition holds no such
-    key. It is how the implementation selected for the consumer, which CON-022 has state the
-    filter in `supports`, learns which filters it is to keep to in its requests through the
-    Conduit. What keeping to a filter means for a consumer is stated by the requirement's
-    contract. The target's implementation is still sent every filter with each request, under
-    IFC-018, and applies it under IFC-019. The tools of IFC-024 and IFC-035 belong to no Conduit
-    and carry no such key.
+    The list holds the filters of that Conduit that oblige the consumer, and nothing else: no
+    filter that obliges the target alone, no policy, and nothing carried from an invocation. A
+    filter obliges the consumer where `obliges` in its requirement's contract names `consumer`
+    or, for a composition, where the contract of any of its constituents that narrows requests
+    does, under CTR-005. A composed filter that obliges the consumer is written as IFC-018 sends
+    it, as one item for each constituent that narrows requests, and an argument that is a
+    reference is in the resolved form of OBJ-009. Every tool of the Conduit carries the same
+    list, and where the Conduit carries no such filter the definition holds no such key. It is
+    how the implementation selected for the consumer, which CON-022 has state the filter in
+    `supports`, learns which filters it is to keep to in its requests through the Conduit. What
+    keeping to a filter means for a consumer is stated by the requirement's contract. The
+    target's implementation is still sent every filter with each request, under IFC-018, and
+    applies it under IFC-019. The tools of IFC-024 and IFC-035 belong to no Conduit and carry no
+    such key.
   vectors: []
 
 - id: IFC-035

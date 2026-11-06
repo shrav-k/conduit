@@ -16,8 +16,8 @@
 # LIF-021, LIF-022, LIF-024 and LIF-028. Its last pass
 # (docs/proposals/reaudit/round-2/log-tail.md) changed LIF-008, LIF-012, LIF-015, LIF-016,
 # LIF-020, LIF-021, LIF-024, LIF-026 and LIF-028, and added LIF-030, on retiring an instance
-# whose shutdown is confirmed. No promise of this file has been removed. Draft: no vector
-# exists yet.
+# whose shutdown is confirmed. The follow-up to that pass changed LIF-009. No promise of this
+# file has been removed. Draft: no vector exists yet.
 
 - id: LIF-001
   layer: convention
@@ -151,7 +151,8 @@
     same Pool. A replacement for a declared Conduit is opened by a separate request to `access`,
     or by a later setup of its consumer under CON-004. That the template was replaced or
     unregistered in the meantime changes none of this. A request made while the instance is not
-    retired is LIF-029.
+    retired is LIF-029, and a request for a new Resource for an entry of a retired Pool is
+    POOL-017.
   vectors: []
 
 - id: LIF-010

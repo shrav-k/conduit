@@ -50,9 +50,9 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, its keys, how a re-export is written, which files of a project are its documents, and the layout of a package's archive | Draft; 14 promises; no vectors |
 | [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a project that is not published, how a template is replaced, and that every engine takes a directory | Draft; 10 promises; no vectors |
-| [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 14 promises; no vectors |
+| [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 15 promises; no vectors |
 | [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: locations, default placement, requirements on placement and values tied to a location | Draft; 19 promises; no vectors |
-| [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 26 promises; no vectors |
+| [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 27 promises; no vectors |
 | [promises/graphs.yaml](promises/graphs.yaml) | The static meaning of a graph, its two invariants, and what holds when a step is dispatched | Draft; 25 promises; no vectors |
 | [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 5 promises; no vectors |
 | [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 99 documents exported and 1 implementation, which is also an export |
@@ -83,11 +83,11 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 13 promises; no vectors |
 | [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 7 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
-| [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 11 promises; no vectors |
+| [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 12 promises; no vectors |
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 35 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 15 items |
 
-Every area has been written as promises, 421 in all, and the rulings of the
+Every area has been written as promises, 424 in all, and the rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
 [ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the

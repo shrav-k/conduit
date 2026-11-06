@@ -14,8 +14,9 @@
 # `pool-management.v1`. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md)
 # changed CTR-002, which gained the mark `arrangesLaterWork`, and CTR-005, on what `obliges`
 # adds. Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed CTR-002 and CTR-005:
-# a requirement that does not narrow requests states no `obliges`. No promise of this file has
-# been removed. Draft: no vector exists yet.
+# a requirement that does not narrow requests states no `obliges`. The follow-up to that pass
+# changed CTR-005: a composition obliges the consumer where any constituent that narrows does.
+# No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: CTR-001
   layer: language
@@ -131,17 +132,20 @@
     selected for the operations the Conduit lists must always state a filter's requirement in
     `supports`, as CON-022 states, and they are always sent it. `obliges` that names `consumer`
     adds that every implementation selected for the consumer must state it too, and IFC-034 says
-    how the consumer's implementation is told of the filter. `obliges` may be left out or be
-    empty, and one that names `target` alone means the same as one that is left out. An item of
-    `obliges` other than `consumer` or `target` is rejected. A composition narrows requests if
-    any of its constituents does, whatever its own `narrows` states, and applying it somewhere
-    that the `appliesTo` of one of its constituents does not list is rejected. A requirement
-    that does not narrow requests and states `obliges`, whatever the list holds, is rejected
-    when the package is installed or the project is submitted: only a filter is sent to an
-    implementation, so `obliges` on any other requirement would oblige nothing. A requirement
-    that does not narrow requests is applied to a Conduit only where it is a contract of the
-    core package, under CON-030, and is never applied as a policy, under ACC-031. Which
-    implementation applies a requirement on an open Conduit is reported under ACC-038.
+    how the consumer's implementation is told of the filter. A composition obliges the consumer
+    where its own contract, or the contract of any of its constituents that narrows requests,
+    names `consumer`, as it narrows where any of its constituents does. `obliges` may be left
+    out or be empty, and one that names `target` alone means the same as one that is left out.
+    An item of `obliges` other than `consumer` or `target` is rejected. A composition narrows
+    requests if any of its constituents does, whatever its own `narrows` states, and applying it
+    somewhere that the `appliesTo` of one of its constituents does not list is rejected. A
+    requirement that does not narrow requests and states `obliges`, whatever the list holds, is
+    rejected when the package is installed or the project is submitted: only a filter is sent to
+    an implementation, so `obliges` on any other requirement would oblige nothing. A requirement
+    that is not a composition and does not narrow requests is applied to a Conduit, itself or as
+    a constituent, only where it is a contract of the core package, under CON-030, and one that
+    does not narrow requests is never applied as a policy, under ACC-031. Which implementation
+    applies a requirement on an open Conduit is reported under ACC-038.
   vectors: []
 
 - id: CTR-006

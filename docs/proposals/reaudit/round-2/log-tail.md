@@ -138,63 +138,15 @@ listed here and below.
 
 ## Still needs a decision
 
-Where two promises collide, or a choice above settles a collision between two decisions, both
-are named. Nothing below was decided beyond what its row above says.
+The last pass listed fourteen points here. The coordinator settled eleven of them in the
+section "The last pass, and what it left" of [the decisions](DECISIONS.md), and the
+[follow-up](#follow-up) below applies them. The fourteenth was the choices of the pass, which
+stand unless the owner strikes them. Two points remain:
 
-1. **`remaining` against the rule on `isError`.** Decision 11 has the result of
-   `retire-with-resources.v1` list what remains where its outcome is failed. The decision on
-   rows 21 and 22 has a result whose outcome is failed hold no outputs. The editor put the
-   list in diagnostics and removed the output `remaining` (LIF-021, IFC-025). The other ways
-   are to except this output from IFC-025, or to change the outcome.
-2. **A Resource registered into a retired Pool.** No promise rejects a Resource whose owner is
-   retired: PLC-018 rejects a retired location as a placement and CON-025 a retired end, and
-   POOL-004 accepts any Pool. ACC-033 has such a registration "also" need a Conduit to the
-   Pool. Read with decision 1, a Conduit to `management` then suffices, and a retired Pool can
-   gain Resources and replacements for its entries under LIF-009. Read the other way, the
-   request is refused for good, because every Conduit to a retired Pool is closed.
-3. **Later work arranged by an onward request.** ACC-017 has an onward request carry "the
-   filters on the Conduit the caller came in through", and ACC-040 sends a start "the filters
-   of that Conduit and the policies that apply", as decision 9 words it. A start then runs
-   without the filters that the arranging request carried, and goes on after the Conduit that
-   the caller came in through is closed, because ACC-034 stops only the onward requests of an
-   invocation in progress.
-4. **Later work arranged by a step that has no `conduit`.** IFC-006 sends such a step no
-   Conduit, so ACC-040 refuses every start of the work. ACC-018 ties the step's restrictions
-   to the invocation that its graph is serving; whether the work is tied to that invocation's
-   Conduit in the same way is not said.
-5. **A `setup` or `retire` graph that holds a step whose operation is marked
-   `arrangesLaterWork`.** IMP-005 and IMP-009 reject the like for model work. Decision 9 names
-   only the analog of IMP-004, so no promise rejects the template. The step is refused when it
-   runs, under IMP-011, where it names a Conduit, and otherwise arranges work of which no start
-   is dispatched (IMP-010).
-6. **A start that names an arranging invocation whose outcome is failed**, or that was
-   reconciled as not having occurred. The conditions of ACC-040 are met, and OPS-003 says that
-   nothing was arranged.
-7. **How a consumer learns the result of later work.** IFC-016 has the result of work that
-   finishes after its call returns "retrieved later under the operations convention", by the
-   operation identity and the target of the request. Under ACC-040 each start is an invocation
-   whose identity is scoped to the instance that asked for it, so the consumer that arranged
-   the work has no invocation to retrieve (OPS-015). IFC-016 names neither `arrangesLaterWork`
-   nor ACC-040, and the comment on `directory.sweep.v1` in the example package cites it.
-8. **A Conduit in the state registered whose consumer is retired with its shutdown not
-   confirmed.** CON-008 now leaves it as it was. ACC-006 and CON-023 forbid opening only to a
-   retired target, so `open.v1` opens it and ACC-039 limits it. CON-025 refuses to instantiate
-   a Conduit for a retired consumer, which points the other way.
-9. **A composition made only of requirements of the core package that do not narrow**, such as
-   one whose single constituent is `shared-host.v1`. CON-030 rejects it, by the letter of
-   decision 7. The engine could check it.
-10. **A constituent whose contract names `consumer` in `obliges`, in a composition that states
-    no `obliges`.** CON-022 and IFC-034 read `obliges` from the contract of the requirement the
-    Conduit applies, so the consumer is not obliged.
-11. **Whether an implementation's result that states succeeded with `isError` true, or failed
-    with `isError` not true, is a contradiction.** IFC-009 now has the engine take the outcome
-    from the key. IFC-009 gives the outcome unknown to a result that holds both an outcome and
-    a reason, which is the nearest case.
-12. **The shape of an inspection result and of a diagnostic**, deferred by decision 14 to the
-    conformance vectors and known for round 3. LIF-020 and LIF-021 now rely on a diagnostic
-    naming a Resource, and no promise says how.
-13. **How a value is marked as secret.** Left for the owner, as before.
-14. **The choices above**, each of which the owner can strike.
+1. **The shape of an inspection result and of a diagnostic**, deferred by decision 14 to the
+   conformance vectors and known for round 3. LIF-020, LIF-021 and POOL-017 rely on a
+   diagnostic naming a Resource or a Pool, and no promise says how.
+2. **How a value is marked as secret.** Left for the owner, as before.
 
 ## Outside this pass
 
@@ -264,3 +216,94 @@ they satisfy it as they stand.
 Not verified: nothing was checked against the Model Context Protocol in this pass. What the
 interface now says of the protocol rests on the report of the check and on the decisions on
 it.
+
+## Follow-up
+
+Done on 2026-11-06 by the same editor, on the eleven decisions of the section "The last pass,
+and what it left" of [the decisions](DECISIONS.md). Edited: files under `spec/`,
+`tools/check_schemas.py` and this log. Nothing was committed. Only the promises that were
+touched and their neighbours were read again; no general cold read was made.
+
+- 424 promises, 3 more: 221 of the layer `language`, 168 of the layer `convention` and 35 of
+  the layer `interface`. None was removed and no ID was reused.
+- Added: POOL-017 and CON-031, of the layer `convention`, and IMP-012, of the layer
+  `language`.
+- 21 promises changed: ACC-006, ACC-019, ACC-022, ACC-033, ACC-038, ACC-040, IMP-006,
+  IMP-010, IMP-011, LIF-009, OPS-007, IFC-006, IFC-009, IFC-016, IFC-034, CON-018, CON-022,
+  CON-023, CON-030, CTR-005 and POOL-004. No promise changed layer or level.
+- Per file, where the count changed: pools 15, conduits 27, implicit 12.
+- The core package, the schemas' shapes, the implementation-defined list and the numbers of
+  example files are as they were. The set under
+  `invalid-by-rule/CON-030-requirement-that-does-not-narrow-on-a-conduit.yaml` gained one
+  document.
+
+| Decision | Promises and files changed | What changed |
+| --- | --- | --- |
+| 1. What remains after `retire-with-resources.v1` fails | none | The choice stands. Nothing under `spec/` still mentions the output `remaining` |
+| 2. A Resource registered into a retired Pool | POOL-017 (new), POOL-004, LIF-009, ACC-033; definitions (`owner`); `register.v1`, `register-replacement.v1`, `core/capabilities.yaml` (comment) | The request is not dispatched and reports conflict, and so does a request under LIF-009 for a new Resource for an entry of a retired Pool |
+| 3. Later work arranged by an onward request | ACC-019, ACC-040, IMP-006; definitions (`later work`); `start-later-work.v1`, `core/README.md` | The work is tied to every Conduit of the chain. A start is dispatched only while all of them are open, and carries the restrictions that the arranging request carried under ACC-017, as they stand at the start |
+| 4. Later work arranged by a step that has no `conduit` | ACC-019, ACC-040, IMP-010, IFC-006; definitions (`later work`); `start-later-work.v1`, `core/README.md` | The work is tied to the Conduit, and the chain, of the invocation that the step's graph serves |
+| 5. A `setup` or `retire` graph with a step whose operation is marked `arrangesLaterWork` | IMP-012 (new), IMP-010, IMP-011; definitions (`later work`) | The template is rejected |
+| 6. A start that names an arranging invocation that did not succeed | ACC-040; definitions (`later work`); `start-later-work.v1`, `core/README.md` | A start is dispatched only where the arranging invocation has ended with the outcome succeeded, as first reported or as reconciled. Otherwise the request reports refused |
+| 7. How a consumer learns the result of later work | IFC-016, ACC-019, ACC-040; definitions (`later work`); `start-later-work.v1`, `core/README.md`; the comment on `directory.sweep.v1` and its description in the example package | The conventions give no way, the record holds the result, and the contract of the operation that arranges the work says how its results are read. IFC-016 says that it is about one invocation that outlasts its call |
+| 8. Opening a Conduit whose consumer is retired | CON-031 (new), CON-023, ACC-006, ACC-022; definitions (`open`); `open.v1` | `open.v1` for a Conduit either of whose ends is retired reports conflict, whatever the shutdown |
+| 9. A composition made only of core requirements that do not narrow | CON-030, CON-018, CTR-005; definitions (`requirement`); `core/requirements.yaml` (comment), `core/README.md`, `schemas/contracts.yaml` (description), `schemas/README.md`; `tools/check_schemas.py` (rule `narrows-on-conduit`); `invalid-by-rule/CON-030-requirement-that-does-not-narrow-on-a-conduit.yaml` | CON-030 rejects a requirement that is not a composition, does not narrow and is not of the core package, applied itself or as a constituent, and nothing else. The checker's rule no longer names a composition |
+| 10. `obliges` of a constituent | CTR-005, CON-022, IFC-034, ACC-038; definitions (`requirement`); `schemas/contracts.yaml` (description), `core/README.md` | A composition obliges the consumer where its own contract, or the contract of any constituent that narrows, names `consumer` |
+| 11. An implementation's result whose outcome key and `isError` disagree | IFC-009, OPS-007; the paragraph under "How a request ends" in the definitions | The outcome is unknown |
+
+Choices made where a decision left the wording open. Each can be struck by the owner.
+
+| Where | Choice | Why |
+| --- | --- | --- |
+| Decision 2, POOL-017 | A promise of the layer `convention` in the pools file. The request is not dispatched; the document is not called rejected, so OBJ-023 and OBJ-025 are unchanged. With the Pool retired, the request is authorized against `management` alone | The decision gives conflict, and OBJ-023 gives invalid to every rejected document but a clash of names. ACC-033 already moves what a retired Pool authorized to `management` |
+| Decisions 3 and 4, ACC-019 | The chain is defined there: the Conduit the arranging request came through and each Conduit that the invocations it served, directly or through others, came through. ACC-040 cites it | ACC-019 is the promise that says what the work is tied to |
+| Decision 5 | A new promise, IMP-012, beside IMP-010 | IMP-005 and IMP-009 are apart from IMP-004 in the same way |
+| Decision 6, ACC-040 | A start that names an arranging invocation still in progress reports refused | It has not ended with the outcome succeeded |
+| Decision 7, the example package | The description of `directory.sweep.v1` says that what a sweep removed is read with `directory.read.v1` | The decision has the contract say how results are read |
+| Decision 8 | A new promise, CON-031, in the conduits file | ACC-006 states who may open, and CON-023 and CON-025 are the neighbours |
+| Decision 9, the example | The set now applies `same-team.v1` as a constituent of a composition, beside `shared-host.v1` | It shows that the constituent of another package is what rejects the template, and that the core constituent is not |
+| Decision 10, IFC-034 | The definition of a tool lists a composition that obliges the consumer as IFC-018 sends it, with every constituent that narrows | The composition as a whole obliges, and CON-022 has the consumer's implementation support the composition or every constituent |
+| Decision 11, IFC-009 | The two disagree where a result states succeeded with `isError` true, or failed or unknown with `isError` not true. A result that gives a reason is left as IFC-026 and IFC-027 have it | The decision speaks of the outcome key |
+
+The corrected rule of the checker for CON-030 was tried in memory on a Conduit template that
+applies a composition whose one constituent is `shared-host.v1`: the rule accepts it, and it
+still rejects a requirement of another package that does not narrow and is applied itself.
+
+Run from the repository root after the last edit of the follow-up. Each exited with status 0.
+
+```text
+$ /usr/bin/python3 - (the validation command of CONSOLIDATION.md)
+424 promises ok
+
+$ (every promise ID and DL item cited in a .yaml or .md file under spec/, file names
+  included, exists)
+129 files; 3650 citations of promises, 53 of DL items; 424 promises and 15 DL items exist
+promise IDs cited and missing: {}
+DL items cited and missing: {}
+
+$ python3 tools/check_schemas.py        (the line of each step, last line)
+1. Read 100 files holding 225 documents as strict YAML.
+2. Checked 58 Schema contracts against the profile, and every `$ref`.
+3. Validated 137 documents under spec/schemas/, spec/core/ and examples/valid/.
+4. 59 invalid documents in 59 files were each rejected by a schema, or rejected when read.
+5. Core package: 99 documents exported, 0 documents deliberately private and 1 implementation, which is also an export. Checked 434 references for the kind they name; 1 name packages that are not in this repository and were not checked. Checked 3 controls, the 5 operations that take no `revision`, the tables of the two READMEs, and 799 citations of promises in 103 files. The example packages keep 0 documents private.
+6. Applied 16 rules of this tool, which come from 14 promises, to the core package and 3 example directories. 17 sets of documents in 17 files under examples/invalid-by-rule/ were each rejected by the rule they are named for; each of their 30 documents is valid against the schemas.
+   SCH-019: validated 10 defaults of the core package and the valid examples against their schemas; 0 were not validated, because a `$ref` in the schema leads outside this repository.
+Errors: 0
+
+$ python3 tools/set_names.py --check
+Names: corePackage x432, apiVersion x228, metaPrefix x88. Errors: 0
+
+$ python3 tools/check_docs.py
+Files: listed by Git (tracked, and untracked but not ignored).
+Checked 121 Markdown files and 1546 local links (offline).
+Errors: 0
+
+$ git diff --check
+(no output; exit status 0)
+```
+
+No line of a YAML file under `spec/` is longer than 96 characters, and the counts in the
+Contents table of `spec/README.md` were recounted and agree: 424 promises, 15 in the pools
+file, 27 in the conduits file and 12 in the convention on implicit effects. `docs/AUDIT.md`
+and `docs/README.md` still state the earlier counts.

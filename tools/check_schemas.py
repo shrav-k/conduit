@@ -1222,7 +1222,8 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
         """Whether the requirement `key` names narrows requests: True, False, or None where
         this tool cannot tell because it lacks a contract. A composition narrows exactly where
         one of its constituents does (CTR-005). Also returns the names of the requirements,
-        this one and those below it, that do not narrow and are not of the core package."""
+        this one and those below it, that are not compositions, do not narrow and are not of
+        the core package. A composition is judged by its constituents alone (CON-030)."""
         contract = lookup(key, "Requirement")
         if contract is None or id(contract) in seen:
             return None, []
@@ -1239,14 +1240,15 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
             narrows = True if True in states else None if None in states else False
         else:
             narrows = body.get("narrows") is True
-        if narrows is False and key[0] != core:
+        if narrows is False and key[0] != core and not parts:
             names.append(key[1])
         return narrows, names
 
-    # narrows-on-conduit (CON-030): a requirement that does not narrow requests is applied to
-    # a Conduit, itself or as a constituent, only where it is a contract of the core package.
-    # Applied to the `requirements` of a Conduit template, as far as the tool has the
-    # contracts.
+    # narrows-on-conduit (CON-030): a requirement that is not a composition and does not
+    # narrow requests is applied to a Conduit, itself or as a constituent, only where it is a
+    # contract of the core package. A composition made only of such core requirements is
+    # accepted. Applied to the `requirements` of a Conduit template, as far as the tool has
+    # the contracts.
     for (kind, name), template in templates.items():
         spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
         for local, item in members(spec.get("requirements")) if kind == "Conduit" else ():

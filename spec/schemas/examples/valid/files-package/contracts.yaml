@@ -107,12 +107,16 @@ spec:
 # An operation that arranges later work: the sweep runs after this invocation has ended, so
 # the contract carries the mark (CTR-002). The work is tied to the Conduit through which it
 # was arranged, and is not started once that Conduit is closed (ACC-019). The output names
-# the work (IFC-016).
+# the work. A sweep is a start that the consumer did not request, so `retrieve-result.v1`
+# does not return its result: the contract says how the result is read, here with another
+# operation of the same capability (ACC-019).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: directory.sweep.v1
-  description: Arrange for the stale entries of a directory to be removed after a delay.
+  description: >-
+    Arrange for the stale entries of a directory to be removed after a delay. What a sweep
+    removed is read with `directory.read.v1`, which then no longer returns those entries.
 spec:
   inputs:
     path:

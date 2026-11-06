@@ -15,8 +15,8 @@
 # and added OPS-028. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
 # OPS-007, OPS-009, OPS-012, OPS-014, OPS-016, OPS-017, OPS-022 and OPS-024. Its last pass
 # (docs/proposals/reaudit/round-2/log-tail.md) changed OPS-005, OPS-007, OPS-009 and OPS-014,
-# and added OPS-029, on a request that names what does not exist. No promise of this file has
-# been removed.
+# and added OPS-029, on a request that names what does not exist. The follow-up to that pass
+# changed OPS-007. No promise of this file has been removed.
 
 - id: OPS-001
   layer: convention
@@ -104,19 +104,21 @@
   when: >-
     No result arrives; the implementation stops before returning one; a result from an
     implementation that carries Conduit's keys states neither an outcome nor a reason under
-    IFC-026, or states both; or a declared output fails validation in a result that would
-    otherwise have the outcome succeeded, whether or not the implementation is marked `plain`.
+    IFC-026, or states both; such a result states an outcome with which its `isError` disagrees;
+    or a declared output fails validation in a result that would otherwise have the outcome
+    succeeded, whether or not the implementation is marked `plain`.
   then: >-
     The invocation's outcome is unknown.
   observable: >-
-    In each of those four cases the record of the invocation's end states unknown. It states
-    succeeded or failed only when the implementation's result stated it or, for an
-    implementation marked `plain`, when IFC-010 gives it. A declared output that is not marked
-    `optional: true` and that the result does not hold fails validation in this sense: a plain
-    server that returns a complete result that is not an error, and no `structuredContent`, for
-    an operation with such an output has the outcome unknown. A result that states failed or
-    unknown, and an error of a plain server, hold no outputs to validate, under IFC-009 and
-    IFC-010.
+    In each of those five cases the record of the invocation's end states unknown. A result's
+    `isError` disagrees with its outcome where it is true beside succeeded, or not true beside
+    failed or unknown, as IFC-009 states. It states succeeded or failed only when the
+    implementation's result stated it or, for an implementation marked `plain`, when IFC-010
+    gives it. A declared output that is not marked `optional: true` and that the result does not
+    hold fails validation in this sense: a plain server that returns a complete result that is
+    not an error, and no `structuredContent`, for an operation with such an output has the
+    outcome unknown. A result that states failed or unknown, and an error of a plain server,
+    hold no outputs to validate, under IFC-009 and IFC-010.
   vectors: []
 
 - id: OPS-008

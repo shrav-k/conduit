@@ -11,8 +11,9 @@ the owner changed is in
 and changed some descriptions here; they added no export. The
 [decisions of the second re-audit round](../../docs/proposals/reaudit/round-2/DECISIONS.md)
 changed contracts and descriptions here and added no export either; what changed is in the
-[log of that pass](../../docs/proposals/reaudit/round-2/log-documents.md). The promises are
-the source of truth: where a document here and a promise differ, the document is wrong.
+[log of that pass](../../docs/proposals/reaudit/round-2/log-documents.md) and the
+[log of its closing pass](../../docs/proposals/reaudit/round-2/log-closing.md). The promises
+are the source of truth: where a document here and a promise differ, the document is wrong.
 
 ## What this is
 
@@ -85,7 +86,7 @@ these invocations. A Conduit is set up by `open.v1` and retired by `close.v1` in
 | `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
 | `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, POOL-013 |
 | `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009 |
-| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1`, `location-settings.v1` | for a control | yes | — | OPS-014, LIF-028, REV-010 |
+| `reconcile.v1` | `object-management.v1`, `pool-management.v1`, `access-control.v1` | for a control | yes | — | OPS-014, ACC-033, LIF-028, REV-010 |
 | `register-replacement.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | LIF-009, POOL-003 |
 | `install.v1` | `object-management.v1` | — | yes | — | ACC-033, OPS-019 |
 | `declare-lost.v1` | `object-management.v1` | — | yes | yes | PLC-017, ACC-032 |
@@ -95,7 +96,7 @@ these invocations. A Conduit is set up by `open.v1` and retired by `close.v1` in
 | `close.v1` | `access-control.v1` | — | yes | — | ACC-012 |
 | `apply-policy.v1` | `access-control.v1` | — | yes | — | ACC-031 |
 | `remove-policy.v1` | `access-control.v1` | — | yes | — | ACC-031 |
-| `retrieve-result.v1` | No capability: presented to every consumer | — | — | — | IFC-024, OPS-016 |
+| `retrieve-result.v1` | No capability: presented to every instance | — | — | — | IFC-024, OPS-016 |
 | `set-default-location.v1` | `system-settings.v1` | required | yes | — | PLC-016 |
 | `set-facts.v1` | `location-settings.v1` | required | yes | — | PLC-021 |
 
@@ -121,19 +122,22 @@ How to read the columns:
   stored there (REV-007). `set-facts.v1` returns `settings: {/facts: ...}`. The input
   `settings` of `reconcile.v1`, which states the settings of a reconciled control that took
   effect, has the same shape (REV-010).
-- **Reconciling.** `reconcile.v1` is in the capability of `management`, of a Pool, of
-  `access` and of a location, because reconciling is authorized against the target that
-  authorized the request being reconciled, by an open Conduit to that target that lists
-  `reconcile.v1` (ACC-033, OPS-014). A control of the `system` Pool is reconciled through a
-  Conduit to `system` that carries `pool-management.v1`. A type of another package whose
-  instances are to have their invocations reconciled offers a capability that includes
-  `github.com/shrav-k/conduit/core#reconcile.v1`, as the example package's
-  `directory-access.v1` does. Recording that an unknown setup or open occurred makes the
+- **Reconciling.** `reconcile.v1` is in the capability of `management`, of a Pool and of
+  `access`, and in no other. An invocation of a management verb is reconciled through the
+  target that authorized the request being reconciled, by an open Conduit to that target
+  that lists `reconcile.v1`. Any other invocation, of a control or of any other operation,
+  is reconciled through the target that manages the instance it was dispatched to: the Pool
+  that owns it where it is a Resource, and `management` where it is an Agent, an Interface
+  or a Pool (ACC-033, OPS-014). So a control of a location is reconciled through a Conduit
+  to `system`, which owns every location, and a control of the `system` Pool through a
+  Conduit to `management`. No capability, of this package or of any other, has to include
+  `reconcile.v1` beside those three. Recording that an unknown setup or open occurred makes the
   instance ready or the Conduit open. Recording that a retirement or a close occurred
   confirms the shutdown. Recording that the effect did not occur gives the outcome failed
   and changes nothing else (LIF-028). For a control, the settings stated are stored in the
   current configuration, or nothing is (REV-010). A consumer learns the ID that names the
-  invocation from the `io.github.shrav-k.conduit/invocation` of its result (IFC-025).
+  invocation from the `io.github.shrav-k.conduit/invocation` of its result (IFC-025), or
+  from the output `invocation` of `retrieve-result.v1` (IFC-024).
 - **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
   that may be left out is marked `optional: true`. Each input of the requirement `bound.v1`
   states `default: []`, and may be left out for that reason alone (OBJ-015).
@@ -165,22 +169,27 @@ How to read the columns:
 - **Published contracts only.** The input `requirement` of `apply-policy.v1`, and each item
   of the argument `operations` of `bound.v1`, is a qualified reference. A policy and a bound
   therefore name contracts of published packages only (ACC-031, ACC-029).
-- No core operation starts model work (IMP-002), so none carries `startsModelWork`.
+- No core operation starts model work (IMP-002), so none carries `startsModelWork`. None
+  arranges later work either, so none carries `arrangesLaterWork` (CTR-002, ACC-019).
 - Every core operation states `github.com/shrav-k/conduit/core#engine` as its default
   implementation. The engine performs it; no process is started and no request crosses the
   implementation interface.
 
 The tool that IFC-024 always presents is named `retrieve-result.v1`, with no Conduit's name
-before it. A caller names its invocation by `operationIdentity` and `target` (OPS-016). An
+before it. An instance names an invocation that began with a request it sent itself by
+`operationIdentity` and `target` (OPS-016). An
 operation identity, and the retrieval of a result, are scoped to the caller, the target and
 the instance that sent the request (OPS-008), and an identity under which the sender has no
-invocation reports refused (OPS-015). A retained result is bound to the Conduit its
+invocation reports refused (OPS-015). A retained result belongs to the Conduit its
 invocation was dispatched through: its content is delivered only while that Conduit is open,
 and never under another one (OPS-017, ACC-034). Once the target is unregistered it can no
 longer be named, so the request reports refused, as for any identity under which the sender
-can reach no invocation; the records of the invocation remain (OPS-016, LIF-019). The two
-words of the tool's result are also what a result that answers a request directly carries
-in its `_meta`:
+can reach no invocation; the records of the invocation remain (OPS-016, LIF-019). The tool's
+result holds `state`, `invocation`, `withheld` and `outputs`. `invocation` is the engine's
+ID for the invocation asked about, so an instance that lost the result of its request can
+still reconcile it. `outputs` is absent where content is withheld, and where the engine no
+longer keeps it (OPS-016). `state` and `withheld` are also what a result that answers a
+request directly carries in its `_meta`:
 `io.github.shrav-k.conduit/state` with the value `inProgress` for a repeat of an invocation
 that has not ended (OPS-009), and `io.github.shrav-k.conduit/withheld` with the value true
 where content is withheld (ACC-034). IFC-025 states both. A result's `_meta` may also hold
@@ -203,16 +212,24 @@ packages are told apart in one request in that way.
 `inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records`
 (LIF-013). `packages` is a list. Each item has `address`, `version` and `digest`; the core
 package's item has no `digest`, and an unpublished package's has `digest` alone (NAM-009,
-PKG-005). `declared` shows each reference in its resolved form, `{kind, id}`. For a Conduit
-it shows, under each requirement the Conduit applies, the qualified reference of the
-implementation that applies it (ACC-038). The status of `access` lists the policies in force
-under `policies`, each with the `id` that `apply-policy.v1` returned (ACC-031).
+PKG-005). `declared` shows each reference in its resolved form, `{kind, id}`. For an open
+Conduit it shows, under each requirement the Conduit applies, the implementation that applies it,
+named by its qualified reference or, for an implementation of a project that is not
+published, as `<digest>#<name>` (ACC-038). The status of `access` lists the policies in
+force under `policies`, each with the `id` that `apply-policy.v1` returned (ACC-031).
+
+A policy applies to each request whose caller is one of its `actors`, where that list is
+given, and whose target is one of its `targets`, where that list is given. A request to
+`apply-policy.v1` gives at least one of the two (ACC-031), and no policy applies to a request
+whose caller is the root Interface (ACC-035).
 
 ## First start
 
 At first start (FST-001, FST-002) the engine instantiates five documents, which are written out
 as an example in
-[spec/schemas/examples/valid/first-start](../schemas/examples/valid/first-start/first-start.yaml):
+[spec/schemas/examples/valid/first-start](../schemas/examples/valid/first-start/first-start.yaml).
+The example shows what first start makes. The engine is handed no such documents, and a
+submission that held them would be rejected (FST-006, OBJ-002):
 
 | Object | Kind | `from` | Notes |
 | --- | --- | --- | --- |
@@ -228,8 +245,9 @@ are `management` and `access`, so the root Interface's tools are `management.reg
 `management` and `access` are not entries of the `system` Pool's template: an entry's Resource
 gets a generated name (OBJ-003), and FST-001 fixes these two names.
 
-The first-start objects are identified by their IDs. None of them is renamed (LIF-022), and
-no second instance is made from the templates `system`, `management`, `access` and `root`: an
+The first-start objects are identified by their IDs. None of them is renamed, and nor is
+either of the two Conduits of `root` (LIF-022). No second instance is made from the templates
+`system`, `management`, `access` and `root`: an
 instance document whose `from` names one of the four is rejected (FST-006). The template
 `location` is instantiated for every location, and a location's document writes
 `owner: system` (PLC-008).
@@ -266,7 +284,7 @@ is a choice of the batch that the owner accepted, and the record lists it.
 | `access-control.v1` | Capability | OPS-019, ACC-006, ACC-012, ACC-031, ACC-033 |
 | `pool-management.v1` | Capability | OPS-019, ACC-033, ACC-028, CTR-004 |
 | `system-settings.v1` | Capability | PLC-016, CON-017 |
-| `location-settings.v1` | Capability | PLC-021, CON-017, ACC-033 |
+| `location-settings.v1` | Capability | PLC-021, CON-017 |
 | `register.v1` | Operation | OPS-019, ACC-033, SUB-006 |
 | `replace.v1` | Operation | SUB-009, SUB-007 |
 | `rename.v1` | Operation | OBJ-026, OBJ-011 |
@@ -300,7 +318,7 @@ is a choice of the batch that the owner accepted, and the record lists it.
 | `target-reference.v1` | Schema, a reference schema | OBJ-021, OBJ-013, CON-027 |
 | `entry-reference.v1` | Schema, a reference schema | OBJ-021, POOL-005 |
 | `pool-entry-reference.v1` | Schema, a reference schema | OBJ-021, POOL-014 |
-| `object.v1` | Schema | none |
+| `object.v1` | Schema | OBJ-003: a result names each instance made, and says which nested instantiation made a nested one. Its shape is a choice |
 | `diagnostic.v1` | Schema | none |
 | `name.v1` | Schema of a document's part | OBJ-001, OBJ-022 |
 | `export-name.v1` | Schema of a document's part | NAM-004 |
@@ -352,8 +370,9 @@ is a choice of the batch that the owner accepted, and the record lists it.
 ## What this package does not settle
 
 - The full shape of an inspection result and of a diagnostic. `inspect.v1` fixes the names of
-  its outputs, the shape of `packages`, the two values every status carries, and that a
-  policy listed in the status of `access` has an `id`; `diagnostic.v1` fixes only `message`.
+  its outputs, the shape of `packages`, the lifecycle state that every status carries, the
+  shutdown that the status of a retired instance carries, and that a policy listed in the
+  status of `access` has an `id`; `diagnostic.v1` fixes only `message`.
   That `declared` shows each reference as `{kind, id}`, and names under each requirement of a
   Conduit the implementation that applies it, is settled; the keys that hold them are not.
   Not fixed either: where the result of inspecting a Conduit states, for each restriction,
@@ -362,7 +381,9 @@ is a choice of the batch that the owner accepted, and the record lists it.
   the word unknown stands against a setting (REV-009); how the status names a setup and its
   outcome, what retired an instance and which event closed a Conduit (LIF-004, LIF-005,
   CON-008, CON-011); the members that list the actors or targets of a policy (ACC-031); where
-  an instance's `from` is reported (FST-005); and how a gap in the records is shown (REC-006).
+  an instance's `from` is reported (FST-005); how a gap in the records is shown (REC-006); and
+  where the result of a request to retire or to unregister a Pool names the Resources in the
+  way (LIF-020), since `retire.v1` and `unregister.v1` declare no output.
 
 It is listed, with the promises concerned, in the
 [record](../../docs/proposals/core-and-schemas/README.md). The other point that page once
@@ -370,7 +391,7 @@ listed is settled: a request to retrieve the result of an invocation whose targe
 unregistered reports refused (OPS-016).
 
 No contract of the core package states `restoresRuntimes`, `records` or `obliges`, and none is
-a composition (CTR-004, CTR-005, CTR-010). No core type declares a runtime. `bound.v1` states
-no `obliges`, so the implementation of its target must state it in `supports`, and `engine`,
-which is the implementation behind `access`, does. `shared-host.v1` does not narrow requests,
-and the engine itself checks it (PLC-013).
+a composition (CTR-004, CTR-005, CTR-010). No core type declares a runtime. `bound.v1` is a
+filter, and the implementation of the target must always state a filter in `supports`
+(CON-022): `engine`, which is the implementation behind `access`, does. `shared-host.v1` does
+not narrow requests, and the engine itself checks it (PLC-013).

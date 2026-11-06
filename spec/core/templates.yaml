@@ -6,12 +6,13 @@
 # from `location`; the Resources `management` and `access`, owned by `system`, from the
 # templates of those names; and the Interface `root` from `root`, whose two declared Conduits
 # are made from `root-management` and `root-access`. The instance documents are written out,
-# as an example, in spec/schemas/examples/valid/first-start/.
+# as an example, in spec/schemas/examples/valid/first-start/: they show what first start
+# makes, and a submission that held them would be rejected (FST-006, OBJ-002).
 #
 # Promises encoded:
 #   system           FST-001, FST-005, PLC-003 (it holds the default-location setting, which
 #                    names nothing until the control sets it)
-#   location         FST-001, FST-005, PLC-008, NAM-020 (the one export a promise names). The
+#   location         FST-001, FST-005, PLC-008, NAM-020. The
 #                    argument `facts` sets a location's facts when it is instantiated; after
 #                    that only the control `set-facts.v1` changes them. The template has no
 #                    `controls` map, so every control of its type is available (TPL-010)
@@ -30,7 +31,8 @@
 # A package's templates are not registered (NAM-013), so the template `system` and the Pool
 # `system` do not clash under OBJ-002. The declared Conduits of `root` have the local names
 # `management` and `access`, which gives the root Interface the tools `management.register.v1`,
-# `access.open.v1` and so on under IFC-012.
+# `access.open.v1` and so on under IFC-012. Neither of those two Conduits is renamed
+# (LIF-022).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool

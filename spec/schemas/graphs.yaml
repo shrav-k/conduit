@@ -6,7 +6,8 @@
 #
 # Promises encoded:
 #   graph.v1            GRA-023 (`steps` is a map by name), GRA-021 (`outputs`, each with a
-#                       `value` and perhaps `optional`), OBJ-015
+#                       `value` and perhaps `optional`, which marks an output the graph may
+#                       leave without a value), OBJ-015
 #   lifecycle-graph.v1  GRA-023 (`setup` and `retire` each hold `steps`), GRA-021 (neither has
 #                       `outputs`), GRA-014 and TPL-008 (its steps are what the engine runs
 #                       for `set-up.v1` or `retire.v1`; it is not an implementation selected
@@ -52,7 +53,12 @@ spec:
         type: object
         properties:
           value: {$ref: github.com/shrav-k/conduit/core#value-binding.v1}
-          optional: {type: boolean}
+          optional:
+            type: boolean
+            description: >-
+              True for an output the graph may leave without a value: where its value binding
+              yields none, the result holds no such output. Only an output that the
+              operation's contract makes optional is so marked.
         required: [value]
         additionalProperties: false
   required: [steps]

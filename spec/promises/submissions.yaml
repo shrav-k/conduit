@@ -6,7 +6,8 @@
 # DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed SUB-008. The second round
 # of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) reduced SUB-007 to its rule on
 # documents, changed SUB-005 and SUB-008, and added SUB-009, which is of the layer
-# `convention`. No promise of this file has been removed.
+# `convention`. Its closing pass changed SUB-005, SUB-008 and SUB-009. No promise of this file
+# has been removed.
 
 - id: SUB-001
   layer: language
@@ -73,7 +74,12 @@
     way to hand them over. Where a directory is submitted, what is read is the files in the
     directory itself whose names end in `.yaml` or `.json`, the manifest among them, as MAN-001
     and MAN-011 state. Nothing below the directory is read, and a file with any other ending is
-    not read, so neither is part of the submission.
+    not read, so neither is part of the submission. An engine that is handed files applies the
+    rules on a file when it reads them: which files are read, under MAN-001, MAN-002 and
+    MAN-011, and their syntax, under SCH-012, SCH-017 and SCH-018. Where a registration hands
+    the documents over as values, as the input `documents` of `register.v1` does, no file is in
+    front of the engine and those rules have nothing to check; every other rule applies to the
+    values.
   vectors: []
 
 - id: SUB-006
@@ -108,15 +114,15 @@
   layer: language
   level: must
   when: >-
-    A submission contains contract documents.
+    A submission contains contract documents, or its manifest lists implementations.
   then: >-
-    They are made available to the documents of that project, which are the documents handed
-    over in the same registration, and are not registered. The engine keeps them as an
-    unpublished package, identified by a digest. The digest is the SHA-256, written as PKG-004
-    writes a digest, of the JSON Canonicalization Scheme form, RFC 8785, of one map with two
-    members: `documents`, a list of the project's contract documents ordered by `kind` and then
-    by `metadata.name`, each compared by the bytes of its UTF-8 string, and `manifest`, the
-    project's manifest, which is left out when the project has none.
+    The contracts and the implementations are made available to the documents of that project,
+    which are the documents handed over in the same registration, and are not registered. The
+    engine keeps them as an unpublished package, identified by a digest. The digest is the
+    SHA-256, written as PKG-004 writes a digest, of the JSON Canonicalization Scheme form, RFC
+    8785, of one map with two members: `documents`, a list of the project's contract documents
+    ordered by `kind` and then by `metadata.name`, each compared by the bytes of its UTF-8
+    string, and `manifest`, the project's manifest, which is left out when the project has none.
   observable: >-
     A document of the same project can refer to such a contract as `#name` under NAM-022. No
     object exists for the contract after the submission, and no document outside the project can
@@ -126,7 +132,10 @@
     are equal under SCH-007 give the same digest, however their files are written, and the
     manifest is part of it because it fixes what the contracts' references to other packages
     mean. Ordered by the bytes of their UTF-8 strings, the kinds stand `Capability`,
-    `Operation`, `Requirement`, `Schema`, `Type`, and the name `a.v10` stands before `a.v2`.
+    `Operation`, `Requirement`, `Schema`, `Type`, and the name `a.v10` stands before `a.v2`. A
+    project whose manifest lists implementations and that has no contract document has an
+    unpublished package too, with an empty `documents` list: its digest is what names those
+    implementations as `<digest>#<name>` under ACC-038.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
@@ -146,5 +155,9 @@
     replaced. A request that names a revision that is not current reports conflict under
     REV-002, and one that names none reports invalid under REV-011. The request is authorized
     against `management`, under ACC-033. What a reference written `#name` reaches in the
-    replacing document is NAM-022.
+    replacing document is NAM-022. The request may hand over a manifest with the document, as
+    the input `manifest` of `replace.v1`: the document's references to packages resolve through
+    it under NAM-007, and the template as replaced keeps the packages it gives, under NAM-009. A
+    replacing document that is rejected, or that is of another kind or name than the template,
+    is not dispatched and reports invalid, and its result carries the diagnostics.
   vectors: []

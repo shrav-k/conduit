@@ -6,30 +6,36 @@
 # are in operations.yaml.
 #
 # Promises encoded:
-#   object-management.v1  ACC-033 (what is authorized against `management`), OPS-019,
-#                         ACC-032 and CTR-003 (it lists the two operations reserved to the
-#                         root Interface, which only a capability of the core package may)
+#   object-management.v1  ACC-033 (what is authorized against `management`, reconciling an
+#                         invocation of an operation of an Agent, an Interface or a Pool
+#                         among it), OPS-019, ACC-032 and CTR-003 (it lists the two
+#                         operations reserved to the root Interface, which only a capability
+#                         of the core package may)
 #   access-control.v1     ACC-006, ACC-012, ACC-031 (the operations of `access`), ACC-033 and
 #                         OPS-014 (reconciling an open or a close is authorized against
 #                         `access`, the target that authorized it, so the capability includes
 #                         `reconcile.v1`)
-#   pool-management.v1    ACC-033 (what is authorized against a Pool), ACC-028 (a Pool's own
-#                         operations), LIF-021, LIF-009, CTR-004 (a Type of the family Pool
-#                         that does not offer it is rejected, so every Pool offers it)
+#   pool-management.v1    ACC-033 (what is authorized against a Pool, reconciling an
+#                         invocation of an operation of a Resource it owns among it),
+#                         ACC-028 (a Pool's own operations), LIF-021, LIF-009, CTR-004 (a
+#                         Type of the family Pool that does not offer it is rejected, so
+#                         every Pool offers it)
 #   system-settings.v1    PLC-016, OPS-020 and CON-017 (a Conduit lists a control like any
 #                         operation, so a capability includes it)
 #   location-settings.v1  PLC-021 (a location's facts are changed only by a control), OPS-020
-#                         and CON-017; ACC-033 (a control is reconciled through a Conduit to
-#                         the instance itself, so the capability includes `reconcile.v1`)
+#                         and CON-017
 #
-# Reconciling is authorized against the target that authorized the request being reconciled,
-# by an open Conduit to that target that lists `reconcile.v1` (ACC-033, OPS-014). Every
-# target of a core operation therefore offers a capability that includes it: `management`,
-# `access`, every Pool, the `system` Pool among them, and a location. A control of the
-# `system` Pool is reconciled through a Conduit to `system` that carries
-# `pool-management.v1`.
+# Reconciling an invocation of a management verb is authorized against the target that
+# authorized the request being reconciled, so the three capabilities that hold management
+# verbs include `reconcile.v1`. Any other invocation, of a control or of any other
+# operation, is reconciled through the target that manages the instance it was dispatched
+# to: the Pool that owns a Resource, and `management` for an Agent, an Interface or a Pool
+# (ACC-033, OPS-014). No other capability has to include `reconcile.v1`, and
+# `system-settings.v1` and `location-settings.v1` do not: a control of a location is
+# reconciled through a Conduit to `system`, which owns every location, and a control of the
+# `system` Pool through a Conduit to `management`.
 #
-# `retrieve-result.v1` is in no capability: IFC-024 presents it to every consumer, and a call
+# `retrieve-result.v1` is in no capability: IFC-024 presents it to every instance, and a call
 # to it needs no Conduit.
 
 apiVersion: github.com/shrav-k/conduit/v0
@@ -38,8 +44,10 @@ metadata:
   name: object-management.v1
   description: >-
     What the `management` Resource offers: registering, replacing, renaming and unregistering
-    objects; inspecting, setting up and retiring what is not a Resource; installing packages;
-    and the operations reserved to the root Interface.
+    objects; asking for a new instance for a nested instantiation whose instance is retired;
+    inspecting, setting up and retiring what is not a Resource; reconciling an
+    invocation that it authorized, or an invocation of an operation of an Agent, an Interface
+    or a Pool; installing packages; and the operations reserved to the root Interface.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#register.v1
@@ -76,9 +84,11 @@ kind: Capability
 metadata:
   name: pool-management.v1
   description: >-
-    What every Pool offers: registering a Resource into it; inspecting, setting up and
-    retiring the Resources it owns; reconciling an invocation that it authorized; and
-    retiring it together with those Resources. A Type of the family Pool that does not list
+    What every Pool offers: registering a Resource into it, and asking for a new Resource for
+    one of its entries; inspecting, setting up and
+    retiring the Resources it owns; reconciling an invocation that it authorized, or an
+    invocation of an operation of a Resource it owns, a control among them; and retiring it
+    together with those Resources. A Type of the family Pool that does not list
     this capability under `offers` is rejected when its package is installed or its project
     is submitted.
 spec:
@@ -107,9 +117,9 @@ kind: Capability
 metadata:
   name: location-settings.v1
   description: >-
-    What a location offers: the control that changes its stored facts, and reconciling an
-    invocation of that control whose outcome is unknown.
+    What a location offers: the control that changes its stored facts. An invocation of that
+    control whose outcome is unknown is reconciled through a Conduit to the `system` Pool,
+    which owns every location.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#set-facts.v1
-    - github.com/shrav-k/conduit/core#reconcile.v1

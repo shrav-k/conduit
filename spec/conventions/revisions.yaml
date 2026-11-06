@@ -5,7 +5,9 @@
 # docs/proposals/docs-audit/GAPS.md) changed REV-007. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed REV-003, REV-004, REV-006, REV-007,
 # REV-009, REV-010 and REV-012: a rename advances the revision, and a control's `changes` maps
-# each input to the setting it sets. No promise of this file has been removed.
+# each input to the setting it sets. Its closing pass
+# (docs/proposals/reaudit/round-2/log-closing.md) changed REV-006, REV-007, REV-010 and
+# REV-013. No promise of this file has been removed.
 
 - id: REV-001
   layer: convention
@@ -77,7 +79,10 @@
   observable: >-
     After the control succeeds, every setting whose input was not supplied has the value it had
     before. `revision` is the one input of a control that must always be supplied: a control
-    requested without it is not dispatched and reports invalid, under REV-011.
+    requested without it is not dispatched and reports invalid, under REV-011. Every other input
+    of a control may be left out, whether or not its contract marks it `optional: true`: the
+    rule of OBJ-015 that an unmarked input is required does not hold for a control, and the tool
+    definition of IFC-033 lists `revision` alone as required.
   vectors: []
 
 - id: REV-007
@@ -98,7 +103,9 @@
     `settings: {/readLimit: 15}`. A place of `changes` that the control did not confirm, because
     its input was not supplied under REV-006, has no member. A setting that is a reference is
     returned in the resolved form of OBJ-009. Every control declares the input `revision` and
-    the output `settings`, under CTR-006.
+    the output `settings`, under CTR-006. A `settings` that holds a key which is not a pointer
+    of the control's `changes` is not that output: the control's outcome is unknown under
+    OPS-007, and nothing is stored, as under REV-008.
   vectors: []
 
 - id: REV-008
@@ -150,7 +157,10 @@
     conflict under REV-002, and one that names none reports invalid under REV-011. One whose
     stated settings do not satisfy the schema is REV-013. In `reconcile.v1` the revision and the
     settings are the inputs `revision` and `settings`, and `settings` has the shape of the
-    control's output `settings`: a map keyed by the pointers of the control's `changes`.
+    control's output `settings`: a map keyed by the pointers of the control's `changes`. The
+    request is authorized under ACC-033 against the target that manages the instance: the Pool
+    that owns it where it is a Resource, and `management` otherwise. It is not authorized by a
+    Conduit to the instance itself, as the control was.
   vectors: []
 
 - id: REV-011
@@ -198,5 +208,7 @@
     The reconciliation is not dispatched, and reports invalid.
   observable: >-
     The stored configuration and revision are as before. The control's outcome is still unknown,
-    and the settings it addressed are still reported as unknown under REV-009.
+    and the settings it addressed are still reported as unknown under REV-009. A reconciliation
+    whose `settings` holds a key that is not a pointer of the control's `changes` reports
+    invalid in the same way.
   vectors: []

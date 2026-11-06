@@ -3,7 +3,7 @@
 #
 # The Operation contracts of the core package: every management verb the promises mention
 # (OPS-019), the tool that retrieves one's own results (IFC-024), the control that designates
-# the default location (PLC-016) and the control that changes a location's facts (PLC-008).
+# the default location (PLC-016) and the control that changes a location's facts (PLC-021).
 # Which capability includes each is in capabilities.yaml, and which open Conduit authorizes
 # each is ACC-033.
 #
@@ -12,9 +12,12 @@
 #     `set-up.v1`, `retire.v1` and `reconcile.v1` are included both in the capability of
 #     `management` and in the capability of a Pool; ACC-033 says which of the two targets
 #     authorizes a request, from the object the request names. `reconcile.v1` is also
-#     included in the capability of `access` and in that of a location, because reconciling
-#     is authorized against the target that authorized the request being reconciled, by an
-#     open Conduit to that target that lists `reconcile.v1` (ACC-033).
+#     included in the capability of `access`, because reconciling an invocation of a
+#     management verb is authorized against the target that authorized the request being
+#     reconciled. Any other invocation, of a control or of any other operation, is
+#     reconciled through the target that manages the instance it was dispatched to: the
+#     Pool that owns a Resource, and `management` otherwise (ACC-033). So no other
+#     capability, of the core package or of any other, has to include `reconcile.v1`.
 #   - An instance is set up by one invocation of `set-up.v1` and retired by one of
 #     `retire.v1`, requested of the target ACC-033 names, with the instance as an input. The
 #     engine implements both. The `setup` and `retire` graphs of the instance's template are
@@ -29,7 +32,7 @@
 #   - A control declares the input `revision` and the output `settings`, and its `changes`
 #     is a map from the name of an input to the pointer, into the configuration, of the
 #     setting that input sets (CTR-006). `revision` is the one input that must always be
-#     supplied (REV-006). `settings` states the settings the control confirmed: an object
+#     supplied (REV-006). `settings` states the settings the control confirmed: a map
 #     keyed by those pointers, with one member for each place confirmed, holding the value
 #     now stored there (REV-007). Its other inputs are optional, and one that is not supplied
 #     leaves its setting as stored: the settings a control addressed are those of the inputs
@@ -43,7 +46,8 @@
 #     declared where the engine runs the steps of a template's graph or invokes other
 #     implementations, as it does for `set-up.v1`, `retire.v1` and
 #     `retire-with-resources.v1`.
-#   - No core operation starts model work (IMP-002), so none carries `startsModelWork`.
+#   - No core operation starts model work (IMP-002), so none carries `startsModelWork`, and
+#     none arranges later work, so none carries `arrangesLaterWork` (CTR-002, ACC-019).
 #   - Every core operation is implemented by the engine itself, written as the default
 #     implementation `github.com/shrav-k/conduit/core#engine`.
 #   - An object is named in a request by a reference and never by an ID. The engine resolves
@@ -73,7 +77,9 @@ metadata:
     operation. `objects` lists every template and instance the request added, nested instances
     among them, and says of each nested instance which nested instantiation made it. A
     registration that is rejected is not dispatched, and its result still carries
-    `diagnostics`.
+    `diagnostics`. The request hands the manifest over as a value, with no directory, so an
+    item of `packages` whose `fetch` is a relative reference, and an implementation item whose
+    program is a relative path, are rejected.
 spec:
   inputs:
     documents:
@@ -106,7 +112,10 @@ metadata:
     Replace a template with the document given, which has the same kind and name. Instances
     made before keep what they resolved. The document is handed over with no contracts: a
     reference written `#name` in it reaches a contract of the unpublished package that the
-    template being replaced holds. Authorized against `management`.
+    template being replaced holds. A manifest may be handed over with the document, and the
+    document's references to packages then resolve through it. A replacing document that is
+    rejected, or that is of another kind or name, reports invalid. Authorized against
+    `management`.
 spec:
   inputs:
     template:
@@ -135,8 +144,9 @@ metadata:
     Give a template or an instance a new name. Its ID and its definition are unchanged, and
     its revision advances, as for any stored change. Authorized against `management`. A rename
     of a Conduit that would make one of its tool names equal to another tool's name, or longer
-    than 128 characters, reports conflict. A first-start object is not renamed: the request
-    reports refused.
+    than 128 characters, reports conflict. A first-start object is not renamed, and nor is
+    either of the two Conduits of `root` that exist from first start: the request reports
+    refused.
 spec:
   inputs:
     object:
@@ -155,8 +165,8 @@ metadata:
   name: unregister.v1
   description: >-
     Remove a template, or a retired instance, from the objects that exist. An instance is
-    removed only if its shutdown is confirmed or it was retired because its location was
-    declared lost; otherwise the request reports conflict. Its name and its ID no longer
+    removed only if its shutdown is confirmed or its location was declared lost; otherwise the
+    request reports conflict. Its name and its ID no longer
     resolve. Records are kept. Authorized against `management`.
 spec:
   inputs:
@@ -178,10 +188,11 @@ metadata:
     else is authorized against `management`. `packages` lists the packages the object holds.
     Each item has `address`, `version` and `digest`; the core package's item has no `digest`,
     and an unpublished package's has `digest` alone. `declared` shows each reference in its
-    resolved form, `{kind, id}`. Inspecting a Conduit shows, under each requirement it
-    applies, the qualified reference of the implementation that applies it. The status of
+    resolved form, `{kind, id}`. Inspecting an open Conduit shows, under each requirement it
+    applies, the implementation that applies it, named by its qualified reference or, for an
+    implementation of a project that is not published, as `<digest>#<name>`. The status of
     `access` also lists the policies in force, each with the ID `apply-policy.v1` returned
-    for it and with the actors or targets it applies to.
+    for it and with the actors and targets it names.
 spec:
   inputs:
     object:
@@ -291,19 +302,22 @@ metadata:
   description: >-
     Record, with what was checked, whether the effect of an invocation whose outcome is unknown
     occurred. The invocation is named by the ID the engine gave it, which a consumer learns
-    from the result of its request. Authorized against the target that authorized the request
-    being reconciled, by an open Conduit to that target that lists this operation:
-    `management` or a Pool for a setup or a retirement, `access` for an open or a close, and
-    the instance itself for a control or any other operation requested of it. Recording that
-    a setup or an open occurred gives it the outcome succeeded and makes the instance ready
-    or the Conduit open. Recording that a retirement or a close occurred confirms the
-    shutdown. Recording that the effect did not occur gives the outcome failed and changes
-    nothing else: the instance or the Conduit is as a failed setup, open, retirement or close
-    leaves it. For a control, `revision` is required. Where the
-    control took effect, `settings` states the settings that took effect, in the shape of the
-    control's output `settings`, a map keyed by the pointers of the control's `changes`,
-    and they are stored in the instance's current configuration. Where it did not, nothing
-    is stored.
+    from the result of its request or from `retrieve-result.v1`. An invocation of a
+    management verb is reconciled through the target that authorized the request being
+    reconciled, by an open Conduit to that target that lists this operation: `management` or
+    a Pool for a setup or a retirement, and `access` for an open or a close. Any other
+    invocation, of a control or of any other operation, is reconciled through the target that
+    manages the instance it was dispatched to: the Pool that owns a Resource, and
+    `management` for an Agent, an Interface or a Pool. A request that names an invocation
+    whose outcome is not unknown reports conflict. Recording that a setup or an open
+    occurred gives it the outcome succeeded and makes the instance ready or the Conduit open.
+    Recording that a retirement or a close occurred confirms the shutdown. Recording that the
+    effect did not occur gives the outcome failed and changes nothing else: the instance or
+    the Conduit is as a failed setup, open, retirement or close leaves it. For a control,
+    `revision` is required. Where the control took effect, `settings` states the settings
+    that took effect, in the shape of the control's output `settings`, a map keyed by the
+    pointers of the control's `changes`, and they are stored in the instance's current
+    configuration. Where it did not, nothing is stored.
 spec:
   inputs:
     invocation:
@@ -366,9 +380,14 @@ metadata:
   name: install.v1
   description: >-
     Make one version of a package available. Nothing is registered. Authorized against
-    `management`. An installation that is rejected is not dispatched and reports invalid. It
-    reports unavailable where the archive cannot be fetched now, and conflict where that
-    address and version is already installed with another digest.
+    `management`. An installation that is rejected is not dispatched and reports invalid: an
+    archive whose digest is not `digest`, and a manifest that states another address or
+    version, are among the causes. It reports unavailable where the archive cannot be fetched
+    now, and conflict where that address and version is already installed with another
+    digest. Where it is already installed with the same digest the request changes nothing
+    and succeeds. A package whose manifest lists a package that is not installed is
+    installed, and `diagnostics` reports the missing one. `fetch` is a URI reference, and a
+    relative one is rejected, because a request has no directory to resolve it against.
 spec:
   inputs:
     address:
@@ -414,7 +433,8 @@ metadata:
   name: purge.v1
   description: >-
     Remove the records made before a given time. For every invocation its operation identity,
-    its outcome and a digest of its contents are kept, and a record of the purge is kept.
+    the engine's ID for it, its outcome and a digest of its contents are kept, and a record of
+    the purge is kept.
     Reserved to the root Interface, and authorized against `management`.
 spec:
   inputs:
@@ -434,7 +454,8 @@ metadata:
   description: >-
     Retire the Pool that is the target of the request together with the Resources it owns. Each
     Resource is retired, and the Pool is retired only if the shutdown of every one of them is
-    confirmed. Authorized against that Pool.
+    confirmed. Authorized against that Pool, by a Conduit that need list only this operation:
+    the retirements of the Resources are part of it, so the Conduit need not list `retire.v1`.
 spec:
   outputs:
     remaining:
@@ -456,7 +477,11 @@ metadata:
     Open a Conduit whose state is registered. Dispatched only if the bound of the actor's own
     Conduit to `access` covers the Conduit's target and names every operation it lists. A
     Conduit to `access` that applies no bound is unlimited, and is opened only by an actor
-    whose own Conduit to `access` applies no bound.
+    whose own Conduit to `access` applies no bound. Where the Conduit to be opened is itself
+    one to `access`, ACC-030 states the condition in place of this one: its bound is within
+    the actor's own, and the actor's bound need not cover `access` as a target. A request to
+    open a Conduit that is already open changes nothing and succeeds, and one to open a
+    closed Conduit reports conflict.
 spec:
   inputs:
     conduit:
@@ -477,7 +502,9 @@ metadata:
     nothing to shut down. Dispatched only if the bound of the actor's own Conduit to `access`
     covers the Conduit's target and names every operation it lists. A Conduit to `access`
     that applies no bound is closed only by an actor whose own Conduit to `access` applies
-    no bound.
+    no bound. Where the Conduit to be closed is itself one to `access`, ACC-030 states the
+    condition in place of this one. A request to close a Conduit that is already closed
+    changes nothing and succeeds.
 spec:
   inputs:
     conduit:
@@ -491,11 +518,15 @@ kind: Operation
 metadata:
   name: apply-policy.v1
   description: >-
-    Apply a requirement, as a policy, to chosen actors or targets wherever they appear. The
-    policy is stored by `access`, which returns an ID for it. A policy is not configuration,
-    so the request names no revision. `requirement` is a qualified reference: a policy names
-    a Requirement contract of a published package only. Dispatched only if every actor and
-    target named is covered by the bound of the actor's own Conduit to `access`.
+    Apply a requirement, as a policy. The request gives `actors`, `targets` or both, and one
+    that gives neither reports invalid. The policy applies to each request whose caller is
+    one of `actors`, where that list is given, and whose target is one of `targets`, where
+    that list is given. No policy applies to a request whose caller is the root Interface,
+    and a request whose `actors` names it reports refused. The policy is stored by `access`,
+    which returns an ID for it. A policy is not configuration, so the request names no
+    revision. `requirement` is a qualified reference: a policy names a Requirement contract
+    of a published package only. Dispatched only if every actor and target named is covered
+    by the bound of the actor's own Conduit to `access`.
 spec:
   inputs:
     requirement:
@@ -526,8 +557,8 @@ metadata:
   name: remove-policy.v1
   description: >-
     Remove a policy, named by the ID `apply-policy.v1` returned. The request names no
-    revision. Dispatched only if every actor and target the policy applies to is covered by
-    the bound of the actor's own Conduit to `access`.
+    revision. Dispatched only if every actor and target the policy names is covered by the
+    bound of the actor's own Conduit to `access`.
 spec:
   inputs:
     policy:
@@ -536,22 +567,25 @@ spec:
   deduplicates: true
   implementation: github.com/shrav-k/conduit/core#engine
 
-# --- The tool every consumer is presented, whether or not a Conduit of it is open.
+# --- The tool every instance is presented, whether or not a Conduit of it is open.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: retrieve-result.v1
   description: >-
-    Retrieve the result of one of the caller's own invocations, named by the operation identity
-    the caller gave it and the target it was sent to. An operation identity, and the retrieval
+    Retrieve the result of an invocation that began with a request the instance sent itself,
+    named by the operation identity the request carried and the target it was sent to, for the
+    same caller. An operation identity, and the retrieval
     of a result, are scoped to the caller, the target and the instance that sent the request:
     an instance retrieves only the result of an invocation that it sent the request for. An
     identity under which the sender has no invocation reports refused. Needs no Conduit.
-    `state` is the invocation's state. A retained result is bound to the Conduit its
-    invocation was dispatched through: its content is delivered only while that Conduit is
-    open, and never under another one. `withheld` is true where content exists and is not
-    delivered; `outputs` holds the operation's outputs where they are delivered. Once the
+    `state` is the invocation's state, and `invocation` is the engine's ID for the
+    invocation, which is the ID `reconcile.v1` takes. A retained result belongs to the
+    Conduit its invocation was dispatched through: its content is delivered only while that
+    Conduit is open, and never under another one. `withheld` is true where content exists
+    and is not delivered; `outputs` holds the operation's outputs where they are delivered,
+    and is absent, with `withheld` not true, where the engine no longer keeps them. Once the
     target is unregistered it can no longer be named, and the request reports refused, as for
     any identity under which the sender can reach no invocation; the records of the invocation
     remain.
@@ -564,6 +598,8 @@ spec:
   outputs:
     state:
       schema: {enum: [inProgress, succeeded, failed, unknown]}
+    invocation:
+      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
     withheld:
       schema: {type: boolean}
       optional: true

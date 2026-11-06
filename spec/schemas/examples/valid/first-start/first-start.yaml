@@ -1,13 +1,16 @@
-# Example. The instance documents of the five first-start objects
-# (FST-001), written out. An engine makes these objects at first start; it is not handed this
-# file, and what triggers first start is DL6 of the implementation-defined list. They refer
+# Example. The instance documents of the five first-start objects (FST-001), written out to
+# show what first start makes. An engine makes these objects itself at first start; it is not
+# handed this file, and what triggers first start is DL6 of the implementation-defined list.
+# Each document is valid against the schemas, and submitting them is rejected: an instance
+# document made from the template `system`, `management`, `access` or `root` is rejected
+# under FST-006, and the five names are taken from first start under OBJ-002. They refer
 # only to the core package, so no manifest is needed (NAM-020).
 #
 # The two Conduits of FST-002 are not written here: they are the declared Conduits of the
 # template `root`, and are instantiated with it (CON-002).
 #
 # The facts of `local` are the engine's to supply. The values below are an example. After
-# first start they are changed only by the control `set-facts.v1` (PLC-008).
+# first start they are changed only by the control `set-facts.v1` (PLC-021).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Pool

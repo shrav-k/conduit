@@ -6,7 +6,7 @@
 # folded into OBJ-002. The ruling on the core package and the schemas (ruling 37) changed
 # FST-002 and FST-005: the templates are in spec/core/templates.yaml. The second round of the
 # re-audit (docs/proposals/reaudit/round-2/reader-3.md, finding 8) changed FST-001 and added
-# FST-006. Draft: no vector exists yet.
+# FST-006, and its closing pass changed FST-002 and FST-006. Draft: no vector exists yet.
 
 - id: FST-001
   layer: language
@@ -36,7 +36,9 @@
   observable: >-
     Inspection lists those two Conduits, with `root` as consumer, and the five objects of
     FST-001, each in the state ready. The two are the declared Conduits `management` and
-    `access` of the template `root`, instantiated with it under CON-002.
+    `access` of the template `root`, instantiated with it under CON-002. They are not
+    first-start objects, and LIF-022 refuses a request to rename either of them, as it refuses
+    one to rename a first-start object.
   vectors: []
 
 - id: FST-003
@@ -80,5 +82,8 @@
     the only ones.
   observable: >-
     Resolving returns a diagnostic naming the template. The template `location` is not one of
-    the four: every location is an instance of it, under PLC-008.
+    the four: every location is an instance of it, under PLC-008. Submitting the instance
+    documents that first start makes is rejected for this reason, and because their names are
+    taken under OBJ-002: the engine makes those objects itself and is handed no document for
+    them.
   vectors: []

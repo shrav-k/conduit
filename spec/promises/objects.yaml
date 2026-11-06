@@ -9,8 +9,9 @@
 # docs/proposals/docs-audit/GAPS.md) changed OBJ-019. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) reduced OBJ-002 and OBJ-011 to their rules on
 # documents, changed OBJ-001, OBJ-003, OBJ-004, OBJ-009, OBJ-010, OBJ-013 to OBJ-016, OBJ-021
-# to OBJ-023, and added OBJ-025 and OBJ-026, which are of the layer `convention`. No promise of
-# this file has been removed.
+# to OBJ-023, and added OBJ-025 and OBJ-026, which are of the layer `convention`. Its closing
+# pass (docs/proposals/reaudit/round-2/log-closing.md) changed OBJ-003, OBJ-015, OBJ-023 and
+# OBJ-026: a runtime is no longer marked optional. No promise of this file has been removed.
 
 - id: OBJ-001
   layer: language
@@ -59,7 +60,10 @@
     component Conduit is no longer than 63 characters. How long the generated suffix is, which
     characters it uses and how far the template's part is shortened are DL15 of the
     implementation-defined list. From outside its Pool, the Resource of an entry is reached by
-    the reference to a Pool's entry that POOL-014 gives, whatever name was generated for it.
+    the reference to a Pool's entry that POOL-014 gives, whatever name was generated for it. The
+    result of `register.v1` lists each instance the request made, with its name and its ID, and
+    says of a nested instance which nested instantiation made it, so a generated name is learned
+    there.
   vectors: []
 
 - id: OBJ-004
@@ -240,17 +244,20 @@
   layer: language
   level: must
   when: >-
-    An input, a step, a declared Conduit, a Pool's entry, a runtime or an output is to be
-    optional.
+    An input, a step, a declared Conduit, a Pool's entry or an output is to be optional.
   then: >-
     It is marked `optional: true`. Without that mark it is required, except that an input that
     states a `default` may be left out whether or not it is marked. That holds for an input of a
-    template, of an Operation contract and of a Requirement contract alike.
+    template, of an Operation contract and of a Requirement contract alike. An input of a
+    control other than `revision` may also be left out without the mark, under REV-006.
   observable: >-
     A `required` key on any of them is rejected with a diagnostic naming it. `required` keeps
     its meaning inside a schema. An input that states `default: []` and no mark may be left out,
     and the default is then used: INS-007 says so for a template's input, OPS-026 for an
-    Operation's and NAM-019 for a Requirement's.
+    Operation's and NAM-019 for a Requirement's. An output that is marked optional is one that a
+    result may leave out, and that a graph may leave without a value under GRA-021. A runtime
+    carries no such mark: `optional` on a runtime is rejected like any key this specification
+    does not define, and the step that starts the runtime may be marked instead, under GRA-017.
   vectors: []
 
 - id: OBJ-016
@@ -391,8 +398,8 @@
   layer: convention
   level: must
   when: >-
-    A document submitted for registration is rejected, for any cause other than the clash with
-    an existing name that OBJ-002 states.
+    A document, the manifest or the submission that is handed over for registration is rejected,
+    for any cause other than the clash with an existing name that OBJ-002 states.
   then: >-
     The registration is not dispatched, and reports invalid.
   observable: >-
@@ -451,6 +458,8 @@
     it had, and a later revision, under REV-003. A request that names a revision that is not
     current reports conflict under REV-002, and one that names none reports invalid under
     REV-011. The request is authorized against `management`, under ACC-033. What the rename of a
-    Conduit must also satisfy is CON-026, and LIF-022 refuses the rename of a first-start
-    object.
+    Conduit must also satisfy is CON-026, and LIF-022 refuses the rename of a first-start object
+    and of the two Conduits of `root`. A request whose new name another object of that kind has
+    is not dispatched and reports conflict, and one whose new name breaks OBJ-001 reports
+    invalid.
   vectors: []

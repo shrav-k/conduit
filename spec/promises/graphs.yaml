@@ -10,7 +10,9 @@
 # round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed GRA-003, GRA-014,
 # GRA-017, GRA-020, GRA-022 and GRA-025 to GRA-027: a template's `setup` and `retire` graphs
 # implement no operation, and are the steps the engine runs within one invocation of
-# `set-up.v1` or of `retire.v1`.
+# `set-up.v1` or of `retire.v1`. Its closing pass
+# (docs/proposals/reaudit/round-2/log-closing.md) changed GRA-021 and GRA-026: an optional
+# output is one the graph may leave without a value.
 
 - id: GRA-001
   layer: language
@@ -264,10 +266,15 @@
     A graph implements an operation whose contract declares outputs.
   then: >-
     It has an `outputs` map that gives each declared output a `value`, a value binding, and may
-    mark an output the contract makes optional as `optional: true`.
+    mark an output the contract makes optional as `optional: true`. An output so marked is one
+    the graph may leave without a value.
   observable: >-
     A graph that gives no value for a required output, or names an output the contract does not
-    declare, is rejected. A setup or retire graph with `outputs` is rejected.
+    declare, is rejected, and so is one that marks as optional an output the contract does not
+    make optional. A setup or retire graph with `outputs` is rejected. Where the value binding
+    of an output marked optional yields no value when the graph runs, the result holds no such
+    output and the invocation's outcome is as its steps give it, under OPS-022. An output the
+    contract makes optional may also be left out of the `outputs` map altogether.
   vectors: []
 
 - id: GRA-022
@@ -354,7 +361,8 @@
     against the input's schema like any other value. A source names something absent where it is
     an optional input that the request left out and that states no default, an optional output
     that a step did not return, or a runtime that the instance does not hold. Where a value
-    reference in a graph's `outputs` yields no value, OPS-022 gives the invocation's outcome.
+    reference in a graph's `outputs` yields no value, OPS-022 gives the invocation's outcome,
+    unless the output is marked optional under GRA-021.
   vectors: []
 
 - id: GRA-027

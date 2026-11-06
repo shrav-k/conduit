@@ -26,12 +26,12 @@ Schema contract `schema.v1` in [schemas/schema.yaml](schemas/schema.yaml), and
 | `date-time`, `date` | RFC 3339, section 5.6 | Format grammar. |
 | `duration` | RFC 3339, appendix A | Format grammar. |
 | `uri` | RFC 3986 | Format grammar. |
-| `fetch`, and an implementation's `url` | RFC 3986 | `fetch` in an item of a manifest's `packages` is a URI reference, and a relative one is resolved against the place of the manifest that holds it (MAN-006). An implementation's `url` is a URI (MAN-010). |
+| `fetch`, and an implementation's `url` | RFC 3986 | `fetch` in an item of a manifest's `packages` is a URI reference. A relative one is resolved against the directory the manifest was read from, and is rejected where the manifest was handed over without a directory (MAN-006). An implementation's `url` is a URI (MAN-010). |
 | `uuid` | RFC 9562 | Format grammar. JSON Schema 2020-12 cites RFC 4122 for this format; the grammar cited here is the one that is checked (SCH-004). |
 | Package versions | Semantic Versioning 2.0.0 | The grammar of a version (PKG-001). Two versions are the same when neither precedes the other, so build metadata is set aside; the digest decides whether two archives are the same package (PKG-003, PKG-021). |
 | Digests | SHA-256, FIPS 180-4 | The digest of a package's archive, written as `sha256:` followed by the hash in lowercase hexadecimal (PKG-004). The digest of an unpublished package is written in the same way (SUB-008). |
 | Canonical form of a value | JSON Canonicalization Scheme, RFC 8785 | The bytes that are hashed for the digest of an unpublished package: the canonical form of one map that holds the project's contract documents and its manifest (SUB-008). It writes equal values alike, so `1` and `1.0` give the same bytes. The contract documents are ordered by kind and then by name, each compared by the bytes of its UTF-8 string. |
-| Package archives | tar, as POSIX (IEEE Std 1003.1) defines it, compressed with gzip, RFC 1952 | A package's archive is a gzip-compressed tar file, and the digest is taken over the compressed file as distributed (PKG-022). |
+| Package archives | tar, as POSIX (IEEE Std 1003.1) defines it, compressed with gzip, RFC 1952 | A package's archive is a gzip-compressed tar file, and the digest is taken over the compressed file as distributed (PKG-022). Which of the tar formats and extensions an engine reads is item DL7 of the [implementation-defined list](implementation-defined.yaml). |
 | Host part of an address | Host names, RFC 1123, section 2.1 | The host part of a package's address: a DNS name written in lowercase, with labels of letters, digits and hyphens, each at most 63 characters, at least one dot, no port and no trailing dot. A host whose last label is all digits is not a host name (NAM-001). |
 | Internationalized host names | IDNA, RFC 5890 | An internationalized name is written in its ASCII form, with `xn--` labels (NAM-001). |
 | The implementation interface | Model Context Protocol, revision 2026-07-28 | The wire between an engine, its implementations and its consumers, and the baseline revision of this version of the specification (IFC-002). |
@@ -52,7 +52,7 @@ no JSON form is not accepted either: an infinity or a not-a-number, such as `.in
 and an integer written in hexadecimal or octal, such as `0x1F` or `0o17` (SCH-017). Nor is a
 number that is not an integer and is outside the range of IEEE 754 binary64 (SCH-021).
 
-## Permitted schema keywords
+## Schema keywords in the profile
 
 `type`, `enum`, `const`, `properties`, `required`, `additionalProperties`, `items`, `minItems`,
 `maxItems`, `uniqueItems`, `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`,
@@ -77,7 +77,7 @@ it is written and is not applied (SCH-009). A `default` satisfies the schema tha
 and the `default` of an input satisfies the input's own `schema`; a document in which one does
 not is rejected (SCH-019).
 
-## Enforced formats
+## Formats that are checked
 
 `date-time`, `date`, `duration`, `uri`, `uuid`. For each of them the grammar cited in the table
 above is the one that is checked (SCH-004).

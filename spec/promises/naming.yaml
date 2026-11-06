@@ -15,8 +15,8 @@
 # docs/proposals/docs-audit/GAPS.md) changed NAM-018, NAM-022 and NAM-027. The manifest's own
 # format is in manifest.yaml. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed NAM-001, NAM-003, NAM-005, NAM-007,
-# NAM-009, NAM-012, NAM-018 to NAM-020, NAM-022 and NAM-023. No promise of this file has been
-# removed. Draft: no vector exists yet.
+# NAM-009, NAM-012, NAM-018 to NAM-020, NAM-022 and NAM-023, and its closing pass changed
+# NAM-009. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: NAM-001
   layer: language
@@ -144,8 +144,8 @@
     It keeps the address, version and digest of each package it refers to, as its project's
     manifest gave them at that moment. For the core package, which is built into the engine and
     so has no archive and no digest, it keeps the address and the version alone. Where it refers
-    to a contract of its own unpublished project, it keeps in the same way the digest that
-    identifies the unpublished package of SUB-008.
+    to a contract or an implementation of its own unpublished project, it keeps in the same way
+    the digest that identifies the unpublished package of SUB-008.
   observable: >-
     Inspecting the template lists those packages under `packages`, a list of items that hold
     `address`, `version` and `digest`. The item of the core package has no `digest`, and the

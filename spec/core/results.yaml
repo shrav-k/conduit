@@ -2,8 +2,10 @@
 # record is docs/proposals/core-and-schemas/README.md. See README.md in this directory.
 #
 # Two small Schema contracts that the outputs of the core operations share. No promise gives
-# either shape; both are choices the record lists (C16), kept as small as the promises
-# allow. The full format of a diagnostic and of an inspection result is not settled.
+# the whole of either shape; both are choices the record lists (C16), kept as small as the
+# promises allow. OBJ-003 states what `object.v1` must let a result say: the name and the ID
+# of each instance, and which nested instantiation made a nested instance. The full format
+# of a diagnostic and of an inspection result is not settled.
 #
 # Promises relied on:
 #   object.v1      OBJ-003 (a generated name is learned from the result), OBJ-005 (the ID),

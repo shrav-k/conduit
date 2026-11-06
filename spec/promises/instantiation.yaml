@@ -6,7 +6,8 @@
 # text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed INS-011,
 # INS-014 and INS-018 and added INS-024. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed INS-002, INS-011, INS-012, INS-014
-# and INS-018, and added INS-025, the forms of `from`.
+# and INS-018, and added INS-025, the forms of `from`. Its closing pass reworded one sentence
+# of INS-024, and wrote "composite" for "composed" in INS-012 and INS-016.
 
 - id: INS-001
   layer: language
@@ -160,7 +161,7 @@
     A template is registered in which an input's destination is none of these: `config` as a
     whole, or a place inside it; a declared Conduit's `target`; the `arguments` of a declared
     Conduit as a whole, or a place inside them; an entry's `placement`; the `arguments` of an
-    entry as a whole, or a place inside them; in a Conduit template that is not composed,
+    entry as a whole, or a place inside them; in a Conduit template that is not a composite,
     `operations` as a whole, and the `arguments` of an applied requirement as a whole or a place
     inside them; and, in a composite Conduit template, the `arguments` of a component as a whole
     or a place inside them.
@@ -179,7 +180,7 @@
     `/operations/0`; the `requirement` of an applied requirement, such as
     `/requirements/rate/requirement`; and anything under `/inputs`. `/operations` and a place
     under `/requirements` are rejected in a composite template, which has neither key under
-    CON-016, and a place under `/components` is rejected in a template that is not composed.
+    CON-016, and a place under `/components` is rejected in a template that is not a composite.
     What is required of an `operations` that an input fills is INS-023.
   vectors: []
 
@@ -222,11 +223,11 @@
   then: >-
     The only objects made are the instance and its nested instances, which are the Conduits its
     template declares and, for a Pool, the Resources of its entries. A composite Conduit
-    template makes one Conduit for each component and none for the composition, as CON-003
-    states. Nothing is set up or opened.
+    template makes one Conduit for each component and none for the composite, as CON-003 states.
+    Nothing is set up or opened.
   observable: >-
-    After instantiation no setup has run, no Conduit is open, and no implementation has
-    received a call.
+    After instantiation no setup has run, no Conduit is open, and no implementation has received
+    a call.
   vectors: []
 
 - id: INS-017
@@ -338,11 +339,11 @@
   when: >-
     An Interface, Agent, Resource or Pool template writes no `config`.
   then: >-
-    Its `config` is treated as present and empty: the template means the same as one that
-    writes `config: {}`.
+    Its `config` is treated as present and empty: the template means the same as one that writes
+    `config: {}`.
   observable: >-
     The empty map is what is checked against the schema of the type under INS-014. The defaults
-    of the type's schema apply to it under SCH-009, because the object is present. An input may
+    of the type's schema apply to it under SCH-009, because the map is present. An input may
     have a destination inside it, because the parent that INS-011 requires is present. Resolving
     a template that writes no `config` and one that writes `config: {}`, otherwise equal, gives
     the same template.

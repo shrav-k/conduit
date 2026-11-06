@@ -12,8 +12,7 @@
 #                   setting and its control); CTR-006
 #   location.v1     the location type (PLC-008): a location's facts are stored configuration,
 #                   changed only by its control `set-facts.v1` (PLC-021); PLC-007, PLC-013
-#                   (the facts a requirement is checked against); CTR-006; it requires
-#                   `reconcile.v1`, with which that control is reconciled (ACC-033)
+#                   (the facts a requirement is checked against); CTR-006
 #   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
 #   access.v1       the type of `access` (FST-001, ACC-006, ACC-012, ACC-031); it requires
 #                   `reconcile.v1`, which its capability includes (ACC-033)
@@ -127,7 +126,6 @@ spec:
     - github.com/shrav-k/conduit/core#location-settings.v1
   requires:
     - github.com/shrav-k/conduit/core#set-facts.v1
-    - github.com/shrav-k/conduit/core#reconcile.v1
   controls:
     - github.com/shrav-k/conduit/core#set-facts.v1
   placement: {}

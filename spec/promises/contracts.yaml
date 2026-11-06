@@ -11,7 +11,9 @@
 # changed CTR-002 to CTR-007 and CTR-010: a contract that breaks one of them is rejected when
 # its package is installed or its project is submitted, a control's `changes` is a map from an
 # input's name to the pointer it sets, and a Type of the family Pool offers
-# `pool-management.v1`. No promise of this file has been removed. Draft: no vector exists yet.
+# `pool-management.v1`. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md)
+# changed CTR-002, which gained the mark `arrangesLaterWork`, and CTR-005, on what `obliges`
+# adds. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: CTR-001
   layer: language
@@ -39,21 +41,24 @@
     non-empty string, to a member that holds either a `schema` or, for a handle, `handle: true`,
     and may hold `optional: true`. An input that holds a `schema` may also hold `default`. The
     `spec` may further hold `effect`, a statement of what it changes outside itself;
-    `startsModelWork`; `deduplicates`; `reservedToRoot`, the mark of an operation reserved to
-    the root Interface; `implementation`, its default implementation, which is one selection;
-    and, for a control, `changes`, as CTR-006 states.
+    `startsModelWork`; `arrangesLaterWork`, the mark of an operation that arranges work to start
+    or to run after its own invocation has ended; `deduplicates`; `reservedToRoot`, the mark of
+    an operation reserved to the root Interface; `implementation`, its default implementation,
+    which is one selection; and, for a control, `changes`, as CTR-006 states.
   observable: >-
     An operation with no `effect` changes nothing outside itself. `startsModelWork`,
-    `deduplicates` and `reservedToRoot` are booleans, and one that is absent is false; IMP-003,
-    OPS-012 and ACC-032 state what each mark means, and CTR-009 says where `reservedToRoot` may
-    be written. An input or output with both `schema` and `handle`, or with neither, or whose
-    name is the empty string, is rejected when the contract's package is installed or its
-    project is submitted. A name such as `maxResults` or `max_results` is accepted: the rule
-    OBJ-022 gives for other names a document chooses does not apply to these. An output that
-    states a `default`, and an input that is a handle and states one, are rejected in the same
-    way. An input that states a `default` may be left out of a request whether or not it is
-    marked `optional: true`, under OBJ-015. What the `default` then does is OPS-026, and SCH-019
-    rejects one that fails the input's schema.
+    `arrangesLaterWork`, `deduplicates` and `reservedToRoot` are booleans, and one that is
+    absent is false; IMP-003, ACC-019, OPS-012 and ACC-032 state what each mark means, and
+    CTR-009 says where `reservedToRoot` may be written. An operation whose contract does not
+    state `arrangesLaterWork: true` arranges no later work, and one that arranges a later start
+    of model work states `startsModelWork: true` as well, under IMP-006. An input or output with
+    both `schema` and `handle`, or with neither, or whose name is the empty string, is rejected
+    when the contract's package is installed or its project is submitted. A name such as
+    `maxResults` or `max_results` is accepted: the rule OBJ-022 gives for other names a document
+    chooses does not apply to these. An output that states a `default`, and an input that is a
+    handle and states one, are rejected in the same way. An input that states a `default` may be
+    left out of a request whether or not it is marked `optional: true`, under OBJ-015. What the
+    `default` then does is OPS-026, and SCH-019 rejects one that fails the input's schema.
   vectors: []
 
 - id: CTR-003
@@ -107,8 +112,9 @@
     Its `spec` holds `appliesTo`, a list drawn from `conduit`, `policy` and `placement`. It may
     also hold `inputs`, a map from a name to a member that holds `schema` and may hold `default`
     and `optional: true`; `narrows`, which is true for a requirement that limits requests and so
-    can serve as a filter; `obliges`, a list drawn from `consumer` and `target`, which names the
-    ends of a Conduit whose implementations must state the requirement in `supports`; and, for a
+    can serve as a filter; `obliges`, a list drawn from `consumer` and `target`, which says
+    whether the implementations selected for the consumer of a Conduit must state the
+    requirement in `supports`, as those of its target always must for a filter; and, for a
     composition, `constituents`, a map of the constituents that CTR-010 gives. A requirement
     whose `appliesTo` includes `placement` states `schema`, a schema that a location's stored
     facts must satisfy, and declares no `inputs`.
@@ -117,9 +123,12 @@
     `appliesTo` is empty can be applied nowhere. A composition that reaches itself through its
     constituents, and a requirement that applies to placement and states no `schema` or declares
     `inputs`, are rejected when the package is installed or the project is submitted. `narrows`
-    may be left out, and is then false. `obliges` may be left out or be empty, and it is then
-    the implementation of the target that must state the requirement in `supports`, as CON-022
-    states. An item of `obliges` other than `consumer` or `target` is rejected. A composition
+    may be left out, and is then false. The implementations that the target of a Conduit has
+    selected for the operations the Conduit lists must always state a filter's requirement in
+    `supports`, as CON-022 states, and they are always sent it. `obliges` that names `consumer`
+    adds that every implementation selected for the consumer must state it too. `obliges` may be
+    left out or be empty, and one that names `target` alone means the same as one that is left
+    out. An item of `obliges` other than `consumer` or `target` is rejected. A composition
     narrows requests if any of its constituents does, whatever its own `narrows` states, and
     applying it somewhere that the `appliesTo` of one of its constituents does not list is
     rejected. Which implementation applies a requirement on an open Conduit is reported under

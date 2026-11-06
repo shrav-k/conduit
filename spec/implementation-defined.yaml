@@ -5,7 +5,8 @@
 # docs/proposals/docs-audit/GAPS.md) added to DL1 when a graph's outputs become available, and
 # added DL14. The second round of the re-audit (docs/proposals/reaudit/round-2/) named the key
 # that states what an item is about `subject`, added to DL5 and DL6, reworded DL7 and added
-# DL15.
+# DL15. Its closing pass added to DL7 which tar formats an engine reads, to DL10 how long the
+# content of a retained result is kept, and to DL12 what the `content` of a result holds.
 
 - id: DL1
   subject: Graph execution
@@ -22,9 +23,9 @@
     is computed, which a purge keeps under REC-004. The SHA-256 of the RFC 8785 form of the
     operation and its arguments is one way that gives equal contents the same digest.
 - id: DL3
-  subject: A request that waits for an actor's answer
+  subject: A request that waits for an actor to reply
   document: >-
-    When the wait expires, and what happens to an answer given twice or given while the engine
+    When the wait expires, and what happens to a reply given twice or given while the engine
     cannot receive it.
 - id: DL4
   subject: Unreachable `access` or `management`
@@ -45,7 +46,8 @@
   subject: Packages
   document: >-
     Where packages are stored, how they are fetched and removed, which schemes of `fetch` are
-    accepted, and whether a package can be used from files that are still being edited, with no
+    accepted, which of the tar formats and extensions an engine reads in an archive under
+    PKG-022, and whether a package can be used from files that are still being edited, with no
     archive.
 - id: DL8
   subject: Delivery of observations and records
@@ -60,7 +62,8 @@
 - id: DL10
   subject: Limits
   document: >-
-    Sizes, counts, the time allowed for a call, and behavior when storage is exhausted.
+    Sizes, counts, the time allowed for a call, how long the content of a retained result is
+    kept for retrieval under OPS-016, and behavior when storage is exhausted.
 - id: DL11
   subject: Conduits during setup
   document: >-
@@ -70,8 +73,9 @@
   subject: Transport, processes and protocol revisions
   document: >-
     The transport used for each implementation, who starts its process, how many instances
-    share one, and which revisions of the Model Context Protocol are supported beyond the
-    baseline.
+    share one, which revisions of the Model Context Protocol are supported beyond the baseline,
+    and what the engine puts in the `content` member of a result it returns to a consumer,
+    within what IFC-025 states of a result whose content is withheld.
 - id: DL13
   subject: Identifying consumers
   document: >-

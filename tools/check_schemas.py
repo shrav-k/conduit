@@ -229,17 +229,18 @@ def profile():
             sys.exit(f"spec/schema-profile.md: no section {title!r}. NOTHING WAS CHECKED.")
         return set(re.findall(r"`([^`]+)`", match.group(1)))
 
-    return first_paragraph("Permitted schema keywords"), first_paragraph("Enforced formats")
+    return (first_paragraph("Schema keywords in the profile"),
+            first_paragraph("Formats that are checked"))
 
 
 # --- 2. Schemas: a walk that knows which members of a schema are schemas.
 
-def walk(schema, where, visit, place="plain"):
-    """Visit every schema object. `place` is plain, property or combined (SCH-008)."""
+def walk(schema, where, visit, place="other"):
+    """Visit every schema object. `place` is other, property or combined (SCH-008)."""
     if isinstance(schema, bool):
         return
     if not isinstance(schema, dict):
-        fail(f"{where}: a schema is an object or a boolean")
+        fail(f"{where}: a schema is a map or a boolean")
         return
     visit(schema, where, place)
     inside = place == "combined"
@@ -249,11 +250,11 @@ def walk(schema, where, visit, place="plain"):
             fail(f"{where}/{keyword}: not a map")
             continue
         for name, sub in members.items():
-            below = "combined" if inside else ("property" if keyword == "properties" else "plain")
+            below = "combined" if inside else ("property" if keyword == "properties" else "other")
             walk(sub, f"{where}/{keyword}/{name}", visit, below)
     for keyword in ("additionalProperties", "items"):
         if keyword in schema:
-            walk(schema[keyword], f"{where}/{keyword}", visit, "combined" if inside else "plain")
+            walk(schema[keyword], f"{where}/{keyword}", visit, "combined" if inside else "other")
     for keyword in ("allOf", "anyOf", "oneOf"):
         for index, sub in enumerate(schema.get(keyword, [])):
             walk(sub, f"{where}/{keyword}/{index}", visit, "combined")
@@ -287,7 +288,7 @@ def check_profile(label, root, keywords, formats, core, schemas):
             fail(f"{where}: format `{schema['format']}` is outside the profile (SCH-003)")
         if "default" in schema and place != "property":
             fail(f"{where}: `default` is not on a property reached through `properties`, or is "
-                 f"inside a combiner (SCH-008)")
+                 f"inside `allOf`, `anyOf` or `oneOf` (SCH-008)")
         ref = schema.get("$ref")
         if ref is None:
             return

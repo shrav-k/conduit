@@ -9,7 +9,9 @@
 # TPL-003, TPL-006 and TPL-010. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed TPL-003, TPL-004, TPL-006 to TPL-009
 # and TPL-012: an instance is set up by one invocation of `set-up.v1` and retired by one of
-# `retire.v1`, and a template's `setup` and `retire` graphs are the steps the engine runs.
+# `retire.v1`, and a template's `setup` and `retire` graphs are the steps the engine runs. Its
+# closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed TPL-006, where a runtime
+# is no longer marked optional, and TPL-010, and added TPL-013, of the layer `convention`.
 # No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: TPL-001
@@ -96,15 +98,17 @@
     A template or a Type contract declares a runtime.
   then: >-
     It is a member of a `runtimes` map, keyed by its name, that holds `start` and `stop`, each
-    the selection of an operation, and may hold `optional: true`. The start operation's contract
-    declares exactly one output that is a handle, and the stop operation's contract takes
-    exactly one required input that is a handle. An instance has the runtimes that its type
-    declares as well as those that its template declares.
+    the selection of an operation, and nothing else. The start operation's contract declares
+    exactly one output that is a handle, and the stop operation's contract takes exactly one
+    required input that is a handle. An instance has the runtimes that its type declares as well
+    as those that its template declares.
   observable: >-
     A runtime whose start or stop operation does not have that shape is rejected with a
     diagnostic naming the runtime and the operation. A template that declares a runtime under a
     name that its type declares is rejected with a diagnostic naming the runtime. A step may
-    name a runtime that either of them declares, under GRA-017.
+    name a runtime that either of them declares, under GRA-017. A runtime is not marked
+    optional, and one that carries `optional` is rejected: a runtime is started only by a step
+    that names it, and that step may be marked `optional: true`.
   vectors: []
 
 - id: TPL-007
@@ -172,9 +176,9 @@
     to a member that holds `schema`, a schema that further narrows that input.
   observable: >-
     A key the type does not list, or an input name the control does not declare, is rejected. A
-    control the map does not list is not available on the template's instances. A template with
-    no `controls` map makes every control of its type available.
-    `inputs: {limit: {schema: {maximum: 50}}}` narrows the input `limit`.
+    control the map does not list is not available on the template's instances, and TPL-013 says
+    what a request for it reports. A template with no `controls` map makes every control of its
+    type available. `inputs: {limit: {schema: {maximum: 50}}}` narrows the input `limit`.
   vectors: []
 
 - id: TPL-011
@@ -202,4 +206,23 @@
   observable: >-
     An invocation of `set-up.v1` for such an instance invokes no operation of any implementation
     beyond those.
+  vectors: []
+
+# --- Added by the closing pass of the second round of the re-audit
+# --- (docs/proposals/reaudit/round-2/reader-3.md, finding 28). It is of the layer `convention`.
+
+- id: TPL-013
+  layer: convention
+  level: must
+  when: >-
+    A control is requested on an instance that does not have it: the instance's type does not
+    list it under CTR-006, or its template has a `controls` map that does not list it under
+    TPL-010.
+  then: >-
+    The request is not dispatched, and reports invalid.
+  observable: >-
+    The instance's configuration and revision are as they were, and no implementation receives a
+    call. A Conduit may list the control, because its capability includes it under CON-017, and
+    the request reports invalid all the same. Where the actor is not permitted, OPS-023 gives
+    refused first.
   vectors: []

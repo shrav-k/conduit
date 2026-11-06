@@ -1,5 +1,5 @@
 # Example. It must be rejected:
-# a Conduit template that is not composed writes `operations`, unless an input fills it, and
+# a Conduit template that is not a composite writes `operations`, unless an input fills it, and
 # this one declares no inputs.
 
 apiVersion: github.com/shrav-k/conduit/v0

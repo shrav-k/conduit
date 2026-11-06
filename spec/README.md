@@ -4,6 +4,12 @@ Status: draft, begun 2026-11-05. Incomplete, and not a release. Every area has b
 promises, and the core package, the JSON Schemas of documents and the manifest's format have
 been written as documents; the parts still to come are listed under [Contents](#contents).
 
+Some parts say that the owner accepted them, as [the core package](core/README.md) and
+[the schemas](schemas/README.md) do. The two words do not conflict. The owner has accepted each
+ruling that the specification is written from, and "accepted" on a part says that the owner
+ruled on what it holds. The specification as a whole is a draft until it has conformance
+vectors and two audit rounds in a row that find nothing in it.
+
 The specification alone binds. Nothing under [docs/protocol](../docs/protocol/README.md) binds:
 it is the design as it stood before the specification, superseded, and kept as source material
 for the type contracts that are still to be written. A behavior that is missing from `spec/` is
@@ -36,12 +42,12 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [definitions.md](definitions.md) | The terms the promises use | Draft; follows the promises as they stand |
 | [promises/objects.yaml](promises/objects.yaml) | Names, IDs, references, kinds and the shape of a document | Draft; 26 promises; no vectors |
 | [promises/schemas.yaml](promises/schemas.yaml) | Schemas, document syntax and numbers | Draft; 21 promises; no vectors |
-| [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the permitted schema keywords and the enforced formats | Draft |
+| [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the schema keywords in the profile and the formats that are checked | Draft |
 | [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 24 promises; no vectors |
-| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, runtimes, retirement and controls | Draft; 12 promises; no vectors |
+| [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, runtimes, retirement and controls | Draft; 13 promises; no vectors |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 10 promises; no vectors |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 27 promises; no vectors |
-| [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 19 promises; no vectors |
+| [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 22 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, its keys, how a re-export is written, which files of a project are its documents, and the layout of a package's archive | Draft; 14 promises; no vectors |
 | [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a project that is not published, and how a template is replaced | Draft; 9 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 14 promises; no vectors |
@@ -69,7 +75,7 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item | Draft; 2 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions and digests | Draft; 12 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a project that is not published, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 58 files |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 59 files |
 | [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 14 files |
 | [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, unregistration and what reconciling a setup or a retirement changes | Draft; 29 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 31 promises; no vectors |
@@ -81,7 +87,7 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 33 promises; no vectors |
 | [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 15 items |
 
-Every area has been written as promises, 406 in all, and the rulings of the
+Every area has been written as promises, 410 in all, and the rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
 [ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
@@ -148,20 +154,27 @@ diagnostic. It never accepts a document and ignores part of it.
 Run these from the root of the repository:
 
 ```sh
-python3 tools/check_docs.py
-python3 tools/set_names.py --check
-python3 tools/check_schemas.py
+python3 tools/set_names.py --check   # the names under spec/ agree with names.yaml
+python3 tools/check_schemas.py       # schemas, core package and examples
+git diff --check                     # whitespace errors
+python3 tools/check_docs.py          # links, in every Markdown file of the repository
 ```
 
-The first checks the links between the Markdown files. The second checks that every file under
-`spec/` writes the names of [names.yaml](names.yaml) as that file states them. The third reads
-every file under `core/` and `schemas/` as strict YAML, checks every schema against
+The first three read `spec/`. The first checks that every file under `spec/` writes the names
+of [names.yaml](names.yaml) as that file states them. The second reads every file under `core/`
+and `schemas/` as strict YAML, checks every schema against
 [schema-profile.md](schema-profile.md), validates every document of the core package and
 every valid example against the schemas, checks that every invalid example is rejected, checks
 the references among those files, and applies a few of the rules that no schema can express,
-among them that a `default` satisfies its schema (SCH-019).
-It needs PyYAML and jsonschema, and runs itself again under `/usr/bin/python3` where the first
-interpreter lacks them. None of the three is a conformance vector: no promise is tested yet.
+among them that a `default` satisfies its schema (SCH-019). It needs PyYAML and jsonschema,
+and runs itself again under `/usr/bin/python3` where the first interpreter lacks them. The
+third finds whitespace errors in what was changed, and needs a Git working tree.
+
+The fourth, `check_docs.py`, covers the whole repository: it checks the links between all its
+Markdown files, those under `spec/` among them. It is not for a copy that holds `spec/` alone,
+because files under `spec/` link to records under `docs/`. These are the four checks that
+[AGENTS.md](../AGENTS.md#checks) lists, and that page says what each needs. None of them is a
+conformance vector: no promise is tested yet.
 
 ## Existing standards first
 

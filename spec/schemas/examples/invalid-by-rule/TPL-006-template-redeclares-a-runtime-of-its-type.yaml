@@ -28,4 +28,3 @@ spec:
     watcher:
       start: example.org/files#watcher.start.v1
       stop: example.org/files#watcher.stop.v1
-      optional: true

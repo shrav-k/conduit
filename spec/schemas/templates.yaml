@@ -12,7 +12,7 @@
 #   pool-template-spec.v1     TPL-001 (`entries`, and no `conduits`), TPL-002, OBJ-014,
 #                             INS-012
 #   conduit-template-spec.v1  CON-016 (either `capability`, `operations` and `requirements`,
-#                             or `components`, never both; a template that is not composed
+#                             or `components`, never both; a template that is not a composite
 #                             requires `capability`, and `operations` unless an input fills
 #                             it), CON-017, CON-018, CON-019, CON-020 (no `consumer` or
 #                             `target`), TPL-002 (no `type`), INS-012
@@ -21,12 +21,13 @@
 #                             that states a `default` may be left out, marked optional or
 #                             not), OBJ-016
 #   implementation-map.v1     TPL-003 (each value is a string or a graph written in place)
-#   runtime.v1                TPL-006 (`start`, `stop`, perhaps `optional`), TPL-003
+#   runtime.v1                TPL-006 (`start` and `stop`, and nothing else: a runtime is not
+#                             marked optional), TPL-003
 #   template-controls.v1      TPL-010 (each value may hold `inputs`, each with a `schema`)
 #
 # The places a destination may reach are a closed list (INS-012), and each schema of a
 # `spec` carries it as a pattern, under its `$defs`. The schema of a Conduit template's
-# `spec` carries two, one for a template that is not composed and one for a composite:
+# `spec` carries two, one for a template that is not a composite and one for a composite:
 #   an Interface, Agent or Resource template   the whole of `config` or a place inside it; a
 #                                              declared Conduit's `target`; the whole of a
 #                                              declared Conduit's `arguments` or a place
@@ -34,7 +35,7 @@
 #   a Pool template                            the whole of `config` or a place inside it; an
 #                                              entry's `placement`; the whole of an entry's
 #                                              `arguments` or a place inside it
-#   a Conduit template that is not composed    `operations`; the whole of the `arguments` of
+#   a Conduit template that is not a composite `operations`; the whole of the `arguments` of
 #                                              an applied requirement or a place inside it
 #   a composite Conduit template               the whole of the `arguments` of a component or
 #                                              a place inside it
@@ -56,7 +57,7 @@
 # because the profile has no keyword that constrains the keys of a map; that `type` is a Type
 # contract of the template's own family (TPL-002); that destinations do not overlap and that
 # a destination's parent is present (INS-010, INS-011); that, where a Conduit template that
-# is not composed writes no `operations`, the destination of one of its inputs is
+# is not a composite writes no `operations`, the destination of one of its inputs is
 # `/operations` (CON-016); that an implementation implements the operation it is selected
 # for (TPL-005); default implementations (TPL-004); the shape of a runtime's operations, and
 # that a template declares no runtime under a name its type declares (TPL-006); that a
@@ -305,13 +306,13 @@ metadata:
   description: >-
     One member of the `runtimes` of a template or of a Type contract. An instance has the
     runtimes its type declares as well as those its template declares, and a step may name
-    either. A template that declares a runtime under a name its type declares is rejected.
+    either. A template that declares a runtime under a name its type declares is rejected. A
+    runtime is not marked optional: the step that starts it may be.
 spec:
   type: object
   properties:
     start: {$ref: github.com/shrav-k/conduit/core#selection.v1}
     stop: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-    optional: {type: boolean}
   required: [start, stop]
   additionalProperties: false
 ---

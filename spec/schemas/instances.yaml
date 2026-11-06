@@ -177,7 +177,7 @@ metadata:
   name: conduit-component.v1
   description: >-
     One member of the `components` of a composite Conduit template. It takes the consumer and
-    the target given to the composition. An `arguments` map that is left out is present and
+    the target given to the composite. An `arguments` map that is left out is present and
     empty.
 spec:
   type: object

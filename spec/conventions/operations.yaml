@@ -12,7 +12,9 @@
 # The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
 # OPS-005, OPS-006, OPS-008 to OPS-010, OPS-012, OPS-014 to OPS-019, OPS-021 to OPS-023, OPS-025
 # and OPS-026, made OPS-015 the rule for an identity under which the sender has no invocation,
-# and added OPS-028. No promise of this file has been removed.
+# and added OPS-028. Its closing pass (docs/proposals/reaudit/round-2/log-closing.md) changed
+# OPS-007, OPS-009, OPS-012, OPS-014, OPS-016, OPS-017, OPS-022 and OPS-024. No promise of this
+# file has been removed.
 
 - id: OPS-001
   layer: convention
@@ -104,7 +106,10 @@
   observable: >-
     In each of those four cases the record of the invocation's end states unknown. It states
     succeeded or failed only when the implementation's result stated it or, for an
-    implementation marked `plain`, when IFC-010 gives it.
+    implementation marked `plain`, when IFC-010 gives it. A declared output that is not marked
+    `optional: true` and that the result does not hold fails validation in this sense: a plain
+    server that returns no `structuredContent` for an operation with such an output has the
+    outcome unknown.
   vectors: []
 
 - id: OPS-008
@@ -142,7 +147,13 @@
     the same operation and their arguments are equal under SCH-007, judged after the defaults of
     OPS-026 are filled in. The result of a repeat of an invocation that has not ended carries
     neither an outcome nor a reason, and its `_meta` holds `io.github.shrav-k.conduit/state`
-    with the value `inProgress`, as IFC-025 states.
+    with the value `inProgress`, as IFC-025 states. The result of a repeat of an invocation that
+    succeeded is that invocation's retained result: it carries the outcome succeeded and the
+    outputs, where the engine still keeps them under OPS-016 and OPS-017 does not withhold them.
+    A repeat is a request through a Conduit, and the access decision is made for it like any
+    other, under ACC-036: a repeat sent through a Conduit that has been closed reports refused
+    under ACC-011, and the instance learns the invocation's state with `retrieve-result.v1`
+    under OPS-016.
   vectors: []
 
 - id: OPS-010
@@ -176,7 +187,9 @@
   layer: convention
   level: must
   when: >-
-    A repeat, as OPS-009 defines it, arrives for an invocation whose outcome is unknown.
+    A request arrives that matches the request of an invocation whose outcome is unknown, as
+    OPS-009 describes a match: from the same instance, with the same caller, target, operation
+    identity and contents. It is a repeat.
   then: >-
     The repeat is dispatched as a new attempt only if the operation's contract declares
     `deduplicates: true` and the implementation is not marked `plain`. Otherwise nothing is
@@ -206,16 +219,22 @@
   when: >-
     An actor records, with what it checked, that the effect of an invocation whose outcome is
     unknown occurred or that it did not. The actor is the consumer of an open Conduit that lists
-    `reconcile.v1`, to the target that authorized the request being reconciled, as ACC-033
-    states.
+    `reconcile.v1`, to the target that ACC-033 names for reconciling that invocation.
   then: >-
     The invocation's outcome becomes succeeded or failed accordingly.
   observable: >-
     A record states the new outcome, the actor that reconciled it and what the actor checked.
     The earlier record that the outcome was unknown is kept. An actor with no such Conduit
     reports refused. The request is the operation `reconcile.v1`, which names the invocation by
-    the ID the engine gave it. What the reconciliation of a setup, an open, a retirement or a
-    close changes beside the outcome is LIF-028, and what that of a control changes is REV-010.
+    the ID the engine gave it. The instance that sent the invocation's request learns that ID
+    from the result of the request, under IFC-025, or from `retrieve-result.v1`, under IFC-024.
+    The target is the one that authorized the request being reconciled where the invocation is
+    of a management verb, and otherwise the Pool that owns the instance the invocation was
+    dispatched to, or `management` where that instance is not a Resource. A request that names
+    an invocation whose outcome is not unknown, because it is in progress, has ended with
+    another outcome or has been reconciled already, is not dispatched and reports conflict. What
+    the reconciliation of a setup, an open, a retirement or a close changes beside the outcome
+    is LIF-028, and what that of a control changes is REV-010.
   vectors: []
 
 - id: OPS-015
@@ -241,8 +260,8 @@
     An instance asks, by operation identity and target, for the result of an invocation that
     began with a request it sent itself, for the same caller.
   then: >-
-    It is told the invocation's state: in progress, or its outcome. The request needs no open
-    Conduit.
+    It is told the invocation's state, which is in progress or its outcome, and the engine's ID
+    for the invocation. The request needs no open Conduit.
   observable: >-
     The result states the outcome even if the Conduit was closed after the invocation was
     dispatched. The request names the target as well as the identity, because OPS-008 scopes an
@@ -250,7 +269,12 @@
     `retrieve-result.v1`, which IFC-024 says is always presented, and the state is in that
     tool's result as IFC-024 states. Once the target is unregistered, a reference to it no
     longer resolves, and the request reports refused under OPS-015. The records of the
-    invocation remain, as LIF-019 and REC-003 state.
+    invocation remain, as LIF-019 and REC-003 state. The ID is the one that `reconcile.v1` names
+    under OPS-014, so an instance that lost the result of its request can still reconcile the
+    invocation. The content of a retained result is kept apart from the records, and `records`
+    in the type's contract does not decide whether it is kept. How long it is kept is DL10 of
+    the implementation-defined list. Where the engine no longer keeps it, the result of the tool
+    states the invocation's state and its ID, holds no outputs and is not marked as withheld.
   vectors: []
 
 - id: OPS-017
@@ -258,7 +282,8 @@
   level: must
   when: >-
     An instance asks for the retained result of an invocation that began with a request it sent
-    itself, and the Conduit through which that invocation was dispatched is no longer open.
+    itself, the Conduit through which that invocation was dispatched is no longer open, and the
+    engine still keeps the content.
   then: >-
     The content is not delivered, and the result states that it is withheld.
   observable: >-
@@ -358,9 +383,11 @@
     succeeded with an effect or ended unknown on an operation that has one. The steps of
     `set-up.v1` are those of the instance's `setup` graph, its declared Conduits and, for a
     Pool, its entries. The steps of `retire.v1` are those of its `retire` graph, and each stop
-    of a runtime counts as a step that is not optional. Where a value reference in a graph's
-    `outputs` yields no value, the invocation's outcome is unknown if a step had an effect, and
-    failed otherwise.
+    of a runtime counts as a step that is not optional. Where a value binding in a graph's
+    `outputs` yields no value for an output that is not marked optional, the invocation's
+    outcome is unknown if a step had an effect, and failed otherwise. An output that the graph
+    marks `optional: true` under GRA-021 is one the graph may leave without a value: the result
+    then holds no such output, and the outcome is as the steps give it.
   vectors: []
 
 - id: OPS-023
@@ -381,7 +408,9 @@
   layer: convention
   level: must
   when: >-
-    A repeat, as OPS-009 defines it, arrives for an invocation whose outcome is failed.
+    A request arrives that matches the request of an invocation whose outcome is failed, as
+    OPS-009 describes a match: from the same instance, with the same caller, target, operation
+    identity and contents. It is a repeat.
   then: >-
     The repeat is dispatched as a new attempt.
   observable: >-

@@ -6,7 +6,8 @@
 # control. Its instances have two runtimes: `watcher`, which the type `local-directory.v1`
 # declares, and `path-watcher`, which the template declares. A step may name either
 # (GRA-017). A template that declared a runtime named `watcher` would be rejected, because
-# its type declares one of that name (TPL-006).
+# its type declares one of that name (TPL-006). A runtime is not marked optional; the steps
+# that start these two are.
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource
 metadata:
@@ -30,7 +31,6 @@ spec:
     path-watcher:
       start: example.org/files#watcher.start.v1
       stop: example.org/files#watcher.stop.v1
-      optional: true
   setup:
     steps:
       establish:

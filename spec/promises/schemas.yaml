@@ -5,8 +5,8 @@
 # and SCH-015. The conversion of the older text (decision DA3 of the docs audit,
 # docs/proposals/docs-audit/GAPS.md) changed SCH-009 and added SCH-019 to SCH-021. The second
 # round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed SCH-001, SCH-008
-# to SCH-010, SCH-014, SCH-016 and SCH-019. No promise of this file has been removed. Draft: no
-# vector exists yet.
+# to SCH-010, SCH-014, SCH-016 and SCH-019, and its closing pass reworded one sentence of
+# SCH-008. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: SCH-001
   layer: language
@@ -113,7 +113,7 @@
     position. A `default` on a property of a map inside `items` is accepted, as Kubernetes
     structural defaulting accepts it. A `default` that a member of `$defs` states on itself is
     rejected, even where the only `$ref` to that member is written as a property: what refers to
-    a schema does not change the answer.
+    a schema does not change whether its `default` is allowed.
   vectors: []
 
 - id: SCH-009

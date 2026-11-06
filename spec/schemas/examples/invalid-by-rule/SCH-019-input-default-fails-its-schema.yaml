@@ -1,7 +1,8 @@
-# Example. One set of documents. Each is valid against the schemas, and each must be
-# rejected: the `default` of an input satisfies the input's own `schema`. The Operation's
-# input `maxEntries` allows 1 to 100 through a Schema contract of the same project and
-# states the default 500, and the template's input `limit` allows 1 upwards and states 0.
+# Example. One set of documents. Each is valid against the schemas, and the Operation and
+# the template must each be rejected: the `default` of an input satisfies the input's own
+# `schema`. The Operation's input `maxEntries` allows 1 to 100 through a Schema contract of
+# the same project and states the default 500, and the template's input `limit` allows 1
+# upwards and states 0.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

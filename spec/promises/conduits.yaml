@@ -8,7 +8,11 @@
 # CON-018 and CON-026, and added CON-028. The conversion of the older text (decision DA3 of the
 # docs audit, docs/proposals/docs-audit/GAPS.md) changed CON-003 and added CON-029. The second
 # round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed CON-004, CON-008,
-# CON-020, CON-022, CON-024 and CON-028, and removed none. Draft: no vector exists yet.
+# CON-020, CON-022, CON-024 and CON-028, and removed none. Its closing pass
+# (docs/proposals/reaudit/round-2/log-closing.md) changed CON-022: the implementation of the
+# target always states a filter's requirement. It also wrote "composite" where CON-003,
+# CON-016, CON-019 and CON-020 said "composition" of a Conduit template, a word that is kept
+# for a composed requirement. Draft: no vector exists yet.
 
 - id: CON-001
   layer: language
@@ -42,9 +46,9 @@
   layer: language
   level: must
   when: >-
-    A Conduit template that is composed of other Conduit templates is instantiated.
+    A composite Conduit template is instantiated.
   then: >-
-    One Conduit is instantiated for each component, and no instance represents the composition
+    One Conduit is instantiated for each component, and no instance represents the composite
     itself. Each component Conduit is named by the name given to, or generated for, the instance
     document or nested instantiation that names the composite template, then a hyphen, then the
     component's name.
@@ -187,7 +191,7 @@
     The `spec` of a Conduit template is read.
   then: >-
     It may hold `inputs`, and it holds either `capability`, `operations` and `requirements`, or
-    `components`. There are no other keys. A template that is not composed requires
+    `components`. There are no other keys. A template that is not a composite requires
     `capability`. It requires `operations` unless one of its inputs has `operations` as a
     destination, and it may leave out `requirements`, and then applies none.
   observable: >-
@@ -231,13 +235,13 @@
   layer: language
   level: must
   when: >-
-    A Conduit template is composed of others.
+    A Conduit template is a composite.
   then: >-
     Its `components` is a map of nested instantiations of Conduit templates, and each component
-    Conduit takes the consumer and the target given to the composition.
+    Conduit takes the consumer and the target given to the composite.
   observable: >-
-    A composition that reaches itself through its components is rejected with a diagnostic
-    naming the templates in the cycle.
+    A composite that reaches itself through its components is rejected with a diagnostic naming
+    the templates in the cycle.
   vectors: []
 
 - id: CON-020
@@ -252,7 +256,7 @@
     Resolving returns a diagnostic naming the key. A declared Conduit or a component that names
     a consumer, and a component that names a target, are rejected under OBJ-014: the consumer of
     a declared Conduit is always the instance being instantiated, and a component takes the ends
-    given to the composition.
+    given to the composite.
   vectors: []
 
 - id: CON-021
@@ -277,15 +281,16 @@
   then: >-
     The Conduit is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the filter, the operation and the implementation. The
-    answer comes from the manifest under PKG-019, without starting anything. Which
-    implementations must state the requirement is said by `obliges` in its contract, under
-    CTR-005: they are those of the ends it names, and where it names none, those of the target.
-    For the target they are the implementations it has selected for the operations the Conduit
-    lists, and for the consumer every implementation selected for it. An implementation supports
-    a composed requirement where its `supports` lists the composition or every one of its
-    constituents. An implementation marked `plain` states no `supports` under PKG-020, so no
-    Conduit is instantiated with a filter that an instance it serves must apply.
+    Resolving returns a diagnostic naming the filter, the operation and the implementation. It
+    is decided from the manifest under PKG-019, without starting anything. The implementations
+    that the target has selected for the operations the Conduit lists must always state the
+    requirement: they are sent every filter on the Conduit under IFC-018, and apply it under
+    IFC-019. Where `obliges` in the requirement's contract names `consumer`, under CTR-005,
+    every implementation selected for the consumer must state it too. `obliges` never takes the
+    obligation from the target. An implementation supports a composed requirement where its
+    `supports` lists the composition or every one of its constituents. An implementation marked
+    `plain` states no `supports` under PKG-020, so no Conduit is instantiated with a filter that
+    an instance it serves must apply.
   vectors: []
 
 - id: CON-023

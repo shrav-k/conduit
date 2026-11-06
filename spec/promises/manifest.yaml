@@ -18,8 +18,11 @@
 # changed what MAN-003 and MAN-007 cite. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed MAN-001 and MAN-006: a manifest holds
 # one YAML document, a project is the documents and the one manifest handed over together,
-# and what gives `fetch` is called an item of `packages`. No promise of this file has been
-# removed. Draft: no vector exists yet.
+# and what gives `fetch` is called an item of `packages`. Its closing pass
+# (docs/proposals/reaudit/round-2/log-closing.md) changed MAN-006 and MAN-010: a relative
+# `fetch` or program is resolved against the directory the manifest was read from, and is
+# rejected where there is none. No promise of this file has been removed. Draft: no vector
+# exists yet.
 
 - id: MAN-001
   layer: language
@@ -107,13 +110,19 @@
     An item of `packages` in a manifest gives `fetch`.
   then: >-
     Its value is a URI reference, as RFC 3986 gives one, to the package's archive file. A
-    relative reference is resolved against the place of the manifest that holds it.
+    relative reference is resolved against the directory the manifest was read from. Where the
+    manifest was handed over without a directory, a relative reference is rejected.
   observable: >-
-    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and
-    `fetch: ../history/history-1.4.0.tar.gz` each name one archive file. The package is still
-    identified by its address, as NAM-012 states, and the digest decides whether what was
-    fetched satisfies the item, under PKG-021. Which schemes an engine can fetch from is DL7
-    of the implementation-defined list.
+    `fetch: https://example.org/downloads/history-1.4.0.tar.gz` and `fetch:
+    ../history/history-1.4.0.tar.gz` each name one archive file. The package is still identified
+    by its address, as NAM-012 states, and the digest decides whether what was fetched satisfies
+    the item, under PKG-021. Which schemes an engine can fetch from is DL7 of the
+    implementation-defined list. A manifest is handed over without a directory where several
+    files are submitted without one, or where a registration hands it over as a value, as the
+    input `manifest` of `register.v1` does: `fetch: ../history.tar.gz` in such a manifest is
+    rejected with a diagnostic naming the item. The input `fetch` of `install.v1` is a URI
+    reference in the same way, and a request has no directory, so a relative one is rejected
+    there too.
   vectors: []
 
 - id: MAN-007
@@ -172,18 +181,22 @@
   when: >-
     The keys of an implementation item are read.
   then: >-
-    `implements` is a list of selections of operations, and `supports` a list of selections
-    of requirements, each written as NAM-018 gives a selection. `command` is a list of one or
-    more strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in
-    place, as TPL-003 gives one. `placement` is a map of applied requirements, as CTR-004
-    gives a Type. `plain` is a boolean. `tools` is the map of PKG-020, and each of its values
-    is a non-empty string.
+    `implements` is a list of selections of operations, and `supports` a list of selections of
+    requirements, each written as NAM-018 gives a selection. `command` is a list of one or more
+    strings: a program, then its arguments. `url` is a URI. `graph` is a graph written in place,
+    as TPL-003 gives one. `placement` is a map of applied requirements, as CTR-004 gives a Type.
+    `plain` is a boolean. `tools` is the map of PKG-020, and each of its values is a non-empty
+    string.
   observable: >-
     A `command` written as one string, a `url` with no scheme, and a `graph` item whose
     `implements` does not list exactly one operation, as GRA-014 requires, are each rejected
     with a diagnostic naming the item. `plain: false` means the same as leaving `plain` out. A
-    program given as a relative path is taken from the root of the package's archive, and no
-    shell reads the list. Who starts the program is DL12 of the implementation-defined list.
+    program given as a relative path is taken from the directory the manifest was read from,
+    which for a package is the root of its archive, and no shell reads the list. Where the
+    manifest was handed over without a directory, as MAN-006 describes, an item whose program is
+    a relative path is rejected. A program is a relative path where it holds a `/` and does not
+    begin with one; one that holds no `/` is a name and not a path, and is found as the one who
+    starts it finds programs. Who starts the program is DL12 of the implementation-defined list.
   vectors: []
 
 - id: MAN-011

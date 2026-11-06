@@ -10,7 +10,7 @@
 # The ruling on the core package and the schemas (ruling 37) changed POOL-005 and POOL-012.
 # The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
 # POOL-003, POOL-006, POOL-009 and POOL-012 to POOL-015. POOL-012 now leaves the shape of an
-# entry to OBJ-014. Draft: no vector exists yet.
+# entry to OBJ-014. Its closing pass changed POOL-016. Draft: no vector exists yet.
 
 - id: POOL-001
   layer: language
@@ -208,5 +208,9 @@
     several do, it is placed on the location the `system` Pool's default-location setting names,
     and where that setting names none of them the Resource is not instantiated, and so neither
     is the Pool, under POOL-002. This holds whether the template has no input with that
-    destination or has an optional one that was not supplied.
+    destination or has an optional one that was not supplied. A placement that these rules chose
+    is the Resource's, and is not written into the entry as the Pool holds it under INS-013: a
+    replacement for that entry under LIF-009 is placed by the same rules as they stand when it
+    is made. A placement that an input supplied is part of the entry the Pool holds, and a
+    replacement takes it.
   vectors: []

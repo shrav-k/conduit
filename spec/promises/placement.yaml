@@ -8,7 +8,8 @@
 # audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. The second round of the re-audit
 # (docs/proposals/reaudit/round-2/DECISIONS.md) changed PLC-001, PLC-005, PLC-008, PLC-016 and
 # PLC-020, and added PLC-021, of the layer `convention`, which took from PLC-008 how a
-# location's facts are changed. Draft: no vector exists yet.
+# location's facts are changed. Its closing pass changed PLC-017 and PLC-021 and reworded one
+# sentence of PLC-007. Draft: no vector exists yet.
 
 - id: PLC-001
   layer: language
@@ -98,7 +99,7 @@
   observable: >-
     Resolving returns a diagnostic naming the type or the implementation, the requirement and
     the location, before any effect. A fact that is absent from the location's stored facts
-    fails the requirement. The answer comes from the documents and the stored facts, without
+    fails the requirement. It is decided from the documents and the stored facts, without
     reaching the location.
   vectors: []
 
@@ -218,7 +219,7 @@
     The location and every instance placed on it are retired. The status of each reports its
     shutdown as unknown, and states that it could not be confirmed because the location was
     declared lost. An instance for which no setup was ever dispatched reports confirmed, as
-    LIF-025 states.
+    LIF-025 states, and one whose shutdown was confirmed before stays confirmed, under LIF-024.
   observable: >-
     Each of them can then be unregistered under LIF-017 without a reconciliation. The Conduits
     of which any of them was an end are closed under CON-008.
@@ -286,5 +287,8 @@
     The control is in the capability `location-settings.v1`, which the location type offers, so
     it is requested through an open Conduit to the location that lists it. It takes the
     location's current `revision` and `facts`, and its result states the settings it confirmed
-    in `settings`. Nothing observed of the location changes a stored fact.
+    in `settings`. Nothing observed of the location changes a stored fact. A change of facts
+    changes no instance that is placed on the location: PLC-007 tests a requirement on placement
+    when an instance is instantiated and not again, and PLC-013 tests the shared-host
+    requirement on each opening and each request.
   vectors: []

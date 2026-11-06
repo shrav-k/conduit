@@ -7,8 +7,8 @@
 # directory and the Schema contracts under spec/schemas/. Its one implementation, `engine`,
 # is the engine itself: it states none of `command`, `url` and `graph` (MAN-012).
 # `supports` lists `bound.v1`, because a bound is a filter on a Conduit to `access` and
-# CON-022 asks the implementation behind `access` to state the filters it can apply:
-# `bound.v1` states no `obliges`, so it is the target's implementation that must.
+# CON-022 has the implementation of the target, here the one behind `access`, always state
+# a filter's requirement.
 #
 # The version is the version of the package, not of any contract: each contract carries its
 # own compatibility version in its name (NAM-015). A template or an instance that uses the

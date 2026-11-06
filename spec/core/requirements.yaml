@@ -26,14 +26,16 @@
 # schema, and so is resolved when the Conduit is instantiated and stored as `{kind, id}`
 # (OBJ-021). Each item of `operations` is a qualified reference, so a bound names operations
 # of published packages only: an operation of an unpublished package cannot be named in one.
+# A bound that names an operation which a package re-exports, by the re-export or by its
+# origin, covers both (ACC-029).
 # A Conduit to `access` with no bound requirement has no bound and is unlimited, and only an
 # actor whose own Conduit to `access` applies no bound may open or close one (ACC-030); a
 # Conduit whose bound names nothing covers nothing. A Conduit template that applies
 # `bound.v1` more than once is rejected when it is registered, and a Conduit that applies
 # it and whose target is not `access` is not instantiated (CON-028).
 #
-# Neither contract states `obliges` (CTR-005). `bound.v1` is a filter, and with no `obliges`
-# the implementation of the target must state it in `supports`: the target is `access`,
+# Neither contract states `obliges` (CTR-005). `bound.v1` is a filter, and the implementation
+# of the target must always state a filter in `supports` (CON-022): the target is `access`,
 # whose implementation is `engine`, and conduit.yaml states it there. `shared-host.v1` does
 # not narrow requests, so it is not a filter and no implementation applies it: the engine
 # itself checks it (PLC-013). Neither is a composition, so neither has `constituents`
@@ -46,10 +48,13 @@ metadata:
   name: bound.v1
   description: >-
     The bound of a right to open: the Pools, the individual targets and the operations of the
-    Conduits that the consumer of a Conduit to `access` may open and close. Naming a Pool
+    Conduits that the consumer of a Conduit to `access` may open and close, and the actors and
+    targets of the policies it may apply and remove. Naming a Pool
     covers the Pool itself and every Resource it owns. The bound is a filter. `operations`
-    names operations by qualified reference, and so only operations of published packages.
-    A Conduit template applies it at most once, and only a Conduit to `access` carries it.
+    names operations by qualified reference, and so only operations of published packages;
+    naming an operation that a package re-exports, by the re-export or by its origin, covers
+    both. A Conduit template applies it at most once, and only a Conduit to `access` carries
+    it.
 spec:
   appliesTo: [conduit]
   narrows: true

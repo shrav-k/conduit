@@ -21,7 +21,7 @@
 # Three definitions carry SCH-008. `schema` is a schema in a place where `default` is not
 # accepted. `property` is a schema that is a member of `properties`, where it is. `combined`
 # is a schema anywhere inside `allOf`, `anyOf` or `oneOf`, where it is accepted nowhere below.
-# A schema is an object or a boolean, as JSON Schema 2020-12 defines.
+# A schema is a map or a boolean, as JSON Schema 2020-12 defines.
 #
 # Not expressed here, and checked by the engine: that a `$ref` resolves, and to a Schema
 # contract (SCH-015); that a `pattern` is a regular expression of ECMA-262 (SCH-016); and

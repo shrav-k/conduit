@@ -26,7 +26,9 @@
 # Not expressed here, and checked by the engine: the rule for a key of `packages` and of
 # `implementations` (NAM-001, NAM-004), because the profile has no keyword that constrains
 # the keys of a map; that `fetch` is a URI reference (MAN-006), because the profile has no
-# format for one, so the schema accepts any string that is not empty; that the core
+# format for one, so the schema accepts any string that is not empty; that a relative
+# `fetch` or program has a directory to be resolved against, which a manifest handed over
+# as a value has not (MAN-006, MAN-010); that the core
 # package's address is not listed (NAM-021); that the address a package states is the one it
 # was listed or fetched under (PKG-017); that every export names a document of the package
 # (PKG-018), though `uniqueItems` does reject a name that `exports` writes twice (PKG-012);

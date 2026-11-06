@@ -9,8 +9,9 @@
 # input is not supplied (CTR-002, OPS-026); a control, whose `changes` maps its input to the
 # setting that input sets (CTR-006); a Type that declares a runtime and states
 # `restoresRuntimes` and `records` (CTR-004); a Requirement that states `obliges`
-# (CTR-005); and a composed Requirement, whose constituent takes its argument from an input
-# of the composition (CTR-010).
+# (CTR-005); a composed Requirement, whose constituent takes its argument from an input
+# of the composition (CTR-010); and an Operation that arranges later work, marked
+# `arrangesLaterWork: true` (CTR-002, ACC-019).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -26,7 +27,7 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: directory.establish.v1
-  description: Make sure the directory exists, and return its resolved path.
+  description: Make sure the directory exists, and return its full path.
 spec:
   inputs:
     path:
@@ -103,6 +104,28 @@ spec:
   effect: Stops the process that watches the directory.
   implementation: '#files-server'
 ---
+# An operation that arranges later work: the sweep runs after this invocation has ended, so
+# the contract carries the mark (CTR-002). The work is tied to the Conduit through which it
+# was arranged, and is not started once that Conduit is closed (ACC-019). The output names
+# the work (IFC-016).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.sweep.v1
+  description: Arrange for the stale entries of a directory to be removed after a delay.
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+    after:
+      schema: {type: string, format: duration}
+  outputs:
+    sweep:
+      schema: {type: string, minLength: 1}
+  effect: Arranges a sweep, which removes the stale entries of the directory when it runs.
+  arrangesLaterWork: true
+  implementation: '#files-server'
+---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
@@ -132,17 +155,16 @@ kind: Capability
 metadata:
   name: directory-access.v1
   description: >-
-    Reading a directory, changing its read limit, and reconciling an invocation of one of
-    those operations whose outcome is unknown.
+    Reading a directory, arranging a sweep of it and changing its read limit. An invocation
+    of one of these operations whose outcome is unknown is reconciled through a Conduit to
+    the Pool that owns the directory (ACC-033), so this capability does not include
+    `reconcile.v1`.
 spec:
   operations:
     - '#directory.read.v1'
     - '#directory.list.v1'
+    - '#directory.sweep.v1'
     - '#set-read-limit.v1'
-    # Reconciling is authorized against the target that authorized the request being
-    # reconciled (ACC-033), so a Conduit to a directory that is to reconcile its invocations
-    # lists the core package's `reconcile.v1`, which the engine implements.
-    - github.com/shrav-k/conduit/core#reconcile.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -157,7 +179,7 @@ spec:
       path: {type: string, minLength: 1}
       readLimit: {type: integer, minimum: 1, maximum: 100, default: 10}
       cache: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-      # A default that is an object is checked after the defaults of its own properties are
+      # A default that is a map is checked after the defaults of its own properties are
       # filled in (SCH-010, SCH-019): `{}` satisfies `required: [depth]` once `depth` has
       # taken its default, 1.
       listing:
@@ -175,14 +197,14 @@ spec:
     - '#directory.establish.v1'
     - '#directory.read.v1'
     - '#directory.list.v1'
+    - '#directory.sweep.v1'
     - '#set-read-limit.v1'
-    - github.com/shrav-k/conduit/core#reconcile.v1
-  # Every instance of the type has this runtime, whatever its template declares.
+  # Every instance of the type has this runtime, whatever its template declares. A runtime
+  # is not marked optional: the step that starts it may be (TPL-006).
   runtimes:
     watcher:
       start: '#watcher.start.v1'
       stop: '#watcher.stop.v1'
-      optional: true
   implementation:
     '#directory.list.v1': '#listing'
   controls:
@@ -218,8 +240,9 @@ metadata:
 spec:
   appliesTo: [conduit, policy]
   narrows: true
-  # The implementation of the target must state this requirement in `supports`, as
-  # `files-server` does in the manifest.
+  # The implementation of the target must always state a requirement that narrows requests
+  # in `supports`, as `files-server` does in the manifest. Naming `target` says so and adds
+  # nothing; naming `consumer` would add the implementations selected for the consumer.
   obliges: [target]
   inputs:
     limit:

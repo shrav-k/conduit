@@ -32,3 +32,16 @@ contract, we should do another vocab audit as well before we finish up pr 7".
   rules on them.
 - The specification is rewritten around provider contracts as rulings 40 and 41 say, then read
   by the vocabulary audit and by a fifth round of readers, before pull request 7 is merged.
+
+## After the ruling
+
+The planner of the rewrite ([PLAN.md](PLAN.md), "Planner's choices") had to fill twenty gaps
+that the review left open, P1 to P20, and the coordinator put them to the owner while the
+editors worked. The owner's answer, on 2026-11-06: "Accept all with p2 changed".
+
+- P1 to P20 are accepted as the plan states them, except P2.
+- P2 is changed: `spec/promises/graphs.yaml` is not kept as a file with no promise. It is
+  deleted, and `spec/README.md` lists the promise files that rulings removed, with the IDs each
+  held, so that no removed ID can be reused.
+- The names that P1 coins are not final: the vocabulary audit reviews them with
+  `secret-reveal.v1` and `reveal-secret.v1`.

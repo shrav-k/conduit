@@ -1,5 +1,12 @@
 # Proposed repository and delivery organization
 
+**Not binding.** The [specification](../../spec/README.md) alone binds. This document uses the
+words from before the vocabulary ruling; the terms in force are in
+[spec/definitions.md](../../spec/definitions.md). The tracker is the [plan audit](../AUDIT.md),
+not REVIEW. Where the text below says that the current review distinguishes the remaining
+decisions, or that the protocol topics own accepted behavior, it no longer holds: those topics
+are superseded.
+
 **Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
 audit](../AUDIT.md) and is not an input for engine builders. Its milestone table M0 to M6 and its
 statement that implementation is not authorized are superseded by the plan audit's experiment

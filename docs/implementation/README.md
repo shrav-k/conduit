@@ -1,5 +1,18 @@
 # V0 reference implementation proposal
 
+**Not binding.** The [specification](../../spec/README.md) alone binds. This document uses the
+words from before the vocabulary ruling; the terms in force are in
+[spec/definitions.md](../../spec/definitions.md). The tracker is the [plan audit](../AUDIT.md),
+not REVIEW. Where the text below says that the review queue is the only active decision queue,
+that the protocol topics supply accepted semantics, or that there is no backward-compatibility
+promise, it no longer holds: those topics are superseded, and what the language promises about
+versions is in [spec/promises/naming.yaml](../../spec/promises/naming.yaml).
+
+Two documents in this directory are current: [independent builds](INDEPENDENT_BUILDS.md), the
+process and readiness gate for the two builds, and the [engine build brief](ENGINE_BUILD_BRIEF.md),
+a draft that is not issued. The rest of this page, [ARCHITECTURE](ARCHITECTURE.md) and
+[ORGANIZATION](ORGANIZATION.md) are earlier proposals for a reference implementation.
+
 **Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
 audit](../AUDIT.md) and is not an input for engine builders. The proof order, the role of Experiment
 002 and the deferral of a second runtime described below are superseded; see [independent
@@ -24,7 +37,7 @@ package example or database choice cannot silently define the public model.
 
 | Document | Purpose / authority |
 | --- | --- |
-| [REVIEW](../archive/reviews/IMPLEMENTATION.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
+| [Closed implementation review](../archive/reviews/IMPLEMENTATION.md) | Compact I1–I7 status with links to accepted contracts; no separate active decision queue. |
 | [ARCHITECTURE](ARCHITECTURE.md) | Detailed runtime mechanisms and examples; accepted boundaries are marked, other mechanisms remain proposals. |
 | [AUTHORIZATION](../proposals/authoring-syntax/AUTHORIZATION.md) | Accepted policy/grant model illustrated with proposed representation and enforcement details. |
 | [ORGANIZATION](ORGANIZATION.md) | Proposed crate/dependency organization, milestones and evidence requirements. Its milestone table is superseded by the plan audit's experiment program. |

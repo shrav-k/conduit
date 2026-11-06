@@ -2,9 +2,10 @@
 
 Status: draft, 2026-11-05, revised for layer decision LD4. **Not issued.** This is the text a
 builder receives as `BUILD.md` on the build base once the
-[readiness gate](INDEPENDENT_BUILDS.md#readiness-gate) passes. The paths it names (`spec/`,
-`conformance/`) are proposed and do not exist yet. Everything from the next heading down is
-written to stand alone, because the builder will see nothing else.
+[readiness gate](INDEPENDENT_BUILDS.md#readiness-gate) passes. Of the paths it names, `spec/` and
+`tools/` exist; `conformance/` does not exist yet, and the build base is not yet published.
+Everything from the next heading down is written to stand alone, because the builder sees
+nothing else.
 
 ---
 
@@ -13,7 +14,7 @@ written to stand alone, because the builder will see nothing else.
 Build an implementation of the Conduit language, in Rust, from the documents in this checkout
 and nothing else.
 
-Conduit is a configuration language. It determines what a set of declarations means: which
+Conduit is a configuration language. It determines what a set of documents means: which
 objects exist, how they relate and which invariants always hold. You are one of two independent
 builders. The purpose is to test whether the language is precise enough that two builders who
 never talk produce implementations that agree. Your implementation matters, and so does your
@@ -26,14 +27,22 @@ the language, and you must not invent it.
 
 | Path | What it is |
 | --- | --- |
-| `spec/README.md` | The manifest of the language. Start here. It lists every normative document. |
-| `spec/` | The language and the shared conventions: numbered promises, schemas, and the implementation interface. |
+| `spec/README.md` | The contents list of the specification. Start here. It lists every normative file. |
+| `spec/` | The specification: the language, the shared conventions and the implementation interface, as numbered promises, with the definitions, the schemas of documents and the core package. |
+| `tools/` | The two checkers the specification refers to, `check_schemas.py` and `set_names.py`. You may run them. They are not part of the specification. |
 | `conformance/README.md` | How conformance vectors are structured and how your implementation must run them. |
 | `conformance/` | The public conformance vectors, each tagged with the promises it tests, and the test implementations. |
 | `BUILD.md` | This brief. |
 
 The promises are the authority. A vector illustrates a promise. If a vector and a promise
 disagree, record it (see below) and follow the promise.
+
+The specification's version is `v0`, as `spec/names.yaml` states. The tag you were given,
+`spec-vN`, names one published revision of that version. It is not a version of the
+specification.
+
+Some files under `spec/` link to records under `docs/`, which this checkout does not hold. Those
+records are the history of a rule. The rule itself is in `spec/`, and you need nothing else.
 
 ## What you must not do
 
@@ -45,17 +54,18 @@ disagree, record it (see below) and follow the promise.
 - Do not contact, read or infer anything from the other builder.
 - Do not ask the owner what the language means. There is no private clarification. Record the
   question as a defect and continue.
-- Do not edit anything under `spec/` or `conformance/`.
+- Do not edit anything under `spec/`, `conformance/` or `tools/`.
 - Do not key any behavior on a vector's identifier or contents. Additional vectors you have not
   seen will be run against your implementation.
 - Do not add behavior the language does not promise in order to be helpful. Where the language
-  says an outcome is implementation-defined, choose one and document it.
+  says a behavior is implementation-defined, choose one and document it in your runtime profile
+  (see Deliverables).
 
 ## What to build
 
 Put everything under `impl/` as one Cargo workspace, with a pinned toolchain file.
 
-1. **The language layer.** A library that takes declarations and returns either the resolved
+1. **The language layer.** A library that takes documents and returns either the resolved
    objects they describe or diagnostics. It parses, validates against the schemas, resolves
    references, performs instantiation and checks every static rule in `spec/`. It is a pure
    function: no files written, no network, no clock, no randomness in its result.
@@ -70,9 +80,10 @@ Put everything under `impl/` as one Cargo workspace, with a pinned toolchain fil
    is compared.
 5. **Your own tests**, runnable offline with `cargo test`.
 
-Out of scope, and not to be built: anything the language assigns to a type contract or to the
-runtime profile, user interfaces, integrations with real model providers or external services,
-and performance work. If a promise seems to need one of these, record it as a defect.
+Out of scope, and not to be built: anything the language assigns to a type contract, anything
+it leaves to the runtime profile beyond the choices your minimal engine needs, user interfaces,
+integrations with real model providers or external services, and performance work. If a promise
+seems to need one of these, record it as a defect.
 
 ## How to work
 
@@ -116,6 +127,8 @@ On your branch, under `impl/`:
 - The workspace, building and passing its tests offline from a clean checkout.
 - The conformance adapter.
 - `DEFECTS.md`, `ASSUMPTIONS.md`, `DEPENDENCIES.md` and `LOG.md`.
+- `PROFILE.md`: your runtime profile. It states your choice for every item of
+  `spec/implementation-defined.yaml`. Where your minimal engine never reaches an item, say so.
 - `REPORT.md` at each milestone: which vectors pass, which fail and why, which promises are not
   yet implemented, and how many defects you logged.
 - `README.md`: exact commands to build, test, and run the adapter over a vector.

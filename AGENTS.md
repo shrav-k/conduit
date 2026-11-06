@@ -1,26 +1,24 @@
 # Instructions for agents working in this repository
 
-Conduit is a protocol and configuration language for connecting independent Agents to shared
-Resources. This repository holds the language's design. No Conduit engine exists yet.
+Conduit is a configuration language for the relationships between independent agents and the
+things they share. This repository holds the language's design. No Conduit engine exists yet.
 
 **If you were asked to build an engine, stop.** Engine builders work only from the `build-base`
-branch and must not read this branch. See
-[independent builds](docs/implementation/INDEPENDENT_BUILDS.md).
+branch and must not read this branch. That branch is not yet published, and the builds have not
+started. See [independent builds](docs/implementation/INDEPENDENT_BUILDS.md).
 
 ## Read first
 
-1. [docs/AUDIT.md](docs/AUDIT.md): the owner's current direction, the ruling log, priorities,
-   action items and the experiment program. It governs where other documents differ.
-2. [docs/LANGUAGE_DEFECTS.md](docs/LANGUAGE_DEFECTS.md): known places where the accepted text is
-   undetermined, contradictory or unsafe.
-3. The [placement](docs/proposals/placement/README.md) and
-   [instantiation](docs/proposals/instantiation/README.md) records: accepted rulings not yet
-   restated in the protocol topics.
+1. [spec/README.md](spec/README.md): what the specification is, its three layers, its contents
+   and the form of a promise.
+2. [spec/definitions.md](spec/definitions.md): the terms in force.
+3. [docs/AUDIT.md](docs/AUDIT.md): the state of the work, the owner's direction, the ruling
+   log, the action items and the experiment program.
 
 ## The goal
 
 The language is the core and the runtime fulfills its promise. Conduit is a configuration language,
-not a behavioral specification: the language fully determines what a set of declarations means,
+not a behavioral specification: the language fully determines what a set of documents means,
 and behavior beyond a few shared conventions belongs to type contracts and a runtime profile. See
 the layered claim in [docs/AUDIT.md](docs/AUDIT.md#layered-claim). Work that makes the language more
 concise, concrete and provable comes first.
@@ -31,21 +29,31 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 
 ## What binds and what does not
 
-- The specification is [spec/](spec/README.md): the language and the shared conventions, as
-  numbered promises. It is a draft being filled area by area, and it governs what it covers.
-- Accepted behavior not yet converted is in `docs/protocol/`, as amended by the records under
-  `docs/proposals/` for placement, instantiation, vocabulary and relationships.
-- Not binding: `docs/research/`, `docs/archive/`, `docs/proposals/authoring-syntax/`,
-  `docs/implementation/ARCHITECTURE.md`, `docs/implementation/ORGANIZATION.md`, and Experiments
-  001 to 003. Several predate the current direction and say so in a note under their title.
-- Only the five family names are settled: Interface, Agent, Resource, Pool, Conduit. All other
-  names are provisional. Do not rename or merge terms; the vocabulary pass comes last.
+- The specification, [spec/](spec/README.md), alone binds. It holds three layers: the language,
+  the shared conventions and the implementation interface, as numbered promises. It is a draft:
+  every area is written, and no conformance vector exists yet.
+- A behavior that is missing from `spec/` is a gap in `spec/`. No older document supplies it.
+- Nothing under `docs/protocol/` binds. It is the design as it stood before the specification,
+  kept as source material for the type contracts still to be written.
+- The records under `docs/proposals/` say what the owner ruled and why. Where a record and the
+  specification differ, the specification governs.
+- Also not binding: `docs/OVERVIEW.md`, `docs/REVIEW.md`, `docs/VOCABULARY.md`,
+  `docs/authoring/`, `docs/proposals/authoring-syntax/`, `docs/implementation/`,
+  `docs/research/`, `docs/archive/` and everything under `experiments/`. Most predate the
+  specification and say so in a note under their title.
+- The vocabulary is ruled (rulings 17, 18 and 27 to 29). The terms in force are in
+  [spec/definitions.md](spec/definitions.md); write new text in them. Older documents keep the
+  earlier words; do not mass-rename them.
 
 ## Where things go
 
-- An owner ruling: the ruling log in `docs/AUDIT.md`, then the documents it affects.
-- A defect in the language: `docs/LANGUAGE_DEFECTS.md`. Fix it in the language, not around it.
-- Accepted behavior: a promise in `spec/`, written in the ruled vocabulary.
+- An owner ruling: the ruling log in `docs/AUDIT.md`, with its record under `docs/proposals/`,
+  then the documents it affects.
+- Accepted behavior: a promise in `spec/`, in the terms of `spec/definitions.md`. It changes
+  only by a logged ruling.
+- A defect in the language: fix it in the language, not around it. Findings against `spec/` are
+  recorded under `docs/proposals/reaudit/`. `docs/LANGUAGE_DEFECTS.md` is the register of the
+  first sweep, which read `docs/protocol/`.
 - Evidence: its own directory under `experiments/`, with dated results. Never present an
   expected outcome as a result.
 
@@ -55,20 +63,34 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
   toolchain and ignored build output. The Python checkers in `tools/` are the only exception.
 - The owner makes the rulings. When a choice changes behavior, present the options with a
   recommendation and wait; do not record your recommendation as accepted.
-- Do not edit `docs/archive/`, the content of `docs/research/`, or the sibling directories
-  `../agentwatch` and `../pi-reference`, which are reference clones to consult only.
-- Commit or push only when asked, and work on a branch.
+- Do not edit `docs/archive/`, the content of `docs/research/`, or the topic files under
+  `docs/protocol/`.
+- Do not edit the sibling directories `../agentwatch` and `../pi-reference`, if present. They
+  are reference clones on the owner's machine, to consult only. Nothing in this repository
+  needs them.
+- Commit or push only when asked, and work on a branch. The owner's standing instruction of
+  2026-11-05 is that this work is tracked on
+  [pull request #6](https://github.com/shrav-k/conduit/pull/6): commit and push to its branch,
+  `docs/plan-audit`, at each milestone.
 
 ## Checks
 
+Run these from the repository root before each commit:
+
 ```sh
-python3 tools/check_docs.py
-python3 tools/set_names.py --check
-git diff --check
+python3 tools/check_docs.py          # links, anchors and code fences in every Markdown file
+python3 tools/set_names.py --check   # the names under spec/ agree with spec/names.yaml
+python3 tools/check_schemas.py       # schemas, core package and examples; needs PyYAML and jsonschema
+git diff --check                     # whitespace errors
 ```
 
+`check_schemas.py` needs the Python packages PyYAML and jsonschema. If the interpreter that runs
+it lacks either, it runs itself again under `/usr/bin/python3`, and it never reports a check it
+did not run. The other two tools need only Python 3.
+
 The names the specification assigns (the core package's address, `apiVersion` and the prefix of
-its `_meta` keys) are defined once, in `spec/names.yaml`. Never edit one by hand: run
-`python3 tools/set_names.py` with the new values, which rewrites every occurrence together.
+its `_meta` keys) are defined once, in `spec/names.yaml`. Never edit one by hand. Run
+`python3 tools/set_names.py` with the new values to see what would change, and add `--write` to
+rewrite every occurrence together.
 
 Run `cargo test --release` in each Rust experiment directory you change.

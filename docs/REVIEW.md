@@ -1,12 +1,21 @@
 # Current review
 
-Updated: 2026-11-05. This is the only active review entry point. The conceptual, implementation-boundary,
-post-migration and authoring behavior/structure reviews are complete. Accepted rules live in the
-[protocol reference](protocol/README.md); the full
-[completed authoring record](archive/reviews/AUTHORING-2026-11-04.md) preserves the rulings and rationale.
+**Superseded as a work queue by the [plan audit](AUDIT.md).** The plan audit is the one tracker:
+it holds the state of the work, the owner's rulings and the open action items. Accepted behavior
+is in the [specification](../spec/README.md), which alone binds. Nothing here binds.
 
-Direction changed on 2026-11-05; the plan audit section below governs. No Conduit engine exists. A new example that exposes a conflict with an accepted guarantee should return here with
-its affected behavior, a concrete counterexample and the specific choice needed.
+The sections below are kept as they were written, for the links into them. These statements in
+them no longer hold:
+
+- that this is the only active review entry point, and that a new question returns here;
+- that accepted rules live in the protocol reference, which is superseded;
+- that the vocabulary pass comes last, and that only five names are settled. The vocabulary is
+  ruled, and the terms in force are in [spec/definitions.md](../spec/definitions.md);
+- that schemas and the representation of documents are a later pass. They are written, under
+  [spec/schemas/](../spec/schemas/README.md).
+
+The [completed authoring record](archive/reviews/AUTHORING-2026-11-04.md) preserves the earlier
+rulings and their rationale. No Conduit engine exists.
 
 ## Plan audit, 2026-11-05
 
@@ -38,8 +47,8 @@ accepted meanings, worked examples and affected surfaces; the IDs are not protoc
 Review distinctions before names. Preserve external-standard terminology, historical source language
 and attributed dissent. No replacement name is selected by this audit.
 
-The [naming research](research/vocabulary/README.md) now supplies cross-system precedents,
-alternatives for all 37 topics and walkthroughs. Its proposed discussion order begins with package,
+The [naming research](research/vocabulary/README.md) now supplies cross-system precedents
+and the reviewer's simplification pass. Its proposed discussion order begins with package,
 contract and plugin/implementation boundaries, then execution and relationships. This is preparation
 for owner rulings; it adopts no names, adds no object families and reopens no accepted behavior.
 

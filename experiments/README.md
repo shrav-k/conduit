@@ -1,23 +1,24 @@
 # Experiments
 
+Experiments are evidence. Nothing here binds: the [specification](../spec/README.md) alone states
+accepted behavior. No experiment has run a Conduit engine, because none exists.
+
 Direction since 2026-11-05: experiment code is Rust only, and the nine-scenario program in the
-[plan audit](../docs/AUDIT.md#experiment-program) replaces Experiments 001 to 003, which are removed
-as their replacements land. The
-[language/protocol research](../docs/research/language-protocol-foundations/README.md) preserves its
-evidence. Draft fixtures and library observations remain distinct from Conduit runtime evidence.
+[plan audit](../docs/AUDIT.md#experiment-program) replaces Experiments 001 to 003. Each of those
+is removed as its replacement lands.
 
 Experiments live outside `docs/`. Each directory keeps its documentation, configuration examples,
-expected outcomes and validation record together. The [specification](../docs/OVERVIEW.md) and
-[design contracts](../docs/protocol/README.md) remain authoritative for accepted behavior.
+expected outcomes and validation record together.
 
 | Experiment | Purpose | Current evidence |
 | --- | --- | --- |
-| [001 — shared access](001-shared-access/README.md) | Exercise all five families, Pool composition, shared authentication, communication, controls and Interface observability. | Documentation and static configuration checks only. Fixture plugins do not exist yet. |
-| [002 — runtime and plugins](002-runtime-plugins/README.md) | Test authored/code-optional plugins, graph-backed operations, composed/custom requirements, independent MCP access and effect recovery. | One-machine/two-executor layout and combined authoring proof scope accepted; implementation details remain proposed. No code or runtime measurements yet. |
-| [003 — language library probes](003-language-probes/README.md) | Check concrete JSON Schema and YAML library behavior before choosing authoring syntax/tooling. | 20 offline cases executed and recorded, in Python. No Conduit parser/runtime or provider calls. |
-| [004 — Stateright evaluation](004-stateright-evaluation/README.md) | Evaluate a Rust-embedded model checker for checking safety promises under loss, reordering and crashes. | Executed 2026-11-05 in Rust: five rule sets checked, three seeded defects found, one defect found in an accepted rule. A tool evaluation, not Conduit runtime evidence. |
+| 001 — shared access | Exercised all five families on paper, with static fixtures. | Removed on 2026-11-05: its fixtures used only shapes the rulings replaced. Its files are in the [last commit that held it](https://github.com/shrav-k/conduit/tree/7927d68ce4eea16ba54f45ef92387fc43f7b37fe/experiments/001-shared-access). For current example documents see [spec/schemas/examples/](../spec/schemas/examples/). |
+| [002 — runtime and plugins](002-runtime-plugins/README.md) | A plan to test authored implementations, operations implemented by graphs, composed requirements, access over the Model Context Protocol and recovery. Written before the specification, in the words of that time. | A plan only. No code and no measurements. It stays until its cases are mapped onto promises and vectors (action A23 of the plan audit). |
+| [003 — language library probes](003-language-probes/README.md) | Check how JSON Schema and YAML libraries behave, before the schema profile was chosen. | 20 offline cases executed and recorded, in Python. No Conduit parser and no provider calls. |
+| [004 — Stateright evaluation](004-stateright-evaluation/README.md) | Evaluate a Rust-embedded model checker for checking safety promises under loss, reordering and crashes. | Executed 2026-11-05 in Rust: five rule sets checked, three seeded defects found, one defect found in an accepted rule. A tool evaluation, not evidence about a Conduit engine. |
 
-Distinguish draft syntax, parser/static checks, synthetic runtime tests and live provider tests.
-Do not promote expected outcomes into completed evidence. Changes to accepted behavior discovered
-here return to review with a concrete counterexample. New experiment directories should follow the
-same pattern rather than adding competing rule sets to research reports.
+Keep draft syntax, static checks, synthetic tests and tests against live providers distinct.
+Never present an expected outcome as a result. A result that contradicts a promise is raised
+with a concrete counterexample; the fix is a change to the specification, which needs an owner
+ruling logged in the [plan audit](../docs/AUDIT.md#ruling-log). New experiments follow the same
+pattern, in their own directory, and state no rules of their own.

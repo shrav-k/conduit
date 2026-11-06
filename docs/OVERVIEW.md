@@ -1,188 +1,286 @@
-# Conduit protocol overview
+# Conduit overview
 
-Conduit is an extensible protocol for connecting independent Agents to shared Resources and to one
-another. Its durable product is the contract: authors can publish small plugins, compose them into
-repeatable templates, establish instances and inspect/control them through compatible Interfaces.
-A Rust reference implementation and replaceable frontends will demonstrate that contract.
+Not binding. This is a plain-language tour of the language, written from
+[spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md) as they
+stood on 2026-11-05. The [specification](../spec/README.md) alone binds, and it governs where
+this page differs. Each section links the files that state its rules. A code such as `CON-001`
+is the identifier of one promise in them.
 
-Status: conceptual design, amended by the owner's rulings of 2026-11-05 in the
-[plan audit](AUDIT.md). No Conduit engine exists. The
-[design topics](protocol/README.md#contract-map) hold accepted detailed behavior. The
-[closed review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure.
-The [plan audit](AUDIT.md) tracks current work; known defects in the accepted text are in the
-[defect register](LANGUAGE_DEFECTS.md).
+## What Conduit is
 
-## Five families
+Conduit is a configuration language for the relationships between independent agents and the
+things they share.
 
-Every family has a reusable template form and a concrete instance form. Instances have identity,
-configuration and state; they do not necessarily require their own process.
+Languages such as Kubernetes, Docker Compose and Terraform declare workloads, which do what
+their configuration says. An agent decides for itself what to do. So Conduit declares what
+surrounds the agent: what it may reach, under which limits, and who answers for what it did.
 
-| Family | Meaning |
+An author writes documents. An engine is a running program that implements the specification.
+No engine exists yet.
+
+## The five families
+
+Every object is a template or an instance of one of five families
+([definitions](../spec/definitions.md#objects-and-documents)).
+
+| Family | What it is |
 | --- | --- |
-| Interface | Active management and observability endpoint. Users attach CLI, terminal or test clients; the root Interface directs foundational setup and explicit repair. |
-| Agent | Autonomous participant with a selected runtime/account boundary, private context, supported controls and Conduit attachments. |
-| Resource | One unitary capability with related operations, established and owned by exactly one Pool. |
-| Pool | Organizes available Resource templates and exclusively owns its provisioned Resource instances, including shared authentication. |
-| Conduit | An ongoing relationship with concrete participation and composable requirements, implemented through compatible endpoint behavior. |
+| Interface | An actor: it makes requests on its own behalf. |
+| Agent | An actor, as an Interface is. Its model being run is called model work. |
+| Resource | Something that agents share, such as a directory. It is not an actor: it makes a request only to serve one it received. |
+| Pool | The owner of Resources. It is never a consumer or a caller. |
+| Conduit | A relationship between exactly one consumer and exactly one target, for exactly one capability. |
 
-Pool ownership is logical, not a process or placement rule. A Pool can eventually own Resources on
-several hosts. A Conduit can connect Agents, Resources and other supported endpoints without creating
-a new object for every request or socket. Supporting durable content belongs to Pool-owned Resources.
+## Documents, templates and instances
 
-## What powers the families
+Rules: [objects](../spec/promises/objects.yaml),
+[instantiation](../spec/promises/instantiation.yaml),
+[templates](../spec/promises/templates.yaml) and
+[submissions](../spec/promises/submissions.yaml).
 
-| Concept | Responsibility |
+A document is one template, instance or contract written out, in YAML or the equivalent JSON.
+
+- A **template** has no `from`. Its `spec` holds everything it declares, including its inputs.
+  Each input has a schema and names the places in the `spec` where its value is assigned.
+- An **instance** is one identified object made from a template. Its document has `from`, which
+  names the template, and `arguments`, which supply the inputs. It has no `spec`. Every
+  instance comes from a template.
+- A template of any family but Conduit selects a **type**: a contract that states the schema of
+  an instance's `config`, the capabilities its instances offer and their controls.
+
+Documents are handed to the engine together, as a submission. The engine resolves them: it
+reads them against what already exists and yields either the objects they make or diagnostics.
+Resolving runs nothing. If no document is rejected, the engine registers them all; otherwise it
+registers none. Registering an instance document makes the instance and the instances its
+template nests in it. Nothing is set up, and nothing is opened (INS-016).
+
+## Pools, ownership and placement
+
+Rules: [pools](../spec/promises/pools.yaml) and [placement](../spec/promises/placement.yaml).
+
+Every Resource has exactly one owner, which is a Pool. The owner is fixed when the Resource is
+made, and no operation changes it (POOL-001). Ownership is a stored fact and permits nothing
+(ACC-028).
+
+A Pool template may declare entries. When the Pool is made, one Resource is made for each entry
+and is owned by that Pool (POOL-002). A Resource can also be made on its own, by a document
+that names a Pool as its owner (POOL-004).
+
+An Agent and a Resource each have exactly one placement: the location where it runs. A location
+is itself a Resource, owned by the Pool `system`. Interfaces, Pools and Conduits have none.
+
+## Conduits and access
+
+Rules: [conduits](../spec/promises/conduits.yaml), the
+[access convention](../spec/conventions/access.yaml) and
+[first start](../spec/promises/first-start.yaml).
+
+A Conduit joins one consumer to one target for one capability (CON-001). The consumer makes
+requests through it. The target receives them. A capability is a list of operations. A type
+lists the capabilities its instances offer, and a Conduit names one that its target's type
+offers. Offering is not permission.
+
+**Every permission is an open Conduit.** While a Conduit is open it permits exactly the
+operations it lists, on its target (ACC-003). A request for an operation that no open Conduit
+from that consumer to that target lists is refused (ACC-001). There is no separate object for a
+permission.
+
+A Conduit comes to exist in one of two ways. A template of an Interface, an Agent or a Resource
+can declare it; one Conduit is then made with each instance of that template, and opening it is
+a step of that instance's setup (CON-002). Or a Conduit document names an existing instance as
+its consumer and another as its target (CON-012).
+
+A Conduit can carry restrictions. A filter narrows what may pass through one Conduit. A policy
+limits every request of the actors or targets it is applied to. A restriction only narrows
+(ACC-008). Inspecting a Conduit reports, for each restriction, whether it is enforced or only
+mediated, which means it applies only to requests that pass through the engine (ACC-027).
+
+**The right to open Conduits is itself an open Conduit.** Opening and closing are operations of
+a Resource named `access`. An actor may open a Conduit only if it is the consumer of an open
+Conduit to `access` that lists the opening operation (ACC-006). That Conduit can carry a bound,
+which names the Pools, targets and operations it covers. A right to open is passed on only as
+it is or narrower (ACC-030).
+
+Access begins at first start. Five objects then exist: the Pool `system`, the location `local`,
+the Resources `management` and `access`, and the Interface `root`, which has an open Conduit to
+each of those two Resources (FST-001, FST-002). Any other Interface has no access until a
+Conduit of which it is the consumer is opened (ACC-023).
+
+Closing a Conduit ends all the access it carried, and it is never opened again (ACC-011,
+LIF-006).
+
+## A worked example
+
+These two documents are quoted from the specification's
+[example project](../spec/schemas/examples/valid/project/). The names under `example.org` are
+invented. The first is a Conduit template, from `templates.yaml`:
+
+```yaml
+# A Conduit template with two requirements: the shared-host requirement and a filter. The
+# input `limit` fills an argument of the filter (INS-012).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1}
+      to: [/requirements/rate/arguments/limit]
+      default: 20
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    same-machine:
+      requirement: github.com/shrav-k/conduit/core#shared-host.v1
+    rate:
+      requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: 20
+```
+
+The second is a Conduit made from it, from `instances.yaml`:
+
+```yaml
+# A Conduit instantiated on its own (CON-012). `consumer` and `target` each accept more than
+# one kind, so each is written with its kind (OBJ-013).
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: reviewer-scratch
+from: directory-read
+consumer: {kind: Agent, name: reviewer-1}
+target: {kind: Resource, name: scratch}
+arguments:
+  limit: 10
+```
+
+- `directory-read` has no `from`, so it is a template. It names one capability of the package
+  `example.org/files` and lists one of its operations.
+- It applies two requirements. `shared-host.v1`, from the core package, requires the consumer's
+  location and the target's location to be on the same host. `rate-limit.v1` is a filter, and
+  the input `limit` fills its argument.
+- `reviewer-scratch` has `from`, so it is an instance. Its consumer is the Agent `reviewer-1`,
+  its target is the Resource `scratch`, and it supplies 10 for `limit`.
+- Registering it makes the Conduit, in the state registered. Once the Conduit is opened,
+  `reviewer-1` may ask `scratch` for `directory.read.v1` within the two requirements. This
+  Conduit permits nothing else.
+
+## One lifecycle
+
+Rules: the [lifecycle convention](../spec/conventions/lifecycle.yaml) and
+[declared against observed state](../spec/conventions/observation.yaml).
+
+Every instance of every family has exactly one lifecycle state, and the state only moves
+forward (LIF-001, LIF-006). A template has none.
+
+| State | When an instance has it |
 | --- | --- |
-| Contract / capability | Public typed meaning and behavior; a capability describes what an endpoint offers. |
-| Operation / graph | A callable action and a finite dependency composition of actions. Graphs can implement reusable operations. |
-| Plugin | Published contracts plus implementation bindings to code, existing MCP services, composed operations, or combinations. |
-| Requirement | A reusable, versioned obligation with parameters, applicability and enforcement duties; requirements can compose. |
-| Policy / grant | Authoritative application of requirements, and recorded permission on a particular Conduit participation. |
+| registered | From the moment it is made. |
+| ready | Once its setup has succeeded. A Conduit that is ready is open. |
+| retired | From the moment a request to retire it is dispatched, whatever the outcome. |
 
-These are extension concepts beneath the families, not additional template/instance object stacks.
-Temporary names may evolve without changing their responsibilities. Published language-neutral
-contracts are authoritative; implementations conform. Schemas alone cannot describe every effect,
-recovery or lifecycle guarantee.
+For a Conduit the verbs are open and close, in place of set up and retire. A retired instance
+still exists until it is unregistered, which needs its shutdown to be confirmed or its location
+to have been declared lost (LIF-017).
 
-Conformance describes explicitly supported capabilities. A limited client/plugin need not implement
-an entire runtime; a runtime claiming portable template execution must implement its public graph,
-control, lifecycle and recovery semantics. Physical runtime mechanisms remain replaceable. Exact
-profiles remain authoring work. By the 2026-11-05 ruling, sufficiency of the language
-is shown by two independently built engines passing one set of conformance vectors; see
-[independent builds](implementation/INDEPENDENT_BUILDS.md).
+Whether an instance is running, paused or idle is not a lifecycle state. A type may define such
+conditions, and they are reported beside the state (LIF-011).
 
-A template supplies typed configuration, its setup graph, declared ongoing behavior and permitted
-controls. It can bind compatible contributions from several plugins without a mandatory primary.
-Standard templates and declared defaults simplify authoring, while instances retain explicit resolved
-bindings. Plugins are not required to contain new code or run a separate server each.
+Inspecting an instance returns what was declared, its status and the records about it
+(LIF-013). A difference between what is observed and what was declared is reported, and nothing
+removes it without an explicit request (OBS-004).
+
+## Operations, outcomes and reasons
+
+Rules: the conventions on [operations](../spec/conventions/operations.yaml),
+[revisions](../spec/conventions/revisions.yaml), [records](../spec/conventions/records.yaml) and
+[nothing implicit](../spec/conventions/implicit.yaml).
+
+An operation is a callable action with named inputs and outputs, defined by a contract. Every
+management verb, such as register, set up, open, close and retire, is itself an operation.
+
+A request asks for one operation on one target. The engine makes its own access decision before
+any implementation is invoked (ACC-002). A request that passes the engine's checks is
+dispatched, which begins an invocation. Every request ends in exactly one of seven ways
+([definitions](../spec/definitions.md#how-a-request-ends)):
+
+- With an **outcome**: succeeded, failed or unknown. Unknown means it cannot be confirmed that
+  the effect occurred or that it did not.
+- With a **reason** and no outcome: refused, invalid, conflict or unavailable.
+
+A caller may attach an operation identity to a request so that a repeat is recognized, and at
+most one invocation exists for one caller, one target and one identity (OPS-008). Nothing is
+dispatched again unless the caller repeats the request (IMP-007). An unknown outcome stays
+unknown until an actor reconciles it (OPS-014).
+
+A control is an operation that changes stored settings. A request to change an object names the
+object's current revision, and one that names another reports conflict (REV-002).
+
+Model work starts only as the effect of an operation whose contract is marked as starting it,
+dispatched through an open Conduit that lists it (IMP-001). Setup never starts it. Every access
+decision and every invocation is recorded (REC-001).
+
+## Packages, contracts and the core package
+
+Rules: [contracts](../spec/promises/contracts.yaml), [naming](../spec/promises/naming.yaml),
+[packages](../spec/promises/packages.yaml), the
+[implementation interface](../spec/interface/implementation.yaml) and the
+[core package](../spec/core/README.md).
+
+A contract is a document that states what something is. There are five kinds: `Type`,
+`Capability`, `Operation`, `Requirement` and `Schema`. Its name ends in its compatibility
+version, such as `.v1`.
+
+A package is what an author ships: a manifest and the things it exports. It is identified by an
+address, such as `example.org/files`, and each release has a version. A project's manifest lists
+each package it uses with exactly one version and that version's digest. A document reaches an
+export by a qualified reference: the address, then `#`, then the export's name. A reference
+never carries a version.
+
+An implementation does the work behind an operation. It is reached by a command, by a URL or as
+a graph, which is a set of steps ordered only by their dependencies. An existing server that
+was not written for Conduit can be one; its manifest item marks it `plain`.
+
+The shared wire between an engine and an implementation, and between an engine and a consumer,
+is the Model Context Protocol. An operation is one tool, and the engine presents to each
+consumer, as tools, the operations its open Conduits list (IFC-012).
+
+The core package is built into every engine. It exports the templates of the first-start
+objects, the contracts of the management operations and the schemas of documents. It needs no
+manifest item and cannot be replaced.
+
+## Three layers, and what is outside them
+
+The specification has three layers ([spec/README.md](../spec/README.md#what-this-is)), and every
+promise says which one it belongs to.
+
+| Layer | What it determines |
+| --- | --- |
+| `language` | What a set of documents means: which objects they make, how those relate, and what is valid. |
+| `convention` | The few behaviors every part must agree on, stated as invariants. There are seven: operation identity and outcomes; revision-checked change; access; declared against observed state; ownership and lifecycle; records; and that nothing starts model work or repeats an effect implicitly. |
+| `interface` | The implementation interface: the Model Context Protocol as the shared wire, with the keys Conduit adds to it. |
+
+Two things are deliberately outside it, and neither binds other engines:
+
+- **How one type behaves**, such as the conditions it defines or a directory's edge cases. That
+  belongs to the type's contract.
+- **How an engine gets from documents to a running system**, such as scheduling, retries and
+  process layout. That belongs to the engine's runtime profile: its documented choice for every
+  item of the [implementation-defined list](../spec/implementation-defined.yaml).
+
+An engine claims conformance at a level the specification names. The Language level covers
+the layer `language`. The Engine level adds the other two layers and a runtime profile
+([conformance](../spec/README.md#conformance)). For graphs, schemas and packages, which are not
+what distinguishes Conduit, the specification adopts existing standards
+([schema profile](../spec/schema-profile.md)).
+
+No promise is yet tested by a conformance vector, and there is no reference model. The
+[plan audit](AUDIT.md#where-things-stand) tracks the state of the work.
 
 ## One user journey
 
-1. The local owner starts the root Interface from a locally available definition. Its graph establishes
-   the system Pool, management/access-management Resources and ordinary management Conduits/grants.
-   Later startup reuses them; missing components require explicit repair.
-2. Through the Interface, the user composes an application Pool with named Resource-template entries.
-   Listing an entry does not deploy it, authenticate an account or grant access.
-3. Explicit setup provisions selected Resources or selects existing ones. A shared authentication
-   Resource can support a Linear integration through a Conduit, while a directory Resource exposes
-   the project files. Ready Resources can be used while unrelated setup is incomplete.
-4. Agents start from templates with their own model subscriptions/private state and declared Conduits
-   to permitted capabilities. They reuse shared service authentication under their individual grants.
-5. Users and authorized Agents inspect objects, add/remove connections and invoke supported controls.
-   The Interface relates each request to its effects, progress, failures and evidence.
-
-Native provider tools preserve their familiar contracts where supported. A managed MCP endpoint may
-proxy them without forcing a generic replacement tool or one combined gateway. Shared provider login
-is distinct from the calling Agent's authorization and from its model subscription.
-
-## Construction, controls and recovery
-
-Registration performs no provisioning or model work. Explicit establishment executes a finite graph
-of typed operations; output bindings establish dependencies. Inputs use literals, typed references
-and explicit object/list assembly. Calculations, other transformations and provider branching/polling
-remain in plugins initially. The instance
-owns ongoing processes, including a runtime started during setup.
-Graph completion, readiness and execution status are separate observations.
-
-Running instances preserve their selected code and contracts against source edits. In edit mode,
-development replaces affected instances without archiving every revision. Deliberate preservation
-for later selection requires a versioned publication of fixed package contents through a public or
-private distribution source. Conduit need not host releases. Release identity is independent of
-running instances and does not promise compatibility with future runtimes.
-Definition or implementation upgrades require replacement in v0. Named typed controls
-can change their permitted settings. The single stored configuration advances only after application
-is confirmed; pending/uncertain requests are recorded separately. Controls normally serialize per target
-and check its inspected revision, with contract-declared safe exceptions.
-
-Failed setup preserves successful work by default. Explicit retry reuses only valid progress and
-reconciles uncertain effects. A timeout does not prove failure; reconnection is not permission to replay
-a write or start model work. Stop, detachment, unregistration and backing-data purge have distinct effects.
-Retirement stops new work and permits unregistration only after required shutdown duties are
-confirmed. Preserve shared dependencies and operation evidence; local shutdown does not prove an
-external effect was cancelled. Missing confirmation leaves retirement incomplete.
-
-## Identity and access
-
-The accepted authoring envelope uses `apiVersion`, `kind`, `form`, `metadata` and `spec`. Inspection
-adds system-owned `status`; ordinary authoring rejects it. Strict typed YAML excludes ambiguous implicit
-conversions, duplicate keys, anchors/aliases, merge keys, custom tags and undeclared fields. Exact further
-package/schema formats remain proposals.
-
-Stable IDs survive renaming; names are unique per family across forms. Authored kind/form/name references
-resolve to IDs that remain bound until explicitly rebound. Creation/update intent is explicit; template
-edits are checked complete replacements, and editing a file alone does not change active configuration.
-Instances materialize defaults and export current stored settings, not live credentials, grants or progress.
-
-Ordinary managed access requires a recorded participation grant, including root management access.
-Governing requirements apply independently of administering Interfaces. Every applicable restriction on
-the selected path must pass; separate paths cannot mix operations and targets into broader permission.
-Requirements and Pool membership do not grant access. Grant administration checks current authority;
-issued grants do not depend on issuer ancestry or continued activity. Recipient detachment, withdrawal
-and current restrictions govern use. V0 has no offline grants.
-
-Resources serving callers use their own dependency grants while preserving authenticated caller
-context and enforcing applicable restrictions on effects and returned content. Autonomous maintenance
-uses the Resource's own authority. A caller need not receive direct access to internal backing services;
-a broader internal grant cannot widen what the caller can cause or receive.
-
-Endpoint instances select/manage their implementations; Conduits coordinate compatible capabilities,
-requirements and participation. Required setup failures block preparation, optional failures are reported,
-and later dependency failures normally allow unrelated work. Ending the last logical participation ends
-a Conduit; later access uses a new instance. A transport outage alone does not end participation.
-
-## Shared content, communication and observation
-
-Memory, search, workspaces, integrations and authentication are Resource capabilities. The accepted
-memory contracts include revisioned records, provenance, bounded scoped search, direct read-only sharing
-and declared source dependencies for derived content. Native service data keeps its provider contracts.
-Resources stay unitary; storage, search and integration remain distinct responsibilities by default.
-Contexts can be ordinary Resources exposing plugin-backed capabilities, using their own data or
-authorized connections to other Resources. There is no additional universal Context layer;
-filtered access alone can use a Conduit without creating another Resource.
-
-The initial communication capability is a Pool-owned append-only shared history with independent
-read positions and current-access checks. It supports explicit participation, bounded catch-up and
-state inspection. Next-turn unread notices do not automatically wake Agents. Reading is not evidence
-of understanding or task acceptance. Other communication modes remain extensible. Linear/Jira and
-specialized message tracking are ordinary Resources, with no mandatory tracker abstraction.
-
-Control and observability are inseparable in the Interface. Local authoritative operation/recovery
-evidence survives frontend closure and optional exporter failure. A lightweight observation bundle
-adds correlated traces/diagnostics, small health metrics and optional OpenTelemetry export; plugins can
-add CPU/token or other domain observations. Report freshness, uncertainty and coverage. Real payload
-capture needs explicit policy; credentials stay out of ordinary logs. Retained controlled content/evidence
-remains until explicit purge, with external retention limits reported.
-
-## First implementation and limits
-
-**V0 acceptance scenario (owner rulings, 2026-11-05):** two Agents share a project directory and a
-message history on one location (scenario S1), and one service login is shared by two Agents under
-different restrictions (scenario S2). Both must pass every method of the
-[experiment program](AUDIT.md#experiment-program). Running them with real Claude and Codex Agents,
-and the two-Claude, two-Codex account check, are later gates. This is the first proof, not the
-scope. Passing it removes nothing from the model above, and no capability is narrowed because these
-scenarios do not exercise it; see the [scope guard](AUDIT.md#scope-guard).
-
-Management owns registration/templates and shared policy; one designated service owns each instance's
-confirmed configuration and outcomes. Executors supervise managed activity; backends own domain data.
-The Interface aggregates sources rather than becoming another writable authority. Initial persistence
-uses a minimal public plugin contract with bundled SQLite as a service dependency. Secret custody uses
-replaceable OS adapters, initially macOS Keychain, with Interface-guided enrollment/unlock.
-
-Proof order (ruled 2026-11-05): placement in the language, then separated components under a simulated
-network, then real processes, then two machines. That proof uses management and two execution services, instance-associated
-helpers for authored code, composed operations/requirements, failure injection and Interface inspection.
-Then validate native Claude/Codex adapters on macOS, followed by Conduit's own Rust model/tool loop.
-Two-Claude/two-Codex accounts and later two-machine support require their own evidence. Pi supplies
-research/frontend inspiration; Xerj is an optional Resource backend.
-
-Native execution remains the default; isolated execution is optional or required by an Agent's fixed
-contract and cannot be claimed until demonstrated. Managed access enforcement is not universal native
-host interception. BYO compatible skills remain native, explicitly activated from permitted Resources.
-
-The [review](archive/reviews/CONCEPTUAL.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
-The behavior/structure review is complete. The naming pass now comes last; the normative
-surface, schemas, reference model and conformance vectors come first ([plan audit](AUDIT.md)). Remote/multi-user operation,
-automatic wake, general authored loops, in-place
-definition upgrades and a marketplace remain deferred. The [collaborator proposals](archive/collaborator-proposals/REVIEW.md)
-are evaluated against this model; they do not silently add deployment requirements.
+Older documents link to this heading. The journey it described was written before the
+specification and no longer holds. See the [worked example](#a-worked-example) above and the
+[example project](../spec/schemas/examples/valid/project/).

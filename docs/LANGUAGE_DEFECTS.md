@@ -9,13 +9,20 @@ This register feeds condition G7 of the
 [readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate). The
 [plan audit](AUDIT.md) tracks the surrounding work.
 
+**What this register covers.** It covers the first sweep, which read the protocol topics under
+[docs/protocol](protocol/README.md) before the [specification](../spec/README.md) existed. The
+table of defects stops there. Findings against `spec/` are not added here: they are in the
+[re-audit record](proposals/reaudit/README.md). Defect text keeps the words of the text it was
+found in, such as handler, plugin, grant, provision, host and join; the terms in force are in
+[spec/definitions.md](../spec/definitions.md).
+
 **These defects were found against a stronger claim than the one now in force.** The readers were
 asked where two engines could differ in any observable behavior. On 2026-11-05 the owner adopted
 the [layered claim](AUDIT.md#layered-claim): the language determines what declarations mean, and
 behavior beyond a few shared conventions belongs to type contracts and a runtime profile. Each
-defect below is to be re-triaged by layer, as the
+defect below was then re-triaged by layer, as the
 [defect closure plan](AUDIT.md#defect-closure-plan) describes. Only those assigned to the language
-or the shared conventions are language defects in the strict sense; the rest become decisions for
+or the shared conventions are language defects in the strict sense; the rest are decisions for
 a type contract or the runtime profile.
 
 ## Triage by layer
@@ -59,12 +66,23 @@ judged that many more remain. This list is therefore a lower bound.
 
 ## Status values
 
-`open`, `fix proposed` (a rule is drafted and awaits an owner ruling), `ruled` (the owner has
-decided; the language text is not yet changed), `closed` (the language states the rule and a
-vector covers it), `implementation-defined` (deliberately left to implementations and listed as
-such).
+| Status | Meaning |
+| --- | --- |
+| `open` | Not decided. |
+| `fix proposed` | A rule is drafted and awaits an owner ruling. |
+| `ruled` | The owner has decided, and the rule is written as the promises the row names. No vector covers it yet. |
+| `closed` | The language states the rule and a vector covers it; or the question no longer arises, and the row gives the reason. |
+| `implementation-defined` | Deliberately left to each engine. The row names the item, `DLn`, of the [implementation-defined list](../spec/implementation-defined.yaml) that covers it. |
+
+A promise identifier in a status, such as `OPS-012`, names a promise in [spec](../spec/README.md)
+as it stands now. Where a promise first cited was later folded into another, the row cites the
+one that replaced it. The comment at the head of each file under `spec/` says where each removed
+identifier went.
 
 ## Sweep rounds
+
+The notes in this table are a history. Their promise ranges and counts are as first written,
+and some of the promises in those ranges were later folded into others.
 
 | Round | Date | Method | New defects | Notes |
 | --- | --- | --- | --- | --- |
@@ -112,16 +130,16 @@ such).
 | L26 | U | Language | Graphs | A prerequisite listed twice, or listed for a step that is also data-bound: rejected or accepted. | State one. | ruled: GRA-009; vector pending |
 | L27 | U | Language | Packages | Whether installing a package registers its exported templates, and how a registry reference reaches a package export. Two packages exporting a Resource template `shared-history` collide with per-family unique names. | State whether install registers templates and how references name a package export. | ruled: NAM-001 to NAM-017; vector pending |
 | L28 | U | Language | Packages | When an implementation binding is resolved and captured: at template registration, instance creation or first start. Reading installed-package state at creation also makes instantiation impure. | Bind and capture at instance creation, before any effect, recording the digest in the instance; or owner picks another point. | ruled: PKG-005; vector pending |
-| L29 | C/U | Language | Bootstrap | Foundational inventory, order and placement. The protocol says the system Pool owns two management Resources; the placement record adds the local execution location. Names, types, placements and creation order are unstated, and creation "goes through its owning Pool" before the Resource that performs creation exists. | Enumerate the foundational objects, their names, types, placements and creation order. | ruled: FST-001 to FST-004; vector pending |
-| L30 | U | Language | Packages | Where a package must be installed (management or each location), and where a plugin declares its own needs of a location. | Define install scope and let implementation bindings declare location needs, checked like type needs. | ruled: PKG-015; vector pending |
+| L29 | C/U | Language | Bootstrap | Foundational inventory, order and placement. The protocol says the system Pool owns two management Resources; the placement record adds the local execution location. Names, types, placements and creation order are unstated, and creation "goes through its owning Pool" before the Resource that performs creation exists. | Enumerate the foundational objects, their names, types, placements and creation order. | ruled: FST-001 to FST-003, FST-005, OBJ-002; vector pending |
+| L30 | U | Language | Packages | Where a package must be installed (management or each location), and where a plugin declares its own needs of a location. | Define install scope and let implementation bindings declare location needs, checked like type needs. | ruled: PLC-007; vector pending |
 | L31 | C/X | Convention | Bootstrap | Authority of a second Interface: "Interfaces are unrestricted" against "future access policy is deferred" and the recorded-grant rule. An Agent with instance-creation rights could mint an unrestricted Interface. | Only the root receives foundational grants; any other Interface starts with none. | ruled: ACC-022, ACC-023; vector pending |
 | L32 | U | Runtime | Bootstrap | What triggers first initialization and what a repeated or half-finished initialization does; where resume progress lives before persistence exists. | Define a durable initialization marker and the outcome of initialization in each state. | implementation-defined: DL6 |
 | L33 | X/D | Convention | Bootstrap | Revoking the root's management grant: refused, allowed and unrecoverable, or re-issued from owner verification, which is a standing bypass. | Owner decision: a non-revocable root grant, or a defined, audited owner-verified re-issue. | ruled: ACC-024; vector pending |
 | L34 | D/X | Runtime | Bootstrap | "Verified local-owner context" is undefined, so any process under the owner's OS account, including an Agent, may count as an owner frontend. | Define the observable rule for accepting a frontend attachment and a repair request. | implementation-defined: DL6 |
-| L35 | U | Language | Packages | Resolving a dependency alias when several releases and an edit-mode copy of one package are installed; the scope of a "configured default". | A selection names identity plus release or edit source; ambiguity is rejected at one named point. | ruled: PKG-002, PKG-003; vector pending |
+| L35 | U | Language | Packages | Resolving a dependency alias when several releases and an edit-mode copy of one package are installed; the scope of a "configured default". | A selection names identity plus release or edit source; ambiguity is rejected at one named point. | ruled: NAM-006, PKG-003; vector pending |
 | L36 | U | Runtime | Bootstrap | "Missing or inconsistent" foundational components on a later start: what is checked and which operations remain available. | List the checks and the permitted operations in the reported state. | implementation-defined: DL6 |
-| L37 | C | Language | Packages | Type-default handlers against the single dependency map: a default handler from a package absent from the template's map, or two aliases contributing the same control. | State whether type defaults create bindings outside the map; reject duplicate contributions to one slot. | ruled: PKG-009 to PKG-011; vector pending |
-| L38 | U | Language | Packages | Where an unresolved dependency is accepted or rejected, and whether an existing instance late-binds when the package is installed later. | Unresolved templates may register; instance creation requires full resolution. | ruled: PKG-006 to PKG-008; vector pending |
+| L37 | C | Language | Packages | Type-default handlers against the single dependency map: a default handler from a package absent from the template's map, or two aliases contributing the same control. | State whether type defaults create bindings outside the map; reject duplicate contributions to one slot. | ruled: TPL-003, TPL-004, CTR-004; vector pending |
+| L38 | U | Language | Packages | Where an unresolved dependency is accepted or rejected, and whether an existing instance late-binds when the package is installed later. | Unresolved templates may register; instance creation requires full resolution. | ruled: PKG-006, PKG-007, NAM-011; vector pending |
 | L39 | C | Runtime | Packages | Edit mode against the rule that conflicting definitions of one contract identity and version cannot coexist. | Scope conflict detection to released artifacts, or require a version bump. | implementation-defined: DL7 |
 | L40 | U | Runtime | Bootstrap | Where code for Pool, Conduit and Interface instances runs, given that they carry no placement but every type must state its location needs. | Name the execution site for management-held families. | implementation-defined: DL6 |
 | L41 | C | Runtime | Bootstrap | Whether repair uses the root definition bundled with the current runtime or the one the root instance retained, after a runtime upgrade. | State which governs and whether foundational objects can be retired or renamed. | implementation-defined: DL6 |
@@ -132,8 +150,8 @@ such).
 | L46 | D | Language | Conformance | What a conformance claim must list and where unsupported semantics are reported. No minimum profile exists, so two conforming engines may support disjoint surfaces. | Define the v0 profile both builds implement and the reporting point. | ruled: conformance section of the specification; vector pending |
 | L47 | U | Convention | Packages | Whether plugin state is isolated per instance or shared when two instances use one plugin. | Guarantee per-instance isolation, or state that plugins must assume neither. | ruled: PKG-016; vector pending |
 | L48 | D | Language | Packages | The content digest is not deterministic across engines: algorithm, canonical form, file modes and symlinks are unspecified. | Specify the canonical manifest and algorithm. | ruled: PKG-004; vector pending |
-| L49 | C | Language | Instantiation | Protocol text still describes creation as editing ordinary fields of a draft, against the instantiation record's closed inputs; direct creation of a complete instance is unbounded. | Rewrite the creation text and bound direct creation. | ruled: INS-001 to INS-017; vector pending |
-| L50 | U | Convention | Bootstrap | Which target authorizes Resource creation: the owning Pool, the management Resource, or both. | Name the operation's target. | ruled: ACC-025; vector pending |
+| L49 | C | Language | Instantiation | Protocol text still describes creation as editing ordinary fields of a draft, against the instantiation record's closed inputs; direct creation of a complete instance is unbounded. | Rewrite the creation text and bound direct creation. | ruled: INS-001 to INS-014, INS-016, INS-017, OBJ-013; vector pending |
+| L50 | U | Convention | Bootstrap | Which target authorizes Resource creation: the owning Pool, the management Resource, or both. | Name the operation's target. | ruled: ACC-033; vector pending |
 | L51 | D | Convention | Operations | Who mints an operation identity, its scope, and its relation to the "operation reference". With a receiver-minted reference, a retry after a lost response dispatches twice. | The caller mints a unique identity before the first send; the receiver keys its record on target instance and identity. | ruled: OPS-008; vector pending |
 | L52 | X | Convention | Operations | The enforcement point for a call crossing two locations is unstated. If one engine checks at the caller and the other trusts the caller, no check runs. | The target instance's authority always checks at dispatch and at delivery. | ruled: ACC-002, OPS-017; vector pending |
 | L53 | C/D | Runtime | Outage | How "current permission cannot be established" is detected: a live query per dispatch, or a local copy treated as available authority. The protocol and the placement record read differently. | Owner decision: a live answer per dispatch, or a versioned answer with a stated maximum age; then specify the exchange and timeout. | implementation-defined: DL4 |
@@ -204,9 +222,9 @@ such).
 | L118 | D | Language | Identity | Name comparison (case) and what happens when a generated name collides. | Exact comparison over a restricted character set; regenerate a bounded number of times, then conflict. | ruled: OBJ-001, OBJ-003; vector pending |
 | L119 | U | Language | Instantiation | Direct creation of a complete instance definition that carries its own graph and controls with no template. | Owner decision: validated against the type contract only, or rejected. | ruled: every instance comes from a template (ruling 18) |
 | L120 | C | Convention | Authority | Interfaces are "unrestricted", yet the root needs a recorded grant that any grant administrator may revoke; a second Interface has no stated authority. | Owner decision: the root grant is outside ordinary administration, or revocable with owner recovery as the only way back; state whether non-root Interfaces need grants. | ruled: ACC-022 to ACC-024; vector pending |
-| L121 | U | Convention | Authority | A revoked grant is silently re-established when the Agent's declared connection is set up again on restart or import. | A withdrawal is recorded on the participation; setup, reconnect, restart and import never reissue it. | ruled: CON-010, LIF-008; vector pending |
-| L122 | U | Convention | Authority | The extent of a grant established at connection: exactly the requested access, or the establisher's maximum narrowed by filters. An empty request grants nothing or everything. | A connect-time grant equals the enumerated requested access; an empty request grants nothing. | ruled: ACC-003, ACC-004; vector pending |
-| L123 | U | Convention | Authority | Telling an "explicit broader request" from a caller-added restriction without a subset check. | Positive access (targets, operations) is compared and refused unless provably within bounds; restrictions are only conjoined. | ruled: ACC-007; vector pending |
+| L121 | U | Convention | Authority | A revoked grant is silently re-established when the Agent's declared connection is set up again on restart or import. | A withdrawal is recorded on the participation; setup, reconnect, restart and import never reissue it. | ruled: LIF-008; vector pending |
+| L122 | U | Convention | Authority | The extent of a grant established at connection: exactly the requested access, or the establisher's maximum narrowed by filters. An empty request grants nothing or everything. | A connect-time grant equals the enumerated requested access; an empty request grants nothing. | ruled: ACC-003; vector pending |
+| L123 | U | Convention | Authority | Telling an "explicit broader request" from a caller-added restriction without a subset check. | Positive access (targets, operations) is compared and refused unless provably within bounds; restrictions are only conjoined. | ruled: ACC-006; vector pending |
 | L124 | U | Runtime | Authority | Cannot-verify: hold or fail, for how long, and how it ranks against a known missing grant. The three-way decision result is not in the protocol reference. | Default to an immediate, distinct cannot-verify result; a known missing grant is a refusal. | implementation-defined: DL4 |
 | L125 | U | Runtime | Authority | A rule change between admission, dispatch and delivery: whether the caller still learns the outcome and identity of its own dispatched write. | The outcome status and operation identity always reach the originator; payload delivery is rechecked. | implementation-defined: DL4 |
 | L126 | U | Runtime | Authority | Routing: whether an automatic resolution is sticky when a second route appears, what a configured choice is keyed on, and what happens when the chosen route is revoked. | Owner decision on stickiness and key; a recorded choice never switches automatically. | implementation-defined: DL4 |
@@ -216,7 +234,7 @@ such).
 | L130 | D | Type | Authority | Classifying provider tools discovered later against a grant for "read operations". | Bundles expand to named operations at issuance; an unlisted tool is refused. | open |
 | L131 | U | Convention | Authority | A Resource that newly matches a governing binding but whose plugin does not support the requirement: exempt, unavailable, or provisioning refused. | A matched but unsupported target has the governed capability unavailable. | ruled: ACC-015; vector pending |
 | L132 | U | Convention | Authority | An operation a requirement cannot evaluate, within its declared applicability. | The operation is unavailable. | ruled: ACC-014; vector pending |
-| L133 | U | Convention | Authority | A filter the endpoint does not support, at establishment: refuse, establish with everything unavailable, or establish partly. | Pick one; state the same for a binding added to a live Resource. | ruled: ACC-013; vector pending |
+| L133 | U | Convention | Authority | A filter the endpoint does not support, at establishment: refuse, establish with everything unavailable, or establish partly. | Pick one; state the same for a binding added to a live Resource. | ruled: CON-022; vector pending |
 | L134 | U | Convention | Authority | The authority needed to delegate: holding the access, holding an administrative grant, or both. | Delegation is grant issuance; only the administrative grant's bounds are checked. | ruled: ACC-006; vector pending |
 | L135 | U | Convention | Authority | Revoking or changing a grant wider than the administrator's own extent; whether partial revocation exists. | Owner decision. | ruled: ACC-011, ACC-012; vector pending |
 | L136 | U | Convention | Authority | Issuing a grant that exceeds the recipient Agent's limits: refused, or issued but ineffective until the limit lifts. | Choose one; state whether Agent limits are actor-wide governing bindings. | ruled: ACC-026; vector pending |
@@ -225,13 +243,13 @@ such).
 | L139 | U | Type | Authority | Mixed-access content "withheld as a whole": the unit, what the caller sees, and whether limits apply before or after withholding. | The unit is the record; state the notice form and the order relative to limits. | open |
 | L140 | U | Convention | Authority | Whether a composite Conduit carries one grant or one per component, and a composite filter naming an operation a component lacks. | Grants are per component participation; an unevaluable composite restriction makes that component unavailable. | ruled: CON-003; vector pending |
 | L141 | U | Runtime | Authority | Replacing the service identity behind a recorded route: continues as the same path, or needs a new explicit choice. | A changed recorded service identity invalidates the selection. | implementation-defined: DL4 |
-| L142 | U | Convention | Authority | Whether refusals and cannot-verify results are recorded, with what fields, and what reason the caller sees. | Require a record for every decision with a minimum field set and a caller-visible reason class. | ruled: ACC-020, ACC-021; vector pending |
+| L142 | U | Convention | Authority | Whether refusals and cannot-verify results are recorded, with what fields, and what reason the caller sees. | Require a record for every decision with a minimum field set and a caller-visible reason class. | ruled: REC-001, OPS-005; vector pending |
 | L143 | U/D | Convention | Conduits | What ends logical participation: whether a crash, stop, pause, close or delete of the consumer does, or only an explicit detach. This decides when a Conduit and its grants end. | Enumerate the events that end participation and say for each whether it does. | ruled: CON-007, CON-008; vector pending |
 | L144 | D | Language | Conduits | Preparing a consumer again with an `open` declaration: reuse the existing Conduit or open a second with a new identity and no grants. | A declaration holds at most one live participation; re-preparation reuses it unless the flow has ended. | ruled: CON-002, CON-004; vector pending |
 | L145 | C | Language | Conduits | Joining an instance that has ended: "later participation opens a new instance" against "join requires a flow that has not ended". | Owner decision. Proposed: a join to an ended instance fails; a new instance needs an explicit open. | closed: a Conduit is pairwise, so there is no join (ruling 17) |
 | L146 | U | Language | Conduits | Whether a Conduit with no consumer is live, and how two Agents from one template come to share one conversation rather than opening two. | State whether a zero-consumer Conduit is live and define the open-then-join sequence. | closed: a Conduit is pairwise, so there is no join (ruling 17) |
-| L147 | U | Language | Conduits | The registry state of an ended Conduit: removed, or retained as ended so that its name stays taken. | Specify the state and who unregisters it. | ruled: LIF-007, CON-010; vector pending |
-| L148 | U | Convention | Conduits | Which grant, if any, preparation establishes on a re-open or a rejoin, and under whose authority. | Define it for the first open and every re-open. | ruled: ACC-005, CON-010; vector pending |
+| L147 | U | Language | Conduits | The registry state of an ended Conduit: removed, or retained as ended so that its name stays taken. | Specify the state and who unregisters it. | ruled: LIF-007, LIF-008; vector pending |
+| L148 | U | Convention | Conduits | Which grant, if any, preparation establishes on a re-open or a rejoin, and under whose authority. | Define it for the first open and every re-open. | ruled: ACC-005, LIF-008; vector pending |
 | L149 | D | Language | Conduits | Composite Conduits: how many instances one open creates, whether components are shared between consumers, how required and optional component failures aggregate, and when components end. | Specify the instances created per open, the aggregation rule and last-consumer per component. | ruled: CON-003; vector pending |
 | L150 | U | Language | Pools | Provisioning a composition twice under a new request: duplicates, no-op or conflict; and which of two `auth` Resources a later sibling binds to. | Retry means the same operation identity only; say whether a composition is provision-once; make sibling references unambiguous. | ruled: POOL-003, POOL-004; vector pending |
 | L151 | U | Type | Communication | A participant's initial read position, the catch-up bound, what is returned beyond it, and whether the history has one total order under concurrent posts. | State the initial position, the bound, over-bound behavior and a single total order assigned at acceptance. | open |

@@ -6,7 +6,19 @@ The names (the core package's address, a document's `apiVersion`, and the prefix
 specification uses them. This tool keeps the two in step.
 
     python3 tools/set_names.py --check
-        Verify that spec/ agrees with spec/names.yaml. Exit 1 if not.
+        Verify that spec/ agrees with spec/names.yaml. Exit 1 if not. It reports:
+          - a retired name, anywhere;
+          - one of Conduit's `_meta` keys written with another prefix. The keys are read from
+            spec/interface/implementation.yaml, so a key added there is checked everywhere;
+          - a value that looks like one of the three names and is not it: an `apiVersion`
+            with another value; an address that ends as the core package's or the
+            `apiVersion`'s does, or that begins with the repository, and is neither; and a
+            key under the prefix, or a prefix close to it, that the specification does not
+            define;
+          - a name that appears nowhere.
+        The check reads text and knows nothing of YAML. It takes a token of the form
+        `<dotted name>/<key>` to be a `_meta` key, and an address whose last part is the
+        core package's last part to be meant as the core package.
 
     python3 tools/set_names.py --domain example.org
     python3 tools/set_names.py --github owner/repo
@@ -19,6 +31,7 @@ No third-party modules are needed.
 from __future__ import annotations
 
 import argparse
+import difflib
 import pathlib
 import re
 import sys
@@ -28,6 +41,17 @@ NAMES = ROOT / "spec" / "names.yaml"
 KEYS = ("repository", "corePackage", "apiVersion", "metaPrefix")
 DEFAULT_ROOTS = ("spec", "conformance", "reference-model")
 TEXT_SUFFIXES = {".yaml", ".yml", ".md", ".json", ".rs", ".toml", ".txt"}
+# The file that defines Conduit's `_meta` keys. The list of keys is read from it.
+INTERFACE = ROOT / "spec" / "interface" / "implementation.yaml"
+# Prefixes of `_meta` keys that are not Conduit's: the Model Context Protocol's own.
+FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
+# A run of characters that can make up a name, a reference or a path.
+TOKEN = re.compile(r"[A-Za-z0-9._/#:-]+")
+DNS_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+")
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9]*")
+API_VERSION_VALUE = re.compile(r"\bapiVersion: *['\"]?([^\s,}`'\"]+)")
+# How close a dotted prefix must be to the current one to count as a misspelling of it.
+CLOSE = 0.8
 
 
 def read_names() -> tuple[dict[str, str], list[str]]:
@@ -99,13 +123,63 @@ def files(roots: list[str]) -> list[pathlib.Path]:
     return out
 
 
+def meta_keys(prefix: str) -> list[str]:
+    """The names of Conduit's `_meta` keys: every word the interface file writes after the prefix."""
+    if not INTERFACE.exists():
+        sys.exit(f"{INTERFACE}: missing; the `_meta` keys are read from it")
+    found = re.findall(re.escape(prefix) + r"([A-Za-z][A-Za-z0-9]*)", INTERFACE.read_text())
+    keys = sorted(set(found))
+    if not keys:
+        sys.exit(f"{INTERFACE}: no `_meta` key with the prefix {prefix!r}")
+    return keys
+
+
+def look_alikes(token: str, names: dict[str, str], keys: list[str], in_interface: bool) -> list[str]:
+    """Say why a token looks like one of the three names without being it."""
+    core, api, prefix, repo = names["corePackage"], names["apiVersion"], names["metaPrefix"], names["repository"]
+    if "://" in token:  # A URL is not a name.
+        return []
+    token = token.rstrip(".:")
+    head = token.split("#", 1)[0]
+    if not head or head in (core, api, repo, prefix):
+        return []
+    first, slash, rest = head.partition("/")
+    if not slash or not DNS_NAME.fullmatch(first):
+        return []
+    # One dotted name, then one word or nothing: the shape of a `_meta` key.
+    if "/" not in rest:
+        if first + "/" == prefix:
+            if rest not in keys:
+                return [f"{head!r} is not a `_meta` key that {INTERFACE.relative_to(ROOT)} defines"]
+            return []
+        if first + "/" in FOREIGN_META_PREFIXES:
+            return []
+        if rest in keys:
+            return [f"`_meta` key {head!r} does not use {prefix!r}"]
+        if rest == "" or WORD.fullmatch(rest):
+            if in_interface and rest:
+                # In the interface file a dotted name and one word is a `_meta` key.
+                return [f"{head!r} is read as a `_meta` key, and does not use {prefix!r}"]
+            if difflib.SequenceMatcher(None, first + "/", prefix).ratio() >= CLOSE:
+                return [f"{head!r} looks like the prefix {prefix!r} and differs from it"]
+        if rest == "":
+            return []
+    # An address: a host part and a path.
+    last = head.rsplit("/", 1)[1]
+    if last == core.rsplit("/", 1)[1]:
+        return [f"{head!r} looks like the core package's address {core!r} and differs from it"]
+    if last == api.rsplit("/", 1)[1]:
+        return [f"{head!r} looks like the `apiVersion` {api!r} and differs from it"]
+    if head.startswith(repo + "/"):
+        return [f"{head!r} begins with the repository {repo!r} and is neither {core!r} nor {api!r}"]
+    return []
+
+
 def check(roots: list[str]) -> int:
     names, retired = read_names()
+    keys = meta_keys(names["metaPrefix"])
     errors = []
     seen = {k: 0 for k in ("corePackage", "apiVersion", "metaPrefix")}
-    # Anything that looks like one of Conduit's `_meta` keys or a core reference must use the
-    # current names.
-    meta_key = re.compile(r"([A-Za-z0-9.-]+/)(interfaceVersion|operationIdentity|restrictions|serving)\b")
     for p in files(roots):
         if p == NAMES:
             continue
@@ -114,12 +188,19 @@ def check(roots: list[str]) -> int:
         for k in seen:
             seen[k] += text.count(names[k])
         for n, line in enumerate(text.splitlines(), 1):
+            found = []
             for old in retired:
                 if old in line:
-                    errors.append(f"{rel}:{n}: retired name {old!r}")
-            for m in meta_key.finditer(line):
-                if m.group(1) != names["metaPrefix"]:
-                    errors.append(f"{rel}:{n}: `_meta` key {m.group(0)!r} does not use {names['metaPrefix']!r}")
+                    found.append(f"retired name {old!r}")
+            # The value of an `apiVersion` key, wherever a document is written out.
+            for m in API_VERSION_VALUE.finditer(line):
+                value = m.group(1).rstrip(".")
+                if value != names["apiVersion"] and not value.startswith(("{", "<", "$")):
+                    found.append(f"`apiVersion` is {value!r}, not {names['apiVersion']!r}")
+            for m in TOKEN.finditer(line):
+                found.extend(look_alikes(m.group(0), names, keys, p == INTERFACE))
+            for message in dict.fromkeys(found):
+                errors.append(f"{rel}:{n}: {message}")
     for k, count in seen.items():
         if count == 0:
             errors.append(f"spec/names.yaml: {k} = {names[k]!r} appears nowhere under {', '.join(roots)}")

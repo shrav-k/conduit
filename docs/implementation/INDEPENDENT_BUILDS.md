@@ -2,13 +2,15 @@
 
 Status: the roles and independence rules were accepted by the owner on 2026-11-05, and the scope
 below follows layer decision LD4 of the same day. **The builds have not started and must not
-start until the [readiness gate](#readiness-gate) passes.** Directory and branch names are
-proposals; the [form of the specification](../proposals/normative-surface/README.md) is ruled.
+start until the [readiness gate](#readiness-gate) passes.** The specification exists as a draft
+in [spec/](../../spec/README.md), and its [form](../proposals/normative-surface/README.md) is
+ruled. `conformance/`, `reference-model/` and the branches named below do not exist yet; their
+names are proposals.
 
 ## What the builds prove
 
 The claim under test is the [layered claim](../AUDIT.md#layered-claim): the language fully
-determines what a set of declarations means, and the shared conventions hold as invariants. The
+determines what a set of documents means, and the shared conventions hold as invariants. The
 recognized public evidence for a claim of this kind is two independent implementations passing
 one shared test suite.
 
@@ -17,7 +19,7 @@ Neither checks the other's work. Each covers three things:
 
 | Part | What it is | How the two are compared |
 | --- | --- | --- |
-| Language layer | Declarations in; resolved objects and diagnostics out. A pure function with no effects. | On the public and held-out vectors, and on generated declarations, where any difference in output is a finding. |
+| Language layer | Documents in; resolved objects and diagnostics out. A pure function with no effects. | On the public and held-out vectors, and on generated documents, where any difference in output is a finding. |
 | Shared conventions | A minimal engine that honors the seven conventions: operation identity and outcomes, revision-checked change, access, declared against observed state, ownership and lifecycle, records, and that nothing starts model work or repeats an effect implicitly. | On convention vectors. |
 | Implementation interface | The shared wire between an engine and an implementation. | The same test implementations must work unchanged against both engines. |
 
@@ -32,7 +34,7 @@ in any other engine.
 
 | Role | Who | May see | Produces |
 | --- | --- | --- | --- |
-| Language side | The owner, with the sessions that have been writing the language | Everything | The normative surface, the reference model, the conformance vectors |
+| Language side | The owner, with the sessions that have been writing the language | Everything | The specification, the reference model, the conformance vectors |
 | Builder | One fresh Codex session and one fresh Claude session that did not write the language | Only the contents of the build base (below) | One implementation each, with a defect log |
 | Comparer | The owner, or a neutral harness run by the owner | Everything | The comparison of the two implementations |
 
@@ -45,9 +47,18 @@ Isolation is enforced by what a builder's checkout contains, not by trust.
 | Branch or tag | Contents | Purpose |
 | --- | --- | --- |
 | Working branches and `main` | Everything | Language work |
-| `build-base` (orphan branch) | `spec/`, `conformance/`, the build brief as `BUILD.md`, `AGENTS.md` and `CLAUDE.md` pointing at it, and the licence. Nothing else, and no shared history with the working branches. | The only input a builder receives |
-| `spec-v1`, `spec-v2`, … (tags on `build-base`) | One published revision of the language | Both builders work from the same revision |
+| `build-base` (orphan branch) | `spec/`, `conformance/`, `tools/`, the build brief as `BUILD.md`, `AGENTS.md` and `CLAUDE.md` pointing at it, and the licence. Nothing else, and no shared history with the working branches. | The only input a builder receives |
+| `spec-v1`, `spec-v2`, … (tags on `build-base`) | One published revision of the specification | Both builders work from the same revision |
 | `build/codex`, `build/claude` | Forked from a `spec-vN` tag; each adds its implementation under `impl/` | One per builder |
+
+The tags number published revisions. They are not versions of the specification: its version
+is `v0`, the one [spec/names.yaml](../../spec/names.yaml) states, and every `spec-vN` tag is a
+revision of that version.
+
+`tools/` ships on the build base because files under `spec/` tell the reader to run
+`tools/check_schemas.py` and `tools/set_names.py`. Files under `spec/` also link to records
+under `docs/`, which the build base does not hold; the brief tells builders that they do not
+need them.
 
 Each builder works in its own clone created with a single branch, so no other branch exists
 locally:
@@ -56,16 +67,18 @@ locally:
 git clone --single-branch --branch build/codex <repository> conduit-build-codex
 ```
 
-Proposed top-level directories on the working branches:
+Top-level directories on the working branches. `spec/`, `tools/`, `docs/` and `experiments/`
+exist. The others are proposed and do not exist yet.
 
-| Directory | Contents | Visible to builders |
-| --- | --- | --- |
-| `spec/` | The normative surface: the language and the shared conventions, as a manifest, promises and schemas | Yes |
-| `conformance/` | Public conformance vectors and the adapter contract | Yes |
-| `conformance-held-out/` | Vectors withheld from builders, run only by the comparer | No |
-| `reference-model/` | The executable reference model in Rust | No |
-| `docs/`, `experiments/` | Explanation, research, history, proposals, exploratory code | No |
-| The reference engine, its standard library of type contracts and its runtime profile | The one full engine | No |
+| Directory | Contents | Exists | Visible to builders |
+| --- | --- | --- | --- |
+| `spec/` | The specification: the language, the shared conventions and the implementation interface, as a contents list, promises, definitions, schemas and the core package | Yes | Yes |
+| `tools/` | The checkers the specification refers to | Yes | Yes |
+| `conformance/` | Public conformance vectors and the adapter contract | No | Yes |
+| `conformance-held-out/` | Vectors withheld from builders, run only by the comparer | No | No |
+| `reference-model/` | The executable reference model in Rust | No | No |
+| `docs/`, `experiments/` | Explanation, research, history, proposals, exploratory code | Yes | No |
+| The reference engine, its standard library of type contracts and its runtime profile | The one full engine | No | No |
 
 ## Rules
 
@@ -86,9 +99,9 @@ immature language spends its effort rediscovering defects that cheaper methods f
 
 | # | Condition | Evidence |
 | --- | --- | --- |
-| G1 | The normative surface is defined: a manifest lists every normative file and nothing normative lives outside it | `spec/README.md` |
+| G1 | The specification is defined: a contents list names every normative file and nothing normative lives outside it | `spec/README.md` |
 | G2 | The promise register covers the language and the shared conventions; each promise has at least one vector or is on the explicit implementation-defined list | Coverage report |
-| G3 | Schemas exist for the envelope, each family and form, packages, contracts, instantiation and vectors; every scenario's declarations validate with the Rust loader | Loader test run |
+| G3 | Schemas exist for the envelope, each kind, packages, contracts, instantiation and vectors; every scenario's documents validate with the Rust loader | Loader test run |
 | G4 | The reference model for the language layer and the shared conventions passes every vector with no unhandled case | Model test run |
 | G5 | Every safety promise in the shared conventions that can be modelled holds under model checking in the stated configurations; the rest are listed with the reason | Stateright test run |
 | G6 | Mutation testing of the model against the vectors leaves no unexplained surviving mutant | Mutation report |
@@ -103,7 +116,7 @@ immature language spends its effort rediscovering defects that cheaper methods f
 After each milestone the comparer:
 
 1. Runs both implementations' conformance adapters over the public and held-out vectors.
-2. Runs generated declarations through both language layers and the reference model and compares
+2. Runs generated documents through both language layers and the reference model and compares
    the resolved objects and diagnostics.
 3. Reads both defect logs side by side. A situation logged by only one builder is still a defect:
    the other builder guessed without noticing.

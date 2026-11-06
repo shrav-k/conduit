@@ -1,0 +1,92 @@
+[
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/coding-agent/docs/packages.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 8171,
+    "sha256": "f03ce96224985c1b0daac643cb6edc97a58701c492243c8eda16a7d1633e9dac",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/coding-agent/docs/packages.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/coding-agent/docs/extensions.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 154396,
+    "sha256": "d0e4b1f593f6fef15047d6459d6ba03bcfadd627f1e5c179860bded1f0ed5dac",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/coding-agent/docs/extensions.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/coding-agent/docs/skills.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 4793,
+    "sha256": "5b9805525b194474ef1fe5455a0917ef15ed7f710aa9bec2eee11879556469e5",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/coding-agent/docs/skills.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/ai/README.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 107561,
+    "sha256": "5947baecd418cacec9c7880b5e5d896fa8dfb549f9e24c4187da6f9bf51268a3",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/ai/README.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/mcp/README.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 5733,
+    "sha256": "1ef949d454c0948706133bc1732a5f66617df6bfd237ec4138051eeba8c37f13",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/mcp/README.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/telemetry/README.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 32776,
+    "sha256": "9059a8e088be545d6b2baaeb1e0b2eaa237fef2f9e01f587b16a94b51bf2f36a",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/telemetry/README.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/durable/README.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 82801,
+    "sha256": "d6aeceed6c3948169ffb50dc39b400213b9bc13d2f8d3eecdd30fd2402776af4",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/durable/README.md"
+  },
+  {
+    "repository": "earendil-works/pi",
+    "commit": "0441483926f283e42ca44eb7b4a46552e9469d6f",
+    "path": "packages/chord/README.md",
+    "inspected_on": "2026-11-04",
+    "bytes": 15717,
+    "sha256": "1fc744d3fe1509339b695b14bebd3b5b71b614198f26523fd91df8d669e360a1",
+    "url": "https://github.com/earendil-works/pi/blob/0441483926f283e42ca44eb7b4a46552e9469d6f/packages/chord/README.md"
+  },
+  {
+    "repository": "xerj-org/xerj",
+    "commit": "63b6aef5e66e14df12a18929caf704e550e2c4f5",
+    "path": "engine/crates/xerj-wasm/src/lib.rs",
+    "inspected_on": "2026-11-04",
+    "bytes": 4321,
+    "sha256": "fae0bc530a95808b4561ed6b2c26477caba279a57821251f5af40943645b29fa",
+    "url": "https://github.com/xerj-org/xerj/blob/63b6aef5e66e14df12a18929caf704e550e2c4f5/engine/crates/xerj-wasm/src/lib.rs"
+  },
+  {
+    "repository": "xerj-org/xerj",
+    "commit": "63b6aef5e66e14df12a18929caf704e550e2c4f5",
+    "path": "engine/crates/xerj-wasm/src/pipeline.rs",
+    "inspected_on": "2026-11-04",
+    "bytes": 57012,
+    "sha256": "793b8db2dcb62ab7ac24ff5d2d3ee23309ee8e4d6c6284c3aecbf994d0393643",
+    "url": "https://github.com/xerj-org/xerj/blob/63b6aef5e66e14df12a18929caf704e550e2c4f5/engine/crates/xerj-wasm/src/pipeline.rs"
+  }
+]

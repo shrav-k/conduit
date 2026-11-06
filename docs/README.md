@@ -16,7 +16,7 @@ the [archive](archive/README.md). Research supplies evidence, not another questi
 | Implement the protocol | [Configuration and conformance](protocol/CONFIGURATION.md) → [Conduit authority/requirements](protocol/CONDUITS.md) → [experiment obligations](../experiments/002-runtime-plugins/README.md). |
 | Build the reference runtime | [Implementation boundaries](implementation/README.md) → [architecture candidates](implementation/ARCHITECTURE.md) → [organization candidates](implementation/ORGANIZATION.md). |
 | Understand a decision or contribute | [Current review](REVIEW.md) → [research](research/README.md) / [archived rationale](archive/README.md) → [contributor guide](../CONTRIBUTING.md). |
-| Review names without changing meaning | [Vocabulary map](VOCABULARY.md) → its stable definition link → complete example → [naming procedure](VOCABULARY.md#review-and-migration-procedure). |
+| Review names without changing meaning | [Vocabulary map](VOCABULARY.md) → its stable definition link → [research and walkthroughs](research/vocabulary/README.md) → [naming procedure](VOCABULARY.md#review-and-migration-procedure). |
 
 ## Source responsibilities
 

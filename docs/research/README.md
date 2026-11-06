@@ -1,9 +1,14 @@
 # Research
 
-> Not binding. Nothing under `docs/research/` binds. Every packet but the naming research predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
+> Not binding. Nothing under `docs/research/` binds. Every packet but the naming research and the secrets research predates the specification in [`spec/`](../../spec/README.md); where a packet says accepted, current, SPEC.md or DESIGN.md, it means the documents as they stood before 2026-11-05.
 
 The [plan audit](../AUDIT.md) is the tracker. Statements below about the current queue, the
 current design and the first proof layout are historical.
+
+The [secrets research](SECRETS.md), of 2026-11-06, was written for ruling 39, point 1: how
+AWS, Kubernetes and the systems around them handle secrets, with every claim checked against
+its source by a second reader. It informs the [secrets proposal](../proposals/secrets/README.md),
+which is not ruled.
 
 The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
 and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources

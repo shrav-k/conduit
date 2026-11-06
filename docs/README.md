@@ -87,7 +87,7 @@ of the rulings. Where a record and the specification differ, the specification g
 
 | Location | What it is |
 | --- | --- |
-| [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming research predates the specification. |
+| [research/](research/README.md) | Dated primary sources, source pins, comparisons and probe results. Evidence for the rulings; nothing in it binds, and every packet but the naming and secrets research predates the specification. |
 | [archive/](archive/README.md) | Closed reviews, the accounting of one migration, attributed collaborator proposals including dissent, the [history of the plan audit](archive/plan-audit-history.md), and the [list of documents removed from the tree](archive/README.md#removed-from-the-tree) with links to their last versions. History; nothing in it binds. |
 | [../experiments/](../experiments/README.md) | Measured evidence. One experiment remains, a Rust model-checking evaluation (004); the index says what became of 001 to 003. No experiment has run a Conduit engine, because none exists. |
 

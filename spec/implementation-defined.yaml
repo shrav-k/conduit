@@ -21,6 +21,9 @@
 # names. Every change listed above for the conversion of the older text (the docs audit) and
 # for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37, logged in
 # the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which. Ruling 38 took out of DL7 whether an engine that is handed a
+# directory installs the packages its manifest lists: it installs none (SUB-010).
 
 - id: DL1
   subject: Graph execution
@@ -65,8 +68,7 @@
     Where packages are stored, how they are fetched and removed, which schemes of `fetch` are
     accepted, and which of the tar formats and extensions an engine reads in an archive under
     PKG-022. Also how the engine is handed a directory under SUB-010, such as by a command or a
-    call, for which actor it then registers, and whether it installs the packages that the
-    manifest lists, by requests for `install.v1`, before it registers.
+    call, and for which actor it then registers.
 - id: DL8
   subject: Delivery of observations and records
   document: >-

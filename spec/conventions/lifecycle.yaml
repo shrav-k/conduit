@@ -43,6 +43,10 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md.
 
 - id: LIF-001
   layer: convention
@@ -578,13 +582,11 @@
     `close.v1` whose outcome is unknown.
   then: >-
     Recording that a setup or an open occurred makes the instance ready or the Conduit open.
-    For the one opening of a composite declared Conduit under CON-004, it makes every component
-    Conduit that the step was to open open, and recording that the opening did not occur leaves
-    every one of them as it was. Recording that a retirement or a close occurred confirms the
-    shutdown, unless the outcome of a start of one of the instance's runtimes is still unknown,
-    under LIF-024. A reconciliation that would record as having occurred the retirement of an
-    instance that holds a runtime is not dispatched, and reports conflict, as LIF-024 states.
-    Recording that it did not occur gives the outcome failed, and changes nothing else.
+    Recording that a retirement or a close occurred confirms the shutdown, unless the outcome of
+    a start of one of the instance's runtimes is still unknown, under LIF-024. A reconciliation
+    that would record as having occurred the retirement of an instance that holds a runtime is
+    not dispatched, and reports conflict, as LIF-024 states. Recording that it did not occur
+    gives the outcome failed, and changes nothing else.
   observable: >-
     After a reconciliation that records a setup as having occurred, inspecting the instance
     reports the state ready, as after a setup that succeeded under LIF-003; an instance that was
@@ -602,7 +604,10 @@
     which it is the consumer are closed, under CON-008, as they are when a retirement succeeds.
     What the reconciliation of the start or the stop of a runtime changes is TPL-015. Each of
     the four is a management verb, so the reconciliation is authorized against the target that
-    authorized the request being reconciled, as ACC-033 states.
+    authorized the request being reconciled, as ACC-033 states. An invocation of `open.v1` is of
+    one Conduit: where the step of a composite declared Conduit made a request for each of its
+    component Conduits, under CON-004, each of those invocations is reconciled by itself, and
+    changes the state of its own Conduit alone.
   vectors: []
 
 - id: LIF-029
@@ -670,9 +675,9 @@
     served invocation, under IFC-024, is made for that invocation's caller and not on the
     instance's own behalf, so it may hold the resolved form in `target`: an implementation holds
     only that form of the target it called. An invocation and a policy are not objects:
-    `reconcile.v1`, `start-later-work.v1` and `remove-policy.v1` name each by the ID the engine
-    gave it. A request that names an object by a reference that resolves to nothing reports
-    invalid too, under OPS-029. Where the actor is not permitted, OPS-023 gives refused first.
+    `reconcile.v1` and `remove-policy.v1` name each by the ID the engine gave it. A request that
+    names an object by a reference that resolves to nothing reports invalid too, under OPS-029.
+    Where the actor is not permitted, OPS-023 gives refused first.
   vectors: []
 
 - id: LIF-032

@@ -1,13 +1,16 @@
 # Part of the core package. The owner accepted it as it stood on 2026-11-05 (plan-audit
 # ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the docs audit
 # and rounds 2 to 4 of the re-audit changed since rests on the coordinator's logged
-# decisions, which the owner has not ruled on. See README.md in this directory.
+# decisions, which the owner has not ruled on, apart from those that ruling 38 accepted:
+# spec/README.md lists them where it says what "accepted" covers. See README.md in this
+# directory. Ruling 38 (2026-11-06, docs/proposals/ruling-38/README.md) removed the tool
+# `start-later-work.v1`, because later work is not part of this version, and gave
+# `apply-policy.v1` the output `diagnostics`: both are the owner's decisions.
 #
 # The Operation contracts of the core package: every management verb (OPS-019), which is
-# every operation here but the two tools and the two controls; the tool that retrieves one's
-# own results (IFC-024); the tool that asks for a start of later work (IFC-035, ACC-040); the
-# control that designates the default location (PLC-016); and the control that changes a
-# location's facts (PLC-021).
+# every operation here but the one tool and the two controls; the tool that retrieves one's
+# own results (IFC-024); the control that designates the default location (PLC-016); and the
+# control that changes a location's facts (PLC-021).
 # Which capability includes each is in capabilities.yaml, and which open Conduit authorizes
 # each is ACC-033.
 #
@@ -16,8 +19,8 @@
 # coordinator's logged decisions, which the owner has not ruled on; README.md in this directory
 # names the logs. Among the later ones are that `reconcile.v1` is in the capability of `access`
 # and takes `handle`, that an instance is set up by one invocation of `set-up.v1`, that a
-# control's `changes` is a map, the tool `start-later-work.v1`, that `apply-policy.v1` takes
-# `version`, and that `rename.v1` returns `revision`.
+# control's `changes` is a map, that `apply-policy.v1` takes `version`, and that `rename.v1`
+# returns `revision`.
 #   - One contract for one verb. `register.v1`, `register-replacement.v1`, `inspect.v1`,
 #     `set-up.v1`, `retire.v1` and `reconcile.v1` are included both in the capability of
 #     `management` and in the capability of a Pool; ACC-033 says which of the two targets
@@ -61,12 +64,11 @@
 #   - `deduplicates: true` is declared where the whole effect is a change to what the engine
 #     itself stores, which the engine can recognize by the operation identity. It is not
 #     declared where the engine runs the steps of a template's graph or invokes other
-#     implementations, as it does for `set-up.v1`, `retire.v1`,
-#     `retire-with-resources.v1` and `start-later-work.v1`.
-#   - No core operation starts model work (IMP-002), so none carries `startsModelWork`, and
-#     none arranges later work, so none carries `arrangesLaterWork` (CTR-002, ACC-019).
-#     `start-later-work.v1` starts work that another operation arranged, and whether that
-#     start is dispatched follows the marks of the two operations it names (ACC-040).
+#     implementations, as it does for `set-up.v1`, `retire.v1` and
+#     `retire-with-resources.v1`.
+#   - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
+#     operation, of this package or of any other, arranges through the engine work that
+#     outlasts its invocation, and no contract carries a mark for it (ACC-019, CTR-002).
 #   - Every core operation is implemented by the engine itself, written as the default
 #     implementation `github.com/shrav-k/conduit/core#engine`.
 #   - A request that an actor makes on its own behalf names an object by a reference and
@@ -86,6 +88,10 @@
 #     a request to retire or to unregister a Pool whose Resources are in the way (LIF-020),
 #     though `retire.v1` and `unregister.v1` declare no output. A request that is not
 #     permitted reports refused and says nothing else about the objects it names (OPS-023).
+#     A diagnostic of the other class is reported and prevents nothing: `register.v1` and
+#     `install.v1` report a package that is not installed so (PKG-006, PKG-028), and
+#     `apply-policy.v1` the targets whose implementation does not support the policy's
+#     requirement (ACC-031).
 #   - A result that carries none of an operation's outputs has `isError` true: one that
 #     ended with a reason, one whose outcome is failed or unknown, one whose content is
 #     withheld, and a repeat of an invocation that has not ended, or of one that succeeded
@@ -317,9 +323,11 @@ metadata:
     declared Conduit or sets up the Resource of an entry is authorized exactly as this request
     was, by the Conduits of the instance that sent it, which for an onward request is the
     sending instance and not the caller it serves. A declared Conduit that is made from a
-    composite template is one step, and its component Conduits are opened all together or not at
-    all: the opening is decided for every one of them before any is opened, and where one would
-    not be opened none is, nothing is closed, and the step reports that component's reason.
+    composite template is one step, and the opening of its component Conduits is decided as a
+    whole: it is decided for every one of them before any is opened, and where one would not
+    be opened none is, nothing is closed, and the step reports that component's reason.
+    Otherwise the step makes one request for `open.v1` for each of them, each an invocation of
+    its own, and afterwards each component Conduit is opened or closed by itself like any other.
     Setting up a Resource is authorized against the Pool that owns it, and setting up an Agent,
     an Interface or a Pool against `management`. A Conduit is set up with `open.v1`: a request
     that names a Conduit or a template reports invalid, and so does one that names an object
@@ -539,8 +547,8 @@ metadata:
     the instance it was dispatched to, the Conduit it was dispatched through, the target that
     authorized it and, for a step that names a runtime, the name of that runtime are kept, and
     are read as records of that instance. Records are removed and nothing else: what an instance
-    holds, and the Conduits to which later work is tied, are untouched. A record of the purge is
-    kept. Reserved to the root Interface, and authorized against `management`.
+    holds, and the content of a retained result, are untouched. A record of the purge is kept.
+    Reserved to the root Interface, and authorized against `management`.
 spec:
   inputs:
     before:
@@ -650,7 +658,12 @@ metadata:
     requirement from another. A policy is never dropped: a request to which it applies, and
     whose implementation does not support the requirement, reports unavailable, and that is so
     for every request for an operation of this package, because `engine` supports `bound.v1`
-    alone. Dispatched only if every actor and target named is covered by the bound of the
+    alone. The result says where that will be so: `diagnostics` names each target that the
+    policy reaches and whose implementation does not support the requirement, and the policy is
+    applied all the same. For a policy that gives `targets` those are the ones among them, and
+    for one that gives none they are `management`, `access` and every Pool, which the engine
+    implements. Where there is none to name, `diagnostics` is an empty list. Dispatched only if
+    every actor and target named is covered by the bound of the
     actor's own Conduit to `access`. A requirement that does not narrow requests, or that does
     not apply as a policy, reports invalid, and so do `arguments` that do not fit the
     requirement's inputs, a `version` that is not installed or does not export the requirement,
@@ -678,6 +691,10 @@ spec:
   outputs:
     policy:
       schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
+    diagnostics:
+      schema:
+        type: array
+        items: {$ref: github.com/shrav-k/conduit/core#diagnostic.v1}
   effect: Adds a policy to the policies in force.
   deduplicates: true
   implementation: github.com/shrav-k/conduit/core#engine
@@ -699,7 +716,7 @@ spec:
   deduplicates: true
   implementation: github.com/shrav-k/conduit/core#engine
 
-# --- The two tools every instance is presented, whether or not a Conduit of it is open.
+# --- The one tool every instance is presented, whether or not a Conduit of it is open.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
@@ -742,53 +759,6 @@ spec:
     outputs:
       schema: {type: object}
       optional: true
-  implementation: github.com/shrav-k/conduit/core#engine
----
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Operation
-metadata:
-  name: start-later-work.v1
-  description: >-
-    Ask for a start of later work. The implementation that holds work which an operation marked
-    `arrangesLaterWork` arranged asks with this tool for each start. `invocation` is the
-    engine's ID for the invocation that arranged the work. `operation` names the operation to
-    start, by its qualified reference or, for an operation of an unpublished package, as
-    `<digest>#<name>`, and `arguments` holds that operation's inputs. The engine dispatches an
-    invocation of that operation to the instance that asks, for the caller of the arranging
-    invocation and through the Conduit to which the work is tied: the one the arranging
-    invocation was dispatched through or, where that invocation was a step with no `conduit`,
-    the one of the invocation that the step's graph serves. The start carries the filters of
-    that Conduit, the filters that the arranging invocation carried, and the policies that
-    apply, when the start is decided, to a request of that caller to the target of each
-    invocation in the chain. Work that a start arranges is tied to every Conduit to which the
-    work of that start is tied, and each start of it carries the filters that the arranging
-    start carried. The engine does so only if the arranging invocation was dispatched to the
-    instance that asks, is of an operation marked `arrangesLaterWork` and has ended with the
-    outcome succeeded, that Conduit and every other Conduit to which the work is tied are open
-    and the consumer of none of them is retired, that Conduit lists the operation to start, and,
-    where that operation starts model work, the arranging operation is marked `startsModelWork`
-    too. Where one of these does not hold, the request reports refused. Needs no Conduit of the
-    instance that asks, and names no invocation that it serves. The result is that of the
-    started invocation: its outcome is the outcome of the request, the engine's ID for it is in
-    the result's `_meta`, and `outputs` holds the outputs of the operation that was started,
-    where it succeeded and they are delivered. A repeat under one operation identity is the same
-    start. The consumer that arranged the work did not request the start, so
-    `retrieve-result.v1` does not return its result to that consumer: the operation that
-    arranges the work says in its contract how the results are read.
-spec:
-  inputs:
-    invocation:
-      schema: {$ref: github.com/shrav-k/conduit/core#id.v1}
-    operation:
-      schema: {type: string, minLength: 1}
-    arguments:
-      schema: {type: object}
-      optional: true
-  outputs:
-    outputs:
-      schema: {type: object}
-      optional: true
-  effect: Starts one invocation of the operation named, with the effects of that operation.
   implementation: github.com/shrav-k/conduit/core#engine
 
 # --- The control of the `system` Pool.

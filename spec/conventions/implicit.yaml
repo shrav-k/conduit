@@ -21,6 +21,12 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md. It removed IMP-006, IMP-010,
+# IMP-011 and IMP-012, on later work, which is not part of this version. Those IDs are
+# not reused.
 
 - id: IMP-001
   layer: convention
@@ -99,32 +105,6 @@
     no model work by becoming ready.
   vectors: []
 
-- id: IMP-006
-  layer: convention
-  level: must
-  when: >-
-    A start of model work is to be dispatched at a later time, or repeatedly.
-  then: >-
-    It was arranged by an operation whose contract is marked both `arrangesLaterWork: true` and
-    `startsModelWork: true`. The work is tied, under ACC-019, to the Conduit through which it
-    was arranged and to every Conduit of the arranging invocation's chain. Each start is
-    recorded against the caller for whom it was arranged, and is dispatched only on the
-    conditions of ACC-040: among them, that every one of those Conduits is open, that the
-    consumer of none of them is retired, and that the Conduit through which the work was
-    arranged lists the operation to be started.
-  observable: >-
-    A start that falls after one of those Conduits was closed, or after the consumer of one of
-    them was retired, is not dispatched and reports refused under ACC-040, and a record of that
-    exists. Once one of them is closed no start of the work is ever dispatched again, whatever
-    Conduits are opened later. Each start is an invocation that the engine dispatches when the
-    implementation that holds the work asks for it with `start-later-work.v1`, as ACC-040
-    states: a request for a start of an operation marked `startsModelWork: true`, where the
-    operation that arranged the work is not so marked, reports refused under IMP-008. ACC-019
-    says what the requests of work already started report. Later work that starts no model work
-    may be arranged by any operation whose contract is marked `arrangesLaterWork: true`, and an
-    operation without that mark arranges none, under CTR-002.
-  vectors: []
-
 - id: IMP-007
   layer: convention
   level: must not
@@ -145,18 +125,15 @@
   level: must
   when: >-
     A request for an operation marked as starting model work names, in
-    `io.github.shrav-k.conduit/serving`, an invocation of an operation that is not so marked; or
-    a request for `start-later-work.v1` names an operation marked as starting model work as the
-    one to start, and names an arranging invocation of an operation that is not so marked.
+    `io.github.shrav-k.conduit/serving`, an invocation of an operation that is not so marked.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
     A request for a marked operation is dispatched only when the invocation it serves is itself
-    of a marked operation, when it serves none and an actor makes it on its own behalf, or when
-    it is a start of later work that was arranged by an operation marked both
-    `arrangesLaterWork: true` and `startsModelWork: true`, under IMP-006 and ACC-040. Code that
-    implements an unmarked operation, or a step of a setup or retire graph, cannot start model
-    work by an onward request, and cannot start it later by arranging work.
+    of a marked operation, or when it serves none and an actor makes it on its own behalf. Code
+    that implements an unmarked operation, or a step of a setup or retire graph, cannot start
+    model work by an onward request. Nor can it start model work later: once an invocation has
+    ended the engine dispatches no request on its behalf, under ACC-019.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decision F8 of the re-audit).
@@ -173,70 +150,4 @@
   observable: >-
     Resolving such a template returns a diagnostic naming the step. Retiring an instance starts
     no model work.
-  vectors: []
-
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 9 of "The closing pass, and what it
-# --- left" in DECISIONS.md). IMP-010 is a rule on documents and has the layer `language`.
-
-- id: IMP-010
-  layer: language
-  level: must
-  when: >-
-    A template is registered, and a graph selected for its instances contains a step whose
-    operation is marked `arrangesLaterWork: true`, while the operation that the graph implements
-    is not so marked. Every selection counts, however it was made: in the template's
-    `implementation` map, as a default of its type, or as the default of an operation's own
-    contract, and whether it writes a graph in place or names an implementation item whose
-    manifest gives a `graph`.
-  then: >-
-    The template is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the step and the operation the graph implements, as
-    IMP-004 does for a step that starts model work, and for the same graphs: every one that
-    GRA-005 covers, with the check made under INS-022 where a package was not installed when the
-    template was registered. A `setup` or a `retire` graph implements no operation, under
-    TPL-008, and one that holds such a step is rejected under IMP-012. Work that a step with no
-    `conduit` arranges is tied to the Conduit of the invocation that the step's graph serves,
-    under ACC-019.
-  vectors: []
-
-- id: IMP-011
-  layer: convention
-  level: must
-  when: >-
-    A request for an operation marked `arrangesLaterWork: true` names, in
-    `io.github.shrav-k.conduit/serving`, an invocation of an operation that is not so marked.
-  then: >-
-    The request is not dispatched, and reports refused.
-  observable: >-
-    A request for a marked operation is dispatched only when the invocation it serves is itself
-    of a marked operation, when it serves none and an actor makes it on its own behalf, or when
-    it is a start of later work under ACC-040, whose arranging operation carries the mark. Code
-    that implements an unmarked operation, the implementation of a step of a `setup` or `retire`
-    graph among it, cannot arrange later work by an onward request. IMP-008 states the same for
-    model work, and IMP-010 and IMP-012 reject the graph that would do it.
-  vectors: []
-
-# --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;
-# --- decision 5 of "The last pass, and what it left" in DECISIONS.md). It is a rule on
-# --- documents and has the layer `language`.
-
-- id: IMP-012
-  layer: language
-  level: must
-  when: >-
-    A template declares a `setup` graph or a `retire` graph that contains a step whose operation
-    is marked `arrangesLaterWork: true`.
-  then: >-
-    The template is rejected.
-  observable: >-
-    Resolving such a template returns a diagnostic naming the step. `set-up.v1` and `retire.v1`,
-    within whose invocations the engine runs the steps of those graphs, carry no such mark, as
-    they carry none for model work under IMP-005 and IMP-009. Setting an instance up, and
-    retiring it, arranges no later work.
-    A graph that a step of `setup` or of `retire` invokes, as the implementation selected for
-    the step's operation, implements an operation that carries no mark, or the step itself would
-    break this rule. IMP-010 rejects the template where such a graph holds a marked step,
-    however the graph was selected, and IMP-004 does so for model work.
   vectors: []

@@ -27,7 +27,7 @@
 # in the `_meta` of a tool's definition, and added the tool `start-later-work.v1`. The follow-up
 # to that pass changed IFC-006, IFC-009, IFC-016 and IFC-034: a result whose `isError` disagrees
 # with its outcome is unknown, and IFC-016 is about one invocation that outlasts its call. No
-# promise of this file has been removed. Draft: no vector exists yet.
+# promise of this file was removed before ruling 38. Draft: no vector exists yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed IFC-006, IFC-021, IFC-024, IFC-025 and IFC-028: a retrieval names
@@ -57,6 +57,11 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md. It removed IFC-035, on
+# later work, which is not part of this version. Those IDs are not reused.
 
 - id: IFC-001
   layer: interface
@@ -165,10 +170,7 @@
     unpublished package has no address and so no qualified reference: it is written
     `<digest>#<name>`, the digest that identifies the unpublished package under SUB-008, written
     as PKG-004 writes a digest, then `#`, then the contract's name. No separate key names the
-    package, so one request can name contracts of two unpublished packages. A start of later
-    work is sent the caller for whom the work was arranged, the Conduit through which it is
-    dispatched, and the operation identity that the instance which asked for the start supplied,
-    if it supplied one, under ACC-040.
+    package, so one request can name contracts of two unpublished packages.
   vectors: []
 
 - id: IFC-007
@@ -266,15 +268,15 @@
   then: >-
     The engine presents to that instance a Model Context Protocol server whose tools are exactly
     the operations that its open Conduits list and for which IFC-033 gives a definition, and the
-    two tools of IFC-024 and IFC-035. A tool for an operation is named by the Conduit's local
-    name, then the name of each component for a Conduit made from a composite template, then the
-    operation's export name, joined by dots. The local name of a declared Conduit is the name
-    its consumer's template gives it, and that of a Conduit instantiated on its own is the
-    Conduit's own name.
+    one tool of IFC-024. A tool for an operation is named by the Conduit's local name, then the
+    name of each component for a Conduit made from a composite template, then the operation's
+    export name, joined by dots. The local name of a declared Conduit is the name its consumer's
+    template gives it, and that of a Conduit instantiated on its own is the Conduit's own name.
   observable: >-
     The instance's tool list holds one tool for each operation of each of its open Conduits,
     apart from an operation whose contract the Conduit's target does not hold, under IFC-033,
-    the tools of IFC-024 and IFC-035, and nothing else. The list that the engine serves for a
+    the tool of IFC-024, and nothing else. That tool is the only one that needs no Conduit: the
+    engine presents no other tool that belongs to none. The list that the engine serves for a
     request depends only on the instance established for that request under IFC-022 and on which
     of that instance's Conduits are open when it is served. It depends neither on the connection
     nor on what was sent on it before: once a Conduit is opened or closed, every request of that
@@ -332,7 +334,7 @@
   observable: >-
     Resolving returns a diagnostic naming the tool name and, where two names are equal, the
     Conduit that has the other. The other tools are those of the consumer's other Conduits that
-    are not closed, whether or not they are open yet, and the tools of IFC-024 and IFC-035. A
+    are not closed, whether or not they are open yet, and the tool of IFC-024. A
     Conduit instantiated on its own under the local name of one of its consumer's declared
     Conduits is not instantiated where the two would have a tool name in common. No two tools
     presented to one consumer share a name, and none is longer than the 128 characters that the
@@ -367,12 +369,10 @@
   observable: >-
     The retained result is found by the operation identity and the target of the request, under
     OPS-016, by the instance that sent the request, whichever facility delivered it. This is one
-    invocation, whose result is its own. It is not later work: work that an operation arranges
-    to start or to run after its own invocation has ended is under ACC-019, and each start of it
-    is an invocation of its own, under ACC-040. The consumer that arranged such work did not
-    request its starts, so no result of a start is retrieved in this way. The record of a start
-    holds how it ended, and the contract of the operation that arranged the work says how its
-    results are read.
+    invocation, whose result is its own. Until it ends it is in progress: the instance that
+    serves it may make onward requests that name it, under IFC-020, and they are decided like
+    any other. Once it has ended no request is dispatched on its behalf, under ACC-019: no
+    operation arranges, through the engine, work that outlasts its invocation.
   vectors: []
 
 - id: IFC-017
@@ -405,8 +405,7 @@
     request: the requirements of the request's own Conduit that narrow requests, every policy
     that applies, and the restrictions carried from the served invocation under ACC-017. For a
     step that has no `conduit`, it holds the restrictions of the invocation that the step's
-    graph is serving, under ACC-018. For a start of later work it holds the restrictions that
-    ACC-041 has the start carry. A composed requirement is sent as one item for each of its
+    graph is serving, under ACC-018. A composed requirement is sent as one item for each of its
     constituents that narrows requests, with that constituent's arguments bound as CTR-010
     states. The list is empty when no restriction applies.
   observable: >-
@@ -418,13 +417,10 @@
     by a qualified reference, because ACC-031 lets a policy name a published contract only. An
     argument that is a reference is sent in the resolved form of OBJ-009, and the `arguments` of
     an item are the arguments as they are stored, with the defaults that NAM-019 and SCH-009
-    fill in. A start of later work serves no invocation, so nothing reaches it under ACC-017:
-    its list is the one ACC-041 gives, which holds the filters of every Conduit to which the
-    work is tied and the policies as they apply when the start is decided. The implementation
-    that the target has selected for the operation is sent every filter, whatever `obliges` in
-    the filter's contract names: CON-022 has it state each one in `supports`. Two restrictions
-    that have the same requirement and equal arguments, as a filter and a policy may, are two
-    equal items, and nothing in an item says which it is.
+    fill in. The implementation that the target has selected for the operation is sent every
+    filter, whatever `obliges` in the filter's contract names: CON-022 has it state each one in
+    `supports`. Two restrictions that have the same requirement and equal arguments, as a filter
+    and a policy may, are two equal items, and nothing in an item says which it is.
     A requirement that a package re-exports is named by its origin, to which PKG-013 leads: a
     filter that a Conduit's template names through the re-exporting package is sent with the
     address of the package that originally exports the contract, and so is a policy, whichever
@@ -477,8 +473,8 @@
   level: must
   when: >-
     An instance that is not an actor, which is to say neither an Interface nor an Agent, makes a
-    request, other than one for `start-later-work.v1` or for `retrieve-result.v1`, that names no
-    invocation in `io.github.shrav-k.conduit/serving`.
+    request, other than one for `retrieve-result.v1`, that names no invocation in
+    `io.github.shrav-k.conduit/serving`.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
@@ -486,8 +482,6 @@
     reports refused, whatever open Conduits the Resource is the consumer of. An Interface or an
     Agent that names none makes the request on its own behalf and is its caller. What a request
     reports that names an invocation which the sending instance does not serve is IFC-028. A
-    request for `start-later-work.v1` names no invocation in that key, whichever instance makes
-    it: its caller is that of the invocation that arranged the work, and ACC-040 decides it. A
     call to `retrieve-result.v1` that names none is made for the instance as its own caller,
     under IFC-024, and is decided under OPS-015 and OPS-016. An instance that is not an actor is
     the caller of no invocation, so such a call from one finds no invocation and reports refused
@@ -638,9 +632,9 @@
     of IFC-024 the keys say how the retrieval itself ended, and the ID among them is that of the
     retrieval. The state of the invocation it asks about, that invocation's ID and whether its
     content is withheld are in the result's `structuredContent`, as IFC-024 states, and that
-    result is not an error. For a call to the tool of IFC-035 the keys are those of the
-    invocation it started. A call that names a tool the engine does not present is answered with
-    no tool result: the reason is then in the `data` of the protocol's error, as IFC-012 states.
+    result is not an error. A call that names a tool the engine does not present is answered
+    with no tool result: the reason is then in the `data` of the protocol's error, as IFC-012
+    states.
     IFC-032 names another, and IFC-036 the requests that the protocol has a server reject with
     an error of its own. The `content` member is always present in a tool result, as the
     protocol requires, and may be an empty list. The protocol recommends that a result with
@@ -776,7 +770,7 @@
   observable: >-
     A client of the Model Context Protocol that is not an instance, or that presents nothing
     from which the engine establishes one under IFC-022, can use no tool: each of its calls
-    reports refused, the tools of IFC-024 and IFC-035 included, and no implementation receives a
+    reports refused, the tool of IFC-024 included, and no implementation receives a
     call. The engine presents no tool to such a client, so it answers each call as IFC-012
     states for a tool that is not presented. The record of such a request holds no caller, and
     says that none could be established, under REC-002. Where what a request presents is a
@@ -849,42 +843,7 @@
     `supports`, learns which filters it is to keep to in its requests through the Conduit. What
     keeping to a filter means for a consumer is stated by the requirement's contract. The
     target's implementation is still sent every filter with each request, under IFC-018, and
-    applies it under IFC-019. The tools of IFC-024 and IFC-035 belong to no Conduit and carry no
-    such key.
-  vectors: []
-
-- id: IFC-035
-  layer: interface
-  level: must
-  when: >-
-    The engine presents its server to an instance.
-  then: >-
-    The server always has the tool `start-later-work.v1`, an operation of the core package that
-    is in no capability, with which the implementation that holds later work asks for a start of
-    it. The tool is named by that export name alone, with no Conduit's name before it. It is
-    presented whether or not any Conduit of which the instance is the consumer is open, and a
-    call to it needs no Conduit of that instance. A call names `invocation`, the engine's ID for
-    the invocation that arranged the work; `operation`, the operation to start, written as
-    IFC-006 writes an operation; and `arguments`, the inputs of that operation. The result is
-    that of the invocation the call started: its `_meta` holds that invocation's outcome and the
-    engine's ID for it, as IFC-025 states, and its `structuredContent` holds `outputs`, the
-    outputs of the operation that was started.
-  observable: >-
-    An instance with no open Conduit still lists the tool. Whether a call is dispatched is
-    ACC-040: a call that fails one of its conditions reports refused, and one that fails another
-    check of a request reports the reason of that check, in a result that IFC-025 describes. The
-    operation is named by its qualified reference or, for an operation of an unpublished
-    package, as `<digest>#<name>`. `arguments` may be left out, and then supplies none. The call
-    carries no `io.github.shrav-k.conduit/serving`, under IFC-021, and may carry
-    `io.github.shrav-k.conduit/operationIdentity`, under IFC-023: a repeat of the call is the
-    same start, and its result is the one OPS-009 gives a repeat. The ID in
-    `io.github.shrav-k.conduit/invocation` is that of the started invocation. It is the ID that
-    a request the work makes while it runs names in `io.github.shrav-k.conduit/serving`, under
-    ACC-019, and the one `reconcile.v1` names where the outcome is unknown. Where the outcome is
-    failed or unknown, or the content is withheld under ACC-034, the result holds no `outputs`
-    and its `isError` is true, as IFC-025 states. An implementation marked `plain` is sent no ID
-    of an invocation, under IFC-007, and cannot ask for a start: TPL-014 rejects a template that
-    would have one arrange later work.
+    applies it under IFC-019. The tool of IFC-024 belongs to no Conduit and carries no such key.
   vectors: []
 
 # --- Added by the fix pass of the fourth round of the re-audit

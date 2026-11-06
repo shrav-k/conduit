@@ -14,7 +14,8 @@
 # is no longer marked optional, and TPL-010, and added TPL-013, of the layer `convention`.
 # Its last pass (docs/proposals/reaudit/round-2/log-tail.md) changed TPL-004, which now covers
 # every operation of a capability the type offers and every control it lists, and TPL-009, and
-# added TPL-014. No promise of this file has been removed. Draft: no vector exists yet.
+# added TPL-014. No promise of this file was removed before ruling 38. Draft: no vector exists
+# yet.
 # The fix pass of the third round of the re-audit (docs/proposals/reaudit/round-3/log-fixes.md),
 # on the coordinator's decisions in docs/proposals/reaudit/round-3/DECISIONS.md, which the owner
 # has not ruled on, changed TPL-003 and TPL-007, and added TPL-015, of the layer `convention`,
@@ -32,6 +33,11 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md. It removed TPL-014, on
+# later work, which is not part of this version. Those IDs are not reused.
 
 - id: TPL-001
   layer: language
@@ -107,8 +113,7 @@
     default is rejected, and so is one whose type lists such a control, even where the
     template's `controls` map leaves that control out. Where the template was registered while
     the type's package was not installed, as PKG-006 allows, the check is made when the template
-    is instantiated, under INS-022. Which implementation may be selected for an operation that
-    arranges later work is TPL-014.
+    is instantiated, under INS-022.
   vectors: []
 
 - id: TPL-005
@@ -273,29 +278,6 @@
     call. A Conduit may list the control, because its capability includes it under CON-017, and
     the request reports invalid all the same. Where the actor is not permitted, OPS-023 gives
     refused first.
-  vectors: []
-
-# --- Added by the last pass of the second round of the re-audit
-# --- (docs/proposals/reaudit/round-2/log-tail.md; decision 9 of "The closing pass, and what it
-# --- left" in DECISIONS.md).
-
-- id: TPL-014
-  layer: language
-  level: must
-  when: >-
-    A template is registered in which the implementation of an operation marked
-    `arrangesLaterWork: true` is marked `plain`, whether the template selects that
-    implementation or it is the default under TPL-004.
-  then: >-
-    The template is rejected.
-  observable: >-
-    Resolving returns a diagnostic naming the operation and the implementation. It is decided
-    from the operation's contract and from the manifest, under PKG-020, without starting
-    anything. A plain implementation is sent none of Conduit's keys, under IFC-007, so it never
-    learns the engine's ID for the invocation that arranged the work, and cannot ask for a start
-    with `start-later-work.v1` under ACC-040. Where the template was registered while a package
-    it needs was not installed, as PKG-006 allows, the check is made when the template is
-    instantiated, under INS-022.
   vectors: []
 
 # --- Added by the fix pass of the third round of the re-audit

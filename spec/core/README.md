@@ -3,14 +3,17 @@
 Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as it stood on that
 day, as one batch with [the schemas](../schemas/README.md) and
 [the manifest's promises](../promises/manifest.yaml). **Changed since by decisions that the
-owner has not ruled on.** It was written for decision G1 of the
+owner has not ruled on**, apart from those that ruling 38 accepted or made: see
+[what "accepted" covers](../README.md) in the specification's README. It was written for
+decision G1 of the
 [re-audit](../../docs/proposals/reaudit/README.md). The record of the batch, with every choice
 made here and its alternative, is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
 the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
 
 What follows was changed after the owner's ruling, by the coordinator of the re-audit, whose
-decisions are logged and can be struck by the owner. None of it is a choice the owner accepted.
+decisions are logged and can be struck by the owner. None of it is a choice the owner accepted,
+except what [ruling 38](../../docs/proposals/ruling-38/README.md) of 2026-11-06 accepted.
 The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) settled the points
 that batch left open and changed some descriptions here; they added no export. The
 [decisions of the second re-audit round](../../docs/proposals/reaudit/round-2/DECISIONS.md)
@@ -18,7 +21,7 @@ changed contracts and descriptions here and added no export either; what changed
 [log of that pass](../../docs/proposals/reaudit/round-2/log-documents.md) and the
 [log of its closing pass](../../docs/proposals/reaudit/round-2/log-closing.md). The
 [last pass of that round](../../docs/proposals/reaudit/round-2/log-tail.md) added one export,
-the operation `start-later-work.v1`. The
+the operation `start-later-work.v1`, which ruling 38 removed again. The
 [decisions of the third round](../../docs/proposals/reaudit/round-3/DECISIONS.md) added no
 export: they gave `reconcile.v1` the input `handle` and `apply-policy.v1` the input `version`,
 and changed descriptions; what changed is in the
@@ -26,8 +29,19 @@ and changed descriptions; what changed is in the
 [decisions of the fourth round](../../docs/proposals/reaudit/round-4/DECISIONS.md) added no
 export either: they gave `rename.v1` the output `revision`, corrected the description of
 `object-management.v1` and changed other descriptions; what changed is in the
-[log of that pass](../../docs/proposals/reaudit/round-4/log-fixes.md). The promises are the
-source of truth: where a document here and a promise differ, the document is wrong.
+[log of that pass](../../docs/proposals/reaudit/round-4/log-fixes.md).
+
+Ruling 38 made four changes here, which are the owner's decisions and not the coordinator's.
+Later work is not part of this version, so the export `start-later-work.v1` is removed and the
+package exports 98 documents, 20 of them Operation contracts. `apply-policy.v1` has the output
+`diagnostics`, which names the targets where a policy will make requests report unavailable
+(ACC-031). The description of `set-up.v1` says that the opening of a composite Conduit's
+components is decided as a whole and that each is then opened by a request of its own. And the
+note on installing says that a directory handed to an engine installs no package. What was changed is in the
+[log of that pass](../../docs/proposals/ruling-38/log-spec.md).
+
+The promises are the source of truth: where a document here and a promise differ, the document
+is wrong.
 
 ## What this is
 
@@ -40,7 +54,7 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 21 Operation contracts: every management verb, the tool that retrieves one's own results, the tool that asks for a start of later work, the control that designates the default location and the control that changes a location's facts |
+| [operations.yaml](operations.yaml) | The 20 Operation contracts: every management verb, the tool that retrieves one's own results, the control that designates the default location and the control that changes a location's facts |
 | [capabilities.yaml](capabilities.yaml) | The 5 Capability contracts: what `management`, `access`, a Pool, the `system` Pool and a location offer |
 | [types.yaml](types.yaml) | The 6 Type contracts: the basic Interface and Pool types, and the types of `system`, of a location, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
@@ -51,7 +65,7 @@ everything the promises say it exports, and everything first start needs.
 The package also exports the 45 Schema contracts under [spec/schemas](../schemas/README.md),
 which are the schemas of documents themselves. They are part of this package because a `$ref`
 from one schema to another names a Schema contract (SCH-015), and because `register.v1` states
-its inputs with them. In all the package exports 99 documents, 58 of them Schema contracts,
+its inputs with them. In all the package exports 98 documents, 58 of them Schema contracts,
 and has one implementation, which is also an export (PKG-019).
 
 A document of the core package refers to another by its full address, as
@@ -90,6 +104,9 @@ both. A template's `setup` and `retire` graphs are the steps the engine runs for
 instance: they are not implementations selected in the `implementation` map, and they have no
 inputs of their own. "The setup operation" and "the retire operation" of an instance mean
 these invocations. A Conduit is set up by `open.v1` and retired by `close.v1` in the same way.
+A request for `open.v1` names one Conduit. The step of a setup that opens a declared Conduit
+made from a composite template decides the opening of every component first, and then makes
+one such request for each, or none (CON-004).
 
 | Operation | Included in | `revision` input | `deduplicates` | Reserved to `root` | Promise |
 | --- | --- | --- | --- | --- | --- |
@@ -111,7 +128,6 @@ these invocations. A Conduit is set up by `open.v1` and retired by `close.v1` in
 | `apply-policy.v1` | `access-control.v1` | — | yes | — | ACC-031 |
 | `remove-policy.v1` | `access-control.v1` | — | yes | — | ACC-031 |
 | `retrieve-result.v1` | No capability: presented to every instance | — | — | — | IFC-024, OPS-016 |
-| `start-later-work.v1` | No capability: presented to every instance | — | no | — | IFC-035, ACC-040 |
 | `set-default-location.v1` | `system-settings.v1` | required | yes | — | PLC-016 |
 | `set-facts.v1` | `location-settings.v1` | required | yes | — | PLC-021 |
 
@@ -141,7 +157,7 @@ How to read the columns:
   effect, has the same shape (REV-010).
 - **Reconciling.** `reconcile.v1` is in the capability of `management`, of a Pool and of
   `access`, and in no other. A management verb is every operation in this table but the two
-  controls, `retrieve-result.v1` and `start-later-work.v1`. An invocation of one is reconciled
+  controls and `retrieve-result.v1`. An invocation of one is reconciled
   through the target that authorized the request being reconciled, by an open Conduit to that
   target that lists `reconcile.v1`. Any other invocation, of a control or of any other
   operation, is reconciled through the target that manages the instance it was dispatched to:
@@ -182,8 +198,8 @@ How to read the columns:
   stores, which the engine recognizes by the operation identity, so a repeat after an unknown
   outcome can be dispatched as a new attempt (OPS-012). Not declared where the engine runs the
   steps of a template's graph or invokes other implementations, as it does for `set-up.v1`,
-  `retire.v1`, `retire-with-resources.v1` and `start-later-work.v1`. `inspect.v1` and
-  `retrieve-result.v1` state no `effect`.
+  `retire.v1` and `retire-with-resources.v1`. `inspect.v1` and `retrieve-result.v1` state no
+  `effect`.
 - **Reserved to `root`.** Written `reservedToRoot: true` in the contract (CTR-002). ACC-032
   says what the mark means, and only an Operation contract of the core package carries it: any
   other package that holds one is rejected when it is installed, and a project that holds one
@@ -204,8 +220,12 @@ How to read the columns:
   an onward request may therefore hold it in an input of a core operation, because the
   engine handed it to them; a request that an actor makes on its own behalf may not
   (LIF-031).
-- **Diagnostics.** `register.v1`, `replace.v1`, `register-replacement.v1` and `install.v1`
-  declare the output `diagnostics`, for the diagnostics that did not prevent the request.
+- **Diagnostics.** `register.v1`, `replace.v1`, `register-replacement.v1`, `install.v1` and
+  `apply-policy.v1` declare the output `diagnostics`, for the diagnostics that did not prevent
+  the request. That of `apply-policy.v1` names each target that the policy reaches and whose
+  implementation does not support the policy's requirement: those among `targets` where the
+  request gives that list, and `management`, `access` and every Pool, which the engine
+  implements, where it gives none (ACC-031).
   What a request that is not dispatched says beyond its reason, it says in `diagnostics` in
   the `structuredContent` of its result, whether or not the operation declares an output of
   that name (IFC-025). A rejected registration carries them so (OBJ-023), and a request to
@@ -232,8 +252,10 @@ How to read the columns:
   confirmed, it has the outcome failed, and the diagnostics of its result name them (LIF-021).
   It declares no output, because a result whose outcome is failed holds none (IFC-025).
 - **Installing.** A package is installed only by `install.v1`. A registration installs none
-  of the packages its manifest lists, and `fetch` in an item of `packages` is the place an
-  installation of that item fetches from (NAM-012, PKG-006). A request for an address and
+  of the packages its manifest lists, and neither does an engine that is handed a directory:
+  a package that is listed and not installed is reported (SUB-010, PKG-006). `fetch` in an
+  item of `packages` is the place an
+  installation of that item fetches from (NAM-012). A request for an address and
   version that is already installed is decided from what is installed, and fetches nothing
   (PKG-025, PKG-027). It is decided like any other request all the same: one whose `fetch` is
   a relative reference reports invalid (PKG-023).
@@ -245,10 +267,9 @@ How to read the columns:
   one installed version of that package must export the requirement, and otherwise the
   request reports invalid (ACC-042). The policy keeps that version of that package and its
   digest, also where the package re-exports the requirement from another (ACC-031, PKG-013).
-- No core operation starts model work (IMP-002), so none carries `startsModelWork`. None
-  arranges later work either, so none carries `arrangesLaterWork` (CTR-002, ACC-019).
-  `start-later-work.v1` starts work that another operation arranged, and the marks of the
-  two operations it names decide whether the start is dispatched (ACC-040, IMP-006).
+- No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
+  operation arranges, through the engine, work that outlasts its invocation, and no contract
+  carries a mark for it (ACC-019, CTR-002).
 - Every core operation states `github.com/shrav-k/conduit/core#engine` as its default
   implementation. The engine performs it; no process is started and no request crosses the
   implementation interface.
@@ -299,26 +320,12 @@ with that error and no tool result, and where the engine could establish the ins
 it, the error's `data` holds the reason invalid (IFC-036). The engine presents no tool for an
 operation whose contract the target's version of the package does not hold (IFC-033).
 
-The engine always presents a second tool, `start-later-work.v1`, also with no Conduit's name
-before it (IFC-035). The implementation that holds later work asks with it for each start,
-naming the engine's ID for the invocation that arranged the work, the operation to start and its
-arguments. The engine dispatches the start for the caller of the arranging invocation and
-through the Conduit to which the work is tied, where that invocation was dispatched to the
-instance that asks, is of an operation marked `arrangesLaterWork` and has ended with the outcome
-succeeded, that Conduit lists the operation, and, where the operation starts model work, the
-arranging operation is marked `startsModelWork` too. The work is tied to the Conduit the
-arranging request came through and to every Conduit that the invocations it served came through,
-and a start is dispatched only while all of them are open and the consumer of none of them is
-retired; work that a step with no `conduit` arranged is tied to the Conduit of the invocation
-that the step's graph serves, and work that a start of later work arranged is tied as well to
-every Conduit to which the work of that start is tied (ACC-019). Where one of these does not
-hold, the request reports refused (ACC-040). A start carries the filters of its Conduit, the
-filters that the arranging invocation carried, and the policies that apply, when the start is
-decided, to a request of that caller to the target of each invocation in the chain (ACC-041).
-The result is that of the started invocation, with the started operation's outputs in `outputs`.
-The consumer that arranged the work did not request the start, so `retrieve-result.v1` does not
-return its result to that consumer: an operation that arranges later work says in its contract
-how the results are read.
+`retrieve-result.v1` is the one tool that the engine presents with no Conduit. No operation
+arranges, through the engine, work that outlasts its invocation: once an invocation has ended,
+no request that names it as served is dispatched (IFC-028), and the engine dispatches none on
+its behalf (ACC-019). Work that is to happen later is asked for later, by an actor, through a
+Conduit that is open then. Later work is not part of this version, and the tool
+`start-later-work.v1`, which earlier drafts held for it, is no longer an export.
 
 The definition of a tool that the engine presents for an operation of a Conduit holds
 `io.github.shrav-k.conduit/restrictions` in its `_meta` where the Conduit carries a filter
@@ -358,7 +365,9 @@ reports refused (ACC-043). A policy is never dropped where an implementation can
 `engine`, the implementation of every operation here, supports `bound.v1` alone, so a
 request for an operation of this package to which a policy applies reports unavailable, the
 request to remove that policy among them: an actor that a policy names cannot remove it, and
-the root Interface can (ACC-015, ACC-026).
+the root Interface can (ACC-015, ACC-026). The request that applies a policy is told where
+that will be so: the output `diagnostics` of `apply-policy.v1` names each such target, and the
+policy is applied all the same (ACC-031).
 
 ## First start
 
@@ -399,10 +408,9 @@ Conduit to the location that lists it. A location's document states no placement
 
 ## Every export
 
-"Requires" names the promises that need the export to exist. Every export but
-`start-later-work.v1` was in the batch that the owner accepted; that one was added by the last
-pass of the second round of the re-audit, on a decision of the coordinator that the owner has
-not ruled on. No row says "none".
+"Requires" names the promises that need the export to exist. Every export was in the batch
+that the owner accepted. The one export added since, `start-later-work.v1`, was removed by
+ruling 38. No row says "none".
 
 | Export | Kind | Requires |
 | --- | --- | --- |
@@ -442,7 +450,6 @@ not ruled on. No row says "none".
 | `apply-policy.v1` | Operation | ACC-031, ACC-042 |
 | `remove-policy.v1` | Operation | ACC-031 |
 | `retrieve-result.v1` | Operation | IFC-024, OPS-016 |
-| `start-later-work.v1` | Operation | IFC-035, ACC-040, ACC-019 |
 | `set-default-location.v1` | Operation, a control | PLC-016 |
 | `set-facts.v1` | Operation, a control | PLC-021, PLC-008 |
 | `bound.v1` | Requirement | ACC-029, ACC-030, CON-028, CTR-011 |

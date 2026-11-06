@@ -25,6 +25,10 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md.
 
 - id: REC-001
   layer: convention
@@ -104,17 +108,15 @@
     are kept because a reconciliation needs them: ACC-033 fixes the target that authorizes it
     from them, LIF-028 the instance whose state or shutdown it changes, and REV-010 the control
     and its `changes`. The caller and the Conduit are kept because later requests are decided
-    from them: ACC-040 dispatches a start of later work for the caller of the arranging
-    invocation and through its Conduit, IFC-024 takes the caller of a retrieval from the
-    invocation that it names as served, and OPS-017 delivers a retained result only while the
-    Conduit of its invocation is open. The name of the runtime is kept because TPL-015 gives the
-    handle of a reconciled start to that runtime, and two runtimes of one instance may share a
-    start operation. All of them are kept for an invocation that carried no operation identity
-    as for any other. A purge removes records and nothing else: the Conduits to which later work
-    is tied under ACC-019, what an instance holds and the content of a retained result are not
-    records, and a purge does not touch them. What a purge keeps of an invocation is read as
-    records of that instance: inspecting the instance still lists it among the records that name
-    the instance, under LIF-013.
+    from them: IFC-024 takes the caller of a retrieval from the invocation that it names as
+    served, and OPS-017 delivers a retained result only while the Conduit of its invocation is
+    open. The name of the runtime is kept because TPL-015 gives the handle of a reconciled start
+    to that runtime, and two runtimes of one instance may share a start operation. All of them
+    are kept for an invocation that carried no operation identity as for any other. A purge
+    removes records and nothing else: what an instance holds and the content of a retained
+    result are not records, and a purge does not touch them. What a purge keeps of an invocation
+    is read as records of that instance: inspecting the instance still lists it among the
+    records that name the instance, under LIF-013.
   vectors: []
 
 - id: REC-005

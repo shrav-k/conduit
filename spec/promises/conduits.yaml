@@ -40,6 +40,10 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md.
 
 - id: CON-001
   layer: language
@@ -104,11 +108,11 @@
     The step that GRA-022 gives each declared Conduit opens the Conduit made for it if its state
     is registered. Where the Conduit is already open nothing is dispatched, and the step is left
     as succeeded. For a declared Conduit that is made from a composite template, the one step
-    opens every component Conduit whose state is registered, together: the opening is decided
-    for every one of them before any is opened. Where the opening of any component Conduit would
-    not be dispatched, none is opened, nothing is closed, and the step reports that component's
-    reason. Otherwise all of them are opened, in one invocation with one outcome. Setup
-    instantiates no Conduit.
+    opens every component Conduit whose state is registered: the opening is decided for every
+    one of them before any is opened. Where the opening of any component Conduit would not be
+    dispatched, no request for `open.v1` is made, none is opened, nothing is closed, and the
+    step reports that component's reason. Otherwise one request for `open.v1` is made for each
+    of them. Setup instantiates no Conduit.
   observable: >-
     After setup runs a second time, inspection shows the same Conduit IDs and the same number of
     Conduits as before. A replacement registered under LIF-009 is in the state registered, so
@@ -122,16 +126,23 @@
     reports, and a diagnostic names each of those components. A step that reports a reason has
     not succeeded: GRA-003 keeps the setup from succeeding where the declared Conduit is
     required, and has it reported as not opened where it is optional. No component Conduit has
-    changed state, so nothing is closed and LIF-027 needs no exception. Where all are opened,
-    the opening is one invocation of `open.v1`, which the engine makes for the step and which
-    stands for every component Conduit that the step opens: it has one ID and one outcome. Where
-    that outcome is unknown it is unknown for the whole, the state of every one of those
-    Conduits is as it was, under LIF-004, and the reconciliation of the invocation under LIF-028
-    records every one of them as open or every one of them as not open. A component Conduit that
-    was open before the step is left as it was, and where every one is already open nothing is
-    dispatched and the step is left as succeeded. This is the rule for the step of a setup. A
-    component Conduit is an instance of its own under CON-003, and a request for `open.v1` or
-    for `close.v1` that an actor makes names one Conduit, under ACC-006 and ACC-012.
+    changed state, so nothing is closed and LIF-027 needs no exception. Where the opening of
+    every one of them would be dispatched, the engine makes, for the step, one request for
+    `open.v1` for each component Conduit whose state is registered. Each is an invocation of its
+    own, with its own ID and its own outcome, as a request to open one Conduit is under ACC-006,
+    and each carries an operation identity of its own, which the engine derives as OPS-028 has
+    it derive a step's, and from the component's name as well. The step has succeeded once every
+    one of those invocations has succeeded. For the outcome of the setup, each of them counts
+    under OPS-022 as a step does. Where the outcome of one of them is failed or unknown, the
+    state of its Conduit is as it was, under LIF-004, a Conduit that another of them opened
+    stays open, under LIF-027, and an invocation whose outcome is unknown is reconciled by
+    itself, for its one Conduit, under LIF-028. A component Conduit that was open before the
+    step is left as it was, and where every one is already open nothing is dispatched and the
+    step is left as succeeded. That every opening is decided before any is made is the rule for
+    the step of a setup, and for nothing else. After setup each component Conduit is a Conduit
+    like any other: it is an instance of its own under CON-003, and an actor may open or close
+    it by itself, with a request for `open.v1` or for `close.v1` that names that one Conduit,
+    under ACC-006 and ACC-012.
   vectors: []
 
 - id: CON-006
@@ -406,10 +417,10 @@
   observable: >-
     The target's implementation receives no call for such a request while the target's state is
     registered. A request made once the target is ready is decided as any other. A management
-    verb is an operation of the core package other than its two controls and the two tools that
-    the engine always presents, `retrieve-result.v1` and `start-later-work.v1`. That is every
-    operation of `object-management.v1`, `access-control.v1` and `pool-management.v1`,
-    `inspect.v1` and `purge.v1` among them, under OPS-019. The ones that ACC-033 authorizes
+    verb is an operation of the core package other than its two controls and the one tool that
+    the engine always presents, `retrieve-result.v1`. That is every operation of
+    `object-management.v1`, `access-control.v1` and `pool-management.v1`, `inspect.v1` and
+    `purge.v1` among them, under OPS-019. The ones that ACC-033 authorizes
     against a Pool, such as setting up a Resource the Pool owns, are dispatched while the Pool's
     state is registered, so that a Pool's own setup can set up its entries. A control is not a
     management verb.

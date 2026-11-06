@@ -123,8 +123,8 @@ These four steps were written when the findings were recorded. Each now has its 
 4. A second round of cold readers. Done: [round 2](round-2/README.md), which was not clean.
    [Round 3](round-3/README.md) is done and was not clean either, and
    [round 4](round-4/README.md) is done and was not clean. The done-when of action A59 asks for two
-   rounds in a row with no finding. Whether the readiness condition G7 is judged on these
-   rounds is [for the owner](../../AUDIT.md#waiting-for-the-owner).
+   rounds in a row with no finding. Ruling 38 later withdrew that done-when and
+   restated the readiness condition G7 ([record](../ruling-38/README.md)).
 
 ## Consolidation pass 1
 

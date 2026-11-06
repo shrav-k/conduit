@@ -41,8 +41,8 @@
 # on a handle (GRA-011); that a step is not named as a declared Conduit or an entry is
 # (GRA-022); that the outputs match the operation's contract (GRA-021); that no value
 # reference reads an output of a step that names a runtime (GRA-028); that no graph invokes
-# the operation it implements (GRA-005); model work (IMP-004, IMP-005, IMP-009); and later
-# work (IMP-010, IMP-012).
+# the operation it implements (GRA-005); and model work (IMP-004, IMP-005, IMP-009). Ruling
+# 38 removed the two rules on later work.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

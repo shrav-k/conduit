@@ -10,9 +10,8 @@
 # setting that input sets (CTR-006); a Type that declares a runtime and states
 # `restoresRuntimes` and `records` (CTR-004); a Requirement that states `obliges`
 # (CTR-005); a composed Requirement, whose constituent takes its argument from an input
-# of the composition (CTR-010); and an Operation that arranges later work, marked
-# `arrangesLaterWork: true`, with the operation that each start of that work invokes
-# (CTR-002, ACC-019, ACC-040).
+# of the composition (CTR-010). Ruling 38 removed the two operations that showed later
+# work, which is not part of this version.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -105,59 +104,6 @@ spec:
   effect: Stops the process that watches the directory.
   implementation: '#files-server'
 ---
-# An operation that arranges later work: the sweep runs after this invocation has ended, so
-# the contract carries the mark (CTR-002). The work is tied to the Conduit through which it
-# was arranged, and is not started once that Conduit is closed (ACC-019). The output names
-# the work. A sweep is a start that the consumer did not request, so `retrieve-result.v1`
-# does not return its result: the contract says how the result is read, here with another
-# operation of the same capability (ACC-019). Each start of a sweep is an invocation of
-# `directory.sweep-now.v1`, below.
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Operation
-metadata:
-  name: directory.sweep.v1
-  description: >-
-    Arrange for the stale entries of a directory to be removed after a delay. The sweep, when
-    it starts, is an invocation of `directory.sweep-now.v1`. What a sweep removed is read with
-    `directory.read.v1`, which then no longer returns those entries.
-spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-    after:
-      schema: {type: string, format: duration}
-  outputs:
-    sweep:
-      schema: {type: string, minLength: 1}
-  effect: Arranges a sweep, which removes the stale entries of the directory when it runs.
-  arrangesLaterWork: true
-  implementation: '#files-server'
----
-# The operation that a start of a sweep invokes. When the delay has passed, the
-# implementation that holds the sweep asks for the start with `start-later-work.v1`: it
-# names the invocation of `directory.sweep.v1` that arranged the sweep, this operation and
-# its arguments. The engine dispatches the start for the caller of that invocation and
-# through the Conduit to which the sweep is tied, and only if that Conduit lists this
-# operation (ACC-040). So a Conduit whose consumer is to arrange sweeps lists both
-# operations, and the consumer may also request this one itself. It carries no mark: it
-# arranges nothing and starts no model work.
-apiVersion: github.com/shrav-k/conduit/v0
-kind: Operation
-metadata:
-  name: directory.sweep-now.v1
-  description: >-
-    Remove the stale entries of a directory now, and say how many were removed. Each start
-    of a sweep that `directory.sweep.v1` arranged is an invocation of this operation.
-spec:
-  inputs:
-    path:
-      schema: {type: string, minLength: 1}
-  outputs:
-    removed:
-      schema: {type: integer, minimum: 0}
-  effect: Removes the stale entries of the directory.
-  implementation: '#files-server'
----
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
@@ -187,7 +133,7 @@ kind: Capability
 metadata:
   name: directory-access.v1
   description: >-
-    Reading a directory, arranging a sweep of it, sweeping it and changing its read limit. An
+    Reading and listing a directory and changing its read limit. An
     invocation of one of these operations whose outcome is unknown is reconciled through a
     Conduit to the Pool that owns the directory (ACC-033), so this capability does not include
     `reconcile.v1`.
@@ -195,8 +141,6 @@ spec:
   operations:
     - '#directory.read.v1'
     - '#directory.list.v1'
-    - '#directory.sweep.v1'
-    - '#directory.sweep-now.v1'
     - '#set-read-limit.v1'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -230,8 +174,6 @@ spec:
     - '#directory.establish.v1'
     - '#directory.read.v1'
     - '#directory.list.v1'
-    - '#directory.sweep.v1'
-    - '#directory.sweep-now.v1'
     - '#set-read-limit.v1'
   # Every instance of the type has this runtime, whatever its template declares. A runtime
   # is not marked optional: the step that starts it may be (TPL-006).

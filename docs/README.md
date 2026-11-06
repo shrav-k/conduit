@@ -46,7 +46,7 @@ batch under [proposals/](#records-of-rulings).
 ### Records of rulings
 
 Each record says what was proposed, what was decided, by whom and why. Most hold rulings of
-the owner. The last four, the documents audit and rounds 2 to 4 of the re-audit, hold what the
+the owner. Four, the documents audit and rounds 2 to 4 of the re-audit, hold what the
 coordinator decided under ruling 37; their ruling column names the ruling that asked for the
 work, not a ruling on its content. They are listed in the order
 of the rulings. Where a record and the specification differ, the specification governs.
@@ -66,12 +66,14 @@ of the rulings. Where a record and the specification differ, the specification g
 | [proposals/consolidation/](proposals/consolidation/README.md) | 27 to 29 | The audit for one idea with several notations, or one key with several meanings: 26 findings, the owner's rulings on all of them, and the choices made while writing them. Applied to the specification. |
 | [proposals/conventions/](proposals/conventions/README.md) | 30 | The four remaining shared conventions: fourteen decisions. Accepted; written as promises under `spec/conventions/`. |
 | [proposals/schemas-and-interface/](proposals/schemas-and-interface/README.md) | 31 | The shape of documents and contracts, the implementation interface and the implementation-defined list. Accepted, with the owner's amendment on protocol revisions. |
-| [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification, round 1, by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. Rounds 2 to 4 are the last three rows of this table. |
+| [proposals/reaudit/](proposals/reaudit/README.md) | 32, 33 | The re-audit of the whole specification, round 1, by three cold readers: their reports, the 37 decisions of ruling 32, the follow-up decisions of ruling 33, and the logs of the passes that applied them. Rounds 2 to 4 are rows of this table, below. |
 | [proposals/core-and-schemas/](proposals/core-and-schemas/README.md) | 37 | The core package as documents, the JSON Schemas of every document, and the manifest's format. Accepted with five changes; [how each is applied](proposals/core-and-schemas/APPLY.md). |
 | [proposals/docs-audit/](proposals/docs-audit/README.md) | 37 | The audit of the documents outside `spec/`, asked for in ruling 37: two readers' reports and the thirteen decisions taken to make the repository ready for a cold read, all applied. With it are the [list](proposals/docs-audit/GAPS.md) of the behaviors that the older text accepted and the specification lacked, and the logs of the edits: [entry points](proposals/docs-audit/log-entry-points.md), [older text](proposals/docs-audit/log-older-text.md) and [the specification](proposals/docs-audit/log-gaps.md). |
 | [proposals/reaudit/round-2/](proposals/reaudit/round-2/README.md) | 30, 37 | Round 2 of the re-audit, done, with its fixes applied. Ruling 30 asked for the specification to be audited again, and ruling 37 says how the findings are resolved. Four cold readers, three of the specification alone and one of the whole repository: their reports, the decisions, the logs of what was done about them, and the check of the interface against the Model Context Protocol. |
 | [proposals/reaudit/round-3/](proposals/reaudit/round-3/README.md) | 30, 37 | Round 3 of the re-audit: the same four readers' roles, on the specification as round 2 left it. Their reports, the decisions, and the log of the fix pass. |
 | [proposals/reaudit/round-4/](proposals/reaudit/round-4/README.md) | 30, 37 | Round 4 of the re-audit: the reports, the second check of the interface against the Model Context Protocol, the decisions, and the log of the fix pass. |
+| [proposals/ruling-38/](proposals/ruling-38/README.md) | 38 | The fourteen points put to the owner after round 4, with the ruling on each in the owner's words, and the log of what it changed in `spec/`. |
+| [proposals/secrets/](proposals/secrets/README.md) | 38 | Proposed, not ruled: the secret type that ruling 38 asked to be explored. |
 
 ### Process for the builds
 

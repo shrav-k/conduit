@@ -2,8 +2,8 @@
 
 Not binding. This is a short tour of the language in ordinary words, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
-last read against the specification on 2026-11-06, as the fix pass of
-[round 4 of the re-audit](proposals/reaudit/round-4/log-fixes.md) left it. The
+last read against the specification on 2026-11-06, as
+[ruling 38](proposals/ruling-38/README.md) left it. The
 [specification](../spec/README.md) alone binds, and it governs where this page differs. Each
 section links the files that state its rules. A code such as `CON-001` is the identifier of
 one promise in them.
@@ -95,10 +95,9 @@ offers. Offering is not permission.
 **Every permission is an open Conduit.** While a Conduit is open it permits exactly the
 operations it lists, on its target (ACC-003). A request for an operation that no open Conduit
 from that consumer to that target lists is refused (ACC-001). There is no separate object for a
-permission. Two tools of the core package are the exception and need no Conduit:
-`retrieve-result.v1`, with which an instance retrieves the results of its own requests, and
-`start-later-work.v1`, which is described [below](#operations-outcomes-and-reasons) (IFC-024,
-IFC-035).
+permission. One tool of the core package is the exception and needs no Conduit:
+`retrieve-result.v1`, with which an instance retrieves the results of its own requests
+(IFC-024).
 
 A Conduit comes to exist in one of two ways. A template of an Interface, an Agent or a Resource
 can declare it; one Conduit is then made with each instance of that template, or one for each
@@ -123,7 +122,8 @@ which the target's implementation does not support reports unavailable (ACC-015)
 of the core package are implemented by the engine itself, which supports only the bound. A
 policy that names an actor therefore makes every request of that actor to `management`, to
 `access` or to a Pool for one of those operations unavailable, the request to remove the policy
-among them, and `root` can still remove it (ACC-015, ACC-026).
+among them, and `root` can still remove it (ACC-015, ACC-026). The result of `apply-policy.v1`
+warns of this in a diagnostic, naming each target that cannot apply the policy (ACC-031).
 
 Inspecting a Conduit reports, for each restriction, whether it is enforced or only mediated
 (ACC-027). Mediated means that the restriction applies to requests that pass through the
@@ -295,15 +295,11 @@ object's current revision, and one that names another reports conflict (REV-002)
 Model work starts only as the effect of an operation whose contract is marked as starting it,
 dispatched through an open Conduit that lists it (IMP-001). Setup never starts it.
 
-Not every invocation begins with a consumer's request. The stop of OBS-007 is one case, and
-later work is the other. An operation whose contract is marked
-as arranging later work may arrange work that starts after its own invocation has ended. The
-implementation that holds the work asks for each start with `start-later-work.v1`, and the
-engine dispatches it for the caller that arranged the work, through the Conduit it was
-arranged through, and only while every Conduit the work is tied to is open and the consumer
-of none of them is retired (ACC-019, ACC-040).
-Such work starts model work only if the operation that arranged it is marked as starting it
-too (IMP-006). Every access decision and every invocation is recorded (REC-001).
+Not every invocation begins with a consumer's request: the engine itself dispatches the stop
+of OBS-007. Work that outlasts its invocation is not part of this version (ruling 38). Once an
+invocation has ended, no request is dispatched on its behalf, and work that is to happen later
+is asked for later, by an actor, through a Conduit that is open then (ACC-019). Every access
+decision and every invocation is recorded (REC-001).
 
 ## Packages, contracts and the core package
 
@@ -331,8 +327,8 @@ was not written for Conduit can be one; its implementation item in the manifest 
 
 The shared wire between an engine and an implementation, and between an engine and a consumer,
 is the Model Context Protocol. An operation is one tool, and the engine presents to each
-consumer, as tools, the operations its open Conduits list and the two tools that need no
-Conduit (IFC-012).
+consumer, as tools, the operations its open Conduits list and the one tool that needs no
+Conduit, `retrieve-result.v1` (IFC-012).
 
 The core package is built into every engine. It exports the templates that first start
 instantiates, the contracts of the management verbs and the schemas of documents. It needs no item

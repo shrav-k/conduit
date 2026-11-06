@@ -38,6 +38,10 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
+# Ruling 38 of the owner (docs/proposals/ruling-38/README.md, 2026-11-06) changed this file;
+# what changed is in docs/proposals/ruling-38/log-spec.md.
 
 - id: OPS-001
   layer: convention
@@ -441,8 +445,10 @@
     succeeded with an effect or ended unknown on an operation that has one. The steps of
     `set-up.v1` are those of the instance's `setup` graph, its declared Conduits and, for a
     Pool, its entries. The step of a declared Conduit that is made from a composite template is
-    one step, and CON-004 says how it ends. The steps of `retire.v1` are those of its `retire`
-    graph, and each stop of a runtime counts as a step that is not optional. A further run under
+    one step, and CON-004 says how it ends: where it makes a request for `open.v1` for each
+    component Conduit, each of those invocations counts here as a step does. The steps of
+    `retire.v1` are those of its `retire` graph, and each stop of a runtime counts as a step
+    that is not optional. A further run under
     LIF-026, or a further setup, in which a step that is not optional is left with the outcome
     unknown under OPS-021, on an operation that has an effect, has the outcome unknown, even
     where the run itself dispatched nothing: for a retirement the shutdown then reports unknown
@@ -499,11 +505,10 @@
     under LIF-009, or through another Conduit of the same consumer to the same target that lists
     the operation. OPS-008 does not put the Conduit in the scope of an identity, so the request
     is a repeat all the same. From the new attempt on, the Conduit of that attempt is the one
-    the invocation was dispatched through: the retained result belongs to it under OPS-017, a
-    close of it withholds the result under ACC-034, and later work that the invocation arranges
-    is tied to it under ACC-019. The same holds for a new attempt that OPS-012 dispatches. A
-    repeat that is not dispatched, because the invocation is in progress or succeeded, changes
-    none of this.
+    the invocation was dispatched through: the retained result belongs to it under OPS-017, and
+    a close of it withholds the result under ACC-034. The same holds for a new attempt that
+    OPS-012 dispatches. A repeat that is not dispatched, because the invocation is in progress
+    or succeeded, changes none of this.
   vectors: []
 
 # --- Added with the core package (plan-audit ruling 37; point P10 of the ruling on the core
@@ -592,7 +597,10 @@
     the invocation supplied one of its own. An implementation whose operation declares
     `deduplicates: true` therefore recognizes the new attempt that OPS-021 dispatches when a
     setup or a retirement runs again, and the effect is applied once. Two steps of one
-    invocation have different identities. A step that failed, succeeded or was reconciled in an
+    invocation have different identities. The step of a composite declared Conduit makes one
+    request for `open.v1` for each of its component Conduits, under CON-004, and each of those
+    requests carries an identity of its own, derived from the step's name and from the
+    component's name. A step that failed, succeeded or was reconciled in an
     earlier run, and that a later run dispatches, does not carry its earlier identity: OPS-009,
     OPS-010 and OPS-024 do not answer it from the earlier invocation, and arguments that differ
     from those of the earlier run, as after a control changed the configuration that a `setup`
@@ -632,10 +640,9 @@
     the actor's Conduit to `access`. A request from an actor with no open Conduit that lists the
     operation reports refused under ACC-001, and says nothing of whether the thing exists, as
     OPS-023 states. OPS-015 is another case: a retrieval needs no Conduit, and reports refused
-    for an identity and a target under which the instance has no invocation. So is ACC-040: no
-    Conduit lists `start-later-work.v1`, and a request for it that names no invocation reports
-    refused. A value in the input `location` of `set-default-location.v1` that names no location
-    that exists is invalid in the same way, under PLC-022. So is a request for `set-up.v1` or
+    for an identity and a target under which the instance has no invocation. A value in the
+    input `location` of `set-default-location.v1` that names no location that exists is invalid
+    in the same way as the others, under PLC-022. So is a request for `set-up.v1` or
     for `retire.v1` that names a template or a Conduit, under LIF-032: the thing exists, and is
     not one the operation addresses. A request that an actor makes on its own behalf names an
     object by a reference, and one that holds the resolved form `{kind, id}` in its place

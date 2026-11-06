@@ -39,6 +39,9 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
   rulings, and for the documents audit and rounds 2 to 4 of the re-audit the decisions of the
   coordinating session under ruling 37. Where a record and the
   specification differ, the specification governs.
+- If you were asked to read or audit this repository cold, start at
+  [for the next reader](docs/AUDIT.md#for-the-next-reader): what to read, what is known to be
+  open, what to look at first, and where findings go.
 - Also not binding: `docs/OVERVIEW.md`, `docs/REVIEW.md`, `docs/VOCABULARY.md`,
   `docs/authoring/`, `docs/proposals/authoring-syntax/`, `docs/implementation/`,
   `docs/research/`, `docs/archive/` and everything under `experiments/`. Most predate the
@@ -55,8 +58,8 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
 - An owner ruling: the ruling log in `docs/AUDIT.md`, with its record under `docs/proposals/`,
   then the documents it affects.
 - Accepted behavior: a promise in `spec/`, in the terms of `spec/definitions.md`. It changes
-  by a logged ruling. Under ruling 37 the session that coordinates the re-audit may also settle
-  a cold reader's finding without a ruling on it, and logs each such decision under
+  by a logged ruling. Under ruling 37, as the owner confirmed it in ruling 38, the session that coordinates the
+  re-audit may also settle a cold reader's finding without a ruling on it, and logs each such decision under
   `docs/proposals/reaudit/` as its own and not the owner's
   ([who decides what](docs/AUDIT.md#who-decides-what-since-ruling-37)).
 - A defect in the language: fix it in the language, not around it. Findings against `spec/` are
@@ -81,8 +84,9 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
   is for the sessions the owner has asked to write the language, not for a reviewer or any
   other session: the owner's instruction of 2026-11-05 is that this work is tracked on
   [pull request #6](https://github.com/shrav-k/conduit/pull/6) (ruling 36). The coordinating
-  session reads that as committing and pushing to its branch, `docs/plan-audit`, at each
-  milestone. The owner has not confirmed that reading.
+  session reads that as committing and pushing to its branch at each milestone, and the owner
+  confirmed that reading in ruling 38. Pull request 6 was merged by squashing after ruling 38;
+  later work of those sessions goes on a new branch with its own pull request.
 
 ## Checks
 

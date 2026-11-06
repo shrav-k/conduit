@@ -30,6 +30,8 @@
 # names by number. Every change listed above for the conversion of the older text (the docs
 # audit) and for rounds 2 to 4 of the re-audit is a decision of the coordinator under ruling 37,
 # logged in the records named, and the owner has not ruled on it.
+# Ruling 38 (2026-11-06) accepted some of those decisions and made changes of its own;
+# spec/README.md says which.
 
 - id: GRA-001
   layer: language
@@ -68,10 +70,11 @@
     ready by that run, as LIF-004 states. A declared Conduit that is not opened and an entry
     whose Resource is not set up are such steps under GRA-022: setup does not succeed if one of
     them is required, and reports it as not opened or not set up if it is optional. A declared
-    Conduit that is made from a composite template is opened as a whole or not at all, under
-    CON-004. A step for something that is already done is left as succeeded: a declared Conduit
-    that is open under CON-004, a Resource that is ready under POOL-013, and a runtime that is
-    held under TPL-007.
+    Conduit that is made from a composite template is decided as a whole: no component
+    Conduit is opened unless the opening of every one would be dispatched, and each one that is
+    opened then has its own invocation and its own outcome, under CON-004. A step for
+    something that is already done is left as succeeded: a declared Conduit that is open under
+    CON-004, a Resource that is ready under POOL-013, and a runtime that is held under TPL-007.
   vectors: []
 
 - id: GRA-004

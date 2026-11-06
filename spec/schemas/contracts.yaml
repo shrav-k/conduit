@@ -19,10 +19,11 @@
 #   operation-spec.v1       CTR-002 (an input or output holds exactly one of `schema` and
 #                           `handle: true`; only an input that holds a `schema` may hold
 #                           `default`), CTR-006 (`changes` is a map from the name of an input
-#                           to the pointer that input sets), IMP-003, OPS-012, ACC-019
-#                           (`arrangesLaterWork`), OBJ-015 (an input that states a `default`
-#                           may be left out, marked optional or not), ACC-032 and CTR-009
-#                           (`reservedToRoot`)
+#                           to the pointer that input sets), IMP-003, OPS-012, OBJ-015
+#                           (an input that states a `default` may be left out, marked
+#                           optional or not), ACC-032 and CTR-009 (`reservedToRoot`);
+#                           `additionalProperties: false` rejects `arrangesLaterWork`,
+#                           which ruling 38 removed
 #   requirement-spec.v1     CTR-005 (`obliges` is drawn from `consumer` and `target`; naming
 #                           `consumer` adds the consumer's implementations to the target's,
 #                           which must always state a filter in `supports`; a requirement
@@ -33,7 +34,8 @@
 #
 # The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) made a
 # control's `changes` a map, said what `obliges` adds and how a composition is supported,
-# sent and applied, and gave an Operation contract the mark `arrangesLaterWork`.
+# sent and applied, and gave an Operation contract the mark `arrangesLaterWork`, which ruling 38
+# removed again.
 #
 # The decisions of docs/proposals/docs-audit/GAPS.md (docs audit, decision DA3) added
 # `restoresRuntimes` and `records` to a Type, `default` to an Operation's input, and `obliges`
@@ -208,8 +210,7 @@ metadata:
     marked `reservedToRoot: true`, which only an Operation contract of the core package may be.
     An input that holds a `schema` may state a `default`, which the engine fills in where the
     input is not supplied. An input that states a `default` may be left out, whether or not it
-    is marked `optional: true`. An operation that arranges work to start or to run after its
-    own invocation has ended is marked `arrangesLaterWork: true`.
+    is marked `optional: true`.
 spec:
   type: object
   properties:
@@ -221,11 +222,6 @@ spec:
       additionalProperties: {$ref: '#/$defs/output'}
     effect: {type: string, minLength: 1}
     startsModelWork: {type: boolean}
-    arrangesLaterWork:
-      type: boolean
-      description: >-
-        True for an operation that arranges later work: work that starts, or runs, after its
-        own invocation has ended. Absent means false, and such an operation arranges none.
     deduplicates: {type: boolean}
     reservedToRoot:
       type: boolean

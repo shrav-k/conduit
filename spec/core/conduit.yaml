@@ -1,7 +1,10 @@
 # The manifest of the core package. The owner accepted it as it stood on 2026-11-05
 # (plan-audit ruling 37); the record is docs/proposals/core-and-schemas/README.md. What the
 # docs audit and rounds 2 to 4 of the re-audit changed since rests on the coordinator's
-# logged decisions, which the owner has not ruled on. See README.md in this directory.
+# logged decisions, which the owner has not ruled on, apart from those that ruling 38
+# accepted: spec/README.md lists them where it says what "accepted" covers. See README.md in
+# this directory. Ruling 38 (2026-11-06) took the export `start-later-work.v1` out, here and
+# from what `engine` implements: later work is not part of this version.
 #
 # The core package is built into every engine (NAM-020) and is never installed, listed or
 # fetched (NAM-021), so it has no archive and no digest. Its documents are the files of this
@@ -60,7 +63,6 @@ exports:
   - apply-policy.v1
   - remove-policy.v1
   - retrieve-result.v1
-  - start-later-work.v1
   - set-default-location.v1
   - set-facts.v1
   # Requirements (requirements.yaml).
@@ -149,7 +151,6 @@ implementations:
       - github.com/shrav-k/conduit/core#apply-policy.v1
       - github.com/shrav-k/conduit/core#remove-policy.v1
       - github.com/shrav-k/conduit/core#retrieve-result.v1
-      - github.com/shrav-k/conduit/core#start-later-work.v1
       - github.com/shrav-k/conduit/core#set-default-location.v1
       - github.com/shrav-k/conduit/core#set-facts.v1
     supports:

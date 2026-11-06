@@ -22,8 +22,6 @@ exports:
   - directory.establish.v1
   - directory.read.v1
   - directory.list.v1
-  - directory.sweep.v1
-  - directory.sweep-now.v1
   - watcher.start.v1
   - watcher.stop.v1
   - set-read-limit.v1
@@ -40,8 +38,6 @@ implementations:
     implements:
       - '#directory.establish.v1'
       - '#directory.read.v1'
-      - '#directory.sweep.v1'
-      - '#directory.sweep-now.v1'
       - '#watcher.start.v1'
       - '#watcher.stop.v1'
       - '#set-read-limit.v1'

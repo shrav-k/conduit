@@ -12,8 +12,8 @@ commit `b1d3fb4`.
 
 The round was not clean. The done-when of action A59 asks for two consecutive rounds with no
 finding in the language, the conventions or the interface, and none of the three rounds has
-been clean. Whether the readiness condition G7 is judged on these rounds is
-[for the owner](../../../AUDIT.md#waiting-for-the-owner).
+been clean. Ruling 38 later withdrew that done-when and restated the
+readiness condition G7 ([record](../../ruling-38/README.md)).
 
 | Step | Record |
 | --- | --- |

@@ -1,8 +1,9 @@
 # Re-audit, round 4
 
-Status: done, 2026-11-06 (plan-audit action A59). No fifth round is started: whether to go on
-reading or to move to the reference model and the vectors is
-[for the owner](../../../AUDIT.md#waiting-for-the-owner). Four cold
+Status: done, 2026-11-06 (plan-audit action A59). No fifth round is started. The owner
+then ruled on what was open ([ruling 38](../../ruling-38/README.md)): the gate of two clean
+rounds is withdrawn, and the next read is the owner's cold read by Codex
+([for the next reader](../../../AUDIT.md#for-the-next-reader)). Four cold
 readers read the repository as it stood after [round 3](../round-3/README.md), its fix pass and
 the follow-up, at commit `f583469`.
 
@@ -24,9 +25,9 @@ of the four rounds has been clean. What reader 3 finds has stayed level: its fin
 two features that were specified apart meet, and each round's fixes add text for the next round
 to meet. Rounds 2 to 4 are counted alike, as the sum of the findings in the three reports on
 `spec/`. Round 1 is counted otherwise, as about 170 problems by class after duplicates among
-the reports were merged; its three reports hold about 200 items. Whether the readiness
-condition G7 is judged on these rounds is
-[for the owner](../../../AUDIT.md#waiting-for-the-owner).
+the reports were merged; its three reports hold about 200 items. Ruling 38 withdrew that
+done-when and restated the readiness condition G7: it is judged on no unsafe finding in the
+latest round, and on the reference model and the vectors.
 
 | Step | Record |
 | --- | --- |

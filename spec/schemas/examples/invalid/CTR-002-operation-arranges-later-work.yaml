@@ -1,0 +1,14 @@
+# Example. It must be rejected:
+# an Operation contract holds no `arrangesLaterWork`. Later work is not part of this version
+# (ruling 38), and the schema of an Operation's `spec` admits no key it does not list.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.sweep.v1
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+  effect: Arranges a sweep of the directory that runs later.
+  arrangesLaterWork: true

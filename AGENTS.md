@@ -77,8 +77,8 @@ and preservation tests in [docs/AUDIT.md](docs/AUDIT.md#purpose).
   recommendation and wait; do not record your recommendation as accepted.
 - Do not edit `docs/archive/`, the content of `docs/research/`, or the topic files under
   `docs/protocol/`.
-- Do not edit the sibling directories `../agentwatch` and `../pi-reference`, if present. They
-  are reference clones on the owner's machine, to consult only. Nothing in this repository
+- Do not edit the sibling directories of this repository that hold reference clones, if
+  present. They are on the owner's machine, to consult only. Nothing in this repository
   needs them.
 - Commit or push only when asked, and work on a branch. One standing instruction exists, and it
   is for the sessions the owner has asked to write the language, not for a reviewer or any

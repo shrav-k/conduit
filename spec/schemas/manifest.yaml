@@ -2,7 +2,7 @@
 # core package and the manifest's promises; the record is
 # docs/proposals/core-and-schemas/README.md. What the docs audit and rounds 2 to 4 of the
 # re-audit changed since rests on the coordinator's logged decisions, which the owner has
-# not ruled on.
+# not ruled on, apart from those that ruling 38 accepted or made; spec/README.md says which.
 #
 # The manifest of a project or a package, and one item of its `implementations`. The file's
 # name, its keys and the layout of an archive are promised in spec/promises/manifest.yaml.

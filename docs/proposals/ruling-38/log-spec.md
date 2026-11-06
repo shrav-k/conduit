@@ -50,7 +50,7 @@ $ python3 tools/set_names.py --check
 Errors: 0
 
 $ python3 tools/check_docs.py
-Errors: 0 once the proposal on secrets exists
+Errors: 0
 ```
 
 After the fixes of [the check](check.md), no YAML line under `spec/` is longer than 96
@@ -58,8 +58,6 @@ characters. A search under `spec/`, `tools/` and
 `docs/OVERVIEW.md` for `arrangesLaterWork`, `start-later-work` and the removed IDs finds them
 only in head comments that record their removal, in the schema comment that says the key is
 rejected, and in the invalid example.
-
-## Not done here
 
 ## The check of the changes
 
@@ -82,3 +80,23 @@ A reviewer read these changes before the merge and reported fourteen findings, n
 | R38-12 This log | Corrected: OPS-029 added, OPS-022 moved, the claim on line length made true, the standing row widened. |
 | R38-13 "No promise of this file has been removed" | "Was removed before ruling 38". |
 | R38-14 "Two changes" in the core README | Four, each named. |
+
+## The check of the handoff
+
+A second reviewer read the repository at commit `96ed241` as the next reviewer will, and
+reported twelve findings ([report](handoff-check.md)). Each was fixed by the coordinator:
+
+| Finding | What was done |
+| --- | --- |
+| H-1 The composite Conduit is not in the open lists | Listed in the tracker's "Waiting for the owner" and "Known to be open"; the record of ruling 38 and the round-4 record point to it. |
+| H-2 "Read by their editors alone" | The tracker says the changes of ruling 38 were checked against the ruling and not read cold. |
+| H-3 The done-when of A42 | Restated as ruling 38 restated G7. |
+| H-4 The schemas' heads and README | Say what ruling 38 accepted or made. |
+| H-5 "Eight changes listed under later amendments" | The ruling's row says which are there. |
+| H-6 "All rulings given on 2026-11-05" | Ruling 38 is dated 2026-11-06. |
+| H-7 The reading of "Understood" | The record says where the gate is stated. |
+| H-8 A private name in `AGENTS.md`; "three readers' reports" | Removed; two. The record of the ruling says where the names remain. |
+| H-9 The squash message | Written by hand, with no session link and the owner's no-reply address. |
+| H-10 Links pinned to `7927d68` | Listed for the owner: they work while the branch or the pull request exists. |
+| H-11 "Round 4 is next" | "Followed". |
+| H-12 An empty heading and a stale check line | Removed and corrected. |

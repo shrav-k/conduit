@@ -1,6 +1,6 @@
 # Re-audit, round 3
 
-Status: done, 2026-11-06 (plan-audit action A59), and [round 4](../round-4/README.md) is next. Four cold
+Status: done, 2026-11-06 (plan-audit action A59), and [round 4](../round-4/README.md) followed. Four cold
 readers read the repository as it stood after [round 2](../round-2/README.md) and its passes, at
 commit `b1d3fb4`.
 

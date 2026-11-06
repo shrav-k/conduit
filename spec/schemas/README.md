@@ -3,13 +3,16 @@
 Status: **accepted by the owner on 2026-11-05** (plan-audit ruling 37), as it stood on that
 day, as one batch with [the core package](../core/README.md) and
 [the manifest's promises](../promises/manifest.yaml). **Changed since by decisions that the
-owner has not ruled on.** It was written for decision G1 of the
+owner has not ruled on, apart from those that ruling 38 accepted or made.** It was written for decision G1 of the
 [re-audit](../../docs/proposals/reaudit/README.md). The record of the batch is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
 the owner changed is in [APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md).
 
 What follows was changed after the owner's ruling, by the coordinator of the re-audit, whose
-decisions are logged and can be struck by the owner. None of it is a choice the owner accepted.
+decisions are logged and can be struck by the owner. None of it is a choice the owner accepted,
+except what [ruling 38](../../docs/proposals/ruling-38/README.md) accepted or made: a runtime
+with no `optional`, a control's `changes` as a map, and an Operation contract with no
+`arrangesLaterWork`.
 The decisions of the [docs audit](../../docs/proposals/docs-audit/GAPS.md) added four things
 a contract may hold, which are listed under
 [Choices the schemas encode](#choices-the-schemas-encode). The

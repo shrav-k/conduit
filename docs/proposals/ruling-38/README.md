@@ -35,10 +35,13 @@ owner's words.
    [documents audit](../docs-audit/GAPS.md) stays unconverted.
 2. The six are dropped by this ruling. The
    [tracker's section](../../AUDIT.md#behaviors-not-carried-into-the-specification) says so.
-3. CON-004 is reworded. No rule changes.
+3. CON-004 is reworded. Applying it showed that only the decision to open is whole; each
+   component is then opened by a request of its own, with its own outcome. The
+   [log](log-spec.md) says why, and the tracker lists it for the owner.
 4. The done-when of action A59 and the readiness condition G7 are restated in the tracker and
    in the [build document](../../implementation/INDEPENDENT_BUILDS.md). The coordinator reads
-   "Understood" as accepting the recommendation; the note for the next reader says so.
+   "Understood" as accepting the recommendation, and the tracker's section for the next reader
+   states the gate as restated.
 5. The sentence of ruling 31 is withdrawn. The tracker's later amendments say so.
 6. Later work leaves the specification. See the work order below.
 7. `apply-policy.v1` gains the warning.
@@ -47,7 +50,9 @@ owner's words.
    and the tracker's later amendments say "accepted by ruling 38".
 11. A note for the next reader in the tracker.
 13. `AGENTS.md` and the tracker give both as confirmed.
-14. The two names are removed from the documents, and pull request 6 is merged by squashing.
+14. The two names are removed from the tracker and from `AGENTS.md`. Research packets,
+   archived files and kept reports still hold them, which the rules of this repository say not
+   to edit; the tracker lists that for the owner. Pull request 6 is merged by squashing.
 
 Every other decision that the coordinator made on a finding since ruling 37 keeps its standing:
 it is the coordinator's, it is logged, and the owner can strike it.

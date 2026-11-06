@@ -54,6 +54,8 @@ this directory as the coordinator's and not the owner's
 Open when the round ended, for whoever reads next:
 
 - The two points at the end of [DECISIONS.md](DECISIONS.md), on opening a composite Conduit.
+  [Ruling 38](../../ruling-38/README.md), point 3, settled them; how it was applied, and what is
+  left for the owner, is in [its log](../../ruling-38/log-spec.md).
 - The text that the fix pass of this round changed, 92 promises and 5 new ones, has been read by
   its editor alone.
 - The interface promises that the fix pass changed have not been checked against the Model

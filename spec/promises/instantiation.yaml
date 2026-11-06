@@ -4,7 +4,9 @@
 # were added. The follow-up decisions (ruling 33) added INS-023. The ruling on the core package
 # and the schemas (ruling 37) changed INS-006, INS-012 and INS-014. The conversion of the older
 # text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed INS-011,
-# INS-014 and INS-018 and added INS-024.
+# INS-014 and INS-018 and added INS-024. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed INS-002, INS-011, INS-012, INS-014
+# and INS-018, and added INS-025, the forms of `from`.
 
 - id: INS-001
   layer: language
@@ -30,7 +32,7 @@
   observable: >-
     Resolving returns a diagnostic naming the `from` value and what it resolved to, if anything.
     Every instance is made from a template: one that exists when the instance is made, or one
-    that an installed package exports.
+    that an installed package exports. The forms `from` may take are INS-025.
   vectors: []
 
 - id: INS-003
@@ -144,7 +146,11 @@
   observable: >-
     Resolving returns a diagnostic naming the input and the destination. The `config` of a
     template that writes none is present and empty, under INS-024, so `/config/model` is
-    accepted there and `/config/limits/read` is not.
+    accepted there and `/config/limits/read` is not. The `arguments` of a nested instantiation,
+    or of an applied requirement, that writes none is present and empty in the same way, as
+    OBJ-014 and NAM-019 state: `/conduits/checkout/arguments/limit` is accepted beside a
+    declared Conduit `checkout` that writes no `arguments`, and
+    `/requirements/rate/arguments/limit` beside an applied requirement `rate` that writes none.
   vectors: []
 
 - id: INS-012
@@ -154,9 +160,10 @@
     A template is registered in which an input's destination is none of these: `config` as a
     whole, or a place inside it; a declared Conduit's `target`; the `arguments` of a declared
     Conduit as a whole, or a place inside them; an entry's `placement`; the `arguments` of an
-    entry as a whole, or a place inside them; and, in a Conduit template, `operations` as a
-    whole, the `arguments` of an applied requirement as a whole or a place inside them, and the
-    `arguments` of a component as a whole or a place inside them.
+    entry as a whole, or a place inside them; in a Conduit template that is not composed,
+    `operations` as a whole, and the `arguments` of an applied requirement as a whole or a place
+    inside them; and, in a composite Conduit template, the `arguments` of a component as a whole
+    or a place inside them.
   then: >-
     The template is rejected. The list is closed: a destination that reaches any other place is
     not accepted.
@@ -170,8 +177,10 @@
     one of them; the `from` or the `optional` of a nested instantiation; a whole nested
     instantiation, such as `/conduits/checkout`; an item of `operations`, such as
     `/operations/0`; the `requirement` of an applied requirement, such as
-    `/requirements/rate/requirement`; and anything under `/inputs`. What is required of an
-    `operations` that an input fills is INS-023.
+    `/requirements/rate/requirement`; and anything under `/inputs`. `/operations` and a place
+    under `/requirements` are rejected in a composite template, which has neither key under
+    CON-016, and a place under `/components` is rejected in a template that is not composed.
+    What is required of an `operations` that an input fills is INS-023.
   vectors: []
 
 - id: INS-013
@@ -199,8 +208,10 @@
     No instance is made, and the instance document is rejected.
   observable: >-
     Resolving returns a diagnostic naming the type and what fails. A template can narrow what
-    its type allows and cannot widen it. A template that has no `config` is checked against its
-    type's schema as an empty map, under INS-024.
+    its type allows and cannot widen it. A value that is a reference is stored in the resolved
+    form of OBJ-009, which every reference schema accepts, so the configuration as it is stored
+    satisfies the same schema. A template that has no `config` is checked against its type's
+    schema as an empty map, under INS-024.
   vectors: []
 
 - id: INS-016
@@ -239,7 +250,7 @@
     It is joined to a working directory or to any other base.
   observable: >-
     The value reaches its destination exactly as supplied. Whether a relative path is then valid
-    is decided by the schema of the type that receives it. Where a value is bound to a location,
+    is decided by the schema of the type that receives it. Where a value is tied to a location,
     as an absolute path is, PLC-020 says who interprets it.
   vectors: []
 
@@ -335,4 +346,27 @@
     have a destination inside it, because the parent that INS-011 requires is present. Resolving
     a template that writes no `config` and one that writes `config: {}`, otherwise equal, gives
     the same template.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- finding R2-S1).
+
+- id: INS-025
+  layer: language
+  level: must
+  when: >-
+    The `from` of an instance document, or of a nested instantiation, is written.
+  then: >-
+    It is one of four: a bare name, or `{kind: <Kind>, name: <name>}`, for a template that
+    exists; a qualified reference, for a template that a package exports; or `#` followed by a
+    name, for a template of the same project or package as the document that holds it, as
+    NAM-022 gives that form.
+  observable: >-
+    A bare name, and the form with a kind, resolve among the objects that exist, under NAM-003,
+    and a template that the same submission registers is one of them, under SUB-002. A document
+    of a package names a template of its own package as `#name`, because a bare name is never
+    looked up in a package. `from` is not a selection: a selection chooses a contract or an
+    implementation, and `from` names a template. PKG-013 says what holds where a package
+    re-exports the template. A value of any other form is rejected with a diagnostic naming it,
+    and INS-002 rejects one that does not resolve to a template of the same kind.
   vectors: []

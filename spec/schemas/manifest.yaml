@@ -15,7 +15,8 @@
 #                           PKG-004, PKG-017, PKG-018
 #   implementation-item.v1  MAN-009 and MAN-010 (the keys and their values; exactly one of
 #                           `command`, `url` and `graph`), PKG-019, PKG-020 (a plain item
-#                           gives `tools` and no `supports`), TPL-003
+#                           gives `tools` and no `supports`, and an item that is not plain
+#                           gives no `tools`), TPL-003
 #
 # The first two forms below are the manifest of a project that is not published and the
 # manifest of a package. The third is the core package's own manifest, whose implementations
@@ -24,8 +25,11 @@
 #
 # Not expressed here, and checked by the engine: the rule for a key of `packages` and of
 # `implementations` (NAM-001, NAM-004), because the profile has no keyword that constrains
-# the keys of a map; that the core package's address is not listed (NAM-021); that every
-# export names a document of the package and no name is exported twice (PKG-012, PKG-018);
+# the keys of a map; that `fetch` is a URI reference (MAN-006), because the profile has no
+# format for one, so the schema accepts any string that is not empty; that the core
+# package's address is not listed (NAM-021); that the address a package states is the one it
+# was listed or fetched under (PKG-017); that every export names a document of the package
+# (PKG-018), though `uniqueItems` does reject a name that `exports` writes twice (PKG-012);
 # re-export cycles (PKG-014); that a plain item's `tools` has a key for each operation in
 # `implements` (PKG-020); that a `graph` item implements exactly the one operation it lists
 # (GRA-014); that no two documents of the project or package share a name (NAM-027);
@@ -118,7 +122,8 @@ metadata:
     One member of a manifest's `implementations`. It is reached by exactly one of `command`,
     `url` and `graph`. An existing server that knows nothing of this specification is marked
     `plain: true`, gives `tools` and states no `supports`. `supports` and `placement` may each
-    be left out.
+    be left out. An implementation supports a composed requirement when its `supports` lists
+    the composition or every one of its constituents.
 spec:
   oneOf:
     - type: object

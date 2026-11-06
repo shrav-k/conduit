@@ -2,7 +2,10 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 20, 32 and 33). Draft: no vector exists yet.
 # The ruling on the core package and the schemas (ruling 37) changed REV-006, REV-007 and
 # REV-010 to REV-012. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed REV-007. No promise of this file has been removed.
+# docs/proposals/docs-audit/GAPS.md) changed REV-007. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed REV-003, REV-004, REV-006, REV-007,
+# REV-009, REV-010 and REV-012: a rename advances the revision, and a control's `changes` maps
+# each input to the setting it sets. No promise of this file has been removed.
 
 - id: REV-001
   layer: convention
@@ -32,18 +35,19 @@
   layer: convention
   level: must
   when: >-
-    An object's stored definition or configuration changes.
+    An object's stored definition, configuration or name changes.
   then: >-
     Its revision advances.
   observable: >-
-    The revision after the change differs from the revision before it.
+    The revision after the change differs from the revision before it. A rename is such a
+    change, under OBJ-026.
   vectors: []
 
 - id: REV-004
   layer: convention
   level: must not
   when: >-
-    An object's stored definition and configuration do not change.
+    An object's stored definition, configuration and name do not change.
   then: >-
     Its revision advances.
   observable: >-
@@ -68,7 +72,8 @@
   when: >-
     A control is requested and one of its inputs, other than `revision`, is not supplied.
   then: >-
-    The setting that input governs is left as stored. No default is applied to it.
+    The setting that input sets, at the pointer the control's `changes` gives for it, is left as
+    stored. No default is applied to it.
   observable: >-
     After the control succeeds, every setting whose input was not supplied has the value it had
     before. `revision` is the one input of a control that must always be supplied: a control
@@ -82,17 +87,18 @@
     A control succeeds.
   then: >-
     Its result states the settings it confirmed, in its output `settings`, and exactly those
-    settings are stored. `settings` is an object keyed by the pointers of the control's
-    `changes`. It has one member for each place the control confirmed, which holds the value
-    now stored at that place.
+    settings are stored. `settings` is a map keyed by the pointers of the control's `changes`.
+    It has one member for each place the control confirmed, which holds the value now stored at
+    that place.
   observable: >-
     The stored configuration after the control equals the configuration before it with the
     confirmed settings applied, and nothing else changed. A control whose confirmed settings
     cannot be stored has not succeeded: REV-008 gives its outcome. A control whose `changes` is
-    `[/readLimit]` and that confirmed the value 15 returns `settings: {/readLimit: 15}`. A place
-    of `changes` that the control did not confirm, because its input was not supplied under
-    REV-006, has no member. Every control declares the input `revision` and the output
-    `settings`, under CTR-006.
+    `{limit: /readLimit}` and that confirmed the value 15 for its input `limit` returns
+    `settings: {/readLimit: 15}`. A place of `changes` that the control did not confirm, because
+    its input was not supplied under REV-006, has no member. A setting that is a reference is
+    returned in the resolved form of OBJ-009. Every control declares the input `revision` and
+    the output `settings`, under CTR-006.
   vectors: []
 
 - id: REV-008
@@ -116,7 +122,8 @@
     A control's outcome is unknown.
   then: >-
     The stored configuration and revision are unchanged, and the settings the control addressed
-    are reported as unknown.
+    are reported as unknown. They are the settings of the inputs the request supplied, at the
+    pointers the control's `changes` gives for those inputs.
   observable: >-
     Inspection shows the earlier stored values, the earlier revision, and the word unknown
     against each setting the control addressed.
@@ -134,14 +141,16 @@
     The reconciliation names the instance's current revision and states the settings that took
     effect, and exactly those settings are stored.
   observable: >-
-    The stored configuration equals the configuration before the control with the stated
-    settings applied, the revision advances under REV-003 if anything changed, and those
-    settings are no longer reported as unknown. A reconciliation that records that the effect
-    did not occur stores nothing. Every reconciliation of a control names the instance's current
-    revision, whichever way it records the effect: one that names a revision that is not current
-    is not dispatched and reports conflict under REV-002, and one that names none reports
-    invalid under REV-011. One whose stated settings do not satisfy the schema is REV-013. In
-    `reconcile.v1` the revision and the settings are the inputs `revision` and `settings`.
+    The stored configuration equals the current configuration with the stated settings applied,
+    whatever other change was stored after the control was dispatched. The revision advances
+    under REV-003 if anything changed, and those settings are no longer reported as unknown. A
+    reconciliation that records that the effect did not occur stores nothing. Every
+    reconciliation of a control names the instance's current revision, whichever way it records
+    the effect: one that names a revision that is not current is not dispatched and reports
+    conflict under REV-002, and one that names none reports invalid under REV-011. One whose
+    stated settings do not satisfy the schema is REV-013. In `reconcile.v1` the revision and the
+    settings are the inputs `revision` and `settings`, and `settings` has the shape of the
+    control's output `settings`: a map keyed by the pointers of the control's `changes`.
   vectors: []
 
 - id: REV-011
@@ -170,11 +179,11 @@
     that was current when a change was dispatched is still current when its result is stored.
     Setting up and retiring an instance, which for a Conduit are opening and closing it, name no
     revision, change neither its definition nor its configuration, and do not advance its
-    revision. Of several requests to change one object that name the same revision, at most one
-    is stored: once it is, the revision has advanced under REV-003, and a request that still
-    names the earlier revision is not dispatched and reports conflict under REV-002. What
-    happens to a request to set up, to retire or to change an instance that arrives while
-    another of them has not ended is DL9 of the implementation-defined list.
+    revision. Of several requests to change one object that name the same revision, renames
+    among them, at most one is stored: once it is, the revision has advanced under REV-003, and
+    a request that still names the earlier revision is not dispatched and reports conflict under
+    REV-002. What happens to a request to set up, to retire or to change an instance that
+    arrives while another of them has not ended is DL9 of the implementation-defined list.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decision F11 of the re-audit).

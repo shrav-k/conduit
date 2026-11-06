@@ -42,6 +42,8 @@ implementations:
       - '#watcher.stop.v1'
       - '#set-read-limit.v1'
     command: [bin/files-server, --stdio]
+    # It also supports the composition `review-limit.v1`, because it supports its one
+    # constituent.
     supports:
       - '#rate-limit.v1'
     placement:

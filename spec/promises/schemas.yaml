@@ -3,8 +3,10 @@
 # syntax rules. Consolidation pass 1 added SCH-015 to SCH-017. The follow-up decisions (ruling
 # 33) added SCH-018. The ruling on the core package and the schemas (ruling 37) changed SCH-008
 # and SCH-015. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed SCH-009 and added SCH-019 to SCH-021. No promise of
-# this file has been removed. Draft: no vector exists yet.
+# docs/proposals/docs-audit/GAPS.md) changed SCH-009 and added SCH-019 to SCH-021. The second
+# round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed SCH-001, SCH-008
+# to SCH-010, SCH-014, SCH-016 and SCH-019. No promise of this file has been removed. Draft: no
+# vector exists yet.
 
 - id: SCH-001
   layer: language
@@ -14,9 +16,9 @@
   then: >-
     The keyword means what JSON Schema 2020-12 defines it to mean.
   observable: >-
-    A value is valid against the schema exactly when a conforming JSON Schema 2020-12 validator,
-    with format checking on, says it is. For a format the profile lists, the grammar SCH-004
-    cites is the one that is checked.
+    A value is valid against the schema exactly when a conforming JSON Schema 2020-12 validator
+    that asserts formats, as the format-assertion vocabulary of JSON Schema defines, says it is.
+    For a format the profile lists, the grammar SCH-004 cites is the one that is checked.
   vectors: []
 
 - id: SCH-002
@@ -98,7 +100,7 @@
   level: must
   when: >-
     A schema written in a contract or a template places `default` anywhere other than on a
-    property reached through `properties`. The object that holds the property may be written
+    property reached through `properties`. The schema that holds the property may be written
     directly, reached through `$ref`, or be the schema that `items` gives.
   then: >-
     The document that holds the schema is rejected, when its package is installed or when it is
@@ -108,7 +110,7 @@
     A `default` is accepted where the schema that states it is written as a member of
     `properties` and is not inside `allOf`, `anyOf` or `oneOf`. A `default` inside `allOf`,
     `anyOf` or `oneOf`, and a `default` on `items` itself, each produce a diagnostic naming its
-    position. A `default` on a property of an object inside `items` is accepted, as Kubernetes
+    position. A `default` on a property of a map inside `items` is accepted, as Kubernetes
     structural defaulting accepts it. A `default` that a member of `$defs` states on itself is
     rejected, even where the only `$ref` to that member is written as a property: what refers to
     a schema does not change the answer.
@@ -118,31 +120,32 @@
   layer: language
   level: must
   when: >-
-    A template is instantiated and a property that has a `default` is absent from an object
-    that is present.
+    A template is instantiated and a property that has a `default` is absent from a map that is
+    present.
   then: >-
     The property takes its default.
   observable: >-
-    The resolved instance holds the default value there. An absent object is not made in order
-    to hold its properties' defaults. An object that is an item of a list is present when the
-    list holds it: each such item takes the defaults of its own properties, and no item is
-    added to a list. The `config` of a template that writes none is present and empty, under
-    INS-024, so the defaults of the type's schema apply to it. A `default` that is reached only
-    through a `$ref` written inside `allOf`, `anyOf` or `oneOf` is not applied: SCH-008 accepts
-    it where it is written, and a combiner gives no default.
+    The resolved instance holds the default value there. An absent map is not made in order to
+    hold its properties' defaults. A map that is an item of a list is present when the list
+    holds it: each such item takes the defaults of its own properties, and no item is added to a
+    list. The `config` of a template that writes none is present and empty, under INS-024, so
+    the defaults of the type's schema apply to it. A `default` that is reached only through a
+    `$ref` written inside `allOf`, `anyOf` or `oneOf` is not applied: SCH-008 accepts it where
+    it is written, and none of those three keywords gives a default.
   vectors: []
 
 - id: SCH-010
   layer: language
   level: must
   when: >-
-    A default supplies an object.
+    A default supplies a map.
   then: >-
-    The defaults of that object's own properties then apply to it, as they would to an object
-    that a document supplied.
+    The defaults of that map's own properties then apply to it, as they would to a map that a
+    document supplied.
   observable: >-
-    The resolved instance holds the default object with each of its absent defaulted properties
-    filled.
+    The resolved instance holds the default map with each of its absent defaulted properties
+    filled. Whether such a default satisfies its schema is judged after they are filled in,
+    under SCH-019.
   vectors: []
 
 - id: SCH-011
@@ -185,8 +188,8 @@
   layer: language
   level: must not
   when: >-
-    A schema published by an existing Model Context Protocol server uses a keyword or format
-    outside the profile.
+    A schema of an existing Model Context Protocol server, one that was not written for this
+    specification, uses a keyword or format outside the profile.
   then: >-
     It is rejected for that reason.
   observable: >-
@@ -220,10 +223,13 @@
   when: >-
     A schema uses `pattern`.
   then: >-
-    The pattern is a regular expression of the ECMA-262 dialect, as JSON Schema recommends.
+    The pattern is a regular expression of the ECMA-262 dialect, as JSON Schema recommends, in
+    the edition that JSON Schema 2020-12 cites, and it is matched in Unicode mode, which is that
+    dialect's `u` flag.
   observable: >-
-    Whether a string matches is what an ECMA-262 regular expression gives, whichever
-    regular-expression library the engine is built with.
+    Whether a string matches is what an ECMA-262 regular expression with the `u` flag gives,
+    whichever regular-expression library the engine is built with. A character outside the Basic
+    Multilingual Plane is one character to a pattern, as it is to `maxLength`.
   vectors: []
 
 - id: SCH-017
@@ -273,7 +279,10 @@
     it fails. A property declared `{type: integer, minimum: 1, maximum: 100, default: 0}` is
     rejected. So is an input of a template, of an Operation contract or of a Requirement
     contract that states `schema: {type: integer, minimum: 1}` beside `default: 0`. Supplying a
-    valid argument on every use does not make such a document acceptable.
+    valid argument on every use does not make such a document acceptable. A `default` that is a
+    map is checked after the defaults of its own properties are filled in, as SCH-010 fills
+    them: `default: {}` is accepted for a schema that requires a property which states a
+    `default` of its own.
   vectors: []
 
 - id: SCH-020

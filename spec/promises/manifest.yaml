@@ -7,7 +7,7 @@
 # `Chart.yaml` carries `apiVersion`; the files of one directory and not of those below it, as
 # Terraform reads a module; a re-export written among the exports, as a JavaScript module
 # writes `export ... from`; a program and its arguments as a list, as Kubernetes and Docker
-# write `command`; and an archive with the project file at its root, refusing members that
+# write `command`; and an archive with the project file at its root, rejecting members that
 # would be written outside it, as npm and Cargo do. What naming.yaml and packages.yaml
 # promise is cited and not restated: what an item of `packages` must state is NAM-006 and
 # NAM-012; a package's own address and version PKG-017; which documents are exports PKG-018;
@@ -15,8 +15,11 @@
 # for a package NAM-009 and PKG-005; and which reason a rejected installation reports
 # PKG-023. The JSON Schema of these shapes is spec/schemas/manifest.yaml. The conversion
 # of the older text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md)
-# changed what MAN-003 and MAN-007 cite. No promise of this file has been removed. Draft: no
-# vector exists yet.
+# changed what MAN-003 and MAN-007 cite. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed MAN-001 and MAN-006: a manifest holds
+# one YAML document, a project is the documents and the one manifest handed over together,
+# and what gives `fetch` is called an item of `packages`. No promise of this file has been
+# removed. Draft: no vector exists yet.
 
 - id: MAN-001
   layer: language
@@ -25,12 +28,16 @@
     A project's manifest is read.
   then: >-
     It is the one file named `conduit.yaml`, or `conduit.json` for the JSON form that SCH-013
-    allows, that lies in the project's directory itself, and it holds exactly one document.
+    allows, that lies in the project's directory itself, and it holds exactly one YAML
+    document.
   observable: >-
     A file of that name is read as the manifest and never as a template, an instance or a
-    contract. A manifest that holds two documents, or a JSON manifest that holds an array, is
-    rejected with a diagnostic naming the file. Where several files are submitted without a
-    directory, the manifest is the one among them that has that name.
+    contract. A manifest file that holds two YAML documents, or a JSON manifest that holds an
+    array, is rejected with a diagnostic naming the file. A project is the documents and the
+    one manifest handed over together in one registration, and a directory is one way to hand
+    them over. Where several files are submitted without a directory, the manifest is the one
+    among them that has that name, and where a registration hands the manifest over as a
+    value, as the input `manifest` of `register.v1` does, that value is the manifest.
   vectors: []
 
 - id: MAN-002
@@ -97,7 +104,7 @@
   layer: language
   level: must
   when: >-
-    A manifest item gives `fetch`.
+    An item of `packages` in a manifest gives `fetch`.
   then: >-
     Its value is a URI reference, as RFC 3986 gives one, to the package's archive file. A
     relative reference is resolved against the place of the manifest that holds it.

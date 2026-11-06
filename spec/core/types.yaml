@@ -4,16 +4,19 @@
 # The Type contracts of the core package.
 #
 # Promises encoded:
-#   interface.v1    the plain Interface type (TPL-002: every Interface template has a type);
+#   interface.v1    the basic Interface type (TPL-002: every Interface template has a type);
 #                   the type of `root` (FST-001)
-#   pool.v1         the plain Pool type (TPL-002); ACC-028, ACC-033 (a Pool's own operations)
+#   pool.v1         the basic Pool type (TPL-002); ACC-028, ACC-033 (a Pool's own operations);
+#                   CTR-004 (a Type of the family Pool offers `pool-management.v1`)
 #   system-pool.v1  the type of `system` (FST-001); PLC-003, PLC-016 (the default-location
 #                   setting and its control); CTR-006
 #   location.v1     the location type (PLC-008): a location's facts are stored configuration,
-#                   changed only by its control `set-facts.v1`; PLC-007, PLC-013 (the facts a
-#                   requirement is checked against); CTR-006
+#                   changed only by its control `set-facts.v1` (PLC-021); PLC-007, PLC-013
+#                   (the facts a requirement is checked against); CTR-006; it requires
+#                   `reconcile.v1`, with which that control is reconciled (ACC-033)
 #   management.v1   the type of `management` (FST-001, ACC-033, OPS-019)
-#   access.v1       the type of `access` (FST-001, ACC-006, ACC-012, ACC-031)
+#   access.v1       the type of `access` (FST-001, ACC-006, ACC-012, ACC-031); it requires
+#                   `reconcile.v1`, which its capability includes (ACC-033)
 #
 # Every type writes `placement: {}`: none has a requirement on placement (CTR-004). Each
 # lists under `requires` the operations of the capabilities it offers, and each of those
@@ -22,15 +25,20 @@
 # runtime, and the records about its instances need keep neither inputs nor outputs.
 #
 # A location's stored facts are the value of `facts` in its configuration. `host` and
-# `localPaths` are the two facts the definitions name; `facts` is open, so that a location
-# may state others for a requirement on placement to test. The shared-host requirement
-# compares `host`.
+# `localPaths` are the two facts the core package's schemas name; `facts` is open, so that a
+# location may state others for a requirement on placement to test. The shared-host
+# requirement compares `host`.
+#
+# The value of `defaultLocation` in the configuration of the `system` Pool is a reference,
+# because a reference schema governs it (OBJ-021). The engine stores it in the resolved
+# form, `{kind: Resource, id}`, which that schema accepts, so the stored configuration
+# satisfies the type's schema after a control as it did before (REV-008).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: interface.v1
-  description: The plain Interface type. It has no settings and offers nothing.
+  description: The basic Interface type. It has no settings and offers nothing.
 spec:
   family: Interface
   schema:
@@ -44,7 +52,7 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
   name: pool.v1
-  description: The plain Pool type. It has no settings and offers a Pool's own operations.
+  description: The basic Pool type. It has no settings and offers a Pool's own operations.
 spec:
   family: Pool
   schema:
@@ -67,8 +75,8 @@ kind: Type
 metadata:
   name: system-pool.v1
   description: >-
-    The type of the `system` Pool. Beyond a plain Pool it holds the default-location setting,
-    which names a location that exists or nothing.
+    The type of the `system` Pool. Beyond the basic Pool type it holds the default-location
+    setting, which its control sets to a location that exists or to nothing.
 spec:
   family: Pool
   schema:
@@ -119,6 +127,7 @@ spec:
     - github.com/shrav-k/conduit/core#location-settings.v1
   requires:
     - github.com/shrav-k/conduit/core#set-facts.v1
+    - github.com/shrav-k/conduit/core#reconcile.v1
   controls:
     - github.com/shrav-k/conduit/core#set-facts.v1
   placement: {}
@@ -169,4 +178,5 @@ spec:
     - github.com/shrav-k/conduit/core#close.v1
     - github.com/shrav-k/conduit/core#apply-policy.v1
     - github.com/shrav-k/conduit/core#remove-policy.v1
+    - github.com/shrav-k/conduit/core#reconcile.v1
   placement: {}

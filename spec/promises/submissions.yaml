@@ -3,8 +3,10 @@
 # yet. Consolidation pass 1: SUB-007 was reduced to the replace operation; the rejection it
 # shared with OBJ-011 is OBJ-002. SUB-008 was added. The ruling on the core package and the
 # schemas (ruling 37) changed SUB-005 and SUB-008. The conversion of the older text (decision
-# DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed SUB-008. No promise of this
-# file has been removed.
+# DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed SUB-008. The second round
+# of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) reduced SUB-007 to its rule on
+# documents, changed SUB-005 and SUB-008, and added SUB-009, which is of the layer
+# `convention`. No promise of this file has been removed.
 
 - id: SUB-001
   layer: language
@@ -66,10 +68,12 @@
   then: >-
     The submission is rejected.
   observable: >-
-    The diagnostic names the item, and nothing is registered. Where a directory is submitted,
-    what is read is the files in the directory itself whose names end in `.yaml` or `.json`, the
-    manifest among them, as MAN-001 and MAN-011 state. Nothing below the directory is read, and
-    a file with any other ending is not read, so neither is part of the submission.
+    The diagnostic names the item, and nothing is registered. The documents and the one manifest
+    that are handed over together in one registration are one project, and a directory is one
+    way to hand them over. Where a directory is submitted, what is read is the files in the
+    directory itself whose names end in `.yaml` or `.json`, the manifest among them, as MAN-001
+    and MAN-011 state. Nothing below the directory is read, and a file with any other ending is
+    not read, so neither is part of the submission.
   vectors: []
 
 - id: SUB-006
@@ -89,15 +93,13 @@
   layer: language
   level: must
   when: >-
-    A template is replaced.
+    A document is submitted.
   then: >-
-    It is done by a replace operation that names the template's current revision. Submitting a
-    document never replaces a template.
+    It never replaces a template.
   observable: >-
     A document submitted under the kind and name of an existing template is rejected under
-    OBJ-002, and the template and its revision are unchanged. After a replace, the instances
-    made before it are as INS-020 states, and instances made after it come from the template as
-    replaced.
+    OBJ-002, and the template and its revision are unchanged. A template is replaced only by the
+    operation that SUB-009 names.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -108,12 +110,13 @@
   when: >-
     A submission contains contract documents.
   then: >-
-    They are made available to the documents of that project, and are not registered. The engine
-    keeps them as an unpublished package, identified by a digest. The digest is the SHA-256,
-    written as PKG-004 writes a digest, of the JSON Canonicalization Scheme form, RFC 8785, of
-    one object with two members: `documents`, a list of the project's contract documents ordered
-    by `kind` and then by `metadata.name`, each compared by the bytes of its UTF-8 string, and
-    `manifest`, the project's manifest, which is left out when the project has none.
+    They are made available to the documents of that project, which are the documents handed
+    over in the same registration, and are not registered. The engine keeps them as an
+    unpublished package, identified by a digest. The digest is the SHA-256, written as PKG-004
+    writes a digest, of the JSON Canonicalization Scheme form, RFC 8785, of one map with two
+    members: `documents`, a list of the project's contract documents ordered by `kind` and then
+    by `metadata.name`, each compared by the bytes of its UTF-8 string, and `manifest`, the
+    project's manifest, which is left out when the project has none.
   observable: >-
     A document of the same project can refer to such a contract as `#name` under NAM-022. No
     object exists for the contract after the submission, and no document outside the project can
@@ -124,4 +127,24 @@
     manifest is part of it because it fixes what the contracts' references to other packages
     mean. Ordered by the bytes of their UTF-8 strings, the kinds stand `Capability`,
     `Operation`, `Requirement`, `Schema`, `Type`, and the name `a.v10` stands before `a.v2`.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- finding R1-5.1). It is of the layer `convention`.
+
+- id: SUB-009
+  layer: convention
+  level: must
+  when: >-
+    A template is replaced.
+  then: >-
+    It is done by the operation `replace.v1`, which names the template's current revision and
+    gives the document that takes its place, a template of the same kind and name.
+  observable: >-
+    After a replace the template's revision has advanced, under REV-003. The instances made
+    before it are as INS-020 states, and instances made after it come from the template as
+    replaced. A request that names a revision that is not current reports conflict under
+    REV-002, and one that names none reports invalid under REV-011. The request is authorized
+    against `management`, under ACC-033. What a reference written `#name` reaches in the
+    replacing document is NAM-022.
   vectors: []

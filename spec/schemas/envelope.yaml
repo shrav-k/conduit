@@ -16,9 +16,9 @@
 # body is wrong. The closed schema of each kind is in templates.yaml, instances.yaml and
 # contracts.yaml, and `document.v1` in document.yaml joins them.
 #
-# A field the engine owns (OBJ-004: `id`, `revision`, `status` and the kept list of packages)
-# is rejected by those closed schemas, at the top level and inside `metadata`, like any other
-# key this specification does not define.
+# A field the engine owns (OBJ-004: `id`, `revision`, `status` and `packages`, the list of
+# packages the engine keeps) is rejected by those closed schemas, at the top level and inside
+# `metadata`, like any other key this specification does not define.
 #
 # Not expressed here, and checked by the engine: that a name is not already taken (OBJ-002,
 # SUB-004).

@@ -1,5 +1,5 @@
 # Example. It must be rejected:
-# a `$ref` is `#` and a JSON Pointer, or a qualified reference.
+# a `$ref` is `#` and a JSON Pointer, a qualified reference, or `#` and a name.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

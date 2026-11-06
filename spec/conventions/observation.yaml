@@ -4,8 +4,9 @@
 # conditions, which keep the time of the last successful observation beside an unknown status.
 # Acting only on an explicit request follows Compose and Terraform. PLC-010 was folded into
 # OBS-003 and LIF-010. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed OBS-005. No promise of this file has been removed.
-# Draft: no vector exists yet.
+# docs/proposals/docs-audit/GAPS.md) changed OBS-005. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed OBS-004 and OBS-005 and added OBS-007.
+# No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: OBS-001
   layer: convention
@@ -52,7 +53,7 @@
     What is observed of an instance differs from what is declared for it.
   then: >-
     Anything acts to remove the difference without an explicit request, other than an
-    implementation restoring its own runtime, which OBS-005 governs.
+    implementation restoring its own runtime, which OBS-005 and OBS-007 govern.
   observable: >-
     The difference appears in the instance's status and stays until an actor asks for an
     operation that removes it. No setup, control, open or retire is dispatched because of it.
@@ -69,9 +70,9 @@
   observable: >-
     Restoring a runtime means that the implementation keeps alive what is behind the handle the
     instance holds. A type contract allows it by stating `restoresRuntimes: true`, under
-    CTR-004. Afterwards the same handle is accepted, and no record shows a `start` or any
-    other operation dispatched because of the restoring. That it starts no model work is
-    IMP-002.
+    CTR-004. Afterwards the same handle is accepted, and no record shows a `start` or any other
+    operation dispatched because of the restoring. That it starts no model work is IMP-002. What
+    follows where the type contract does not allow the restoring is OBS-007.
   vectors: []
 
 - id: OBS-006
@@ -85,4 +86,22 @@
     Inspecting leaves every instance's status and every Conduit as it was, and that actor's
     requests are permitted or refused exactly as before. That it starts no model work is
     IMP-002.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- the points known before the round).
+
+- id: OBS-007
+  layer: convention
+  level: must
+  when: >-
+    An implementation restores its own runtime although its type contract does not state
+    `restoresRuntimes: true`.
+  then: >-
+    The engine treats the handle as no longer held: the runtime is stopped under its `stop`
+    operation, and the instance is reported as not holding it.
+  observable: >-
+    The engine invokes the runtime's `stop` operation with the handle. Inspecting the instance
+    afterwards does not list the runtime as held, and a later step that names the runtime starts
+    it under TPL-007. No `start` operation is dispatched because of the restoring.
   vectors: []

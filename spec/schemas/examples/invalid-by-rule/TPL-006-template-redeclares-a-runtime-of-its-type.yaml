@@ -1,0 +1,31 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# an instance has the runtimes its type declares as well as those its template declares, so
+# a template does not declare a runtime under a name its type declares. Here the type and
+# the template both declare `watcher`. A schema cannot tell: only the type's contract says
+# which names are taken.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: watched-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+  runtimes:
+    watcher:
+      start: example.org/files#watcher.start.v1
+      stop: example.org/files#watcher.stop.v1
+  placement: {}
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: project-directory
+spec:
+  type: '#watched-directory.v1'
+  runtimes:
+    watcher:
+      start: example.org/files#watcher.start.v1
+      stop: example.org/files#watcher.stop.v1
+      optional: true

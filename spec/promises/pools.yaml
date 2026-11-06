@@ -8,7 +8,9 @@
 # instantiated together.
 # Removed by consolidation pass 1: POOL-010 was folded into LIF-009.
 # The ruling on the core package and the schemas (ruling 37) changed POOL-005 and POOL-012.
-# Draft: no vector exists yet.
+# The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
+# POOL-003, POOL-006, POOL-009 and POOL-012 to POOL-015. POOL-012 now leaves the shape of an
+# entry to OBJ-014. Draft: no vector exists yet.
 
 - id: POOL-001
   layer: language
@@ -45,7 +47,8 @@
     The request is not dispatched, and reports conflict.
   observable: >-
     The Pool owns one Resource for the entry before and after the request. Where the entry's
-    Resource is retired, the request is the one LIF-009 describes.
+    Resource is retired, the request is the one LIF-009 describes. LIF-029 states the same for a
+    declared Conduit and a component.
   vectors: []
 
 - id: POOL-004
@@ -84,8 +87,9 @@
   then: >-
     The reference resolves to the Resource instantiated from the other entry.
   observable: >-
-    The Resource holds the ID of that Resource where the reference was, whichever entry is
-    written first. The entry that refers depends on the entry it refers to.
+    The Resource holds the resolved form of OBJ-009, with the ID of that Resource, where the
+    reference was, whichever entry is written first. The entry that refers depends on the entry
+    it refers to.
   vectors: []
 
 - id: POOL-007
@@ -111,8 +115,9 @@
     The template is accepted, and the Resource of that entry takes the placement supplied for
     the input. An entry's placement is written in no other way.
   observable: >-
-    An entry that itself names a location is rejected under PLC-005, with a diagnostic naming
-    the entry. An entry whose placement no input supplies is placed under POOL-016.
+    An entry that itself writes `placement` is rejected under OBJ-014 and PLC-005, with a
+    diagnostic naming the entry. An entry whose placement no input supplies is placed under
+    POOL-016.
   vectors: []
 
 - id: POOL-011
@@ -132,11 +137,11 @@
   when: >-
     An entry of a Pool template is read.
   then: >-
-    It is a nested instantiation of a Resource template: `from`, and optionally `arguments` and
-    `optional: true`. It gives no owner, because its owner is the Pool.
+    It is a nested instantiation of a Resource template, in the shape OBJ-014 gives an entry. It
+    gives no owner, because its owner is the Pool.
   observable: >-
-    An entry that carries `owner` is rejected with a diagnostic naming it. An entry with no
-    `arguments` supplies none, as OBJ-014 states.
+    An entry that carries `owner`, or `placement`, is rejected under OBJ-014 with a diagnostic
+    naming it. An entry with no `arguments` supplies none, as OBJ-014 states.
   vectors: []
 
 - id: POOL-013
@@ -146,8 +151,8 @@
     A Pool is set up.
   then: >-
     The step that GRA-022 gives each entry sets up the Resource of that entry that is not
-    retired, after the Resources of the entries it refers to. A Resource that is already ready
-    is left as it is.
+    retired, after the Resources of the entries it refers to. For a Resource that is already
+    ready nothing is dispatched, and the step is left as succeeded.
   observable: >-
     After the Pool's setup succeeds, the Resource of every entry not marked optional is ready,
     and none was set up before a Resource it refers to.
@@ -164,9 +169,9 @@
     The reference is written `{kind: Pool, name: <pool>, entry: <entry>}`, and resolves to the
     Resource of that entry that is not retired.
   observable: >-
-    The resolved instance holds that Resource's ID. Where the Pool has no entry of that name,
-    or the entry has no Resource that is not retired, the reference names no existing object,
-    with the result that OBJ-008 and OBJ-009 state.
+    The resolved instance holds the resolved form of OBJ-009, with that Resource's ID. Where the
+    Pool has no entry of that name, or the entry has no Resource that is not retired, the
+    reference names no existing object, with the result that OBJ-008 and OBJ-009 state.
   vectors: []
 
 - id: POOL-015
@@ -175,12 +180,16 @@
   when: >-
     A Pool's setup reaches the step that sets up the Resource of an entry.
   then: >-
-    The step is a request to set up that Resource made by the actor that asked for the Pool's
-    setup, and it is authorized against the Pool under ACC-033 like any other request to set up
-    a Resource the Pool owns.
+    The step is a request for `set-up.v1` that names that Resource, sent by the instance that
+    sent the request to set up the Pool. It is authorized as any request of that instance to set
+    up a Resource the Pool owns: against the Pool under ACC-033, by that instance's own open
+    Conduit to the Pool.
   observable: >-
-    If that actor is not the consumer of an open Conduit to the Pool that lists the operation,
-    the step reports refused, the Resource is not set up and its state is as it was.
+    If that instance is not the consumer of an open Conduit to the Pool that lists `set-up.v1`,
+    the step reports refused, the Resource is not set up and its state is as it was. Where the
+    request to set up the Pool was an onward request, the Conduit is one of the instance that
+    sent it, and not one of the caller it serves. The steps of the Resource's own setup are
+    authorized in the same way, as ACC-005 states for the opening of a declared Conduit.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decision F15 of the re-audit).

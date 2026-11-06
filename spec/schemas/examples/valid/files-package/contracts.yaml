@@ -6,10 +6,11 @@
 # `set-read-limit.v1` each state an input with `#read-limit.v1`.
 #
 # It also shows: an Operation's input with a `default`, which the engine fills in where the
-# input is not supplied (CTR-002, OPS-026); a Type that states `restoresRuntimes` and
-# `records` (CTR-004); a Requirement that states `obliges` (CTR-005); and a composed
-# Requirement, whose constituent takes its argument from an input of the composition
-# (CTR-010).
+# input is not supplied (CTR-002, OPS-026); a control, whose `changes` maps its input to the
+# setting that input sets (CTR-006); a Type that declares a runtime and states
+# `restoresRuntimes` and `records` (CTR-004); a Requirement that states `obliges`
+# (CTR-005); and a composed Requirement, whose constituent takes its argument from an input
+# of the composition (CTR-010).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -46,8 +47,9 @@ spec:
   inputs:
     path:
       schema: {type: string, minLength: 1}
-    # An input with a `default` need not be supplied: the step `read` of the implementation
-    # `listing` gives it no value, and the engine fills in 50 before it dispatches the step.
+    # An input with a `default` may be left out, although it is not marked optional: the
+    # step `read` of the implementation `listing` gives it no value, and the engine fills in
+    # 50 before it dispatches the step.
     maxEntries:
       schema: {$ref: '#read-limit.v1'}
       default: 50
@@ -105,7 +107,9 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: set-read-limit.v1
-  description: A control. Change how many entries one read may return.
+  description: >-
+    A control. Change how many entries one read may return. Its result states `settings`,
+    a map keyed by the pointer of `changes`: `{/readLimit: 15}` after it confirmed 15.
 spec:
   inputs:
     limit:
@@ -117,7 +121,9 @@ spec:
     settings:
       schema: {type: object}
   effect: Changes the read limit of the directory.
-  changes: [/readLimit]
+  # The input `limit` sets the setting at `/readLimit` in the configuration.
+  changes:
+    limit: /readLimit
   deduplicates: true
   implementation: '#files-server'
 ---
@@ -125,12 +131,18 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
 metadata:
   name: directory-access.v1
-  description: Reading a directory, and changing its read limit.
+  description: >-
+    Reading a directory, changing its read limit, and reconciling an invocation of one of
+    those operations whose outcome is unknown.
 spec:
   operations:
     - '#directory.read.v1'
     - '#directory.list.v1'
     - '#set-read-limit.v1'
+    # Reconciling is authorized against the target that authorized the request being
+    # reconciled (ACC-033), so a Conduit to a directory that is to reconcile its invocations
+    # lists the core package's `reconcile.v1`, which the engine implements.
+    - github.com/shrav-k/conduit/core#reconcile.v1
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -145,6 +157,16 @@ spec:
       path: {type: string, minLength: 1}
       readLimit: {type: integer, minimum: 1, maximum: 100, default: 10}
       cache: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+      # A default that is an object is checked after the defaults of its own properties are
+      # filled in (SCH-010, SCH-019): `{}` satisfies `required: [depth]` once `depth` has
+      # taken its default, 1.
+      listing:
+        type: object
+        properties:
+          depth: {type: integer, minimum: 1, default: 1}
+        required: [depth]
+        additionalProperties: false
+        default: {}
     required: [path]
     additionalProperties: false
   offers:
@@ -154,6 +176,8 @@ spec:
     - '#directory.read.v1'
     - '#directory.list.v1'
     - '#set-read-limit.v1'
+    - github.com/shrav-k/conduit/core#reconcile.v1
+  # Every instance of the type has this runtime, whatever its template declares.
   runtimes:
     watcher:
       start: '#watcher.start.v1'
@@ -194,13 +218,17 @@ metadata:
 spec:
   appliesTo: [conduit, policy]
   narrows: true
+  # The implementation of the target must state this requirement in `supports`, as
+  # `files-server` does in the manifest.
   obliges: [target]
   inputs:
     limit:
       schema: {type: integer, minimum: 1}
 ---
 # A composition (CTR-005, CTR-010). Its one constituent is `rate-limit.v1`, whose input
-# `limit` takes the value of the composition's own input `per-minute`.
+# `limit` takes the value of the composition's own input `per-minute`. It narrows because
+# its constituent does, and it is applied to a Conduit, where its constituent may be
+# applied. An implementation that states `rate-limit.v1` in `supports` supports it.
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement
 metadata:

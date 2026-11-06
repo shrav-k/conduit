@@ -4,8 +4,9 @@
 # interrupted or repeated, and how repair works, belong to the runtime profile. The objects are
 # instances of templates the core package exports. Removed by consolidation pass 1: FST-004 was
 # folded into OBJ-002. The ruling on the core package and the schemas (ruling 37) changed
-# FST-002 and FST-005: the templates are in spec/core/templates.yaml. Draft: no vector exists
-# yet.
+# FST-002 and FST-005: the templates are in spec/core/templates.yaml. The second round of the
+# re-audit (docs/proposals/reaudit/round-2/reader-3.md, finding 8) changed FST-001 and added
+# FST-006. Draft: no vector exists yet.
 
 - id: FST-001
   layer: language
@@ -17,7 +18,11 @@
     Resources `management` and `access`, owned by `system`; and the Interface `root`.
   observable: >-
     Inspection lists exactly those five objects, apart from Conduits, and each has the name
-    given.
+    given. Each is identified by its ID: where a promise names `system`, `local`, `management`,
+    `access` or `root`, or speaks of the `access` Resource or of the root Interface, it means
+    the object made at first start. Those names stay theirs, because LIF-022 refuses the rename
+    of a first-start object. The stored facts that `local` is given are DL6 of the
+    implementation-defined list.
   vectors: []
 
 - id: FST-002
@@ -59,4 +64,21 @@
     into `github.com/shrav-k/conduit/core`. The templates are `system`, `location`,
     `management`, `access` and `root`, and for the two Conduits `root-management` and
     `root-access`.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md,
+# --- finding 8).
+
+- id: FST-006
+  layer: language
+  level: must
+  when: >-
+    An instance document's `from` resolves to the core package's template `system`,
+    `management`, `access` or `root`.
+  then: >-
+    The document is rejected. The instances that first start makes from those four templates are
+    the only ones.
+  observable: >-
+    Resolving returns a diagnostic naming the template. The template `location` is not one of
+    the four: every location is an instance of it, under PLC-008.
   vectors: []

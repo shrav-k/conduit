@@ -5,7 +5,10 @@
 # OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
 # The follow-up rulings removed nothing. The ruling on the core package and the schemas (ruling
 # 37) changed PLC-008 and PLC-016. The conversion of the older text (decision DA3 of the docs
-# audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. Draft: no vector exists yet.
+# audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed PLC-001, PLC-005, PLC-008, PLC-016 and
+# PLC-020, and added PLC-021, of the layer `convention`, which took from PLC-008 how a
+# location's facts are changed. Draft: no vector exists yet.
 
 - id: PLC-001
   layer: language
@@ -13,7 +16,8 @@
   when: >-
     An Agent or a Resource is instantiated.
   then: >-
-    It has exactly one placement, which is the ID of a location.
+    It has exactly one placement, which is a location. The instance holds it in the resolved
+    form of OBJ-009, with the location's ID.
   observable: >-
     Inspecting the instance shows one placement. A document that gives two, or a
     placement that is not a location, is rejected.
@@ -62,11 +66,14 @@
   layer: language
   level: must
   when: >-
-    A template is registered that names a location.
+    A template is registered that gives a placement: in an entry that writes `placement`, or as
+    the `default` of an input whose destination is an entry's `placement`.
   then: >-
-    The template is rejected.
+    The template is rejected. A placement is given only when an instance is instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the field that holds the location.
+    Resolving returns a diagnostic naming the entry or the input. A template may refer to a
+    location in any other way: as the `target` of a declared Conduit, among the `targets` of a
+    bound, or in a place of `config` that a reference schema governs.
   vectors: []
 
 - id: PLC-006
@@ -103,17 +110,15 @@
   then: >-
     It is a Resource instance of the location type, owned by the system Pool, and it is its own
     placement. Its facts, including its host, are stored configuration of the location, held
-    under `facts` in its configuration. Once the location is instantiated they are changed only
-    by the control `set-facts.v1` of the core package.
+    under `facts` in its configuration.
   observable: >-
     Inspecting a location shows the kind Resource, the location type, the system Pool as owner,
     its own ID as placement, and its facts under `facts` in its configuration. A location's
-    document states no placement: one that states a `placement` is rejected. A document made
-    from the core package's template `location` supplies the facts as the argument `facts`. The
-    control is in the capability `location-settings.v1`, which the location type offers, so it
-    is requested through an open Conduit to the location that lists it, like any control. It
-    takes the location's current `revision` and `facts`, and its result states the settings it
-    confirmed in `settings`. Nothing observed of the location changes a stored fact.
+    document states no placement: one that states a `placement` is rejected. It writes
+    `owner: system`, as OBJ-013 requires an owner of every Resource document, and one that names
+    another Pool is rejected. A document made from the core package's template `location`
+    supplies the facts as the argument `facts`. How they are changed once the location is
+    instantiated is PLC-021.
   vectors: []
 
 - id: PLC-009
@@ -189,13 +194,17 @@
     The default location is designated or cleared.
   then: >-
     It is done by a control of the `system` Pool, permitted and checked like any other control,
-    and the setting names a location that exists or nothing.
+    which sets the setting to a location that exists or to nothing.
   observable: >-
     The control is `set-default-location.v1` of the core package, in the capability
     `system-settings.v1` that the type of the `system` Pool offers. It takes `location`, a
     reference to a Resource or null, and null clears the setting. A value other than null that
-    does not refer to a location that exists reports invalid. After the control succeeds, an
-    instance instantiated without a placement takes the named location under PLC-003.
+    does not refer to a location that exists reports invalid. The setting stores the location in
+    the resolved form of OBJ-009. After the control succeeds, an instance instantiated without a
+    placement takes the named location under PLC-003. Once the location that the setting names
+    is unregistered, the setting still holds its ID and reports it as missing, under LIF-019: it
+    then names none of the locations that exist, and PLC-004 applies until the control sets it
+    again.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).
@@ -250,13 +259,32 @@
   layer: convention
   level: must not
   when: >-
-    An instance holds a value that is bound to a location, such as an absolute path.
+    An instance holds a value that is tied to a location: one that has its meaning only at that
+    location, such as an absolute path.
   then: >-
     The value is interpreted anywhere other than by the instance's implementation at the
     instance's placement.
   observable: >-
-    The engine stores the value and passes it on as it was written, and never opens, resolves
-    or checks it against the machine the engine itself runs on or against any other location.
+    The engine stores the value and passes it on as it was written, and never opens it, expands
+    it or checks it against the machine the engine itself runs on or against any other location.
     An absolute path in the configuration of a Resource means that path on the host of the
     Resource's location. That the engine joins no base to a relative path is INS-018.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- finding R1-5.3): the part of PLC-008 that is of the layer `convention`.
+
+- id: PLC-021
+  layer: convention
+  level: must
+  when: >-
+    The stored facts of a location that has been instantiated are changed.
+  then: >-
+    They are changed only by the control `set-facts.v1` of the core package, permitted and
+    checked like any other control.
+  observable: >-
+    The control is in the capability `location-settings.v1`, which the location type offers, so
+    it is requested through an open Conduit to the location that lists it. It takes the
+    location's current `revision` and `facts`, and its result states the settings it confirmed
+    in `settings`. Nothing observed of the location changes a stored fact.
   vectors: []

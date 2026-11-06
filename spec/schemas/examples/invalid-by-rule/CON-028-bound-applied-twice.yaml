@@ -1,6 +1,6 @@
 # Example. One document, valid against the schemas, that must be rejected:
-# a Conduit applies `bound.v1` at most once, and this template applies it twice. No Conduit
-# is instantiated from it.
+# a Conduit template applies `bound.v1` at most once, and this template applies it twice. It
+# is rejected when it is registered, so no Conduit is instantiated from it.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Conduit

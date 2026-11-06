@@ -21,19 +21,20 @@ What it checks, and reports under these numbers:
      against `document.v1`, and every manifest (a file named conduit.yaml) against
      `manifest.v1`, with a JSON Schema 2020-12 validator and format checking on.
   4. Every document under spec/schemas/examples/invalid/ is rejected by a schema, or is
-     refused when its file is read, and its file is named for a promise that exists.
+     rejected when its file is read, and its file is named for a promise that exists.
   5. The core package agrees with itself: every export in its manifest is a document of the
      package, every document is exported or is listed in PRIVATE below, no name is used
      twice, names follow NAM-004, CTR-001 and OBJ-001, every reference into the core package
-     names an export of the kind the place expects, every control has `changes` that its
-     type's schema describes and declares the input `revision` and the output `settings`
-     (CTR-006), every other input of a control is optional (REV-006, as the record settled
-     it), the operations of REV-012 take no `revision`, no implementation has the name of a
-     document of its project or package (NAM-027), and the
+     names an export of the kind the place expects, every control has a `changes` that maps
+     inputs it declares to places its type's schema describes and declares the input
+     `revision` and the output `settings` (CTR-006), every other input of a control is
+     optional (REV-006, as the record settled it), the operations of REV-012 take no
+     `revision`, no implementation has the name of a document of its project or package
+     (NAM-027), and the
      tables of spec/core/README.md and spec/schemas/README.md list exactly the files and the
      exports there are, each export with its kind and with promises that exist. The same
-     reference check is made on every `#name`, a `$ref` among them, inside each example
-     directory, and every promise ID cited under spec/core/, spec/schemas/ and in
+     reference check is made on every `#name`, a `$ref` and a `from` among them, inside each
+     example directory, and every promise ID cited under spec/core/, spec/schemas/ and in
      spec/promises/manifest.yaml is the ID of a promise that exists.
   6. Rules that no schema can express and that this tool applies itself, each named in RULES
      below with the promise it comes from. The core package and every directory under
@@ -112,6 +113,9 @@ RULES = {
     "ref": "SCH-015",
     "constituent-input": "CTR-010",
     "default-valid": "SCH-019",
+    "pool-offers": "CTR-004",
+    "runtime-once": "TPL-006",
+    "applies-to": "CTR-005",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -129,7 +133,7 @@ def rel(path):
 
 # --- 1. Strict YAML: the YAML 1.2 core schema, narrowed as SCH-012 and SCH-017 require.
 
-class Refused(Exception):
+class NotStrict(Exception):
     pass
 
 
@@ -141,12 +145,12 @@ class StrictLoader(yaml.SafeLoader):
         for key_node, _ in node.value:
             if key_node.tag != "tag:yaml.org,2002:str":
                 line = key_node.start_mark.line + 1
-                raise Refused(f"line {line}: a key that is not a string")
+                raise NotStrict(f"line {line}: a key that is not a string")
             key = key_node.value
             if key == "<<" and key_node.style is None:
-                raise Refused(f"line {key_node.start_mark.line + 1}: a merge key")
+                raise NotStrict(f"line {key_node.start_mark.line + 1}: a merge key")
             if key in seen:
-                raise Refused(f"line {key_node.start_mark.line + 1}: duplicate key {key!r}")
+                raise NotStrict(f"line {key_node.start_mark.line + 1}: duplicate key {key!r}")
             seen.add(key)
         return super().construct_mapping(node, deep)
 
@@ -154,27 +158,27 @@ class StrictLoader(yaml.SafeLoader):
 def _int(loader, node):
     text = node.value
     if re.match(r"^0[ox]", text):
-        raise Refused(f"line {node.start_mark.line + 1}: {text} has no JSON form (SCH-017)")
+        raise NotStrict(f"line {node.start_mark.line + 1}: {text} has no JSON form (SCH-017)")
     value = int(text)
     if abs(value) > SAFE_INT:
-        raise Refused(f"line {node.start_mark.line + 1}: {text} is outside the range of SCH-006")
+        raise NotStrict(f"line {node.start_mark.line + 1}: {text} is outside the range of SCH-006")
     return value
 
 
 def _float(loader, node):
     text = node.value
     if re.search(r"inf|nan", text, re.I):
-        raise Refused(f"line {node.start_mark.line + 1}: {text} has no JSON form (SCH-017)")
+        raise NotStrict(f"line {node.start_mark.line + 1}: {text} has no JSON form (SCH-017)")
     try:
         number = decimal.Decimal(text)
         whole = number == number.to_integral_value()
     except decimal.DecimalException:
-        raise Refused(f"line {node.start_mark.line + 1}: {text} cannot be read as a number")
+        raise NotStrict(f"line {node.start_mark.line + 1}: {text} cannot be read as a number")
     if whole and abs(number) > SAFE_INT:
-        raise Refused(f"line {node.start_mark.line + 1}: {text} is outside the range of SCH-006")
+        raise NotStrict(f"line {node.start_mark.line + 1}: {text} is outside the range of SCH-006")
     value = float(text)
     if math.isinf(value):
-        raise Refused(f"line {node.start_mark.line + 1}: {text} is outside the range of IEEE 754 "
+        raise NotStrict(f"line {node.start_mark.line + 1}: {text} is outside the range of IEEE 754 "
                       f"binary64 (SCH-021)")
     return value
 
@@ -192,20 +196,20 @@ StrictLoader.add_constructor("tag:yaml.org,2002:float", _float)
 
 
 def load(path):
-    """Return the documents of one file, or raise Refused."""
+    """Return the documents of one file, or raise NotStrict."""
     text = pathlib.Path(path).read_text()
     try:
         for event in yaml.parse(text, Loader=yaml.SafeLoader):
             line = event.start_mark.line + 1
             if isinstance(event, yaml.AliasEvent):
-                raise Refused(f"line {line}: an alias")
+                raise NotStrict(f"line {line}: an alias")
             if getattr(event, "anchor", None):
-                raise Refused(f"line {line}: an anchor")
+                raise NotStrict(f"line {line}: an anchor")
             if getattr(event, "tag", None) is not None:
-                raise Refused(f"line {line}: a tag")
+                raise NotStrict(f"line {line}: a tag")
         return [d for d in yaml.load_all(text, Loader=StrictLoader)]
     except yaml.YAMLError as error:
-        raise Refused(str(error).replace("\n", " "))
+        raise NotStrict(str(error).replace("\n", " "))
 
 
 # --- The names and the profile, read from the specification itself.
@@ -474,6 +478,24 @@ def check_references(role, doc, packages, local_kinds, counts):
 
     refs(doc)
 
+    def template(ref, want, where):
+        """A `from` that is a qualified reference or `#name` names a template of the kind the
+        place makes. A bare name or `{kind, name}` names a template that exists, which only
+        an engine can look up, and is not checked here."""
+        if isinstance(ref, str) and "#" in ref:
+            one(ref, want, where)
+
+    if role == "instance":
+        template(doc.get("from"), doc.get("kind"), "from")
+    if role == "template":
+        spec = doc.get("spec") if isinstance(doc.get("spec"), dict) else {}
+        for key, want in (("conduits", "Conduit"), ("entries", "Resource"),
+                          ("components", "Conduit")):
+            members = spec.get(key) if isinstance(spec.get(key), dict) else {}
+            for name, member in members.items():
+                if isinstance(member, dict):
+                    template(member.get("from"), want, f"spec/{key}/{name}/from")
+
     for kind, path, want in EXPECT:
         if kind == role:
             for ref in reach(doc, path):
@@ -534,11 +556,12 @@ def contents(files):
 
 def check_controls(label, docs, package_docs, address):
     """For every control that a Type in `docs` lists and whose contract is in this repository:
-    it is an Operation with `changes`, each pointer of which is a place the type's `schema`
-    describes through `properties`, and it declares the input `revision` and the output
-    `settings` (CTR-006). It also has the shape that item D13 of the record settled under
-    REV-006: `revision` is not optional, and every other input is optional. That last part is
-    a check of the documents in this repository against the record, not of a promise."""
+    it is an Operation with `changes`, a map in which each key is the name of an input the
+    control declares and each value is a pointer to a place the type's `schema` describes
+    through `properties`, and it declares the input `revision` and the output `settings`
+    (CTR-006). It also has the shape that item D13 of the record settled under REV-006:
+    `revision` is not optional, and every other input is optional. That last part is a check
+    of the documents in this repository against the record, not of a promise."""
     count = 0
     for doc in docs:
         if not isinstance(doc, dict) or doc.get("kind") != "Type":
@@ -554,10 +577,18 @@ def check_controls(label, docs, package_docs, address):
             count += 1
             at = f"{label}: {named(doc)} lists the control {ref}, which"
             body = control.get("spec") or {}
+            inputs = body.get("inputs") if isinstance(body.get("inputs"), dict) else {}
             changes = body.get("changes")
-            if not changes:
-                fail(f"{at} has no `changes` (CTR-006)")
-            for place in changes or []:
+            if not isinstance(changes, dict) or not changes:
+                fail(f"{at} has no `changes` that maps an input to the pointer it sets "
+                     f"(CTR-006)")
+                changes = {}
+            for source, place in changes.items():
+                if source not in inputs:
+                    fail(f"{at} gives a pointer in `changes` to {source}, which is not an "
+                         f"input it declares (CTR-006)")
+                if not isinstance(place, str):
+                    continue               # not a pointer: reported by step 3
                 schema = spec.get("schema")
                 for token in place.split("/")[1:]:
                     token = token.replace("~1", "/").replace("~0", "~")
@@ -567,7 +598,6 @@ def check_controls(label, docs, package_docs, address):
                         fail(f"{at} changes {place}, a place the type's schema does not "
                              f"describe (CTR-006)")
                         break
-            inputs = body.get("inputs") or {}
             if "revision" not in inputs:
                 fail(f"{at} does not declare the input `revision` (CTR-006)")
             elif inputs["revision"].get("optional"):
@@ -579,6 +609,17 @@ def check_controls(label, docs, package_docs, address):
             if "settings" not in (body.get("outputs") or {}):
                 fail(f"{at} does not declare the output `settings` (CTR-006)")
     return count
+
+
+def contract_of(ref, kind, own, package_docs):
+    """The contract of that kind which a selection names, where this tool has it: `#name` in
+    `own`, the documents of the same project or package by name, or a qualified reference
+    into a package in this repository. None where the tool does not have it."""
+    if not isinstance(ref, str) or "#" not in ref:
+        return None
+    address, _, name = ref.partition("#")
+    found = own.get(name) if not address else package_docs.get(address, {}).get(name)
+    return found if isinstance(found, dict) and found.get("kind") == kind else None
 
 
 def check_readmes(core_dir, schema_dir, core_kinds, groups, loaded):
@@ -695,7 +736,9 @@ class Defaults:
     contracts of every project and package in this repository, so that a `$ref` can be
     followed: `#` and a pointer inside the same schema, `#name` inside the same project or
     package, and a qualified reference to a package it holds. Where a `$ref` leads anywhere
-    else the default is not validated, and is counted as not checked. It needs jsonschema."""
+    else the default is not validated, and is counted as not checked. A default that is an
+    object is validated after the defaults of its own properties are filled in, as SCH-010
+    applies them. It needs jsonschema."""
 
     def __init__(self):
         self.defs, self.needs, self.by_address, self.pending = {}, {}, {}, []
@@ -757,9 +800,52 @@ class Defaults:
                 todo.extend(self.needs[key])
         return needs is not None
 
+    @staticmethod
+    def stands_for(schema, top):
+        """The schemas that `schema` stands for: itself and, through `$ref`, what it refers
+        to inside `top`."""
+        out, seen = [], set()
+        while isinstance(schema, dict):
+            out.append(schema)
+            ref = schema.get("$ref")
+            if not isinstance(ref, str) or ref in seen:
+                break
+            seen.add(ref)
+            found, schema = pointer(top, ref)
+            if not found:
+                break
+        return out
+
+    def filled(self, value, schema, top, depth=0):
+        """`value` with the defaults of its own properties filled in, as SCH-009 and SCH-010
+        apply them: a property that is absent from an object that is present takes the
+        `default` its schema states, each object that is an item of a list takes the defaults
+        of its own properties, and no object is made in order to hold defaults. The object
+        that holds a property may be written directly, reached through `$ref`, or be the
+        schema that `items` gives; nothing is filled in through `allOf`, `anyOf` or `oneOf`."""
+        if depth > 32:
+            return value
+        parts = self.stands_for(schema, top)
+        if isinstance(value, dict):
+            value = dict(value)
+            for part in parts:
+                members = part.get("properties")
+                for name, sub in (members.items() if isinstance(members, dict) else ()):
+                    if name not in value:
+                        if not isinstance(sub, dict) or "default" not in sub:
+                            continue
+                        value[name] = copy.deepcopy(sub["default"])
+                    value[name] = self.filled(value[name], sub, top, depth + 1)
+        elif isinstance(value, list):
+            for part in parts:
+                if isinstance(part.get("items"), dict):
+                    return [self.filled(item, part["items"], top, depth + 1) for item in value]
+        return value
+
     def fails(self, scope, root, tokens, value):
-        """Why `value` does not satisfy the schema that `tokens` lead to inside `root`. None
-        where it does, and where a `$ref` cannot be followed, which is counted."""
+        """Why `value` does not satisfy the schema that `tokens` lead to inside `root`, once
+        the defaults of its own properties are filled in. None where it does, and where a
+        `$ref` cannot be followed, which is counted."""
         rewritten, needs = self.rewrite(root, scope, "root")
         if not self.follows(needs):
             self.skipped += 1
@@ -772,6 +858,7 @@ class Defaults:
             else {"allOf": [part]}
         top["$schema"] = "https://json-schema.org/draft/2020-12/schema"
         top["$defs"] = dict(self.defs, root=rewritten)
+        value = self.filled(value, top, top)
         found = list(jsonschema.Draft202012Validator(
             top, format_checker=jsonschema.Draft202012Validator.FORMAT_CHECKER).iter_errors(value))
         return explain(found[0]) if found else None
@@ -981,6 +1068,73 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None):
                                       f"{named(doc)} gives `{argument}` the input {name}, "
                                       f"which the composition does not declare"))
 
+    # pool-offers (CTR-004): a Type of the family Pool offers the core package's capability
+    # `pool-management.v1`. The capability is recognized where `offers` names it in the core
+    # package; one that reaches it through another package's re-export is not followed.
+    pool_management = {core + "#pool-management.v1"} | \
+        ({"#pool-management.v1"} if is_core else set())
+    for doc in docs:
+        spec = doc.get("spec") if doc.get("kind") == "Type" else None
+        if isinstance(spec, dict) and spec.get("family") == "Pool":
+            offers = spec.get("offers") if isinstance(spec.get("offers"), list) else []
+            if not any(isinstance(o, str) and o in pool_management for o in offers):
+                found.append(("pool-offers", f"the Type contract {named(doc)} is of the family "
+                                             f"Pool and does not offer {core}"
+                                             f"#pool-management.v1"))
+
+    # runtime-once (TPL-006): an instance has the runtimes of its type as well as those of its
+    # template, so a template declares no runtime under a name its type declares. Applied
+    # where the tool has the type's contract: in the same set, or in a package in this
+    # repository.
+    own = {named(d): d for d in docs if "from" not in d}
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        declared = spec.get("runtimes") if isinstance(spec.get("runtimes"), dict) else {}
+        type_doc = contract_of(spec.get("type"), "Type", own, package_docs)
+        of_type = (type_doc.get("spec") or {}).get("runtimes") if type_doc else None
+        for runtime in sorted(set(declared) & set(of_type if isinstance(of_type, dict) else ())):
+            found.append(("runtime-once", f"the template {name} declares the runtime "
+                                          f"{runtime}, which its type {named(type_doc)} "
+                                          f"declares too"))
+
+    # applies-to (CTR-005): a requirement is applied only where its `appliesTo` lists, and a
+    # composition only where the `appliesTo` of every one of its constituents lists too.
+    # Applied to the `requirements` of a Conduit template, which apply to a Conduit, and to
+    # the `placement` of a Type contract, which applies to placement, where the tool has the
+    # requirement's contract and, for a composition, as far as it has the constituents'.
+    def may_not(ref, place, seen=()):
+        """The requirements, the one `ref` selects and the constituents below it, whose
+        `appliesTo` does not list `place`."""
+        contract = contract_of(ref, "Requirement", own, package_docs)
+        if contract is None or id(contract) in seen:
+            return []
+        body = contract.get("spec") if isinstance(contract.get("spec"), dict) else {}
+        listed = body.get("appliesTo") if isinstance(body.get("appliesTo"), list) else []
+        out = [] if place in listed else [named(contract)]
+        parts = body.get("constituents") if isinstance(body.get("constituents"), dict) else {}
+        for part in parts.values():
+            if isinstance(part, dict):
+                out += may_not(part.get("requirement"), place, seen + (id(contract),))
+        return out
+    applied = []
+    for (kind, name), template in templates.items():
+        spec = template.get("spec") if isinstance(template.get("spec"), dict) else {}
+        if kind == "Conduit" and isinstance(spec.get("requirements"), dict):
+            applied += [(f"the Conduit template {name}", item, "conduit")
+                        for item in spec["requirements"].items()]
+    for doc in docs:
+        spec = doc.get("spec") if doc.get("kind") == "Type" else None
+        if isinstance(spec, dict) and isinstance(spec.get("placement"), dict):
+            applied += [(f"the Type contract {named(doc)}", item, "placement")
+                        for item in spec["placement"].items()]
+    for where, (local, item), place in applied:
+        ref = item.get("requirement") if isinstance(item, dict) else None
+        for requirement in may_not(ref, place):
+            found.append(("applies-to", f"{where} applies {ref} to "
+                                        f"{'a Conduit' if place == 'conduit' else place}, as "
+                                        f"{local}, and the `appliesTo` of {requirement} does "
+                                        f"not list `{place}`"))
+
     # default-valid (SCH-019): a `default` satisfies the schema that states it, and an input's
     # `default` the input's own `schema`. Applied where every `$ref` of the schema can be
     # followed inside this repository; the others are counted and not validated.
@@ -1034,11 +1188,11 @@ def main():
         for path in paths:
             try:
                 loaded[path] = load(path)
-            except Refused as refused:
+            except NotStrict as problem:
                 if group == "invalid":
-                    loaded[path] = refused
+                    loaded[path] = problem
                 else:
-                    fail(f"{rel(path)}: not strict YAML: {refused}")
+                    fail(f"{rel(path)}: not strict YAML: {problem}")
     count = sum(len(v) for v in loaded.values() if isinstance(v, list))
     print(f"1. Read {len(loaded)} files holding {count} documents as strict YAML.")
 
@@ -1102,7 +1256,7 @@ def main():
         if not validating:
             continue
         docs = loaded[path]
-        if isinstance(docs, Refused):
+        if isinstance(docs, NotStrict):
             rejected += 1
             print(f"   rejected {path.name}: when read: {docs}")
             continue
@@ -1115,7 +1269,7 @@ def main():
                 print(f"   rejected {path.name}: {why}")
     if validating:
         print(f"4. {rejected} invalid documents in {len(groups['invalid'])} files were each "
-              f"rejected by a schema, or refused when read.")
+              f"rejected by a schema, or rejected when read.")
 
     # 5. The core package and the references that can be checked here.
     core_files = [(p, loaded.get(p, [])) for g in ("schemas", "core") for p in groups[g]]
@@ -1226,13 +1380,14 @@ def main():
         cited += len(ids)
         for promise in sorted(ids - promises):
             fail(f"{rel(path)}: cites {promise}, which is not a promise that exists")
-    print(f"5. Core package: {len(exports)} exports, {len(PRIVATE)} documents deliberately "
-          f"private and {len(core_kinds) - len(documents)} implementation. Checked "
-          f"{counts['checked']} references for the kind they name; {counts['skipped']} name "
-          f"packages that are not in this repository and were not checked. Checked "
-          f"{controls} controls, the {len(NO_REVISION)} operations that take no `revision`, "
-          f"the tables of the two READMEs, and {cited} citations of promises in "
-          f"{len(cited_in)} files. The example packages keep {private} documents private.")
+    print(f"5. Core package: {len(exports)} documents exported, {len(PRIVATE)} documents "
+          f"deliberately private and {len(core_kinds) - len(documents)} implementation, which "
+          f"is also an export. Checked {counts['checked']} references for the kind they name; "
+          f"{counts['skipped']} name packages that are not in this repository and were not "
+          f"checked. Checked {controls} controls, the {len(NO_REVISION)} operations that "
+          f"take no `revision`, the tables of the two READMEs, and {cited} citations of "
+          f"promises in {len(cited_in)} files. The example packages keep {private} documents "
+          f"private.")
 
     # 6. Rules that no schema can express.
     checker = Defaults() if validating else None

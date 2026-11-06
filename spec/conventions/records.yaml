@@ -1,11 +1,12 @@
 # Records: what is always recorded, what a record holds and how long it is kept.
 # Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). The list of events and the
 # fields follow Kubernetes audit events and AWS CloudTrail, which record who, what, when and how
-# it ended, and cannot be deleted through the interface they record. A record is a log entry: it
-# is added and never altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No
-# promise of this file has been removed. The ruling on the core package and the schemas (ruling
-# 37) changed REC-004. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed REC-002. Draft: no vector exists yet.
+# it ended, and cannot be deleted through the interface they record. A record is added and never
+# altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No promise of this file has
+# been removed. The ruling on the core package and the schemas (ruling 37) changed REC-004. The
+# conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed REC-002. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed REC-002. Draft: no vector exists yet.
 
 - id: REC-001
   layer: convention
@@ -33,10 +34,11 @@
     used, the target, the operation, the engine's ID for the invocation, the operation identity
     if the caller supplied one, the time, and how it ended.
   observable: >-
-    Each of those is present in every record to which it applies. The inputs and outputs of
-    the operation need not be; what content is kept is stated by each type's contract, under
+    Each of those is present in every record to which it applies. The inputs and outputs of the
+    operation need not be; what content is kept is stated by each type's contract, under
     `records` as CTR-004 gives it: the inputs where `inputs` is true, and the outputs where
-    `outputs` is true.
+    `outputs` is true. The record of a request from which the engine could establish no
+    instance, under IFC-032, holds no caller, and says that none could be established.
   vectors: []
 
 - id: REC-003

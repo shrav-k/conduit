@@ -6,7 +6,11 @@
 # were added. The ruling on the core package and the schemas (ruling 37) changed GRA-017. The
 # conversion of the older text (decision DA3 of the docs audit,
 # docs/proposals/docs-audit/GAPS.md) changed GRA-007 and GRA-020 and added GRA-025 to GRA-027,
-# which say what holds when a step is dispatched and are of the layer `convention`.
+# which say what holds when a step is dispatched and are of the layer `convention`. The second
+# round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed GRA-003, GRA-014,
+# GRA-017, GRA-020, GRA-022 and GRA-025 to GRA-027: a template's `setup` and `retire` graphs
+# implement no operation, and are the steps the engine runs within one invocation of
+# `set-up.v1` or of `retire.v1`.
 
 - id: GRA-001
   layer: language
@@ -36,15 +40,17 @@
   layer: convention
   level: must
   when: >-
-    A setup graph ends.
+    The steps that the engine runs to set up an instance have ended.
   then: >-
-    Setup has succeeded only if every step not marked optional has the outcome succeeded.
-    Otherwise its outcome is failed or unknown, as OPS-022 states.
+    The invocation of `set-up.v1` has succeeded only if every step not marked optional has the
+    outcome succeeded. Otherwise its outcome is failed or unknown, as OPS-022 states.
   observable: >-
-    If any such step failed, has an unknown outcome or did not run, the instance does not
-    become ready by that run, as LIF-004 states. A declared Conduit that is not opened and an
-    entry whose Resource is not set up are such steps under GRA-022: setup does not succeed if
-    one of them is required, and reports it as not opened or not set up if it is optional.
+    If any such step failed, has an unknown outcome or did not run, the instance does not become
+    ready by that run, as LIF-004 states. A declared Conduit that is not opened and an entry
+    whose Resource is not set up are such steps under GRA-022: setup does not succeed if one of
+    them is required, and reports it as not opened or not set up if it is optional. A step for
+    something that is already done is left as succeeded: a declared Conduit that is open under
+    CON-004, a Resource that is ready under POOL-013, and a runtime that is held under TPL-007.
   vectors: []
 
 - id: GRA-004
@@ -163,13 +169,15 @@
   layer: language
   level: must
   when: >-
-    A graph is declared.
+    A graph is written as an implementation: as a value of an `implementation` map, or as the
+    `graph` of an implementation item in a manifest.
   then: >-
-    It implements exactly one operation. A setup graph implements its instance's setup
-    operation.
+    It implements exactly one operation.
   observable: >-
-    A graph that is attached to no operation, or to more than one, is rejected with a
-    diagnostic naming it.
+    A graph that is attached to no operation, or to more than one, is rejected with a diagnostic
+    naming it. The graphs that a template writes under `setup` and `retire` are not
+    implementations and implement no operation: they are the steps that the engine runs within
+    an invocation of `set-up.v1` or of `retire.v1`, as TPL-008 states.
   vectors: []
 
 - id: GRA-015
@@ -193,13 +201,13 @@
     A step is read.
   then: >-
     It has exactly one of `operation`, the selection of an operation as NAM-018 gives one, and
-    `runtime`, the name of a runtime the template declares, which invokes that runtime's start
-    operation. It may also have `arguments`, `dependsOn` and `optional`, and a step that has
-    `operation` may have `conduit`.
+    `runtime`, the name of a runtime that the template or its type declares, which invokes that
+    runtime's start operation. It may also have `arguments`, `dependsOn` and `optional`, and a
+    step that has `operation` may have `conduit`.
   observable: >-
-    A step with both, with neither, or with a runtime name the template does not declare, is
-    rejected with a diagnostic naming the step. So is a step that has `runtime` and carries
-    `conduit`.
+    A step with both, with neither, or with a runtime name that neither the template nor its
+    type declares, is rejected with a diagnostic naming the step. So is a step that has
+    `runtime` and carries `conduit`. Which runtimes an instance has is TPL-006.
   vectors: []
 
 - id: GRA-018
@@ -241,7 +249,9 @@
   observable: >-
     Any other source is rejected. So is a value reference written with `from` in place of
     `source`: `from` names only the template of an instance or of a nested instantiation.
-    `input` is rejected in a setup or retire graph, which have no inputs, and `config` is
+    `input` is rejected in a `setup` or `retire` graph, which implements no operation and has no
+    inputs of its own under TPL-008: the engine reads the input `instance` of `set-up.v1` and of
+    `retire.v1`, and the graph reaches the instance through the source `instance`. `config` is
     rejected elsewhere, as GRA-010 states. `step`, `runtime` and `instance` are accepted in
     every graph. In a constituent of a composed requirement, which is not a graph, `input` is
     the only source, and it names an input of the composition, as CTR-010 states.
@@ -264,10 +274,11 @@
   layer: language
   level: must
   when: >-
-    A setup graph belongs to a template that declares Conduits or, for a Pool, entries.
+    A template declares Conduits or, for a Pool, entries.
   then: >-
-    Each declared Conduit and each entry is a step of that graph under its own name. A step
-    written under `steps` may name it in `dependsOn`, and may not take the same name.
+    Each declared Conduit and each entry is a step of the setup of the template's instances,
+    under its own name, whether or not the template writes a `setup` graph. A step written under
+    the `steps` of `setup` may name it in `dependsOn`, and may not take the same name.
   observable: >-
     A step that depends on the declared Conduit `checkout` runs only after that Conduit is open.
     A step written under the name `checkout` is rejected.
@@ -313,25 +324,26 @@
   layer: convention
   level: must
   when: >-
-    A step is about to be dispatched, and the arguments that its value bindings resolve to do
-    not satisfy the inputs of the step's operation.
+    A step is about to be dispatched, and the values that its value bindings yield do not
+    satisfy the inputs of the step's operation.
   then: >-
     The step is not dispatched, and reports invalid.
   observable: >-
-    No implementation receives a call for the step. The check is made on the resolved values,
-    with the defaults of OPS-026 filled in, whatever GRA-007 and GRA-008 found when the template
-    was registered: a value that another step's output or the configuration supplies is checked
-    here for the first time. A value that fails is not converted, as SCH-011 states. A step that
-    reports invalid has not succeeded, so GRA-002 leaves the steps that depend on it not run,
-    and the steps that ran before it keep their outcomes.
+    No implementation receives a call for the step. The check is made on the values the bindings
+    yield, with the defaults of OPS-026 filled in, whatever GRA-007 and GRA-008 found when the
+    template was registered: a value that another step's output or the configuration supplies is
+    checked here for the first time. A value that fails is not converted, as SCH-011 states. A
+    step that reports invalid has not succeeded, so GRA-002 leaves the steps that depend on it
+    not run, and the steps that ran before it keep their outcomes.
   vectors: []
 
 - id: GRA-026
   layer: convention
   level: must
   when: >-
-    A step's arguments are resolved, and the `pointer` of a value reference among them selects
-    nothing in the value its source names.
+    A step is about to be dispatched, and a value reference among its arguments yields no value:
+    its `pointer` selects nothing in the value its source names, or its source names something
+    that is absent.
   then: >-
     The step is not dispatched, and reports invalid.
   observable: >-
@@ -339,18 +351,21 @@
     missing value, even where the input is optional or states a default. The pointer
     `/connection/endpoint` selects nothing in an output whose `connection` has no `endpoint`. A
     pointer that selects a member whose value is null selects a value, and that null is checked
-    against the input's schema like any other value.
+    against the input's schema like any other value. A source names something absent where it is
+    an optional input that the request left out and that states no default, an optional output
+    that a step did not return, or a runtime that the instance does not hold. Where a value
+    reference in a graph's `outputs` yields no value, OPS-022 gives the invocation's outcome.
   vectors: []
 
 - id: GRA-027
   layer: convention
   level: must
   when: >-
-    An invocation of an operation that a graph implements is dispatched, and the graph reads
-    the instance's configuration through a value reference with the source `config`.
+    The steps of a `setup` or a `retire` graph run, and the graph reads the instance's
+    configuration through a value reference with the source `config`.
   then: >-
-    Every such reference in that run yields the configuration as it stood when the invocation
-    was dispatched.
+    Every such reference in that run yields the configuration as it stood when the invocation of
+    `set-up.v1` or of `retire.v1` that runs the steps was dispatched.
   observable: >-
     Two steps of one run that read the same setting receive the same value, whenever each of
     them runs. A change to the configuration that is stored while the graph runs does not reach

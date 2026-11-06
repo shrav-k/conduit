@@ -6,8 +6,11 @@
 # entries in pools.yaml. The JSON Schemas of these shapes are in spec/schemas/templates.yaml.
 # Consolidation pass 1 took PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004.
 # The ruling on the core package and the schemas (plan-audit ruling 37) changed TPL-002,
-# TPL-003, TPL-006 and TPL-010.
-# Draft: no vector exists yet.
+# TPL-003, TPL-006 and TPL-010. The second round of the re-audit
+# (docs/proposals/reaudit/round-2/DECISIONS.md) changed TPL-003, TPL-004, TPL-006 to TPL-009
+# and TPL-012: an instance is set up by one invocation of `set-up.v1` and retired by one of
+# `retire.v1`, and a template's `setup` and `retire` graphs are the steps the engine runs.
+# No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: TPL-001
   layer: language
@@ -51,7 +54,9 @@
   observable: >-
     A step, a runtime or a control that carries its own `implementation` key is rejected with a
     diagnostic naming it. The map holds one selection for an operation; the same operation
-    written twice is a duplicate key, rejected under SCH-012.
+    written twice is a duplicate key, rejected under SCH-012. `setup` and `retire` are not
+    selected here: the engine implements `set-up.v1` and `retire.v1`, and the graphs a template
+    writes under `setup` and `retire` are the steps it runs, as TPL-008 states.
   vectors: []
 
 - id: TPL-004
@@ -65,10 +70,11 @@
     the operation's own contract states. If there is neither, the template is rejected.
   observable: >-
     The resolved template shows one implementation for each such operation and where it came
-    from: the template, the type or the operation's contract. A default resolves through the
-    manifest of the package that publishes the contract stating it, as NAM-014 states. A step
-    that carries `conduit` is a request to another instance under GRA-024 and needs no
-    implementation here.
+    from: the template, the type or the operation's contract. A default is a selection, and it
+    resolves in the project or package that holds the contract stating it: under NAM-022 where
+    it is written `#name`, and through that package's own manifest, under NAM-014, where it
+    names another package. A step that carries `conduit` is a request to another instance under
+    GRA-024 and needs no implementation here.
   vectors: []
 
 - id: TPL-005
@@ -92,10 +98,13 @@
     It is a member of a `runtimes` map, keyed by its name, that holds `start` and `stop`, each
     the selection of an operation, and may hold `optional: true`. The start operation's contract
     declares exactly one output that is a handle, and the stop operation's contract takes
-    exactly one required input that is a handle.
+    exactly one required input that is a handle. An instance has the runtimes that its type
+    declares as well as those that its template declares.
   observable: >-
     A runtime whose start or stop operation does not have that shape is rejected with a
-    diagnostic naming the runtime and the operation.
+    diagnostic naming the runtime and the operation. A template that declares a runtime under a
+    name that its type declares is rejected with a diagnostic naming the runtime. A step may
+    name a runtime that either of them declares, under GRA-017.
   vectors: []
 
 - id: TPL-007
@@ -110,36 +119,46 @@
     again and the step is left as succeeded.
   observable: >-
     Inspecting the instance lists the runtime as held. A value reference with the source
-    `runtime` and that name yields the handle. Running setup again starts no second runtime of
-    that name, and the instance holds the same handle as before.
+    `runtime` and that name yields the handle. Setting the instance up again starts no second
+    runtime of that name, and the instance holds the same handle as before.
   vectors: []
 
 - id: TPL-008
   layer: language
   level: must
   when: >-
-    A template declares a `retire` graph.
+    A template declares a `setup` graph or a `retire` graph.
   then: >-
-    The graph implements the retire operation of its instances, as `setup` implements their
-    setup operation.
+    The graph is the steps that the engine runs for an instance of the template: those of
+    `setup` within the one invocation of `set-up.v1` that sets the instance up, and those of
+    `retire` within the one invocation of `retire.v1` that retires it. The engine implements
+    both operations. Neither graph is an implementation, neither is selected in the
+    `implementation` map, and neither has inputs of its own.
   observable: >-
-    A `retire` graph may refer to the instance's configuration and to the handles of its
-    runtimes, as GRA-010 and GRA-020 state.
+    The request names the instance in the input `instance` of `set-up.v1` or of `retire.v1`, and
+    is made of the target that ACC-033 names. The setup operation and the retire operation of an
+    instance mean these two invocations, and its setup and its retirement are what they do. A
+    `setup` or `retire` graph may refer to the instance's configuration and to the handles of
+    its runtimes, as GRA-010 and GRA-020 state, and a value reference with the source `input` is
+    rejected in one. A Conduit template has neither graph: a Conduit is set up by an invocation
+    of `open.v1` and retired by one of `close.v1`.
   vectors: []
 
 - id: TPL-009
   layer: convention
   level: must
   when: >-
-    An instance is retired.
+    An instance is retired by an invocation of `retire.v1`.
   then: >-
-    The steps of its `retire` graph run, if it has one and a setup of the instance was ever
-    dispatched, and then the stop operation of each runtime the instance still holds is
-    invoked. Nothing else is done, apart from the closing of its Conduits under CON-008.
+    Within the invocation of `retire.v1` the engine runs the steps of the instance's `retire`
+    graph, if it has one and a setup of the instance was ever dispatched, and then invokes the
+    stop operation of each runtime the instance still holds. Nothing else is done, apart from
+    the closing of its Conduits under CON-008.
   observable: >-
-    An instance that was never set up does not run its `retire` graph. With no `retire` graph
-    to run and no runtime held, the retire operation succeeds at once. The stops are part of
-    the retire operation, which succeeds only if the graph and every stop succeeded.
+    An instance for which no setup was ever dispatched does not run its `retire` graph, as
+    LIF-025 states. With no `retire` graph to run and no runtime held, the invocation succeeds
+    at once. The stops are part of the invocation, which succeeds only if the steps of the graph
+    did, as OPS-022 counts them, and every stop succeeded.
   vectors: []
 
 - id: TPL-010
@@ -177,8 +196,10 @@
   when: >-
     A template has no `setup` graph.
   then: >-
-    Its instances' setup consists only of opening their declared Conduits and, for a Pool,
-    setting up the Resources of its entries.
+    The steps that the engine runs to set up one of its instances are only the opening of the
+    instance's declared Conduits and, for a Pool, the setting up of the Resources of its
+    entries.
   observable: >-
-    Setting up such an instance invokes no operation of any implementation beyond those.
+    An invocation of `set-up.v1` for such an instance invokes no operation of any implementation
+    beyond those.
   vectors: []

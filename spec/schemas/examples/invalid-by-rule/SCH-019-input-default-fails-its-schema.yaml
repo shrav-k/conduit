@@ -40,3 +40,5 @@ spec:
   requirements:
     rate:
       requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: 20

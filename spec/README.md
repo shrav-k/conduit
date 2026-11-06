@@ -34,26 +34,26 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | --- | --- | --- |
 | [names.yaml](names.yaml) | The names this version assigns: the core package's address, `apiVersion` and the prefix of its `_meta` keys. The one place they are defined | Current |
 | [definitions.md](definitions.md) | The terms the promises use | Draft; follows the promises as they stand |
-| [promises/objects.yaml](promises/objects.yaml) | Names, IDs, references, kinds and the shape of a document | Draft; 24 promises; no vectors |
+| [promises/objects.yaml](promises/objects.yaml) | Names, IDs, references, kinds and the shape of a document | Draft; 26 promises; no vectors |
 | [promises/schemas.yaml](promises/schemas.yaml) | Schemas, document syntax and numbers | Draft; 21 promises; no vectors |
 | [schema-profile.md](schema-profile.md) | The standards relied on, the YAML features not accepted, the permitted schema keywords and the enforced formats | Draft |
-| [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance | Draft; 23 promises; no vectors |
+| [promises/instantiation.yaml](promises/instantiation.yaml) | How a template and its arguments become an instance, and what `from` may be | Draft; 24 promises; no vectors |
 | [promises/templates.yaml](promises/templates.yaml) | What the `spec` of a template holds: the type, implementations, runtimes, retirement and controls | Draft; 12 promises; no vectors |
 | [promises/contracts.yaml](promises/contracts.yaml) | The five kinds of contract and what each holds | Draft; 10 promises; no vectors |
 | [promises/naming.yaml](promises/naming.yaml) | How packages, their exports and contracts are named, where versions live, and which version of a contract governs | Draft; 27 promises; no vectors |
 | [promises/packages.yaml](promises/packages.yaml) | Versions, digests, the archive, what a package's manifest states, and what a request to install reports | Draft; 19 promises; no vectors |
 | [promises/manifest.yaml](promises/manifest.yaml) | The manifest's format: the file `conduit.yaml`, its keys, how a re-export is written, which files of a project are its documents, and the layout of a package's archive | Draft; 14 promises; no vectors |
-| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, and the contracts of a project that is not published | Draft; 8 promises; no vectors |
+| [promises/submissions.yaml](promises/submissions.yaml) | Handing over several documents at once, the contracts of a project that is not published, and how a template is replaced | Draft; 9 promises; no vectors |
 | [promises/pools.yaml](promises/pools.yaml) | Ownership and entries | Draft; 14 promises; no vectors |
-| [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: locations, default placement, requirements on placement and values bound to a location | Draft; 18 promises; no vectors |
+| [promises/placement.yaml](promises/placement.yaml) | Where an Agent or Resource runs: locations, default placement, requirements on placement and values tied to a location | Draft; 19 promises; no vectors |
 | [promises/conduits.yaml](promises/conduits.yaml) | What a Conduit is, what its template holds, when it exists and when it is open | Draft; 25 promises; no vectors |
 | [promises/graphs.yaml](promises/graphs.yaml) | The static meaning of a graph, its two invariants, and what holds when a step is dispatched | Draft; 25 promises; no vectors |
-| [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 4 promises; no vectors |
-| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 98 exports and 1 implementation |
+| [promises/first-start.yaml](promises/first-start.yaml) | The objects that exist before anything is submitted | Draft; 5 promises; no vectors |
+| [core/](core/README.md) | The core package, written out as documents: what it exports, and the promise that needs each export | Draft; 98 documents exported and 1 implementation, which is also an export |
 | [core/conduit.yaml](core/conduit.yaml) | The core package's manifest: its address, its version, its exports and its one implementation, the engine itself | Draft |
 | [core/operations.yaml](core/operations.yaml) | The Operation contracts: every management verb, the retrieval tool `retrieve-result.v1`, and the controls `set-default-location.v1` and `set-facts.v1` | Draft; 20 contracts |
 | [core/capabilities.yaml](core/capabilities.yaml) | The Capability contracts: what `management`, `access`, a Pool, the `system` Pool and a location offer | Draft; 5 contracts |
-| [core/types.yaml](core/types.yaml) | The Type contracts: the plain Interface and Pool types, and the types of `system`, of a location, of `management` and of `access` | Draft; 6 contracts |
+| [core/types.yaml](core/types.yaml) | The Type contracts: the basic Interface and Pool types, and the types of `system`, of a location, of `management` and of `access` | Draft; 6 contracts |
 | [core/requirements.yaml](core/requirements.yaml) | The Requirement contracts `bound.v1` and `shared-host.v1` | Draft; 2 contracts |
 | [core/references.yaml](core/references.yaml) | The reference schemas: the Schema contracts that make a value a reference | Draft; 11 contracts |
 | [core/results.yaml](core/results.yaml) | The Schema contracts `object.v1` and `diagnostic.v1`, which the outputs of the operations share | Draft; 2 contracts |
@@ -69,25 +69,26 @@ belongs to that engine's runtime profile, which is its documented choice for eve
 | [schemas/manifest.yaml](schemas/manifest.yaml) | `manifest.v1` and `implementation-item.v1`: the manifest and one implementation item | Draft; 2 contracts |
 | [schemas/values.yaml](schemas/values.yaml) | The small values the others share: names, addresses, the forms of a reference to an export, pointers, versions and digests | Draft; 12 contracts |
 | [schemas/examples/valid](schemas/examples/valid) | Documents that the schemas accept: a project that is not published, a package, and the instance documents of the first-start objects | Draft; 7 files in 3 directories |
-| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are refused when the file is read, one to a file, each file named for the promise it breaks | Draft; 55 files |
-| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 11 files |
-| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement and unregistration | Draft; 27 promises; no vectors |
+| [schemas/examples/invalid](schemas/examples/invalid) | Documents that a schema rejects, or that are rejected when the file is read, one to a file, each file named for the promise it breaks | Draft; 58 files |
+| [schemas/examples/invalid-by-rule](schemas/examples/invalid-by-rule) | Sets of documents that are valid against the schemas and are rejected by a rule no schema can express, each file named for the promise the set breaks | Draft; 14 files |
+| [conventions/lifecycle.yaml](conventions/lifecycle.yaml) | The convention on ownership and lifecycle: the one lifecycle every instance has, what inspecting returns, retirement, unregistration and what reconciling a setup or a retirement changes | Draft; 29 promises; no vectors |
 | [conventions/access.yaml](conventions/access.yaml) | The access convention: every permission is an open Conduit, decided anew for each request | Draft; 31 promises; no vectors |
-| [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 27 promises; no vectors |
+| [conventions/operations.yaml](conventions/operations.yaml) | The convention on operation identity and outcomes | Draft; 28 promises; no vectors |
 | [conventions/revisions.yaml](conventions/revisions.yaml) | The convention on revision-checked change | Draft; 13 promises; no vectors |
-| [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 6 promises; no vectors |
+| [conventions/observation.yaml](conventions/observation.yaml) | The convention on declared against observed state | Draft; 7 promises; no vectors |
 | [conventions/records.yaml](conventions/records.yaml) | The convention on records | Draft; 6 promises; no vectors |
 | [conventions/implicit.yaml](conventions/implicit.yaml) | The convention that nothing starts model work or repeats an effect implicitly | Draft; 9 promises; no vectors |
-| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 32 promises; no vectors |
-| [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 14 items |
+| [interface/implementation.yaml](interface/implementation.yaml) | The implementation interface: the Model Context Protocol as the wire between an engine, its implementations and its consumers | Draft; 33 promises; no vectors |
+| [implementation-defined.yaml](implementation-defined.yaml) | What is left to each engine, which it documents as its runtime profile | Draft; 15 items |
 
-Every area has been written as promises, 395 in all, and the rulings of the
+Every area has been written as promises, 406 in all, and the rulings of the
 [consolidation audit](../docs/proposals/consolidation/README.md#rulings), the decisions of the
 [re-audit](../docs/proposals/reaudit/README.md), the
-[ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md) and
-the [decisions of the docs audit](../docs/proposals/docs-audit/GAPS.md), which converted the
-behaviors that the older text accepted and the specification did not state, have been applied
-to them. The JSON Schemas of documents, contracts and manifests, the core package
+[ruling on the core package and the schemas](../docs/proposals/core-and-schemas/APPLY.md), the
+[decisions of the docs audit](../docs/proposals/docs-audit/GAPS.md), which converted the
+behaviors that the older text accepted and the specification did not state, and the
+[decisions of the second round of the re-audit](../docs/proposals/reaudit/round-2/DECISIONS.md)
+have been applied to them. The JSON Schemas of documents, contracts and manifests, the core package
 as documents and the manifest's file format now exist: they are `schemas/`, `core/` and
 `promises/manifest.yaml`. Still to come: the conformance vectors, and a reference model.
 

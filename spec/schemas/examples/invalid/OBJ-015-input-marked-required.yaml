@@ -1,5 +1,6 @@
 # Example. It must be rejected:
-# an input is required unless it is marked `optional: true`; `required` is not a key.
+# an input is required unless it is marked `optional: true` or states a `default`;
+# `required` is not a key.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Interface

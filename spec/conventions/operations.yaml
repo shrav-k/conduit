@@ -3,13 +3,16 @@
 # yet.
 # The at-most-once promises were explored by model checking in
 # experiments/004-stateright-evaluation.
-# A record is a log entry (conventions/records.yaml). What is kept for an operation identity is
-# the invocation's state, which is in progress or its outcome and is read from the records about
-# the invocation. ACC-020 and ACC-021 were folded into OPS-005 and REC-001. The ruling on the
-# core package and the schemas (ruling 37) changed OPS-007, OPS-009, OPS-014, OPS-016 and
-# OPS-019, and added OPS-025. The conversion of the older text (decision DA3 of the docs audit,
-# docs/proposals/docs-audit/GAPS.md) changed OPS-016 and added OPS-026 and OPS-027. No promise
-# of this file has been removed.
+# A record is kept and never altered (conventions/records.yaml). What is kept for an operation
+# identity is the invocation's state, which is in progress or its outcome and is read from the
+# records about the invocation. ACC-020 and ACC-021 were folded into OPS-005 and REC-001. The
+# ruling on the core package and the schemas (ruling 37) changed OPS-007, OPS-009, OPS-014,
+# OPS-016 and OPS-019, and added OPS-025. The conversion of the older text (decision DA3 of the
+# docs audit, docs/proposals/docs-audit/GAPS.md) changed OPS-016 and added OPS-026 and OPS-027.
+# The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed
+# OPS-005, OPS-006, OPS-008 to OPS-010, OPS-012, OPS-014 to OPS-019, OPS-021 to OPS-023, OPS-025
+# and OPS-026, made OPS-015 the rule for an identity under which the sender has no invocation,
+# and added OPS-028. No promise of this file has been removed.
 
 - id: OPS-001
   layer: convention
@@ -68,7 +71,7 @@
     It has no outcome. It reports why, as exactly one of: refused, invalid, conflict or
     unavailable.
   observable: >-
-    The response to the caller and the record of the request carry the same one of those four
+    The result that is returned and the record of the request carry the same one of those four
     reasons and no outcome. Where the request was not dispatched, the implementation received no
     call. Where the implementation gave the reason, which is refused or unavailable, it
     performed nothing. Where more than one reason applies, OPS-023 says which is reported.
@@ -85,7 +88,7 @@
     Every result such an implementation returns across the implementation interface carries one
     of the three outcome values, in the key IFC-009 names, or the reason refused or unavailable,
     in the key IFC-026 names. An implementation marked `plain` states neither, and the outcome
-    of its answer is the one IFC-010 gives.
+    of its result is the one IFC-010 gives.
   vectors: []
 
 - id: OPS-007
@@ -110,38 +113,45 @@
   when: >-
     A caller makes a request of a target that carries an operation identity.
   then: >-
-    The identity is scoped to that caller and that target. At most one invocation exists for
-    one caller, one target and one identity, and its state is read from the records about it.
+    The identity is scoped to that caller, that target and the instance that sent the request.
+    At most one invocation exists for one caller, one sending instance, one target and one
+    identity, and its state is read from the records about it.
   observable: >-
-    Asking by that caller, target and identity returns the state of one invocation, in progress
-    or its outcome, however many times the request was sent. The same identity sent by another
-    caller, or to another target, belongs to another invocation.
+    Asking by that caller, target and identity, from the instance that sent the request, returns
+    the state of one invocation, in progress or its outcome, however many times the request was
+    sent. The same identity sent by another caller, by another instance for the same caller, or
+    to another target, belongs to another invocation. The instance that sends a request an actor
+    makes on its own behalf is that actor, and the instance that sends an onward request is the
+    one that makes it: a request an Agent sends itself and an onward request that a Resource
+    sends for that Agent, with one identity and one target, are two invocations.
   vectors: []
 
 - id: OPS-009
   layer: convention
   level: must
   when: >-
-    A request arrives with the same caller, target, operation identity and contents as an
-    earlier request, and the invocation that request began is in progress or succeeded.
+    A request arrives from the instance that sent an earlier request, with the same caller,
+    target, operation identity and contents as that request, and the invocation that request
+    began is in progress or succeeded.
   then: >-
-    The request is a repeat, not a new request. Nothing is dispatched, and the response gives
-    the invocation's state: in progress, or succeeded.
+    The request is a repeat, not a new request. Nothing is dispatched, and the result gives the
+    invocation's state: in progress, or succeeded.
   observable: >-
-    The implementation receives no further call for the invocation, and the response matches the
+    The implementation receives no further call for the invocation, and the result matches the
     state read from the invocation's records. Two requests have the same contents when they name
-    the same operation and their arguments are equal under SCH-007. The answer to a repeat of an
-    invocation that has not ended carries neither an outcome nor a reason, and its `_meta` holds
-    `io.github.shrav-k.conduit/state` with the value `inProgress`, as IFC-025 states.
+    the same operation and their arguments are equal under SCH-007, judged after the defaults of
+    OPS-026 are filled in. The result of a repeat of an invocation that has not ended carries
+    neither an outcome nor a reason, and its `_meta` holds `io.github.shrav-k.conduit/state`
+    with the value `inProgress`, as IFC-025 states.
   vectors: []
 
 - id: OPS-010
   layer: convention
   level: must
   when: >-
-    A request arrives with the caller, target and operation identity of an existing invocation
-    and with different contents: another operation, or arguments that are not equal under
-    SCH-007.
+    A request arrives from the instance that sent the request of an existing invocation, with
+    that invocation's caller, target and operation identity and with different contents: another
+    operation, or arguments that are not equal under SCH-007.
   then: >-
     It is not dispatched, and reports conflict.
   observable: >-
@@ -170,7 +180,7 @@
   then: >-
     The repeat is dispatched as a new attempt only if the operation's contract declares
     `deduplicates: true` and the implementation is not marked `plain`. Otherwise nothing is
-    dispatched, and the response gives the state unknown.
+    dispatched, and the result gives the state unknown.
   observable: >-
     Where the contract does not declare it, or the implementation is plain and so never receives
     the operation identity, the implementation receives no further call for the invocation. A
@@ -196,67 +206,76 @@
   when: >-
     An actor records, with what it checked, that the effect of an invocation whose outcome is
     unknown occurred or that it did not. The actor is the consumer of an open Conduit that lists
-    the reconcile operation, to the target against which ACC-033 authorizes setting up and
-    retiring the instance the invocation was dispatched to.
+    `reconcile.v1`, to the target that authorized the request being reconciled, as ACC-033
+    states.
   then: >-
     The invocation's outcome becomes succeeded or failed accordingly.
   observable: >-
     A record states the new outcome, the actor that reconciled it and what the actor checked.
     The earlier record that the outcome was unknown is kept. An actor with no such Conduit
     reports refused. The request is the operation `reconcile.v1`, which names the invocation by
-    the ID the engine gave it.
+    the ID the engine gave it. What the reconciliation of a setup, an open, a retirement or a
+    close changes beside the outcome is LIF-028, and what that of a control changes is REV-010.
   vectors: []
 
 - id: OPS-015
   layer: convention
   level: must
   when: >-
-    An actor asks for the retained result of an invocation it did not make.
+    An instance asks for a retained result by an operation identity and a target under which it
+    has no invocation: none that began with a request it sent itself, for the same caller.
   then: >-
     The request is not dispatched, and reports refused.
   observable: >-
-    Only a request from the original caller returns the result. Any other actor's request
-    reports refused, whatever open Conduits it is the consumer of.
+    The reason is the same for an identity that was never used, for one that another instance or
+    another caller used, for one whose request ended with a reason and so began no invocation
+    under OPS-025, and for a target that has been unregistered and so can no longer be named.
+    The result says nothing of whether an invocation of another instance exists, whatever open
+    Conduits the instance that asks is the consumer of.
   vectors: []
 
 - id: OPS-016
   layer: convention
   level: must
   when: >-
-    The original caller asks, by operation identity and target, for the result of its own
-    invocation.
+    An instance asks, by operation identity and target, for the result of an invocation that
+    began with a request it sent itself, for the same caller.
   then: >-
     It is told the invocation's state: in progress, or its outcome. The request needs no open
     Conduit.
   observable: >-
-    The response states the outcome even if the caller's Conduit was closed after the invocation
-    was dispatched. The request names the target as well as the identity, because OPS-008 scopes
-    an identity to a caller and a target. It is made with the tool `retrieve-result.v1`, which
-    IFC-024 says is always presented, and the state is in that tool's result as IFC-024 states.
-    Once the target is unregistered, a reference to it no longer resolves, and the result can no
-    longer be retrieved through the tool. The records of the invocation remain, as LIF-019 and
-    REC-003 state.
+    The result states the outcome even if the Conduit was closed after the invocation was
+    dispatched. The request names the target as well as the identity, because OPS-008 scopes an
+    identity to a caller, a sending instance and a target. It is made with the tool
+    `retrieve-result.v1`, which IFC-024 says is always presented, and the state is in that
+    tool's result as IFC-024 states. Once the target is unregistered, a reference to it no
+    longer resolves, and the request reports refused under OPS-015. The records of the
+    invocation remain, as LIF-019 and REC-003 state.
   vectors: []
 
 - id: OPS-017
   layer: convention
   level: must
   when: >-
-    The original caller asks for the retained result of its own invocation and its access at
-    that moment does not permit the content.
+    An instance asks for the retained result of an invocation that began with a request it sent
+    itself, and the Conduit through which that invocation was dispatched is no longer open.
   then: >-
-    The content is not delivered, and the response states that it is withheld.
+    The content is not delivered, and the result states that it is withheld.
   observable: >-
-    The response carries the outcome, no content, and an explicit statement that content exists
-    and is withheld. IFC-024 says where the result of the tool carries that statement.
+    A retained result belongs to the Conduit through which its invocation was dispatched: its
+    content is delivered only while that Conduit is open, and never under another one, whatever
+    other Conduits join the same consumer and target. The result carries the outcome, no
+    content, and an explicit statement that content exists and is withheld. IFC-024 says where
+    the result of the tool carries that statement.
   vectors: []
 
 - id: OPS-018
   layer: convention
   level: must not
   when: >-
-    Requests from one caller to one target that carry one operation identity are lost, delayed,
-    reordered or repeated, or the engine or the implementation handling them stops and restarts.
+    Requests that one instance sends for one caller to one target, and that carry one operation
+    identity, are lost, delayed, reordered or repeated, or the engine or the implementation
+    handling them stops and restarts.
   then: >-
     The effect is applied more than once.
   observable: >-
@@ -280,8 +299,8 @@
     one of the ways the definitions list, and leaves a record. Without an operation identity it
     is a new invocation each time, under OPS-011. The capabilities are those of the core
     package: `object-management.v1`, which `management` offers, `access-control.v1`, which
-    `access` offers, and `pool-management.v1`, which every Pool offers. Each verb is an
-    Operation contract of the core package, such as `register.v1`, `set-up.v1`, `open.v1`,
+    `access` offers, and `pool-management.v1`, which every Pool offers, under CTR-004. Each verb
+    is an Operation contract of the core package, such as `register.v1`, `set-up.v1`, `open.v1`,
     `apply-policy.v1` and `install.v1`.
   vectors: []
 
@@ -308,24 +327,27 @@
   layer: convention
   level: must
   when: >-
-    An instance's setup or retire runs again, and one of its steps has the outcome unknown from
-    an earlier run.
+    An instance's setup or retirement runs again, and one of its steps has the outcome unknown
+    from an earlier run.
   then: >-
-    That step is not dispatched again, except as a new attempt of the same invocation where
-    OPS-012 dispatches one.
+    That step is not dispatched again, except as a new attempt of the step's own invocation
+    where OPS-012 dispatches one, with the operation identity that OPS-028 gave the step.
   observable: >-
     A step whose outcome is unknown, and whose operation does not declare `deduplicates: true`
-    or whose implementation is plain, receives no further call however often setup or retire
-    runs, until it is reconciled under OPS-014. What a re-run does with the other steps that
-    already ran is DL1 of the implementation-defined list. A runtime the instance holds is not
-    started again, as TPL-007 states.
+    or whose implementation is plain, receives no further call however often the instance is set
+    up or retired, until it is reconciled under OPS-014. One whose operation declares it, and
+    whose implementation is not plain, is dispatched as a new attempt on the conditions of
+    OPS-012, with the identity it carried before, so its implementation recognizes it. What a
+    further run does with the other steps that already ran is DL1 of the implementation-defined
+    list. A runtime the instance holds is not started again, as TPL-007 states.
   vectors: []
 
 - id: OPS-022
   layer: convention
   level: must
   when: >-
-    An invocation of an operation that a graph implements has ended.
+    An invocation of an operation that a graph implements has ended, or an invocation of
+    `set-up.v1` or of `retire.v1`, whose steps the engine runs.
   then: >-
     Its outcome is succeeded only if every step not marked optional succeeded, failed only if no
     step had an effect, and otherwise unknown.
@@ -333,8 +355,12 @@
     Where a step not marked optional did not succeed, the outcome is failed if every step that
     was dispatched either failed, was answered with a reason in place of an outcome under
     IFC-026, or is of an operation whose contract states no `effect`, and is unknown if any step
-    succeeded with an effect or ended unknown on an operation that has one. The setup and retire
-    operations of an instance follow the same rule.
+    succeeded with an effect or ended unknown on an operation that has one. The steps of
+    `set-up.v1` are those of the instance's `setup` graph, its declared Conduits and, for a
+    Pool, its entries. The steps of `retire.v1` are those of its `retire` graph, and each stop
+    of a runtime counts as a step that is not optional. Where a value reference in a graph's
+    `outputs` yields no value, the invocation's outcome is unknown if a step had an effect, and
+    failed otherwise.
   vectors: []
 
 - id: OPS-023
@@ -347,8 +373,8 @@
     otherwise refused, then invalid, then conflict, then unavailable.
   observable: >-
     A request that is not permitted reports refused whatever else is wrong with it, and its
-    response says nothing else about the objects it names. A permitted request that fails a
-    schema and also names a revision that is not current reports invalid.
+    result says nothing else about the objects it names. A permitted request that fails a schema
+    and also names a revision that is not current reports invalid.
   vectors: []
 
 - id: OPS-024
@@ -371,8 +397,9 @@
   layer: convention
   level: must
   when: >-
-    A request arrives with the same caller, target, operation identity and contents as an
-    earlier request that ended with a reason and no outcome.
+    A request arrives from the instance that sent an earlier request, with the same caller,
+    target, operation identity and contents as that request, which ended with a reason and no
+    outcome.
   then: >-
     It is a new request, and is decided afresh. It is not answered with the earlier reason.
   observable: >-
@@ -398,9 +425,9 @@
     The implementation receives the default as the value of that input, the same whether it is
     code or a graph: the `arguments` of the call hold it, and a value reference with the source
     `input` yields it. An input that states a `default` may be left out whether or not it is
-    marked `optional: true`, as INS-004 has it for a template's input, so GRA-007 does not
-    reject a step that gives it no value. A control applies no default: an input of a control
-    that is not supplied leaves its setting as stored, as REV-006 states.
+    marked `optional: true`, under OBJ-015, so GRA-007 does not reject a step that gives it no
+    value. A control applies no default: an input of a control that is not supplied leaves its
+    setting as stored, as REV-006 states.
   vectors: []
 
 - id: OPS-027
@@ -417,4 +444,27 @@
     outcome that is unknown stays so until it is reconciled under OPS-014, as OPS-013 states.
     Whether an invocation can be cancelled, and how, is DL14 of the implementation-defined
     list.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
+# --- finding R3-2).
+
+- id: OPS-028
+  layer: convention
+  level: must
+  when: >-
+    The engine dispatches a step: a step of a graph that implements an operation, or a step of
+    an instance's setup or retirement.
+  then: >-
+    It gives the step an operation identity, derived from the ID of the invocation in which the
+    step is first dispatched and from the step's name, and sends it. A new attempt of the step
+    carries the same identity.
+  observable: >-
+    The step's implementation receives the identity in
+    `io.github.shrav-k.conduit/operationIdentity` under IFC-006, whether or not the caller of
+    the invocation supplied one of its own. An implementation whose operation declares
+    `deduplicates: true` therefore recognizes the new attempt that OPS-021 dispatches when a
+    setup or a retirement runs again, and the effect is applied once. Two steps of one
+    invocation have different identities. An implementation marked `plain` receives none, under
+    IFC-007, and is never sent a new attempt, under OPS-012.
   vectors: []

@@ -10,8 +10,12 @@
 # IFC-019 and IFC-024 to IFC-027, which gained three keys of a result's `_meta`: `restriction`,
 # `state` and `withheld`. The conversion of the older text (decision DA3 of the docs audit,
 # docs/proposals/docs-audit/GAPS.md) changed IFC-006, IFC-018, IFC-022, IFC-024 and IFC-025,
-# gave a request the key `package`, and added IFC-030 to IFC-032. No promise of this file has
-# been removed. Draft: no vector exists yet.
+# gave a request the key `package`, and added IFC-030 to IFC-032. The second round of the
+# re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) removed the key `package`, so that a
+# contract of an unpublished package is written `<digest>#<name>`; gave a result the key
+# `invocation`; changed IFC-006, IFC-010, IFC-012, IFC-016, IFC-018 to IFC-020, IFC-023 to
+# IFC-025, IFC-029 and IFC-032; and added IFC-033. No promise of this file has been removed.
+# Draft: no vector exists yet.
 
 - id: IFC-001
   layer: interface
@@ -96,20 +100,20 @@
     `io.github.shrav-k.conduit/invocation`, `io.github.shrav-k.conduit/caller` and
     `io.github.shrav-k.conduit/restrictions`. It also holds
     `io.github.shrav-k.conduit/operationIdentity` when the caller supplied an operation
-    identity, `io.github.shrav-k.conduit/conduit` when the request came through a Conduit, and
-    `io.github.shrav-k.conduit/package` when the operation, or a requirement that the
-    restrictions name, is a contract of an unpublished package. None of them appears in the
-    `arguments`.
+    identity, or when the request is a step, to which the engine gives one under OPS-028, and
+    `io.github.shrav-k.conduit/conduit` when the request came through a Conduit. None of them
+    appears in the `arguments`.
   observable: >-
     The interface version is `v0` for this version of the specification. The instance is given
     by its ID, the operation by its qualified reference, the invocation by the ID the engine
     gives every invocation, the caller by its ID, and the Conduit by its ID. The key
     `io.github.shrav-k.conduit/conduit` is absent for a step that invokes the instance's own
-    implementation. What `io.github.shrav-k.conduit/restrictions` holds is IFC-018. A contract
-    of an unpublished package has no address and so no qualified reference: it is named as `#`
-    and its name, and `io.github.shrav-k.conduit/package` holds the digest that identifies the
-    unpublished package under SUB-008, written as PKG-004 writes a digest. The key is absent
-    when every contract the request names has a qualified reference.
+    implementation; such a step still carries the restrictions of the invocation its graph is
+    serving. What `io.github.shrav-k.conduit/restrictions` holds is IFC-018. A contract of an
+    unpublished package has no address and so no qualified reference: it is written
+    `<digest>#<name>`, the digest that identifies the unpublished package under SUB-008, written
+    as PKG-004 writes a digest, then `#`, then the contract's name. No separate key names the
+    package, so one request can name contracts of two unpublished packages.
   vectors: []
 
 - id: IFC-007
@@ -164,7 +168,7 @@
     A complete result that is not an error is the outcome succeeded. An error on an operation
     whose contract declares no effect, and a JSON-RPC error that says the tool is unknown or the
     request malformed, is failed. A result whose `resultType` is `input_required`, any other
-    error, and no answer, is unknown.
+    error, and no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error, and the one that says the tool is
@@ -215,7 +219,7 @@
     composite is at most 63 characters under OBJ-001 and OBJ-022, and an export name at most 63
     under NAM-004, so only a Conduit made from a composite can pass the limit. A Conduit one of
     whose tool names would be longer, or would equal another tool's name, is not instantiated,
-    under IFC-014.
+    under IFC-014. What the definition of each tool holds is IFC-033.
   vectors: []
 
 - id: IFC-013
@@ -267,12 +271,13 @@
   when: >-
     An operation's work finishes after its call returns.
   then: >-
-    The call returns a reference among its outputs, and the result is retrieved later under the
-    operations convention. The protocol's tasks extension, `io.modelcontextprotocol/tasks`, may
-    also be used, and never stands in for the operation identity.
+    The call returns, among its outputs, a value that names the work, as the operation's
+    contract declares it, and the result is retrieved later under the operations convention. The
+    protocol's tasks extension, `io.modelcontextprotocol/tasks`, may also be used, and never
+    stands in for the operation identity.
   observable: >-
-    The retained result is found by the caller's operation identity and target, under OPS-016,
-    whichever facility delivered it.
+    The retained result is found by the operation identity and the target of the request, under
+    OPS-016, whichever facility delivered it.
   vectors: []
 
 - id: IFC-017
@@ -298,16 +303,22 @@
     An engine sends `io.github.shrav-k.conduit/restrictions` to an implementation under IFC-006.
   then: >-
     It is a list. Each item holds `requirement`, which is the qualified reference of a
-    requirement or, for a requirement of an unpublished package, `#` and its name as IFC-006
+    requirement or, for a requirement of an unpublished package, `<digest>#<name>` as IFC-006
     states, and its `arguments`. The list holds every restriction that applies to the request:
     the requirements of the request's own Conduit that narrow requests, every policy that
-    applies, and the restrictions carried from the served invocation under ACC-017. It is empty
-    when none applies.
+    applies, and the restrictions carried from the served invocation under ACC-017. For a step
+    that has no `conduit`, it holds the restrictions of the invocation that the step's graph is
+    serving, under ACC-018. A composed requirement is sent as one item for each of its
+    constituents, with that constituent's arguments bound as CTR-010 states. The list is empty
+    when no restriction applies.
   observable: >-
     Each filter on the Conduit named in `io.github.shrav-k.conduit/conduit`, each policy that
     applies, and each restriction carried from the invocation that an onward request serves
-    appears as one item. A requirement that does not narrow requests, such as the shared-host
-    requirement, does not appear.
+    appears as one item, or for a composition as one item for each constituent. A requirement
+    that does not narrow requests, such as the shared-host requirement, does not appear. A
+    policy is always named by a qualified reference, because ACC-031 lets a policy name a
+    published contract only. An argument that is a reference is sent in the resolved form of
+    OBJ-009.
   vectors: []
 
 - id: IFC-019
@@ -321,12 +332,14 @@
     one of them forbids the request, or it cannot apply one of them, it performs nothing and
     answers with a reason in place of an outcome, as IFC-026 states.
   observable: >-
-    No request is performed with a restriction it was sent left unapplied. The answer gives the
-    reason refused where a restriction forbids the request, and unavailable where the
-    implementation cannot apply one, and it names the restriction in
-    `io.github.shrav-k.conduit/restriction`, as IFC-026 states. Which requirements an
-    implementation can apply is stated by `supports` in its manifest under PKG-019, and an
-    implementation marked `plain` states none under PKG-020.
+    No request is performed with a restriction it was sent left unapplied. This holds for a step
+    that has no `conduit` as for any request: the restrictions it is sent are those of the
+    invocation its graph is serving, under ACC-018. The result gives the reason refused where a
+    restriction forbids the request, and unavailable where the implementation cannot apply one,
+    and it names the restriction in `io.github.shrav-k.conduit/restriction`, as IFC-026 states.
+    Where the restriction came from a composed requirement, the item named is that of a
+    constituent. Which requirements an implementation can apply is stated by `supports` in its
+    manifest under PKG-019, and an implementation marked `plain` states none under PKG-020.
   vectors: []
 
 - id: IFC-020
@@ -339,9 +352,11 @@
     ID the engine sent as `io.github.shrav-k.conduit/invocation`. The engine takes the onward
     request's caller, and the restrictions carried under ACC-017, from the served invocation.
   observable: >-
-    The request that the onward target's implementation receives carries the served
-    invocation's caller in `io.github.shrav-k.conduit/caller` and its restrictions in
-    `io.github.shrav-k.conduit/restrictions`, whatever else the onward request states.
+    The request that the onward target's implementation receives carries the served invocation's
+    caller in `io.github.shrav-k.conduit/caller` and its restrictions in
+    `io.github.shrav-k.conduit/restrictions`, whatever else the onward request states. An
+    operation identity that the onward request carries is scoped to the instance that sends it,
+    as well as to that caller and to the onward target, under OPS-008.
   vectors: []
 
 - id: IFC-021
@@ -383,8 +398,8 @@
   when: >-
     A consumer makes a request through the server the engine presents to it.
   then: >-
-    It supplies an operation identity as `io.github.shrav-k.conduit/operationIdentity` in the
-    request's `_meta`.
+    It supplies an operation identity, which is a non-empty string, as
+    `io.github.shrav-k.conduit/operationIdentity` in the request's `_meta`.
   observable: >-
     The engine treats that value as the request's operation identity under OPS-008 and sends it
     to the implementation under IFC-006. A request without the key carries no operation identity
@@ -398,21 +413,24 @@
     The engine presents its server to an instance.
   then: >-
     The server always has the tool `retrieve-result.v1`, an operation of the core package that
-    is in no capability, with which the instance retrieves the caller's own results. The tool is
-    named by that export name alone, with no Conduit's name before it. It is presented whether
-    or not any Conduit of which the instance is the consumer is open, and a call to it needs no
-    Conduit. A call names an invocation by `operationIdentity` and `target`, the operation
-    identity the caller gave it and the target it was sent to. The `structuredContent` of the
-    result holds `state`, the invocation's state, which is `inProgress`, `succeeded`, `failed`
-    or `unknown`; `withheld`, which is true where OPS-017 withholds the content; and `outputs`,
-    the invocation's outputs where they are delivered.
+    is in no capability, with which the instance retrieves the results of invocations that began
+    with requests it sent itself. The tool is named by that export name alone, with no Conduit's
+    name before it. It is presented whether or not any Conduit of which the instance is the
+    consumer is open, and a call to it needs no Conduit. A call names an invocation by
+    `operationIdentity` and `target`, the operation identity the request carried and the target
+    it was sent to. The `structuredContent` of the result holds `state`, the invocation's state,
+    which is `inProgress`, `succeeded`, `failed` or `unknown`; `withheld`, which is true where
+    OPS-017 withholds the content; and `outputs`, the invocation's outputs where they are
+    delivered.
   observable: >-
     An instance with no open Conduit still lists the tool. A call to it is decided under OPS-015
     to OPS-017 and not under ACC-001. An invocation that has not ended is reported with the
-    `state` `inProgress`, and one that has ended by its outcome. A result whose content is
-    withheld carries `state` and `withheld: true`, and no `outputs`. Once the target is
-    unregistered it can no longer be named, and the result can no longer be retrieved through
-    the tool, as OPS-016 states.
+    `state` `inProgress`, and one that has ended by its outcome. The outputs are delivered only
+    while the Conduit through which the invocation was dispatched is open, under OPS-017: a
+    result whose content is withheld carries `state` and `withheld: true`, and no `outputs`. A
+    call that names an identity and a target under which the instance has no invocation reports
+    refused, under OPS-015. Once the target is unregistered it can no longer be named, and the
+    call reports refused in the same way.
   vectors: []
 
 - id: IFC-025
@@ -428,13 +446,15 @@
     the value refused, invalid, conflict or unavailable, and the result's `isError` is true.
     Where a restriction is why the request ended with a reason, the result's `_meta` also holds
     `io.github.shrav-k.conduit/restriction`, which names that restriction by its `requirement`
-    and its `arguments`: the engine's own answer carries it under the same key that an
+    and its `arguments`: the engine's own result carries it under the same key that an
     implementation uses under IFC-026. When the request is a repeat of an invocation that has
-    not ended, under OPS-009, the
-    result's `_meta` holds neither of the two and holds `io.github.shrav-k.conduit/state`, with
-    the value `inProgress`. Where the content of a result is withheld under ACC-034, the result
-    carries its outcome and no `structuredContent`, and its `_meta` holds
-    `io.github.shrav-k.conduit/withheld`, with the value true.
+    not ended, under OPS-009, the result's `_meta` holds neither of the two and holds
+    `io.github.shrav-k.conduit/state`, with the value `inProgress`. When the request has an
+    outcome, or is a repeat of an invocation, the result's `_meta` also holds
+    `io.github.shrav-k.conduit/invocation`, the engine's ID for that invocation. Where the
+    content of a result is withheld under ACC-034, the result carries its outcome and no
+    `structuredContent`, and its `_meta` holds `io.github.shrav-k.conduit/withheld`, with the
+    value true.
   observable: >-
     A result for a request that has an outcome never carries `io.github.shrav-k.conduit/reason`,
     and a result for one that ended with a reason never carries
@@ -443,9 +463,11 @@
     of a rejected registration does under OBJ-023. A request that the engine does not dispatch
     because a filter or a policy forbids it, or cannot be evaluated or applied, names that
     filter or policy in `io.github.shrav-k.conduit/restriction`, as ACC-008, ACC-014 and ACC-015
-    require. For a call to the tool of IFC-024 the keys
-    say how the retrieval itself ended, and the state of the invocation it asks about, and
-    whether its content is withheld, are in the result's `structuredContent`.
+    require; for a composed requirement it names the constituent, as IFC-018 sends it. The ID in
+    `io.github.shrav-k.conduit/invocation` is the one by which `reconcile.v1` names the
+    invocation, under OPS-014, so a consumer learns it from the result. For a call to the tool
+    of IFC-024 the keys say how the retrieval itself ended, and the state of the invocation it
+    asks about, and whether its content is withheld, are in the result's `structuredContent`.
   vectors: []
 
 # --- Added by the follow-up rulings (plan-audit ruling 33; decisions F1 and F7 of the
@@ -510,9 +532,11 @@
   when: >-
     A new version of this specification changes the prefix of Conduit's keys.
   then: >-
-    A request or a result carries the keys of one version only, which its interface version
-    names. An engine or an implementation that supports both versions reads each by its own
-    prefix.
+    A request or a result carries the keys of one version only. A request that the engine sends
+    to an implementation names that version in its interface version. A result, and a request
+    that a consumer or an instance sends to the engine, carry no interface version: the prefix
+    of their keys says which version they are written for. An engine or an implementation that
+    supports both versions reads each by its own prefix.
   observable: >-
     A request that mixes keys under two prefixes is answered as IFC-008 answers an unsupported
     interface version. The prefix for this version is the one `names.yaml` states.
@@ -561,5 +585,30 @@
   observable: >-
     A client of the Model Context Protocol that is not an instance, or that presents nothing
     from which the engine establishes one under IFC-022, can use no tool: each of its calls
-    reports refused, the tool of IFC-024 included, and no implementation receives a call.
+    reports refused, the tool of IFC-024 included, and no implementation receives a call. The
+    record of such a request holds no caller, and says that none could be established, under
+    REC-002.
+  vectors: []
+
+# --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md,
+# --- finding 12).
+
+- id: IFC-033
+  layer: interface
+  level: must
+  when: >-
+    The engine presents a tool for an operation to a consumer, under IFC-012.
+  then: >-
+    The tool's definition is derived from the Operation contract as the target holds it. Its
+    `inputSchema` describes a map whose properties are the contract's inputs, each with the
+    input's `schema`, and whose `required` lists the inputs that are neither marked
+    `optional: true` nor state a `default`. Its `outputSchema` is derived from the contract's
+    outputs in the same way.
+  observable: >-
+    An input or an output that is a handle is given the schema of a string, which is what
+    IFC-011 makes it on the wire. A `$ref` that names a Schema contract, by a qualified
+    reference or as `#name`, is replaced by the schema that the contract's `spec` is, under
+    SCH-015, so the definition can be read with no package at hand. Where the consumer, the
+    Conduit and the target hold different versions of the contract's package, the definition is
+    that of the version the target holds, as NAM-023 states.
   vectors: []

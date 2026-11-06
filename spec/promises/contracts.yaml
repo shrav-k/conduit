@@ -1,4 +1,4 @@
-# Contracts: the five kinds of published definition and what each holds.
+# Contracts: the five kinds of contract and what each holds.
 # Owner rulings of 2026-11-05 (plan-audit rulings 31 to 33). A contract is a document with the
 # same envelope as any other, as a Kubernetes resource definition is itself a resource. Every
 # field below is one that an existing promise already relies on. The JSON Schemas of these
@@ -7,7 +7,11 @@
 # the kind `Schema`. The ruling on the core package and the schemas (ruling 37) changed CTR-001
 # to CTR-004 and CTR-008, and added CTR-009. The conversion of the older text (decision DA3 of
 # the docs audit, docs/proposals/docs-audit/GAPS.md) changed CTR-002 and CTR-004 to CTR-006, and
-# added CTR-010. No promise of this file has been removed. Draft: no vector exists yet.
+# added CTR-010. The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md)
+# changed CTR-002 to CTR-007 and CTR-010: a contract that breaks one of them is rejected when
+# its package is installed or its project is submitted, a control's `changes` is a map from an
+# input's name to the pointer it sets, and a Type of the family Pool offers
+# `pool-management.v1`. No promise of this file has been removed. Draft: no vector exists yet.
 
 - id: CTR-001
   layer: language
@@ -43,11 +47,13 @@
     `deduplicates` and `reservedToRoot` are booleans, and one that is absent is false; IMP-003,
     OPS-012 and ACC-032 state what each mark means, and CTR-009 says where `reservedToRoot` may
     be written. An input or output with both `schema` and `handle`, or with neither, or whose
-    name is the empty string, is rejected when the contract's package is installed. A name such
-    as `maxResults` or `max_results` is accepted: the rule OBJ-022 gives for other names a
-    document chooses does not apply to these. An output that states a `default`, and an input
-    that is a handle and states one, are rejected in the same way. What an input's `default`
-    does is OPS-026, and SCH-019 rejects one that fails the input's schema.
+    name is the empty string, is rejected when the contract's package is installed or its
+    project is submitted. A name such as `maxResults` or `max_results` is accepted: the rule
+    OBJ-022 gives for other names a document chooses does not apply to these. An output that
+    states a `default`, and an input that is a handle and states one, are rejected in the same
+    way. An input that states a `default` may be left out of a request whether or not it is
+    marked `optional: true`, under OBJ-015. What the `default` then does is OPS-026, and SCH-019
+    rejects one that fails the input's schema.
   vectors: []
 
 - id: CTR-003
@@ -60,7 +66,7 @@
   observable: >-
     A capability outside the core package that lists an operation reserved to the root
     Interface, which is one whose contract is marked `reservedToRoot: true`, is rejected when
-    its package is installed.
+    its package is installed or its project is submitted.
   vectors: []
 
 - id: CTR-004
@@ -69,22 +75,27 @@
   when: >-
     A Type contract is read.
   then: >-
-    Its `spec` holds `family`; `schema`, the schema of an instance's `config`; `offers`, the
-    capabilities its instances offer; `requires`, the operations its instances must have
-    implemented; `runtimes`; `implementation`, its default implementations, a map in the form
-    TPL-003 gives for a template; `controls`, a list of selections of its controls; `placement`,
-    a map of applied requirements on placement; `conditions`, the names of the further
-    conditions it reports; `restoresRuntimes`, which is true where its implementation may
-    restore its own runtime; and `records`, which holds `inputs` and `outputs`, each true or
+    Its `spec` holds `family` and `placement`, a map of applied requirements on placement. It
+    may also hold `schema`, the schema of an instance's `config`; `offers`, the capabilities its
+    instances offer; `requires`, the operations its instances must have implemented; `runtimes`;
+    `implementation`, its default implementations, a map in the form TPL-003 gives for a
+    template; `controls`, a list of selections of its controls; `conditions`, the names of the
+    further conditions it reports; `restoresRuntimes`, which is true where its implementation
+    may restore its own runtime; and `records`, which holds `inputs` and `outputs`, each true or
     false, and says whether the records about its instances keep the inputs and the outputs of
     their operations.
   observable: >-
     A Type contract with no `family`, or with no `placement` key, is rejected when its package
-    is installed. A type with no requirements on placement writes an empty map. A type whose
-    default implementation cannot be resolved through its own package's manifest is rejected in
-    the same way. `restoresRuntimes`, `records` and each of the two members of `records` may be
-    left out, and one that is left out is false. What restoring a runtime is, is OBS-005, and
-    what a record holds is REC-002.
+    is installed or its project is submitted. A type with no requirements on placement writes an
+    empty map. A type whose default implementation cannot be resolved through its own package's
+    manifest is rejected in the same way. So is a Type of the family Pool whose `offers` does
+    not list the core package's capability `pool-management.v1`: every Pool offers it. A type
+    that states no `schema` puts no rule on the configuration of its instances, and so can list
+    no control under CTR-006. One that states no `offers` offers no capability, one that states
+    no `requires` requires no operation, and one that states no `runtimes`, `implementation`,
+    `controls` or `conditions` has none. `restoresRuntimes`, `records` and each of the two
+    members of `records` may be left out, and one that is left out is false. What restoring a
+    runtime is, is OBS-005, and what a record holds is REC-002.
   vectors: []
 
 - id: CTR-005
@@ -93,19 +104,26 @@
   when: >-
     A Requirement contract is read.
   then: >-
-    Its `spec` holds `appliesTo`, a list drawn from `conduit`, `policy` and `placement`;
-    `inputs`; `narrows`, which is true for a requirement that limits requests and so can serve
-    as a filter; `obliges`, a list drawn from `consumer` and `target`, which says which end of
-    a Conduit the requirement obliges; and, for a composition, `constituents`, a map of the
-    constituents that CTR-010 gives. A requirement whose `appliesTo` includes `placement` states
-    `schema`, a schema that a location's stored facts must satisfy, and declares no `inputs`.
+    Its `spec` holds `appliesTo`, a list drawn from `conduit`, `policy` and `placement`. It may
+    also hold `inputs`, a map from a name to a member that holds `schema` and may hold `default`
+    and `optional: true`; `narrows`, which is true for a requirement that limits requests and so
+    can serve as a filter; `obliges`, a list drawn from `consumer` and `target`, which names the
+    ends of a Conduit whose implementations must state the requirement in `supports`; and, for a
+    composition, `constituents`, a map of the constituents that CTR-010 gives. A requirement
+    whose `appliesTo` includes `placement` states `schema`, a schema that a location's stored
+    facts must satisfy, and declares no `inputs`.
   observable: >-
-    Applying a requirement somewhere its `appliesTo` does not list is rejected. A composition
-    that reaches itself through its constituents, and a requirement that applies to placement
-    and states no `schema` or declares `inputs`, are rejected when the package is installed.
-    `obliges` may be left out, and a requirement that leaves it out names neither end. An item
-    of `obliges` other than `consumer` or `target` is rejected. Which implementation applies a
-    requirement on an open Conduit is reported under ACC-038.
+    Applying a requirement somewhere its `appliesTo` does not list is rejected, so one whose
+    `appliesTo` is empty can be applied nowhere. A composition that reaches itself through its
+    constituents, and a requirement that applies to placement and states no `schema` or declares
+    `inputs`, are rejected when the package is installed or the project is submitted. `narrows`
+    may be left out, and is then false. `obliges` may be left out or be empty, and it is then
+    the implementation of the target that must state the requirement in `supports`, as CON-022
+    states. An item of `obliges` other than `consumer` or `target` is rejected. A composition
+    narrows requests if any of its constituents does, whatever its own `narrows` states, and
+    applying it somewhere that the `appliesTo` of one of its constituents does not list is
+    rejected. Which implementation applies a requirement on an open Conduit is reported under
+    ACC-038.
   vectors: []
 
 - id: CTR-006
@@ -114,16 +132,20 @@
   when: >-
     A control is defined.
   then: >-
-    It is an Operation contract whose `spec` also holds `changes`, a list of JSON Pointers into
-    the configuration. It declares the input `revision` and the output `settings`. A Type
-    contract lists it under `controls`, and each pointer in its `changes` addresses a place in
-    the configuration that the type's `schema` describes.
+    It is an Operation contract whose `spec` also holds `changes`, a map from the name of one of
+    its inputs to a JSON Pointer into the configuration, which is the setting that input sets.
+    It declares the input `revision` and the output `settings`. A Type contract lists it under
+    `controls`, and each pointer in its `changes` addresses a place in the configuration that
+    the type's `schema` describes.
   observable: >-
     A type that lists a control whose `changes` addresses a place its schema does not describe,
     or that lists under `controls` an operation with no `changes`, with no input `revision` or
-    with no output `settings`, is rejected when the package is installed. An instance has only
-    the controls its type lists. `revision` is the input that REV-006 and REV-011 require of a
-    control, and `settings` is an object keyed by the pointers of `changes`, as REV-007 states.
+    with no output `settings`, is rejected when the package is installed or the project is
+    submitted. So is a control in which a key of `changes` is not the name of one of its inputs.
+    An instance has only the controls its type lists. `changes: {limit: /readLimit}` says that
+    the input `limit` sets the setting at `/readLimit`. `revision` is the input that REV-006 and
+    REV-011 require of a control, and `settings` is a map keyed by the pointers of `changes`, as
+    REV-007 states.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -137,8 +159,9 @@
   then: >-
     The contract is rejected.
   observable: >-
-    Installation returns a diagnostic naming the two operations. No capability gives two of its
-    operations one name.
+    Installation or resolving returns a diagnostic naming the two operations: the contract is
+    rejected when its package is installed or its project is submitted. No capability gives two
+    of its operations one name.
   vectors: []
 
 # --- Added by the follow-up decisions (plan-audit ruling 33; decision F21 of the re-audit).
@@ -199,5 +222,7 @@
     rejected when the package is installed or the project is submitted. When the composition is
     applied, each binding takes its value from the arguments given to the composition, and the
     values are checked against the constituent's inputs as NAM-019 checks the arguments of an
-    applied requirement. A constituent that leaves out `arguments` supplies none.
+    applied requirement. A constituent that leaves out `arguments` supplies none. Where a
+    composition is applied to a Conduit, CON-022 says what an implementation must state in
+    `supports`, and IFC-018 how the composition is sent.
   vectors: []

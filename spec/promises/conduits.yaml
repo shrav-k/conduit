@@ -6,8 +6,9 @@
 # CON-015 into LIF-001, LIF-003, LIF-005 and LIF-006. The follow-up rulings removed nothing.
 # The ruling on the core package and the schemas (ruling 37) changed CON-003, CON-016 to
 # CON-018 and CON-026, and added CON-028. The conversion of the older text (decision DA3 of the
-# docs audit, docs/proposals/docs-audit/GAPS.md) changed CON-003 and added CON-029. Draft: no
-# vector exists yet.
+# docs audit, docs/proposals/docs-audit/GAPS.md) changed CON-003 and added CON-029. The second
+# round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md) changed CON-004, CON-008,
+# CON-020, CON-022, CON-024 and CON-028, and removed none. Draft: no vector exists yet.
 
 - id: CON-001
   layer: language
@@ -70,11 +71,12 @@
     Setup runs for an instance that declares Conduits.
   then: >-
     The step that GRA-022 gives each declared Conduit opens the Conduit made for it if its state
-    is registered, and leaves it as it is if it is already open. Setup instantiates no Conduit.
+    is registered. Where the Conduit is already open nothing is dispatched, and the step is left
+    as succeeded. Setup instantiates no Conduit.
   observable: >-
     After setup runs a second time, inspection shows the same Conduit IDs and the same number of
     Conduits as before. A replacement registered under LIF-009 is in the state registered, so
-    the next setup opens it.
+    the next setup opens it. Whose Conduit to `access` authorizes the step is ACC-005.
   vectors: []
 
 - id: CON-006
@@ -116,9 +118,10 @@
     consumer's `retire` graph and the stops of its runtimes have ended, or at once where none of
     them runs.
   observable: >-
-    Inspecting the Conduit reports the state retired and which of those events closed it. A step
-    of the consumer's `retire` graph can make a request through the consumer's own Conduit, and
-    a request to a retired target reports refused from the moment its retirement is dispatched.
+    Inspecting the Conduit reports the state retired and which of those events closed it, and
+    reports its shutdown as confirmed, however it was closed, under LIF-024. A step of the
+    consumer's `retire` graph can make a request through the consumer's own Conduit, and a
+    request to a retired target reports refused from the moment its retirement is dispatched.
   vectors: []
 
 - id: CON-011
@@ -241,13 +244,15 @@
   layer: language
   level: must
   when: >-
-    A Conduit template, or a component of one, names a consumer or a target; or a declared
-    Conduit names a consumer.
+    A Conduit template names a consumer or a target.
   then: >-
     The template is rejected. A consumer and a target are supplied only when a Conduit is
-    instantiated, and a declared Conduit's consumer is always the instance being instantiated.
+    instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the key.
+    Resolving returns a diagnostic naming the key. A declared Conduit or a component that names
+    a consumer, and a component that names a target, are rejected under OBJ-014: the consumer of
+    a declared Conduit is always the instance being instantiated, and a component takes the ends
+    given to the composition.
   vectors: []
 
 - id: CON-021
@@ -267,16 +272,20 @@
   layer: language
   level: must
   when: >-
-    A Conduit is instantiated that carries a filter, and the implementation its target has
-    selected for an operation the Conduit lists does not state that filter's requirement in
-    `supports`.
+    A Conduit is instantiated that carries a filter, and an implementation that must state the
+    filter's requirement in `supports` does not state it.
   then: >-
     The Conduit is not instantiated.
   observable: >-
     Resolving returns a diagnostic naming the filter, the operation and the implementation. The
-    answer comes from the manifest under PKG-019, without starting anything. An implementation
-    marked `plain` states no `supports` under PKG-020, so no Conduit that carries a filter is
-    instantiated to a target it serves.
+    answer comes from the manifest under PKG-019, without starting anything. Which
+    implementations must state the requirement is said by `obliges` in its contract, under
+    CTR-005: they are those of the ends it names, and where it names none, those of the target.
+    For the target they are the implementations it has selected for the operations the Conduit
+    lists, and for the consumer every implementation selected for it. An implementation supports
+    a composed requirement where its `supports` lists the composition or every one of its
+    constituents. An implementation marked `plain` states no `supports` under PKG-020, so no
+    Conduit is instantiated with a filter that an instance it serves must apply.
   vectors: []
 
 - id: CON-023
@@ -298,15 +307,16 @@
   level: must
   when: >-
     A request is made through an open Conduit whose target is not ready, for an operation other
-    than one that manages an object.
+    than a management verb.
   then: >-
     The request is not dispatched, and reports unavailable.
   observable: >-
     The target's implementation receives no call for such a request while the target's state is
-    registered. A request made once the target is ready is decided as any other. The operations
-    that ACC-033 authorizes against a Pool, such as setting up a Resource the Pool owns, are
-    dispatched while the Pool's state is registered, so that a Pool's own setup can set up its
-    entries.
+    registered. A request made once the target is ready is decided as any other. A management
+    verb is an operation of `object-management.v1`, `access-control.v1` or `pool-management.v1`,
+    under OPS-019: the ones that ACC-033 authorizes against a Pool, such as setting up a
+    Resource the Pool owns, are dispatched while the Pool's state is registered, so that a
+    Pool's own setup can set up its entries. A control is not a management verb.
   vectors: []
 
 - id: CON-025
@@ -362,14 +372,16 @@
   layer: language
   level: must
   when: >-
-    A Conduit is instantiated that applies the core package's requirement `bound.v1` and whose
-    target is not the `access` Resource, or that applies `bound.v1` more than once.
+    A Conduit template applies the core package's requirement `bound.v1` more than once, or a
+    Conduit is instantiated that applies `bound.v1` and whose target is not the `access`
+    Resource.
   then: >-
-    The Conduit is not instantiated.
+    A template that applies it more than once is rejected when it is registered. A Conduit that
+    applies it and whose target is not `access` is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the Conduit and each item of its `requirements` that
-    applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried only by a Conduit to
-    `access`, as ACC-029 states, and such a Conduit carries at most one.
+    Resolving returns a diagnostic naming the template or the Conduit, and each item of its
+    `requirements` that applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried
+    only by a Conduit to `access`, and such a Conduit carries at most one.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ4 of

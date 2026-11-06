@@ -1,5 +1,7 @@
 # Example. It must be rejected:
-# a reference names an address and an export, never a release.
+# a qualified reference has no part that selects a release: the address names the package,
+# and the manifest names its version. `@` is not a character of an address (NAM-001), so
+# nothing written after the address can carry a version.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Resource

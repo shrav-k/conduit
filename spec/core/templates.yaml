@@ -22,6 +22,11 @@
 #   root-management  FST-002, ACC-032 (it lists the operations reserved to the root Interface)
 #   root-access      FST-002, ACC-022 (it applies no bound)
 #
+# Each of `system`, `management`, `access` and `root` is instantiated once, at first start:
+# the first-start objects are identified by their IDs, and an instance document whose `from`
+# names one of those four templates is rejected (FST-006). `location` is instantiated for
+# every location.
+#
 # A package's templates are not registered (NAM-013), so the template `system` and the Pool
 # `system` do not clash under OBJ-002. The declared Conduits of `root` have the local names
 # `management` and `access`, which gives the root Interface the tools `management.register.v1`,
@@ -124,7 +129,7 @@ metadata:
   name: root-access
   description: >-
     The root Interface's Conduit to `access`. It lists every operation of `access-control.v1`
-    and applies no bound, so it is a right to open with no bound.
+    and applies no bound, so it is a right to open with no bound, which is unlimited.
 spec:
   capability: github.com/shrav-k/conduit/core#access-control.v1
   operations:
@@ -132,3 +137,4 @@ spec:
     - github.com/shrav-k/conduit/core#close.v1
     - github.com/shrav-k/conduit/core#apply-policy.v1
     - github.com/shrav-k/conduit/core#remove-policy.v1
+    - github.com/shrav-k/conduit/core#reconcile.v1

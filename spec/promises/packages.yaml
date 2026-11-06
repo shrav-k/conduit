@@ -10,7 +10,9 @@
 # PKG-022, and added PKG-023 to PKG-025. The conversion of the older text (decision DA3 of the
 # docs audit, docs/proposals/docs-audit/GAPS.md) changed PKG-012, and kept PKG-023 to PKG-025 as
 # three promises, since a promise names one reason. The manifest's own format is in
-# manifest.yaml. Draft: no vector exists yet.
+# manifest.yaml. The second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md)
+# changed PKG-003, PKG-005, PKG-013, PKG-019 to PKG-021 and PKG-023, and removed none. Draft: no
+# vector exists yet.
 
 - id: PKG-001
   layer: language
@@ -27,8 +29,8 @@
   layer: language
   level: must
   when: >-
-    A manifest item names a version of a package, and the installed package at that address has
-    a different version.
+    An item of a manifest's `packages` names a version of a package, and the installed package
+    at that address has a different version.
   then: >-
     That package does not satisfy the item, however close the versions are. Two versions are
     the same when neither precedes the other under Semantic Versioning 2.0.0, which sets build
@@ -62,10 +64,10 @@
     The instance holds, for each package its template uses, the version and digest that the
     template holds under NAM-009.
   observable: >-
-    Inspecting the instance lists those packages with the versions and digests that inspecting
-    its template listed when the instance was made. An unpublished package that the template
-    holds under NAM-009 is listed by its digest in the same way, and the core package by its
-    address and version alone, since it has no digest.
+    Inspecting the instance lists those packages under `packages`, in the form NAM-009 gives,
+    with the versions and digests that inspecting its template listed when the instance was
+    made. An unpublished package that the template holds under NAM-009 is listed by its digest
+    alone, and the core package by its address and version alone, since it has no digest.
   vectors: []
 
 - id: PKG-006
@@ -110,13 +112,14 @@
   layer: language
   level: must
   when: >-
-    A selection resolves to something a package re-exports from another package.
+    A selection, or the `from` of an instance or of a nested instantiation, resolves to
+    something that a package re-exports from another package.
   then: >-
     It resolves to the package that originally exports it, and the instance holds that
     package's version and digest.
   observable: >-
-    Inspecting the instance lists the originating package for that selection. How a re-export is
-    written in a manifest is MAN-008.
+    Inspecting the instance lists the originating package for that selection or that `from`. How
+    a re-export is written in a manifest is MAN-008.
   vectors: []
 
 - id: PKG-014
@@ -186,9 +189,11 @@
     has no requirement on placement.
   observable: >-
     Whether an implementation implements an operation, supports a filter or can run on a
-    location is answered from the manifest, without starting it. The keys of an item and their
-    values are MAN-009 and MAN-010. The one implementation that is reached by none of the three
-    is the engine itself, in the core package's own manifest, under MAN-012.
+    location is answered from the manifest, without starting it. An implementation supports a
+    composed requirement where its `supports` lists the composition or every one of its
+    constituents, as CON-022 states. The keys of an item and their values are MAN-009 and
+    MAN-010. The one implementation that is reached by none of the three is the engine itself,
+    in the core package's own manifest, under MAN-012.
   vectors: []
 
 - id: PKG-020
@@ -197,14 +202,15 @@
   when: >-
     An implementation is an existing server that was not written for this specification.
   then: >-
-    Its manifest item is marked `plain: true` and gives `tools`, a map from the selection of
-    each operation it implements to the name of the tool that serves it. It states no
-    `supports`.
+    Its implementation item in the manifest is marked `plain: true` and gives `tools`, a map
+    from the selection of each operation it implements to the name of the tool that serves it.
+    It states no `supports`.
   observable: >-
-    An operation in `implements` that is not a key of `tools`, and a plain implementation that
-    states `supports`, are each rejected when the package is installed. A plain implementation
-    supports no requirement, and never counts as deduplicating under OPS-012, whatever the
-    contracts of its operations declare.
+    An operation in `implements` that is not a key of `tools`, a plain implementation that
+    states `supports`, and an item that is not marked `plain` and states `tools`, are each
+    rejected when the package is installed. A plain implementation supports no requirement, and
+    never counts as deduplicating under OPS-012, whatever the contracts of its operations
+    declare.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -213,8 +219,8 @@
   layer: language
   level: must
   when: >-
-    A manifest item gives a digest for a package, and the archive of the installed package at
-    that address and version has a different digest.
+    An item of a manifest's `packages` gives a digest for a package, and the archive of the
+    installed package at that address and version has a different digest.
   then: >-
     That package does not satisfy the item.
   observable: >-
@@ -248,7 +254,7 @@
   then: >-
     The request is not dispatched, and reports invalid.
   observable: >-
-    The response carries the diagnostics, and the package is not available. This holds for every
+    The result carries the diagnostics, and the package is not available. This holds for every
     cause for which a promise says that a package is rejected when it is installed, such as
     PKG-001, PKG-012, PKG-014, PKG-022, NAM-004 and MAN-014, and for a request to install a
     package at the core package's address, under NAM-021. An archive that cannot be fetched now

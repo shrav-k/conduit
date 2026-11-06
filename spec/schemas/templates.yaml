@@ -38,9 +38,11 @@
 # instantiation, a requirement's `requirement`, and anything under `inputs`.
 #
 # Open, as OBJ-019 exempts: everything inside `config`, and the value of an input's
-# `default`. The keys of `inputs`, `conduits`, `entries`, `runtimes`, `requirements` and
-# `components` are names; the keys of `implementation` and `controls` are selections of
-# operations, each a qualified reference or `#` and a name (NAM-018, NAM-022).
+# `default`, which is a literal value. `config` may be left out, and a template that writes
+# none means the same as one that writes `config: {}` (INS-024). The keys of `inputs`,
+# `conduits`, `entries`, `runtimes`, `requirements` and `components` are names; the keys of
+# `implementation` and `controls` are selections of operations, each a qualified reference
+# or `#` and a name (NAM-018, NAM-022).
 #
 # Not expressed here, and checked by the engine: the rule for the name of a member of a named
 # map, and the form of a key of `implementation` or `controls` (OBJ-022, TPL-003, TPL-010),

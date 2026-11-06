@@ -11,8 +11,10 @@
 # the manifest key that says where a package is fetched from, so that `source` is the key of a
 # value reference only. The ruling on the core package and the schemas (ruling 37) changed
 # NAM-001, NAM-006, NAM-009, NAM-012, NAM-013, NAM-018, NAM-019 and NAM-022, and added
-# NAM-027. The manifest's own format is in manifest.yaml. No promise of this file has been
-# removed. Draft: no vector exists yet.
+# NAM-027. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed NAM-018, NAM-022 and NAM-027. The manifest's own
+# format is in manifest.yaml. No promise of this file has been removed. Draft: no vector exists
+# yet.
 
 - id: NAM-001
   layer: language
@@ -259,7 +261,8 @@
     A selection written as a group, name and version is rejected with a diagnostic naming it.
     The two forms are accepted wherever a promise speaks of the selection of one of the five: a
     template's `type`, a Conduit template's `capability` and `operations`, the `requirement` of
-    an applied requirement, a step's `operation`, the `start` and `stop` of a runtime, the lists
+    an applied requirement or of a constituent, a step's `operation`, the `start` and `stop` of
+    a runtime, the lists
     in a contract or a manifest item, a default implementation, and the keys of an
     `implementation`, `controls` or `tools` map. `#directory.read.v1` selects the operation of
     that name in the document's own project or package.
@@ -312,13 +315,17 @@
   when: >-
     A reference is written as `#` followed by a name, with no address before the `#`.
   then: >-
-    It refers to the document of that name in the same project, or the same package, as the
-    document that holds it.
+    It refers to the document, or the implementation, of that name in the same project, or the
+    same package, as the document that holds it.
   observable: >-
     In a package it reaches a document the package does not export as well as one it does, as
     PKG-018 allows. In a submitted project it reaches a contract of that project, as SUB-008
-    states. Where no document of that project or package has the name, the reference is
-    unresolved; it is never looked up among the objects that exist or in another package. A
+    states. It reaches an implementation that the manifest of the project or package lists
+    under `implementations`, as the selection of an implementation under NAM-018 needs. Under
+    NAM-027 a name is the name of one document or of one implementation, so the reference
+    reaches at most one thing. Where no document and no implementation of that project or
+    package has the name, the reference is unresolved; it is never looked up among the objects
+    that exist or in another package. A
     document refers to something in its own project or package in this form and never by a
     qualified reference: a package's own address is not among the `packages` of its own
     manifest, so a qualified reference that uses it is rejected under NAM-007. The core
@@ -387,15 +394,19 @@
   layer: language
   level: must
   when: >-
-    Two documents of one project, or of one package, have the same name, whatever their kinds.
+    Two documents of one project, or of one package, have the same name, whatever their kinds,
+    or an implementation has the name of a document of its project or package.
   then: >-
     The submission that holds them is rejected, and so is the package when it is installed.
-    Within one project or package no two documents share a name.
+    Within one project or package no two documents share a name, and no implementation shares a
+    name with a document.
   observable: >-
-    Resolving or installation returns a diagnostic naming the two documents. A reference written
-    as `#name` carries no kind, and under this rule it reaches at most one document. A template
-    and a contract that share a name, or two templates of different kinds that do, are rejected
-    in this way. SUB-004 already rejects two documents that would make objects of one kind and
-    name, and PKG-012 two exports of one name. An instance document that gives no name has none
-    to share.
+    Resolving or installation returns a diagnostic naming the two. A reference written as
+    `#name` carries no kind, and under this rule it reaches at most one thing. A template and a
+    contract that share a name, or two templates of different kinds that do, are rejected in
+    this way. So is an implementation that a manifest lists under the name of a document,
+    whether or not the document is exported. SUB-004 already rejects two documents that would
+    make objects of one kind and name, and PKG-012 two exports of one name. Two implementations
+    of one name are a duplicate key of `implementations`, rejected under SCH-012. An instance
+    document that gives no name has none to share.
   vectors: []

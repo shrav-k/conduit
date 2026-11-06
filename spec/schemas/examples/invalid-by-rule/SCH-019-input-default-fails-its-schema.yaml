@@ -1,0 +1,42 @@
+# Example. One set of documents. Each is valid against the schemas, and each must be
+# rejected: the `default` of an input satisfies the input's own `schema`. The Operation's
+# input `maxEntries` allows 1 to 100 through a Schema contract of the same project and
+# states the default 500, and the template's input `limit` allows 1 upwards and states 0.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Schema
+metadata:
+  name: read-limit.v1
+spec:
+  type: integer
+  minimum: 1
+  maximum: 100
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Operation
+metadata:
+  name: directory.read.v1
+spec:
+  inputs:
+    path:
+      schema: {type: string, minLength: 1}
+    maxEntries:
+      schema: {$ref: '#read-limit.v1'}
+      default: 500
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Conduit
+metadata:
+  name: directory-read
+spec:
+  inputs:
+    limit:
+      schema: {type: integer, minimum: 1}
+      to: [/requirements/rate/arguments/limit]
+      default: 0
+  capability: example.org/files#directory-access.v1
+  operations:
+    - example.org/files#directory.read.v1
+  requirements:
+    rate:
+      requirement: example.org/files#rate-limit.v1

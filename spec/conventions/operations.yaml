@@ -7,7 +7,9 @@
 # the invocation's state, which is in progress or its outcome and is read from the records about
 # the invocation. ACC-020 and ACC-021 were folded into OPS-005 and REC-001. The ruling on the
 # core package and the schemas (ruling 37) changed OPS-007, OPS-009, OPS-014, OPS-016 and
-# OPS-019, and added OPS-025. No promise of this file has been removed.
+# OPS-019, and added OPS-025. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed OPS-016 and added OPS-026 and OPS-027. No promise
+# of this file has been removed.
 
 - id: OPS-001
   layer: convention
@@ -231,6 +233,9 @@
     was dispatched. The request names the target as well as the identity, because OPS-008 scopes
     an identity to a caller and a target. It is made with the tool `retrieve-result.v1`, which
     IFC-024 says is always presented, and the state is in that tool's result as IFC-024 states.
+    Once the target is unregistered, a reference to it no longer resolves, and the result can no
+    longer be retrieved through the tool. The records of the invocation remain, as LIF-019 and
+    REC-003 state.
   vectors: []
 
 - id: OPS-017
@@ -376,4 +381,40 @@
     having performed nothing. The later request is checked as if the earlier one had not been
     made: it may be dispatched, or may end with a reason again, and each has its own record.
     Nothing is applied twice, because the earlier request performed nothing.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP7 and
+# --- GP19 of docs/proposals/docs-audit/GAPS.md).
+
+- id: OPS-026
+  layer: convention
+  level: must
+  when: >-
+    An operation that is not a control is requested, or is invoked by a step of a graph, with
+    no value for an input for which the operation's contract states a `default`.
+  then: >-
+    The engine fills in the default before the request or the step is dispatched.
+  observable: >-
+    The implementation receives the default as the value of that input, the same whether it is
+    code or a graph: the `arguments` of the call hold it, and a value reference with the source
+    `input` yields it. An input that states a `default` may be left out whether or not it is
+    marked `optional: true`, as INS-004 has it for a template's input, so GRA-007 does not
+    reject a step that gives it no value. A control applies no default: an input of a control
+    that is not supplied leaves its setting as stored, as REV-006 states.
+  vectors: []
+
+- id: OPS-027
+  layer: convention
+  level: must
+  when: >-
+    An invocation is cancelled while it is in progress.
+  then: >-
+    Its outcome is unknown, unless its implementation confirms that nothing was done.
+  observable: >-
+    The record of the invocation's end states unknown, or failed where the implementation's
+    result states that outcome, which under OPS-003 says that the effect has not occurred in
+    whole or in part. Asking for a cancellation never makes an outcome failed by itself. An
+    outcome that is unknown stays so until it is reconciled under OPS-014, as OPS-013 states.
+    Whether an invocation can be cancelled, and how, is DL14 of the implementation-defined
+    list.
   vectors: []

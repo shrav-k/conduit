@@ -13,8 +13,10 @@
 # NAM-012; a package's own address and version PKG-017; which documents are exports PKG-018;
 # what an implementation states PKG-019 and PKG-020; what a template or an instance holds
 # for a package NAM-009 and PKG-005; and which reason a rejected installation reports
-# PKG-023. The JSON Schema of these shapes is spec/schemas/manifest.yaml. No promise of
-# this file has been removed. Draft: no vector exists yet.
+# PKG-023. The JSON Schema of these shapes is spec/schemas/manifest.yaml. The conversion
+# of the older text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md)
+# changed what MAN-003 and MAN-007 cite. No promise of this file has been removed. Draft: no
+# vector exists yet.
 
 - id: MAN-001
   layer: language
@@ -56,8 +58,8 @@
     A manifest with no `apiVersion`, or with one the engine does not know, is rejected with a
     diagnostic naming it, and so is a manifest that carries `kind`, `metadata` or `spec`. The
     `apiVersion` says which version's names apply to the manifest, as OBJ-024 states for a
-    document. The rules on syntax of SCH-012, SCH-017 and SCH-006 apply to a manifest as to
-    any document.
+    document. The rules on syntax and on numbers of SCH-012, SCH-017, SCH-006, SCH-020 and
+    SCH-021 apply to a manifest as to any document.
   vectors: []
 
 - id: MAN-004
@@ -120,7 +122,8 @@
     with a diagnostic naming the item. A name is the name of one document, because no two
     documents of a package share a name under NAM-027. An implementation is not listed in
     `exports`: its item under `implementations` is what exports it, as PKG-019 states. A name
-    written twice, and a name that an implementation also has, are rejected under PKG-012.
+    written twice is rejected under PKG-012, and a name that an implementation also has under
+    NAM-027.
   vectors: []
 
 - id: MAN-008

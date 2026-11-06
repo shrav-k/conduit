@@ -6,7 +6,9 @@
 # nothing. Removed by consolidation pass 1: ACC-004 was folded into ACC-003; ACC-007 into
 # ACC-006; ACC-013 into CON-022; ACC-020 and ACC-021 into REC-001 and OPS-005; ACC-025 into
 # ACC-033. ACC-010 was removed earlier and folded into LIF-008. The ruling on the core package
-# and the schemas (ruling 37) changed ACC-029 and ACC-031 to ACC-034. Draft: no vector exists
+# and the schemas (ruling 37) changed ACC-029 and ACC-031 to ACC-034. The conversion of the
+# older text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed
+# ACC-008, ACC-014, ACC-015 and ACC-027, and added ACC-036 to ACC-038. Draft: no vector exists
 # yet.
 
 - id: ACC-001
@@ -98,7 +100,9 @@
     performed. Whether the Conduit lists the operation is decided by the engine before any call
     to the implementation, under ACC-002. The implementation applies the restrictions it is sent
     under IFC-019, and where one of them forbids the request it performs nothing and answers
-    with the reason refused under IFC-026.
+    with the reason refused under IFC-026. The response names the restriction that forbade the
+    request in `io.github.shrav-k.conduit/restriction`, whether the engine or the implementation
+    found it, as IFC-025 states.
   vectors: []
 
 - id: ACC-009
@@ -156,7 +160,9 @@
     The record names the restriction and states that it could not be evaluated. Where the engine
     finds this before any call, the request is not dispatched and the target's implementation
     receives no call. Where the implementation finds that it cannot apply a restriction it was
-    sent, it performs nothing and answers with the reason unavailable under IFC-026.
+    sent, it performs nothing and answers with the reason unavailable under IFC-026. In both
+    cases the response names the restriction in `io.github.shrav-k.conduit/restriction`, as
+    IFC-025 states.
   vectors: []
 
 - id: ACC-015
@@ -167,7 +173,8 @@
   then: >-
     Each request the policy would apply to is not dispatched, and reports unavailable.
   observable: >-
-    The response to each such request names the policy as the cause, until the policy no longer
+    The response to each such request names the policy as the cause, in
+    `io.github.shrav-k.conduit/restriction` as IFC-025 states, until the policy no longer
     applies or the implementation supports it. Requests on that target that the policy would not
     apply to are decided as before.
   vectors: []
@@ -290,9 +297,11 @@
     A Conduit is inspected.
   then: >-
     For each restriction on it, the report states whether the restriction is enforced or only
-    mediated.
+    mediated. In this version every restriction is reported as mediated.
   observable: >-
-    Each restriction in the inspection result carries one of those two values.
+    Each restriction in the inspection result carries one of those two values. A restriction is
+    enforced where an isolation plugin also keeps the consumer from going around it. This
+    version specifies no isolation plugin, so the value is mediated for every restriction.
   vectors: []
 
 # --- Added by the consolidation rulings (plan-audit rulings 28 and 29).
@@ -454,4 +463,55 @@
     The policy is applied.
   observable: >-
     The request reports refused, whoever makes it, and the policies in force are as they were.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP2 and
+# --- GP15 of docs/proposals/docs-audit/GAPS.md).
+
+- id: ACC-036
+  layer: convention
+  level: must
+  when: >-
+    A request is decided.
+  then: >-
+    The access decision is made anew for that request, from the Conduits and the policies as
+    they stand when it is made. No earlier decision is reused.
+  observable: >-
+    A request that was permitted a moment ago reports refused once its Conduit is closed or a
+    policy that forbids it applies, and the reverse holds once a Conduit that lists the
+    operation is opened or that policy is removed. Each request has its own record of an access
+    decision under REC-001. No decision is kept to stand in for a later one.
+  vectors: []
+
+- id: ACC-037
+  layer: convention
+  level: must
+  when: >-
+    A request is to be decided, and the state of the Conduits or of the policies that the
+    decision needs cannot be established.
+  then: >-
+    The request is not dispatched, and reports unavailable.
+  observable: >-
+    The target's implementation receives no call, and no earlier decision is used in place of
+    the one that cannot be made, even for a request between two instances on one location. The
+    same request made once the state can be established is decided as any other. Whether the
+    engine reports at once or first waits, and for how long, is DL4 of the
+    implementation-defined list.
+  vectors: []
+
+- id: ACC-038
+  layer: convention
+  level: must
+  when: >-
+    An open Conduit is inspected.
+  then: >-
+    For each requirement the Conduit applies, the result names the implementation that applies
+    it.
+  observable: >-
+    For a filter it is the implementation that the target has selected for the operations the
+    Conduit lists, which states the filter's requirement in `supports` under CON-022 and applies
+    it under IFC-019. Where those operations have more than one implementation, each is named.
+    For a requirement that the engine itself checks, as it checks the shared-host requirement
+    under PLC-013, the result names the engine. Which end a requirement obliges is stated by
+    `obliges` in its contract, under CTR-005.
   vectors: []

@@ -1,0 +1,11 @@
+# Example. Invalid: `records` in a Type contract holds `inputs` and `outputs`, each true or
+# false (CTR-004). It is not a list.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: local-directory.v1
+spec:
+  family: Resource
+  placement: {}
+  records: [inputs]

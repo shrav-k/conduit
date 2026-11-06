@@ -3,7 +3,10 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 14, 23, 24, 28, 32 and 33). Draft: no vector
 # exists yet. Consolidation pass 1: GRA-013 was folded into GRA-019 and GRA-016 into GRA-020.
 # GRA-002 and GRA-003, the two invariants, are of the layer `convention`. GRA-023 and GRA-024
-# were added. The ruling on the core package and the schemas (ruling 37) changed GRA-017.
+# were added. The ruling on the core package and the schemas (ruling 37) changed GRA-017. The
+# conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed GRA-007 and GRA-020 and added GRA-025 to GRA-027,
+# which say what holds when a step is dispatched and are of the layer `convention`.
 
 - id: GRA-001
   layer: language
@@ -89,7 +92,8 @@
   then: >-
     The template is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the step and the input.
+    Resolving returns a diagnostic naming the step and the input. An input for which the
+    operation's contract states a `default` need not be given a value: OPS-026 fills it in.
   vectors: []
 
 - id: GRA-008
@@ -239,7 +243,8 @@
     `source`: `from` names only the template of an instance or of a nested instantiation.
     `input` is rejected in a setup or retire graph, which have no inputs, and `config` is
     rejected elsewhere, as GRA-010 states. `step`, `runtime` and `instance` are accepted in
-    every graph.
+    every graph. In a constituent of a composed requirement, which is not a graph, `input` is
+    the only source, and it names an input of the composition, as CTR-010 states.
   vectors: []
 
 - id: GRA-021
@@ -299,4 +304,57 @@
     graph lists the declared Conduit's step among the dependencies of a step that carries
     `conduit`, whether or not `dependsOn` also names it, so that step runs only after the
     Conduit is open.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP8, GP9
+# --- and GP10 of docs/proposals/docs-audit/GAPS.md). These three are of the layer `convention`.
+
+- id: GRA-025
+  layer: convention
+  level: must
+  when: >-
+    A step is about to be dispatched, and the arguments that its value bindings resolve to do
+    not satisfy the inputs of the step's operation.
+  then: >-
+    The step is not dispatched, and reports invalid.
+  observable: >-
+    No implementation receives a call for the step. The check is made on the resolved values,
+    with the defaults of OPS-026 filled in, whatever GRA-007 and GRA-008 found when the template
+    was registered: a value that another step's output or the configuration supplies is checked
+    here for the first time. A value that fails is not converted, as SCH-011 states. A step that
+    reports invalid has not succeeded, so GRA-002 leaves the steps that depend on it not run,
+    and the steps that ran before it keep their outcomes.
+  vectors: []
+
+- id: GRA-026
+  layer: convention
+  level: must
+  when: >-
+    A step's arguments are resolved, and the `pointer` of a value reference among them selects
+    nothing in the value its source names.
+  then: >-
+    The step is not dispatched, and reports invalid.
+  observable: >-
+    No implementation receives a call for the step. No null and no default stands in for the
+    missing value, even where the input is optional or states a default. The pointer
+    `/connection/endpoint` selects nothing in an output whose `connection` has no `endpoint`. A
+    pointer that selects a member whose value is null selects a value, and that null is checked
+    against the input's schema like any other value.
+  vectors: []
+
+- id: GRA-027
+  layer: convention
+  level: must
+  when: >-
+    An invocation of an operation that a graph implements is dispatched, and the graph reads
+    the instance's configuration through a value reference with the source `config`.
+  then: >-
+    Every such reference in that run yields the configuration as it stood when the invocation
+    was dispatched.
+  observable: >-
+    Two steps of one run that read the same setting receive the same value, whenever each of
+    them runs. A change to the configuration that is stored while the graph runs does not reach
+    that run, and a later run reads the configuration as changed. REV-012 already keeps another
+    change of the same instance from being dispatched while its setup or retirement has not
+    ended.
   vectors: []

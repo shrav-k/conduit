@@ -5,7 +5,8 @@
 # OBJ-013. OBJ-020 to OBJ-022 were added. The follow-up decisions (ruling 33) added OBJ-023,
 # which is of the layer `convention`. The ruling on the core package and the schemas (plan-audit
 # ruling 37) changed OBJ-003, OBJ-006, OBJ-013, OBJ-014, OBJ-018, OBJ-019, OBJ-021 and OBJ-023
-# and added none. No promise of this file has been removed.
+# and added none. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed OBJ-019. No promise of this file has been removed.
 
 - id: OBJ-001
   layer: language
@@ -283,7 +284,8 @@
   level: must
   when: >-
     A document contains a key that this specification does not define, other than: a key inside
-    `config`, `annotations` or a literal value; inside a schema, a name the author gives a
+    `config`, `annotations` or a literal value, which is the value of `literal` in a value
+    binding or the value of an input's `default`; inside a schema, a name the author gives a
     member of `properties` or of `$defs`, and a key inside a value the schema states under
     `const`, `enum`, `default` or `examples`; a key inside the `arguments` of an instance, a
     nested instantiation or an applied requirement; a name that keys a member of a map this
@@ -295,7 +297,10 @@
   observable: >-
     Resolving returns a diagnostic naming the key. `depends_on`, a policy written in a template,
     and a family-specific key on an Interface or an Agent are each rejected in this way. A
-    step's `arguments` hold value bindings, and an undefined key in one of those is rejected.
+    step's `arguments`, and those of a constituent of a composed requirement under CTR-010, hold
+    value bindings, and an undefined key in one of those is rejected. An input's `default` is a
+    literal value whether a template, an Operation contract or a Requirement contract declares
+    the input, so a key inside a `default` that is a map is the author's.
     Inside a schema only the names are the author's: its keywords are closed by the profile, and
     one outside it is rejected under SCH-002.
   vectors: []

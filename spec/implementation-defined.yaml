@@ -1,14 +1,17 @@
 # Implementation-defined behavior: what this specification deliberately leaves to each engine.
 # Owner rulings of 2026-11-05 (plan-audit rulings 31, 32, 33 and 37). An engine documents its
 # choice for every entry, and that document is its runtime profile. A choice must keep every
-# promise.
+# promise. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) added to DL1 when a graph's outputs become available, and
+# added DL14.
 
 - id: DL1
   entry: Graph execution
   document: >-
     The order among steps that do not depend on each other; how many run at once; cancellation;
-    the states a step passes through; what happens to the remaining steps after one fails; and
-    what a re-run of setup or retire does with steps that already ran.
+    the states a step passes through; what happens to the remaining steps after one fails; what
+    a re-run of setup or retire does with steps that already ran; and when a graph's outputs
+    become available.
 - id: DL2
   entry: Dispatch records
   document: >-
@@ -69,3 +72,9 @@
   document: >-
     What a request presents to show which instance its consumer is, and how the engine
     establishes the instance from it for each request.
+- id: DL14
+  entry: Cancelling an invocation
+  document: >-
+    Whether an invocation that is in progress can be cancelled, how a cancellation is asked for,
+    and how it reaches the implementation. Whatever is chosen, the outcome of a cancelled
+    invocation is the one OPS-027 states.

@@ -8,14 +8,22 @@
 #   contract.v1             CTR-001 (the four top-level keys and no other; a name that has at
 #                           least one segment and then a version segment), OBJ-018, OBJ-020,
 #                           CTR-008 (the `spec` of a Schema contract is the schema itself)
-#   type-spec.v1            CTR-004 (`family` and `placement` are required), TPL-002 (a type
-#                           is of one of the four families that have one), TPL-006
+#   type-spec.v1            CTR-004 (`family` and `placement` are required; `restoresRuntimes`
+#                           and `records` may be given), TPL-002 (a type is of one of the four
+#                           families that have one), TPL-006
 #   capability-spec.v1      CTR-003
 #   operation-spec.v1       CTR-002 (an input or output holds exactly one of `schema` and
-#                           `handle: true`), CTR-006 (`changes`), IMP-003, OPS-012, OBJ-015,
+#                           `handle: true`; only an input that holds a `schema` may hold
+#                           `default`), CTR-006 (`changes`), IMP-003, OPS-012, OBJ-015,
 #                           ACC-032 and CTR-009 (`reservedToRoot`)
-#   requirement-spec.v1     CTR-005
+#   requirement-spec.v1     CTR-005 (`obliges` is drawn from `consumer` and `target`), CTR-010
+#                           (a constituent's `arguments` are value bindings whose only source
+#                           is `input`)
 #   applied-requirement.v1  NAM-019, CON-018 (`requirement` is required)
+#
+# The decisions of docs/proposals/docs-audit/GAPS.md (docs audit, decision DA3) added
+# `restoresRuntimes` and `records` to a Type, `default` to an Operation's input, and `obliges`
+# and the form of a constituent to a Requirement.
 #
 # `reservedToRoot: true` on an Operation contract is the mark of an operation reserved to the
 # root Interface (ACC-032). Only an Operation contract of the core package carries it: any
@@ -24,10 +32,11 @@
 # package it belongs to, so `operation-spec.v1` accepts the key and the engine checks where
 # it is written.
 #
-# Open, as OBJ-019 exempts: the `arguments` of an applied requirement, and the value of a
-# Requirement input's `default`. The keys of an Operation's `inputs` and `outputs` are any
-# non-empty string (CTR-002); the keys of a Type's `runtimes` and `placement` and of a
-# Requirement's `inputs` and `constituents` are names.
+# Open, as OBJ-019 exempts: the `arguments` of an applied requirement, and the value of the
+# `default` of an Operation's input and of a Requirement's input, which is a literal value.
+# The keys of an Operation's `inputs` and `outputs` are any non-empty string (CTR-002); the
+# keys of a Type's `runtimes` and `placement`, of a Requirement's `inputs` and `constituents`
+# and of a constituent's `arguments` are names.
 #
 # Not expressed here, and checked by the engine: the rule for the name of a member of a named
 # map (OBJ-022) and that an Operation's input or output name is not empty (CTR-002), because
@@ -37,8 +46,10 @@
 # that no Operation contract outside the core package is marked `reservedToRoot` (CTR-009);
 # that a type's controls have `changes` its schema describes (CTR-006); default
 # implementations (CTR-004, TPL-004); that a requirement on placement states `schema` and no
-# `inputs`, and that a composition does not reach itself (CTR-005); and compatibility
-# between releases (NAM-024).
+# `inputs`, and that a composition does not reach itself (CTR-005); that a value reference
+# in a constituent names an input the composition declares (CTR-010); that a control
+# declares the input `revision` and the output `settings` (CTR-006); that a `default` satisfies
+# its input's schema (SCH-019); and compatibility between releases (NAM-024).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -129,6 +140,19 @@ spec:
       type: array
       items: {type: string, minLength: 1}
       uniqueItems: true
+    restoresRuntimes:
+      type: boolean
+      description: >-
+        True where the type's implementation may restore its own runtime. Absent means false.
+    records:
+      type: object
+      description: >-
+        What content the records about the type's instances keep: the inputs of their
+        operations, the outputs, both or neither. A member that is absent means false.
+      properties:
+        inputs: {type: boolean}
+        outputs: {type: boolean}
+      additionalProperties: false
   required: [family, placement]
   additionalProperties: false
 ---
@@ -153,16 +177,17 @@ metadata:
   description: >-
     The `spec` of an Operation contract. A control also holds `changes`. An operation reserved
     to the root Interface is marked `reservedToRoot: true`, which only an Operation contract of
-    the core package may be.
+    the core package may be. An input that holds a `schema` may state a `default`, which the
+    engine fills in where the input is not supplied.
 spec:
   type: object
   properties:
     inputs:
       type: object
-      additionalProperties: {$ref: '#/$defs/member'}
+      additionalProperties: {$ref: '#/$defs/input'}
     outputs:
       type: object
-      additionalProperties: {$ref: '#/$defs/member'}
+      additionalProperties: {$ref: '#/$defs/output'}
     effect: {type: string, minLength: 1}
     startsModelWork: {type: boolean}
     deduplicates: {type: boolean}
@@ -178,7 +203,22 @@ spec:
       items: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
   additionalProperties: false
   $defs:
-    member:
+    input:
+      oneOf:
+        - type: object
+          properties:
+            schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
+            default: {}
+            optional: {type: boolean}
+          required: [schema]
+          additionalProperties: false
+        - type: object
+          properties:
+            handle: {const: true}
+            optional: {type: boolean}
+          required: [handle]
+          additionalProperties: false
+    output:
       oneOf:
         - type: object
           properties:
@@ -197,7 +237,10 @@ apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: requirement-spec.v1
-  description: The `spec` of a Requirement contract.
+  description: >-
+    The `spec` of a Requirement contract. A composition holds `constituents`, and each
+    constituent's `arguments` are value bindings whose only source is `input`, which names an
+    input of the composition.
 spec:
   type: object
   properties:
@@ -216,20 +259,64 @@ spec:
         required: [schema]
         additionalProperties: false
     narrows: {type: boolean}
+    obliges:
+      type: array
+      description: Which end of a Conduit the requirement obliges.
+      items: {enum: [consumer, target]}
+      uniqueItems: true
     constituents:
       type: object
-      additionalProperties: {$ref: github.com/shrav-k/conduit/core#applied-requirement.v1}
+      additionalProperties: {$ref: '#/$defs/constituent'}
     schema: {$ref: github.com/shrav-k/conduit/core#schema.v1}
   required: [appliesTo]
   additionalProperties: false
+  $defs:
+    constituent:
+      type: object
+      properties:
+        requirement: {$ref: github.com/shrav-k/conduit/core#selection.v1}
+        arguments:
+          type: object
+          additionalProperties: {$ref: '#/$defs/binding'}
+      required: [requirement]
+      additionalProperties: false
+    binding:
+      oneOf:
+        - type: object
+          properties:
+            literal: {}
+          required: [literal]
+          additionalProperties: false
+        - type: object
+          properties:
+            source: {const: input}
+            name: {$ref: github.com/shrav-k/conduit/core#name.v1}
+            pointer: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
+          required: [source, name]
+          additionalProperties: false
+        - type: object
+          properties:
+            object:
+              type: object
+              additionalProperties: {$ref: '#/$defs/binding'}
+          required: [object]
+          additionalProperties: false
+        - type: object
+          properties:
+            list:
+              type: array
+              items: {$ref: '#/$defs/binding'}
+          required: [list]
+          additionalProperties: false
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
 metadata:
   name: applied-requirement.v1
   description: >-
-    A requirement applied somewhere: on a Conduit, as a constituent of another requirement, or
-    on placement.
+    A requirement applied somewhere: on a Conduit or on placement. Its `arguments` are plain
+    values. A constituent of a composed requirement is written differently, and is part of
+    `requirement-spec.v1`.
 spec:
   type: object
   properties:

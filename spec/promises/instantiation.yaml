@@ -2,7 +2,9 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 8, 18, 21, 28, 29, 32 and 33). Draft: no
 # vector exists yet. Consolidation pass 1: INS-015 was folded into OBJ-013. INS-020 to INS-022
 # were added. The follow-up decisions (ruling 33) added INS-023. The ruling on the core package
-# and the schemas (ruling 37) changed INS-006, INS-012 and INS-014.
+# and the schemas (ruling 37) changed INS-006, INS-012 and INS-014. The conversion of the older
+# text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) changed INS-011,
+# INS-014 and INS-018 and added INS-024.
 
 - id: INS-001
   layer: language
@@ -140,7 +142,9 @@
   then: >-
     The template is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the input and the destination.
+    Resolving returns a diagnostic naming the input and the destination. The `config` of a
+    template that writes none is present and empty, under INS-024, so `/config/model` is
+    accepted there and `/config/limits/read` is not.
   vectors: []
 
 - id: INS-012
@@ -196,7 +200,7 @@
   observable: >-
     Resolving returns a diagnostic naming the type and what fails. A template can narrow what
     its type allows and cannot widen it. A template that has no `config` is checked against its
-    type's schema as an empty map.
+    type's schema as an empty map, under INS-024.
   vectors: []
 
 - id: INS-016
@@ -235,7 +239,8 @@
     It is joined to a working directory or to any other base.
   observable: >-
     The value reaches its destination exactly as supplied. Whether a relative path is then valid
-    is decided by the schema of the type that receives it.
+    is decided by the schema of the type that receives it. Where a value is bound to a location,
+    as an absolute path is, PLC-020 says who interprets it.
   vectors: []
 
 - id: INS-019
@@ -311,4 +316,23 @@
     Resolving returns a diagnostic naming the operation. An input may have a Conduit template's
     `operations` as its destination under INS-012, and the check that CON-017 makes on a list
     the template writes is then made on the resolved list, when the Conduit is instantiated.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ5 of
+# --- docs/proposals/docs-audit/GAPS.md).
+
+- id: INS-024
+  layer: language
+  level: must
+  when: >-
+    An Interface, Agent, Resource or Pool template writes no `config`.
+  then: >-
+    Its `config` is treated as present and empty: the template means the same as one that
+    writes `config: {}`.
+  observable: >-
+    The empty map is what is checked against the schema of the type under INS-014. The defaults
+    of the type's schema apply to it under SCH-009, because the object is present. An input may
+    have a destination inside it, because the parent that INS-011 requires is present. Resolving
+    a template that writes no `config` and one that writes `config: {}`, otherwise equal, gives
+    the same template.
   vectors: []

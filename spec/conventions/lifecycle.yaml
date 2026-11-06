@@ -7,8 +7,9 @@
 # at once and removed when its finalizers finish. Which Conduit permits each of these operations
 # is ACC-033. Consolidation pass 1 folded in CON-010, CON-015, POOL-010 and PLC-010, and split
 # LIF-014 into LIF-014, LIF-024, LIF-025 and LIF-026. The ruling on the core package and the
-# schemas (ruling 37) changed LIF-007, LIF-009, LIF-013 and LIF-015. Draft: no vector exists
-# yet.
+# schemas (ruling 37) changed LIF-007, LIF-009, LIF-013 and LIF-015. The conversion of the older
+# text (decision DA3 of the docs audit, docs/proposals/docs-audit/GAPS.md) added LIF-027. Draft:
+# no vector exists yet.
 
 - id: LIF-001
   layer: convention
@@ -372,4 +373,23 @@
     A request to retire an instance whose shutdown is pending or unknown is not stopped by
     LIF-015. The operations convention decides which of its steps are dispatched again, and
     the status then reports the shutdown under LIF-024.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; row GP18 of
+# --- docs/proposals/docs-audit/GAPS.md).
+
+- id: LIF-027
+  layer: convention
+  level: must not
+  when: >-
+    An instance's setup does not succeed: it fails, has an unknown outcome or is not dispatched.
+  then: >-
+    A Conduit that the setup opened is closed, or an instance that it set up is retired, because
+    of it.
+  observable: >-
+    After a setup that did not succeed, each declared Conduit it opened is still open, and each
+    Resource of an entry that it set up is still ready. The instance's own state is unchanged
+    under LIF-004. A later setup leaves what is already open or ready as it is, under CON-004
+    and POOL-013. What the consumer of only some of its Conduits may do meanwhile is DL11 of
+    the implementation-defined list.
   vectors: []

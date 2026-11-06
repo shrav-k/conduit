@@ -7,8 +7,10 @@
 # NAM-011; PKG-009, PKG-010 and PKG-011 into TPL-003, TPL-004 and CTR-004; and PKG-015 into
 # PLC-007. PKG-021 was added. The follow-up decisions (ruling 33) added PKG-022. The ruling on
 # the core package and the schemas (ruling 37) changed PKG-005, PKG-013, PKG-017 to PKG-020 and
-# PKG-022, and added PKG-023 to PKG-025. The manifest's own format is in manifest.yaml. Draft:
-# no vector exists yet.
+# PKG-022, and added PKG-023 to PKG-025. The conversion of the older text (decision DA3 of the
+# docs audit, docs/proposals/docs-audit/GAPS.md) changed PKG-012, and kept PKG-023 to PKG-025 as
+# three promises, since a promise names one reason. The manifest's own format is in
+# manifest.yaml. Draft: no vector exists yet.
 
 - id: PKG-001
   layer: language
@@ -99,7 +101,9 @@
   then: >-
     The package is rejected when it is installed.
   observable: >-
-    Installation returns a diagnostic naming the repeated export name.
+    Installation returns a diagnostic naming the repeated export name. An implementation is an
+    export under PKG-019. One that has the name of a document of its package is rejected under
+    NAM-027, whether or not the package exports that document.
   vectors: []
 
 - id: PKG-013

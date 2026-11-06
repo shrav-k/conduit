@@ -17,7 +17,9 @@
 #
 # Every type writes `placement: {}`: none has a requirement on placement (CTR-004). Each
 # lists under `requires` the operations of the capabilities it offers, and each of those
-# operations states the engine as its default implementation (TPL-004).
+# operations states the engine as its default implementation (TPL-004). No core type states
+# `restoresRuntimes` or `records`, so each is false (CTR-004): no core type declares a
+# runtime, and the records about its instances need keep neither inputs nor outputs.
 #
 # A location's stored facts are the value of `facts` in its configuration. `host` and
 # `localPaths` are the two facts the definitions name; `facts` is open, so that a location

@@ -3,7 +3,9 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 30, 32 and 33). Reporting follows Kubernetes
 # conditions, which keep the time of the last successful observation beside an unknown status.
 # Acting only on an explicit request follows Compose and Terraform. PLC-010 was folded into
-# OBS-003 and LIF-010. No promise of this file has been removed. Draft: no vector exists yet.
+# OBS-003 and LIF-010. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed OBS-005. No promise of this file has been removed.
+# Draft: no vector exists yet.
 
 - id: OBS-001
   layer: convention
@@ -66,7 +68,8 @@
     runtime's `start` operation again, or any invocation is dispatched again because of it.
   observable: >-
     Restoring a runtime means that the implementation keeps alive what is behind the handle the
-    instance holds. Afterwards the same handle is accepted, and no record shows a `start` or any
+    instance holds. A type contract allows it by stating `restoresRuntimes: true`, under
+    CTR-004. Afterwards the same handle is accepted, and no record shows a `start` or any
     other operation dispatched because of the restoring. That it starts no model work is
     IMP-002.
   vectors: []

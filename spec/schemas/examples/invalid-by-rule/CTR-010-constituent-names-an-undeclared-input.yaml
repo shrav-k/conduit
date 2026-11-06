@@ -1,0 +1,19 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a value reference in a constituent's `arguments` names an input that the composition itself
+# declares. This composition declares `per-minute`, and its constituent names `limit`.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: review-limit.v1
+spec:
+  appliesTo: [conduit]
+  narrows: true
+  inputs:
+    per-minute:
+      schema: {type: integer, minimum: 1}
+  constituents:
+    rate:
+      requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: {source: input, name: limit}

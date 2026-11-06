@@ -1,0 +1,16 @@
+# Example. One document, valid against the schemas, that must be rejected:
+# a `default` satisfies the schema that states it. The property `readLimit` allows 1 to 100
+# and states the default 0. A schema of a schema cannot tell: it sees the keyword `default`
+# and not whether its value fits.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: local-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      readLimit: {type: integer, minimum: 1, maximum: 100, default: 0}
+  placement: {}

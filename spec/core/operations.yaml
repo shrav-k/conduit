@@ -17,9 +17,13 @@
 #     inputs (IFC-001). Setting up, retiring, retiring a Pool with its Resources, opening and
 #     closing name no revision and advance none (REV-012); nor do applying and removing a
 #     policy, because a policy is not configuration (ACC-031).
-#   - A control takes `revision`, the one input that must always be supplied, and returns
-#     `settings`, the settings it confirmed (REV-006, REV-007). Its other inputs are
-#     optional, and one that is not supplied leaves its setting as stored.
+#   - A control declares the input `revision` and the output `settings` (CTR-006). `revision`
+#     is the one input that must always be supplied (REV-006). `settings` states the settings
+#     the control confirmed: an object keyed by the pointers of its `changes`, with one member
+#     for each place confirmed, holding the value now stored there (REV-007). Its other
+#     inputs are optional, and one that is not supplied leaves its setting as stored.
+#   - No input of a core operation states a `default` (CTR-002, OPS-026): each is supplied or
+#     is optional.
 #   - `reservedToRoot: true` marks an operation reserved to the root Interface (ACC-032).
 #     Only an Operation contract of the core package carries the mark (CTR-009).
 #   - `deduplicates: true` is declared where the whole effect is a change to what the engine
@@ -451,7 +455,9 @@ metadata:
     Retrieve the result of one of the caller's own invocations, named by the operation identity
     the caller gave it and the target it was sent to. Needs no Conduit. `state` is the
     invocation's state; `withheld` is true where content exists and the caller's access no
-    longer permits it; `outputs` holds the operation's outputs where they are delivered.
+    longer permits it; `outputs` holds the operation's outputs where they are delivered. Once
+    the target is unregistered it can no longer be named, and the result can no longer be
+    retrieved with this tool; the records of the invocation remain.
 spec:
   inputs:
     operationIdentity:
@@ -478,7 +484,8 @@ metadata:
   description: >-
     Designate the default location, or clear it by giving null. A control of the `system` Pool,
     authorized by an open Conduit to `system` that lists it. A value that is not the name of a
-    location that exists reports invalid.
+    location that exists reports invalid. `settings` holds the member `/defaultLocation`, with
+    the value now stored there, where the control confirmed it.
 spec:
   inputs:
     location:
@@ -507,7 +514,8 @@ metadata:
     Change the stored facts of a location. A control of a location, authorized by an open
     Conduit to that location that lists it. `facts` is the whole of what the location is to
     state about itself; where it is not supplied, the facts are left as stored. A location's
-    facts are changed in no other way.
+    facts are changed in no other way. `settings` holds the member `/facts`, with the facts
+    now stored, where the control confirmed them.
 spec:
   inputs:
     facts:

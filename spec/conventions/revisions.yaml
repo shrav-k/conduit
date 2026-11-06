@@ -1,7 +1,8 @@
 # Revisions: the shared convention on revision-checked change.
 # Owner rulings of 2026-11-05 (plan-audit rulings 20, 32 and 33). Draft: no vector exists yet.
 # The ruling on the core package and the schemas (ruling 37) changed REV-006, REV-007 and
-# REV-010 to REV-012. No promise of this file has been removed.
+# REV-010 to REV-012. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed REV-007. No promise of this file has been removed.
 
 - id: REV-001
   layer: convention
@@ -81,11 +82,17 @@
     A control succeeds.
   then: >-
     Its result states the settings it confirmed, in its output `settings`, and exactly those
-    settings are stored.
+    settings are stored. `settings` is an object keyed by the pointers of the control's
+    `changes`. It has one member for each place the control confirmed, which holds the value
+    now stored at that place.
   observable: >-
     The stored configuration after the control equals the configuration before it with the
     confirmed settings applied, and nothing else changed. A control whose confirmed settings
-    cannot be stored has not succeeded: REV-008 gives its outcome.
+    cannot be stored has not succeeded: REV-008 gives its outcome. A control whose `changes` is
+    `[/readLimit]` and that confirmed the value 15 returns `settings: {/readLimit: 15}`. A place
+    of `changes` that the control did not confirm, because its input was not supplied under
+    REV-006, has no member. Every control declares the input `revision` and the output
+    `settings`, under CTR-006.
   vectors: []
 
 - id: REV-008

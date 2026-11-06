@@ -4,7 +4,8 @@
 # it ended, and cannot be deleted through the interface they record. A record is a log entry: it
 # is added and never altered. ACC-020 and ACC-021 were folded into REC-001 and OPS-005. No
 # promise of this file has been removed. The ruling on the core package and the schemas (ruling
-# 37) changed REC-004. Draft: no vector exists yet.
+# 37) changed REC-004. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed REC-002. Draft: no vector exists yet.
 
 - id: REC-001
   layer: convention
@@ -33,7 +34,9 @@
     if the caller supplied one, the time, and how it ended.
   observable: >-
     Each of those is present in every record to which it applies. The inputs and outputs of
-    the operation need not be; what content is kept is stated by each type's contract.
+    the operation need not be; what content is kept is stated by each type's contract, under
+    `records` as CTR-004 gives it: the inputs where `inputs` is true, and the outputs where
+    `outputs` is true.
   vectors: []
 
 - id: REC-003

@@ -27,6 +27,10 @@
 # to `access` with no bound requirement has no bound; one whose bound names nothing covers
 # nothing. A Conduit that applies `bound.v1` and whose target is not `access`, or that
 # applies it more than once, is not instantiated (CON-028).
+#
+# Neither contract states `obliges` (CTR-005), so each names neither end: the engine itself
+# checks both. Neither is a composition, so neither has `constituents` (CTR-010). The
+# `default` of each input of `bound.v1` satisfies that input's schema (SCH-019).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Requirement

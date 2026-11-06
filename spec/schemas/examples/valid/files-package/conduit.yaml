@@ -27,6 +27,7 @@ exports:
   - set-read-limit.v1
   - local-paths.v1
   - rate-limit.v1
+  - review-limit.v1
   - read-limit.v1
   # A re-export: `example.org/files#timestamp.v1` resolves to the export of that name of
   # `example.org/common`.

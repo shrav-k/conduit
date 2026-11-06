@@ -1,0 +1,15 @@
+# Example. Invalid: a value reference in a constituent's `arguments` has the source `input`
+# and no other (CTR-010). A composition has no configuration to read.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Requirement
+metadata:
+  name: review-limit.v1
+spec:
+  appliesTo: [conduit]
+  narrows: true
+  constituents:
+    rate:
+      requirement: example.org/files#rate-limit.v1
+      arguments:
+        limit: {source: config, pointer: /readLimit}

@@ -5,7 +5,9 @@
 # was folded into LIF-007. Removed by consolidation pass 1: CON-010 was folded into LIF-008, and
 # CON-015 into LIF-001, LIF-003, LIF-005 and LIF-006. The follow-up rulings removed nothing.
 # The ruling on the core package and the schemas (ruling 37) changed CON-003, CON-016 to
-# CON-018 and CON-026, and added CON-028. Draft: no vector exists yet.
+# CON-018 and CON-026, and added CON-028. The conversion of the older text (decision DA3 of the
+# docs audit, docs/proposals/docs-audit/GAPS.md) changed CON-003 and added CON-029. Draft: no
+# vector exists yet.
 
 - id: CON-001
   layer: language
@@ -56,8 +58,9 @@
     name so formed in place of the given or generated one. A component Conduit's name is never
     longer than 63 characters. Where the part before the hyphen was generated, the template's
     part of it is shortened further than OBJ-003 alone requires, so that the whole name fits.
-    Where an instance document gave that part and the whole name would be longer than 63
-    characters, the document is rejected.
+    Where no shortening of a generated part makes the whole name fit, or an instance document
+    gave that part, and the whole name would be longer than 63 characters, the Conduit is not
+    instantiated, under CON-029.
   vectors: []
 
 - id: CON-004
@@ -367,4 +370,23 @@
     Resolving returns a diagnostic naming the Conduit and each item of its `requirements` that
     applies `github.com/shrav-k/conduit/core#bound.v1`. A bound is carried only by a Conduit to
     `access`, as ACC-029 states, and such a Conduit carries at most one.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; point GQ4 of
+# --- docs/proposals/docs-audit/GAPS.md).
+
+- id: CON-029
+  layer: language
+  level: must
+  when: >-
+    The name that CON-003 gives a component Conduit would be longer than 63 characters, and
+    shortening a generated part of it cannot make it fit: an instance document gave the part
+    before the components' names, or the components' names alone are too long, as those of a
+    composite inside a composite can be.
+  then: >-
+    The Conduit is not instantiated.
+  observable: >-
+    Resolving returns a diagnostic naming the component and the name it would have, and the
+    document that would make the Conduit is rejected. No component's name and no given name is
+    shortened. This holds even when nothing in the name was generated.
   vectors: []

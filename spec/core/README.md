@@ -6,7 +6,9 @@ It was written for decision G1 of the [re-audit](../../docs/proposals/reaudit/RE
 record of the batch, with every choice made here and its alternative, is
 [docs/proposals/core-and-schemas](../../docs/proposals/core-and-schemas/README.md), and what
 the owner changed is in
-[APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md). The promises are the source of
+[APPLY.md](../../docs/proposals/core-and-schemas/APPLY.md). The decisions of the
+[docs audit](../../docs/proposals/docs-audit/GAPS.md) settled the points that batch left open
+and changed some descriptions here; they added no export. The promises are the source of
 truth: where a document here and a promise differ, the document is wrong.
 
 ## What this is
@@ -96,11 +98,15 @@ How to read the columns:
   lifecycle state, not its definition or configuration (REV-012). Applying and removing a
   policy name none either, because a policy is not configuration (ACC-031).
 - **Controls.** `set-default-location.v1` and `set-facts.v1` are controls: each states
-  `changes`, is listed under `controls` by its type, and is included in a capability so that a
-  Conduit to the instance can list it (OPS-020, CON-017). `revision` is the one input that must
-  always be supplied. Every other input is optional, and one that is not supplied leaves its
-  setting as stored (REV-006). The result states the settings it confirmed in the output
-  `settings` (REV-007).
+  `changes`, declares the input `revision` and the output `settings` (CTR-006), is listed under
+  `controls` by its type, and is included in a capability so that a Conduit to the instance can
+  list it (OPS-020, CON-017). `revision` is the one input that must always be supplied. Every
+  other input is optional, and one that is not supplied leaves its setting as stored (REV-006).
+  The result states the settings it confirmed in the output `settings`: an object keyed by the
+  pointers of the control's `changes`, with one member for each place confirmed, holding the
+  value now stored there (REV-007). `set-facts.v1` returns `settings: {/facts: ...}`.
+- **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
+  that may be left out is marked `optional: true`.
 - **`deduplicates`.** Declared where the whole effect is a change to what the engine itself
   stores, which the engine recognizes by the operation identity, so a repeat after an unknown
   outcome can be dispatched as a new attempt (OPS-012). Not declared where the operation runs
@@ -123,13 +129,25 @@ How to read the columns:
   implementation interface.
 
 The tool that IFC-024 always presents is named `retrieve-result.v1`, with no Conduit's name
-before it. A caller names its invocation by `operationIdentity` and `target` (OPS-016). The
-two words of its result are also what a direct answer carries in its `_meta`:
+before it. A caller names its invocation by `operationIdentity` and `target` (OPS-016). Once
+the target is unregistered it can no longer be named, so the result can no longer be retrieved
+through the tool; the records of the invocation remain (OPS-016, LIF-019). The two words of
+its result are also what a direct answer carries in its `_meta`:
 `io.github.shrav-k.conduit/state` with the value `inProgress` for a repeat of an invocation
 that has not ended (OPS-009), and `io.github.shrav-k.conduit/withheld` with the value true
-where content is withheld (ACC-034). IFC-025 states both, and IFC-026 states the third key of
-a result, `io.github.shrav-k.conduit/restriction`. No operation of the core package declares
-any of the three as an output, because `_meta` is not part of an operation's outputs.
+where content is withheld (ACC-034). IFC-025 states both. The third key of a result is
+`io.github.shrav-k.conduit/restriction`, which names the restriction that is why a request
+ended with a reason: an implementation gives it under IFC-026, and the engine's own answer
+carries it under the same key (IFC-025). No operation of the core package declares any of the
+three as an output, because `_meta` is not part of an operation's outputs.
+
+The keys of a request's `_meta` are those of IFC-006: `interfaceVersion`, `instance`,
+`operation`, `invocation`, `caller` and `restrictions`, with `operationIdentity`, `conduit` and
+`package` where they apply, and `serving` on an onward request (IFC-020), each under the prefix
+`io.github.shrav-k.conduit/`. `io.github.shrav-k.conduit/package` is sent only where the
+operation, or a requirement that the restrictions name, is a contract of an unpublished
+package: such a contract has no qualified reference, so it is named `#name`, and the key
+holds the unpublished package's digest (SUB-008).
 
 `inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records`
 (LIF-013). The status of `access` lists the policies in force under `policies`, each with the
@@ -273,9 +291,15 @@ is a choice of the batch that the owner accepted, and the record lists it.
 
 - The full shape of an inspection result and of a diagnostic. `inspect.v1` fixes only the names
   of its outputs, the two values every status carries, and that a policy listed in the status
-  of `access` has an `id`; `diagnostic.v1` fixes only `message`.
-- How a caller retrieves the result of an invocation whose target has been unregistered, and
-  so can no longer be named (item D22 of the record).
+  of `access` has an `id`; `diagnostic.v1` fixes only `message`. Where the result of inspecting
+  a Conduit states, for each restriction, enforced or mediated (ACC-027), and for each
+  requirement the implementation that applies it (ACC-038), is not fixed either.
 
-Each is listed, with the promises concerned, in the
-[record](../../docs/proposals/core-and-schemas/README.md).
+It is listed, with the promises concerned, in the
+[record](../../docs/proposals/core-and-schemas/README.md). The other point that page once
+listed is settled: the result of an invocation whose target has been unregistered can no
+longer be retrieved through the tool (OPS-016).
+
+No contract of the core package states `restoresRuntimes`, `records` or `obliges`, and none is
+a composition (CTR-004, CTR-005, CTR-010): no core type declares a runtime, and the engine
+itself checks both core requirements.

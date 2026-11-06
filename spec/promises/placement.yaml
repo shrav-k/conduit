@@ -4,7 +4,8 @@
 # location's stored facts must satisfy. Removed by consolidation pass 1: PLC-010 was folded into
 # OBS-003 and LIF-010, and PLC-014 into CTR-004. PLC-011 was split into PLC-011 and PLC-017.
 # The follow-up rulings removed nothing. The ruling on the core package and the schemas (ruling
-# 37) changed PLC-008 and PLC-016. Draft: no vector exists yet.
+# 37) changed PLC-008 and PLC-016. The conversion of the older text (decision DA3 of the docs
+# audit, docs/proposals/docs-audit/GAPS.md) added PLC-020. Draft: no vector exists yet.
 
 - id: PLC-001
   layer: language
@@ -240,4 +241,22 @@
   observable: >-
     The instance is in the state it had, and no implementation receives a call for its setup.
     Once the location is ready, a request to set up the instance is decided as any other.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; row GP12 of
+# --- docs/proposals/docs-audit/GAPS.md).
+
+- id: PLC-020
+  layer: convention
+  level: must not
+  when: >-
+    An instance holds a value that is bound to a location, such as an absolute path.
+  then: >-
+    The value is interpreted anywhere other than by the instance's implementation at the
+    instance's placement.
+  observable: >-
+    The engine stores the value and passes it on as it was written, and never opens, resolves
+    or checks it against the machine the engine itself runs on or against any other location.
+    An absolute path in the configuration of a Resource means that path on the host of the
+    Resource's location. That the engine joins no base to a relative path is INS-018.
   vectors: []

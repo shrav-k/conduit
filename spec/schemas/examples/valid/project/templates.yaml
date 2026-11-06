@@ -150,13 +150,13 @@ spec:
       optional: true
 ---
 # An Interface template. An Interface has no keys of its own: its settings are in `config`.
+# This template writes no `config`, which means the same as `config: {}` (INS-024).
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Interface
 metadata:
   name: console
 spec:
   type: github.com/shrav-k/conduit/core#interface.v1
-  config: {}
 ---
 # A Conduit template for a right to open that carries a bound (ACC-029). The bound is a
 # filter, written like any other requirement, and a Conduit made from this template must

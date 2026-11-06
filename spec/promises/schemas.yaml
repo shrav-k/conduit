@@ -2,7 +2,9 @@
 # Owner rulings of 2026-11-05 (plan-audit rulings 23, 24, 32 and 33) and earlier accepted
 # syntax rules. Consolidation pass 1 added SCH-015 to SCH-017. The follow-up decisions (ruling
 # 33) added SCH-018. The ruling on the core package and the schemas (ruling 37) changed SCH-008
-# and SCH-015. No promise of this file has been removed. Draft: no vector exists yet.
+# and SCH-015. The conversion of the older text (decision DA3 of the docs audit,
+# docs/proposals/docs-audit/GAPS.md) changed SCH-009 and added SCH-019 to SCH-021. No promise of
+# this file has been removed. Draft: no vector exists yet.
 
 - id: SCH-001
   layer: language
@@ -124,7 +126,10 @@
     The resolved instance holds the default value there. An absent object is not made in order
     to hold its properties' defaults. An object that is an item of a list is present when the
     list holds it: each such item takes the defaults of its own properties, and no item is
-    added to a list.
+    added to a list. The `config` of a template that writes none is present and empty, under
+    INS-024, so the defaults of the type's schema apply to it. A `default` that is reached only
+    through a `$ref` written inside `allOf`, `anyOf` or `oneOf` is not applied: SCH-008 accepts
+    it where it is written, and a combiner gives no default.
   vectors: []
 
 - id: SCH-010
@@ -248,4 +253,55 @@
     A JSON file that holds an array is read as the documents that are its items, and means the
     same as a YAML file that holds those documents. The order of the items has no meaning, as
     SUB-001 states.
+  vectors: []
+
+# --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP5 and
+# --- GP6 of docs/proposals/docs-audit/GAPS.md).
+
+- id: SCH-019
+  layer: language
+  level: must
+  when: >-
+    A schema written in a contract or a template states a `default` that does not satisfy the
+    schema that states it, or an input states a `default` that does not satisfy the input's own
+    `schema`.
+  then: >-
+    The document that holds it is rejected: a contract when its package is installed or its
+    project is submitted, and a template when it is registered.
+  observable: >-
+    Installation or resolving returns a diagnostic naming the default and the part of the schema
+    it fails. A property declared `{type: integer, minimum: 1, maximum: 100, default: 0}` is
+    rejected. So is an input of a template, of an Operation contract or of a Requirement
+    contract that states `schema: {type: integer, minimum: 1}` beside `default: 0`. Supplying a
+    valid argument on every use does not make such a document acceptable.
+  vectors: []
+
+- id: SCH-020
+  layer: language
+  level: must
+  when: >-
+    A document contains a number that is not an integer, which is one that has a fractional
+    part.
+  then: >-
+    It is read as an IEEE 754 binary64 value.
+  observable: >-
+    `0.7` has the value of the binary64 number nearest to it. That value is what a schema checks
+    and what SCH-007 compares, so two numbers that are written differently and read as the same
+    binary64 value are equal. A number with no fractional part is an integer under SCH-005, and
+    SCH-006 gives its range.
+  vectors: []
+
+- id: SCH-021
+  layer: language
+  level: must
+  when: >-
+    A document contains a number that is not an integer and that is outside the range of IEEE
+    754 binary64: its magnitude is greater than the largest finite binary64 value.
+  then: >-
+    The document is rejected.
+  observable: >-
+    Resolving returns a diagnostic naming the value. It is not read as an infinity and is not
+    rounded into the range. An infinity or a not-a-number that is written out is rejected under
+    SCH-017, and a number with no fractional part that is outside the range of SCH-006 is
+    rejected under SCH-006.
   vectors: []

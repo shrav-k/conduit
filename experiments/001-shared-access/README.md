@@ -1,5 +1,11 @@
 # 001 — Shared access, communication and Interface observation
 
+**Direction note, 2026-11-05.** Superseded. Its templates predate the
+[instantiation](../../docs/proposals/instantiation/README.md) and
+[placement](../../docs/proposals/placement/README.md) rulings: they name concrete instances and use
+Pool composition literals that are now retired. It is removed when scenarios S1 and S2 of the [plan
+audit](../../docs/AUDIT.md) exist.
+
 **Status: protocol walkthrough and static fixtures only.** No plugins, runtime, accounts or service
 connections were started. YAML parses as data; it is not executable Conduit configuration yet.
 The field names and fixture contracts are a coherent proposal against the

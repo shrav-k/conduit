@@ -1,5 +1,10 @@
 # Vocabulary review map
 
+**Direction note, 2026-11-05.** Superseded in part on the same day: the vocabulary is now decided alongside the rework; see the
+[vocabulary proposal](proposals/vocabulary/README.md). Earlier: by the owner's rulings in the [plan audit](AUDIT.md) the naming pass
+comes last, after the language is concrete and proven, and it may merge concepts as well as rename
+them. Links below into Experiments 001 to 003 will be replaced when those are removed.
+
 Status: preparation for the naming review, 2026-11-04. **Only Interface, Agent, Resource, Pool and
 Conduit are settled family names.** The accepted [vocabulary boundary](protocol/MODEL.md#vocabulary-review-boundary)
 keeps other Conduit-owned names and field spellings provisional. This map proposes no replacements

@@ -1,5 +1,9 @@
 # Offline language probes
 
+**Direction note, 2026-11-05.** This probe is Python and predates the Rust-only rule. Its results
+stand as recorded. It is removed when the Rust loader of the [plan audit](../../docs/AUDIT.md)
+exists.
+
 Supports the [language/protocol research](../../docs/research/language-protocol-foundations/README.md).
 This is a research fixture, not a new runtime milestone or a selected implementation dependency.
 

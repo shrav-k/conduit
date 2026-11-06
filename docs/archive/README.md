@@ -1,5 +1,8 @@
 # Archive
 
+**Direction note, 2026-11-05.** The active tracker is the [plan audit](../AUDIT.md); the current
+review remains the review entry point and defers to it.
+
 Historical contributions belong here when their arguments should remain available without
 competing with the current specification. Preserve attribution, source revisions and dissent;
 accepted refinements live in the current design, with unresolved questions in review.

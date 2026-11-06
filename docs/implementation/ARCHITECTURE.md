@@ -1,5 +1,10 @@
 # Proposed runtime architecture
 
+**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
+audit](../AUDIT.md) and is not an input for engine builders. Its mechanisms remain candidates; the
+proof order is now placement in the language, then separated components under a simulated network,
+then real processes, then two machines.
+
 Current unresolved work is tracked in [REVIEW](../REVIEW.md). Detailed mechanisms below remain
 proposals unless explicitly accepted; the migration does not turn an architecture sketch into a public protocol rule.
 

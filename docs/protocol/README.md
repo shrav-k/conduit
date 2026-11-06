@@ -1,5 +1,11 @@
 # Conduit design contracts
 
+**Direction note, 2026-11-05.** The [plan audit](../AUDIT.md) records the current direction. Rulings
+on [placement](../proposals/placement/README.md) and
+[instantiation](../proposals/instantiation/README.md) amend the topics below and are not yet
+restated in them; known defects are in the [defect register](../LANGUAGE_DEFECTS.md). Statements
+below about what comes next, and about a deferred second runtime, are superseded.
+
 The active protocol reference lives here. Begin with the [overview](../OVERVIEW.md), use the
 [authoring path](../authoring/README.md) to develop an extension, and consult the
 [current review queue](../REVIEW.md) before treating an unresolved detail as settled.
@@ -9,8 +15,8 @@ and field names provisional except Interface, Agent, Resource, Pool and Conduit.
 and structures continue to guide the work; a separate future PR will settle the vocabulary.
 The [vocabulary map](../VOCABULARY.md) provides stable definition links and naming-review examples.
 
-Updated: 2026-11-04. Current working design; implementation
-has not started. The [overview](../OVERVIEW.md) summarizes the model; the [closed authoring review](../archive/reviews/AUTHORING-2026-11-04.md)
+Updated: 2026-11-04, with direction amended on 2026-11-05 by the [plan audit](../AUDIT.md). No
+Conduit engine exists. The [overview](../OVERVIEW.md) summarizes the model; the [closed authoring review](../archive/reviews/AUTHORING-2026-11-04.md)
 records the behavior/structure rulings and remaining representation boundary. The [YAML walkthrough](../../experiments/001-shared-access/README.md)
 proposes concrete syntax. Research supplies supporting evidence, not extra requirements.
 

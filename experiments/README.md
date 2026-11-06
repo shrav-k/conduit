@@ -1,8 +1,8 @@
 # Experiments
 
-Current sequence: the behavior/structure review is complete. Use the
-[vocabulary map](../docs/VOCABULARY.md) to track future naming changes into these fixtures, and
-[current review](../docs/REVIEW.md) for concrete schema/conformance work. The
+Direction since 2026-11-05: experiment code is Rust only, and the nine-scenario program in the
+[plan audit](../docs/AUDIT.md#experiment-program) replaces Experiments 001 to 003, which are removed
+as their replacements land. The
 [language/protocol research](../docs/research/language-protocol-foundations/README.md) preserves its
 evidence. Draft fixtures and library observations remain distinct from Conduit runtime evidence.
 
@@ -14,7 +14,8 @@ expected outcomes and validation record together. The [specification](../docs/OV
 | --- | --- | --- |
 | [001 — shared access](001-shared-access/README.md) | Exercise all five families, Pool composition, shared authentication, communication, controls and Interface observability. | Documentation and static configuration checks only. Fixture plugins do not exist yet. |
 | [002 — runtime and plugins](002-runtime-plugins/README.md) | Test authored/code-optional plugins, graph-backed operations, composed/custom requirements, independent MCP access and effect recovery. | One-machine/two-executor layout and combined authoring proof scope accepted; implementation details remain proposed. No code or runtime measurements yet. |
-| [003 — language library probes](003-language-probes/README.md) | Check concrete JSON Schema and YAML library behavior before choosing authoring syntax/tooling. | 20 offline cases executed and recorded. No Conduit parser/runtime or provider calls; numbering does not change the agreed runtime milestone order. |
+| [003 — language library probes](003-language-probes/README.md) | Check concrete JSON Schema and YAML library behavior before choosing authoring syntax/tooling. | 20 offline cases executed and recorded, in Python. No Conduit parser/runtime or provider calls. |
+| [004 — Stateright evaluation](004-stateright-evaluation/README.md) | Evaluate a Rust-embedded model checker for checking safety promises under loss, reordering and crashes. | Executed 2026-11-05 in Rust: five rule sets checked, three seeded defects found, one defect found in an accepted rule. A tool evaluation, not Conduit runtime evidence. |
 
 Distinguish draft syntax, parser/static checks, synthetic runtime tests and live provider tests.
 Do not promote expected outcomes into completed evidence. Changes to accepted behavior discovered

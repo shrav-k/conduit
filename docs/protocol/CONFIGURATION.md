@@ -1,5 +1,10 @@
 # Configuration and identity
 
+**Direction note, 2026-11-05.** The owner's rulings on [placement](../proposals/placement/README.md)
+and [instantiation](../proposals/instantiation/README.md) amend this topic and are not yet restated
+here. Known defects in this text are listed in the [defect register](../LANGUAGE_DEFECTS.md). The
+[plan audit](../AUDIT.md) tracks its conversion into numbered promises.
+
 Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
 their accepted status without becoming requirements for every capability implementation.
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
@@ -756,3 +761,6 @@ extension boundary rather than depending on private implementation knowledge or 
 A second complete runtime is deferred. Passing this milestone supplies evidence for those client/plugin
 surfaces; it does not establish portability between two runtimes, unsupported capabilities, or
 unexecuted provider/platform scenarios. No conformance test has run merely by adopting this scope.
+**Amended 2026-11-05:** the owner now requires two independently built engines passing one set of
+conformance vectors as the proof that the language is sufficient; see
+[independent builds](../implementation/INDEPENDENT_BUILDS.md).

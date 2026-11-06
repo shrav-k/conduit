@@ -1,5 +1,10 @@
 # 002 — Rust supervision, independent execution and plugins
 
+**Direction note, 2026-11-05.** Superseded as a plan. Statements below that implementation is not
+authorized, and that a second runtime is deferred, no longer hold. Its acceptance cases are mapped
+onto promises and conformance vectors and it is then removed; see the [plan
+audit](../../docs/AUDIT.md).
+
 Status: first-proof layout, core authority/outage rules and combined composition-authoring proof
 scope and supervised instance-associated helper default accepted; remaining implementation details
 are proposed. Not implemented or executed. Written 2026-11-01 from the

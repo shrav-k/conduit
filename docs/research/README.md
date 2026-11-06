@@ -1,5 +1,9 @@
 # Research
 
+**Direction note, 2026-11-05.** The [plan audit](../AUDIT.md) records the current direction and is
+the active tracker. Statements below about the current queue and the first proof layout are
+historical.
+
 The behavior/structure review is complete. The [language/protocol foundations](language-protocol-foundations/README.md)
 and [worked comparisons](language-protocol-foundations/WALKTHROUGHS.md) preserve the primary sources
 and library probes that informed it. Research does not change accepted semantics. The

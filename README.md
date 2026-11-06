@@ -10,17 +10,21 @@ requirements, implement operations with code or existing MCP services, compose g
 repeatable templates. A Rust reference implementation, replaceable frontends and a thin set of
 plugins/templates will demonstrate those contracts. Richer integrations can live in ancillary packages.
 
-**Status: behavior/structure review complete; vocabulary and concrete representations are next.**
-There is no runnable Conduit implementation yet. Accepted semantics are documented; exact schemas,
-package syntax and MCP profile mappings remain provisional. Static examples are not runtime evidence.
+**Status, 2026-11-05: the language is being made concrete and provable before any engine is built.**
+The language is the core; a runtime fulfills its promises. Current work is a defined normative
+surface, a promise register, schemas, a Rust reference model and conformance vectors, followed by
+two independent engine builds. Vocabulary comes last. No Conduit engine exists; exploratory Rust
+code lives under `experiments/`. The accepted text has known defects, listed in the
+[defect register](docs/LANGUAGE_DEFECTS.md).
 
 | Start here | Purpose |
 | --- | --- |
+| [Plan audit](docs/AUDIT.md) | Read this first: the owner's current direction, priorities, action items and experiment program. |
 | [Learn the protocol](docs/OVERVIEW.md) | Five families, extension concepts and one end-to-end journey. |
 | [Protocol reference](docs/protocol/README.md) | Accepted behavioral contracts and conformance boundaries. |
 | [Author with the protocol](docs/authoring/README.md) | Define an original extension and template; identify which representations are still proposals. |
 | [Reference implementation](docs/implementation/README.md) | Accepted implementation choices, candidate mechanisms and delivery evidence. |
-| [Current review](docs/REVIEW.md) | Remaining vocabulary, representation and conformance work; completed decisions are archived. |
+| [Current review](docs/REVIEW.md) | Review entry point and the earlier work queue; the plan audit governs where they differ. |
 | [Vocabulary map](docs/VOCABULARY.md) | Stable references to accepted meanings, examples and naming collisions. |
 | [Documentation map](docs/README.md) | Research, experiments, archived reviews and attributed dissent. |
 

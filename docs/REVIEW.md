@@ -1,15 +1,34 @@
 # Current review
 
-Updated: 2026-11-04. This is the only active review entry point. The conceptual, implementation-boundary,
+Updated: 2026-11-05. This is the only active review entry point. The conceptual, implementation-boundary,
 post-migration and authoring behavior/structure reviews are complete. Accepted rules live in the
 [protocol reference](protocol/README.md); the full
 [completed authoring record](archive/reviews/AUTHORING-2026-11-04.md) preserves the rulings and rationale.
 
-Next work is vocabulary, concrete representations and executable conformance. No runtime implementation
-has started. A new example that exposes a conflict with an accepted guarantee should return here with
+Direction changed on 2026-11-05; the plan audit section below governs. No Conduit engine exists. A new example that exposes a conflict with an accepted guarantee should return here with
 its affected behavior, a concrete counterexample and the specific choice needed.
 
+## Plan audit, 2026-11-05
+
+The owner set a new direction on 2026-11-05. The [plan audit](AUDIT.md) records the rulings, the
+priorities, the action items and the experiment program, and it governs wherever the sections below
+differ. In short: the language is the core; current work is the normative surface, a promise
+register, schemas, a Rust reference model and conformance vectors; two independent engine builds
+follow once the [readiness gate](implementation/INDEPENDENT_BUILDS.md#readiness-gate) passes; and
+the vocabulary pass comes last. Known defects in the accepted text are in the
+[defect register](LANGUAGE_DEFECTS.md).
+
+**Owner ruling, 2026-11-05 — exploratory code:** experiment code may be written and run under
+[experiments](../experiments/README.md) whenever it is useful, including solely to prove out an
+idea, before the vocabulary and schema work below. It must be written in Rust, reflecting the
+eventual runtime. This lifts the earlier prohibition for exploratory code. A Rust
+reference model and two independent engine builds are planned in the plan audit. Results remain
+evidence rather than accepted behavior.
+
 ## Future vocabulary PR
+
+By the 2026-11-05 rulings this pass comes last, after the language is concrete and proven, and it
+may merge concepts as well as rename them.
 
 Only **Interface, Agent, Resource, Pool and Conduit** are settled names. All other Conduit-owned terms
 and field spellings remain provisional, including spellings used while accepting a structure.

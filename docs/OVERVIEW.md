@@ -5,10 +5,12 @@ another. Its durable product is the contract: authors can publish small plugins,
 repeatable templates, establish instances and inspect/control them through compatible Interfaces.
 A Rust reference implementation and replaceable frontends will demonstrate that contract.
 
-Status: conceptual design, 2026-11-02. No runnable implementation exists. The
+Status: conceptual design, amended by the owner's rulings of 2026-11-05 in the
+[plan audit](AUDIT.md). No Conduit engine exists. The
 [design topics](protocol/README.md#contract-map) hold accepted detailed behavior. The
 [closed review](archive/reviews/CONCEPTUAL.md) records completed conceptual closure.
-The [current review](REVIEW.md) collects remaining decisions and refinements; specific authoring syntax is deferred.
+The [plan audit](AUDIT.md) tracks current work; known defects in the accepted text are in the
+[defect register](LANGUAGE_DEFECTS.md).
 
 ## Five families
 
@@ -45,9 +47,9 @@ recovery or lifecycle guarantee.
 Conformance describes explicitly supported capabilities. A limited client/plugin need not implement
 an entire runtime; a runtime claiming portable template execution must implement its public graph,
 control, lifecycle and recovery semantics. Physical runtime mechanisms remain replaceable. Exact
-profiles remain authoring work. The first conformance milestone uses an independently authored
-client and plugin against the reference runtime and published contracts/tests. A second complete
-runtime is deferred; that initial proof cannot establish runtime-to-runtime portability.
+profiles remain authoring work. By the 2026-11-05 ruling, sufficiency of the language
+is shown by two independently built engines passing one set of conformance vectors; see
+[independent builds](implementation/INDEPENDENT_BUILDS.md).
 
 A template supplies typed configuration, its setup graph, declared ongoing behavior and permitted
 controls. It can bind compatible contributions from several plugins without a mandatory primary.
@@ -153,13 +155,22 @@ remains until explicit purge, with external retention limits reported.
 
 ## First implementation and limits
 
+**V0 acceptance scenario (owner rulings, 2026-11-05):** two Agents share a project directory and a
+message history on one location (scenario S1), and one service login is shared by two Agents under
+different restrictions (scenario S2). Both must pass every method of the
+[experiment program](AUDIT.md#experiment-program). Running them with real Claude and Codex Agents,
+and the two-Claude, two-Codex account check, are later gates. This is the first proof, not the
+scope. Passing it removes nothing from the model above, and no capability is narrowed because these
+scenarios do not exercise it; see the [scope guard](AUDIT.md#scope-guard).
+
 Management owns registration/templates and shared policy; one designated service owns each instance's
 confirmed configuration and outcomes. Executors supervise managed activity; backends own domain data.
 The Interface aggregates sources rather than becoming another writable authority. Initial persistence
 uses a minimal public plugin contract with bundled SQLite as a service dependency. Secret custody uses
 replaceable OS adapters, initially macOS Keychain, with Interface-guided enrollment/unlock.
 
-The first synthetic proof uses management and two executor processes on one machine, instance-associated
+Proof order (ruled 2026-11-05): placement in the language, then separated components under a simulated
+network, then real processes, then two machines. That proof uses management and two execution services, instance-associated
 helpers for authored code, composed operations/requirements, failure injection and Interface inspection.
 Then validate native Claude/Codex adapters on macOS, followed by Conduit's own Rust model/tool loop.
 Two-Claude/two-Codex accounts and later two-machine support require their own evidence. Pi supplies
@@ -170,8 +181,8 @@ contract and cannot be claimed until demonstrated. Managed access enforcement is
 host interception. BYO compatible skills remain native, explicitly activated from permitted Resources.
 
 The [review](archive/reviews/CONCEPTUAL.md) settles conformance scope, dependent-call authority and cross-object lifecycle.
-The behavior/structure review is complete. The [vocabulary map](VOCABULARY.md) prepares the naming
-pass; concrete schemas and executable conformance fixtures follow. Remote/multi-user operation,
+The behavior/structure review is complete. The naming pass now comes last; the normative
+surface, schemas, reference model and conformance vectors come first ([plan audit](AUDIT.md)). Remote/multi-user operation,
 automatic wake, general authored loops, in-place
 definition upgrades and a marketplace remain deferred. The [collaborator proposals](archive/collaborator-proposals/REVIEW.md)
 are evaluated against this model; they do not silently add deployment requirements.

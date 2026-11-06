@@ -1,5 +1,10 @@
 # Proposed repository and delivery organization
 
+**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
+audit](../AUDIT.md) and is not an input for engine builders. Its milestone table M0 to M6 and its
+statement that implementation is not authorized are superseded by the plan audit's experiment
+program.
+
 Status: implementation proposal, 2026-11-01. Directory/crate names below describe the intended
 layout, not files already created. [Architecture](ARCHITECTURE.md) defines responsibilities;
 [closed review](../archive/reviews/IMPLEMENTATION.md) records accepted implementation boundaries.

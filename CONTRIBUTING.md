@@ -2,6 +2,7 @@
 
 Conduit is currently a protocol/language design with a planned Rust reference implementation.
 There is no runnable runtime, published package format or implemented SDK yet. Start with the
+[plan audit](docs/AUDIT.md), which records the current direction, then the
 [documentation map](docs/README.md) and [current review](docs/REVIEW.md).
 
 ## Where work belongs
@@ -17,6 +18,11 @@ There is no runnable runtime, published package format or implemented SDK yet. S
   fixtures and recorded results with their documentation in experiments.
 - Keep [experiments/](experiments/README.md) outside docs with scope, instructions and evidence.
   Expected outcomes must not be presented as passed tests.
+- Write any code in Rust, in its own directory under [experiments/](experiments/README.md) with a
+  lockfile and ignored build output. The existing Python documentation checkers are the only
+  exception.
+- Record a place where the accepted text is undetermined, contradictory or unsafe in the
+  [defect register](docs/LANGUAGE_DEFECTS.md), and fix it in the language.
 - Preserve completed reviews, attribution and dissent in [docs/archive/](docs/archive/README.md).
   Accepted rules must remain accessible in the reference, not only in history.
 
@@ -58,6 +64,8 @@ python3 tools/check_docs.py
 git diff --check
 ```
 
+Run `cargo test --release` in each Rust experiment directory you change.
+
 The checker validates repository Markdown paths, heading anchors, reference links and fenced-code
 balance without network access. It does not validate external links, strict YAML conformance,
 provider behavior, runtime recovery or semantic correctness.
@@ -68,7 +76,8 @@ The dated migration has a separate historical audit:
 python3 tools/check_doc_migration.py
 ```
 
-It verifies preservation against the recorded baseline and mechanical-move commit, including explicitly
+It reads fixed Git objects, so it cannot fail on later changes and is a record of that migration
+only. It verifies preservation against the recorded baseline and mechanical-move commit, including explicitly
 listed editorial changes. By default it checks the commit that introduced the migration record, so
 future edits need not remain frozen. Full Git history containing those commits is needed. See the
 [migration record](docs/archive/migrations/2026-11-protocol-framing.md) for working-tree use and limits.

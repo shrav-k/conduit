@@ -1,5 +1,10 @@
 # Conduit contracts
 
+**Direction note, 2026-11-05.** The owner's rulings on [placement](../proposals/placement/README.md)
+and [instantiation](../proposals/instantiation/README.md) amend this topic and are not yet restated
+here. Known defects in this text are listed in the [defect register](../LANGUAGE_DEFECTS.md). The
+[plan audit](../AUDIT.md) tracks its conversion into numbered promises.
+
 Scope: accepted working contracts. Explicitly marked v0/reference-runtime selections retain
 their accepted status without becoming requirements for every capability implementation.
 See the [reference boundary](README.md#protocol-and-reference-implementation) and the
@@ -500,6 +505,8 @@ recorded result under current access. Distinguish confirmed effects, failure and
 outcomes; timeout alone does not prove failure. Automatically retry only when repetition
 is known safe. After an uncertain write, inspect local/provider state before reissuing;
 unresolved outcomes stay unknown. Agents can reconcile within their permissions.
+**Known defect L1, 2026-11-05:** inspection alone does not make reissue safe; see the
+[defect register](../LANGUAGE_DEFECTS.md).
 
 External integrations promise only guarantees they support. Operations outside Conduit's
 control remain outside this contract. A purged/unavailable operation result does not prove

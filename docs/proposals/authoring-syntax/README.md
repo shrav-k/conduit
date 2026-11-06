@@ -1,5 +1,10 @@
 # Authoring and syntax proposals
 
+**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
+audit](../../AUDIT.md) and is not an input for engine builders. Its examples predate the
+[placement](../placement/README.md) and [instantiation](../instantiation/README.md) rulings, and the
+naming review it puts first now comes last.
+
 Status: **behavior/structure review complete; concrete representations and supporting vocabulary
 remain provisional**, 2026-11-04. [PR #3](https://github.com/shrav-k/conduit/pull/3) merged the accepted
 rulings and migrated paper fixtures. Nothing in this packet is an installable package, runnable

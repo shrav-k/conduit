@@ -388,7 +388,7 @@ The Pool creates a Resource registration bound to that existing directory. The p
 that the configured target can be attached under its path/access contract; it does not create a
 missing target. The instance records the absolute backing path and actual readiness.
 
-Separately, the Agent receives the Resource through a Conduit and its activation chooses a
+Separately, the Agent receives the Resource through a Conduit and its activation chooses an
 Agent-local symlink. In conceptual terms: expose the authorized input `source` as a symlink at
 `<session-workspace>/source`. This is Agent preparation, not a new Resource template or a direct
 reference that bypasses the Conduit. That preparer establishes the link and records enough to

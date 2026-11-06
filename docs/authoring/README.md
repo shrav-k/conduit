@@ -1,5 +1,10 @@
 # Author with the protocol
 
+**Direction note, 2026-11-05.** This document predates the owner's rulings recorded in the [plan
+audit](../AUDIT.md) and is not an input for engine builders. Creation by editing a template draft is
+replaced by the [instantiation rulings](../proposals/instantiation/README.md); the naming discussion
+it refers to as next now comes last.
+
 Conduit's extension boundary is the product: an author should be able to define a new capability,
 implement it, compose it into a template and inspect the resulting instance without editing runtime
 dispatch. Start from the [overview](../OVERVIEW.md) and [accepted extension model](../protocol/MODEL.md#authoring-concepts-beneath-the-object-families).

@@ -8,6 +8,13 @@
 # principles review, added `secret-reference.v1` (section 4 of the review, point 1) and
 # changed the description of the resolved form, which no graph and no control's `settings`
 # holds any longer (decisions 1 and 15). The log is docs/proposals/ruling-41/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in the description of
+# `resource-reference.v1`.
+# The names of ruling 42 (the vocabulary audit's N1 and N16; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`,
+# in the comment below and in the description of `secret-reference.v1`, and the restrictions
+# that an implementation is sent to its filters, in the comment below.
 #
 # The reference schemas: the Schema contracts that make a value a reference (OBJ-021). A
 # value inside `config` or `arguments` is resolved to an ID only where the schema that
@@ -40,7 +47,7 @@
 # to. Every schema below accepts that form as its last branch, with the kinds it accepts, so
 # the stored configuration still satisfies the schema of the type that INS-014 checked it
 # against. Only the engine writes the form. An implementation receives it in its
-# `arguments`, in the restrictions it is sent and in the configuration that every request to
+# `arguments`, in the filters it is sent and in the configuration that every request to
 # it carries (IFC-006), and `inspect.v1` shows it under `declared`.
 # A reference to the Resource of a Pool's entry, in either of its two forms, is stored as
 # `{kind: Resource, id: <ID>}`.
@@ -60,7 +67,7 @@
 # Where `secret-reference.v1` may stand in a schema is not expressed here either: only as the
 # schema of a place, as the `items` of a list, or beside `{type: null}` under `anyOf` or
 # `oneOf` (SEC-001), which tools/check_schemas.py applies itself. That a secret reference
-# resolves to a Resource whose type offers `secret-reveal.v1` is the engine's (SEC-002).
+# resolves to a Resource whose type offers `secret-provider.v1` is the engine's (SEC-002).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -184,7 +191,7 @@ metadata:
   name: resource-reference.v1
   description: >-
     A reference to a Resource. The name alone, the kind and the name, or one of the two forms
-    that name the Resource of a Pool's entry. A location is a Resource and is referred to in
+    that name the Resource of a Pool's entry. A node is a Resource and is referred to in
     this way. The engine stores `{kind: Resource, id}` in its place, the resolved form, which
     only the engine writes.
 spec:
@@ -329,7 +336,7 @@ metadata:
   name: secret-reference.v1
   description: >-
     A secret reference: a reference to a secret Resource, a Resource whose type offers
-    `secret-reveal.v1`, written with its kind or as one of the two forms that name the
+    `secret-provider.v1`, written with its kind or as one of the two forms that name the
     Resource of a Pool's entry, and never as a bare name. A place that this schema governs
     holds the reference and never the secret itself. The engine stores
     `{kind: Resource, id}` in its place, the resolved form, which only the engine writes.

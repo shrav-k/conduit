@@ -115,7 +115,7 @@ RETURNS_REVISION = ("replace.v1",)
 # The provider capabilities of the core package (PRV-001), and the three whose operations no
 # Conduit lists, because the engine alone invokes them by provider calls (PRV-004, PRV-005).
 PROVIDER_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-source.v1",
-                         "secret-reveal.v1")
+                         "secret-provider.v1")
 CALLED_CAPABILITIES = ("runtime-provider.v1", "machine-provider.v1", "package-source.v1")
 CALLED_OPERATIONS = ("run.v1", "stop.v1", "inspect-run.v1", "list-machines.v1", "place.v1",
                      "fetch-package.v1")
@@ -124,7 +124,7 @@ CALLED_OPERATIONS = ("run.v1", "stop.v1", "inspect-run.v1", "list-machines.v1", 
 # directory under examples/valid/ that writes those instances out to show what first start
 # makes. That directory is a picture of the engine's own work and not a submission, so the
 # rule for FST-006 is not applied to it; every other rule is.
-FIRST_START_TEMPLATES = ("system", "location", "management", "access", "root")
+FIRST_START_TEMPLATES = ("system", "node", "management", "access", "root")
 FIRST_START_DIRECTORY = "first-start"
 
 # The prefixes of the promise files that a ruling removed, whose IDs no file this tool covers
@@ -138,7 +138,19 @@ REMOVED_PREFIXES = ("GRA",)
 SECRET_PLACES = ("properties", "additionalProperties", "items", "$defs")
 
 # The rules of step 6, each with the promise it comes from. A file under
-# examples/invalid-by-rule/ is named for one of these promises.
+# examples/invalid-by-rule/ is named for one of these promises. Ruling 42 (2026-11-06,
+# docs/proposals/ruling-42/log-core.md) added plain-provider and secret-only, made
+# label-conflict compare the selected items with each other, and made item-place-required
+# reject a place at which the schema admits an object or an array, or null for a required
+# input. Ruling 42's names (docs/proposals/ruling-42/log-rename-a.md) renamed location-type
+# to node-type, for the type `node.v1`, and made label-conflict read `nodeSelector`. Its
+# other names (docs/proposals/ruling-42/log-rename-b.md) made secret-only read
+# `secret-provider.v1`, and item-place-required read an item's `packageArguments`, matched
+# to the Package's own `packageArguments` alone. Its editorial fix E17
+# (docs/proposals/ruling-42/log-editorial.md) made secret-only's message say the type of a
+# secret Resource, where it said a secret store's Type, and renamed its example to
+# SEC-022-type-of-a-secret-resource-that-offers-another-capability.yaml; E12 made the docstring
+# of bundle say that a reference references the `spec` of a contract, as SCH-015 now says.
 RULES = {
     "one-name": "NAM-027",
     "bound-once": "CON-028",
@@ -152,7 +164,7 @@ RULES = {
     "names-nothing": "NAM-028",
     "core-address": "NAM-021",
     "first-start-from": "FST-006",
-    "location-type": "PLC-028",
+    "node-type": "PLC-028",
     "one-run": "TPL-019",
     "label-conflict": "PLC-025",
     "item-place-required": "MAN-017",
@@ -160,6 +172,8 @@ RULES = {
     "secret-branch": "SEC-001",
     "provider-family": "PRV-001",
     "provider-conduit": "PRV-004",
+    "plain-provider": "PKG-020",
+    "secret-only": "SEC-022",
 }
 # The rules that validate a value against a schema, and so are applied only with jsonschema.
 NEED_VALIDATOR = frozenset({"default-valid"})
@@ -380,7 +394,7 @@ def check_profile(label, root, keywords, formats, core, schemas):
 def bundle(schemas, core):
     """One JSON Schema that holds every Schema contract under `$defs`, with each `$ref`
     rewritten to point inside it. A qualified reference, and `#name` within the package,
-    stands for the `spec` of the contract it names (SCH-015), which is what the rewriting
+    references the `spec` of the contract it names (SCH-015), which is what the rewriting
     does."""
     defs = {}
     for name, spec in schemas.items():
@@ -977,6 +991,63 @@ def required_place(schema, pointer_text):
     return True
 
 
+def schema_at(schema, pointer_text):
+    """The schema that governs the place a JSON Pointer names, following `properties`: None
+    where a `$ref` on the way, or a member that `properties` does not state, leaves this tool
+    unable to tell."""
+    if not isinstance(pointer_text, str):
+        return None
+    node = schema
+    tokens = [t.replace("~1", "/").replace("~0", "~") for t in pointer_text.split("/")[1:]]
+    for token in tokens:
+        if not isinstance(node, dict) or "$ref" in node:
+            return None
+        node = (node.get("properties") or {}).get(token)
+    return node
+
+
+def admits(node, kinds, secret):
+    """Whether a schema admits a value of one of `kinds` ("object", "array", "null") by its
+    `type`, its `enum` or its `const`, or by those of a branch of its `anyOf` or `oneOf`
+    (MAN-017). False for a place that `secret-reference.v1` governs, where `kinds` holds no
+    "null": SEC-001 lets such a place hold the reference."""
+    of = {"object": dict, "array": list, "null": type(None)}
+    if not isinstance(node, dict):
+        return False
+    branches = [b for k in BRANCHES[1:] for b in (node.get(k) or []) if isinstance(b, dict)]
+    if "null" not in kinds and (node.get("$ref") in secret
+                                or any(b.get("$ref") in secret for b in branches)):
+        return False
+    named_types = node.get("type")
+    named_types = [named_types] if isinstance(named_types, str) else named_types or []
+    values = list(node.get("enum") or []) + ([node["const"]] if "const" in node else [])
+    if any(t in kinds for t in named_types) \
+            or any(isinstance(v, tuple(of[k] for k in kinds)) for v in values):
+        return True
+    return any(admits(b, kinds, secret) for b in branches)
+
+
+def declared_input(item, binding, key):
+    """The input of server.json that an item's binding names by `key`: a variable of the
+    Package's `environmentVariables`, an argument of its `packageArguments`, by `name` where it
+    is named and by `valueHint` where it is positional, or a header of the Remote's `headers`.
+    No key binds the Package's `runtimeArguments` (MAN-010). None for a `command` item, which
+    declares none, and where the key names no input or more than one."""
+    package = item.get("package") if isinstance(item.get("package"), dict) else {}
+    remote = item.get("remote") if isinstance(item.get("remote"), dict) else {}
+    if binding == "environment":
+        found = [v for v in package.get("environmentVariables") or []
+                 if isinstance(v, dict) and v.get("name") == key]
+    elif binding == "packageArguments":
+        found = [a for a in package.get("packageArguments") or []
+                 if isinstance(a, dict) and key == (a.get("name") if a.get("type") == "named"
+                                                    else a.get("valueHint"))]
+    else:
+        found = [h for h in remote.get("headers") or []
+                 if isinstance(h, dict) and h.get("name") == key]
+    return found[0] if len(found) == 1 else None
+
+
 def secret_faults(schema, secret):
     """Each place where a schema puts `secret-reference.v1` where SEC-001 does not let it
     stand: under an applicator other than those of SECRET_PLACES, or under `anyOf` or `oneOf`
@@ -1081,7 +1152,7 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                                                f"of the core package"))
 
     # first-start-from (FST-006): no instance document is made from a core template from
-    # which first start alone makes instances, `location` among them. Applied where `from` is
+    # which first start alone makes instances, `node` among them. Applied where `from` is
     # a qualified reference into the core package: the core package's templates are never
     # registered (NAM-013), so no other form of `from` names one.
     if not first_start:
@@ -1093,17 +1164,16 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                               f"the {doc.get('kind')} {named(doc) or 'with no name'} is made "
                               f"from {ref}, from which first start alone makes instances"))
 
-    # location-type (PLC-028): no template but the core package's `location` has the type
-    # `location.v1`, so that no actor registers a location through a template of its own.
-    # Applied where `type` is the core package's qualified reference, or `#location.v1` inside
-    # the core package.
-    location = {core + "#location.v1"} | ({"#location.v1"} if is_core else set())
+    # node-type (PLC-028): no template but the core package's `node` has the type `node.v1`,
+    # so that no actor registers a node through a template of its own. Applied where `type`
+    # is the core package's qualified reference, or `#node.v1` inside the core package.
+    node_type = {core + "#node.v1"} | ({"#node.v1"} if is_core else set())
     for (kind, name), template in templates.items():
-        if (template.get("spec") or {}).get("type") in location \
-                and not (is_core and kind == "Resource" and name == "location"):
-            found.append(("location-type",
-                          f"the {kind} template {name} has the type location.v1, which only "
-                          f"the core package's template `location` has"))
+        if (template.get("spec") or {}).get("type") in node_type \
+                and not (is_core and kind == "Resource" and name == "node"):
+            found.append(("node-type",
+                          f"the {kind} template {name} has the type node.v1, which only "
+                          f"the core package's template `node` has"))
 
     # entry-reference (POOL-005): `{entry: name}` is written only in an entry of a Pool
     # template. Applied to the places of a document that are never inside an entry and always
@@ -1176,6 +1246,8 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
     def provider(key):
         return key is not None and key[0] == core and key[1] in PROVIDER_CAPABILITIES
 
+    secret = {core + "#secret-reference.v1"} | ({"#secret-reference.v1"} if is_core else set())
+
     # The operations each template of the set must have an implementation for, under TPL-004,
     # with the implementation it has for each: the key of the template's `implementation`
     # map, else the default of its type, else the default of the operation's own contract.
@@ -1245,22 +1317,37 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
             found.append(("one-run", f"the template {name} selects {' and '.join(run)}, two "
                                      f"items that are run, and one run serves one instance"))
 
-        # label-conflict (PLC-025): no selected item's `placement` names a label that its
-        # type's `placement` names with another value.
-        labels = body.get("placement") if isinstance(body.get("placement"), dict) else {}
+        # label-conflict (PLC-025): no selected item's `nodeSelector` names a label that its
+        # type's `nodeSelector`, or another selected item's, names with another value.
+        labels = body.get("nodeSelector") if isinstance(body.get("nodeSelector"), dict) else {}
         for key, item in chosen_items.items():
-            for label, value in members(item.get("placement")):
+            for label, value in members(item.get("nodeSelector")):
                 if label in labels and labels[label] != value:
                     found.append(("label-conflict",
-                                  f"the template {name} selects {key[1]}, whose `placement` "
+                                  f"the template {name} selects {key[1]}, whose `nodeSelector` "
                                   f"gives the label {label} the value {value}, and its type "
                                   f"{named(type_doc)} gives it {labels[label]}"))
+        pairs = sorted(chosen_items.items(), key=lambda pair: (pair[0][0] or "", pair[0][1]))
+        for index, (key, item) in enumerate(pairs):
+            for other_key, other in pairs[index + 1:]:
+                theirs = other.get("nodeSelector") \
+                    if isinstance(other.get("nodeSelector"), dict) else {}
+                for label, value in members(item.get("nodeSelector")):
+                    if label in theirs and theirs[label] != value:
+                        found.append(("label-conflict",
+                                      f"the template {name} selects {key[1]}, whose "
+                                      f"`nodeSelector` gives the label {label} the value "
+                                      f"{value}, and {other_key[1]}, whose `nodeSelector` gives "
+                                      f"it {theirs[label]}"))
 
         # item-place-required (MAN-017): each pointer of a selected item's `environment`,
-        # `arguments` or `headers` names a place that the type's schema requires, with every
-        # member on the way required. A `$ref` on the way is not followed.
+        # `packageArguments` or `headers` names a place that the type's schema requires, with
+        # every member on the way required; the schema at that place admits no object or array,
+        # by `type`, `enum` or `const`, unless `secret-reference.v1` governs it; and where the
+        # Package or the Remote marks the input `isRequired: true`, it admits no null. A
+        # `$ref` on the way, or at the place, is not followed.
         for key, item in chosen_items.items():
-            for binding in ("environment", "arguments", "headers"):
+            for binding in ("environment", "packageArguments", "headers"):
                 for var, place in members(item.get(binding)):
                     if required_place(body.get("schema"), place) is False:
                         found.append(("item-place-required",
@@ -1268,11 +1355,26 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
                                       f"`{binding}` gives {var} the place {place}, which the "
                                       f"schema of its type {named(type_doc)} does not "
                                       f"require"))
+                        continue
+                    at = schema_at(body.get("schema"), place)
+                    if admits(at, ("object", "array"), secret):
+                        found.append(("item-place-required",
+                                      f"the template {name} selects {key[1]}, whose "
+                                      f"`{binding}` gives {var} the place {place}, at which "
+                                      f"the schema of its type {named(type_doc)} admits an "
+                                      f"object or an array"))
+                    declared = declared_input(item, binding, var)
+                    if isinstance(declared, dict) and declared.get("isRequired") is True \
+                            and admits(at, ("null",), secret):
+                        found.append(("item-place-required",
+                                      f"the template {name} selects {key[1]}, which marks "
+                                      f"{var} `isRequired: true`, and whose `{binding}` gives "
+                                      f"it the place {place}, at which the schema of its type "
+                                      f"{named(type_doc)} admits null"))
 
     # secret-branch (SEC-001): `secret-reference.v1` stands only as the schema of a place, as
     # `items`, or under `anyOf` or `oneOf` beside `{type: null}`. Applied to every schema that
     # a document of the set writes.
-    secret = {core + "#secret-reference.v1"} | ({"#secret-reference.v1"} if is_core else set())
     for doc in docs:
         role = role_of(doc, False)
         for kind, path in SCHEMA_PLACES:
@@ -1301,6 +1403,21 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
             found.append(("provider-family",
                           f"the Type contract {named(doc)} offers {' and '.join(offered)}, "
                           f"more than one provider capability"))
+
+    # secret-only (SEC-022): a Type that offers `secret-provider.v1` offers no other capability.
+    # A store that lists or writes secrets does so through another Type.
+    for doc in docs:
+        spec = doc.get("spec") if doc.get("kind") == "Type" else None
+        if not isinstance(spec, dict):
+            continue
+        offers = spec.get("offers") if isinstance(spec.get("offers"), list) else []
+        offered = {canon(o, here) for o in offers} - {None}
+        if (core, "secret-provider.v1") in offered and len(offered) > 1:
+            others = sorted(k[1] for k in offered if k != (core, "secret-provider.v1"))
+            found.append(("secret-only",
+                          f"the Type contract {named(doc)} offers secret-provider.v1 and also "
+                          f"{' and '.join(others)}, and the type of a secret Resource offers "
+                          f"no other capability"))
 
     # provider-conduit (PRV-004): no Conduit template's capability is one whose operations the
     # engine alone invokes, and none lists one of those operations.
@@ -1333,11 +1450,14 @@ def apply_rules(docs, is_core, core, package_docs, defaults=None, scope=None, it
 
 def manifest_rules(manifest, core, holds_contracts=False):
     """Return (rule, message) for each rule on manifests that one manifest breaks. There are
-    two. core-address (NAM-021): a manifest neither lists the core package under `packages`
+    three. core-address (NAM-021): a manifest neither lists the core package under `packages`
     nor states its address as its own. project-address (MAN-015): a manifest that lists an
     implementation, or that belongs to a project that holds a contract, states `address`.
-    The core package's own manifest, which is built into the engine, is not given to this
-    function."""
+    plain-provider (PKG-020): an item marked `plain: true` implements no operation of
+    `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, which the engine
+    reaches only by provider calls, and a provider call carries Conduit's keys; matched by the
+    operation's qualified reference in the core package. The core package's own manifest,
+    which is built into the engine, is not given to this function."""
     found = []
     if not isinstance(manifest, dict):
         return found
@@ -1351,6 +1471,17 @@ def manifest_rules(manifest, core, holds_contracts=False):
         why = "lists an implementation" if manifest.get("implementations") \
             else "belongs to a project that holds a contract"
         found.append(("project-address", f"the manifest {why} and states no `address`"))
+    items = manifest.get("implementations")
+    for name, item in (items.items() if isinstance(items, dict) else ()):
+        if not isinstance(item, dict) or item.get("plain") is not True:
+            continue
+        for ref in item.get("implements") if isinstance(item.get("implements"), list) else ():
+            if isinstance(ref, str) and ref.partition("#")[0] == core \
+                    and ref.partition("#")[2] in CALLED_OPERATIONS:
+                found.append(("plain-provider",
+                              f"the plain implementation {name} implements {ref}, which the "
+                              f"engine invokes only by a provider call, and a plain server "
+                              f"reads none of Conduit's keys"))
     return found
 
 

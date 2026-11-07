@@ -1,12 +1,13 @@
 # First start: the objects that exist before an author declares anything.
 # Owner rulings of 2026-11-05 (plan-audit rulings 24, 28 and 32), following Kubernetes's
 # practice of a small fixed set of well-known names. What first start does when it is
-# interrupted or repeated, and how repair works, belong to the runtime profile. The objects are
-# instances of templates the core package exports. Removed by consolidation pass 1: FST-004 was
-# folded into OBJ-002. The ruling on the core package and the schemas (ruling 37) changed
-# FST-002 and FST-005: the templates are in spec/core/templates.yaml. The second round of the
-# re-audit (docs/proposals/reaudit/round-2/reader-3.md, finding 8) changed FST-001 and added
-# FST-006, and its closing pass changed FST-002 and FST-006. Draft: no vector exists yet.
+# interrupted or repeated, and how repair works, belong to the engine's conformance document.
+# The objects are instances of templates the core package exports. Removed by consolidation
+# pass 1: FST-004 was folded into OBJ-002. The ruling on the core package and the schemas
+# (ruling 37) changed FST-002 and FST-005: the templates are in spec/core/templates.yaml. The
+# second round of the re-audit (docs/proposals/reaudit/round-2/reader-3.md, finding 8) changed
+# FST-001 and added FST-006, and its closing pass changed FST-002 and FST-006. Draft: no vector
+# exists yet.
 # Standing: the owner accepted this file as it stands at ruling 39
 # (docs/proposals/ruling-39/README.md), which accepted every logged decision of the coordinator
 # and choice of an editor.
@@ -17,6 +18,17 @@
 # added none. Its log is docs/proposals/ruling-41/log-G2.md. The coverage check of the
 # rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed FST-006, which
 # points to PLC-028 for a template of another project or package whose type is `location.v1`.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md, changed FST-001: a report names the
+# machine for which `local` stands by the engine's own hostname, in canonical form. It removed
+# none and added none. Its log is docs/proposals/ruling-42/log-machines.md.
+# The names of ruling 42 (the vocabulary audit's N2 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node, the core template
+# `location` to `node`, `location.v1` to `node.v1` and the machines provider to the machine
+# provider in FST-001, FST-005 and FST-006. It removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N18; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the runtime profile to the engine's
+# conformance document in the first lines of this comment. It changed no promise.
 
 - id: FST-001
   layer: language
@@ -24,15 +36,16 @@
   when: >-
     The engine has been started for the first time.
   then: >-
-    These objects exist, with these names: the Pool `system`; the location `local`; the
+    These objects exist, with these names: the Pool `system`; the node `local`; the
     Resources `management` and `access`, owned by `system`; and the Interface `root`.
   observable: >-
     Inspection lists exactly those five objects, apart from Conduits, and each has the name
     given. Each is identified by its ID: where a promise names `system`, `local`, `management`,
     `access` or `root`, or speaks of the `access` Resource or of the root Interface, it means
-    the object made at first start. A name is fixed, under OBJ-011. `local` is the location of
-    the machine the engine runs on, under PLC-026, and its labels are those reported for that
-    machine under PRV-014.
+    the object made at first start. A name is fixed, under OBJ-011. `local` is the node of
+    the machine the engine runs on, which a report names by the engine's own hostname, in
+    canonical form, under PLC-026, and its labels are those reported for that machine under
+    PRV-014.
   vectors: []
 
 - id: FST-002
@@ -72,7 +85,7 @@
     It is an instance of a template that the core package exports, like any other instance.
   observable: >-
     Each of the objects of FST-001 and FST-002 reports a `from` that is a qualified reference
-    into `github.com/shrav-k/conduit/core`. The templates are `system`, `location`,
+    into `github.com/shrav-k/conduit/core`. The templates are `system`, `node`,
     `management`, `access` and `root`, and for the two Conduits `root-management` and
     `root-access`.
   vectors: []
@@ -84,17 +97,16 @@
   layer: language
   level: must
   when: >-
-    An instance document's `from` resolves to the core package's template `system`, `location`,
+    An instance document's `from` resolves to the core package's template `system`, `node`,
     `management`, `access` or `root`.
   then: >-
     The document is rejected. The instances that first start makes from those templates, and the
-    locations that the engine makes under PLC-026, are the only ones: the engine alone makes
-    locations.
+    nodes that the engine makes under PLC-026, are the only ones: the engine alone makes nodes.
   observable: >-
-    Resolving returns a diagnostic naming the template. Every location is an instance of
-    `location`, under PLC-008, made by the engine for a machine that the machines provider
-    reports. Submitting the instance documents that first start makes is rejected for this
-    reason, and because their names are taken under OBJ-002: the engine makes those objects
-    itself and is handed no document for them. A template of any other project or package whose
-    `type` is `location.v1` is rejected under PLC-028, so no location is made from one either.
+    Resolving returns a diagnostic naming the template. Every node is an instance of `node`,
+    under PLC-008, made by the engine for a machine that the machine provider reports.
+    Submitting the instance documents that first start makes is rejected for this reason, and
+    because their names are taken under OBJ-002: the engine makes those objects itself and is
+    handed no document for them. A template of any other project or package whose `type` is
+    `node.v1` is rejected under PLC-028, so no node is made from one either.
   vectors: []

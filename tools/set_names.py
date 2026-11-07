@@ -48,7 +48,9 @@ FOREIGN_META_PREFIXES = ("io.modelcontextprotocol/",)
 # A run of characters that can make up a name, a reference or a path.
 TOKEN = re.compile(r"[A-Za-z0-9._/#:-]+")
 DNS_NAME = re.compile(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+")
-WORD = re.compile(r"[A-Za-z][A-Za-z0-9]*")
+# A key, or the name of an extension, after the prefix: a word, or words joined by hyphens,
+# as in the extension `implementation-interface`.
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*")
 API_VERSION_VALUE = re.compile(r"\bapiVersion: *['\"]?([^\s,}`'\"]+)")
 # How close a dotted prefix must be to the current one to count as a misspelling of it.
 CLOSE = 0.8
@@ -127,7 +129,7 @@ def meta_keys(prefix: str) -> list[str]:
     """The names of Conduit's `_meta` keys: every word the interface file writes after the prefix."""
     if not INTERFACE.exists():
         sys.exit(f"{INTERFACE}: missing; the `_meta` keys are read from it")
-    found = re.findall(re.escape(prefix) + r"([A-Za-z][A-Za-z0-9]*)", INTERFACE.read_text())
+    found = re.findall(re.escape(prefix) + "(" + WORD.pattern + ")", INTERFACE.read_text())
     keys = sorted(set(found))
     if not keys:
         sys.exit(f"{INTERFACE}: no `_meta` key with the prefix {prefix!r}")

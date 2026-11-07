@@ -1,5 +1,7 @@
 # Example. Invalid: `records` in a Type contract holds `inputs` and `outputs`, each true or
 # false (CTR-004). It is not a list.
+# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed the Type's key
+# `placement` to `nodeSelector`.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
@@ -7,5 +9,5 @@ metadata:
   name: local-directory.v1
 spec:
   family: Resource
-  placement: {}
+  nodeSelector: {}
   records: [inputs]

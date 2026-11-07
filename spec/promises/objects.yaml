@@ -31,6 +31,17 @@
 # is made, as OBJ-011 now states, and nothing else replaces them. It changed OBJ-003, OBJ-010,
 # OBJ-011, OBJ-013 to OBJ-016, OBJ-019, OBJ-021 and OBJ-022, and added none. The log is
 # docs/proposals/ruling-41/log-G6.md.
+# The names of ruling 42 (the vocabulary audit's N8 and N9; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of a label selector to
+# `nodeSelector` in OBJ-019, and the schema `label-selector.v1` to `labels.v1` in OBJ-022. It
+# removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N6; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the key `arguments` of an implementation
+# item to `packageArguments` in OBJ-016 and OBJ-019. It removed none and added none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed OBJ-021, whose observable says the `arguments` of a filter under IFC-018, where it
+# said a restriction, since only filters are sent (the vocabulary audit's N16). It removed none
+# and added none.
 
 - id: OBJ-001
   layer: language
@@ -282,7 +293,8 @@
   level: must
   when: >-
     A document points at a place inside a value: an input's destination, a value of a control's
-    `changes`, or a value of an implementation item's `environment`, `arguments` or `headers`.
+    `changes`, or a value of an implementation item's `environment`, `packageArguments` or
+    `headers`.
   then: >-
     The pointer is a JSON Pointer in its string form, with a fixed root. The root is the
     template's `spec` for a destination, and the instance's configuration for a control and for
@@ -336,11 +348,11 @@
     states under `const`, `enum`, `default` or `examples`; a key inside the `arguments` of an
     instance, a nested instantiation or an applied requirement; a name that keys a member of a
     map this specification says is keyed by name, such as `inputs` or `conduits`; a label that
-    keys a member of a label selector under `placement`; a selection, which is a qualified
+    keys a member of a label selector under `nodeSelector`; a selection, which is a qualified
     reference or `#name` under NAM-018, that keys an `implementation`, `controls` or `tools`
     map; a key inside an implementation item's `package` or `remote`, which the schema of
-    server.json governs under MAN-010; and a key of an item's `environment`, `arguments` or
-    `headers`.
+    server.json governs under MAN-010; and a key of an item's `environment`, `packageArguments`
+    or `headers`.
   then: >-
     The document is rejected. Every key this specification defines is written in camelCase.
   observable: >-
@@ -383,7 +395,7 @@
   observable: >-
     A value governed by a reference schema is resolved under OBJ-009, and the instance stores
     the resolved form, `{kind: <Kind>, id: <ID>}`, in its place. That stored form is the one an
-    implementation receives, as in the `arguments` of a restriction under IFC-018 and in the
+    implementation receives, as in the `arguments` of a filter under IFC-018 and in the
     `config` of Conduit's keys under IFC-006, and the one inspecting shows. Each item of a list
     whose `items` is `github.com/shrav-k/conduit/core#pool-reference.v1` is a reference, and
     under `anyOf` with a reference schema and the type null, a name is a reference and null is
@@ -410,7 +422,7 @@
     `outputSchema`, are outside this rule: CTR-002 lets each be any non-empty string, and the
     keys of a control's `changes` and of the `inputs` a template gives a control are those
     names. The keys of a label selector under PLC-007 are labels and not names, and the schema
-    `label-selector.v1` gives their form.
+    `labels.v1` gives their form.
   vectors: []
 
 # --- Added by the follow-up decisions (plan-audit ruling 33; decision W4 of the re-audit).

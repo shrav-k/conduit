@@ -6,6 +6,9 @@
 #
 # The core package is not listed, and may not be (NAM-020, NAM-021). Every package listed is
 # installed before the project is registered (PKG-006).
+# The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1`
+# to `get-secret.v1`. Its editorial fix E17 (docs/proposals/ruling-42/log-editorial.md) calls
+# `keychain-store` an implementation of `get-secret.v1`, where it said a secret store's server.
 
 apiVersion: github.com/shrav-k/conduit/v0
 address: example.org/review-desk
@@ -28,11 +31,11 @@ implementations:
       - github.com/shrav-k/conduit/core#stop.v1
       - github.com/shrav-k/conduit/core#inspect-run.v1
     command: [bin/docker-runner]
-  # A secret store's server, which reads the macOS keychain item that its instance's
-  # configuration locates (SEC-006).
+  # An implementation of `get-secret.v1`, which reads the macOS keychain item that its
+  # instance's configuration locates (SEC-006).
   keychain-store:
     implements:
-      - github.com/shrav-k/conduit/core#reveal-secret.v1
+      - github.com/shrav-k/conduit/core#get-secret.v1
     command: [bin/keychain-store]
   # An existing server, found by name, that mirrors a Git repository. Its variables take the
   # remote and the token from the configuration: `/token` is a place that

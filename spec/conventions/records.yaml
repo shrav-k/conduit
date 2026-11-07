@@ -36,6 +36,33 @@
 # changed is in docs/proposals/ruling-41/log-G4.md. The integration of the rewrite
 # (docs/proposals/ruling-41/log-integration.md) changed REC-002, so that the caller of a
 # provider call is the one PRV-005 gives it.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
+# and the owner's answers in docs/proposals/ruling-41/open-decisions.md, changed REC-002 and
+# REC-004: a record names the invocation that it serves in `serving`; a record of a run names
+# its instance in `subject`; a change that no request asked for holds the invocation within
+# which it happened; a read of a secret made again has the caller of the setup that made the
+# connection (D12); no record holds a run's `identity` (D17); and an invocation of unknown
+# outcome whose records were purged is found in the status of its instance. It added none and
+# removed none. What changed is in docs/proposals/ruling-42/log-conventions.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in REC-005. It removed none
+# and added none.
+# The names of ruling 42 (the vocabulary audit's N12, N14 and N15; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the instance that acted for the caller to
+# the consumer of the Conduit used, which a record holds in `consumer`, in REC-002; origin to
+# source in REC-002 and REC-005, which now says that a record's source is its CloudEvent's
+# `source` and that an engine that names one source for every record keeps them all in one
+# order; and operation identity to idempotency key in REC-002 and REC-004. It removed none and
+# added none.
+# The editorial fixes of ruling 42 (the vocabulary audit's E19; log
+# docs/proposals/ruling-42/log-editorial.md) changed REC-001, whose observable calls what is
+# recorded an occurrence, where it said an event, since a record is the event in CloudEvents'
+# sense. It removed none and added none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed REC-002, whose observable points to PRV-024 for the rule that no record holds any part
+# of `identity`, and REC-005, whose observable says that a record's `source` is a URI-reference
+# that the engine names for the context, such as one node, where it read as though a node were
+# the URI-reference. It removed none and added none.
 
 - id: REC-001
   layer: convention
@@ -48,9 +75,9 @@
   then: >-
     A record of it is kept.
   observable: >-
-    Each such event can be found by inspecting the objects it names. Every request can be found
-    with how it ended: its outcome, or its reason where it has no outcome under OPS-005. The
-    record of an access decision states that the request was permitted, or that it was not
+    Each such occurrence can be found by inspecting the objects it names. Every request can be
+    found with how it ended: its outcome, or its reason where it has no outcome under OPS-005.
+    The record of an access decision states that the request was permitted, or that it was not
     dispatched and the reason. A provider call is not a request, under PRV-005, and is recorded
     all the same, with how it ended. A read of a secret is a request, under SEC-010, and is
     recorded as one, without its value, under SEC-015. One request is not recorded: one that
@@ -64,23 +91,42 @@
   when: >-
     A record is kept.
   then: >-
-    It holds the caller, the instance that acted for the caller if there was one, the Conduit
-    used, the target, the operation, the engine's ID for the invocation, the operation identity
-    if the caller supplied one, the time, and how it ended.
+    It holds the caller, the Conduit used and its consumer if a Conduit was used, the target,
+    the operation, the engine's ID for the invocation, the engine's ID for the
+    invocation that it serves where it serves one, the idempotency key if the caller supplied
+    one or the engine gave one under OPS-028, the time, and how it ended.
   observable: >-
     Each of those is present in every record to which it applies. The inputs and outputs of the
     operation need not be; what content is kept is stated by each type's contract, under
     `records` as CTR-004 gives it: the inputs where `inputs` is true, and the outputs where
     `outputs` is true. A record has the form of the core schema `record.v1`: a CloudEvent whose
-    `data` holds these fields. `inspect.v1` returns records in that form, under LIF-013, and an
-    engine may also export them in it, as DL8 of the implementation-defined list says. The
-    record of a request from which the engine could establish no instance, under IFC-032, holds
-    no caller, and says that none could be established. Every other request has a caller: a read
-    of a secret has the caller of the setup or the retirement it belongs to, under SEC-011. A
-    provider call is not a request, and its record holds a caller only where the call is made
-    for a request, the caller of that request, under PRV-005. The record of a read holds no part
-    of the value it read, under SEC-015, and a record holds a value at a place that
-    `secret-reference.v1` governs only in the resolved form, under SEC-004.
+    `data` holds these fields, the consumer of the Conduit used in `consumer` and the invocation
+    served in `serving`. `inspect.v1` returns records in that form, under LIF-013, and an engine
+    may also export them in it, as DL8 of the implementation-defined list says. The invocation
+    is the one whose ID the recorded call carried in `io.github.shrav-k.conduit/invocation`: the
+    request's, the hook's or the read's own, and for a provider call the invocation it was made
+    within, under PRV-005. The invocation served is the one that an onward request names in
+    `io.github.shrav-k.conduit/serving`, under IFC-020; for a hook, a read of a secret or a part
+    that is an invocation of its own, such as an `open.v1` under CON-004, an entry's setup under
+    POOL-013 or a Resource's retirement under LIF-021, it is the setup or the retirement that it
+    belongs to; and for a read made again under SEC-023 it is the setup that made the
+    connection. A provider call's record names none. The records of an invocation's parts are
+    those whose invocation or invocation served is that invocation, whatever their source, under
+    REC-005. A record of `run.v1`, `stop.v1` or `inspect-run.v1` names in the CloudEvent's
+    `subject` the instance whose run it is, so inspecting that instance finds it, under LIF-013.
+    The record of a change that no request asked for itself, such as a Conduit closed under
+    CON-008 or an instance removed under LIF-035, holds as its invocation the invocation within
+    which the change happened, and that invocation's caller; where it happened within none, as
+    under PLC-024, it states the cause, as PLC-024 has it. The record of a request from which
+    the engine could establish no instance, under IFC-032, holds no caller, and says that none
+    could be established. Every other request has a caller: a read of a secret has the caller of
+    the setup or the retirement it belongs to, under SEC-011, and a read made again under
+    SEC-023 that of the setup that made the connection. A provider call is not a request, and
+    its record holds a caller only where the call is made for a request, the caller of that
+    request, under PRV-005. The record of a read holds no part of the value it read, under
+    SEC-015; the record of a call of `run.v1` holds no value of its `secrets`, as `run.v1`
+    states, and no part of its `identity`, under PRV-024; and a record holds a value at a place
+    that `secret-reference.v1` governs only in the resolved form, under SEC-004.
   vectors: []
 
 - id: REC-003
@@ -113,27 +159,32 @@
     no later purge removes it. The operation is `purge.v1`, and the time is its input `before`.
     A purge removes records and nothing else. What repeats and reconciliations need is the
     engine's own state under OPS-008, which no purge touches: after a purge, a request that
-    repeats the operation identity of an invocation whose records were purged is still answered
-    under OPS-009 to OPS-012, OPS-024 and OPS-032, no effect is applied a second time, and an
-    invocation whose outcome is unknown can still be reconciled under OPS-014. Two requests with
-    the same contents, as OPS-009 defines them, give the same digest, so a request with that
-    identity and different contents still reports conflict under OPS-010. How the digest is
-    computed is DL2 of the implementation-defined list. The outputs that the engine keeps for
-    repeats under OPS-009 are not records either, and a purge does not touch them.
+    repeats the idempotency key of an invocation whose records were purged is still answered
+    under OPS-009 to OPS-012, OPS-024, OPS-032 and OPS-034, no effect is applied a second time,
+    and an invocation whose outcome is unknown can still be found in the status of the instance
+    that it was dispatched to or names, under LIF-013, while that instance exists, and
+    reconciled under OPS-014. Two requests with the same contents, as OPS-009 defines them, give
+    the same digest, so a request with that idempotency key and different contents still reports
+    conflict under OPS-010. How the digest is computed is DL2 of the implementation-defined
+    list. The outputs that the engine keeps for repeats under OPS-009 are not records either,
+    and a purge does not touch them.
   vectors: []
 
 - id: REC-005
   layer: convention
   level: must
   when: >-
-    Records made at one origin are read.
+    Records made at one source are read.
   then: >-
-    They are in the order in which they were made at that origin. No order is promised between
-    records from different origins.
+    They are in the order in which they were made at that source. No order is promised between
+    records from different sources.
   observable: >-
-    Reading one origin's records twice gives the same order. An actor that reads records from
-    several origins is not told which of two records from different origins came first, unless
-    one names the other. An origin is where a record was made, such as one location.
+    Reading one source's records twice gives the same order. An actor that reads records from
+    several sources is not told which of two records from different sources came first, unless
+    one names the other. A record's source is its CloudEvent's `source`, a URI-reference that
+    the engine names for the context in which the record was made, such as one node; the
+    sequence extension of CloudEvents orders events within one `source` in the same way. An
+    engine that names one `source` for every record keeps all its records in one order.
   vectors: []
 
 - id: REC-006

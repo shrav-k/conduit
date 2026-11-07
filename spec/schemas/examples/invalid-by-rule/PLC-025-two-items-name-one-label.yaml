@@ -1,0 +1,36 @@
+# Example. One set of documents. Each is valid alone, and together they must be rejected:
+# the label selectors of the items that a template selects agree on every label that two of
+# them name (PLC-025). The type `shared-directory.v1` names no label. The template
+# `mixed-folder` keeps `files-server`, the default implementation of
+# `example.org/files#directory.establish.v1` in ../valid/files-package/, which asks for
+# `kubernetes.io/os: linux`, and selects `legacy-reader` for
+# `example.org/files#directory.read.v1`, which asks for `windows`, so no node could match
+# both. A schema cannot tell: the selectors are in the package's manifest.
+# The names of ruling 42 (docs/proposals/ruling-42/log-rename-a.md) renamed location to node
+# here.
+
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Type
+metadata:
+  name: shared-directory.v1
+spec:
+  family: Resource
+  schema:
+    type: object
+    properties:
+      path: {type: string, minLength: 1}
+    required: [path]
+  requires:
+    - example.org/files#directory.establish.v1
+    - example.org/files#directory.read.v1
+---
+apiVersion: github.com/shrav-k/conduit/v0
+kind: Resource
+metadata:
+  name: mixed-folder
+spec:
+  type: '#shared-directory.v1'
+  config:
+    path: /srv/shared
+  implementation:
+    example.org/files#directory.read.v1: example.org/files#legacy-reader

@@ -1,0 +1,16 @@
+# Example. It must be rejected:
+# the Package of a `package` item whose `registryType` is `oci` is pinned by a digest in its
+# `identifier`, `@sha256:` and the hash in lowercase hexadecimal after the repository
+# (MAN-010). This one names the image by a tag alone.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  listing:
+    implements: ['#directory.list.v1']
+    package:
+      registryType: oci
+      identifier: ghcr.io/example/directory-listing:1.2.0
+      transport:
+        type: stdio

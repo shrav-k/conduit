@@ -29,6 +29,11 @@
 # IMP-008 cover the setup hook and the retire hook); changed IMP-002 and IMP-008; and added
 # none. IMP-003 is now the one rule on documents in this file. What changed is in
 # docs/proposals/ruling-41/log-G1.md. Those IDs are not reused.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
+# in docs/proposals/ruling-41/open-decisions.md, changed IMP-007: the further setup or
+# retirement that dispatches a new attempt of a hook is the repeat, and its caller is the
+# attempt's. It added none and removed none. What changed is in
+# docs/proposals/ruling-42/log-conventions.md.
 
 - id: IMP-001
   layer: convention
@@ -79,7 +84,9 @@
     It is dispatched again without a repeat of the request from its caller.
   observable: >-
     An invocation is dispatched at most once per attempt, and a new attempt is made only for a
-    repeat that OPS-012 or OPS-024 dispatches. An invocation that was in progress across a
+    repeat that OPS-012 or OPS-024 dispatches. For a setup hook or a retire hook, the further
+    setup or retirement that dispatches a new attempt under OPS-021 is the repeat, and its
+    caller is the attempt's caller, under OPS-028. An invocation that was in progress across a
     restart has the outcome unknown.
   vectors: []
 

@@ -84,5 +84,29 @@ Not ruled:
 | 41 (decision 17 of the principles review) | A request through a closed Conduit reports invalid. | Refused (D6). |
 | 41 (decision 4c) | Every read of a secret belongs to a request in progress. | Also a read again for the caller of the setup, where a connection's values were lost (D12). |
 | 41 (section 4, line 18) | What else a run receives is the provider's. | For the engine's own runner, six variables and a list set on the runner (D8). |
-| 39 (decision 5 of round 3) | `retire-with-resources.v1` stops at the first Resource whose retirement does not complete. | It goes on with every Resource that does not depend on it (R5). |
+| 39 (decision 5 of round 3) | `retire-with-resources.v1` stops at the first Resource whose retirement does not complete. | It goes on: only the Resources that the order puts after the one it could not retire wait (R5). |
 | 17, 18 (V4), 33 | Location; origin; the earlier names that N1 to N20 replace. | The names of the vocabulary audit. |
+
+## After the ruling
+
+The ruling was applied to `spec/` on 2026-11-06. The editors' logs are beside this record:
+[machines](log-machines.md), [secrets](log-secrets.md), [conventions](log-conventions.md),
+[language](log-language.md), [core](log-core.md), [docs](log-docs.md), the renames
+([nodes](log-rename-a.md), [the rest](log-rename-b.md)), the [editorial fixes](log-editorial.md)
+and the [integration](log-integration.md), whose section "Verification" answers 34 findings of
+three verifiers. The specification then held 440 promises.
+
+The coordinator's decisions on what the logs left open, under rulings 37 and 38:
+
+- A retire hook on a `remote` item after the engine restarts: a connection whose values were
+  lost counts as one that does not last, so the retirement connects anew with reads of its own
+  (option a of item 1 of the integration log). It keeps every read of a retirement its own.
+- A request to unregister removes the instance whatever came of the stop that LIF-036 asks for,
+  and `unregister.v1` keeps `deduplicates: true` (item 3). The request is the assertion that the
+  shutdown is settled another way, and D11 leaves a stop the provider cannot carry out now to its
+  contract.
+- The table line for R5 above said "every Resource that does not depend on it"; it is corrected
+  to what the answer and LIF-021 say (item 4).
+
+The other open items of the integration log bear on work across machines, and wait for the
+owner's answer on the [multi-machine proposal](../multi-machine/README.md).

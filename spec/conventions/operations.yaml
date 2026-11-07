@@ -1,10 +1,10 @@
-# Operations: the shared convention on operation identity and outcomes.
+# Operations: the shared convention on idempotency keys and outcomes.
 # Owner rulings of 2026-11-05 (plan-audit rulings 20, 28, 32 and 33). Draft: no vector exists
 # yet.
 # The at-most-once promises were explored by model checking in
 # experiments/004-stateright-evaluation.
-# A record is kept and never altered (conventions/records.yaml). What is kept for an operation
-# identity is the invocation's state, which is in progress or its outcome; since ruling 41 the
+# A record is kept and never altered (conventions/records.yaml). What is kept for an idempotency
+# key is the invocation's state, which is in progress or its outcome; since ruling 41 the
 # engine keeps it as its own state, apart from the records (OPS-008). ACC-020 and ACC-021 were
 # folded into OPS-005 and REC-001. The
 # ruling on the core package and the schemas (ruling 37) changed OPS-007, OPS-009, OPS-014,
@@ -54,6 +54,19 @@
 # changed OPS-008, whose state is kept for every invocation that is dispatched, as alignment
 # C33 has it, and added OPS-033, on arguments that do not satisfy an operation's
 # `inputSchema`, so that IFC-025 has a promise to name for the commonest invalid request.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
+# in docs/proposals/ruling-41/open-decisions.md, changed OPS-005, OPS-008, OPS-009, OPS-014,
+# OPS-024, OPS-027, OPS-028 and OPS-032, and added OPS-034: OPS-032 is split, and keeps a
+# repeat of an invocation that has not ended, while OPS-034 takes a repeat of one that
+# succeeded and whose outputs are no longer kept; a cancellation is passed on to the parts of a
+# setup or a retirement; a new attempt of a hook is made for the caller of the setup or the
+# retirement that dispatches it; and an invocation of unknown outcome is found in the status of
+# its instance. It removed none. What changed is in docs/proposals/ruling-42/log-conventions.md.
+# The names of ruling 42 (the vocabulary audit's N15; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed operation identity to idempotency key, and
+# `operationIdentity` to `idempotencyKey`, in OPS-008 to OPS-012, OPS-018, OPS-019, OPS-021,
+# OPS-024, OPS-025 and OPS-028, and the convention to that of idempotency keys and outcomes, in
+# the first line of this comment. It removed none and added none.
 
 - id: OPS-001
   layer: convention
@@ -120,12 +133,12 @@
     a request that is not dispatched says beyond its reason, it says in diagnostics, as IFC-025
     states: a result that reports invalid or conflict carries among them an error diagnostic
     whose `ruleId` is the ID of the promise that decided it. A repeat of an invocation that has
-    not ended, or of one that succeeded and whose outputs the engine no longer keeps, is not
-    dispatched and reports conflict, under OPS-032. A call that names a tool the engine does not
-    present is answered with no result: its reason, refused, is in the protocol's error, as
-    IFC-012 states. So is a request that the protocol has the engine reject with an error of its
-    own: where the engine could establish the instance that sent it, its reason is invalid and
-    is in that error, under IFC-036.
+    not ended is not dispatched and reports conflict, under OPS-032, and so does a repeat of one
+    that succeeded and whose outputs the engine no longer keeps, under OPS-034. A call that
+    names a tool the engine does not present is answered with no result: its reason, refused, is
+    in the protocol's error, as IFC-012 states. So is a request that the protocol has the engine
+    reject with an error of its own: where the engine could establish the instance that sent it,
+    its reason is invalid and is in that error, under IFC-036.
   vectors: []
 
 - id: OPS-006
@@ -171,30 +184,32 @@
   layer: convention
   level: must
   when: >-
-    An invocation is dispatched, whether or not its request carries an operation identity; or
-    a caller makes a request of a target that carries an operation identity.
+    An invocation is dispatched, whether or not its request carries an idempotency key; or a
+    caller makes a request of a target that carries an idempotency key.
   then: >-
-    An identity that a request carries is scoped to that caller, that target and the instance
-    that sent the request. At most one invocation exists for one caller, one sending instance,
-    one target and one identity. The engine keeps, as its own state and apart from the records,
-    what repeats and reconciliations need, for every invocation: its operation identity where it
-    carries one, the engine's ID for it, its state, a digest of its contents, its operation, its
-    caller, the instance it was dispatched to, the Conduit it was dispatched through where it
-    went through one, the target that authorized it and, for a control, the values it was sent.
-    No purge touches that state.
+    An idempotency key that a request carries is scoped to that caller, that target and the
+    instance that sent the request. At most one invocation exists for one caller, one sending
+    instance, one target and one idempotency key. The engine keeps, as its own state and apart
+    from the records, what repeats and reconciliations need, for every invocation: its
+    idempotency key where it carries one, the engine's ID for it, its state, a digest of its
+    contents, its operation, its caller, the instance it was dispatched to, the Conduit it was
+    dispatched through where it went through one, the target that authorized it and, for a
+    control, the values it was sent. No purge touches that state.
   observable: >-
     A repeat of the request, from the instance that sent it, for that caller and to that target,
     is answered from that one invocation however many times the request was sent, under OPS-009,
-    OPS-012, OPS-024 and OPS-032. The same identity sent by another caller, by another instance
-    for the same caller, or to another target, belongs to another invocation. The instance that
-    sends a request an actor makes on its own behalf is that actor, and the instance that sends
-    an onward request is the one that makes it: a request an Agent sends itself and an onward
-    request that a Resource sends for that Agent, with one identity and one target, are two
-    invocations. The identity that the engine gives a setup hook or a retire hook is the one
-    exception to this scope: it is scoped to the instance alone, under OPS-028. A purge under
-    REC-004 does not change what a repeat or a reconciliation finds. How the digest is computed
-    is DL2 of the implementation-defined list, and the outputs of an invocation that succeeded
-    are kept for a repeat for as long as DL10 says, under OPS-009.
+    OPS-012, OPS-024, OPS-032 and OPS-034. The same idempotency key sent by another caller, by
+    another instance for the same caller, or to another target, belongs to another invocation.
+    The instance that sends a request an actor makes on its own behalf is that actor, and the
+    instance that sends an onward request is the one that makes it: a request an Agent sends
+    itself and an onward request that a Resource sends for that Agent, with one idempotency key
+    and one target, are two invocations. The idempotency key that the engine gives a setup hook
+    or a retire hook is the one exception to this scope: it is scoped to the instance alone,
+    under OPS-028, and the caller kept for such a hook's invocation is that of its latest
+    attempt. A purge under REC-004 does not change what a repeat or a reconciliation finds. How
+    the digest is computed is DL2 of the implementation-defined list, and the outputs of an
+    invocation that succeeded are kept for a repeat for as long as DL10 says, under OPS-009,
+    after which a repeat reports conflict, under OPS-034.
   vectors: []
 
 - id: OPS-009
@@ -202,7 +217,7 @@
   level: must
   when: >-
     A request arrives from the instance that sent an earlier request, with the same caller,
-    target, operation identity and contents as that request; the invocation that request began
+    target, idempotency key and contents as that request; the invocation that request began
     succeeded; and the engine still keeps its outputs.
   then: >-
     The request is a repeat, not a new request. Nothing is dispatched, and the result is that
@@ -218,11 +233,11 @@
     of an invocation that succeeded for as long as DL10 of the implementation-defined list says.
     An operation that declares no outputs has none to lose: a repeat of an invocation of it that
     succeeded is always answered so, with an empty map as its `structuredContent`. A repeat of
-    an invocation that has not ended, or of one that succeeded and whose outputs the engine no
-    longer keeps, reports conflict under OPS-032; a repeat of one whose outcome is unknown is
-    OPS-012, and of one that failed OPS-024. A repeat is a request through a Conduit, and the
-    access decision is made for it like any other, under ACC-036: a repeat sent through a
-    Conduit that has been closed reports refused under ACC-011.
+    an invocation that has not ended reports conflict under OPS-032, and one of an invocation
+    that succeeded and whose outputs the engine no longer keeps under OPS-034; a repeat of one
+    whose outcome is unknown is OPS-012, and of one that failed OPS-024. A repeat is a request
+    through a Conduit, and the access decision is made for it like any other, under ACC-036: a
+    repeat sent through a Conduit that has been closed reports refused under ACC-011.
   vectors: []
 
 - id: OPS-010
@@ -230,7 +245,7 @@
   level: must
   when: >-
     A request arrives from the instance that sent the request of an existing invocation, with
-    that invocation's caller, target and operation identity and with different contents: another
+    that invocation's caller, target and idempotency key and with different contents: another
     operation, or arguments that are not equal under SCH-007 once the defaults are filled in, as
     OPS-009 states.
   then: >-
@@ -244,13 +259,13 @@
   layer: convention
   level: must
   when: >-
-    A request arrives carrying no operation identity.
+    A request arrives carrying no idempotency key.
   then: >-
     It is a new invocation. It is not treated as a repeat of an earlier request because its
     contents match.
   observable: >-
-    Two requests with identical contents and no identity are two invocations, each with its own
-    ID under IFC-006 and its own records, and the implementation receives two calls.
+    Two requests with identical contents and no idempotency key are two invocations, each with
+    its own ID under IFC-006 and its own records, and the implementation receives two calls.
   vectors: []
 
 - id: OPS-012
@@ -258,16 +273,16 @@
   level: must
   when: >-
     A request arrives that matches the request of an invocation whose outcome is unknown, as
-    OPS-009 describes a match: from the same instance, with the same caller, target, operation
-    identity and contents. It is a repeat.
+    OPS-009 describes a match: from the same instance, with the same caller, target, idempotency
+    key and contents. It is a repeat.
   then: >-
     The repeat is dispatched as a new attempt only if the operation's contract declares
     `deduplicates: true` and the implementation is not marked `plain`. Otherwise nothing is
     dispatched, and the result gives the state unknown.
   observable: >-
     Where the contract does not declare it, or the implementation is plain and so never receives
-    the operation identity, the implementation receives no further call for the invocation. A
-    new attempt carries the same operation identity as the first and, like any dispatch, needs
+    the idempotency key, the implementation receives no further call for the invocation. A new
+    attempt carries the same idempotency key as the first and, like any dispatch, needs
     the request to be permitted under ACC-001.
     Where the new attempt goes through another Conduit than the attempt before it, the
     invocation counts as dispatched through that Conduit, as OPS-024 states.
@@ -300,7 +315,10 @@
     reports refused. The request is the operation `reconcile.v1`, which names the invocation by
     the ID the engine gave it. The instance that sent the invocation's request learns that ID
     from the `_meta` of the request's result, or of the result of a repeat of it, under IFC-025,
-    or from the records, under REC-002. The target is the one that authorized the request being
+    or from the records, under REC-002, or from the status of the instance that the invocation
+    was dispatched to or names, under LIF-013, which lists it until it is reconciled: so an
+    actor finds there a hook, which no actor sends, and an invocation whose result was lost and
+    whose records were purged. The target is the one that authorized the request being
     reconciled where the invocation is of a management verb, and otherwise the Pool that owns
     the instance the invocation was dispatched to, or `management` where that instance is not a
     Resource or the Pool that owns it is retired, as ACC-033 states. Where the instance that the
@@ -312,22 +330,25 @@
     a close changes beside the outcome is LIF-028, and what that of a control changes is
     REV-010. Where a setup or a retirement of unknown outcome asked for a run or for its stop,
     what the actor checks includes the state of the run, which inspecting the instance reports
-    under PRV-009. OPS-031 says which input of `reconcile.v1` makes a request invalid where it
-    does not belong.
+    under PRV-009. An actor may reconcile a retirement whose retire hook ended unknown, which
+    confirms the shutdown under LIF-028 although the hook's outcome is still unknown; otherwise
+    every further retirement ends unknown until the hook itself is reconciled, under OPS-021 and
+    OPS-022, and so does every further setup while a setup hook is unknown. OPS-031 says which
+    input of `reconcile.v1` makes a request invalid where it does not belong.
   vectors: []
 
 - id: OPS-018
   layer: convention
   level: must not
   when: >-
-    Requests that one instance sends for one caller to one target, and that carry one operation
-    identity, are lost, delayed, reordered or repeated, or the engine or the implementation
-    handling them stops and restarts.
+    Requests that one instance sends for one caller to one target, and that carry one
+    idempotency key, are lost, delayed, reordered or repeated, or the engine or the
+    implementation handling them stops and restarts.
   then: >-
     The effect is applied more than once.
   observable: >-
-    Inspecting what the effect changes shows it applied at most once for that identity, in
-    every ordering of those events.
+    Inspecting what the effect changes shows it applied at most once for that idempotency key,
+    in every ordering of those events.
   vectors: []
 
 # --- Added by the consolidation rulings (plan-audit ruling 28).
@@ -342,8 +363,8 @@
     The request is an operation of a capability that `management`, `access` or a Pool offers,
     and every promise about operations and about access applies to it as to any other.
   observable: >-
-    Such a request needs an open Conduit that lists it, may carry an operation identity, ends in
-    one of the ways the definitions list, and leaves a record. Without an operation identity it
+    Such a request needs an open Conduit that lists it, may carry an idempotency key, ends in
+    one of the ways the definitions list, and leaves a record. Without an idempotency key it
     is a new invocation each time, under OPS-011. The capabilities are those of the core
     package: `object-management.v1`, which `management` offers, `access-control.v1`, which
     `access` offers, and `pool-management.v1`, which every Pool offers, under CTR-004. Each verb
@@ -378,17 +399,17 @@
     hook from an earlier setup or retirement has the outcome unknown.
   then: >-
     That hook is not dispatched again, except as a new attempt of the same invocation where
-    OPS-012 dispatches one, with the operation identity that OPS-028 gave it.
+    OPS-012 dispatches one, with the idempotency key that OPS-028 gave it.
   observable: >-
     A hook whose outcome is unknown, and whose operation does not declare `deduplicates: true`
     or whose implementation is plain, receives no further call however often the instance is set
     up or retired, until it is reconciled under OPS-014. One whose operation declares it, and
     whose implementation is not plain, is dispatched as a new attempt on the conditions of
-    OPS-012, with the identity it carried before, so its implementation recognizes it. A hook
-    that succeeded is not dispatched again, and one that failed is dispatched as a new attempt
-    under OPS-024, as OPS-028 states. The other parts of a further setup leave what is done
-    already as it is: an open Conduit, a ready Resource and a running run are left as they are,
-    under CON-004, POOL-013 and PRV-007.
+    OPS-012, with the idempotency key it carried before, so its implementation recognizes it. A
+    hook that succeeded is not dispatched again, and one that failed is dispatched as a new
+    attempt under OPS-024, as OPS-028 states. The other parts of a further setup leave what is
+    done already as it is: an open Conduit, a ready Resource and a running run are left as they
+    are, under CON-004, POOL-013 and PRV-007.
   vectors: []
 
 - id: OPS-022
@@ -445,8 +466,8 @@
   level: must
   when: >-
     A request arrives that matches the request of an invocation whose outcome is failed, as
-    OPS-009 describes a match: from the same instance, with the same caller, target, operation
-    identity and contents. It is a repeat.
+    OPS-009 describes a match: from the same instance, with the same caller, target, idempotency
+    key and contents. It is a repeat.
   then: >-
     The repeat is dispatched as a new attempt. An invocation counts as dispatched through the
     Conduit of its latest attempt.
@@ -457,11 +478,11 @@
     arrive through another Conduit than the earlier request did: through the replacement of a
     closed declared Conduit, which keeps its local name and so its tool names under LIF-009, or
     through another Conduit of the same consumer to the same target that lists the operation.
-    OPS-008 does not put the Conduit in the scope of an identity, so the request is a repeat all
-    the same. From the new attempt on, the Conduit of that attempt is the one the invocation was
-    dispatched through, and a close of it while the invocation runs has the effect that ACC-034
-    states. The same holds for a new attempt that OPS-012 dispatches. A repeat that is not
-    dispatched, under OPS-009 or OPS-032, changes none of this.
+    OPS-008 does not put the Conduit in the scope of an idempotency key, so the request is a
+    repeat all the same. From the new attempt on, the Conduit of that attempt is the one the
+    invocation was dispatched through, and a close of it while the invocation runs has the
+    effect that ACC-034 states. The same holds for a new attempt that OPS-012 dispatches. A
+    repeat that is not dispatched, under OPS-009, OPS-032 or OPS-034, changes none of this.
   vectors: []
 
 # --- Added with the core package (plan-audit ruling 37; point P10 of the ruling on the core
@@ -472,7 +493,7 @@
   level: must
   when: >-
     A request arrives from the instance that sent an earlier request, with the same caller,
-    target, operation identity and contents as that request, which ended with a reason and no
+    target, idempotency key and contents as that request, which ended with a reason and no
     outcome.
   then: >-
     It is a new request, and is decided afresh. It is not answered with the earlier reason.
@@ -529,8 +550,23 @@
     response to the request, so a cancelled invocation is usually unknown until it is reconciled
     under OPS-014, as OPS-013 states. A connection over Streamable HTTP that drops while the
     request is in progress closes its stream, and so cancels the invocation. A `tasks/cancel` is
-    decided under the Conduit the invocation was dispatched through, as IFC-016 states. How long
-    the engine waits for a result is DL3 and DL10 of the implementation-defined list.
+    decided under the Conduit the invocation was dispatched through, as IFC-016 states. Where
+    the engine itself implements the invocation in parts, as it does `set-up.v1`, `retire.v1`
+    and `retire-with-resources.v1`, it passes the cancellation on to each part in progress: by
+    the protocol's means for a call that it sent, such as a hook, a read of a secret or a
+    provider call other than a stop, and, for a part whose implementation is `engine`, such as
+    an `open.v1` under CON-004, an entry's setup under POOL-013 or a Resource's retirement under
+    LIF-021, by cancelling that invocation as this promise cancels one. A cancelled part has not
+    succeeded, so no later part begins, under TPL-012, and `retire-with-resources.v1` dispatches
+    no further retirement, under LIF-021. Every retirement still asks for its stop, under
+    TPL-009, and a stop in progress is not cancelled: the instance is retired from the moment
+    its retirement was dispatched, under LIF-005, so leaving out the stop gains nothing, and the
+    protocol lets a receiver ignore what it cannot cancel. Parts that have ended are not undone.
+    The outcome of a setup or a retirement is then OPS-022's, and that of
+    `retire-with-resources.v1` LIF-021's. A cancelled part's invocation ends when the
+    cancellation is sent, with the outcome that this promise gives it, so an onward request that
+    names it is refused from then on, under ACC-019. How long the engine waits for a result is
+    DL3 and DL10 of the implementation-defined list.
   vectors: []
 
 # --- Added by the second round of the re-audit (docs/proposals/reaudit/round-2/DECISIONS.md;
@@ -542,24 +578,31 @@
   when: >-
     The engine dispatches a setup hook or a retire hook, under TPL-017 or TPL-018.
   then: >-
-    It gives the invocation an operation identity, derived from the instance's ID and from the
-    hook's operation, and sends it. The identity is the same in every setup of that instance, or
-    in every retirement of it, and is scoped to the instance alone, not to a caller, a sending
-    instance or a target: a later dispatch of the hook matches the earlier invocation as a
-    repeat does under OPS-009, whoever is the caller of the setup or the retirement it belongs
-    to. So a further setup or retirement dispatches the hook again only as a new attempt, where
-    OPS-012 or OPS-024 would dispatch one for a repeat, and a hook that succeeded is not
-    dispatched again, as OPS-009 dispatches nothing for a repeat.
+    It gives the invocation an idempotency key, derived from the instance's ID and from the
+    hook's operation, and sends it. The idempotency key is the same in every setup of that
+    instance, or in every retirement of it, and is scoped to the instance alone, not to a
+    caller, a sending instance or a target: a later dispatch of the hook matches the earlier
+    invocation as a repeat does under OPS-009, whoever is the caller of the setup or the
+    retirement it belongs to. So a further setup or retirement dispatches the hook again only as
+    a new attempt, where OPS-012 or OPS-024 would dispatch one for a repeat, and a hook that
+    succeeded is not dispatched again, as OPS-009 dispatches nothing for a repeat. A new attempt
+    is made for the caller of the setup or the retirement within which it is dispatched, as
+    TPL-017 and TPL-018 state, and from then on that is the caller of the hook's invocation, as
+    an invocation counts as dispatched through the Conduit of its latest attempt under OPS-024.
   observable: >-
-    The hook's implementation receives the identity in
-    `io.github.shrav-k.conduit/operationIdentity` under IFC-006, whether or not the caller of
+    The hook's implementation receives the idempotency key in
+    `io.github.shrav-k.conduit/idempotencyKey` under IFC-006, whether or not the caller of
     the setup or the retirement supplied one of its own. An implementation whose operation
     declares `deduplicates: true` therefore recognizes the new attempt that OPS-021 dispatches
     when a setup or a retirement runs again, and the effect is applied once. The setup hook and
-    the retire hook of one instance have different identities, because their operations differ.
-    A further setup that another actor sends finds the hook's earlier invocation all the same,
-    and does not run a hook that succeeded a second time. An implementation marked `plain`
-    receives no identity, under IFC-007, and is never sent a new attempt, under OPS-012.
+    the retire hook of one instance have different idempotency keys, because their operations
+    differ. A further setup that another actor sends finds the hook's earlier invocation all the
+    same, and does not run a hook that succeeded a second time. An implementation marked `plain`
+    receives no idempotency key, under IFC-007, and is never sent a new attempt, under OPS-012.
+    The record of each attempt names its own caller, under REC-002, and the records of earlier
+    attempts keep theirs. An onward request that names the invocation, made by an earlier
+    attempt still running on a machine that was cut off, is decided for the latest caller: a
+    limit of this version.
   vectors: []
 
 # --- Added by the last pass of the second round of the re-audit
@@ -649,7 +692,7 @@
   level: must
   when: >-
     A request arrives that matches, as OPS-009 describes a match, the request of an invocation
-    that has not ended, or of one that succeeded and whose outputs the engine no longer keeps.
+    that has not ended.
   then: >-
     It is a repeat. Nothing is dispatched, and it reports conflict. Its result's `_meta` holds
     the engine's ID for that invocation.
@@ -657,14 +700,14 @@
     The implementation receives no further call for the invocation, and the invocation's state
     is unchanged. The result carries the reason conflict and no outcome, holds
     `io.github.shrav-k.conduit/invocation` and no outputs, and its `isError` is true, under
-    IFC-025. The ID is the one by which `reconcile.v1` names the invocation, under OPS-014, so a
-    caller that lost the result of its request learns the ID by repeating it. Once an invocation
-    that had not ended has ended, a later repeat is answered by its outcome under OPS-009,
-    OPS-012 or OPS-024. Where the invocation succeeded and its outputs are no longer kept, every
-    repeat reports conflict, and the outcome is in the records of the invocation, under REC-002.
-    How long the engine keeps the outputs is DL10 of the implementation-defined list. A repeat
-    is decided like any other request, under ACC-036: one sent through a Conduit that has been
-    closed reports refused under ACC-011, which OPS-023 puts first.
+    IFC-025. The error diagnostic that IFC-025 requires has the `ruleId` OPS-032, so the caller
+    knows that a later repeat is answered once the invocation has ended. The ID is the one by
+    which `reconcile.v1` names the invocation, under OPS-014, so a caller that lost the result
+    of its request learns the ID by repeating it. Once the invocation has ended, a later repeat
+    is answered by its outcome under OPS-009, OPS-012 or OPS-024, or reports conflict under
+    OPS-034 where it succeeded and its outputs are no longer kept. A repeat is decided like any
+    other request, under ACC-036: one sent through a Conduit that has been closed reports
+    refused under ACC-011, which OPS-023 puts first.
   vectors: []
 
 # --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
@@ -688,4 +731,31 @@
     holds no part of it, under SEC-003. A value given to a control is checked against the
     type's schema too, under REV-015. Where the actor is not permitted, OPS-023 gives refused
     first.
+  vectors: []
+
+# --- Added by ruling 42 (docs/proposals/ruling-42/README.md; row 31 of
+# --- docs/proposals/ruling-41/open-decisions.md, on R22): split from OPS-032, which keeps
+# --- a repeat of an invocation that has not ended.
+
+- id: OPS-034
+  layer: convention
+  level: must
+  when: >-
+    A request arrives that matches, as OPS-009 describes a match, the request of an invocation
+    that succeeded and whose outputs the engine no longer keeps.
+  then: >-
+    It is a repeat. Nothing is dispatched, and it reports conflict. Its result's `_meta` holds
+    the engine's ID for that invocation.
+  observable: >-
+    The implementation receives no further call for the invocation, and the invocation's state
+    is unchanged. The result carries the reason conflict and no outcome, holds
+    `io.github.shrav-k.conduit/invocation` and no outputs, and its `isError` is true, under
+    IFC-025. The error diagnostic that IFC-025 requires has the `ruleId` OPS-034, which tells
+    this case from OPS-032: the effect has occurred, every later repeat reports conflict too,
+    and the outcome succeeded is in the records of the invocation, under REC-002. How long the
+    engine keeps the outputs is DL10 of the implementation-defined list. Only an operation that
+    declares outputs reaches this promise: a repeat of an invocation of one that declares none,
+    and that succeeded, is answered from its outcome under OPS-009. A repeat is decided like any
+    other request, under ACC-036: one sent through a Conduit that has been closed reports
+    refused under ACC-011, which OPS-023 puts first.
   vectors: []

@@ -1,6 +1,6 @@
 # Implementation-defined behavior: what this specification deliberately leaves to each engine.
 # Owner rulings of 2026-11-05 (plan-audit rulings 31, 32, 33 and 37). An engine documents its
-# choice for every item, and that document is its runtime profile. A choice must keep every
+# choice for every item, and that document is its conformance document. A choice must keep every
 # promise. The conversion of the older text (decision DA3 of the docs audit,
 # docs/proposals/docs-audit/GAPS.md) added to DL1 when a graph's outputs become available, and
 # added DL14. The second round of the re-audit (docs/proposals/reaudit/round-2/) named the key
@@ -32,6 +32,31 @@
 # instance reports conflict under REV-014 (23); DL10 (6c); DL12, since a runtime provider runs
 # an implementation and one run serves one instance (2a); DL13 (26a); and DL15 (30, 5). It
 # added none. What changed is in docs/proposals/ruling-41/log-G5.md. DL14 is not reused.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md and the owner's answers to D8 and
+# D17. Applying them, it changed DL5, now the reports of providers: how long the engine waits
+# for the machines provider's report, how it learns its own hostname, and how often it asks
+# `inspect-run.v1` (rows 13 and 16); DL10: the time a retire hook is allowed, and that a repeat
+# reports conflict under OPS-034 once outputs are no longer kept (rows 3 and 31); and DL13:
+# what the mechanism puts in the input `identity` of `run.v1` (D17). It added DL16, the
+# engine's own runner: what a process it starts receives beside what PRV-023 passes (row 7,
+# with D8). DL14 is not reused. The integration of ruling 42
+# (docs/proposals/ruling-42/log-integration.md) changed DL13, which gives `identity` to a run on
+# the engine's own runner as to any other in place of a sentence of its own on stdio, and DL16,
+# which names what `identity` holds among what a process receives.
+# The names of ruling 42 (the vocabulary audit's N2 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the machines provider to the machine
+# provider, and "for which `local` stands" to "that `local` represents", in DL5. It removed none
+# and added none.
+# The names of ruling 42 (the vocabulary audit's N18; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the runtime profile to the conformance
+# document in the first lines of this comment. It changed no item.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed DL13, which also states how a runtime provider gets a refreshed credential, since no
+# provider call carries one, and DL16, which names an operating system such as Windows, on
+# which a process needs other variables in place of the six of PRV-023, as the case where the
+# engine states which it passes, and adds the runner's restart policy and what becomes of the
+# processes it started when the engine stops and starts again. It removed none and added none.
 
 - id: DL1
   subject: Order of a Pool's Resources
@@ -58,11 +83,15 @@
     Whether a request is not dispatched at once, reporting unavailable, or waits, and for how
     long.
 - id: DL5
-  subject: The machines provider's report
+  subject: Reports of providers
   document: >-
-    How often the engine asks the machines provider for its report under PRV-014, and what it
-    does while none arrives. What a request reports meanwhile, to an instance placed on a
-    machine reported unreachable, is PLC-023.
+    How often the engine asks the machine provider for its report under PRV-014, and how long
+    it waits for one before every machine but the one that `local` represents counts as
+    omitted, under PLC-023; how it learns its own hostname, which is the operating system's
+    unless the engine is configured with another, as the kubelet takes `--hostname-override`,
+    under PLC-026; and how often it asks a runtime provider for the state of a run with
+    `inspect-run.v1` of its own accord, under PRV-009. What a request reports meanwhile, to an
+    instance placed on a machine reported unreachable or omitted, is PLC-023.
 - id: DL6
   subject: First start
   document: >-
@@ -89,8 +118,10 @@
 - id: DL10
   subject: Limits
   document: >-
-    Sizes, counts, the time allowed for a call, how long the outputs of a succeeded invocation
-    are kept for a repeat under OPS-009, and behavior when storage is exhausted.
+    Sizes, counts, the time allowed for a call, a retire hook's among them, after which its part
+    ends unknown and the stop is asked for under TPL-009; how long the outputs of a succeeded
+    invocation are kept for a repeat under OPS-009, after which a repeat reports conflict under
+    OPS-034; and behavior when storage is exhausted.
 - id: DL11
   subject: Conduits during setup
   document: >-
@@ -105,12 +136,16 @@
 - id: DL13
   subject: Identifying consumers
   document: >-
-    The mechanism by which the engine establishes, under IFC-022, which instance a request
-    comes from: what a request presents, and how the engine establishes from it exactly one
-    instance or none, by a cryptographic proof of the instance that sent it wherever the request
-    crosses machines. Mutual TLS, SPIFFE and the authorization of the Model Context Protocol are
-    each one such mechanism. On one machine, over stdio, it is what the engine's own runner
-    gives the process it starts.
+    The mechanism by which the engine establishes, under IFC-022, which instance a request comes
+    from: what a request presents, and how the engine establishes from it exactly one instance
+    or none, by a cryptographic proof of the instance that sent it wherever the request crosses
+    machines. Mutual TLS, SPIFFE and the authorization of the Model Context Protocol are each
+    one such mechanism. For every run, on the engine's own runner as under any runtime provider,
+    it is also what the mechanism puts in the input `identity` of `run.v1`, under PRV-007, which
+    the runtime provider delivers under PRV-022, and the engine's own runner as PRV-003 has it:
+    the variable that holds the engine's address, and the file that holds the credential the run
+    presents, with its path and whether and when it is refreshed in place and, where it is, how
+    the runtime provider gets the new content, since no provider call carries it.
 - id: DL15
   subject: Generated names
   document: >-
@@ -118,3 +153,17 @@
     how far the template's part of a generated name is shortened. Whatever is chosen, the name
     satisfies OBJ-001 and OBJ-002. The generator of the Kubernetes API server, which appends
     five lowercase alphanumeric characters, is one choice that meets it.
+- id: DL16
+  subject: The engine's own runner
+  document: >-
+    What a process that the engine's own runner starts receives beyond what its item binds, what
+    `identity` holds under PRV-022, and the variables of the engine's environment that PRV-023
+    passes: its working directory, and the operating-system user and the login session it runs
+    in. Also how the list of further variables that PRV-023 passes is set on the runner, as
+    systemd's `PassEnvironment=` is set on a unit; on an operating system on which a process
+    needs other variables in place of `HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER`,
+    such as Windows, which it passes in their place, as the stdio clients of the Model Context
+    Protocol's SDKs pass `SYSTEMROOT`, `TEMP` and `USERPROFILE` there; the runner's restart
+    policy, under PRV-010; and what becomes of the processes it started when the engine stops
+    and when it starts again. The engine's own runner is the runtime provider here, so this item
+    is the contract that PRV-011 and SEC-020 leave to a runtime provider.

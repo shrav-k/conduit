@@ -52,6 +52,19 @@
 # now carries what GRA-022 and GRA-003 said of declared Conduits, and a closed Conduit is
 # removed. It added none. What changed is in docs/proposals/ruling-41/log-G3.md. The removed
 # IDs are not reused.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md, changed CON-008: the record of a
+# closing names the invocation within which the Conduit was closed, or states the cause, and
+# the engine reads a secret through a retired consumer's Conduit for a connection that the
+# consumer's retirement makes. It added and removed none. The owner's answer D6 keeps
+# CON-008's refused for a request to a retired target. What changed is in
+# docs/proposals/ruling-42/log-secrets.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in CON-007 and CON-008. It
+# removed none and added none.
+# The editorial fixes of ruling 42 (the vocabulary audit's E19; log
+# docs/proposals/ruling-42/log-editorial.md) changed CON-007, whose observable says "after it",
+# where it said "after the event". It removed none and added none.
 
 - id: CON-001
   layer: language
@@ -125,12 +138,11 @@
   when: >-
     Anything happens to the consumer of an open Conduit other than its being retired or declared
     lost, including a crash, a condition its type defines such as paused, or the machine of its
-    location being reported unreachable, under PLC-023.
+    node being reported unreachable, under PLC-023.
   then: >-
     The Conduit stays open.
   observable: >-
-    Inspecting the Conduit after the event reports the state ready and the same operations as
-    before.
+    Inspecting the Conduit after it reports the state ready and the same operations as before.
   vectors: []
 
 - id: CON-008
@@ -149,18 +161,23 @@
   observable: >-
     A Conduit's shutdown is confirmed when it is closed, however it was closed, under LIF-024,
     so it is removed at once: a request that names it afterwards, to inspect it among others,
-    reports invalid under OPS-029, and its records are kept as LIF-019 states. A request to a
-    retired target has no open Conduit to be made through, which is the case ACC-001 and ACC-011
-    state. A consumer's shutdown is confirmed as LIF-024 states: when an invocation of
-    `retire.v1` for it succeeds, at once where no setup of it was ever dispatched, or when a
-    reconciliation records that its retirement occurred, under LIF-028. From the moment the
-    consumer is retired until then, the Conduit's state is as it was, and the Conduit permits
-    only the requests of the consumer's retirement, as ACC-039 states: the consumer's retire
-    hook can make an onward request through the consumer's own Conduit, and the engine can read
-    a secret through it for a run that the retirement asks for, in a further retirement under
-    LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the Conduit
-    stays so until the shutdown is confirmed, the consumer is declared lost, or an actor closes
-    the Conduit under ACC-012.
+    reports invalid under OPS-029, and its records are kept as LIF-019 states. The record of its
+    closing names, under REC-002, the invocation within which it was closed and that
+    invocation's caller: the close itself, the target's retirement, the invocation of
+    `declare-lost.v1` for the node of an end, or the invocation of `retire.v1` or
+    `reconcile.v1` that confirmed the consumer's shutdown; where it was closed within no
+    invocation, as under PLC-024, the record states the cause. A request to a retired target has
+    no open Conduit to be made through, which is the case ACC-001 and ACC-011 state. A
+    consumer's shutdown is confirmed as LIF-024 states: when an invocation of `retire.v1` for it
+    succeeds, at once where no setup of it was ever dispatched, or when a reconciliation records
+    that its retirement occurred, under LIF-028. From the moment the consumer is retired until
+    then, the Conduit's state is as it was, and the Conduit permits only the requests of the
+    consumer's retirement, as ACC-039 states: the consumer's retire hook can make an onward
+    request through the consumer's own Conduit, and the engine can read a secret through it for
+    a run that the retirement asks for, or a connection that it makes, in a further retirement
+    under LIF-026 as in the first. Where the consumer's shutdown stays pending or unknown, the
+    Conduit stays so until the shutdown is confirmed, the consumer is declared lost, or an actor
+    closes the Conduit under ACC-012.
   vectors: []
 
 - id: CON-011

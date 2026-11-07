@@ -47,6 +47,32 @@
 # include the run that TPL-018 asks for, as OPS-022 counts them. Its coverage check (the same
 # log, "Coverage check") changed TPL-009, which asks for the stop whatever came of the retire
 # hook, and TPL-018, which asks for a run only where the hook is to be dispatched.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md, changed TPL-009, TPL-012, TPL-017
+# and TPL-018: a retirement connects to a `remote` item to serve its retire hook, and asks for
+# the stop when it is cancelled; no part of a setup is begun once the instance is retired or
+# the setup cancelled, and the run and the connections stand at one position in its order;
+# and a type may require a hook and state its default. It added and removed none. What
+# changed is in docs/proposals/ruling-42/log-secrets.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in TPL-018. It removed none
+# and added none.
+# The names of ruling 42 (the vocabulary audit's N15 and N16; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed operation identity to idempotency key in
+# TPL-017 and TPL-018, and the restrictions that the setup hook carries to its filters in
+# TPL-017. It removed none and added none.
+# The editorial fixes of ruling 42 (the vocabulary audit's E8 and E11; log
+# docs/proposals/ruling-42/log-editorial.md) changed TPL-008, whose observable no longer defines
+# the setup operation and the retire operation of an instance, since `set-up.v1` and
+# `retire.v1` are themselves those operations, and TPL-017, whose observable says that the hook
+# carries the filters, where it said that its request does, since a hook is not a request. It
+# removed none and added none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed TPL-018: a retirement connects anew to the `remote` item that serves its retire hook
+# where no connection to it lasts whose values the engine holds, as after the engine restarts,
+# so the reads for the hook belong to the retirement, as row 9 of the open questions has it,
+# and none is the read again of SEC-023 that ACC-039 would refuse. It removed none and added
+# none.
 
 - id: TPL-001
   layer: language
@@ -146,11 +172,9 @@
     is selected in the `implementation` map.
   observable: >-
     The request names the instance in the input `instance` of `set-up.v1` or of `retire.v1`, and
-    is made of the target that ACC-033 names. The setup operation and the retire operation of an
-    instance mean these two invocations, and its setup and its retirement are what they do: what
-    a setup does is TPL-012, and what a retirement does is TPL-009. A Conduit is set up by an
-    invocation of `open.v1` and retired by one of `close.v1`, and a request for `set-up.v1` or
-    `retire.v1` that names one is LIF-032.
+    is made of the target that ACC-033 names. What a setup does is TPL-012, and what a
+    retirement does is TPL-009. A Conduit is set up by an invocation of `open.v1` and retired by
+    one of `close.v1`, and a request for `set-up.v1` or `retire.v1` that names one is LIF-032.
   vectors: []
 
 - id: TPL-009
@@ -160,23 +184,30 @@
     An instance is retired by an invocation of `retire.v1`.
   then: >-
     Within that invocation, where a setup of the instance was ever dispatched, the engine
-    dispatches its retire hook, where its template selects one, under TPL-018, and then asks
-    its runtime provider to stop its run, where an item that is run is selected for it, under
+    dispatches its retire hook, where its template selects one, under TPL-018, and then asks its
+    runtime provider to stop its run, where an item that is run is selected for it, under
     PRV-008, whatever came of the hook: where it succeeded, failed or ended unknown, and where
-    it was not dispatched. Nothing else is done, apart from the run that TPL-018 asks for to
-    serve the hook, with the reads of secrets that it needs under SEC-010, and the closing of
-    its Conduits under CON-008.
+    it was not dispatched. Nothing else is done, apart from the run or the connection that
+    TPL-018 asks for to serve the hook, with the reads of secrets that it needs under SEC-010
+    and SEC-013, and the closing of its Conduits under CON-008. Where the invocation is
+    cancelled under OPS-027 before the hook is dispatched, the hook is not dispatched, and the
+    stop is asked for all the same.
   observable: >-
     An instance for which no setup was ever dispatched gets neither: nothing is dispatched, no
     stop is asked for, and the invocation succeeds at once, as LIF-025 states. With no retire
     hook and no item that is run, the invocation dispatches nothing and succeeds at once. The
-    hook, with the run that TPL-018 asks for to serve it, and the stop are the parts of the
-    retirement, and the invocation succeeds only if each of them that it has succeeded, as
-    OPS-022 counts them. The stop is asked for whether or not
-    the run is reported running, and stopping a run that is not running succeeds, so a run that
-    a setup of unknown outcome may have left running is stopped too. When the Conduits of which
-    the instance is the consumer are closed, and what they permit meanwhile, is CON-008 and
-    ACC-039.
+    hook, with the run or the connection that TPL-018 asks for to serve it, and the stop are the
+    parts of the retirement, and the invocation succeeds only if each of them that it has
+    succeeded, as OPS-022 counts them. The stop is asked for whether or not the run is reported
+    running, and stopping a run that is not running succeeds, so a run that a setup of unknown
+    outcome may have left running is stopped too. The stop does not wait on the hook, as
+    Kubernetes kills a container whose PreStop hook failed: a hook that did not succeed keeps
+    the shutdown from being confirmed, under OPS-022 and LIF-024, and a further retirement
+    dispatches it again as OPS-021 and OPS-028 allow, against a run asked for anew under
+    TPL-018, as Terraform runs a failed destroy-time provisioner again at the next apply. Each
+    connection to a `remote` item for the instance ends when the retirement ends, under SEC-013.
+    When the Conduits of which the instance is the consumer are closed, and what they permit
+    meanwhile, is CON-008 and ACC-039.
   vectors: []
 
 - id: TPL-010
@@ -216,24 +247,32 @@
   when: >-
     An instance is set up by an invocation of `set-up.v1`.
   then: >-
-    The setup is these parts, in this order: first opening its declared Conduits, under
-    CON-004, or for a Pool setting up the Resources of its entries, under POOL-013; then asking
-    for its run, under PRV-007, and connecting to each `remote` item among its selected
-    implementations, under IFC-041; then dispatching its setup hook, under TPL-017. A part is
-    begun only once every part that comes before it in that order, and is not marked optional,
-    has succeeded. Nothing else is dispatched, apart from the reads of secrets that the run or a
-    connection needs, under SEC-010 and SEC-013.
+    The setup is these parts, in this order: first opening its declared Conduits, under CON-004,
+    or for a Pool setting up the Resources of its entries, under POOL-013; then asking for its
+    run, under PRV-007, and connecting to each `remote` item among its selected implementations,
+    under IFC-041; then dispatching its setup hook, under TPL-017. A part is begun only once
+    every part that comes before it in that order, and is not marked optional, has succeeded. No
+    part is begun once the instance is retired, or once the setup is cancelled under OPS-027.
+    Nothing else is dispatched, apart from the reads of secrets that the run or a connection
+    needs, under SEC-010 and SEC-013.
   observable: >-
     No record shows a part begun before every earlier part that is not marked optional has
-    succeeded: one that failed, ended unknown or was not dispatched leaves every later part not
-    begun, and the setup's outcome is as OPS-022 gives it. A run is asked for only once the
-    declared Conduits are open, so the reads it needs go through Conduits that are open. Among
-    the Resources of a Pool's entries, POOL-013 gives the order. An instance whose selected
-    implementations include no item that is run and no `remote` item that names `headers`, and
-    whose template selects no setup hook, dispatches nothing in its setup beyond the first
-    part. A further setup leaves an open Conduit, a ready Resource and a running run as they
-    are, under CON-004, POOL-013 and PRV-007, and dispatches the hook again only as OPS-021 and
-    OPS-028 allow.
+    succeeded: one that failed, ended unknown, was cancelled or was not dispatched leaves every
+    later part not begun, and the setup's outcome is as OPS-022 gives it. The run and the
+    connections stand at one position in the order: none of them waits for another, and the hook
+    waits for all of them. A run is asked for only once the declared Conduits are open, so the
+    reads it needs go through Conduits that are open. Among the Resources of a Pool's entries,
+    POOL-013 gives the order. Where the instance is retired during its setup, under PLC-017 or
+    PLC-024, the parts already dispatched end as they end, the setup's outcome is OPS-022's and
+    the instance stays retired, under LIF-006 and LIF-028, as the kubelet starts no new
+    container of a Pod that is terminating; a run that such a part started is stopped by a
+    further retirement, under LIF-026, or by the stop that LIF-036 asks for when the instance is
+    unregistered. An instance whose selected implementations include no item that is run and no
+    `remote` item that names `headers`, and whose template selects no setup hook, dispatches
+    nothing in its setup beyond the first part. A further setup leaves an open Conduit, a ready
+    Resource and a running run as they are, under CON-004, POOL-013 and PRV-007, connects to
+    each `remote` item again and reads again, under SEC-013, and dispatches the hook again only
+    as OPS-021 and OPS-028 allow.
   vectors: []
 
 # --- Added by the closing pass of the second round of the re-audit
@@ -267,16 +306,20 @@
   then: >-
     Within each invocation of `set-up.v1` for the instance, as the last part of the setup under
     TPL-012, the engine dispatches `setup-hook.v1` to that implementation, through no Conduit,
-    for the caller of the setup, with the operation identity that OPS-028 gives it.
+    for the caller of the setup, with the idempotency key that OPS-028 gives it.
   observable: >-
     The hook is dispatched only once the declared Conduits are open, or the entries set up, and
     the run asked for or the `remote` item connected, under TPL-012, so its onward requests,
-    which are onward requests under ACC-016, go through Conduits that are open. Its request
-    carries the restrictions of the invocation of `set-up.v1` that it belongs to, under ACC-018,
-    and no `conduit`. In a further setup the hook is dispatched again only as OPS-021 and
-    OPS-028 allow. Its outcome counts in the setup's as OPS-022 states. `setup-hook.v1` carries
-    no mark of model work, so the hook starts none, under IMP-001, and neither does an onward
-    request that serves it, under IMP-008.
+    which are onward requests under ACC-016, go through Conduits that are open. It carries the
+    filters of the invocation of `set-up.v1` that it belongs to, under ACC-018, and no
+    `conduit`. In a further setup the hook is dispatched again only as OPS-021 and OPS-028
+    allow. Its outcome counts in the setup's as OPS-022 states. A template selects the hook in
+    its `implementation` map or, where its type lists `setup-hook.v1` under `requires`, takes
+    the default that the type states, under TPL-004. The hook's own contract states no default,
+    so a type that requires the hook and states none makes every template of it select one. A
+    type's default hook that is an item that is run counts with the template's other items under
+    TPL-019. `setup-hook.v1` carries no mark of model work, so the hook starts none, under
+    IMP-001, and neither does an onward request that serves it, under IMP-008.
   vectors: []
 
 - id: TPL-018
@@ -288,26 +331,41 @@
   then: >-
     Within that invocation, before the stop of TPL-009, the engine dispatches `retire-hook.v1`
     to that implementation, through no Conduit, for the caller of the retirement, with the
-    operation identity that OPS-028 gives it, where the hook is to be dispatched: where no
-    earlier invocation of it exists for the instance, or where OPS-012 or OPS-024 would
-    dispatch a new attempt of the earlier one, under OPS-021 and OPS-028. Where the hook is to
-    be dispatched, an item that is run is selected for the instance and its runtime provider
-    does not report the run running, the engine first asks for the run, under PRV-007. Where
-    the hook is not to be dispatched, no run is asked for, and the retirement goes on to the
-    stop.
+    idempotency key that OPS-028 gives it, where the hook is to be dispatched: where no
+    earlier invocation of it exists for the instance, or where OPS-012 or OPS-024 would dispatch
+    a new attempt of the earlier one, under OPS-021 and OPS-028. Where the hook is to be
+    dispatched, an item that is run is selected for the instance and its runtime provider does
+    not report the run running, the engine first asks for the run, under PRV-007. Where the hook
+    is to be dispatched, its implementation is a `remote` item and no connection to it lasts
+    whose values the engine holds, the engine first connects to it, under IFC-041 and SEC-013.
+    Where the hook is not to be dispatched, no run is asked for, no connection is made, and the
+    retirement goes on to the stop.
   observable: >-
-    A run asked for to serve the hook belongs to the retirement, and so does a read of a secret
-    for it, under SEC-011. A run is never asked for, and no secret read, for a hook that is not
-    dispatched again: one that succeeded, or one whose outcome is unknown and that OPS-012
-    does not dispatch as a new attempt. The hook's onward requests go through the Conduits of
-    which the instance is the consumer, which stay open until its shutdown is confirmed, under
-    CON-008, and which permit them under ACC-039. Where the run cannot be had, as where a read
+    A run asked for, or a connection made, to serve the hook belongs to the retirement, and so
+    does a read of a secret for it, under SEC-011. A connection that a setup made and that
+    lasts, but whose values the engine no longer holds, as after it restarts, counts as none
+    here: the retirement connects anew, with reads that belong to it, and sends the hook on no
+    connection whose secrets would be read again under SEC-023 for that setup's caller, a read
+    that ACC-039 refuses once the instance is retired. A run is never asked for, no connection
+    made and no secret read, for a hook that is not dispatched again: one that succeeded, or one
+    whose outcome is unknown and that OPS-012 does not dispatch as a new attempt. A hook
+    dispatched again in a further retirement may run against a new run, asked for under PRV-007
+    with reads of its own, since the earlier retirement asked for the stop whatever came of the
+    hook, under TPL-009: the hook must not depend on the state of a run that an earlier
+    retirement stopped. The hook's onward requests go through the Conduits of which the instance
+    is the consumer, which stay open until its shutdown is confirmed, under CON-008, and which
+    permit them under ACC-039. Where the run or the connection cannot be had, as where a read
     fails under SEC-012, the hook is not dispatched and reports unavailable, and the stop is
-    asked for all the same, under TPL-009. Where the instance's location was declared lost,
-    neither the run nor the hook is had, under PLC-027. No hook is dispatched for an instance
-    for which no setup was ever dispatched, under LIF-025.
-    `retire-hook.v1` carries no mark of model work, so the hook starts none, under IMP-001, and
-    neither does an onward request that serves it, under IMP-008.
+    asked for all the same, under TPL-009. Where the instance's node was declared lost, the
+    hook is not dispatched, and no run is asked for and no connection made for it, under
+    PLC-027. No hook is dispatched for an instance for which no setup was ever dispatched, under
+    LIF-025. A template selects the hook in its `implementation` map or, where its type lists
+    `retire-hook.v1` under `requires`, takes the default that the type states, under TPL-004.
+    The hook's own contract states no default, so a type that requires the hook and states none
+    makes every template of it select one. A type's default hook that is an item that is run
+    counts with the template's other items under TPL-019. `retire-hook.v1` carries no mark of
+    model work, so the hook starts none, under IMP-001, and neither does an onward request that
+    serves it, under IMP-008.
   vectors: []
 
 - id: TPL-019

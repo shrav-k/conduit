@@ -12,6 +12,17 @@
 # `inputSchema`, `outputSchema` and three hints), `requirement-spec.v1` (`inputs` alone) and
 # `applied-requirement.v1` (applied to a Conduit alone), under decisions 2, 3a, 7, 8a, 14,
 # 16 and 20 and alignment C20. The log is docs/proposals/ruling-41/log-core.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the owner's answer D10,
+# changed only the comment below on what the engine checks: a Type that offers
+# `secret-reveal.v1` offers no other capability (SEC-022). The log is
+# docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N8 to N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of `type-spec.v1` to
+# `nodeSelector`, of the schema `labels.v1`, which was `label-selector.v1`, and location to node
+# in its description.
+# The names of ruling 42 (the vocabulary audit's N1; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
+# in the comment below.
 #
 # The five kinds of contract document, and an applied requirement.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -20,7 +31,7 @@
 #   contract.v1             CTR-001 (the four top-level keys and no other; a name that has at
 #                           least one segment and then a version segment), OBJ-018, OBJ-020,
 #                           CTR-008 (the `spec` of a Schema contract is the schema itself)
-#   type-spec.v1            CTR-004 (`family` is required; `placement` is a label selector
+#   type-spec.v1            CTR-004 (`family` is required; `nodeSelector` is a label selector
 #                           under PLC-007; `records` may be given; a Type of the family Pool
 #                           lists the core package's `pool-management.v1` under `offers`),
 #                           TPL-002 (a type is of one of the four families that have one)
@@ -51,17 +62,17 @@
 # keywords are closed by `schema.v1` (SCH-002). The keys of a Requirement's `inputs` are
 # names, stated with `propertyNames` (OBJ-022).
 #
-# Not expressed here, and checked by the engine: that every reference resolves to a contract
-# of the right kind; that a capability lists no two operations with one export name (CTR-007)
-# and, outside the core package, none that is reserved (CTR-003); that no Operation contract
-# outside the core package is marked `reservedToRoot` (CTR-009); that each key of a control's
-# `changes` is an input the control declares and each pointer a place its type's schema
-# describes, that its `inputSchema` requires `revision` and that it declares no output
-# `settings` (CTR-006); default implementations (CTR-004, TPL-004); that a Type that offers a
-# provider capability is of the family Resource and offers no other (PRV-001), that one that
-# offers `package-source.v1` requires `schemes` (PRV-016) and that one that offers
-# `secret-reveal.v1` lists no control (SEC-005); that a `default` satisfies its schema
-# (SCH-019); and compatibility between releases (NAM-024).
+# Not expressed here, and checked by the engine: that every reference resolves to a contract of
+# the right kind; that a capability lists no two operations with one export name (CTR-007) and,
+# outside the core package, none that is reserved (CTR-003); that no Operation contract outside
+# the core package is marked `reservedToRoot` (CTR-009); that each key of a control's `changes`
+# is an input the control declares and each pointer a place its type's schema describes, that
+# its `inputSchema` requires `revision` and that it declares no output `settings` (CTR-006);
+# default implementations (CTR-004, TPL-004); that a Type that offers a provider capability is
+# of the family Resource and offers no other (PRV-001), that one that offers `package-source.v1`
+# requires `schemes` (PRV-016) and that one that offers `secret-provider.v1` lists no control
+# (SEC-005) and offers no other capability (SEC-022), which tools/check_schemas.py also checks;
+# that a `default` satisfies its schema (SCH-019); and compatibility between releases (NAM-024).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -128,10 +139,10 @@ metadata:
   name: type-spec.v1
   description: >-
     The `spec` of a Type contract. `family` is required. `schema`, `offers`, `requires`,
-    `implementation`, `controls`, `conditions`, `records` and `placement` may each be left
+    `implementation`, `controls`, `conditions`, `records` and `nodeSelector` may each be left
     out, and one that is left out lists nothing. A type that states no `schema` puts no rule
-    on the configuration of its instances, and so lists no control. `placement` is a label
-    selector that the labels of an instance's location must match. A Type of the family Pool
+    on the configuration of its instances, and so lists no control. `nodeSelector` is a label
+    selector that the labels of an instance's node must match. A Type of the family Pool
     lists the core package's capability `pool-management.v1` under `offers`.
 spec:
   type: object
@@ -148,7 +159,7 @@ spec:
     controls:
       type: array
       items: {$ref: github.com/shrav-k/conduit/core#selection.v1}
-    placement: {$ref: github.com/shrav-k/conduit/core#label-selector.v1}
+    nodeSelector: {$ref: github.com/shrav-k/conduit/core#labels.v1}
     conditions:
       type: array
       items: {type: string, minLength: 1}

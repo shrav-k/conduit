@@ -11,6 +11,15 @@
 # place in an `implementation` map (decision 1); added `/entries/<name>/runtime` to the places
 # a Pool template's input may reach (decision 31b); and states the keys of the named maps with
 # `propertyNames` (decision 20). The log is docs/proposals/ruling-41/log-core.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying rows 26 and 27 of the
+# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, changed only the
+# comment below on what the engine checks: a template gives no `runtime` as it gives no
+# placement (PLC-005), the label selectors of two items that a template selects agree too
+# (PLC-025), and an item points at no place at which the schema admits an object or an array
+# (MAN-017, rows 22 and 24). The log is docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N1; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
+# in the comment below.
 #
 # A template document, and the parts of a template's `spec`.
 # JSON Schema 2020-12, within spec/schema-profile.md.
@@ -65,20 +74,20 @@
 #
 # Not expressed here, and checked by the engine: that `type` is a Type contract of the
 # template's own family (TPL-002); that destinations do not overlap and that a destination's
-# parent is present (INS-010, INS-011); that, where a Conduit template writes no
-# `operations`, the destination of one of its inputs is `/operations` (CON-016); that an
-# implementation implements the operation it is selected for (TPL-005); default
-# implementations (TPL-004); that the selected implementations include at most one item that
-# is run (TPL-019), that their label selectors agree with the type's (PLC-025) and that their
-# pointers name places the type's schema requires (MAN-017); that a control is one the type
-# lists and an input one the control declares (TPL-010); that an operation is in the
-# capability (CON-017); that a requirement's arguments fit its inputs (NAM-019); that a
-# Conduit template applies the bound of a right to open at most once, which is checked when
-# the template is registered (CON-028); that no Conduit lists an operation of a provider
-# capability other than `secret-reveal.v1` (PRV-004); cycles among entries (POOL-011); that
-# a template gives no placement, which leaves only the `default` of an input whose
-# destination is an entry's `placement` (PLC-005); and that `config`, once filled, satisfies
-# the type's schema (INS-014).
+# parent is present (INS-010, INS-011); that, where a Conduit template writes no `operations`,
+# the destination of one of its inputs is `/operations` (CON-016); that an implementation
+# implements the operation it is selected for (TPL-005); default implementations (TPL-004); that
+# the selected implementations include at most one item that is run (TPL-019), that their label
+# selectors agree with the type's and with each other's (PLC-025) and that their pointers name
+# places the type's schema requires, at which it admits no object or array (MAN-017); that a
+# control is one the type lists and an input one the control declares (TPL-010); that an
+# operation is in the capability (CON-017); that a requirement's arguments fit its inputs
+# (NAM-019); that a Conduit template applies the bound of a right to open at most once, which is
+# checked when the template is registered (CON-028); that no Conduit lists an operation of a
+# provider capability other than `secret-provider.v1` (PRV-004); cycles among entries
+# (POOL-011); that a template gives no placement and no `runtime`, which leaves only the
+# `default` of an input whose destination is an entry's `placement` or `runtime` (PLC-005); and
+# that `config`, once filled, satisfies the type's schema (INS-014).
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema

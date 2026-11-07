@@ -12,14 +12,20 @@
 # `pool-management.v1` and no other; and took away its `supports` and its `placement`, since
 # the engine applies the core package's requirements itself (alignment C20, MAN-012). The log
 # is docs/proposals/ruling-41/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N8 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the exports `location`, `location.v1` and
+# `label-selector.v1` to `node`, `node.v1` and `labels.v1`.
+# The names of ruling 42 (the vocabulary audit's N1; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the exports `secret-reveal.v1` and
+# `reveal-secret.v1` to `secret-provider.v1` and `get-secret.v1`.
 #
 # The core package is built into every engine (NAM-020) and is never installed, listed or
 # fetched (NAM-021), so it has no archive and no digest. Its documents are the files of this
 # directory and the Schema contracts under spec/schemas/. Its one implementation, `engine`,
 # is the engine itself: it states none of `command`, `package` and `remote` and no `supports`
 # (MAN-012). It implements the management verbs (OPS-019, CON-024), and neither the hooks, nor
-# an operation of a provider capability, nor `reveal-secret.v1` (MAN-012, SEC-020): the
-# engine's own runner, machine and fetching serve where no provider does, without being
+# an operation of a provider capability, nor `get-secret.v1` (MAN-012, SEC-020): the
+# engine's own runner, machine provider and fetching serve where no provider does, without being
 # selected as an implementation (PRV-003).
 #
 # The version is the version of the package, not of any contract: each contract carries its
@@ -33,7 +39,7 @@ version: 0.1.0
 exports:
   # The templates that first start instantiates (templates.yaml).
   - system
-  - location
+  - node
   - management
   - access
   - root
@@ -42,7 +48,7 @@ exports:
   # Types (types.yaml).
   - interface.v1
   - pool.v1
-  - location.v1
+  - node.v1
   - management.v1
   - access.v1
   # Capabilities (capabilities.yaml).
@@ -52,7 +58,7 @@ exports:
   - runtime-provider.v1
   - machine-provider.v1
   - package-source.v1
-  - secret-reveal.v1
+  - secret-provider.v1
   # Operations (operations.yaml).
   - register.v1
   - replace.v1
@@ -76,7 +82,7 @@ exports:
   - list-machines.v1
   - place.v1
   - fetch-package.v1
-  - reveal-secret.v1
+  - get-secret.v1
   # Requirements (requirements.yaml).
   - bound.v1
   - shared-host.v1
@@ -112,7 +118,7 @@ exports:
   - digest.v1
   - id.v1
   - revision.v1
-  - label-selector.v1
+  - labels.v1
   - schema.v1
   - api-version.v1
   - envelope.v1

@@ -37,6 +37,11 @@
 # The coverage check of the rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage
 # check") changed SUB-009, whose manifest is rejected where it lists a package that is not
 # installed, under PKG-006.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed SUB-008:
+# two submissions may state one address, each told apart by its digest, and a package may be
+# installed at the address once no template or instance holds a submission there (rows 10 and
+# 36). It added none and removed none.
 
 - id: SUB-001
   layer: language
@@ -159,8 +164,17 @@
   observable: >-
     A document of the same submitted project can refer to such a contract as `#name` under
     NAM-022. No object exists for the contract after the submission, and no document outside the
-    project selects it: no package can be installed at its address, under MAN-016 and PKG-029,
-    so no manifest can list that address under NAM-007 and PKG-006. Outside the project's
+    project selects it: no package can be installed at its address while a template or an
+    instance holds a submission at it, under PKG-029, and no project can be submitted at the
+    address of an installed package, under MAN-016, so no manifest can list that address under
+    NAM-007 and PKG-006 for the project's contracts. Two submissions may state one address,
+    whether one project is submitted again or two projects state it: each is told apart by its
+    digest, which every template that resolved against it keeps under NAM-009, so a template and
+    its instances reach only their own submission. On the wire, in records and in the
+    `operations` of a bound, an operation is `address#name` whichever submission holds it, as in
+    every version of one package, so a record does not tell the submissions apart, an
+    implementation tells requests apart by the instance that IFC-006 names, and a bound covers
+    the operation in every submission at that address, under ACC-029. Outside the project's
     documents it is named `address#name`: in Conduit's keys under IFC-006 and IFC-018, in the
     `operations` of a bound under ACC-029, and where inspecting names an implementation under
     ACC-038. A template registered by the submission keeps the address and that digest under

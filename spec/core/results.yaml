@@ -9,6 +9,19 @@
 # 24a) and the `nested` of `object.v1`, which names a declared Conduit or an entry and no
 # component (decision 5), and added `handle.v1` (decision 16a), `condition.v1` (decision 24b)
 # and `record.v1` (decision 24c). The log is docs/proposals/ruling-41/log-core.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying rows 12 and 18 of the
+# coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, added `serving` to
+# the `data` of `record.v1`, the invocation that a separate invocation serves, and said what
+# a record with no ID of its own holds in `invocation` and what a record of a run names in
+# `subject`. The log is docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N12 to N15; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed the member `instance` of the `data` of
+# `record.v1` to `consumer`, the consumer of the Conduit used, and its `operationIdentity` to
+# `idempotencyKey`; took `observedGeneration` out of `condition.v1`; and renamed its `origin` to
+# `source`, a URI-reference as a record's `source` is.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed the description of `record.v1`: the inputs that a type's `records` keeps leave out
+# what the `secrets` and the `identity` of `run.v1` hold (SEC-018, PRV-024).
 #
 # The Schema contracts that the inputs and outputs of the core operations share, and those
 # that a status, a diagnostic and a record take their shape from. Each follows an existing
@@ -27,7 +40,8 @@
 #   handle.v1      CTR-002, IFC-011, IFC-033 (a handle is a property whose schema is this
 #                  contract; on the wire it is an opaque string the implementation issued)
 #   condition.v1   LIF-011, OBS-002, OBS-003, PRV-009
-#   record.v1      REC-002, LIF-013, SEC-015
+#   record.v1      REC-002, LIF-013, SEC-015, SEC-018, PRV-024 (no record holds what the
+#                  `secrets` or the `identity` of `run.v1` hold)
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -106,11 +120,13 @@ kind: Schema
 metadata:
   name: condition.v1
   description: >-
-    One condition of an instance's status, in the shape of Kubernetes `metav1.Condition` as it
-    is: `type`, `status`, `reason`, `message`, `lastTransitionTime` and `observedGeneration`.
-    `lastHeartbeatTime`, the time of the last successful observation, as Kubernetes's
-    `NodeCondition` has it, and `origin`, where the observation was made, are Conduit's
-    additions. A condition never changes the lifecycle state.
+    One condition of an instance's status, in the shape of Kubernetes `metav1.Condition`:
+    `type`, `status`, `reason`, `message` and `lastTransitionTime`, without the optional
+    `observedGeneration`, since no object of Conduit has a generation. `lastHeartbeatTime`, the
+    time of the last successful observation, as Kubernetes's `NodeCondition` has it, and
+    `source`, the context in which the observation was made, a URI-reference that the engine
+    names, as it names a record's `source`, are Conduit's additions. A condition never changes
+    the lifecycle state.
 spec:
   type: object
   properties:
@@ -127,9 +143,8 @@ spec:
       pattern: '^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$'
     message: {type: string, maxLength: 32768}
     lastTransitionTime: {type: string, format: date-time}
-    observedGeneration: {type: integer, minimum: 0}
     lastHeartbeatTime: {type: string, format: date-time}
-    origin: {type: string, minLength: 1}
+    source: {type: string, format: uri-reference, minLength: 1}
   required: [type, status, reason, message, lastTransitionTime]
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -138,13 +153,20 @@ metadata:
   name: record.v1
   description: >-
     One record, as a CloudEvent of CloudEvents 1.0 whose `data` holds the fields of a record:
-    the IDs of the caller, of the instance that acted for the caller, of the Conduit used and
-    of the target; the operation, by its qualified reference; the engine's ID for the
-    invocation; the operation identity, where the caller supplied one; and how the request
-    ended, by its outcome or its reason. The time of the record is the CloudEvent's `time`.
+    the IDs of the caller, of the Conduit used and of its consumer, where a Conduit was used,
+    and of the target; the operation, by its qualified reference; the engine's ID for the
+    invocation; the engine's ID for the invocation it serves, where it serves one, such as the
+    setup or the retirement that a hook, a read of a secret or a part belongs to, or the
+    invocation that an onward request names; the idempotency key, where the caller
+    supplied one or the engine gave one to a hook; and how the request ended, by its outcome
+    or its reason. A record with no ID of its own, such as that of a provider call or of a
+    change that no request asked for itself, holds in `invocation` the invocation within which
+    it happened, and no `serving`. A record of `run.v1`, `stop.v1` or `inspect-run.v1` names in
+    `subject` the instance whose run it is. The time of the record is the CloudEvent's `time`.
     Each field is present where it applies, and the inputs and outputs of the operation are
-    present where the type's `records` keeps them. An engine names the event's `source` and
-    `type`, and may add members.
+    present where the type's `records` keeps them, apart from what the `secrets` and the
+    `identity` of `run.v1` hold, which no record holds. An engine names the event's `source`
+    and `type`, and may add members.
 spec:
   type: object
   properties:
@@ -159,12 +181,13 @@ spec:
       type: object
       properties:
         caller: {$ref: github.com/shrav-k/conduit/core#id.v1}
-        instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        consumer: {$ref: github.com/shrav-k/conduit/core#id.v1}
         conduit: {$ref: github.com/shrav-k/conduit/core#id.v1}
         target: {$ref: github.com/shrav-k/conduit/core#id.v1}
         operation: {$ref: github.com/shrav-k/conduit/core#qualified-reference.v1}
         invocation: {$ref: github.com/shrav-k/conduit/core#id.v1}
-        operationIdentity: {type: string, minLength: 1}
+        serving: {$ref: github.com/shrav-k/conduit/core#id.v1}
+        idempotencyKey: {type: string, minLength: 1}
         outcome: {enum: [succeeded, failed, unknown]}
         reason: {enum: [refused, invalid, conflict, unavailable]}
         inputs: {type: object}

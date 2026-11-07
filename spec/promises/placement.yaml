@@ -33,6 +33,33 @@
 # the status of an instance already removed; PLC-023, which also covers asking for a run or a
 # stop, and PLC-023 and PLC-024, which leave out the machine for which `local` stands; and
 # added PLC-027 and PLC-028.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md and the owner's answer D11, changed
+# PLC-005, which rejects a `runtime` given by a template as well as a placement; PLC-007, whose
+# label selector holds `local`'s hostname for an instance that has an item that is run and names
+# no `runtime`; PLC-017 and PLC-024, which take effect at once; PLC-023, under which a machine
+# that a report omits counts as unreachable; PLC-025, which compares the selectors of the items
+# a template selects with each other too; PLC-026, under which a hostname is compared in
+# canonical form and a location stands for a hostname whichever machines provider reports it;
+# and PLC-027, under which a request to unregister is the acknowledgment that the retire hook
+# will never run, and asks for the stop once more. It removed none and added none. Its log is
+# docs/proposals/ruling-42/log-machines.md.
+# The names of ruling 42 (the vocabulary audit's N2, N3 and N9 to N11; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node, `location.v1` to
+# `node.v1`, the core template `location` to `node`, "stand for" to "represent", the machines
+# provider to the machine provider and the engine's own machine to the engine's own machine
+# provider, in PLC-001, PLC-002, PLC-005, PLC-007, PLC-008, PLC-011 to PLC-013, PLC-015, PLC-017
+# to PLC-020 and PLC-023 to PLC-028; renamed the key `placement` of a type and of an item to
+# `nodeSelector` in PLC-007 and PLC-025, and the input `location` of `run.v1` to `machine` in
+# PLC-027; and changed PLC-024, under which the engine declares the node lost when its machine
+# is reported gone, where the node counted as declared lost, with PLC-017 and PLC-027, which say
+# so. PLC-023 and PLC-025 write a Kubernetes Node, and its `scheduling.nodeSelector`, so that
+# they are not read as a node. It removed none and added none.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed PLC-007, whose diagnostic names which of the type, the item or the engine's own runner
+# gives the label, where it named the source of the label, since source is now the term for a
+# record's context (the vocabulary audit's N14), and PLC-017, whose observable says that the
+# declaration asks for no stop. It removed none and added none.
 
 - id: PLC-001
   layer: language
@@ -40,11 +67,11 @@
   when: >-
     An Agent or a Resource is instantiated.
   then: >-
-    It has exactly one placement, which is a location. The instance holds it in the resolved
-    form of OBJ-009, with the location's ID.
+    It has exactly one placement, which is a node. The instance holds it in the resolved
+    form of OBJ-009, with the node's ID.
   observable: >-
     Inspecting the instance shows one placement. A document that gives two, or a
-    placement that is not a location, is rejected.
+    placement that is not a node, is rejected.
   vectors: []
 
 - id: PLC-002
@@ -55,14 +82,14 @@
     none or, for the Resource of a Pool's entry, no input of the Pool's template supplies one,
     under POOL-016.
   then: >-
-    Its placement is the location that stands for the machine that the machines provider names
-    for it under PRV-015. Where no machines provider exists that is not retired, the engine's
-    own machine serves under PRV-003, and that location is `local`.
+    Its placement is the node that represents the machine that the machine provider names
+    for it under PRV-015. Where no machine provider exists that is not retired, the engine's
+    own machine provider serves under PRV-003, and that node is `local`.
   observable: >-
-    The resolved instance holds that location's ID. A Resource whose type offers
+    The resolved instance holds that node's ID. A Resource whose type offers
     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` is placed on `local`
-    under PRV-002, and no machines provider is asked. A retired location is never chosen: a
-    location stands for a machine only until it is retired, under PLC-026. The placement is
+    under PRV-002, and no machine provider is asked. A retired node is never chosen: a
+    node represents a machine only until it is retired, under PLC-026. The placement is
     chosen once, when the instance is instantiated, and never changes, under PLC-009.
   vectors: []
 
@@ -70,15 +97,18 @@
   layer: language
   level: must
   when: >-
-    A template is registered that gives a placement: in an entry that writes `placement`, or as
-    the `default` of an input whose destination is an entry's `placement`.
+    A template is registered that gives a placement or a `runtime`: in an entry that writes
+    `placement` or `runtime`, or as the `default` of an input whose destination is an entry's
+    `placement` or `runtime`.
   then: >-
-    The template is rejected. A placement is given only when an instance is instantiated.
+    The template is rejected. A placement and a `runtime` are given only when an instance is
+    instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the entry or the input. A template may refer to a
-    location in any other way, such as among the `targets` of a bound or in a place of `config`
-    that a reference schema governs. A location offers no capability, under PLC-008, so no
-    Conduit to one is instantiated, under CON-021.
+    Resolving returns a diagnostic naming the entry or the input. An instance names its runtime
+    provider as it names its placement, under PRV-006, so no template supplies either. A
+    template may refer to a node in any other way, such as among the `targets` of a bound or
+    in a place of `config` that a reference schema governs. A node offers no capability,
+    under PLC-008, so no Conduit to one is instantiated, under CON-021.
   vectors: []
 
 - id: PLC-006
@@ -96,36 +126,45 @@
   layer: language
   level: must
   when: >-
-    An instance's type, or an implementation item selected for it, states `placement`, a label
-    selector, and the labels reported for the location that the instance would be placed on do
-    not hold each label that the selector names, with the value it gives.
+    An Agent or a Resource would be instantiated with a placement, and the labels reported for
+    that node do not hold each label of the instance's label selector with the value it
+    gives. That selector is the union of the `nodeSelector` that the instance's type and each
+    implementation item selected for it state and, where an item that is run is selected for the
+    instance and it names no `runtime`, the label `kubernetes.io/hostname` with the value that
+    `local`'s status holds.
   then: >-
     The instance is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the type or the item, the label and the location,
-    before any effect. A label that is absent from the location's reported labels does not
-    match. The selector that must match is the union of the type's and those of the items
-    selected for the instance, which PLC-025 keeps from naming one label with two values. It is
-    decided from the documents and the labels that the location's status holds under PLC-026,
-    without reaching the machine, when the instance is instantiated and not again: a later
-    report of other labels changes no instance placed on the location. A placement that the
-    machines provider chose under PRV-015 is checked in the same way.
+    Resolving returns a diagnostic naming the label, the node and which of the type, the item
+    or the engine's own runner gives the label, before any effect. A label that is
+    absent from the node's reported labels does not match. PLC-025 keeps the type and the
+    items from naming one label with two values; where the type or an item names
+    `kubernetes.io/hostname` with another value for an instance that runs on the engine's own
+    runner, no node matches. The label of the engine's own runner is added as Kubernetes
+    merges the `scheduling.nodeSelector` of a Pod's RuntimeClass into the Pod's own, because
+    that runner runs only on the machine that `local` represents, under PRV-003 and PRV-006. An
+    instance with no item that is run, such as one reached only by `remote`, gets no such label.
+    The selector is decided from the documents and the labels that the node's status holds
+    under PLC-026, without reaching the machine, when the instance is instantiated and not
+    again: a later report of other labels changes no instance placed on the node. A
+    placement that the machine provider chose under PRV-015 is checked in the same way, and the
+    provider is given this selector.
   vectors: []
 
 - id: PLC-008
   layer: language
   level: must
   when: >-
-    A location exists.
+    A node exists.
   then: >-
-    It is a Resource of the core type `location.v1`, owned by `system`, and it is its own
+    It is a Resource of the core type `node.v1`, owned by `system`, and it is its own
     placement. Its configuration is empty. The engine makes it, `local` at first start and every
-    other location under PLC-026, and no instance document makes one, under FST-006 and PLC-028.
+    other node under PLC-026, and no instance document makes one, under FST-006 and PLC-028.
   observable: >-
-    Inspecting a location shows the kind Resource, the type `location.v1`, `system` as owner,
+    Inspecting a node shows the kind Resource, the type `node.v1`, `system` as owner,
     its own ID as placement, an empty configuration, and in its status the labels last reported
-    for the machine it stands for, under PLC-026. The type `location.v1` offers no capability
-    and lists no control, so nothing changes a location once it is made apart from its lifecycle
+    for the machine it represents, under PLC-026. The type `node.v1` offers no capability
+    and lists no control, so nothing changes a node once it is made apart from its lifecycle
     state and the labels reported for it.
   vectors: []
 
@@ -145,31 +184,31 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to retire or to unregister a location that has other instances placed on it
+    An actor asks to retire or to unregister a node that has other instances placed on it
     that exist, retired or not.
   then: >-
     The request is not dispatched and reports conflict. Only the declare-lost operation, which
-    is reserved to the root Interface, and a report of the machines provider that the location's
-    machine is gone, under PLC-024, retire a location that still has instances.
+    is reserved to the root Interface, and a report of the machine provider that the node's
+    machine is gone, under PLC-024, retire a node that still has instances.
   observable: >-
-    The location and its instances still exist, in the states they had. Every instance that
-    exists and whose placement is the location counts, a retired one included, whatever its
+    The node and its instances still exist, in the states they had. Every instance that
+    exists and whose placement is the node counts, a retired one included, whatever its
     shutdown reports: a retired instance keeps its placement until it is removed or
-    unregistered. So a location is retired by a request only once every other instance placed on
+    unregistered. So a node is retired by a request only once every other instance placed on
     it has been removed or unregistered, and no instance whose shutdown is pending or unknown is
-    left on a location that a request retired.
+    left on a node that a request retired.
   vectors: []
 
 - id: PLC-012
   layer: convention
   level: must not
   when: >-
-    Two instances share a location or a machine.
+    Two instances share a node or a machine.
   then: >-
     Either gains access to the other because of it.
   observable: >-
     A request between them reports refused unless an open Conduit lists the operation, exactly
-    as for instances on different locations.
+    as for instances on different nodes.
   vectors: []
 
 - id: PLC-013
@@ -177,14 +216,14 @@
   level: must
   when: >-
     A Conduit is instantiated that applies `shared-host.v1`, and the `kubernetes.io/hostname`
-    labels reported for its consumer's location and for its target's location are not equal, or
+    labels reported for its consumer's node and for its target's node are not equal, or
     either is absent.
   then: >-
     The Conduit is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the Conduit, the requirement and the two locations. A
+    Resolving returns a diagnostic naming the Conduit, the requirement and the two nodes. A
     Conduit one of whose ends has no placement is rejected under CON-006. It is decided once: a
-    location stands for one machine, which its hostname names, and a placement never changes,
+    node represents one machine, which its hostname names, and a placement never changes,
     under PLC-009, so neither the opening of the Conduit nor a request through it is checked
     again. The requirement is applied by the engine itself and is never sent to an
     implementation.
@@ -194,13 +233,13 @@
   layer: language
   level: must
   when: >-
-    An instance is placed on a location.
+    An instance is placed on a node.
   then: >-
-    It depends on the location through its placement alone. No Conduit to the location is
+    It depends on the node through its placement alone. No Conduit to the node is
     needed or instantiated for that.
   observable: >-
-    Resolving the instance yields no Conduit whose target is its location. This is one of the
-    three ways a location differs from other Resources; the others are PLC-008 and PLC-011.
+    Resolving the instance yields no Conduit whose target is its node. This is one of the
+    three ways a node differs from other Resources; the others are PLC-008 and PLC-011.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32, decision A2 and reader findings).
@@ -209,35 +248,41 @@
   layer: convention
   level: must
   when: >-
-    The root Interface declares a location lost.
+    The root Interface declares a node lost.
   then: >-
-    The location and every instance placed on it are retired. The status of each reports its
-    shutdown as unknown, and states that it could not be confirmed because the location was
+    The node and every instance placed on it are retired. The status of each reports its
+    shutdown as unknown, and states that it could not be confirmed because the node was
     declared lost. The shutdown of an instance for which no setup was ever dispatched is
-    confirmed, as LIF-025 states, and the instance is removed, under LIF-035. A location that a
+    confirmed, as LIF-025 states, and the instance is removed, under LIF-035. A node that a
     request has already retired is declared lost in the same way. A request to declare lost a
-    location that was already declared lost changes nothing and has the outcome succeeded.
+    node that was already declared lost changes nothing and has the outcome succeeded.
   observable: >-
     One of them whose shutdown is unknown is removed by a request to unregister it, under
-    LIF-017, with no reconciliation; one whose shutdown is confirmed is removed under LIF-035.
-    The Conduits of which any of them was an end are closed under CON-008. LIF-015 lists the
-    request among those that a retired instance takes: a location that a request retired, and
-    whose own shutdown is not confirmed, is declared lost and can then be unregistered. A second
-    request for one location succeeds because the effect that `declare-lost.v1` describes has
-    occurred. A report of the machines provider that the location's machine is gone has the same
-    effect, under PLC-024.
+    LIF-017, with no reconciliation, and that request asks its runtime provider for the stop
+    once more, under LIF-036; one whose shutdown is confirmed is removed under LIF-035. The
+    Conduits of which any of them was an end are closed under CON-008. The declaration asks for
+    no stop: a run left on a machine that comes back is asked to stop only by a further
+    retirement, under PLC-027 and PRV-008, or by the request to unregister, under LIF-036. The
+    declaration takes effect at once and dispatches nothing, so REV-012 does not hold it back
+    where a setup, a retirement or a change of an instance placed there is in progress: the
+    parts already dispatched end as they end, and no later part begins, under TPL-012. LIF-015
+    lists the request among those that a retired instance takes: a node that a request retired,
+    and whose own shutdown is not confirmed, is declared lost and can then be unregistered. A
+    second request for one node succeeds because the effect that `declare-lost.v1` describes
+    has occurred. The engine declares a node lost in the same way where the machine provider
+    reports its machine gone, under PLC-024.
   vectors: []
 
 - id: PLC-018
   layer: language
   level: must
   when: >-
-    An Agent or a Resource would be instantiated with a placement that is a retired location.
+    An Agent or a Resource would be instantiated with a placement that is a retired node.
   then: >-
     The instance is not instantiated.
   observable: >-
-    Resolving returns a diagnostic naming the location and stating that it is retired. A
-    location that is registered and not yet ready is accepted as a placement, and PLC-019 says
+    Resolving returns a diagnostic naming the node and stating that it is retired. A
+    node that is registered and not yet ready is accepted as a placement, and PLC-019 says
     what a request to set up the instance then reports.
   vectors: []
 
@@ -247,13 +292,13 @@
   layer: convention
   level: must
   when: >-
-    An actor asks to set up an instance, other than the location itself, whose location is in
+    An actor asks to set up an instance, other than the node itself, whose node is in
     the state registered and so is not ready.
   then: >-
     The request is not dispatched, and reports unavailable.
   observable: >-
     The instance is in the state it had, and no implementation receives a call for its setup.
-    Once the location is ready, a request to set up the instance is decided as any other.
+    Once the node is ready, a request to set up the instance is decided as any other.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; row GP12 of
@@ -263,16 +308,16 @@
   layer: convention
   level: must not
   when: >-
-    An instance holds a value that is tied to a location: one that has its meaning only at that
-    location, such as an absolute path.
+    An instance holds a value that is tied to a node: one that has its meaning only at that
+    node, such as an absolute path.
   then: >-
     The value is interpreted anywhere other than by the instance's implementation at the
     instance's placement.
   observable: >-
     The engine stores the value and passes it on as it was written, and never opens it, expands
-    it or checks it against the machine the engine itself runs on or against any other location.
+    it or checks it against the machine the engine itself runs on or against any other node.
     An absolute path in the configuration of a Resource means that path on the machine of the
-    Resource's location. That the engine joins no base to a relative path is INS-018.
+    Resource's node. That the engine joins no base to a relative path is INS-018.
   vectors: []
 
 # --- Added by ruling 41 (docs/proposals/ruling-41/README.md), applying decision 8 of the
@@ -283,13 +328,14 @@
   layer: convention
   level: must
   when: >-
-    The machines provider reports a machine unreachable, other than the one for which `local`
-    stands, and a request, or a setup hook or retire hook, would be dispatched to the
-    implementation of an instance placed on the location that stands for that machine, or the
-    engine would ask that instance's runtime provider for its run or its stop.
+    A machine other than the one that `local` represents is reported unreachable by the
+    machine provider, or is omitted from its latest report while a node represents it, and
+    a request, or a setup hook or retire hook, would be dispatched to the implementation of an
+    instance placed on the node that represents that machine, or the engine would ask that
+    instance's runtime provider for its run or its stop.
   then: >-
     It is not dispatched, or not asked for, and reports unavailable, and no secret is read for a
-    run that is not asked for. Nothing is retired because a machine is unreachable.
+    run that is not asked for. Nothing is retired because a machine is unreachable or omitted.
   observable: >-
     In a setup or a retirement, the part that would ask for the run or the stop reports
     unavailable, as PRV-007 and PRV-008 have it report where the runtime provider is not ready.
@@ -297,35 +343,40 @@
     reported as unknown, under OBS-003. Its Conduits stay open, under CON-007. Once the provider
     reports the machine reachable again, a request to the instance is decided as any other. A
     machine that sleeps, or whose network is cut, so loses no instance: only a machine reported
-    gone retires, under PLC-024. How often the engine asks the machines provider, and what it
-    does while no report arrives, is DL5 of the implementation-defined list. A report that the
-    machine for which `local` stands is unreachable makes nothing unavailable: the engine runs
-    on that machine, and `management` and `access` are placed there at first start, and every
-    provider other than a secret Resource under PRV-002. Where the actor is not permitted,
-    OPS-023 gives refused first.
+    gone retires, under PLC-024. A machine that a report omits counts as reported unreachable
+    until a report gives it a state, as Kubernetes sets a Node's condition `Ready` to `Unknown`
+    once its kubelet stops reporting; where no report arrives within the time that DL5 of the
+    implementation-defined list gives, every machine but the one that `local` represents counts
+    as omitted. How often the engine asks the machine provider is DL5 too. A report that the
+    machine that `local` represents is unreachable, or that omits it, makes nothing
+    unavailable: the engine runs on that machine, and `management` and `access` are placed there
+    at first start, and every provider other than a secret Resource under PRV-002. Where the
+    actor is not permitted, OPS-023 gives refused first.
   vectors: []
 
 - id: PLC-024
   layer: convention
   level: must
   when: >-
-    The machines provider reports a machine gone, other than the one for which `local` stands.
+    The machine provider reports a machine gone, other than the one that `local` represents.
   then: >-
-    The location that stands for it and every instance placed on that location are retired, as
-    PLC-017 retires them where the root Interface declares the location lost, and the location
-    counts from then on as declared lost. The status of each, and the record of each retirement,
-    state that the machines provider reported the machine gone.
+    The engine declares the node that represents it lost, with the effect that PLC-017 states
+    where the root Interface declares a node lost: the node and every instance placed on it are
+    retired. The status of each, and the record of each retirement, state that the machine
+    provider reported the machine gone.
   observable: >-
-    No actor asks for it, and no request is made. The Conduits of which any of them is an end
-    are closed under CON-008, and an instance whose shutdown is unknown is removed by a request
-    to unregister it, under LIF-017, as where the root Interface declares a location lost. Where
-    no location stands for the machine, nothing is retired. A machine that the provider later
-    reports again under the same hostname is given a new location under PLC-026, because a
-    retired location is never brought back, under LIF-006. A machine reported unreachable
-    retires nothing, under PLC-023. A report that the machine for which `local` stands is gone
-    retires nothing: the engine runs on that machine, so no first-start object and no provider
-    other than a secret Resource is retired by a report. A further retirement of an instance
-    left on the location dispatches no retire hook and asks for no run, under PLC-027.
+    No actor asks for it, and no request is made. It takes effect at once and dispatches
+    nothing, as the root Interface's declaration does under PLC-017, so REV-012 does not hold it
+    back. The Conduits of which any of them is an end are closed under CON-008, and an instance
+    whose shutdown is unknown is removed by a request to unregister it, under LIF-017, as where
+    the root Interface declares a node lost. Where no node represents the machine, nothing is
+    retired. A machine that the provider later reports again under the same hostname is given a
+    new node under PLC-026, because a retired node is never brought back, under LIF-006. A
+    machine reported unreachable retires nothing, under PLC-023. A report that the machine that
+    `local` represents is gone retires nothing: the engine runs on that machine, so no
+    first-start object and no provider other than a secret Resource is retired by a report. A
+    further retirement of an instance left on the node dispatches no retire hook and asks for no
+    run, under PLC-027.
   vectors: []
 
 - id: PLC-025
@@ -333,39 +384,48 @@
   level: must
   when: >-
     A template is registered whose selected implementations, by its `implementation` map or by
-    default, include an item whose `placement` names a label that the `placement` of the
-    template's type names with another value.
+    default, include an item whose `nodeSelector` names a label that the `nodeSelector` of the
+    template's type, or of another item that it selects, names with another value.
   then: >-
-    The template is rejected: a type's label selector and that of an item its template selects
-    agree on every label that both name.
+    The template is rejected: the label selectors of a type and of the items its template
+    selects agree on every label that two of them name.
   observable: >-
-    Resolving returns a diagnostic naming the item, the type and the label. Where they agree,
-    both selectors apply under PLC-007, as Kubernetes merges the node selector of a RuntimeClass
-    with a Pod's and rejects a Pod for which both name one label with different values.
+    Resolving returns a diagnostic naming the item, the type or the other item, and the label.
+    Where they agree, the selectors apply together under PLC-007, as Kubernetes merges the
+    `scheduling.nodeSelector` of a RuntimeClass with a Pod's and rejects a Pod for which both
+    name one label with different values.
   vectors: []
 
 - id: PLC-026
   layer: convention
   level: must
   when: >-
-    The machines provider reports a machine, reachable or unreachable, for which no location
-    stands.
+    The machine provider reports a machine, reachable or unreachable, that no node
+    represents.
   then: >-
-    The engine registers a location for it from the core package's template `location`, owned by
-    `system`, and sets it up. The location is named by the part of the machine's hostname before
-    the first dot, in lowercase, where that is a valid name under OBJ-001 that no Resource that
-    exists has under OBJ-002, and otherwise under OBJ-003. The machine the engine runs on is
-    `local`, which first start makes, and no other location stands for it. A location's labels
-    are those the provider last reported for its machine, held in its status.
+    The engine registers a node for it from the core package's template `node`, owned by
+    `system`, and sets it up. The node is named by the part of the machine's hostname before
+    the first dot, where that is a valid name under OBJ-001 that no Resource that exists has
+    under OBJ-002, and otherwise under OBJ-003. A hostname is compared in its canonical form,
+    trimmed and lowercased, and a node represents a hostname, whichever machine provider
+    reports it. The machine the engine runs on is the one whose hostname is the engine's own:
+    the operating system's, unless the engine is configured with another, under DL5. `local`,
+    which first start makes, represents it, and no other node does. A node's labels are
+    those the provider last reported for its machine, held in its status.
   observable: >-
-    A location stands for the machine it was registered for, which its status names by its
-    `kubernetes.io/hostname` label, until it is retired: a retired location stands for none. The
-    engine makes the location itself, as it makes the first-start objects: no actor asks for it,
-    and its registration and its lifecycle states are recorded under REC-001. A machine reported
-    gone is given no location. Labels are reported status and never configuration: a report of
-    other labels changes the location's status and nothing else, under PLC-007. With no machines
-    provider, the engine's own machine reports the one machine the engine runs on, under
-    PRV-003, and `local` stands for it.
+    A node represents the machine it was registered for, which its status names by its
+    `kubernetes.io/hostname` label, until it is retired: a retired node represents none. The
+    engine makes the node itself, as it makes the first-start objects: no actor asks for it, and
+    its registration and its lifecycle states are recorded under REC-001. Its setup dispatches
+    nothing and succeeds at once. A machine reported gone is given no node. Labels are reported
+    status and never configuration: a report of other labels changes the node's status and
+    nothing else, under PLC-007. Retiring or replacing the machine provider, under PRV-013,
+    retires no node, as Kubernetes takes a Node of the same name to be the same object: a later
+    provider that reports the hostname reports the same node, and one that does not leaves it
+    omitted, under PLC-023. An actor may retire the node of a machine that is still reported
+    once no other instance is placed on it, under PLC-011, and the next report registers a new
+    one. With no machine provider, the engine's own machine provider reports the one machine the
+    engine runs on, under PRV-003, and `local` represents it.
   vectors: []
 
 # --- Added by the coverage check of ruling 41 (docs/proposals/ruling-41/log-integration.md,
@@ -377,37 +437,42 @@
   layer: convention
   level: must
   when: >-
-    A retirement of an instance whose location was declared lost, under PLC-017, or counts as
-    declared lost, under PLC-024, would dispatch the instance's retire hook or ask for its run
-    to serve that hook, under TPL-018.
+    A retirement of an instance whose node was declared lost, under PLC-017 or PLC-024, would
+    dispatch the instance's retire hook or ask for its run to serve that hook, under TPL-018.
   then: >-
     Neither is done: the hook is not dispatched, no run is asked for and no secret is read for
     one, and the part of the hook reports unavailable.
   observable: >-
-    A location declared lost is retired, and a retired location stands for no machine, under
+    A node declared lost is retired, and a retired node represents no machine, under
     PLC-026, so there is no machine on which to run the item, under PRV-019, or to give in
-    `location`, under PRV-007; and the Conduits of which the instance is the consumer were
-    closed when the location was declared lost, under CON-008. As where the machine is reported
-    unreachable, under PLC-023, nothing is dispatched to it. The stop is asked for all the same,
-    under TPL-009 and PRV-008. A retirement in which this holds does not succeed, under
-    OPS-022: the instance's shutdown stays unknown, under LIF-024, and a request to unregister
-    the instance removes it, under LIF-017. A retirement in which no hook is to be dispatched,
-    because the template selects none or the hook succeeded before, succeeds once the stop has
-    succeeded, and the instance is then removed, under LIF-035.
+    `machine`, under PRV-007; and the Conduits of which the instance is the consumer were
+    closed when the node was declared lost, under CON-008. As where the machine is reported
+    unreachable, under PLC-023, nothing is dispatched to it, and this holds for a hook whose
+    implementation is a `remote` item too, since the instance's node decides. The stop is
+    asked for all the same, under TPL-009 and PRV-008. A retirement in which this holds does not
+    succeed, under OPS-022: the instance's shutdown stays unknown, under LIF-024. A machine that
+    comes back is given a new node, under PLC-026, and the instance's placement never
+    changes, under PLC-009, so the hook is never dispatched. As an object with a finalizer stays
+    terminating, and removing the finalizer by hand asserts that its work is accomplished in
+    another way, a request to unregister the instance is that assertion: it asks the instance's
+    runtime provider for the stop once more, under LIF-036, and removes the instance, under
+    LIF-017. A retirement in which no hook is to be dispatched, because the template selects
+    none or the hook succeeded before, succeeds once the stop has succeeded, and the instance is
+    then removed, under LIF-035.
   vectors: []
 
 - id: PLC-028
   layer: language
   level: must
   when: >-
-    A template is registered whose `type` is the core package's `location.v1`, and it is not
-    the core package's template `location`.
+    A template is registered whose `type` is the core package's `node.v1`, and it is not
+    the core package's template `node`.
   then: >-
     The template is rejected.
   observable: >-
-    Resolving returns a diagnostic naming the template and the type. Every location is made by
-    the engine from the core package's template `location`, under PLC-008 and PLC-026, and no
+    Resolving returns a diagnostic naming the template and the type. Every node is made by
+    the engine from the core package's template `node`, under PLC-008 and PLC-026, and no
     instance document is made from that template, under FST-006, so no actor registers a
-    location, through that template or through one of its own. A Pool's entry is made from a
-    template too, so no entry makes a location either.
+    node, through that template or through one of its own. A Pool's entry is made from a
+    template too, so no entry makes a node either.
   vectors: []

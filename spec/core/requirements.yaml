@@ -13,6 +13,14 @@
 # docs/proposals/ruling-41/log-core.md. The coverage check of the rewrite
 # (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed the description of
 # `bound.v1`, whose `operations` are compared as names (ACC-029).
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying rows 6, 10 and 36 of
+# the coordinator's decisions in docs/proposals/ruling-41/open-decisions.md, said in the
+# description of `bound.v1` that an item of `operations` covers the operation of that name in
+# every submission at its address, and in a package installed there later. The log is
+# docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in this comment and in the
+# description of `shared-host.v1`.
 #
 # The two Requirement contracts of the core package.
 #
@@ -21,7 +29,7 @@
 #                   restriction that the engine applies itself), ACC-006, ACC-012, ACC-030
 #                   (what a bound must cover), ACC-022 (the root Interface's Conduit to
 #                   `access` applies no bound), CTR-005, CON-028
-#   shared-host.v1  PLC-013, CON-006 (the two ends' locations have one hostname, decided when
+#   shared-host.v1  PLC-013, CON-006 (the two ends' nodes have one hostname, decided when
 #                   the Conduit is instantiated)
 #
 # A requirement of the core package is applied by the engine itself and is never sent to an
@@ -44,7 +52,9 @@
 # (OBJ-021). Each item of `operations` is a qualified reference that names an operation of an
 # installed package or of a submitted project whose manifest states that address (ACC-029,
 # SUB-008, MAN-015). It is data, compared as a name and never resolved, so a project's own
-# template may name the project's operations there by its address (ACC-029, NAM-022). A
+# template may name the project's operations there by its address (ACC-029, NAM-022), and an
+# item covers the operation of that name in every submission at that address and in a
+# package installed there once no template or instance holds a submission at it (PKG-029). A
 # Conduit to `access` with no bound requirement has no bound and is unlimited, and only an
 # actor whose own Conduit to `access` applies no bound may open or close one (ACC-030); a
 # Conduit whose bound names nothing covers nothing. A Conduit
@@ -64,8 +74,9 @@ metadata:
     and never sends it. `operations` names operations by qualified reference: of an installed
     package, or of a submitted project, as `address#name` with the address its manifest
     states, even in that project's own documents; each is compared as a name and never
-    resolved. A Conduit template applies it at most once, and only a Conduit to `access`
-    carries it.
+    resolved, so it covers the operation of that name in every submission at that address,
+    and in a package installed there later. A Conduit template applies it at most once, and
+    only a Conduit to `access` carries it.
 spec:
   inputs:
     pools:
@@ -90,7 +101,7 @@ metadata:
   name: shared-host.v1
   description: >-
     The consumer and the target of the Conduit run on one machine: the
-    `kubernetes.io/hostname` labels reported for their two locations are equal. Decided once,
+    `kubernetes.io/hostname` labels reported for their two nodes are equal. Decided once,
     when the Conduit is instantiated: a Conduit for which they differ, or either is absent, is
     not instantiated.
 spec: {}

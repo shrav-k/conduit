@@ -30,6 +30,17 @@
 # (docs/proposals/ruling-41/log-integration.md) changed POOL-012, which names `runtime` among
 # the keys an entry may not carry, as OBJ-014 does. Its coverage check (the same log,
 # "Coverage check") changed POOL-009: an entry given no runtime runs only on `local`'s machine.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), accepting the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md, changed POOL-009: an entry given no
+# runtime that has an item that is run is placed only where `local`'s hostname label matches,
+# and an input whose destination is an entry's `runtime` states no `default`; and POOL-016,
+# which moved from the layer `language` to `convention`, since it calls a provider, and reports
+# unavailable where the machines provider cannot place now. It removed none and added none. Its
+# log is docs/proposals/ruling-42/log-machines.md.
+# The names of ruling 42 (the vocabulary audit's N2 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in POOL-004, the machines
+# provider to the machine provider in POOL-016, and "for which `local` stands" to "that `local`
+# represents" in POOL-009. It removed none and added none.
 
 - id: POOL-001
   layer: language
@@ -82,7 +93,7 @@
     The Pool owns the new Resource alongside any instantiated from its entries. No entry is
     needed for it. For a retired Pool, resolving returns a diagnostic naming the Resource and
     the Pool and stating that the Pool is retired, and the Pool owns the same Resources as
-    before. A retired Pool gains no Resource, as a retired location is given no instance under
+    before. A retired Pool gains no Resource, as a retired node is given no instance under
     PLC-018 and a retired end no Conduit under CON-025: the three are rules of the language, and
     the registration of a document that one of them rejects reports invalid under OBJ-023. A
     request under LIF-009 for a new Resource for an entry of a retired Pool is POOL-017.
@@ -141,12 +152,14 @@
     provider, supplied for the input. An entry's placement and its runtime are written in no
     other way: an entry writes neither key itself.
   observable: >-
-    An entry that itself writes `placement` or `runtime` is rejected under OBJ-014, with a
-    diagnostic naming the entry, and one that writes `placement` under PLC-005 as well. A
-    runtime supplied for an entry names a runtime provider, as PRV-006 requires of the `runtime`
-    of an instance document. An entry whose placement no input supplies is placed under
-    POOL-016, and one whose runtime no input supplies runs on the engine's own runner, under
-    PRV-006, which runs only on the machine for which `local` stands, under PRV-019.
+    An entry that itself writes `placement` or `runtime` is rejected under OBJ-014 and PLC-005,
+    with a diagnostic naming the entry, and so is an input with either destination that states a
+    `default`, under PLC-005. A runtime supplied for an entry names a runtime provider that is
+    not retired, as PRV-006 requires of the `runtime` of an instance document. An entry whose
+    placement no input supplies is placed under POOL-016, and one whose runtime no input
+    supplies runs on the engine's own runner, under PRV-006, which runs only on the machine that
+    `local` represents, under PRV-019: where an item that is run is selected for it, it is
+    placed only where `local`'s hostname label matches, under PLC-007.
   vectors: []
 
 - id: POOL-011
@@ -231,22 +244,23 @@
 # --- Added by the follow-up rulings (plan-audit ruling 33; decision F15 of the re-audit).
 
 - id: POOL-016
-  layer: language
+  layer: convention
   level: must
   when: >-
     A Pool is instantiated, and no input of its template supplies the placement of one of its
     entries.
   then: >-
-    The Resource of that entry is placed under PLC-002, by the machines provider under PRV-015,
+    The Resource of that entry is placed under PLC-002, by the machine provider under PRV-015,
     like any instance whose document gives no placement.
   observable: >-
-    Where the machines provider names no machine for it, the Resource is not instantiated, and
-    so neither is the Pool, under POOL-002. This holds whether the template has no input with
-    that destination or has an optional one that was not supplied. A placement that the provider
-    chose is the Resource's, and is not written into the entry as the Pool holds it under
-    INS-013: a replacement for that entry under LIF-009 is placed by the provider when it is
-    made. A placement that an input supplied is part of the entry the Pool holds, and a
-    replacement takes it.
+    Where the machine provider names no machine for it, the Resource is not instantiated, and
+    so neither is the Pool, under POOL-002; where the provider is not ready or cannot place it
+    now, the request that would instantiate the Pool is not dispatched and reports unavailable,
+    under PRV-015. This holds whether the template has no input with that destination or has an
+    optional one that was not supplied. A placement that the provider chose is the Resource's,
+    and is not written into the entry as the Pool holds it under INS-013: a replacement for that
+    entry under LIF-009 is placed by the provider when it is made. A placement that an input
+    supplied is part of the entry the Pool holds, and a replacement takes it.
   vectors: []
 
 # --- Added by the follow-up to the last pass (docs/proposals/reaudit/round-2/log-tail.md;

@@ -47,6 +47,20 @@
 # docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
 # (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed PKG-006, which also
 # rejects a replacement whose manifest lists a package that is not installed (decision 12).
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed PKG-020:
+# a plain implementation implements no operation of `runtime-provider.v1`,
+# `machine-provider.v1` or `package-source.v1` (row 15); and PKG-029: installing at a submitted
+# project's address reports conflict only while a template or an instance holds a submission
+# there (row 36). It added none and removed none.
+# The names of ruling 42 (the vocabulary audit's N9 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of an implementation
+# item to `nodeSelector`, and location to node, in PKG-019. It removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N1, N6 and N7; log
+# docs/proposals/ruling-42/log-rename-b.md) said in PKG-019 that a `package` item's Package is
+# pinned, where it said that the item states `digest`; renamed the item's `arguments` to
+# `packageArguments` in PKG-019 and PKG-020; and renamed `reveal-secret.v1` to `get-secret.v1`
+# in PKG-020. It removed none and added none.
 
 - id: PKG-001
   layer: language
@@ -204,20 +218,20 @@
   then: >-
     Each has a name, which is an export, and states `implements`, the operations it implements,
     and how it is reached, which is exactly one of `command`, `package` and `remote`. It may
-    state `placement`, a label selector, and `supports`, the requirements it can apply as
-    filters. A `package` item also states `digest`. A `command` or `package` item may state
-    `environment`, a `package` item `arguments`, and a `remote` item `headers`, each giving the
-    places in the instance's configuration that supply values. An item that leaves out
-    `supports` supports no requirement, and one that leaves out `placement` puts no rule on
-    where its instances are placed.
+    state `nodeSelector`, a label selector, and `supports`, the requirements it can apply as
+    filters. A `package` item's Package is pinned to one artifact, under MAN-010. A `command` or
+    `package` item may state `environment`, a `package` item `packageArguments`, and a `remote`
+    item `headers`, each giving the places in the instance's configuration that supply values.
+    An item that leaves out `supports` supports no requirement, and one that leaves out
+    `nodeSelector` puts no rule on where its instances are placed.
   observable: >-
-    Whether an implementation implements an operation, supports a filter or can run on a
-    location is answered from the manifest, without starting it: the last by matching its
-    `placement`, with its type's, against the labels of the location, under PLC-007. The keys of
-    an item and their values are MAN-009 and MAN-010, and which places a pointer may name is
-    MAN-017. Which kinds of `package` a runtime provider can run is part of its contract, under
-    PRV-012. The one implementation that is reached by none of the three is the engine itself,
-    in the core package's own manifest, under MAN-012.
+    Whether an implementation implements an operation, supports a filter or can run on a node is
+    answered from the manifest, without starting it: the last by matching its `nodeSelector`,
+    with its type's, against the labels of the node, under PLC-007. The keys of an item and
+    their values are MAN-009 and MAN-010, and which places a pointer may name is MAN-017. Which
+    kinds of `package` a runtime provider can run is part of its contract, under PRV-012. The
+    one implementation that is reached by none of the three is the engine itself, in the core
+    package's own manifest, under MAN-012.
   vectors: []
 
 - id: PKG-020
@@ -229,16 +243,22 @@
     Its implementation item in the manifest is marked `plain: true` and gives `tools`, a map
     from the selection of each operation it implements to the name of the tool that serves it.
     It states no `supports`. A plain implementation is reached by `command`, `package` or
-    `remote`.
+    `remote`, and implements no operation of `runtime-provider.v1`, `machine-provider.v1` or
+    `package-source.v1`.
   observable: >-
     An operation in `implements` that is not a key of `tools`, a plain implementation that
-    states `supports`, and an item that is not marked `plain` and states `tools`, are each
-    rejected when the package is installed. A plain implementation supports no requirement, and
+    states `supports` or implements an operation of one of those three capabilities, and an item
+    that is not marked `plain` and states `tools`, are each rejected when the package is
+    installed or the project is submitted. The operations of those capabilities are reached only
+    by provider calls, which carry Conduit's keys and declare Conduit's extension, under PRV-005
+    and IFC-037, as a container runtime implements the CRI for the kubelet. A plain
+    implementation of `get-secret.v1` is allowed, under SEC-006: a read is a request, and not
+    a provider call. A plain implementation supports no requirement, and
     never counts as deduplicating under OPS-012, whatever the contracts of its operations
     declare. The `tools` map gives each tool's name and nothing else: the arguments of a call
     are the operation's inputs under their own names, as IFC-001 states. A plain server reads
     none of Conduit's keys, so it learns its instance's configuration only through the values
-    that its item's `environment`, `arguments` or `headers` take from it, under MAN-010.
+    that its item's `environment`, `packageArguments` or `headers` take from it, under MAN-010.
   vectors: []
 
 # --- Added by consolidation pass 1 (plan-audit ruling 32).
@@ -400,13 +420,18 @@
   level: must
   when: >-
     An actor asks to install a package at an address that the manifest of a submitted project
-    states as its own `address`.
+    states as its own `address`, while a template or an instance that exists holds that
+    submission's contracts or implementations under NAM-009 or PKG-005.
   then: >-
     The request is not dispatched, and reports conflict.
   observable: >-
     Nothing is installed, and the contracts of the submitted project keep that address. A
     qualified reference at the address would otherwise name both the project's contracts, under
     SUB-008, and the package's exports; MAN-016 rules out the other order, a submitted project
-    that states the address of an installed package. Where the actor is not permitted, or
-    another reason also applies, OPS-023 says which is reported.
+    that states the address of an installed package. No object exists for a contract after its
+    submission, under SUB-008, so once no template or instance holds a submission at the
+    address, a package may be installed there: an item of a bound's `operations` that names
+    `address#name` then covers the installed package's operation of that name, under ACC-029.
+    Where the actor is not permitted, or another reason also applies, OPS-023 says which is
+    reported.
   vectors: []

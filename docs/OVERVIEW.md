@@ -3,7 +3,9 @@
 Not binding. This is a short tour of the language in ordinary words, written from
 [spec/README.md](../spec/README.md) and [spec/definitions.md](../spec/definitions.md). It was
 last read against the specification on 2026-11-06, as
-[ruling 41](proposals/ruling-41/README.md) left it. The
+[ruling 42](proposals/ruling-42/README.md) left it, with the names that it accepted from the
+vocabulary audit (among them node, machine provider, `nodeSelector`, idempotency key, source and
+conformance document) and its editorial fixes. The
 [specification](../spec/README.md) alone binds, and it governs where this page differs. Each
 section links the files that state its rules. A code such as `CON-001` is the identifier of
 one promise in them.
@@ -34,7 +36,7 @@ Every object is a template or an instance of one of five families
 | Family | What it is |
 | --- | --- |
 | Interface | Where a person, or a system outside, acts on the system. It is an actor: it makes requests on its own behalf. |
-| Agent | An actor, as an Interface is. Its model being run is called model work. |
+| Agent | An actor, as an Interface is. A turn of its model is called model work. |
 | Resource | Something that agents share, such as a directory. It is not an actor: it makes a request only to serve one it received. A provider is a Resource too. |
 | Pool | The owner of Resources. It is never a consumer or a caller. |
 | Conduit | A relationship between exactly one consumer and exactly one target, for exactly one capability. |
@@ -54,7 +56,7 @@ A document is one template, instance or contract written out, in YAML or the equ
   names the template, and the standard arguments of its family: `owner` for a Resource,
   `placement` and `runtime` for an Agent and a Resource, and `consumer` and `target` for a
   Conduit. `owner`, `consumer` and `target` are required. `placement` may be left out, and the
-  machines provider then places the instance. `runtime` may be left out, and the engine's own
+  machine provider then places the instance. `runtime` may be left out, and the engine's own
   runner then runs it (OBJ-013). The document may have `arguments`, which supply values for the
   template's inputs. It has no `spec`. Every instance comes from a template.
 - A template of any family but Conduit selects a **type**: a contract that states the schema of
@@ -85,24 +87,36 @@ made, and no operation changes it (POOL-001). Ownership is a stored fact and per
 A Pool template may declare entries. When the Pool is made, one Resource is made for each entry
 and is owned by that Pool (POOL-002), and the Pool's setup sets them up in the order of the
 references among them (POOL-013). A Resource can also be made on its own, by a document that
-names as its owner a Pool that is not retired (POOL-004).
+names as its owner a Pool that is not retired (POOL-004). Retiring a Pool with its Resources
+retires them in the reverse order. One that cannot be retired, such as one on a machine that
+cannot be reached, holds back only the Resources that the order puts after it, every other is
+retired, and the Pool is retired only once all of them are, so the same request made again
+finishes the work (LIF-021).
 
-An Agent and a Resource each have exactly one placement: the location where it runs, fixed for
-its whole life (PLC-001, PLC-009). Interfaces, Pools and Conduits have none. A location is a
-Resource owned by the Pool `system` that stands for one machine, and the engine makes them all:
-`local` for its own machine at first start, and one for each other machine that the machines
+An Agent and a Resource each have exactly one placement: the node where it runs, fixed for
+its whole life (PLC-001, PLC-009). Interfaces, Pools and Conduits have none. A node is a
+Resource owned by the Pool `system` that represents one machine, and the engine makes them all:
+`local` for the machine it runs on at first start, and one for each other machine that the machine
 provider reports (PLC-026). What is known of a machine is its labels, such as
 `kubernetes.io/os: linux`, which the provider reports and nothing else sets (PRV-014). Where a
-document gives no placement, the machines provider chooses a machine; with none, everything is
+document gives no placement, the machine provider chooses a machine; with none, everything is
 placed on `local` (PLC-002, PRV-015). A type or an implementation may state a label selector
-under `placement`, which the location's labels must match (PLC-007). An instance runs on the
-machine of its location: its runtime provider runs it there, or the run fails and nothing runs
+under `nodeSelector`, which the node's labels must match (PLC-007). An instance runs on the
+machine of its node: its runtime provider runs it there, or the run fails and nothing runs
 (PRV-019). The engine's own runner runs only on the engine's machine, so an instance placed on
-another machine names a runtime provider that runs there (PRV-003, PRV-006).
+another machine names a runtime provider that runs there (PRV-003, PRV-006). An instance that
+has a program to run and names no runtime provider is placed only where `local`'s hostname
+label matches: that label joins its selector, and the machine provider, asked with it, names
+the engine's machine or none (PLC-007, PRV-015). Where the machine provider is not ready, or
+cannot place an instance now, the request that would make the instance reports unavailable
+(PRV-015).
 
-A machine reported unreachable keeps its instances, and requests to them report unavailable
-(PLC-023). A machine reported gone retires its location and every instance on it, as if `root`
-had declared the location lost (PLC-024).
+A machine reported unreachable, or left out of the provider's latest report, keeps its
+instances, and requests to them report unavailable (PLC-023). Where a machine is reported gone,
+the engine declares its node lost, which retires the node and every instance on it, as when
+`root` declares a node lost (PLC-024).
+A node belongs to its machine's hostname and not to the provider that reports it, so
+replacing the machine provider retires no node (PLC-026).
 
 ## Conduits and access
 
@@ -152,19 +166,20 @@ which names the Pools, targets and operations it covers. One that carries no bou
 unlimited (ACC-029). A right to open is passed on only as it is or narrower, and since a bound
 never limits by filters, whoever holds one may open unfiltered access within it (ACC-030).
 
-Access begins at first start. Five objects then exist: the Pool `system`, the location `local`,
+Access begins at first start. Five objects then exist: the Pool `system`, the node `local`,
 the Resources `management` and `access`, and the Interface `root`, which has an open Conduit to
 each of those two Resources (FST-001, FST-002). Any other Interface has no access until a
 Conduit of which it is the consumer is opened (ACC-023). These objects are set apart. None of
-the five is retired or unregistered (LIF-022), a report that the engine's own machine is
+the five is retired or unregistered (LIF-022), a report that the machine the engine runs on is
 unreachable or gone changes nothing (PLC-023, PLC-024), no request closes a Conduit of which
 `root` is
-the consumer (ACC-024), and two operations, declaring a location lost and purging records, are
+the consumer (ACC-024), and two operations, declaring a node lost and purging records, are
 dispatched only when `root` asks (ACC-032). Only `root` opens a Conduit through which the
 engine reads a secret for a Resource or an Agent (SEC-008); see [Secrets](#secrets).
 
 Closing a Conduit ends all the access it carried. It is never opened again, and it is removed
-at once (ACC-011, LIF-035).
+at once (ACC-011, LIF-035). A request through it reports refused, as one that no Conduit ever
+permitted does (ACC-011).
 
 ## A worked example
 
@@ -219,7 +234,7 @@ arguments:
   `example.org/files` and lists one of its operations.
 - It applies two requirements. `shared-host.v1`, from the core package, requires the consumer
   and the target to be placed on the same machine: the engine compares the
-  `kubernetes.io/hostname` labels of their two locations, once, when the Conduit is made
+  `kubernetes.io/hostname` labels of their two nodes, once, when the Conduit is made
   (PLC-013). `rate-limit.v1` is a filter, which the target's implementation applies, and the
   input `limit` fills its argument.
 - `reviewer-scratch` has `from`, so it is an instance. Its consumer is the Agent `reviewer-1`,
@@ -260,13 +275,15 @@ where it is declared lost, and until then they permit only the requests of its r
 them is refused from the same moment, unless it belongs to that retirement. Shutdown is the
 stopping and releasing of what the retired instance itself holds, and the stop of its run
 (LIF-016). It is confirmed once a
-retirement of the instance has succeeded (LIF-024). Declaring a location lost, which only
-`root` may do, retires the location and every instance placed on it without their shutdown
-being confirmed (PLC-017), and a machine reported gone does the same (PLC-024).
+retirement of the instance has succeeded (LIF-024). Declaring a node lost retires the node and
+every instance placed on it without their shutdown being confirmed: only `root` may ask for it
+(PLC-017), and the engine does it where the node's machine is reported gone (PLC-024).
 
 Once a retired instance's shutdown is confirmed, it is removed: it no longer exists, its name
-is free again, and its records are kept (LIF-035). One whose location was declared lost is
-removed by unregistering it (LIF-017).
+is free again, and its records are kept (LIF-035). One whose node was declared lost is
+removed by unregistering it, which asks its runtime provider once more to stop its program
+(LIF-017, LIF-036). What the provider does with a stop that it cannot carry out then, such as
+carry it out once the machine comes back, is what its contract states (PRV-021).
 
 Whether an instance is running, paused or idle is not a lifecycle state. Such conditions are
 reported beside the state, in the shape that Kubernetes gives a condition, and the engine
@@ -275,8 +292,8 @@ reports there whether an instance's program is running (LIF-011, PRV-009).
 Inspecting an instance returns what was declared, its status and the records about it
 (LIF-013). A difference between what is observed and what was declared is reported, and nothing
 acts to remove it without an explicit request (OBS-004). A runtime provider may restart a
-program that stopped, under its own setting, as systemd and Docker Compose do. That is the
-provider's own, and the engine dispatches nothing because of it (PRV-010).
+program that stopped, under its own restart policy, as systemd and Docker Compose do. That is
+the provider's own, and the engine dispatches nothing because of it (PRV-010).
 
 ## Operations, outcomes and reasons
 
@@ -289,7 +306,7 @@ management verb, such as register, set up, open, close and retire, is itself an 
 
 A request asks for one operation on one target. The engine makes its own access decision before
 any implementation is invoked (ACC-002). A request that passes the engine's checks is
-dispatched, which begins an invocation. The implementation then applies the restrictions it
+dispatched, which begins an invocation. The implementation then applies the filters it
 was sent, and answers refused or unavailable, having performed nothing, where one of them
 forbids the request or cannot be applied (IFC-019, IFC-026). Every request ends in one of
 seven ways
@@ -299,13 +316,15 @@ seven ways
   the effect occurred or that it did not.
 - With a **reason** and no outcome: refused, invalid, conflict or unavailable.
 
-A caller may attach an operation identity to a request so that a repeat is recognized. The
-identity is scoped to the caller, the target and the instance that sent the request, and at
-most one invocation exists for one of each and one identity (OPS-008). Nothing is dispatched
+A caller may attach an idempotency key to a request so that a repeat is recognized. The
+key is scoped to the caller, the target and the instance that sent the request, and at most one
+invocation exists for one of each and one key (OPS-008). Nothing is dispatched
 again unless the caller repeats the request (IMP-007). A repeat of a request whose invocation
-succeeded is answered with its outputs, for as long as the engine keeps them; a repeat of one
-that has not ended reports conflict, with the engine's ID for the invocation (OPS-009,
-OPS-032). A caller that lost a result repeats its request.
+succeeded is answered with its outputs for as long as the engine keeps them, and reports
+conflict once it no longer does (OPS-009, OPS-034); a repeat of one that has not ended reports
+conflict too (OPS-032). Each conflict carries the engine's ID for the invocation, and its
+diagnostic names the promise that tells the two apart. A caller that lost a result repeats its
+request.
 
 What follows an unknown outcome is fixed. A repeat of the request is dispatched as a new
 attempt only if the operation's contract declares `deduplicates: true` and the implementation
@@ -316,7 +335,9 @@ is itself an operation, `reconcile.v1`, and needs an open Conduit that lists it.
 invocation of a management verb, that Conduit is to the target that authorized the request
 being reconciled. For any other invocation it is to the target that manages the instance the
 invocation was dispatched to: the Pool that owns it where it is a Resource, and `management`
-otherwise, or where that Pool is retired or the instance no longer exists (ACC-033).
+otherwise, or where that Pool is retired or the instance no longer exists (ACC-033). An actor
+finds the invocations of unknown outcome that concern an instance, and are not yet reconciled,
+in `unreconciled` in the instance's status, even after the records are purged (LIF-013).
 
 A control is an operation that changes stored settings. It applies exactly the values it is
 sent, or fails (REV-007). A request to change an object names the object's current revision,
@@ -330,7 +351,10 @@ start it (IMP-002).
 Not every invocation begins with a consumer's request: the engine dispatches the hooks of a
 setup or a retirement, and reads secrets, for the caller of that setup or retirement (TPL-017,
 SEC-011). Work that outlasts its invocation is not part of this version (ruling 38): once an
-invocation has ended, no request is dispatched on its behalf (ACC-019). A request is cancelled
+invocation has ended, no request is dispatched on its behalf (ACC-019). The one exception is
+the read of a secret that a remote server's headers need, made again after the engine restarts
+for the caller of the setup that made the connection (SEC-023); see [Secrets](#secrets). A
+request is cancelled
 by the protocol's own means (OPS-027). Every access decision, every invocation and every
 provider call is recorded (REC-001), as a CloudEvent (REC-002).
 
@@ -361,8 +385,9 @@ too, and outside the project they are named by it, as a package's are (MAN-015, 
 
 An implementation does the work behind an operation. Its item in the manifest reaches it in
 exactly one of three ways: a command; a package as the MCP Registry's server.json describes
-one, pinned by its digest; or a remote server at a URL (MAN-009, MAN-010). The item can take
-variables, arguments or headers from the instance's settings. An existing server that was not
+one, pinned by the SHA-256 of its file in `fileSha256`, or an OCI image by the digest in its
+identifier; or a remote server at a URL (MAN-009, MAN-010). The item can take variables,
+arguments or headers from the instance's settings. An existing server that was not
 written for Conduit can be one; its item marks it `plain`. An operation built from other
 operations is an ordinary implementation: a server that makes onward requests.
 
@@ -386,24 +411,37 @@ A provider is a Resource whose type offers one of four capabilities of the core 
 
 | Provider | What it does | Where the user picks none |
 | --- | --- | --- |
-| Runtime provider | Runs an instance's program on the machine of its location, stops it and reports whether it is running, as a container runtime does | The engine's own runner starts the program as a process on the engine's machine, and runs nothing placed on another machine |
-| Machines provider | Reports the machines, their labels and whether each is reachable, unreachable or gone, and chooses a machine for an instance | The engine's own machine is the only one, and everything is placed on `local` |
+| Runtime provider | Runs an instance's program on the machine of its node, stops it and reports whether it is running, as a container runtime does | The engine's own runner starts the program as a process on the engine's machine, and runs nothing placed on another machine |
+| Machine provider | Reports the machines, their labels and whether each is reachable, unreachable or gone, and chooses a machine for an instance | The engine's own machine provider reports only the machine the engine runs on, and everything is placed on `local` |
 | Package-source provider | Fetches a package's archive for the URL schemes it claims | The engine fetches `https:` and `file:` URLs itself |
 | Secret Resource | Reads one secret from a store outside the engine | Nothing: no store is built into the engine |
 
 The user picks a provider by registering a Resource of its type, configured as that provider
 needs, such as a Docker context (PRV-001). An Agent or a Resource names the runtime provider
 that runs it in its standard argument `runtime`, as a Kubernetes Pod names its runtime class,
-and it is fixed for life (PRV-006). The machines provider and the package-source providers are
-owned by `system`: one machines provider at a time, and one package-source provider for each
+and it is fixed for life (PRV-006). The machine provider and the package-source providers are
+owned by `system`: one machine provider at a time, and one package-source provider for each
 scheme (PRV-013). A runtime provider is not retired while an instance names it (PRV-020). A
 user who picks none gets the engine's own (PRV-003).
 
+The engine's own runner passes a program it starts, of the engine's own environment, only
+`HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER`, as the stdio clients of the Model
+Context Protocol's SDKs do, and the further variables that a list the user sets on the runner
+names, as systemd's `PassEnvironment=` does. So a token exported in the shell that started the
+engine reaches no process that the runner starts unless that list names it (PRV-023). Only the
+engine's own runner runs a program given by a relative path, which names a file on the
+engine's machine (PRV-007, MAN-010).
+
 The engine calls a provider itself. A provider call is not a request: no Conduit permits it, no
-Conduit may list its operations, and it is recorded (PRV-004, PRV-005). A program's run is named
-by the instance's ID, so one run serves one instance (PRV-007). Which runtime provider ran an
-instance, or on which machine, never establishes who sent a request: only what the request
-presents does, by a cryptographic proof wherever it crosses machines (PRV-018, IFC-022).
+Conduit may list its operations, and it is recorded (PRV-004, PRV-005). It declares Conduit's
+extension, and no server marked `plain` implements a runtime provider, a machine provider or a
+package-source provider (PRV-005, PKG-020). A program's run is named by the instance's
+ID, so one run serves one instance (PRV-007). Which runtime provider ran an instance, or on
+which machine, never establishes who sent a request: only what the request presents does, by a
+cryptographic proof wherever it crosses machines (PRV-018, IFC-022). What a run presents, and
+the engine's address, are given to it in `identity`: the address as a variable and a
+credential as a file, which the runtime provider keeps as it keeps a secret and may refresh
+while the run lasts (PRV-022, DL13).
 
 ## Secrets
 
@@ -414,18 +452,26 @@ A document never holds a secret. A place that the core schema `secret-reference.
 holds a reference to a secret Resource, and a literal there is rejected (SEC-001, SEC-002). A
 secret Resource's settings are a locator, which says where its store keeps the value. Each kind
 of store is its own type, which gives the form of its locator, and has no control, so nothing
-changes a locator once it is written (SEC-005).
+changes a locator once it is written (SEC-005). That type offers nothing but the reading of a
+secret: a store package that lists or writes secrets does so through another type (SEC-022).
 
 Only the engine reads a secret, and only just before it asks a runtime provider to run a
 program that needs it, or connects to a remote server that needs it in a header (SEC-010,
 SEC-013). It reads through the instance's own Conduit to the secret Resource, and only `root`
 may open such a Conduit, for a Resource or an Agent (SEC-008, SEC-009). No instance may ask for
 a secret itself: it is presented no tool for it, and a request for it is refused (SEC-007). A
-read belongs to the setup or the retirement that asked for the run, and has its caller
-(SEC-011). It is recorded without its value; the engine keeps no copy, and passes the value
-only to the run, whose runtime provider sets the variable that the implementation item names
-(SEC-015, SEC-017, SEC-018, PRV-011). The value is fixed for the life of that run (SEC-014). A
-read that fails stops the run, and requests to the instance report unavailable (SEC-012).
+read belongs to the setup or the retirement that asked for the run or the connection, and has
+its caller (SEC-011). It is recorded without its value; the engine keeps no copy, and passes
+the value only to the run, whose runtime provider sets the variable or the argument that the
+implementation item names, or sends it in the header (SEC-015, SEC-017, SEC-018, PRV-011). The
+value is fixed for the life of that run, so a value rotated in its store arrives only in a
+later run (SEC-014). A read that fails stops the run, and requests to the instance report
+unavailable (SEC-012).
+
+After the engine restarts, on its machine or on another, it no longer holds the header values
+of a connection to a remote server. Before it next sends a request on that connection it reads
+them again, for the caller of the setup that made the connection, as the instance's Conduit to
+the secret Resource decides then, so closing that Conduit stops the read (SEC-023).
 
 One contract serves every store. Five are foreseen, each a package that implements it
 ([section 4 of the principles review](proposals/principles-review/README.md#4-secrets-reduced)):
@@ -444,7 +490,7 @@ promise says which one it belongs to.
 | Layer | What it determines |
 | --- | --- |
 | `language` | What a set of documents means: which objects they make, how those relate, and what is valid. |
-| `convention` | The few behaviors every part must agree on, stated as invariants. There are seven: operation identity and outcomes; revision-checked change; access; declared against observed state; ownership and lifecycle; records; and that nothing starts model work or repeats an effect implicitly. |
+| `convention` | The few behaviors every part must agree on, stated as invariants. There are seven: idempotency keys and outcomes; revision-checked change; access; declared against observed state; ownership and lifecycle; records; and that nothing starts model work or repeats an effect implicitly. |
 | `interface` | The implementation interface: the Model Context Protocol as the shared wire, with the keys Conduit adds to it. |
 
 The provider contracts are written in the same three layers. Two things are deliberately
@@ -455,14 +501,14 @@ outside them, and neither binds other engines:
 - **How the work is done beyond what the promises fix.** How a program is started, or where an
   instance is placed, belongs to the provider that does it, and its contract says. What stays
   the engine's own, such as retries and how it stores its records, belongs to the engine's
-  runtime profile: its documented choice for every item of the
-  [implementation-defined list](../spec/implementation-defined.yaml).
+  conformance document: its documented choice for every item of the [implementation-defined
+  list](../spec/implementation-defined.yaml).
 
 A claim of conformance names a version of the specification and one of three levels
 ([conformance](../spec/README.md#conformance)). An engine claims the Language level, which
 covers the layer `language`, or the Engine level, which adds the other two layers and a
-runtime profile. An implementation, which is not an engine, claims the Implementation level:
-every promise of the layer `interface` whose obligation falls on the implementation.
+conformance document. An implementation, which is not an engine, claims the Implementation
+level: every promise of the layer `interface` whose obligation falls on the implementation.
 
 For everything that is not connection and access, such as schemas, packages, the wire and what
 the providers do, the specification adopts existing standards

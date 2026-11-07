@@ -12,6 +12,25 @@
 # of `access-control.v1` (decision 3a), and added the four provider capabilities,
 # `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1` (decisions 2, 8, 21 and
 # 31a) and `secret-reveal.v1` (decision 19). The log is docs/proposals/ruling-41/log-core.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the owner's answer D10,
+# changed the description of `secret-reveal.v1`: a Type that offers it offers no other
+# capability, and is rejected when its package is installed, or its project submitted, if it
+# does (SEC-022). The log is docs/proposals/ruling-42/log-core.md.
+# The names of ruling 42 (the vocabulary audit's N2; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the machines provider to the machine
+# provider, and the engine's own machine to the engine's own machine provider, in the
+# description of `machine-provider.v1`.
+# The names of ruling 42 (the vocabulary audit's N1 and N12; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1` to `secret-provider.v1`
+# and its operation `reveal-secret.v1` to `get-secret.v1`, and the description says that the
+# engine reads a secret for an instance through that instance's own Conduit, where it named the
+# reading instance.
+# The editorial fixes of ruling 42 (the vocabulary audit's E17; log
+# docs/proposals/ruling-42/log-editorial.md) say secret Resource, or the type of a secret
+# Resource, in the description of `secret-provider.v1` and below, where it said secret store.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# says in that description that each kind of store is its own Type, as SEC-005 does, where it
+# said each store, which a store, the system outside the engine, is not.
 #
 # The Capability contracts of the core package: what `management`, `access` and a Pool offer
 # through a Conduit (OPS-019, CTR-003), and the provider capabilities (PRV-001). The
@@ -37,8 +56,9 @@
 #                         states, and placing an instance)
 #   package-source.v1     PRV-001, PRV-013, PRV-016, PRV-017 (fetching an archive for the
 #                         schemes the provider claims)
-#   secret-reveal.v1      SEC-002, SEC-005 (the shared contract of every secret store; a
-#                         Resource whose type offers it is a secret Resource), PRV-001
+#   secret-provider.v1    SEC-002, SEC-005 (the shared contract of every secret Resource; a
+#                         Resource whose type offers it is a secret Resource), SEC-022 (a
+#                         Type that offers it offers no other capability), PRV-001
 #
 # Reconciling an invocation of a management verb is authorized against the target that
 # authorized the request being reconciled, so the three capabilities that hold management
@@ -48,9 +68,10 @@
 # (ACC-033, OPS-014). No other capability has to include `reconcile.v1`.
 #
 # A provider is a Resource whose type offers one of the four provider capabilities, and no
-# other of them (PRV-001). No Conduit lists an operation of `runtime-provider.v1`,
+# other of them (PRV-001); the type of a secret Resource offers no other capability at all
+# (SEC-022). No Conduit lists an operation of `runtime-provider.v1`,
 # `machine-provider.v1` or `package-source.v1`: the engine alone invokes them, by provider
-# calls (PRV-004, PRV-005). A Conduit may list `reveal-secret.v1`, and only the root
+# calls (PRV-004, PRV-005). A Conduit may list `get-secret.v1`, and only the root
 # Interface opens one, for a Resource or an Agent (SEC-008, SEC-009); no actor's request
 # through it is dispatched, and the engine's reads go through it (SEC-007, SEC-010).
 # `setup-hook.v1` and `retire-hook.v1` are in no capability: a template selects them, and the
@@ -149,10 +170,11 @@ kind: Capability
 metadata:
   name: machine-provider.v1
   description: >-
-    What the machines provider offers: reporting the machines, their labels and whether each
+    What the machine provider offers: reporting the machines, their labels and whether each
     is reachable, unreachable or gone, and placing an instance on one of them. At most one
-    machines provider, owned by `system`, is not retired; with none, the engine's own machine
-    is the one machine. No Conduit lists these operations: the engine alone invokes them.
+    machine provider, owned by `system`, is not retired; with none, the engine's own machine
+    provider reports one machine, the one the engine runs on. No Conduit lists these
+    operations: the engine alone invokes them.
 spec:
   operations:
     - github.com/shrav-k/conduit/core#list-machines.v1
@@ -175,13 +197,16 @@ spec:
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Capability
 metadata:
-  name: secret-reveal.v1
+  name: secret-provider.v1
   description: >-
-    The shared contract of a secret store: giving the value of the secret that the locator in
-    the secret Resource's configuration names. A Resource whose type offers it is a secret
-    Resource, and each store is its own Type, whose schema states the form of its locator and
-    which lists no control. The engine reads a secret through the reading instance's own open
-    Conduit that lists `reveal-secret.v1`, and no actor's request for it is dispatched.
+    The shared contract of every secret Resource: giving the value of the secret that the
+    locator in the secret Resource's configuration names. A Resource whose type offers it is a
+    secret Resource, and each kind of store is its own Type, whose schema states the form of
+    its locator, which lists no control and which offers no other capability: one that offers
+    another is rejected when its package is installed or its project is submitted. A store
+    package that lists or writes secrets does so through another Type, whose Resources are not
+    secret Resources. The engine reads a secret for an instance through that instance's own
+    open Conduit that lists `get-secret.v1`, and no actor's request for it is dispatched.
 spec:
   operations:
-    - github.com/shrav-k/conduit/core#reveal-secret.v1
+    - github.com/shrav-k/conduit/core#get-secret.v1

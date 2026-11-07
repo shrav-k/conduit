@@ -3,7 +3,8 @@
 Status: **accepted by the owner as it stands at
 [ruling 39](../../docs/proposals/ruling-39/README.md)** (2026-11-06), which accepted every
 logged decision of the coordinator and choice of an editor, and **changed by
-[ruling 41](../../docs/proposals/ruling-41/README.md)** of the same day; see
+[ruling 41](../../docs/proposals/ruling-41/README.md)** and
+**[ruling 42](../../docs/proposals/ruling-42/README.md)** of the same day; see
 [the specification's README](../README.md). Plan-audit ruling 37 first accepted it on
 2026-11-05, as one batch with [the schemas](../schemas/README.md) and
 [the manifest's promises](../promises/manifest.yaml). It was written for decision G1 of the
@@ -34,12 +35,54 @@ composite components; 20 were added, the two hooks, the provider capabilities an
 operations, the operation of a secret store and the schemas of a handle, a condition, a
 record, a secret reference, a label selector and server.json's Package and Remote; and every
 Operation contract is written as the Model Context Protocol writes a tool. The names that the
-review and the work order coined, `secret-reveal.v1` and `reveal-secret.v1` among them, are
-not final: the vocabulary audit that ruling 41 orders proposes names before pull request 7 is
-finished. The [coverage check](../../docs/proposals/ruling-41/log-integration.md#coverage-check)
-of the rewrite then changed the description of `run.v1`, which runs the item only on the
-machine that `location` names, and of `bound.v1`, whose `operations` are compared as names,
-and no longer says that a control requires `revision` alone.
+review and the work order coined, `secret-reveal.v1` and `reveal-secret.v1` among them, were
+not final: the vocabulary audit that ruling 41 ordered proposed names, which ruling 42
+accepted, as the next paragraph says. The
+[coverage check](../../docs/proposals/ruling-41/log-integration.md#coverage-check) of the
+rewrite then changed the description of `run.v1`, which runs the item only on the machine that
+`location` names, and of `bound.v1`, whose `operations` are compared as names, and no longer
+says that a control requires `revision` alone.
+
+Ruling 42 accepted the decisions that the coordinator settled in the [open questions after the
+rewrite](../../docs/proposals/ruling-41/open-decisions.md) and the owner's answers to most of
+the others, and the [log of that pass](../../docs/proposals/ruling-42/log-core.md) lists what
+changed here: no export was added or removed. `run.v1` requires `endpoint`, keys its `secrets`
+by name under `environment` and `arguments`, and has a new input, `identity`, which carries what
+a run needs to reach the engine and prove which instance it is; `inspect.v1`'s status lists the
+invocations of unknown outcome not yet reconciled in `unreconciled`; `record.v1` has `serving`;
+and the descriptions of `unregister.v1`, `stop.v1`, `retire-with-resources.v1`,
+`reveal-secret.v1`, `secret-reveal.v1` and others follow the answers. The name `identity` is a
+working name, as `serving` and `unreconciled` are. The
+[integration of ruling 42](../../docs/proposals/ruling-42/log-integration.md) then changed the
+descriptions of `unregister.v1` and `stop.v1`, and the section on providers, to say, as the
+owner's answer D11 does, that what a runtime provider does with a stop it cannot carry out now
+is what its contract states. The names N2, N3 and N8 to N11 of ruling 42 then renamed three
+exports, as the [log of the renames](../../docs/proposals/ruling-42/log-rename-a.md) lists: the
+template
+`location` became `node`, the type `location.v1` became `node.v1`, and the schema
+`label-selector.v1` became `labels.v1`. The input `location` of `run.v1` became `machine`, that
+of `declare-lost.v1` became `node`, and that of `place.v1`, `selector`, became `nodeSelector`,
+the key under which a Type and an implementation item state their label selector; and the
+machines provider became the machine provider. Its other names, N1, N5 to N7 and N12 to N20,
+then renamed two exports, as the
+[log of the other renames](../../docs/proposals/ruling-42/log-rename-b.md) lists: the
+capability `secret-reveal.v1` became `secret-provider.v1`, and its operation `reveal-secret.v1`
+became `get-secret.v1`. The output `endpoint` of `run.v1` became `url`, and its input
+`arguments`, with that of its `secrets`, became `packageArguments`, as did the key of
+`implementation-item.v1`, which lost `digest`: its Package is pinned by its own `fileSha256`,
+or an `oci` one by a digest in its `identifier`. `record.v1` names the consumer of the Conduit
+used in `consumer` and the idempotency key in `idempotencyKey`, and `condition.v1` lost
+`observedGeneration` and has `source` in place of `origin`. Of Conduit's keys, `restrictions`
+became `filters` and `operationIdentity` became `idempotencyKey`, and Conduit's extension
+became `io.github.shrav-k.conduit/implementation-interface`. The descriptions follow.
+The editorial fixes of ruling 42, as the
+[log of the editorial fixes](../../docs/proposals/ruling-42/log-editorial.md) lists, then added
+a row for hooks to the table of names (E1); said there that FST-005 names the template `node`,
+and dropped NAM-020, which names no template, from its row of the export table (E23); wrote
+"one contract for one verb" (E13); and said secret Resource, or the type of a secret Resource,
+where the descriptions here and in `capabilities.yaml`, `operations.yaml` and `types.yaml` said
+secret store (E17). `types.yaml` calls `node.v1` the type of every node where it said the node
+type (E10).
 
 The promises are the source of truth: where a document here and a promise differ, the document
 is wrong.
@@ -55,9 +98,9 @@ everything the promises say it exports, and everything first start needs.
 | File | Holds |
 | --- | --- |
 | [conduit.yaml](conduit.yaml) | The package's manifest: its address, its version, its exports and its one implementation, the engine itself |
-| [operations.yaml](operations.yaml) | The 23 Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret store |
-| [capabilities.yaml](capabilities.yaml) | The 7 Capability contracts: what `management`, `access` and a Pool offer, and the four provider capabilities: a runtime provider, the machines provider, a package-source provider and a secret store |
-| [types.yaml](types.yaml) | The 5 Type contracts: the basic Interface and Pool types, and the types of a location, of `management` and of `access` |
+| [operations.yaml](operations.yaml) | The 23 Operation contracts: every management verb, the setup hook and the retire hook, the operations of the three provider capabilities that the engine invokes by provider calls, and the one operation of a secret Resource |
+| [capabilities.yaml](capabilities.yaml) | The 7 Capability contracts: what `management`, `access` and a Pool offer, and the four provider capabilities: a runtime provider, the machine provider, a package-source provider and a secret Resource |
+| [types.yaml](types.yaml) | The 5 Type contracts: the basic Interface and Pool types, and the types of a node, of `management` and of `access` |
 | [requirements.yaml](requirements.yaml) | The 2 Requirement contracts: the bound of a right to open, and the shared-host requirement |
 | [references.yaml](references.yaml) | The 12 reference schemas: the Schema contracts that make a value a reference (OBJ-021), a secret reference among them (SEC-001). Each also accepts the resolved form `{kind, id}`, which only the engine writes |
 | [results.yaml](results.yaml) | 5 Schema contracts: an object as a result names it, a diagnostic, a handle, a condition and a record |
@@ -80,13 +123,14 @@ checks it.
 
 Export names follow NAM-004, and each becomes a tool's name under IFC-012, so they are short.
 The convention, which follows the names the promises already use (`local-directory.v1`,
-`shared-host.v1`, `location`):
+`shared-host.v1`, `node`):
 
 | Kind | Named as | Example |
 | --- | --- | --- |
 | Operation | The verb, in the imperative, as the commands of `kubectl` and `docker` are named. Words are joined by hyphens | `register.v1`, `set-up.v1` |
-| Type, Capability, Requirement, Schema | A noun, with hyphens | `location.v1`, `access-control.v1`, `bound.v1`, `resource-reference.v1` |
-| Template | The name of the first-start object made from it, except `location`, which NAM-020 names, and the two Conduit templates, which are named for their consumer and their target | `system`, `root`, `root-access` |
+| Hook | Named for the invocation it belongs to, then `-hook` | `setup-hook.v1`, `retire-hook.v1` |
+| Type, Capability, Requirement, Schema | A noun, with hyphens | `node.v1`, `access-control.v1`, `bound.v1`, `resource-reference.v1` |
+| Template | The name of the first-start object made from it, except `node`, which FST-005 names, and the two Conduit templates, which are named for their consumer and their target | `system`, `root`, `root-access` |
 | Every contract | Ends in its compatibility version, written `v` and a whole number (CTR-001) | `.v1` |
 
 No two exports share a name, whatever their kinds (PKG-012). That is why the Type of the
@@ -102,7 +146,7 @@ nothing else (CTR-012). An operation with no inputs or no outputs states no `inp
 `outputSchema`. The engine derives a
 tool's definition from the contract (IFC-033).
 
-One contract stands for one verb. Where a verb applies both to a Resource and to other
+One contract for one verb. Where a verb applies both to a Resource and to other
 instances, the same contract is included in the capability of a Pool and in the capability of
 `management`, and ACC-033 says which target authorizes a request from the object it names. A
 request through a Conduit to the other target reports refused.
@@ -122,7 +166,7 @@ set up by `open.v1` and retired by `close.v1`.
 | --- | --- | --- | --- | --- | --- |
 | `register.v1` | `object-management.v1`, `pool-management.v1` | — | yes | — | SUB-006, ACC-033, PKG-006, MAN-015 |
 | `replace.v1` | `object-management.v1` | required | yes | — | SUB-009 |
-| `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017 |
+| `unregister.v1` | `object-management.v1` | required | yes | — | LIF-012, LIF-017, LIF-036 |
 | `inspect.v1` | `object-management.v1`, `pool-management.v1` | — | — | — | LIF-013 |
 | `set-up.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-003, TPL-012 |
 | `retire.v1` | `object-management.v1`, `pool-management.v1` | — | no | — | LIF-005, TPL-009 |
@@ -141,22 +185,22 @@ set up by `open.v1` and retired by `close.v1`.
 | --- | --- | --- | --- |
 | `setup-hook.v1` | No capability: a template selects it | The engine, as the last part of a setup, through no Conduit | TPL-017, OPS-028 |
 | `retire-hook.v1` | No capability: a template selects it | The engine, within a retirement, before the stop | TPL-018, OPS-028 |
-| `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012 |
-| `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008 |
+| `run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-007, PRV-011, PRV-012, PRV-022 |
+| `stop.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-008, PRV-021, LIF-036 |
 | `inspect-run.v1` | `runtime-provider.v1` | The engine, by a provider call | PRV-009 |
 | `list-machines.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-014 |
 | `place.v1` | `machine-provider.v1` | The engine, by a provider call | PRV-015 |
 | `fetch-package.v1` | `package-source.v1` | The engine, by a provider call | PRV-017 |
-| `reveal-secret.v1` | `secret-reveal.v1` | The engine's reads alone, which are requests through the reader's own Conduit | SEC-005 to SEC-007, SEC-010 |
+| `get-secret.v1` | `secret-provider.v1` | The engine's reads alone, which are requests through the instance's own Conduit | SEC-005 to SEC-007, SEC-010, SEC-023 |
 
 None of these nine states a default implementation, and `engine` implements none of them
 (MAN-012, SEC-020): a template selects an implementation for each that it needs, or its type's
 default does (TPL-004). A provider call is not a request: no Conduit permits it, no access
 decision is made for it, and it is recorded (PRV-005). So no Conduit lists an operation of
 `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PRV-004). A Conduit may
-list `reveal-secret.v1`, and only the root Interface opens one, for a Resource or an Agent
+list `get-secret.v1`, and only the root Interface opens one, for a Resource or an Agent
 (SEC-008); no actor's request for it is dispatched and no tool is presented for it (SEC-007,
-IFC-012). None of the provider operations, nor `reveal-secret.v1`, states an `effect`, apart
+IFC-012). None of the provider operations, nor `get-secret.v1`, states an `effect`, apart
 from `run.v1` and `stop.v1`.
 
 ### How to read the columns
@@ -199,12 +243,13 @@ from `run.v1` and `stop.v1`.
   (OPS-031). A request that names an invocation whose outcome is not unknown reports conflict
   (OPS-030). A consumer learns the ID that names the invocation from the
   `io.github.shrav-k.conduit/invocation` of its result, or of a repeat of its request (IFC-025,
-  OPS-032).
+  OPS-032, OPS-034), and finds the invocations of unknown outcome that concern an instance,
+  not yet reconciled, in `unreconciled` in its status, which no purge shortens (LIF-013).
 - **Defaults.** No input of a core operation states a `default` (CTR-002, OPS-026). An input
   that may be left out is one that `required` does not list. Each input of the requirement
   `bound.v1` states `default: []`, and may be left out for that reason alone (OBJ-015).
 - **`deduplicates`.** Declared where the whole effect is a change to what the engine itself
-  stores, which the engine recognizes by the operation identity, so a repeat after an unknown
+  stores, which the engine recognizes by the idempotency key, so a repeat after an unknown
   outcome can be dispatched as a new attempt (OPS-012). Not declared where the engine dispatches
   other work, as it does for `set-up.v1`, `retire.v1` and `retire-with-resources.v1`.
   `inspect.v1` states no `effect`.
@@ -224,7 +269,7 @@ from `run.v1` and `stop.v1`.
 - **The resolved form of a reference.** Where a value is a reference, the instance stores
   `{kind: <Kind>, id: <ID>}` in its place (OBJ-009, OBJ-021). Every reference schema accepts
   that form, and only the engine writes it. An implementation receives it in its `arguments`,
-  in the restrictions it is sent and in the configuration that every request to it carries
+  in the filters it is sent and in the configuration that every request to it carries
   (IFC-006), and `inspect.v1` shows it under `declared`. An onward request may therefore hold
   it in an input of a core operation, because the engine handed it to the instance that sends
   it; a request that an actor makes on its own behalf may not (LIF-031).
@@ -244,12 +289,14 @@ from `run.v1` and `stop.v1`.
   is a further retirement (LIF-026). Once the shutdown of an instance is confirmed it is
   removed, with no request, and its records are kept (LIF-035, LIF-019): a request that names
   it afterwards reports invalid (OPS-029). `unregister.v1` removes a template (LIF-012), or a
-  retired instance whose location was declared lost (LIF-017). The Conduits of which a retired
+  retired instance whose node was declared lost (LIF-017), and for such an instance asks
+  once more for the stop of its run (LIF-036). The Conduits of which a retired
   instance is the target are closed at once. Those of which it is the consumer are closed once
   its shutdown is confirmed, and until then permit only the requests of its retirement
   (CON-008, ACC-039). `retire-with-resources.v1` retires the Resources in the reverse of the
-  order of setup, and declares no output, because a result whose outcome is failed holds none
-  (LIF-021, IFC-025).
+  order of setup; where one cannot be retired, only those that the order puts after it wait,
+  every other one is retired and the Pool is not, so a repeat finishes (LIF-021). It declares
+  no output, because a result whose outcome is failed holds none (IFC-025).
 - **Installing.** A package is installed only by `install.v1`. A registration installs none
   of the packages its manifest lists, and one whose manifest lists a package that is not
   installed at that version and digest is rejected (PKG-006); so is an installation whose
@@ -261,10 +308,12 @@ from `run.v1` and `stop.v1`.
   request has no directory (PKG-023).
 - **Bounds.** Each item of the argument `operations` of `bound.v1` is a qualified reference,
   which reaches a contract of an installed package or of a submitted project, named
-  `address#name` with the address its manifest states (ACC-029, SUB-008, MAN-015). The engine
-  applies a bound itself and never sends it, as it does the shared-host requirement (CTR-005,
-  CON-018). A right to open trusts its consumer with every operation the bound names on every
-  target it covers (ACC-030).
+  `address#name` with the address its manifest states (ACC-029, SUB-008, MAN-015). It is
+  compared as a name, so it covers the operation of that name in every submission at that
+  address, and in a package installed there once no submission at it is held (PKG-029). The
+  engine applies a bound itself and never sends it, as it does the shared-host requirement
+  (CTR-005, CON-018). A right to open trusts its consumer with every operation the bound names
+  on every target it covers (ACC-030).
 - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
   operation arranges, through the engine, work that outlasts its invocation, and no contract
   carries a mark for it (ACC-019, CTR-002).
@@ -279,33 +328,41 @@ reason or its outcome is failed or unknown, and in no other case. Any other resu
 outputs in `structuredContent`, which conforms to the tool's `outputSchema` and is an empty map
 where the operation declares no outputs (IFC-025, IFC-033). A result whose outcome is succeeded
 holds its outputs even where the Conduit through which its invocation was dispatched was closed
-before it ended (ACC-034). A repeat of an invocation that has not ended, or of one that
-succeeded and whose outputs the engine no longer keeps, reports conflict, and its result holds
-the engine's ID for the invocation (OPS-032); a caller that lost a result repeats its request
-with the same operation identity (OPS-009). A call that names a tool the engine does not
-present is answered with no tool result: the engine returns the protocol's error for invalid
-parameters, code -32602, whose `data` holds `io.github.shrav-k.conduit/reason` with the value
-refused (IFC-012). A request that the protocol has a server reject with an error of its own is
-answered with that error and no tool result (IFC-036).
+before it ended (ACC-034). A repeat of an invocation that has not ended reports conflict, and
+its result holds the engine's ID for the invocation (OPS-032); so does a repeat of one that
+succeeded and whose outputs the engine no longer keeps, and the `ruleId` of the error diagnostic
+tells the two apart (OPS-034). A caller that lost a result repeats its request with the same
+idempotency key (OPS-009). A request through a Conduit that has been closed reports refused,
+and one that names the closed Conduit itself reports invalid (ACC-011, OPS-029). A call that
+names a tool the engine does not present is answered with no tool result: the engine returns the
+protocol's error for invalid parameters, code -32602, whose `data` holds
+`io.github.shrav-k.conduit/reason` with the value refused (IFC-012). A request that the protocol
+has a server reject with an error of its own is answered with that error and no tool result
+(IFC-036).
 
 A result's `_meta` holds `io.github.shrav-k.conduit/outcome` where the request has an outcome,
 and `io.github.shrav-k.conduit/reason` where it ended with a reason, with
 `io.github.shrav-k.conduit/restriction` where a restriction is why; a result that has an
-outcome, or that answers a repeat under OPS-032, holds `io.github.shrav-k.conduit/invocation`,
-the ID that `reconcile.v1` takes (IFC-025). No operation of the core package declares any key
-of `_meta` as an output, because `_meta` is not part of an operation's outputs.
+outcome, or that answers a repeat under OPS-032 or OPS-034, holds
+`io.github.shrav-k.conduit/invocation`, the ID that `reconcile.v1` takes (IFC-025). No operation
+of the core package declares any key of `_meta` as an output, because `_meta` is not part of an
+operation's outputs.
 
 Conduit's keys travel as Conduit's extension of the protocol,
-`io.github.shrav-k.conduit/interface`, at its revision `v0`, which the engine declares on each
-request to an implementation that carries them (IFC-037). Their `_meta` keys are those of
-IFC-006: `instance`, `operation`, `invocation`, `caller`, `restrictions`, `config`, which is the
-instance's configuration, and `revision`, its revision, with `operationIdentity` and `conduit`
-where they apply, each under the prefix `io.github.shrav-k.conduit/`. Every request the engine
-sends has a caller. `serving` is not one of them: it is a key of an onward request that an
-instance sends to the engine (IFC-020), and the engine does not send it on. A contract of a
-package, or of a submitted project, is named on the wire by its qualified reference, and a
-submitted project's is `address#name` with the address its manifest states (SUB-008). A provider
-call carries the keys that PRV-005 names.
+`io.github.shrav-k.conduit/implementation-interface`, at its revision `v0`, which the engine
+declares on each request to an implementation that carries them and on each provider call to a
+provider's implementation item, once the implementation's discovery result lists the extension:
+where it does not, the request or the call is not dispatched and reports unavailable (IFC-037).
+The engine's own server lists the extension in its discovery result, and a request to the engine
+that carries any of Conduit's keys and does not declare it reports invalid (IFC-036). Their
+`_meta` keys are those of IFC-006: `instance`, `operation`, `invocation`, `caller`,
+`filters`, `config`, which is the instance's configuration, and `revision`, its revision,
+with `idempotencyKey` and `conduit` where they apply, each under the prefix
+`io.github.shrav-k.conduit/`. Every request the engine sends has a caller. `serving` is not one
+of them: it is a key of an onward request that an instance sends to the engine (IFC-020), and
+the engine does not send it on. A contract of a package, or of a submitted project, is named on
+the wire by its qualified reference, and a submitted project's is `address#name` with the
+address its manifest states (SUB-008). A provider call carries the keys that PRV-005 names.
 
 `inspect.v1` returns `id`, `revision`, `packages`, `declared`, `status` and `records` (LIF-013).
 `packages` is a list. A package's item has `address`, `version` and `digest`; the core package's
@@ -317,9 +374,11 @@ applies it, named by its qualified reference; for a requirement of the core pack
 `github.com/shrav-k/conduit/core#engine` (ACC-038). The status holds the lifecycle state, the
 shutdown of a retired instance (LIF-014, LIF-024) and `conditions`, each in the shape of
 Kubernetes `metav1.Condition`, `condition.v1` (LIF-011, OBS-002, OBS-003), among them the
-condition `Running` of an instance whose item is run (PRV-009). The status of a location holds
-the labels last reported for its machine (PLC-026). `records` is a list of `record.v1`, each a
-CloudEvent whose `data` holds the fields of a record (REC-002).
+condition `Running` of an instance whose item is run (PRV-009), and `unreconciled`, the engine's
+IDs for the invocations of unknown outcome, not yet reconciled, that were dispatched to the
+instance or that name it (LIF-013). The status of a node holds the labels last reported for
+its machine (PLC-026). `records` is a list of `record.v1`, each a CloudEvent whose `data` holds
+the fields of a record (REC-002).
 
 ## Providers
 
@@ -327,24 +386,43 @@ A provider is a Resource whose type offers one of the four provider capabilities
 of them (PRV-001): `runtime-provider.v1` runs an instance's implementation item, stops it and
 reports its state; `machine-provider.v1` reports the machines, their labels and their states,
 and places instances; `package-source.v1` fetches archives for the URL schemes it claims; and
-`secret-reveal.v1` is the contract of a secret store. The user picks one by registering a
+`secret-provider.v1`, which the type of a secret Resource offers, gives the value of the secret
+that the Resource's locator names. The user picks one by registering a
 Resource of its type. An Agent or a Resource names the runtime provider that runs it in its
-standard argument `runtime` (PRV-006); the machines provider and the package-source providers
-are owned by `system`, at most one machines provider and one package-source provider for each
-scheme (PRV-013). The engine's own runner, its own machine and its own `https:` and `file:`
-fetching serve where no provider of a kind does (PRV-003); they are part of the engine and are
-not selected as an implementation, so `engine` states none of them. A runtime provider runs an
-item on the machine that `location` names in `run.v1`, or ends the run failed, so the engine's
-own runner runs only instances placed on `local` (PRV-019). A runtime provider, the
-machines provider and a package-source provider run on the engine's own runner, on `local`
-(PRV-002).
+standard argument `runtime` (PRV-006); the machine provider and the package-source providers
+are owned by `system`, at most one machine provider and one package-source provider for each
+scheme (PRV-013). The engine's own runner, its own machine provider and its own `https:` and
+`file:` fetching serve where no provider of a kind does (PRV-003); they are part of the engine
+and are not selected as an implementation, so `engine` states none of them. A runtime provider
+runs an item on the machine that `run.v1` gives in `machine`, or ends the run failed, so the
+engine's own runner runs only instances placed on `local` (PRV-019), and an instance that has
+an item that is run and names no `runtime` is placed only on the machine the engine runs on,
+whose `kubernetes.io/hostname` its label selector then also holds (PLC-007). A runtime provider, the
+machine provider and a package-source provider run on the engine's own runner, on `local`
+(PRV-002). The engine asks no runtime provider other than its own runner to run a `command` item
+whose program is a relative path (PRV-007). Its own runner passes a process the variables
+`HOME`, `LOGNAME`, `PATH`, `SHELL`, `TERM` and `USER` of the engine's environment, the further
+variables that a list set on the runner names, and what the item binds, which wins, and nothing
+else of the engine's environment (PRV-023). A runtime provider is given, in `run.v1`'s
+`identity`, the variables and the files by which the run reaches the engine and proves which
+instance it is, and delivers and keeps them as it keeps the run's secrets; the engine's own
+runner delivers them in the same way (PRV-022, DL13). What a runtime provider does with a stop
+that it cannot carry out now, such as carry it out once it can, its contract states (PRV-021),
+and the engine asks for the stop once more
+when an actor unregisters an instance whose node was declared lost (LIF-036). A provider
+call declares Conduit's extension (PRV-005, IFC-037), so no plain implementation implements an
+operation of `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1` (PKG-020).
 
-A secret Resource's type is its store's own Type, whose schema is the form of the locator and
-which lists no control (SEC-005). A place that `secret-reference.v1` governs holds a reference
-to a secret Resource and never the secret itself (SEC-001, SEC-002). The engine reads a secret
-before each run it asks for, through the reading instance's own open Conduit to the secret
-Resource, and passes the value in the run's `secrets` (SEC-010, SEC-011); it keeps no copy and
-puts the value nowhere else (SEC-017, SEC-018).
+A secret Resource's type is its store's own Type, whose schema is the form of the locator, which
+lists no control (SEC-005) and which offers no other capability (SEC-022). A place that
+`secret-reference.v1` governs holds a reference to a secret Resource and never the secret itself
+(SEC-001, SEC-002). The engine reads a secret for an instance before each run it asks for, and
+before each connection to a `remote` item whose headers carry one, through that instance's own
+open Conduit to the secret Resource, and passes the value in the run's `secrets` or
+sends it as the header (SEC-010, SEC-011, SEC-013); it keeps no copy and puts the value nowhere
+else (SEC-017, SEC-018). Where the engine has lost a connection's values, as when it restarts,
+it reads again for the caller of the setup that made the connection, decided by the instance's
+own Conduit and its filters as they stand then (SEC-023).
 
 ## First start
 
@@ -356,8 +434,8 @@ submission that held them would be rejected (FST-006, OBJ-002):
 
 | Object | Kind | `from` | Notes |
 | --- | --- | --- | --- |
-| `system` | Pool | `github.com/shrav-k/conduit/core#system` | Of the basic Pool type; owns the locations, `management`, `access`, and the machines provider and package-source providers |
-| `local` | Resource | `github.com/shrav-k/conduit/core#location` | Owned by `system`; its own placement; the location of the machine the engine runs on, with an empty configuration and the labels reported for that machine (PLC-008, PLC-026) |
+| `system` | Pool | `github.com/shrav-k/conduit/core#system` | Of the basic Pool type; owns the nodes, `management`, `access`, and the machine provider and package-source providers |
+| `local` | Resource | `github.com/shrav-k/conduit/core#node` | Owned by `system`; its own placement; the node that represents the machine the engine runs on, with an empty configuration and the labels reported for that machine (PLC-008, PLC-026) |
 | `management` | Resource | `github.com/shrav-k/conduit/core#management` | Owned by `system`, placed on `local` |
 | `access` | Resource | `github.com/shrav-k/conduit/core#access` | Owned by `system`, placed on `local` |
 | `root` | Interface | `github.com/shrav-k/conduit/core#root` | Declares two Conduits, which are instantiated with it |
@@ -369,10 +447,10 @@ are `management` and `access`, so the root Interface's tools are `management.reg
 gets a generated name (OBJ-003), and FST-001 fixes these two names.
 
 The first-start objects are identified by their IDs, and a name is fixed once its object is
-made (OBJ-011). No instance document is made from the templates `system`, `location`,
-`management`, `access` and `root` (FST-006). The engine alone instantiates `location`: for
-`local` at first start, and for every other machine that the machines provider reports and no
-location stands for, naming the location from the machine's hostname (PLC-026). A location
+made (OBJ-011). No instance document is made from the templates `system`, `node`,
+`management`, `access` and `root` (FST-006). The engine alone instantiates `node`: for
+`local` at first start, and for every other machine that the machine provider reports and no
+node represents, naming the node from the machine's hostname (PLC-026). A node
 offers no capability and lists no control, so nothing changes it once it is made apart from its
 lifecycle state and the labels reported for it (PLC-008).
 
@@ -383,7 +461,7 @@ lifecycle state and the labels reported for it (PLC-008).
 | Export | Kind | Requires |
 | --- | --- | --- |
 | `system` | Pool template | FST-001, FST-005 |
-| `location` | Resource template | FST-001, FST-005, PLC-008, PLC-026, NAM-020 |
+| `node` | Resource template | FST-001, FST-005, PLC-008, PLC-026 |
 | `management` | Resource template | FST-001, FST-005 |
 | `access` | Resource template | FST-001, FST-005 |
 | `root` | Interface template | FST-001, FST-002, FST-005 |
@@ -391,7 +469,7 @@ lifecycle state and the labels reported for it (PLC-008).
 | `root-access` | Conduit template | FST-002, FST-005, ACC-022 |
 | `interface.v1` | Type | TPL-002: the template `root` needs a type; the basic Interface type |
 | `pool.v1` | Type | TPL-002: a Pool template needs a type; the basic Pool type, and the type of `system`; CTR-004 |
-| `location.v1` | Type | PLC-008, PLC-026 |
+| `node.v1` | Type | PLC-008, PLC-026 |
 | `management.v1` | Type | TPL-002, ACC-033 |
 | `access.v1` | Type | TPL-002, ACC-006 |
 | `object-management.v1` | Capability | OPS-019, ACC-033 |
@@ -400,10 +478,10 @@ lifecycle state and the labels reported for it (PLC-008).
 | `runtime-provider.v1` | Capability | PRV-001, PRV-006, PRV-007 |
 | `machine-provider.v1` | Capability | PRV-001, PRV-013, PRV-014, PRV-015 |
 | `package-source.v1` | Capability | PRV-001, PRV-016, PRV-017 |
-| `secret-reveal.v1` | Capability | SEC-002, SEC-005, PRV-001 |
+| `secret-provider.v1` | Capability | SEC-002, SEC-005, SEC-022, PRV-001 |
 | `register.v1` | Operation | OPS-019, ACC-033, SUB-006 |
 | `replace.v1` | Operation | SUB-009, SUB-007 |
-| `unregister.v1` | Operation | LIF-012, LIF-017 |
+| `unregister.v1` | Operation | LIF-012, LIF-017, LIF-036 |
 | `inspect.v1` | Operation | LIF-013, ACC-033 |
 | `set-up.v1` | Operation | OPS-019, ACC-033, LIF-003, TPL-012 |
 | `retire.v1` | Operation | OPS-019, ACC-033, LIF-005, TPL-009 |
@@ -417,13 +495,13 @@ lifecycle state and the labels reported for it (PLC-008).
 | `close.v1` | Operation | ACC-012 |
 | `setup-hook.v1` | Operation | TPL-017, TPL-003 |
 | `retire-hook.v1` | Operation | TPL-018, TPL-003 |
-| `run.v1` | Operation | PRV-007, PRV-011 |
-| `stop.v1` | Operation | PRV-008 |
+| `run.v1` | Operation | PRV-007, PRV-011, PRV-022 |
+| `stop.v1` | Operation | PRV-008, PRV-021, LIF-036 |
 | `inspect-run.v1` | Operation | PRV-009 |
 | `list-machines.v1` | Operation | PRV-014 |
 | `place.v1` | Operation | PRV-015 |
 | `fetch-package.v1` | Operation | PRV-017 |
-| `reveal-secret.v1` | Operation | SEC-005, SEC-006, SEC-010 |
+| `get-secret.v1` | Operation | SEC-005, SEC-006, SEC-010, SEC-023 |
 | `bound.v1` | Requirement | ACC-029, ACC-030, CON-028 |
 | `shared-host.v1` | Requirement | PLC-013, CON-006 |
 | `reference.v1` | Schema, a reference schema | OBJ-021, OBJ-006 |
@@ -455,7 +533,7 @@ lifecycle state and the labels reported for it (PLC-008).
 | `digest.v1` | Schema of a document's part | PKG-004 |
 | `id.v1` | Schema of a document's part | OBJ-009, IFC-006: an object and an invocation each have an ID. Its type is a choice |
 | `revision.v1` | Schema of a document's part | REV-001, REV-011 |
-| `label-selector.v1` | Schema of a document's part | PLC-007, CTR-004, MAN-010, PRV-014 |
+| `labels.v1` | Schema of a document's part | PLC-007, CTR-004, MAN-010, PRV-014 |
 | `schema.v1` | Schema of a document's part | CTR-008, SCH-002, SCH-008, SCH-015 |
 | `api-version.v1` | Schema of a document's part | OBJ-017 |
 | `envelope.v1` | Schema of a document's part | OBJ-017, OBJ-020 |
@@ -494,7 +572,7 @@ lifecycle state and the labels reported for it (PLC-008).
   records are `record.v1`. That `declared` shows each reference as `{kind, id}`, and names under
   each requirement of a Conduit the implementation that applies it, is settled; the keys that
   hold them are not. Not fixed either: where the result of inspecting a Conduit states, for
-  each restriction, enforced or mediated (ACC-027); the key that holds a location's labels in
+  each restriction, enforced or mediated (ACC-027); the key that holds a node's labels in
   its status (PLC-026); where the word unknown stands against a setting (REV-009); how the
   status names a setup and its outcome, what retired an instance and which event closed a
   Conduit (LIF-004, LIF-005, CON-008, CON-011); where an instance's `from` is reported
@@ -502,12 +580,12 @@ lifecycle state and the labels reported for it (PLC-008).
   conformance vectors: what a vector compares fixes the shape.
 - How a diagnostic names a document or an object beyond the JSON Pointer of its logical
   location, and the `source` and `type` of a record's CloudEvent: an engine names them.
-- The keys of `secrets` in `run.v1` are the JSON Pointers of the places read, which the item's
-  `environment` and `arguments` bind to names; a value that is not a string at a place an item
-  binds is not settled either. Both are open questions of the
-  [log of this pass](../../docs/proposals/ruling-41/log-core.md#open-questions).
+- What the engine puts in `run.v1`'s `identity`: the name of the variable that holds its
+  address, the path of the file that holds the credential, and whether and when that file is
+  refreshed in place. They belong to the engine's mechanism for identifying consumers, DL13 of
+  the [implementation-defined list](../implementation-defined.yaml).
 
 No contract of the core package states `records`, and no core type offers a provider
-capability or declares a run of its own: the engine's own runner, machine and fetching are part
-of the engine (PRV-003). `bound.v1` and `shared-host.v1` are applied by the engine itself and
-never sent, so no implementation states either in `supports` (CTR-005, CON-022).
+capability or declares a run of its own: the engine's own runner, machine provider and fetching
+are part of the engine (PRV-003). `bound.v1` and `shared-host.v1` are applied by the engine
+itself and never sent, so no implementation states either in `supports` (CTR-005, CON-022).

@@ -21,11 +21,47 @@
 # check of the rewrite (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed
 # the description and the effect of `run.v1`, which runs the item on the machine that
 # `location` names or ends failed (PRV-019).
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), applying the decisions of the
+# coordinator in docs/proposals/ruling-41/open-decisions.md and the owner's answers D6, D11,
+# D12, D17 and R5, changed `run.v1` (it requires `endpoint`; `secrets` holds the values read
+# under `environment` and `arguments`, by name; values that are not strings are converted,
+# and a place that holds null gives nothing; never a `command` item whose program is a
+# relative path; the new input `identity`, D17), `inspect.v1` (`unreconciled` in the status),
+# `unregister.v1` and `stop.v1` (the stop asked once more when an instance on a location
+# declared lost is unregistered, D11), `retire-with-resources.v1` (it goes on with every
+# Resource that the order does not hold back, R5) and `reveal-secret.v1` (the read again after
+# a connection's values are lost, D12), and the descriptions of `register.v1`, `install.v1`,
+# `set-up.v1`, `retire.v1`, `register-replacement.v1`, `close.v1`, the two hooks,
+# `list-machines.v1` and `place.v1`. The log is docs/proposals/ruling-42/log-core.md. The
+# integration of ruling 42 (docs/proposals/ruling-42/log-integration.md) changed the
+# descriptions of `unregister.v1` and `stop.v1` to say, as D11 does, that what a runtime
+# provider does with a stop it cannot carry out now is what its contract states.
+# The names of ruling 42 (the vocabulary audit's N2, N3 and N8 to N11; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the input `location` of `run.v1` to
+# `machine`, that of `declare-lost.v1` to `node`, and that of `place.v1`, `selector`, to
+# `nodeSelector`; made `labels.v1` the schema of the labels in `run.v1`, `list-machines.v1` and
+# `place.v1`; renamed location to node, "stand for" to "represent" and the machines provider to
+# the machine provider in the descriptions; and said in that of `declare-lost.v1` that the
+# engine declares a node lost when its machine is reported gone.
+# The names of ruling 42 (the vocabulary audit's N1, N5, N6, N12 and N15; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1` to `get-secret.v1`, in
+# its contract and in the description of `open.v1`, and said in its description that each read
+# is made for an instance through that instance's own Conduit; renamed the output `endpoint` of
+# `run.v1` to `url`, and its input `arguments`, with that of its `secrets`, to
+# `packageArguments`; and renamed operation identity to idempotency key in the rules below and
+# in the descriptions of `set-up.v1` and of the two hooks.
+# The editorial fixes of ruling 42 (the vocabulary audit's E17; log
+# docs/proposals/ruling-42/log-editorial.md) call `get-secret.v1` the operation of a secret
+# Resource, below and in the heading of its section, where it said that of a secret store.
+# The verification of ruling 42 (docs/proposals/ruling-42/log-integration.md, "Verification")
+# changed the descriptions of `retire.v1` and `retire-hook.v1`: a retirement connects to the
+# `remote` item first where no connection to it lasts whose values the engine holds, so after a
+# restart its reads belong to it (row 9 of the open questions, TPL-018).
 #
 # The Operation contracts of the core package: every management verb (OPS-019, CON-024); the
 # two hooks that a template may select (TPL-017, TPL-018); the operations of the provider
 # capabilities (PRV-001), which the engine invokes by provider calls (PRV-005); and the one
-# operation of a secret store (SEC-005). Which capability includes each is in
+# operation of a secret Resource (SEC-005). Which capability includes each is in
 # capabilities.yaml, and which open Conduit authorizes each management verb is ACC-033.
 #
 # Read with these rules. The record lists the ones that the owner accepted with the batch;
@@ -61,17 +97,22 @@
 #   - `reservedToRoot: true` marks an operation reserved to the root Interface (ACC-032).
 #     Only an Operation contract of the core package carries the mark (CTR-009).
 #   - `deduplicates: true` is declared where the whole effect is a change to what the engine
-#     itself stores, which the engine can recognize by the operation identity. It is not
+#     itself stores, which the engine can recognize by the idempotency key. It is not
 #     declared where the engine dispatches other work, as it does for `set-up.v1`, `retire.v1`
 #     and `retire-with-resources.v1`, nor for an operation that the engine does not implement.
+#     `unregister.v1` declares it although it asks once more for the stop of a run (LIF-036):
+#     the instance is removed whatever comes of that stop, which is not part of the effect, and
+#     a new attempt only asks for it again, which succeeds where nothing runs (PRV-008).
 #   - No core operation starts model work (IMP-002), so none carries `startsModelWork`. No
 #     operation, of this package or of any other, arranges through the engine work that
 #     outlasts its invocation, and no contract carries a mark for it (ACC-019, CTR-002).
 #   - Every management verb is implemented by the engine itself, written as the default
 #     implementation `github.com/shrav-k/conduit/core#engine`. The two hooks, the operations
-#     of the provider capabilities and `reveal-secret.v1` state no default: a template selects
+#     of the provider capabilities and `get-secret.v1` state no default: a template selects
 #     each, or its type's default does (TPL-004), and the engine implements none of them
-#     (MAN-012, SEC-020).
+#     (MAN-012, SEC-020). No plain implementation implements an operation of
+#     `runtime-provider.v1`, `machine-provider.v1` or `package-source.v1`, because a provider
+#     call carries Conduit's keys and declares its extension (PKG-020, PRV-005, IFC-037).
 #   - A request that an actor makes on its own behalf names an object by a reference and
 #     never by an ID: one that holds the resolved form `{kind, id}` in its place reports
 #     invalid (LIF-031). An onward request may hold that form, because the engine handed it
@@ -88,12 +129,12 @@
 #     failed or unknown, and in no other case; any other result holds the outputs in its
 #     `structuredContent`, an empty map where the operation declares none (IFC-025). A repeat
 #     of an invocation that has not ended, or of one that succeeded and whose outputs the
-#     engine no longer keeps, reports conflict with the engine's ID for it (OPS-032).
+#     engine no longer keeps, reports conflict with the engine's ID for it (OPS-032, OPS-034).
 #   - The operations of `runtime-provider.v1`, `machine-provider.v1` and `package-source.v1`
 #     are invoked by the engine alone, by provider calls, which are not requests (PRV-005):
-#     no Conduit lists one (PRV-004). `reveal-secret.v1` is invoked by the engine's reads,
-#     which are requests (SEC-010, SEC-011), and no actor's request for it is dispatched
-#     (SEC-007).
+#     no Conduit lists one (PRV-004). `get-secret.v1` is invoked by the engine's reads,
+#     which are requests (SEC-010, SEC-011, SEC-023), and no actor's request for it is
+#     dispatched (SEC-007).
 
 # --- Operations of `management`, some of them also operations of a Pool.
 
@@ -118,7 +159,12 @@ metadata:
     `address` is that of an installed package. The request hands the manifest over as a
     value, with no directory, so an item of `packages` whose `fetch` is a relative reference,
     and an implementation item whose program is a relative path, are rejected. A Resource
-    document whose owner is a retired Pool is rejected.
+    document whose owner is a retired Pool is rejected, and so is an instance document whose
+    `runtime` names a retired runtime provider. Where the machine provider is to place an
+    instance that the request would make and cannot place it now, as when it is not ready or
+    a node that matches represents a machine reported unreachable, the registration is not
+    dispatched and reports unavailable; for want of a machine it is rejected only where no
+    node matches.
 spec:
   inputSchema:
     type: object
@@ -190,12 +236,16 @@ kind: Operation
 metadata:
   name: unregister.v1
   description: >-
-    Remove a template, or a retired instance whose location was declared lost, from the
-    objects that exist. Its name and its ID no longer resolve, and its records are kept. A
-    request that names an instance whose location was not declared lost, or one that is not
-    retired, reports conflict. An instance whose shutdown is confirmed has been removed
-    already, without a request, so a request that names it, like one that names any object
-    that does not exist, reports invalid. Authorized against `management`.
+    Remove a template, or a retired instance whose node was declared lost, from the objects
+    that exist. Its name and its ID no longer resolve, and its records are kept. Where an item
+    that is run is selected for the instance, the engine asks its runtime provider once more to
+    stop the run, and removes the instance whatever comes of that stop; a provider that cannot
+    stop it now does with the stop what its contract states, such as carry it out once the
+    machine comes back. A request that names an instance whose
+    node was not declared lost, or one that is not retired, reports conflict. An instance
+    whose shutdown is confirmed has been removed already, without a request, so a request that
+    names it, like one that names any object that does not exist, reports invalid. Authorized
+    against `management`.
 spec:
   inputSchema:
     type: object
@@ -204,7 +254,7 @@ spec:
       revision: {$ref: github.com/shrav-k/conduit/core#revision.v1}
     required: [object, revision]
   effect: >-
-    Removes the template, or the instance whose location was declared lost, from the objects
+    Removes the template, or the instance whose node was declared lost, from the objects
     that exist.
   deduplicates: true
   implementation: github.com/shrav-k/conduit/core#engine
@@ -226,9 +276,11 @@ metadata:
     Conduit shows, under each requirement it applies, the implementation that applies it,
     named by its qualified reference. The status holds the lifecycle state, the shutdown of a
     retired instance and, in `conditions`, the further conditions of the instance and what
-    was observed of it, the state of its run among them; the status of a location also holds
-    the labels last reported for its machine. `records` holds the records that name the
-    object, each as a CloudEvent.
+    was observed of it, the state of its run among them, and, in `unreconciled`, the engine's
+    IDs for the invocations of unknown outcome, not yet reconciled, that were dispatched to
+    the instance or that name it in an input or as their target, which no purge shortens; the
+    status of a node also holds the labels last reported for its machine. `records` holds
+    the records that name the object, each as a CloudEvent.
 spec:
   inputSchema:
     type: object
@@ -266,6 +318,9 @@ spec:
           conditions:
             type: array
             items: {$ref: github.com/shrav-k/conduit/core#condition.v1}
+          unreconciled:
+            type: array
+            items: {$ref: github.com/shrav-k/conduit/core#id.v1}
         required: [state]
       records:
         type: array
@@ -280,19 +335,21 @@ metadata:
   description: >-
     Set up an instance. One invocation of this operation is the setup of the instance it names.
     The engine implements it, in parts, each begun only once every part before it that is not
-    marked optional has succeeded: it opens the instance's declared Conduits, or for a Pool
-    sets up the Resources of its entries; then it asks the instance's runtime provider for its
-    run, where an item that is run is selected for it and the run is not reported running,
-    reading first each secret that the item binds, and connects to each `remote` item; then it
+    marked optional has succeeded: it opens the instance's declared Conduits, or for a Pool sets
+    up the Resources of its entries; then it asks the instance's runtime provider for its run,
+    where an item that is run is selected for it and the run is not reported running, reading
+    first each secret that the item binds, and connects to each `remote` item; then it
     dispatches the instance's setup hook, where its template selects one. A part that opens a
     declared Conduit or sets up the Resource of an entry is authorized exactly as this request
     was, by the Conduits of the instance that sent it, which for an onward request is the
     sending instance and not the caller it serves. A further setup leaves an open Conduit, a
     ready Resource and a running run as they are, and dispatches the hook again only as its
-    operation identity allows. Setting up a Resource is authorized against the Pool that owns
-    it, and setting up an Agent, an Interface or a Pool against `management`. A Conduit is set
-    up with `open.v1`: a request that names a Conduit or a template reports invalid, and so
-    does one that names an object that does not exist.
+    idempotency key allows. No part begins once the instance is retired, or once the setup is
+    cancelled, a cancellation that the engine passes on to each part in progress. Setting up a
+    Resource is authorized against the Pool that owns it, and setting up an Agent, an Interface
+    or a Pool against `management`. A Conduit is set up with `open.v1`: a request that names a
+    Conduit or a template reports invalid, and so does one that names an object that does not
+    exist.
 spec:
   inputSchema:
     type: object
@@ -313,17 +370,19 @@ metadata:
     Retire an instance. One invocation of this operation is the retirement of the instance it
     names. The instance's state is retired from the moment the request is dispatched. Where a
     setup of the instance was ever dispatched, the engine dispatches its retire hook, where its
-    template selects one, asking first for its run where the run is not reported running, and
-    then asks its runtime provider to stop the run, where an item that is run is selected for
-    it; stopping a run that is not running succeeds. An instance for which no setup was ever
-    dispatched gets neither, and its shutdown is confirmed at once. Once the shutdown is
-    confirmed the instance is removed, without a further request. Retiring a Resource is
-    authorized against the Pool that owns it, and retiring an Agent, an Interface or a Pool
-    against `management`. A retired Pool whose shutdown is not confirmed is retired again with
-    this operation, through `management`. A request to retire an instance whose shutdown is
-    not confirmed is a further retirement. A Conduit is retired with `close.v1`: a request
-    that names a Conduit or a template reports invalid, and so does one that names an object
-    that does not exist, a removed instance among them. A request to retire a Pool that owns a
+    template selects one, asking first for its run where the run is not reported running, or
+    connecting first to the `remote` item that serves the hook where no connection to it lasts
+    whose values the engine holds, and then, whatever came of the hook, asks its runtime
+    provider to stop the run, where an item that is run is selected for it; stopping a run that
+    is not running succeeds. A cancelled retirement still asks for the stop. An instance for
+    which no setup was ever dispatched gets neither, and its shutdown is confirmed at once. Once
+    the shutdown is confirmed the instance is removed, without a further request. Retiring a
+    Resource is authorized against the Pool that owns it, and retiring an Agent, an Interface or
+    a Pool against `management`. A retired Pool whose shutdown is not confirmed is retired again
+    with this operation, through `management`. A request to retire an instance whose shutdown is
+    not confirmed is a further retirement. A Conduit is retired with `close.v1`: a request that
+    names a Conduit or a template reports invalid, and so does one that names an object that
+    does not exist, a removed instance among them. A request to retire a Pool that owns a
     Resource whose shutdown is not confirmed reports conflict, and a diagnostic names each
     Resource in the way.
 spec:
@@ -402,8 +461,10 @@ metadata:
     request is a registration, so one that is rejected still carries `diagnostics`. A request
     for a new instance that a rule on instantiation does not make reports invalid, as the
     registration of a document that the rule rejects does: one for a declared Conduit whose
-    target is retired, for example, or for a new Resource that the machines provider cannot
-    place.
+    target is retired, for example, for a new Resource whose `runtime` names a retired runtime
+    provider, or for one for which no node matches. Where the machine provider cannot
+    place the new Resource now, as when it is not ready or a node that matches represents
+    a machine reported unreachable, the request reports unavailable.
 spec:
   inputSchema:
     type: object
@@ -430,21 +491,21 @@ metadata:
   description: >-
     Make one version of a package available. Nothing is registered. Authorized against
     `management`. An installation that is rejected is not dispatched and reports invalid: an
-    archive whose digest is not `digest`, a manifest that states another address or version,
-    and a manifest that lists a package that is not installed at the version and digest it
-    gives are among the causes. `fetch` is a URI reference with no user information, and a
-    relative one is rejected, because a request has no directory to resolve it against.
-    Where a package-source provider claims the scheme of `fetch`, the archive is fetched by
-    that provider; otherwise the engine fetches `https` and `file` URLs itself, and a scheme
-    that neither accepts reports invalid, as does a request that gives no `fetch` for a
-    package that is not installed. The request reports unavailable where the archive cannot be
-    fetched now, and conflict where that address and version is already installed with another
-    digest, or where the address is the one that a submitted project's manifest states. Where
-    it is already installed with the same digest the request is decided like any other,
-    changes nothing and succeeds; nothing is fetched for an address and version that is
-    already installed. A package is installed only by this operation: registering a project
-    installs none of the packages its manifest lists, and `fetch` in an item of `packages` is
-    the value an installation of that item gives here.
+    archive whose digest is not `digest`, a manifest that states another address or version, and
+    a manifest that lists a package that is not installed at the version and digest it gives are
+    among the causes. `fetch` is a URI reference with no user information, and a relative one is
+    rejected, because a request has no directory to resolve it against. Where a package-source
+    provider claims the scheme of `fetch`, the archive is fetched by that provider; otherwise
+    the engine fetches `https` and `file` URLs itself, and a scheme that neither accepts reports
+    invalid, as does a request that gives no `fetch` for a package that is not installed. The
+    request reports unavailable where the archive cannot be fetched now, and conflict where that
+    address and version is already installed with another digest, or where the address is the
+    one that the manifest of a submitted project states while a template or an instance holds
+    that submission. Where it is already installed with the same digest the request is decided
+    like any other, changes nothing and succeeds; nothing is fetched for an address and version
+    that is already installed. A package is installed only by this operation: registering a
+    project installs none of the packages its manifest lists, and `fetch` in an item of
+    `packages` is the value an installation of that item gives here.
 spec:
   inputSchema:
     type: object
@@ -470,20 +531,20 @@ kind: Operation
 metadata:
   name: declare-lost.v1
   description: >-
-    Record that a location, and the instances placed on it, can never confirm shutdown. The
-    location and every instance on it are retired. A location that a request has already retired
-    is declared lost in the same way, and a request for a location that was already declared
-    lost changes nothing and succeeds. A machine that the machines provider reports gone has
-    the same effect on the location that stands for it, with no request. Reserved to the root
+    Record that a node, and the instances placed on it, can never confirm shutdown. The
+    node and every instance on it are retired. A node that a request has already retired
+    is declared lost in the same way, and a request for a node that was already declared
+    lost changes nothing and succeeds. The engine declares a node lost in the same way, with
+    no request, when the machine provider reports its machine gone. Reserved to the root
     Interface, and authorized against `management`.
 spec:
   inputSchema:
     type: object
     properties:
-      location: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
-    required: [location]
+      node: {$ref: github.com/shrav-k/conduit/core#resource-reference.v1}
+    required: [node]
   effect: >-
-    Retires the location and every instance placed on it, and closes the Conduits of which any
+    Retires the node and every instance placed on it, and closes the Conduits of which any
     of them is an end.
   deduplicates: true
   reservedToRoot: true
@@ -519,22 +580,25 @@ metadata:
   description: >-
     Retire the Pool that is the target of the request together with the Resources it owns. Each
     Resource whose shutdown is not confirmed is retired, in the reverse of the order of setup: a
-    Resource before any Resource that it refers to, or to which it is the consumer of a Conduit,
-    among those the Pool owns. Among Resources that depend on each other in a cycle the order is
-    the engine's. A Resource that is already retired, with its shutdown not confirmed, is
-    retired again, by a further retirement; a Resource whose shutdown is confirmed has been
-    removed, and none is dispatched for it. Once a retirement that this request dispatched has
-    ended without the shutdown of its Resource confirmed, no further retirement is dispatched,
-    and a retirement of a Resource whose setup, retirement or change is in progress reports
-    conflict. The Pool is retired only if the shutdown of every one of them is confirmed.
-    Authorized against that Pool, by a Conduit that need list only this operation: the
-    retirements of the Resources are part of it, so the Conduit need not list `retire.v1`.
-    Each of those retirements is an invocation of `retire.v1` of its own, with its own
-    outcome, and so is the Pool's. Where Resources remain whose shutdown is not confirmed, the
-    Pool's retirement is not dispatched, the outcome of this request is failed, and the
-    diagnostics of its result name each of them, those whose retirement was not dispatched
-    among them: a result whose outcome is failed holds no outputs, so the operation declares
-    none.
+    Resource before any Resource that it refers to, names in `runtime`, or to which it is the
+    consumer of a Conduit, among those the Pool owns. Among Resources that depend on each other
+    in a cycle the order is the engine's. A Resource that is already retired, with its shutdown
+    not confirmed, is retired again, by a further retirement; a Resource whose shutdown is
+    confirmed has been removed, and none is dispatched for it. A retirement of a Resource whose
+    setup, retirement or change is in progress reports conflict in place of being dispatched.
+    Where a retirement that this request dispatched has ended without the shutdown of its
+    Resource confirmed, or one reported a reason in place of being dispatched, no retirement is
+    dispatched for a Resource that the order puts after that Resource, and every other Resource
+    is retired. The Pool is retired only if the shutdown of every one of them is confirmed, so a
+    request made again finishes what this one could not. A cancelled request dispatches no
+    further retirement, and each retirement in progress still asks for its stop. Authorized
+    against that Pool, by a Conduit that need list only this operation: the retirements of the
+    Resources are part of it, so the Conduit need not list `retire.v1`. Each of those
+    retirements is an invocation of `retire.v1` of its own, with its own outcome, and so is the
+    Pool's. Where Resources remain whose shutdown is not confirmed, the Pool's retirement is not
+    dispatched, the outcome of this request is failed, and the diagnostics of its result name
+    each of them, those whose retirement was not dispatched among them: a result whose outcome
+    is failed holds no outputs, so the operation declares none.
 spec:
   effect: >-
     Retires the Pool, once the shutdown of every Resource it owns is confirmed. The retirement
@@ -554,7 +618,7 @@ metadata:
     own Conduit to `access` applies no bound. Where the Conduit to be opened is itself one to
     `access`, the condition is that its bound is within the actor's own, and the actor's bound
     need not cover `access` as a target. A Conduit that lists an operation reserved to the root
-    Interface is opened only for the root Interface, and one that lists `reveal-secret.v1` only
+    Interface is opened only for the root Interface, and one that lists `get-secret.v1` only
     where the root Interface asks on its own behalf and the consumer is a Resource or an
     Agent; any other such request reports refused. A request to open a Conduit that is already
     open changes nothing and succeeds. A closed Conduit has been removed, so a request that
@@ -579,18 +643,18 @@ kind: Operation
 metadata:
   name: close.v1
   description: >-
-    Close a Conduit. All the access it carried ends, and it is removed when it is closed,
-    however it was closed: its shutdown is confirmed then, because a Conduit holds nothing to
-    shut down. Dispatched only if the bound of the actor's own Conduit to `access` covers the
-    Conduit's target and names every operation it lists. A Conduit to `access` that applies
-    no bound is closed only by an actor whose own Conduit to `access` applies no bound. Where
-    the Conduit to be closed is itself one to `access`, its bound must be within the actor's
-    own. A Conduit whose consumer is the root Interface is never closed at an actor's request,
-    which reports refused. A closed Conduit no longer exists, so a request that names one,
-    like one that names a Conduit that does not exist, reports invalid, whatever the bound. A
-    Conduit whose consumer is retired is closed without a request once the consumer's
-    shutdown is confirmed, and until then permits only the requests of the consumer's
-    retirement.
+    Close a Conduit. All the access it carried ends, so a request through it from then on
+    reports refused, and it is removed when it is closed, however it was closed: its shutdown is
+    confirmed then, because a Conduit holds nothing to shut down. Dispatched only if the bound
+    of the actor's own Conduit to `access` covers the Conduit's target and names every operation
+    it lists. A Conduit to `access` that applies no bound is closed only by an actor whose own
+    Conduit to `access` applies no bound. Where the Conduit to be closed is itself one to
+    `access`, its bound must be within the actor's own. A Conduit whose consumer is the root
+    Interface is never closed at an actor's request, which reports refused. A closed Conduit no
+    longer exists, so a request that names one, like one that names a Conduit that does not
+    exist, reports invalid, whatever the bound. A Conduit whose consumer is retired is closed
+    without a request once the consumer's shutdown is confirmed, and until then permits only the
+    requests of the consumer's retirement.
 spec:
   inputSchema:
     type: object
@@ -609,13 +673,14 @@ metadata:
   name: setup-hook.v1
   description: >-
     An instance's own work at setup, such as making the directory it is to serve. The engine
-    dispatches it within each setup of an instance whose template selects an implementation
-    for it, as the last part of the setup, once the declared Conduits are open, or the entries
-    set up, and the run asked for or the remote server connected. It is dispatched to the
-    instance's own implementation, through no Conduit, for the caller of the setup, with an
-    operation identity scoped to the instance alone, so a hook that succeeded is not
-    dispatched again by a further setup. It is in no capability, so no Conduit lists it. It
-    has no inputs: the implementation learns its instance's configuration from the request.
+    dispatches it within each setup of an instance whose template selects an implementation for
+    it, in its `implementation` map or by its type's default, as the last part of the setup,
+    once the declared Conduits are open, or the entries set up, and the run asked for or the
+    remote server connected. It is dispatched to the instance's own implementation, through no
+    Conduit, for the caller of the setup, with an idempotency key scoped to the instance
+    alone, so a hook that succeeded is not dispatched again by a further setup. It is in no
+    capability, so no Conduit lists it. It has no inputs: the implementation learns its
+    instance's configuration from the request.
 spec:
   effect: >-
     The instance's own setup work, as the implementation that the template selects defines
@@ -627,13 +692,19 @@ metadata:
   name: retire-hook.v1
   description: >-
     An instance's own work at retirement, before its run is stopped. The engine dispatches it
-    within a retirement of an instance whose template selects an implementation for it and
-    for which a setup was ever dispatched, asking first for the run where it is not reported
-    running. It is dispatched to the instance's own implementation, through no Conduit, for
-    the caller of the retirement, with an operation identity scoped to the instance alone. Its
-    onward requests go through the Conduits of which the instance is the consumer, which stay
-    open until its shutdown is confirmed. It is in no capability, so no Conduit lists it. It
-    has no inputs: the implementation learns its instance's configuration from the request.
+    within a retirement of an instance whose template selects an implementation for it, in
+    its `implementation` map or by its type's default, and for which a setup was ever
+    dispatched, asking first for the run where it is not reported running, or connecting
+    first to a `remote` item where no connection to it lasts whose values the engine holds.
+    It is dispatched to the instance's own implementation, through no Conduit, for the caller
+    of the retirement, with an idempotency key scoped to the instance alone. Its onward
+    requests go through the
+    Conduits of which the instance is the consumer, which stay open until its shutdown is
+    confirmed. The stop is asked for whatever came of the hook. A hook that did not succeed
+    keeps the shutdown pending, and a further retirement dispatches it again, against a new
+    run, so it must not depend on the run that was stopped. It is in no capability, so no
+    Conduit lists it. It has no inputs: the implementation learns its instance's
+    configuration from the request.
 spec:
   effect: >-
     The instance's own retirement work, as the implementation that the template selects
@@ -647,27 +718,37 @@ metadata:
   name: run.v1
   description: >-
     Run an instance's implementation item: the run is named by the instance's ID, so one run
-    serves one instance. `item` is the implementation item, reached by `command` or `package`;
-    `arguments` and `environment` hold, under the names the item gives, the values that its
-    `arguments` and `environment` take from the instance's configuration; `secrets` holds,
-    apart from them and keyed by the JSON Pointer of the place each was read for, the value of
-    each secret the engine read for the run, which the provider delivers as the variable or
-    the argument that the item binds to that place, puts nowhere else, and keeps where its
-    contract says; and `location` is the hostname and the labels of the machine the instance's
-    location stands for, on which the provider runs the item, and on no other. `endpoint` is
-    the Streamable HTTP URL at which the engine then reaches the server; the engine's own
-    runner gives none, and reaches its process over stdio. A provider that cannot run the item
-    on that machine, as the engine's own runner cannot on any machine but its own, or that is
-    asked to run a `package` whose `registryType` its contract does not list, ends the run
-    failed and runs nothing. The engine invokes it by a provider call, which is not a
-    request, and no Conduit lists it. The record of the call holds no value of `secrets`.
+    serves one instance. `item` is the implementation item, reached by `command` or `package`,
+    and never a `command` item whose program is a relative path, which only the engine's own
+    runner runs. `packageArguments` and `environment` hold, under the names the item gives, the
+    values that its `packageArguments` and `environment` take from the instance's configuration,
+    each as a string: a string as it is, a number in the form RFC 8785 gives it, and a boolean
+    as `true` or `false`; a place that holds null gives no variable and no argument. `secrets`
+    holds apart from them, under `environment` and `packageArguments` and by the same names, the
+    value of each secret the engine read for the run, which the provider delivers as the
+    variable or the argument of that name, puts nowhere else, and keeps where its contract
+    says; a name is in `environment` or in `secrets.environment`, never both. `identity` holds
+    what the engine's mechanism for the identity of a run gives it, to reach the engine and to
+    prove which instance it is: in `environment`, variables such as the engine's address,
+    which the provider may give as the run sees it; and in `files`, under the path at which
+    the run finds each, files such as a credential, which the provider may refresh in place
+    where the mechanism rotates it. The provider delivers and keeps them as it does the values
+    of `secrets`. `machine` is the hostname and the labels of the machine the instance's
+    node represents, on which the provider runs the item, and on no other. `url` is
+    the Streamable HTTP URL at which the engine then reaches the server, and every runtime
+    provider returns it; the engine's own runner, which no provider call reaches, gives none,
+    and reaches its process over stdio. A provider that cannot run the item on that machine,
+    as the engine's own runner cannot on any machine but its own, or that is asked to run a
+    `package` whose `registryType` its contract does not list, ends the run failed and runs
+    nothing. The engine invokes it by a provider call, which is not a request, and no Conduit
+    lists it. The record of the call holds no value of `secrets` and nothing of `identity`.
 spec:
   inputSchema:
     type: object
     properties:
       instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
       item: {$ref: github.com/shrav-k/conduit/core#implementation-item.v1}
-      arguments:
+      packageArguments:
         type: object
         additionalProperties: {type: string}
       environment:
@@ -675,21 +756,37 @@ spec:
         additionalProperties: {type: string}
       secrets:
         type: object
-        propertyNames: {$ref: github.com/shrav-k/conduit/core#pointer.v1}
-        additionalProperties: {type: string}
-      location:
+        properties:
+          environment:
+            type: object
+            additionalProperties: {type: string}
+          packageArguments:
+            type: object
+            additionalProperties: {type: string}
+      identity:
+        type: object
+        properties:
+          environment:
+            type: object
+            additionalProperties: {type: string}
+          files:
+            type: object
+            propertyNames: {minLength: 1}
+            additionalProperties: {type: string}
+      machine:
         type: object
         properties:
           hostname: {type: string, minLength: 1}
-          labels: {$ref: github.com/shrav-k/conduit/core#label-selector.v1}
+          labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
         required: [hostname, labels]
-    required: [instance, item, location]
+    required: [instance, item, machine]
   outputSchema:
     type: object
     properties:
-      endpoint: {type: string, format: uri}
+      url: {type: string, format: uri}
+    required: [url]
   effect: >-
-    Starts the run of the item for the instance on the machine that `location` names, under its
+    Starts the run of the item for the instance on the machine given in `machine`, under its
     runtime provider's own means.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
@@ -698,8 +795,11 @@ metadata:
   name: stop.v1
   description: >-
     Stop the run that the instance's ID names. Stopping a run that is not running succeeds.
-    Where the provider cannot tell whether the run stopped, the outcome is unknown. The engine
-    invokes it by a provider call, within a retirement, and no Conduit lists it.
+    Where the provider cannot tell whether the run stopped, the outcome is unknown. What the
+    provider does with a stop that it cannot carry out now, as on a machine it cannot reach, its
+    contract states, such as carry it out once it can. The engine invokes it by a provider call,
+    within a retirement, and once more when an actor unregisters an instance whose node was
+    declared lost; no Conduit lists it.
 spec:
   inputSchema:
     type: object
@@ -728,18 +828,22 @@ spec:
       state: {enum: [running, stopped, unknown]}
     required: [state]
 
-# --- The operations of the machines provider.
+# --- The operations of the machine provider.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
   name: list-machines.v1
   description: >-
-    Report the machines: for each, its `hostname`; its `labels`, which hold
-    `kubernetes.io/hostname`, whose value is the hostname, and `kubernetes.io/os` and
-    `kubernetes.io/arch`, whose values are those that Go gives `GOOS` and `GOARCH`; and its
-    `state`, `reachable`, `unreachable` or `gone`. Labels are reported status and never
-    configuration. The engine invokes it by a provider call, and no Conduit lists it.
+    Report the machines: for each, its `hostname`, in canonical form, trimmed and lowercased,
+    and at most once, the provider's contract stating which name of a machine it reports; its
+    `labels`, which hold `kubernetes.io/hostname`, whose value is the hostname, and
+    `kubernetes.io/os` and `kubernetes.io/arch`, whose values are those that Go gives `GOOS`
+    and `GOARCH`; and its `state`, `reachable`, `unreachable` or `gone`, which is only for a
+    machine that the provider knows no longer exists. A report that names one hostname twice
+    is not used, and a machine that a report omits counts as unreachable until a report gives
+    it a state. Labels are reported status and never configuration. The engine invokes it by a
+    provider call, and no Conduit lists it.
 spec:
   outputSchema:
     type: object
@@ -750,7 +854,7 @@ spec:
           type: object
           properties:
             hostname: {type: string, minLength: 1}
-            labels: {$ref: github.com/shrav-k/conduit/core#label-selector.v1}
+            labels: {$ref: github.com/shrav-k/conduit/core#labels.v1}
             state: {enum: [reachable, unreachable, gone]}
           required: [hostname, labels, state]
     required: [machines]
@@ -761,17 +865,19 @@ metadata:
   name: place.v1
   description: >-
     Choose the machine on which an instance is placed: one that the provider reports reachable
-    and whose labels match `selector`, the label selector of the instance's type and of the
-    items selected for it. `hostname` names the machine, and is absent where the provider
-    places the instance on none. The engine invokes it by a provider call, while it decides a
-    request that would instantiate the instance, and no Conduit lists it.
+    and whose labels match `nodeSelector`, the label selector of the instance's type and of
+    the items selected for it, which for an instance that has an item that is run and names no
+    `runtime` also holds the hostname of the machine the engine runs on. `hostname` names the
+    machine, and is absent where the provider places the instance on none. The engine invokes
+    it by a provider call, while it decides a request that would instantiate the instance, and
+    no Conduit lists it.
 spec:
   inputSchema:
     type: object
     properties:
       instance: {$ref: github.com/shrav-k/conduit/core#id.v1}
-      selector: {$ref: github.com/shrav-k/conduit/core#label-selector.v1}
-    required: [instance, selector]
+      nodeSelector: {$ref: github.com/shrav-k/conduit/core#labels.v1}
+    required: [instance, nodeSelector]
   outputSchema:
     type: object
     properties:
@@ -806,20 +912,22 @@ spec:
         pattern: '^[A-Za-z0-9+/]*={0,2}$'
     required: [archive]
 
-# --- The operation of a secret store.
+# --- The operation of a secret Resource.
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation
 metadata:
-  name: reveal-secret.v1
+  name: get-secret.v1
   description: >-
     Give the value of the secret that the locator in the secret Resource's configuration
     names, read only from the store that the locator names, never from the configuration and
     never from another store. Where the store cannot be read, the outcome is failed and there
     is no value. No actor's request for this operation is dispatched, whatever Conduit lists
     it, and no tool is presented for it: the only requests for it that are dispatched are the
-    engine's reads before a run, or before a connection to a remote server, through the
-    reading instance's own open Conduit to the secret Resource.
+    engine's reads before a run, or before a connection to a remote server, and, where the
+    engine has lost the values of such a connection, as when it restarts, its read again for
+    the caller of the setup that made the connection, each for an instance and through that
+    instance's own open Conduit to the secret Resource, as it stands when the read is made.
 spec:
   outputSchema:
     type: object

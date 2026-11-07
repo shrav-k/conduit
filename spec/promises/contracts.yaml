@@ -37,6 +37,20 @@
 # applied only to a Conduit and loses `appliesTo`, `narrows` and `obliges` (decisions 3a, 7, 14
 # and alignment C20), and a control returns no `settings` (decision 15). It added CTR-012. The
 # log is docs/proposals/ruling-41/log-G6.md.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06) accepted the coordinator's
+# decisions in docs/proposals/ruling-41/open-decisions.md. Applying them, it changed the
+# observable of CTR-012: why `type: object` is required at the root of both schemas (row 44).
+# It added none and removed none.
+# The names of ruling 42 (the vocabulary audit's N9 and N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed the key `placement` of a Type to
+# `nodeSelector`, and location to node, in CTR-004. It removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N15; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed operation identity to idempotency key in
+# CTR-002. It removed none and added none.
+# The editorial fixes of ruling 42 (the vocabulary audit's E3; log
+# docs/proposals/ruling-42/log-editorial.md) changed CTR-002, whose observable says that
+# `deduplicates` is not the Model Context Protocol's `idempotentHint`. It removed none and
+# added none.
 
 - id: CTR-001
   layer: language
@@ -66,9 +80,9 @@
     outputs. A handle is a top-level property whose schema is `{$ref:
     github.com/shrav-k/conduit/core#handle.v1}` and which states no `default`. The `spec` may
     further hold `effect`, a statement of what it changes outside itself; `startsModelWork`;
-    `deduplicates`, the mark of an operation whose implementation recognizes an operation
-    identity that it has already been sent and applies the effect at most once for it;
-    `reservedToRoot`, the mark of an operation reserved to the root Interface; `implementation`,
+    `deduplicates`, the mark of an operation whose implementation recognizes an idempotency key
+    that it has already been sent and applies the effect at most once for it; `reservedToRoot`,
+    the mark of an operation reserved to the root Interface; `implementation`,
     its default implementation, which is one selection; for a control, `changes`, as CTR-006
     states; and the booleans `idempotentHint`, `destructiveHint` and `openWorldHint`.
   observable: >-
@@ -77,18 +91,21 @@
     and ACC-032 state what the first and the last of them mean, OPS-012 and OPS-021 say what the
     engine does with a repeat where `deduplicates` is declared, and CTR-009 says where
     `reservedToRoot` may be written. `idempotentHint`, `destructiveHint` and `openWorldHint` may
-    each be left out, and IFC-033 says what they become in the definition of a tool. No key
-    marks an operation as arranging work that is to start or to run after its own invocation has
-    ended, because no operation arranges such work through the engine, under ACC-019: a contract
-    whose `spec` holds a key that this promise does not name, such as `inputs` or `outputs`, is
-    rejected, as OBJ-019 rejects any key that this specification does not define. A property
-    name such as `maxResults` or `max_results` is accepted, as is any other non-empty string:
-    the rule OBJ-022 gives for other names a document chooses does not apply to these. A
-    property whose name is the empty string, a property of `outputSchema` that states a
-    `default`, and a handle that states one, are each rejected when the contract's package is
-    installed or its project is submitted. An input is optional where `inputSchema` does not
-    list it under `required`, under OBJ-015; what the `default` of an input then does is
-    OPS-026, and SCH-019 rejects one that fails the schema of its property.
+    each be left out, and IFC-033 says what they become in the definition of a tool.
+    `deduplicates` is not the Model Context Protocol's `idempotentHint`, which hints that
+    calling the tool again with the same arguments has no further effect: the engine passes that
+    hint into the tool's `annotations`, under IFC-033, and never decides a new attempt by it,
+    under OPS-012. No key marks an operation as arranging work that is to start or to run after
+    its own invocation has ended, because no operation arranges such work through the engine,
+    under ACC-019: a contract whose `spec` holds a key that this promise does not name, such as
+    `inputs` or `outputs`, is rejected, as OBJ-019 rejects any key that this specification does
+    not define. A property name such as `maxResults` or `max_results` is accepted, as is any
+    other non-empty string: the rule OBJ-022 gives for other names a document chooses does not
+    apply to these. A property whose name is the empty string, a property of `outputSchema` that
+    states a `default`, and a handle that states one, are each rejected when the contract's
+    package is installed or its project is submitted. An input is optional where `inputSchema`
+    does not list it under `required`, under OBJ-015; what the `default` of an input then does
+    is OPS-026, and SCH-019 rejects one that fails the schema of its property.
   vectors: []
 
 - id: CTR-003
@@ -120,8 +137,8 @@
     TPL-003 gives for a template; `controls`, a list of selections of its controls;
     `conditions`, the names of the further conditions it reports; `records`, which holds
     `inputs` and `outputs`, each true or false, and says whether the records about its instances
-    keep the inputs and the outputs of their operations; and `placement`, a label selector that
-    the labels of an instance's location must match, under PLC-007.
+    keep the inputs and the outputs of their operations; and `nodeSelector`, a label selector
+    that the labels of an instance's node must match, under PLC-007.
   observable: >-
     A Type contract with no `family` is rejected when its package is installed or its project is
     submitted. A type whose default implementation cannot be resolved through its own package's
@@ -131,10 +148,10 @@
     the configuration of its instances, and so can list no control under CTR-006. One that
     states no `offers` offers no capability, one that states no `requires` requires no
     operation, and one that states no `implementation`, `controls` or `conditions` has none. One
-    that states no `placement`, or an empty one, puts no rule on where its instances are placed.
-    `records` and each of its two members may be left out, and one that is left out is false.
-    What a record holds is REC-002, and what a Type that offers a provider capability must be is
-    PRV-001.
+    that states no `nodeSelector`, or an empty one, puts no rule on where its instances are
+    placed. `records` and each of its two members may be left out, and one that is left out is
+    false. What a record holds is REC-002, and what a Type that offers a provider capability
+    must be is PRV-001.
   vectors: []
 
 - id: CTR-005
@@ -255,7 +272,11 @@
   observable: >-
     Installation or resolving returns a diagnostic naming the contract and the keyword. An
     `inputSchema` with `$ref`, `oneOf` or `if` at its root, or with `type: array`, is rejected;
-    `{type: object, properties: {path: {type: string}}, required: [path]}` is accepted. The root
+    `{type: object, properties: {path: {type: string}}, required: [path]}` is accepted.
+    `type: object` is required at both roots: the protocol requires it of a tool's
+    `inputSchema`, and IFC-001 makes the outputs the members of `structuredContent`, keyed by
+    name, so without it the root's `properties` would admit a result that is not an object,
+    although the protocol lets an `outputSchema` be any schema. The root
     is limited so that each property is one input or one output, as the Model Context Protocol's
     tool definition names them, and so that the `default` of an input stands on its property,
     where SCH-008 accepts it. Inside a property every keyword of the profile may be used, under

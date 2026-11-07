@@ -62,6 +62,25 @@
 # root Interface cannot open; ACC-029, whose `operations` are compared as names, so that a
 # project's own documents may name its operations there; ACC-034, whose result is delivered in
 # the response to the call; and ACC-039, under which a hook is not a request.
+# Ruling 42 (docs/proposals/ruling-42/README.md, 2026-11-06), on the coordinator's decisions
+# and the owner's answers in docs/proposals/ruling-41/open-decisions.md, changed ACC-011,
+# ACC-012, ACC-018, ACC-019, ACC-029 and ACC-039: a request through a closed Conduit reports
+# refused, and one that names the closed Conduit invalid (D6); no hook carries a filter in this
+# version; an item of a bound covers an operation of a package installed later; a retirement
+# may connect to a `remote` item to serve its hook; and the read of a secret made again for a
+# connection whose values were lost is the one request made after its invocation has ended
+# (D12). It added none and removed none. What changed is in
+# docs/proposals/ruling-42/log-conventions.md. The integration of ruling 42
+# (docs/proposals/ruling-42/log-integration.md) changed ACC-019, which says "after the engine
+# restarts, on its machine or on another" for a failover, as SEC-023 does.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in ACC-032, ACC-033 and
+# ACC-037. It removed none and added none.
+# The names of ruling 42 (the vocabulary audit's N1 and N16; log
+# docs/proposals/ruling-42/log-rename-b.md) renamed `reveal-secret.v1` to `get-secret.v1` in
+# ACC-001, ACC-003, ACC-005 and ACC-006, and the key `io.github.shrav-k.conduit/restrictions` to
+# `io.github.shrav-k.conduit/filters` in ACC-017 and ACC-018, which with ACC-009 now say filters
+# where only filters are carried or sent. It removed none and added none.
 
 - id: ACC-001
   layer: convention
@@ -73,7 +92,7 @@
     The request is not dispatched, and reports refused.
   observable: >-
     A record of the refused request exists, and the target's implementation receives no call. A
-    request for `reveal-secret.v1` that an actor makes on its own behalf, or that any instance
+    request for `get-secret.v1` that an actor makes on its own behalf, or that any instance
     makes as an onward request, reports refused in the same way even where an open Conduit lists
     the operation, under SEC-007: the only request for it that is dispatched is the engine's
     read of a secret, under SEC-010.
@@ -101,13 +120,13 @@
     A Conduit is opened.
   then: >-
     It permits exactly the operations it lists, on its target, and no others, except that a
-    request for `reveal-secret.v1` that an actor makes on its own behalf, or that any instance
+    request for `get-secret.v1` that an actor makes on its own behalf, or that any instance
     makes as an onward request, is never dispatched through it, under SEC-007. A Conduit that
     lists no operations permits nothing.
   observable: >-
     Inspecting the open Conduit shows the operations it lists. A request for any other operation
     through it reports refused. A Conduit that lists none is ready once it is opened, and every
-    request through it reports refused. Through a Conduit that lists `reveal-secret.v1`, that
+    request through it reports refused. Through a Conduit that lists `get-secret.v1`, that
     operation is requested only by the engine's read of a secret for the Conduit's consumer,
     under SEC-010, and the engine presents the consumer no tool for it, under IFC-012. From the
     moment its consumer is retired, an open Conduit permits less: only the requests of the
@@ -131,7 +150,7 @@
     sent it, and not one of the caller it serves. The same holds where the setup is itself a
     part of a Pool's setup, under POOL-015: the parts of a setup are authorized as the request
     to set up was, by the Conduits of the instance that sent it. A declared Conduit that lists
-    `reveal-secret.v1` is opened only where the root Interface sent the request to set up on its
+    `get-secret.v1` is opened only where the root Interface sent the request to set up on its
     own behalf, under SEC-008: for any other instance, and for an onward request of the root
     Interface, the part reports refused.
   vectors: []
@@ -147,7 +166,7 @@
     the new Conduit's target, as ACC-029 states, and names every operation the new Conduit
     lists. Being the consumer of an open Conduit to the target does not permit it. Where the new
     Conduit is itself one to `access`, ACC-030 states the condition in place of this one. Where
-    the new Conduit lists `reveal-secret.v1`, SEC-008 states a further condition. A request to
+    the new Conduit lists `get-secret.v1`, SEC-008 states a further condition. A request to
     open a Conduit that is already open is decided like any other, changes nothing and has the
     outcome succeeded.
   observable: >-
@@ -194,7 +213,7 @@
   then: >-
     The restrictions on the other Conduit do not apply. The request is limited by its own
     Conduit's operations and the restrictions on that Conduit and, for an onward request, by the
-    restrictions carried under ACC-017.
+    filters carried under ACC-017.
   observable: >-
     A request that the other Conduit's filter would forbid is permitted through this Conduit,
     unless one of the restrictions that do apply forbids it.
@@ -210,10 +229,16 @@
   observable: >-
     After the close every request through the Conduit reports refused. The closed Conduit is
     removed, under LIF-035, and its tools are no longer presented to its consumer, under
-    IFC-013. To narrow access, the Conduit is closed and a narrower one, which lists fewer
-    operations or applies further filters, is opened. A Conduit whose consumer is retired is not
-    closed by that: CON-008 closes it once the consumer's shutdown is confirmed, or at once
-    where the consumer is declared lost, and ACC-039 says what it permits until it is closed.
+    IFC-013. A request through it is decided under ACC-001 from the Conduits that are open,
+    under ACC-036, and OPS-023 puts refused before invalid, so it reports refused, as a request
+    that no Conduit ever permitted does, although the engine still holds the closed Conduit's ID
+    in the state of the invocations dispatched through it, under OPS-008, and in its records,
+    under LIF-019. A request that names the closed Conduit itself, to open, close or inspect it,
+    reports invalid under OPS-029, because it no longer exists. To narrow access, the Conduit is
+    closed and a narrower one, which lists fewer operations or applies further filters, is
+    opened. A Conduit whose consumer is retired is not closed by that: CON-008 closes it once
+    the consumer's shutdown is confirmed, or at once where the consumer is declared lost, and
+    ACC-039 says what it permits until it is closed.
   vectors: []
 
 - id: ACC-012
@@ -233,7 +258,8 @@
     An actor with such a Conduit to `access` can close a Conduit it did not open. Any other
     actor reports refused, and the Conduit is as it was. A closed Conduit no longer exists,
     under LIF-035, so a request to close it reports invalid under OPS-029, and a repeat of the
-    request that closed it is answered as OPS-009 and OPS-032 state.
+    request that closed it is answered as OPS-009 and OPS-032 state: `close.v1` declares no
+    outputs, so OPS-034 does not apply to it.
   vectors: []
 
 - id: ACC-014
@@ -306,25 +332,25 @@
     An instance, while serving an invocation, requests an operation on another target.
   then: >-
     The onward request carries the identity of the caller of the invocation it names in
-    `io.github.shrav-k.conduit/serving`, and the restrictions of that invocation: the filters on
+    `io.github.shrav-k.conduit/serving`, and the filters of that invocation: the filters on
     the Conduit that invocation was dispatched through, and the filters that invocation itself
     carried from the invocation it served or, for a hook, from the invocation of `set-up.v1` or
     `retire.v1` that it belongs to. The chain of an invocation is the invocations that it
     serves, directly or through others: an onward request serves the invocation it names, and a
     hook serves the invocation it belongs to. Its effects and returned content are limited by
-    those restrictions.
+    those filters.
   observable: >-
     The onward target's record names the original caller. The
-    `io.github.shrav-k.conduit/restrictions` sent to the onward target lists those restrictions
+    `io.github.shrav-k.conduit/filters` sent to the onward target lists those filters
     beside the filters of the instance's own Conduit. An effect or content that they forbid to
     the caller is not produced or returned, even though the instance's own Conduit would permit
     it. A filter is carried as its Conduit's template states it, which no request changes. A
-    hook carries the restrictions of the invocation it belongs to in the same way, under
+    hook carries the filters of the invocation it belongs to in the same way, under
     ACC-018. Where the implementation selected by the onward target does not support a filter
     that is carried, the onward request reports unavailable under ACC-015. An onward request is
     dispatched only where each Conduit of its chain is open, under ACC-034, and the consumer of
     none of them is retired, under ACC-039, which excepts the requests of that consumer's own
-    retirement. The engine's read of a secret carries none of these restrictions: it is decided
+    retirement. The engine's read of a secret carries none of these filters: it is decided
     by the instance's own Conduit and the filters on it alone, under SEC-011.
   vectors: []
 
@@ -335,25 +361,30 @@
     The engine dispatches a setup hook or a retire hook, under TPL-017 or TPL-018.
   then: >-
     The hook is dispatched to the implementation that its own instance has selected for the
-    hook's operation, and is not a request through any Conduit. It carries the restrictions of
+    hook's operation, and is not a request through any Conduit. It carries the filters of
     the invocation of `set-up.v1` or `retire.v1` that it belongs to, as ACC-017 has an onward
     request that serves that invocation carry them, and that implementation applies them as
     IFC-019 states. A request that the implementation makes while serving the hook is an onward
     request, under ACC-016, which names the hook's invocation in
     `io.github.shrav-k.conduit/serving`.
   observable: >-
-    The hook itself reaches no other instance, and the `io.github.shrav-k.conduit/restrictions`
-    it is sent holds the restrictions of the invocation it belongs to, under IFC-018. A filter
-    is carried as its Conduit's template states it. A filter on the Conduit through which the
-    setup or the retirement was requested, or one that the request for it carried under ACC-017,
+    The hook itself reaches no other instance, and the `io.github.shrav-k.conduit/filters` it is
+    sent holds the filters of the invocation it belongs to, under IFC-018. A filter is
+    carried as its Conduit's template states it. A filter on the Conduit through which the setup
+    or the retirement was requested, or one that the request for it carried under ACC-017,
     therefore limits the hook and every onward request that serves it. A hook whose
     implementation does not support the requirement of one of those filters, as one marked
     `plain` supports none, is not dispatched, and its part reports unavailable, under ACC-015.
-    An implementation that finds it cannot apply a restriction it was sent answers unavailable,
+    An implementation that finds it cannot apply a filter it was sent answers unavailable,
     as ACC-014 states. An onward request that serves the hook is made through one of its
     instance's own Conduits and is decided as any other onward request, under ACC-016 and
     ACC-017; during a retirement, ACC-039 permits it through a Conduit whose consumer is
-    retired.
+    retired. In this version no hook carries a filter: `set-up.v1`, `retire.v1` and
+    `retire-with-resources.v1` are implemented by `engine`, which states no `supports`, under
+    MAN-012, so no Conduit through which they are requested applies a filter, under CON-022, and
+    a request for one of them that carries a filter under ACC-017 is not dispatched, and reports
+    unavailable, under ACC-015. The `io.github.shrav-k.conduit/filters` that a hook is sent
+    is therefore an empty list, under IFC-018.
   vectors: []
 
 - id: ACC-019
@@ -364,7 +395,9 @@
   then: >-
     The engine dispatches a request on its behalf: one that names it in
     `io.github.shrav-k.conduit/serving`, or one that the engine makes itself because of work
-    that the invocation's operation arranged.
+    that the invocation's operation arranged, other than the read of a secret that SEC-023 makes
+    again, for the caller of the setup that made a connection, once that connection's values are
+    lost.
   observable: >-
     In this version no operation arranges, through the engine, work that outlasts its
     invocation. Once an invocation has ended, a request that names it in
@@ -377,12 +410,16 @@
     when it is made, under ACC-036, like any other, and is recorded for the actor that made it,
     under REC-001. An instance that is not an actor makes a request only to serve an invocation
     that is in progress, under IFC-021 and IFC-028, so it makes no other request once the
-    invocations it serves have ended. The engine's read of a secret is made only within the
-    setup or the retirement that asks for a run or a connection, under SEC-011, and none is made
-    when a runtime provider restarts a run of its own accord, under PRV-010. An
-    invocation that outlasts its call has not ended: IFC-016 says how its result is read, and
-    until it ends its onward requests are decided under ACC-016 and ACC-017, like any other. A
-    new attempt is dispatched only for a repeat that the caller makes, under IMP-007.
+    invocations it serves have ended. The engine's read of a secret is made within the setup or
+    the retirement that asks for a run or a connection, under SEC-011, and after it only where a
+    connection that lasts has lost its values, as after the engine restarts, on its machine or
+    on another: SEC-023 then reads again, for the caller of the setup that made the connection,
+    as the instance's own Conduit to the secret Resource and the filters on it decide when the
+    read is made, so closing that Conduit stops it. None is made when a runtime provider
+    restarts a run of its own accord, under PRV-010. An invocation that outlasts its call has
+    not ended: IFC-016 says how its result is read, and until it ends its onward requests are
+    decided under ACC-016 and ACC-017, like any other. A new attempt is dispatched only for a
+    repeat that the caller makes, under IMP-007.
   vectors: []
 
 - id: ACC-022
@@ -480,8 +517,11 @@
     data under OBJ-021, compared as a name under ACC-030 and never resolved, so NAM-007 does not
     apply to it, and a project's own documents may name the project's operations there by that
     address; an item that names an operation which no package or project holds covers no
-    request. A request that the bound does not cover reports refused and names it, as IFC-025
-    states. CON-028 says where a bound may be applied.
+    request. An item is compared when a request is decided, so it covers an operation of a
+    package installed after the bound was written whose address and export name are the item's,
+    and an operation of a submitted project in every submission at that address, under SUB-008.
+    A request that the bound does not cover reports refused and names it, as IFC-025 states.
+    CON-028 says where a bound may be applied.
   vectors: []
 
 - id: ACC-030
@@ -524,7 +564,7 @@
   level: must
   when: >-
     An actor asks for an operation that is reserved to the root Interface, such as declaring a
-    location lost, or asks to open a Conduit that lists such an operation and whose consumer is
+    node lost, or asks to open a Conduit that lists such an operation and whose consumer is
     not the root Interface.
   then: >-
     A request for a reserved operation is dispatched only if the actor is the root Interface. No
@@ -542,7 +582,7 @@
   level: must
   when: >-
     An actor asks to register, replace, inspect, set up or retire an object, to unregister a
-    template or an instance whose location was declared lost, to retire a Pool together with the
+    template or an instance whose node was declared lost, to retire a Pool together with the
     Resources it owns, to install a package, for an operation reserved to the root Interface, to
     reconcile an invocation, to open or close a Conduit, or for a control.
   then: >-
@@ -684,7 +724,7 @@
     examined or reported.
   observable: >-
     The target's implementation receives no call, and no earlier decision is used in place of
-    the one that cannot be made, even for a request between two instances on one location.
+    the one that cannot be made, even for a request between two instances on one node.
     OPS-023 puts this case where refused stands in its order: the request reports unavailable
     whatever else is wrong with it, and its result carries no diagnostic and says nothing of the
     objects it names, since the actor has not been found to be permitted. Only a request that
@@ -730,8 +770,9 @@
   then: >-
     The request is permitted only if it belongs to the retirement of that consumer: it is an
     onward request that serves the consumer's retire hook, directly or through others, or the
-    engine's read of a secret for a run that the retirement asks for to serve that hook, under
-    TPL-018 and SEC-011. Every other such request is not dispatched, and reports refused.
+    engine's read of a secret for a run that the retirement asks for, or for a connection that
+    it makes, to serve that hook, under TPL-018 and SEC-011. Every other such request is not
+    dispatched, and reports refused.
   observable: >-
     From the moment the consumer is retired, under LIF-005, a request that the consumer makes on
     its own behalf, and an onward request that serves any invocation other than those of its
@@ -740,18 +781,18 @@
     is dispatched, and so is an onward request that names, in
     `io.github.shrav-k.conduit/serving`, the invocation of that hook or of an onward request
     that serves it, and so is the engine's read of a secret through the Conduit before the run
-    that the retirement asks for. This holds for a further retirement under LIF-026 as for the
-    first. It ends when the Conduit is closed: once the consumer's shutdown is confirmed or the
-    consumer is declared lost, under CON-008, or by a request of an actor under ACC-012. Every
-    other check of a request through the Conduit is made as for any request. The same holds for
-    an onward request that is made through another Conduit. Where a Resource serves an
-    invocation that a request of an Agent began, and the Agent is retired while the invocation
-    is in progress, an onward request of the Resource that names that invocation, or that names
-    an invocation which serves it through others, reports refused from that moment, although the
-    Resource's own Conduit is open and its consumer is not retired. So an onward request is
-    dispatched only where each Conduit of its chain is open, under ACC-034, and none of them has
-    a retired consumer, that consumer's own retirement apart. The invocation itself runs to its
-    end. A hook is not an onward request, and the stop of the consumer's run is a provider call,
-    under PRV-005 and PRV-008, which is not a request and which no Conduit permits, under
-    PRV-004.
+    that the retirement asks for, or the connection that it makes, to serve that hook. This
+    holds for a further retirement under LIF-026 as for the first. It ends when the Conduit is
+    closed: once the consumer's shutdown is confirmed or the consumer is declared lost, under
+    CON-008, or by a request of an actor under ACC-012. Every other check of a request through
+    the Conduit is made as for any request. The same holds for an onward request that is made
+    through another Conduit. Where a Resource serves an invocation that a request of an Agent
+    began, and the Agent is retired while the invocation is in progress, an onward request of
+    the Resource that names that invocation, or that names an invocation which serves it through
+    others, reports refused from that moment, although the Resource's own Conduit is open and
+    its consumer is not retired. So an onward request is dispatched only where each Conduit of
+    its chain is open, under ACC-034, and none of them has a retired consumer, that consumer's
+    own retirement apart. The invocation itself runs to its end. A hook is not an onward
+    request, and the stop of the consumer's run is a provider call, under PRV-005 and PRV-008,
+    which is not a request and which no Conduit permits, under PRV-004.
   vectors: []

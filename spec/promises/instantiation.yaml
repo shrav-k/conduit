@@ -34,6 +34,9 @@
 # docs/proposals/ruling-41/log-G6.md. The coverage check of the rewrite
 # (docs/proposals/ruling-41/log-integration.md, "Coverage check") changed INS-006, under which
 # a bare name is not accepted where `secret-reference.v1` governs, as SEC-001 has it.
+# The names of ruling 42 (the vocabulary audit's N10; log
+# docs/proposals/ruling-42/log-rename-a.md) renamed location to node in INS-018. It removed none
+# and added none.
 
 - id: INS-001
   layer: language
@@ -278,7 +281,7 @@
     It is joined to a working directory or to any other base.
   observable: >-
     The value reaches its destination exactly as supplied. Whether a relative path is then valid
-    is decided by the schema of the type that receives it. Where a value is tied to a location,
+    is decided by the schema of the type that receives it. Where a value is tied to a node,
     as an absolute path is, PLC-020 says who interprets it.
   vectors: []
 

@@ -1,0 +1,16 @@
+# Example. It must be rejected:
+# the Package of a `package` item is pinned by its own `fileSha256`, the SHA-256 of the
+# package file, unless its `registryType` is `oci` (MAN-010). This one states no hash.
+
+apiVersion: github.com/shrav-k/conduit/v0
+address: example.org/files
+version: 0.3.0
+implementations:
+  listing:
+    implements: ['#directory.list.v1']
+    package:
+      registryType: npm
+      identifier: '@example/directory-listing'
+      version: 1.2.0
+      transport:
+        type: stdio

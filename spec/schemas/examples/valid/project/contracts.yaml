@@ -2,6 +2,10 @@
 # (NAM-022), in a `$ref` as anywhere else (SCH-015), and outside the project each is named
 # `example.org/review-desk#name`, by the address its manifest states (SUB-008). The template
 # `reviewer` in templates.yaml checks its input `model` against `model-name.v1`.
+# The names of ruling 42 (docs/proposals/ruling-42/log-rename-b.md) renamed `secret-reveal.v1`
+# to `secret-provider.v1` and `reveal-secret.v1` to `get-secret.v1`. Its editorial fix E17
+# (docs/proposals/ruling-42/log-editorial.md) says the type of a secret Resource, where it said
+# a secret store's type.
 
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Schema
@@ -35,9 +39,9 @@ spec:
     github.com/shrav-k/conduit/core#stop.v1: '#docker-runner'
     github.com/shrav-k/conduit/core#inspect-run.v1: '#docker-runner'
 ---
-# A secret store's type (SEC-005): it offers `secret-reveal.v1`, its schema is the form of
-# its locator, and it lists no control, so a secret Resource's locator is fixed once it is
-# made.
+# The type of a secret Resource (SEC-005): it offers `secret-provider.v1`, its schema is the
+# form of its locator, and it lists no control, so a secret Resource's locator is fixed once it
+# is made.
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Type
 metadata:
@@ -53,9 +57,9 @@ spec:
     required: [service, account]
     additionalProperties: false
   offers:
-    - github.com/shrav-k/conduit/core#secret-reveal.v1
+    - github.com/shrav-k/conduit/core#secret-provider.v1
   implementation:
-    github.com/shrav-k/conduit/core#reveal-secret.v1: '#keychain-store'
+    github.com/shrav-k/conduit/core#get-secret.v1: '#keychain-store'
 ---
 apiVersion: github.com/shrav-k/conduit/v0
 kind: Operation

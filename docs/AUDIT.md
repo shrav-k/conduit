@@ -253,9 +253,9 @@ small points. Most are settled since, and need not be reported again:
 The four points that were left open after round 5 are decided by ruling 44, as round 6's
 critique recommended ([its four open points](proposals/reaudit/round-6/design-critique.md#the-four-open-points)):
 
-- A default that a type states for a hook it does not require is ignored, and the registration
-  of a template that selects no implementation for the hook reports it in a diagnostic that
-  does not reject (TPL-004).
+- A default that a type states for a hook it does not require is ignored: a template that
+  selects no implementation for the hook has none (TPL-004), and installation or resolving
+  reports the default, when it reads the type, in a diagnostic that does not reject (CTR-004).
 - A named argument that a Package repeats, such as `-e`, cannot be bound (MAN-010). That waits
   on a real package that needs it, in S7 and A63. The schema of a server's arguments has
   `isRepeated`, a boolean taken from the registry's `server.json`, and no promise says how one
@@ -276,7 +276,9 @@ applied ruling 44 left five smaller points for a decision, which
 lists: whether a replace may be read from a directory, a key of an ordinary operation's own
 root `$defs` that equals a copy's key in a tool's bundle, how INS-010 compares two
 destinations, a rule of the checker for SEC-005, and a vector for the escaped form of a `$ref`
-to a copy.
+to a copy. The integration's
+[verification](proposals/reaudit/round-6/log-integration.md#verification), by two further
+readers of the result, fixed what they found and left the second of these open, with options.
 
 **To look at in particular (ruling 38, point 11).** The interface follows the Model Context
 Protocol on errors: a call to a tool that the engine does not present is answered with the
@@ -298,14 +300,14 @@ model and cannot make one do so, which is the protocol's limit, and SEP-2145 was
 
 **To look at after round 6.** The text that round 6 and ruling 44 changed has not been read
 cold. [Round 6's decisions](proposals/reaudit/round-6/DECISIONS.md) say what changed, and the
-logs beside them list each promise. Among them are interface promises that rest on the
-published protocol at the baseline revision: the reading of the error -32021 (IFC-007,
-IFC-010, IFC-045 and OPS-007), the tool definition presented as a self-contained bundle,
-narrowed by the target's template (IFC-033, IFC-012), and the root of an ordinary Operation's
-schemas (CTR-012). The independent check read the published protocol on each of the three;
-the editors' logs say what they read. Round 5's own decisions that the owner may want to read
-first are in [its record](proposals/reaudit/round-5/README.md#known-after-the-round), where
-V2-15 is now reversed by ruling 44.
+logs beside them list each promise. Among them are interface promises that rest on the published
+protocol at the baseline revision: the reading of the error -32021 (IFC-007, IFC-010, IFC-045,
+IFC-047 and OPS-007), the tool definition presented as a self-contained bundle, narrowed by the
+target's template (IFC-033, IFC-012), and the root of an ordinary Operation's schemas (CTR-012).
+The independent check read the published protocol on each of the three; the editors' logs say
+what they read. Round 5's own decisions that the owner may want to read first are in
+[its record](proposals/reaudit/round-5/README.md#known-after-the-round), where V2-15 is now
+reversed by ruling 44.
 
 **Who decided what.** The next section. In short: rulings 1 to 44 are the owner's. Ruling 39
 accepted every logged decision of the coordinator and choice of an editor made before it, and
@@ -669,10 +671,11 @@ Ruling 44 reversed one of round 5's decisions. V2-15 of the
 protocol's error -32021, for a client capability that the call did not declare, as failed,
 since it took the protocol to have a server answer so before acting. The protocol says
 "processing ... requires", and nothing of the order of effects. Round 6's finding 6-1-01 reads
-that error as any other error, failed for an operation that declares no effect and unknown for
-one that declares one, except where Conduit's own contract binds the server to have done
-nothing: the error that names Conduit's extension (IFC-008), and an implementation that carries
-Conduit's keys, which answers so only before acting (IFC-045). IFC-007, IFC-010, IFC-045 and
+that error as any other error, failed for an operation that states no effect, is not a control
+and starts no model work, as IFC-033 tests, and unknown for any other, except where Conduit's
+own contract binds the server to have done nothing: the error that names Conduit's extension
+(IFC-008), and an implementation that carries Conduit's keys, which answers so only where it
+has performed nothing for the call (IFC-047). IFC-007, IFC-010, IFC-045, IFC-047, added, and
 OPS-007 changed together.
 
 ## Layered claim
@@ -901,6 +904,6 @@ steps of recovery that need a person.
 | S1 | E05: a tool whose schema refers to a contract with local `$defs`, two contracts with one local name, a recursive contract and a `$ref` with keywords beside it; the definition presented is a self-contained bundle that a value passes exactly when it passes the contract's schemas (IFC-033). E08: an agent may start only an approved reviewer, through a broker, with its trusted code and setup counted (D04). E11: a local contract and its implementation edited, then the template replaced while an old instance exists; the replacement resolves the project submitted with it, and the old instance keeps what it resolved (D11). E12: an object inspected, removed and its name reused before a follow-up request; once D12 is applied as revised (A69), a request that carries the expected ID reports conflict, and an ID grants nothing | D08: a chapter on change and repair, which changes a live setting, upgrades a template, replaces a nested Resource and restores the intended access, with the exact calls, identities and permissions. D19: the bytes kept for each invocation (A38). A comparison with a manually configured baseline on the same tasks, the same agents and the same service, counting duplicated credentials, per-agent changes of access, inspection effort, provider-specific code and recovery steps |
 | S2 | E02: a read succeeds before a filter's deadline and is repeated after it, with the same Conduit and arguments; the read is dispatched again and refused, and no stored output is delivered (OPS-009). E07: an agent with a filtered read and a bound over the same operation opens an unfiltered Conduit, which the bound allows (D03). E13: the shared service's secret rotated with both agents working, the service replaced, and the restoring of access failing partway; no secret reaches an Agent's run. E17: what a real client and its model see after a revoke with cached tools, a protocol refusal and a tool failure | D01: a plain server, a small adapter and a Conduit-aware implementation qualified on one user task, with the adapter work counted (also S7, A63). D05: the first restrictions as complete contracts with vectors shared by two implementations, covering changed authorization data, a repeat, onward calls and revocation. D09: rotation by explicit replacement (also S10). D20: what a local deployment and an isolated one of the same relationships each protect, and which credentials an Agent process can read (also S3) |
 | S3 | E15: a machine reported unreachable, then gone, with partitions before and after an effect and before and after a revocation; unavailable, unknown, retired and stopped stay distinct, and nothing new is dispatched without current authorization | D20, under a partition |
-| S4 | E01: a plain server makes part of an effect, then answers -32021; the outcome of an operation that declares an effect is unknown, and a repeat with the same key is not dispatched (IFC-010, OPS-012). E09: a client that keeps its key and one that sends none, each repeating after a lost response. E18: the owning Pool retired, the Resource inspected and reconciled, the instance removed and reconciled again; each step authorized as ACC-033's table says. E19: records purged and outputs expired, then an old keyed request repeated and an unknown invocation inspected; no effect is repeated. E20: a hook's reply lost, its outcome reconciled failed, a new attempt for another caller, then the earlier attempt's late onward request, decided for the latest caller (OPS-028, A65) | D02: clients that keep the key and clients that send none, against plain and deduplicating implementations, after a success whose response was lost, after an unknown outcome, and for an intended second action. D10: what the actor can conclude, verify and do next after an unknown outcome, a conflict and a partial setup |
-| S5 | E03 and E04: a control whose `changes` gives two inputs one setting, or one a setting inside another's; the control is rejected (CTR-006). E10: a control narrowed by its template to 50 under a contract that allows 100, asked for 75, then left out of the template's map of controls; the tool presented shows the narrowed schema, and no tool is presented for the excluded control (IFC-033, IFC-012). E16: an omitted input, null, an empty map, a nested default, an array element and an omitted control input; keyed repeats compare one normalized value (D13) | D10: what `ruleId`, the invocation's identity and its status let a frontend tell apart in a conflict |
+| S4 | E01: a plain server makes part of an effect, then answers -32021, once directly and once as a task's failed error; the outcome of an operation that states an effect is unknown, and so is that of one marked `startsModelWork: true` that states none, and a repeat with the same key is not dispatched (IFC-010, OPS-012). E09: a client that keeps its key and one that sends none, each repeating after a lost response. E18: the owning Pool retired, the Resource inspected and reconciled, the instance removed and reconciled again; each step authorized as ACC-033's table says. E19: records purged and outputs expired, then an old keyed request repeated and an unknown invocation inspected; no effect is repeated. E20: a hook's reply lost, its outcome reconciled failed, a new attempt for another caller, then the earlier attempt's late onward request, decided for the latest caller (OPS-028, A65) | D02: clients that keep the key and clients that send none, against plain and deduplicating implementations, after a success whose response was lost, after an unknown outcome, and for an intended second action. D10: what the actor can conclude, verify and do next after an unknown outcome, a conflict and a partial setup |
+| S5 | E03 and E04: a control whose `changes` gives two inputs one setting, or one a setting inside another's; the control is rejected (CTR-006). E10: a control narrowed by its template to 50 under a contract that allows 100, asked for 75, then left out of the template's map of controls; the tool presented shows the narrowed schema, and no tool is presented for the excluded control (IFC-033, IFC-012). E16: an omitted input, null, an empty map, a nested default, an array element and an omitted control input; keyed repeats compare one normalized value (D13); and a `default` that only a `$ref` at the root of an operation's `inputSchema` reaches, which fills nothing (SCH-009, CTR-012) | D10: what `ruleId`, the invocation's identity and its status let a frontend tell apart in a conflict |
 | S10 | E06: two package-source providers that would claim one scheme; a Type that lists a control changing `schemes` is rejected, so a claim is fixed for the provider's life (PRV-016), and a second claimant is refused (PRV-013). E14: S1 and S2 with each provider swapped, with every provider-specific edit listed | D15 and D16 (A63): what each provider implements, delegates, keeps and needs configured, and what a swap keeps. D09, on the swapped store |

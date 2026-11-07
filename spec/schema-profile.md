@@ -39,7 +39,9 @@ changed what this page says of the root of an Operation contract's schemas, wher
 profile may now be used beside `type: object`, a control's apart (D14); added what the schema of
 a tool that the engine presents is made of (finding 6-1-04); and added how two pointers are
 compared (finding 6-1-03), as the
-[log of its docs editor](../docs/proposals/reaudit/round-6/log-specdocs.md) says.
+[log of its docs editor](../docs/proposals/reaudit/round-6/log-specdocs.md) says. The
+[verification of round 6](../docs/proposals/reaudit/round-6/log-integration.md#verification)
+added that a copy's key holds a version only where the package or project states one (R-08).
 
 Schemas are not what distinguishes Conduit. This part of the specification invents nothing: it
 selects existing standards and narrows them. Where a standard defines a meaning, that meaning
@@ -147,14 +149,14 @@ are the engine's, made for the wire from the contract's own, and the engine chec
 results against the contract (IFC-033). They can be read with no package at hand. Each holds,
 under the `$defs` of its root, one copy of each Schema contract that the contract's schemas
 reach, directly or through other contracts, keyed by the contract's qualified reference with `@`
-and the version of the package or project that holds it after the address, so that no two
-packages, and no two versions of one, share a key. Every `$ref` in it is a JSON Pointer within
-it: one that named a contract points to that contract's copy, and one that pointed into a
-schema points to the same place in the copy, with `~` and `/` escaped as RFC 6901 escapes a
-reference token and `#` written `%23`, as a URI fragment needs. The keywords written beside a
-`$ref` are kept, and a contract that refers to itself refers to its own copy. A contract whose
-schema holds no `$ref` may be written in the place of a reference to it beside which no keyword
-is written, instead of being copied. This follows
-the bundling of JSON Schema 2020-12, section 9.3, except that a copy carries no `$id` and its
-pointers are rewritten in its place. For a control, an input that the target's template narrows
-has the schema `allOf` of the contract's and the template's (TPL-010, IFC-033).
+and the version of the package or project that holds it after the address, where that package or
+project states one, so that no two packages, and no two versions of one, share a key. Every
+`$ref` in it is a JSON Pointer within it: one that named a contract points to that contract's
+copy, and one that pointed into a schema points to the same place in the copy, with `~` and `/`
+escaped as RFC 6901 escapes a reference token and `#` written `%23`, as a URI fragment needs.
+The keywords written beside a `$ref` are kept, and a contract that refers to itself refers to
+its own copy. A contract whose schema holds no `$ref` may be written in the place of a reference
+to it beside which no keyword is written, instead of being copied. This follows the bundling of
+JSON Schema 2020-12, section 9.3, except that a copy carries no `$id` and its pointers are
+rewritten in its place. For a control, an input that the target's template narrows has the
+schema `allOf` of the contract's and the template's (TPL-010, IFC-033).

@@ -286,9 +286,11 @@ the layer of the promises that bind it.
 | Implementation | An implementation, a provider's among them | Every promise, whatever its layer, whose obligation falls on the implementation and not on the engine. Examples are IFC-008, IFC-009, IFC-019, IFC-026, IFC-031, IFC-047, SEC-006 and SEC-019. For a provider's implementation this includes the promises that bind the provider, which have the layer `convention`, such as PRV-010 to PRV-012, PRV-014, PRV-019, PRV-021, PRV-022, PRV-025 and PRV-028. For a server reached by `remote` that is not plain, it includes PRV-025. |
 
 An engine that is given a document it cannot honor rejects the document and says why in a
-diagnostic. It never accepts a document and ignores part of it unsaid: where a promise leaves a
-part of an accepted document unused, as TPL-004 does a type's default for a hook that the type
-does not require, a diagnostic that does not reject names that part.
+diagnostic. It never accepts a document and ignores part of it unsaid: where a promise leaves
+a part of an accepted document unused, the promise says so, as SCH-009 does a `default` reached
+only through a conditional keyword, or through a `$ref` at the root of an operation's schema.
+A type's default for a hook that the type does not require is also named, when the type is
+read, in a diagnostic that does not reject (CTR-004, TPL-004).
 
 ## Limits of this version
 
@@ -317,9 +319,12 @@ that outlasts its invocation is left out, as [What this is](#what-this-is) says.
   operations of `management`, supports no filter, so no Conduit that lists one of them and
   applies a filter is instantiated (CON-022, MAN-012). A Conduit to `management` that lists
   `register.v1` or `replace.v1` trusts its consumer to register, or to replace, any object that
-  ACC-033 authorizes against `management` alone (ACC-030). Registering a Resource into a Pool
-  that exists and is not retired also needs a Conduit to that Pool (ACC-033), which narrows by
-  owner and never by template.
+  ACC-033 authorizes against `management` alone (ACC-030). Since `replace.v1` hands over the
+  project of its document (SUB-009), a Conduit that lists it trusts its consumer, as one that
+  lists `register.v1` does, to choose the contracts and the implementation items, programs and
+  `remote` URLs among them, of the instances made from the template afterwards (ACC-030).
+  Registering a Resource into a Pool that exists and is not retired also needs a Conduit to that
+  Pool (ACC-033), which narrows by owner and never by template.
 - Narrower access to `management` goes through a broker: a Resource with a trusted operation
   whose own contract allows only what it should, such as registering instances of one approved
   template. The actor is the consumer of a Conduit to the broker that
@@ -586,22 +591,23 @@ the promises.
 [round 6](../docs/proposals/reaudit/round-6/README.md) of the re-audit, the owner's cold read by
 Codex of `main` at `c4d7d33`, whose two reports are six findings and a critique of whether
 Conduit is simple and useful. As the ruling accepted them: an error -32021 for a client
-capability that a call did not declare is read as any other error, unless Conduit's own
-contract binds the server to have done nothing, as the new IFC-047 binds an implementation that
-carries Conduit's keys (IFC-010, IFC-045, IFC-047, OPS-007); a repeat to which a filter applies
-is never answered with outputs that the filter has not judged, and one of an operation with no
-effect is dispatched again so that the filter decides afresh (OPS-009, OPS-024, OPS-034,
-ACC-008); no two pointers of a control's `changes` overlap (CTR-006); the schema of a tool that
-the engine presents is a self-contained bundle (IFC-033); the schemes that a package-source
-provider claims are fixed for its life (PRV-016); and the entry points no longer say that a
-point of round 5 waits for the owner. Of the four points that were left open, a type's default
-for a hook that it does not require is not used, and a diagnostic reports it (TPL-004); the
-tracker keeps the other three. Of the critique's simplifications, a tool shows the narrowing and
-the controls of the target's template (D07; IFC-033, IFC-012), replacing a template resolves the
-project handed over with it as registration does (D11; SUB-009), and an ordinary Operation's
-schemas may use the whole profile at their root (D14; CTR-012). The access convention states, as
-limits of this version, that a bound does not limit filters and that access to `management`
-cannot be narrowed to one template, with the broker that narrows it (ACC-029, ACC-030;
+capability that a call did not declare is read as any other error, unless Conduit's own contract
+binds the server to have done nothing, as the new IFC-047 binds an implementation that carries
+Conduit's keys (IFC-010, IFC-045, IFC-047, OPS-007); a repeat to which a filter applies is never
+answered with outputs that the filter has not judged, and one of an operation that states no
+effect, is not a control and starts no model work is dispatched again so that the filter decides
+afresh (OPS-009, OPS-024, OPS-034, ACC-008); no two pointers of a control's `changes` overlap
+(CTR-006); the schema of a tool that the engine presents is a self-contained bundle (IFC-033);
+the schemes that a package-source provider claims are fixed for its life (PRV-016); and the
+entry points no longer say that a point of round 5 waits for the owner. Of the four points that
+were left open, a type's default for a hook that it does not require is not used, and a
+diagnostic reports it (TPL-004, CTR-004); the tracker keeps the other three. Of the critique's
+simplifications, a tool shows the narrowing and the controls of the target's template (D07;
+IFC-033, IFC-012), replacing a template resolves the project handed over with it as registration
+does (D11; SUB-009), and an ordinary Operation's schemas may use the whole profile at their root
+(D14; CTR-012). The access convention states, as limits of this version, that a bound does not
+limit filters and that access to `management` cannot be narrowed to one template, with the
+broker that narrows it (ACC-029, ACC-030;
 [What access does not narrow](#what-access-does-not-narrow); D03, D04); ACC-033 lists its
 routing as one decision list, with no change of behavior (D18); and this page puts the current
 design first, with [reading paths](#reading-paths) (D21). Two further simplifications, as the
@@ -610,7 +616,9 @@ Operation contract states no default implementation, while the engine implements
 package's operations as a rule (D06), and that the lifecycle actions take an optional expected
 ID, names staying the only address (D12)
 ([After the ruling](../docs/proposals/ruling-44/README.md#after-the-ruling)); action A69 of the
-tracker applies them. Round 6's [decisions](../docs/proposals/reaudit/round-6/DECISIONS.md) list
-what changed for each item, and the logs of its editors, with
+tracker applies them. Round 6's [decisions](../docs/proposals/reaudit/round-6/DECISIONS.md) list what
+changed for each item, and the logs of its editors, with
 [the integration](../docs/proposals/reaudit/round-6/log-integration.md) that made their files
-agree, are beside them.
+agree, are beside them; the integration's
+[verification](../docs/proposals/reaudit/round-6/log-integration.md#verification) lists what two
+further readers of the result found and what was fixed.

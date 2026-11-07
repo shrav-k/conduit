@@ -115,7 +115,10 @@
 # the re-audit (docs/proposals/reaudit/round-6/reader-1.md; log
 # docs/proposals/reaudit/round-6/log-interface.md), added to DL12, now also on the schemas of
 # tools, which `$ref` in a tool's schemas the engine replaces by the schema of the contract it
-# names, where IFC-033 lets it. It added none and removed none.
+# names, where IFC-033 lets it. It added none and removed none. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") added to DL10 that a
+# repeat that OPS-024 dispatches does not report conflict once outputs are no longer kept
+# (R-06).
 
 - id: DL1
   subject: Order of a Pool's Resources
@@ -182,7 +185,8 @@
     allowed for a call, a retire hook's among them, after which its part ends unknown and the
     stop is asked for under TPL-009; how long the outputs of a succeeded invocation, other than
     one whose outcome a reconciliation set, are kept for a repeat under OPS-009, after which a
-    repeat reports conflict under OPS-034; and behavior when storage is exhausted.
+    repeat reports conflict under OPS-034, unless OPS-024 dispatches it; and behavior when
+    storage is exhausted.
 - id: DL12
   subject: Protocol revisions, `content`, `Origin` and the schemas of tools
   document: >-

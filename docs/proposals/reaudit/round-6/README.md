@@ -20,7 +20,7 @@ the next milestone.
 | The critique of the design's simplicity and usefulness: 22 points, D01 to D22, the four open points and twenty evidence cases, E01 to E20 | [design-critique.md](design-critique.md) |
 | The decisions on every finding, point and open point, with what the independent check found | [DECISIONS.md](DECISIONS.md) |
 | The ruling, with what the owner accepted after it | [ruling 44](../../ruling-44/README.md) |
-| What each editor changed, its choices and what it left for a decision | The logs beside this record, `log-*.md`, among them [the log of the tracker and the entry points](log-tracker.md) and [the integration's](log-integration.md), which made the groups' files agree |
+| What each editor changed, its choices and what it left for a decision | The logs beside this record, `log-*.md`, among them [the log of the tracker and the entry points](log-tracker.md) and [the integration's](log-integration.md), which made the groups' files agree, with the [verification](log-integration.md#verification) of the result by two further readers |
 
 | | Round 6 |
 | --- | --- |

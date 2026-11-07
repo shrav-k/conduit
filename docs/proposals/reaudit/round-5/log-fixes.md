@@ -245,12 +245,12 @@ Note of 2026-11-07: ruling 44 reversed V2-15, on finding 6-1-01 of
 [round 6](../round-6/DECISIONS.md#the-six-findings), which an independent check confirmed. The
 protocol has a server answer -32021 where "processing" a request needs a capability that it did
 not declare, and says nothing of whether the server acted first, so the reason given for V2-15
-does not follow from it. The error is now read as any other error, failed for an operation
-that declares no effect and unknown for one that declares one, except where Conduit's own
-contract binds the server to have done nothing: the -32021 that names Conduit's extension
-(IFC-008), and an implementation that carries Conduit's keys, which answers so only before
-acting (IFC-045). IFC-007, IFC-010, IFC-045 and OPS-007 changed together. The row above keeps
-its words as written.
+does not follow from it. The error is now read as any other error, failed for an operation that
+states no effect, is not a control and starts no model work, as IFC-033 tests, and unknown for
+any other, except where Conduit's own contract binds the server to have done nothing: the -32021
+that names Conduit's extension (IFC-008), and an implementation that carries Conduit's keys,
+which answers so only where it has performed nothing for the call (IFC-047). IFC-007, IFC-010,
+IFC-045, IFC-047, added, and OPS-007 changed together. The row above keeps its words as written.
 
 ### Counts
 

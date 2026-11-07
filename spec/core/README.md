@@ -157,7 +157,10 @@ package-source provider claims its schemes for its whole life, as the descriptio
 default for a hook is used only where the type requires the hook, as TPL-004 does. The
 [integration of that round](../../docs/proposals/reaudit/round-6/log-integration.md) made this
 page say that a call naming the tool of a control that the target does not have reports
-invalid, as IFC-012 states.
+invalid, as IFC-012 states. Its
+[verification](../../docs/proposals/reaudit/round-6/log-integration.md#verification) added
+that this holds where the target holds the control's contract (R-07), and that a copy's key
+holds a version where one is stated (R-08).
 
 The promises are the source of truth: where a document here and a promise differ, the document
 is wrong.
@@ -227,15 +230,15 @@ and `required`. An operation with no inputs or no outputs states no `inputSchema
 The engine derives a tool's definition from the contract as the target holds it (IFC-033). The
 definition stands alone: where a schema refers to a Schema contract, the definition holds a copy
 of that contract's schema under the `$defs` of its root, keyed by the contract's qualified
-reference and the version of the package that holds it, so that no two packages' contracts
-collide, with each `$ref` rewritten to point to what it pointed to where it was written and
-every keyword beside a `$ref` kept. Each contract is copied once, so one that refers to itself,
-directly or through others, needs no more. A contract whose schema holds no `$ref`, referred to
-with no keyword beside the `$ref`, may stand in place of the reference instead. The tools of
-`register.v1` and `replace.v1`, whose inputs refer to the schemas of documents, so hold a
-`$defs` at their roots. For a control, an input that the target's template narrows is given
-`allOf` of the contract's schema and the template's, and a control that the target does not have
-has no tool (TPL-010, TPL-013, IFC-012).
+reference and, where one is stated, the version of the package or project that holds it, so that
+no two packages' contracts collide, with each `$ref` rewritten to point to what it pointed to
+where it was written and every keyword beside a `$ref` kept. Each contract is copied once, so
+one that refers to itself, directly or through others, needs no more. A contract whose schema
+holds no `$ref`, referred to with no keyword beside the `$ref`, may stand in place of the
+reference instead. The tools of `register.v1` and `replace.v1`, whose inputs refer to the
+schemas of documents, so hold a `$defs` at their roots. For a control, an input that the
+target's template narrows is given `allOf` of the contract's schema and the template's, and a
+control that the target does not have has no tool (TPL-010, TPL-013, IFC-012).
 
 One contract for one verb. Where a verb applies both to a Resource and to other
 instances, the same contract is included in the capability of a Pool and in the capability of
@@ -439,11 +442,11 @@ OPS-029). A call that names a tool the engine does not present is answered as th
 prescribes for an unknown tool at the revision in use. At the baseline revision that is no tool
 result: the engine returns the protocol's error for invalid parameters, code -32602, whose
 `data` holds `io.github.shrav-k.conduit/reason` with the value refused, or invalid where the
-call names the tool that an open Conduit would give a control that its target does not have
-(TPL-013). At a revision at which a tool result answers it, that result carries the reason as
-any other does (IFC-012, IFC-025). A
-request that the protocol has a server reject with an error of its own is answered with that
-error and no tool result (IFC-036).
+call names the tool that an open Conduit would give a control that its target does not have,
+where the target holds the control's contract (TPL-013). At a revision at which a tool result
+answers it, that result carries the reason as any other does (IFC-012, IFC-025). A request that
+the protocol has a server reject with an error of its own is answered with that error and no
+tool result (IFC-036).
 
 A result's `_meta` holds `io.github.shrav-k.conduit/outcome` where the request has an outcome,
 and `io.github.shrav-k.conduit/reason` where it ended with a reason, with

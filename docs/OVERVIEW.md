@@ -346,27 +346,28 @@ seven ways
   the effect occurred or that it did not.
 - With a **reason** and no outcome: refused, invalid, conflict or unavailable.
 
-A caller may attach an idempotency key to a request so that a repeat is recognized. The
-key is scoped to the caller, the target and the instance that sent the request, and at most one
-invocation exists for one of each and one key (OPS-008). Nothing is dispatched
-again unless the caller repeats the request (IMP-007). A repeat of a request whose invocation
-succeeded is answered with its outputs for as long as the engine keeps them, and otherwise
-reports conflict (OPS-009, OPS-034). Where a filter applies to the repeat, nothing is given that
-the filter has not judged now, since a filter may forbid now what it permitted before, as one
-that allows a read only until a deadline does. A repeat of an operation that changes nothing,
-is not a control and starts no model work is then dispatched again, so that the implementation
-applies the filter afresh (OPS-024). A repeat of any other operation is answered with its
-outcome alone where it declares no outputs, and otherwise reports conflict rather than give the
-stored outputs (OPS-009, OPS-034). A repeat of an invocation that has not ended reports conflict
-too (OPS-032). Each conflict carries the engine's ID for the invocation, and its diagnostic
-names the promise that tells the cases apart. A caller that lost a result repeats its request.
+A caller may attach an idempotency key to a request so that a repeat is recognized. The key is
+scoped to the caller, the target and the instance that sent the request, and at most one
+invocation exists for one of each and one key (OPS-008). Nothing is dispatched again unless the
+caller repeats the request (IMP-007). A repeat of a request whose invocation succeeded is
+answered with its outputs for as long as the engine keeps them, and otherwise reports conflict
+(OPS-009, OPS-034). Where a filter applies to the repeat, no outputs are given that the filter
+has not judged now, since a filter may forbid now what it permitted before, as one that allows a
+read only until a deadline does. A repeat of an operation that changes nothing, is not a control
+and starts no model work is then dispatched again, so that the implementation applies the filter
+afresh (OPS-024). A repeat of any other operation is answered with its outcome alone where it
+declares no outputs, and otherwise reports conflict rather than give the stored outputs
+(OPS-009, OPS-034). A repeat of an invocation that has not ended reports conflict too (OPS-032).
+Each conflict carries the engine's ID for the invocation, and its diagnostic names the promise
+that tells the cases apart. A caller that lost a result repeats its request.
 
 The error that a server not written for Conduit returns when it needed a capability that the
 call did not declare, such as one to ask the user a question, does not prove that it did
 nothing: the protocol does not say that a server answers so before it acts. So for an operation
-with an effect it leaves the outcome unknown, as that server's other errors do, invalid
-parameters apart (IFC-010). An implementation that carries Conduit's keys is bound to answer
-that error only where it has done nothing, and its outcome is then failed (IFC-047, OPS-007).
+that states an effect, is a control or starts model work, it leaves the outcome unknown, as that
+server's other errors do, invalid parameters apart (IFC-010). An implementation that carries
+Conduit's keys is bound to answer that error only where it has done nothing, and its outcome is
+then failed (IFC-047, OPS-007).
 
 What follows an unknown outcome is fixed. A repeat of the request is dispatched as a new
 attempt only if the operation's contract declares `deduplicates: true` and the implementation

@@ -105,7 +105,14 @@
 # of the Conduits its consumer opens, that access to `management` cannot be narrowed to one
 # template, and how a broker narrows it (D03, D04); and ACC-033, whose `then` is one decision
 # list with the same answers (D18). It added none and removed none. What changed is in
-# docs/proposals/reaudit/round-6/log-conventions.md.
+# docs/proposals/reaudit/round-6/log-conventions.md. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed ACC-008, whose
+# `then` itself says that no filter judges a repeat that is not dispatched (C-06); ACC-030,
+# which says that a Conduit that lists `replace.v1` trusts its consumer with the contracts and
+# implementation items of later instances (R-11); and ACC-033, whose rows 1, 2 and 5 to 8 name
+# their operations, so that the first row that fits a request for `register-replacement.v1` or
+# `retire-with-resources.v1` is the one that gave its answer before (C-02, R-01, R-02). It
+# added none and removed none.
 
 - id: ACC-001
   layer: convention
@@ -217,7 +224,10 @@
     A request is made through a Conduit.
   then: >-
     It is permitted only if the Conduit lists the operation and every restriction that applies
-    permits it. No restriction can permit what the Conduit does not.
+    permits it, except that a filter judges only a call: a repeat to which a filter applies and
+    that is not dispatched, under OPS-009, OPS-012, OPS-032 or OPS-034, is judged by no filter,
+    and gives only an outcome already recorded, or reports conflict. No restriction can permit
+    what the Conduit does not.
   observable: >-
     Adding a restriction never makes a previously refused request succeed. A request that any
     one applicable restriction forbids reports refused, has no outcome, and nothing of it is
@@ -227,12 +237,14 @@
     with the reason refused under IFC-026. The result names the restriction that forbade the
     request in `io.github.shrav-k.conduit/restriction`, whether the engine or the implementation
     found it, as IFC-025 states. A filter judges only a call that an implementation receives,
-    under IFC-019, so no filter judges a repeat that is not dispatched, under OPS-009, OPS-012,
-    OPS-032 or OPS-034: where a filter applies to such a repeat, it returns only an outcome that
-    is already recorded, or reports conflict, and gives no outputs. A repeat to which a filter
-    applies, of an invocation that succeeded, of an operation whose contract states no `effect`,
-    that is not a control and whose contract is not marked `startsModelWork: true`, is
-    dispatched as a new attempt, under OPS-024, so that its filters decide afresh.
+    under IFC-019, so a repeat to which a filter applies and that is not dispatched gives no
+    outputs: one of an invocation that succeeded, of an operation that declares no outputs, is
+    answered from that outcome under OPS-009 even where the filter would forbid a call now, and
+    any other reports conflict, under OPS-032 or OPS-034, or is answered with the state unknown,
+    under OPS-012. A repeat to which a filter applies, of an invocation that succeeded, of an
+    operation whose contract states no `effect`, that is not a control and whose contract is not
+    marked `startsModelWork: true`, is dispatched as a new attempt, under OPS-024, so that its
+    filters decide afresh.
   vectors: []
 
 - id: ACC-009
@@ -603,7 +615,11 @@
     implementation that serves it, supports none, under CON-022 and MAN-012. So access to
     `management` cannot be narrowed to one template: a Conduit to it that lists `register.v1` or
     `replace.v1` trusts its consumer to register, or to replace, any object that ACC-033
-    authorizes against `management` alone, an Agent made from any template among them. A
+    authorizes against `management` alone, an Agent made from any template among them. A request
+    for `replace.v1` hands over the project of its document, with its contracts and its
+    manifest, under SUB-009, so a Conduit that lists it trusts its consumer, as one that lists
+    `register.v1` does, to choose the contracts and the implementation items of the instances
+    made from the template afterwards, every program, package and `remote` URL among them. A
     narrower provisioning, such as registering instances of one approved template and no other,
     goes through a broker: a Resource with a trusted operation whose own contract and
     configuration allow only that, and whose implementation, which is trusted to keep them,
@@ -645,24 +661,27 @@
     The request is authorized by an open Conduit from the actor that lists the operation, to the
     target that the first of these rows that fits it names. Each row gives the request, the
     family and state of the object, and the target.
-    (1) Registering a Resource whose owner is a Pool that already exists and is not retired:
-    `management` and that Pool, each of the two Conduits listing `register.v1`.
-    (2) Registering any other object, such as a Resource whose owner is retired or is registered
-    in the same submission, the Resources of a Pool's own entries among them, and replacing or
-    unregistering any object: `management`.
+    (1) Registering, with `register.v1`, a Resource whose owner is a Pool that already exists
+    and is not retired: `management` and that Pool, each of the two Conduits listing
+    `register.v1`.
+    (2) Registering any other object with `register.v1`, such as a Resource whose owner is
+    retired or is registered in the same submission, the Resources of a Pool's own entries among
+    them, and replacing any object with `replace.v1` or unregistering one with `unregister.v1`:
+    `management`.
     (3) A request under LIF-009 for a new instance for a nested instantiation,
     `register-replacement.v1`: the targets that row 1 or row 2 gives for registering the
     instance it makes, each Conduit listing `register-replacement.v1` in place of `register.v1`.
     (4) Setting up or retiring a Resource, with `set-up.v1` or `retire.v1`, which name the
     instance in the input `instance`: the Pool that owns it, and none where that Pool is
     retired.
-    (5) Setting up or retiring an Agent, an Interface or a Pool: `management`.
-    (6) Inspecting a Resource: the Pool that owns it, or `management` where that Pool is
-    retired.
-    (7) Inspecting any other object, an Agent, an Interface, a Pool, a Conduit or a template:
-    `management`.
-    (8) Retiring a Pool together with the Resources it owns, in the one operation of LIF-021:
-    that Pool.
+    (5) Setting up or retiring an Agent, an Interface or a Pool, with `set-up.v1` or
+    `retire.v1`: `management`.
+    (6) Inspecting a Resource with `inspect.v1`: the Pool that owns it, or `management` where
+    that Pool is retired.
+    (7) Inspecting any other object with `inspect.v1`, an Agent, an Interface, a Pool, a
+    Conduit or a template: `management`.
+    (8) Retiring a Pool together with the Resources it owns, with `retire-with-resources.v1`,
+    the one operation of LIF-021: that Pool.
     (9) Installing a package, and every operation reserved to the root Interface under ACC-032,
     which are operations of `management`: `management`.
     (10) Opening or closing a Conduit: `access`, under ACC-006 and ACC-012.

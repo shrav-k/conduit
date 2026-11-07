@@ -86,7 +86,10 @@
 # (log docs/proposals/reaudit/round-6/log-promises.md), changed TPL-004, whose observable
 # says that a type's default for a hook it does not require is not used, and that registering
 # a template that selects no implementation for that hook reports it (the open point on a
-# Type's default hook). It added none and removed none.
+# Type's default hook). It added none and removed none. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed TPL-004 again: the
+# diagnostic on that default is CTR-004's, made when the type is read, so that one is reported
+# whatever its templates select (C-05, R-10). It added none and removed none.
 
 - id: TPL-001
   layer: language
@@ -155,18 +158,18 @@
     resolves in the project or package that holds the contract stating it: under NAM-022 where
     it is written `#name`, and through that package's own manifest, under NAM-014, where it
     names another package. A type's contract promises what its instances offer: a Conduit may
-    list any operation of a capability that its target's type offers, under CON-017 and
-    CON-021, a control among them, so each of those operations has an implementation when the
-    template is registered, whether or not the type also lists it under `requires`. A template
-    whose type offers a capability one of whose operations has no selection and no default is
-    rejected, and so is one whose type lists such a control, even where the template's
-    `controls` map leaves that control out. `setup-hook.v1` and `retire-hook.v1` are in no
-    capability, so a type's default for either is used only where the type lists that hook
-    under `requires`. A default that a type states for a hook it does not require is not used.
-    A template of that type whose `implementation` map selects no implementation for the hook
-    has none, so the hook is not dispatched, under TPL-017 and TPL-018; the template is
-    registered, and its registration reports that default in a diagnostic that did not prevent
-    it.
+    list any operation of a capability that its target's type offers, under CON-017 and CON-021,
+    a control among them, so each of those operations has an implementation when the template is
+    registered, whether or not the type also lists it under `requires`. A template whose type
+    offers a capability one of whose operations has no selection and no default is rejected, and
+    so is one whose type lists such a control, even where the template's `controls` map leaves
+    that control out. `setup-hook.v1` and `retire-hook.v1` are in no capability, so a type's
+    default for either is used only where the type lists that hook under `requires`. A default
+    that a type states for a hook it does not require is not used. A template of that type whose
+    `implementation` map selects no implementation for the hook has none, so the hook is not
+    dispatched, under TPL-017 and TPL-018, and the template is registered. Installation or
+    resolving reports the default in a diagnostic that does not reject, when it reads the type,
+    under CTR-004.
   vectors: []
 
 - id: TPL-005

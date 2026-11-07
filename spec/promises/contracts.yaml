@@ -59,7 +59,12 @@
 # control's `changes` are equal or lie one inside another, compared by their reference tokens
 # (finding 6-1-03); and CTR-012: the root of an Operation contract that is not a control may
 # hold any keyword of the profile beside `type: object`, and a control's keeps the four keys
-# (D14). It added none and removed none.
+# (D14). It added none and removed none. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed CTR-004, under
+# which a type's default for a hook that it does not require is reported in a diagnostic that
+# does not reject (C-05, R-10); CTR-005, whose filter is applied to each call for a request
+# (R-05); and CTR-012, under which a `default` that the root reaches only through a keyword
+# beside its `properties` fills nothing (C-03, R-09). It added none and removed none.
 
 - id: CTR-001
   layer: language
@@ -156,11 +161,14 @@
     schema `type-spec.v1` states that rule too. A type that states no `schema` puts no rule on
     the configuration of its instances, and so can list no control under CTR-006. One that
     states no `offers` offers no capability, one that states no `requires` requires no
-    operation, and one that states no `implementation`, `controls` or `conditions` has none. One
-    that states no `nodeSelector`, or an empty one, puts no rule on where its instances are
-    placed. `records` and each of its two members may be left out, and one that is left out is
-    false. What a record holds is REC-002, and what a Type that offers a provider capability
-    must be is PRV-001.
+    operation, and one that states no `implementation`, `controls` or `conditions` has none. A
+    default that `implementation` states for `setup-hook.v1` or `retire-hook.v1`, where
+    `requires` does not list that hook, is used by no template, under TPL-004: the type is not
+    rejected, and installation or resolving returns a diagnostic, which does not reject, naming
+    the type and the hook. One that states no `nodeSelector`, or an empty one, puts no rule on
+    where its instances are placed. `records` and each of its two members may be left out, and
+    one that is left out is false. What a record holds is REC-002, and what a Type that offers a
+    provider capability must be is PRV-001.
   vectors: []
 
 - id: CTR-005
@@ -174,7 +182,7 @@
     the `requirements` of a Conduit template. A requirement of the core package is applied by
     the engine itself and is never sent to an implementation. Any other is a filter: the
     implementations that the target has selected for the operations the Conduit lists apply it
-    to each request through the Conduit.
+    to each call that they receive for a request through the Conduit, under IFC-019.
   observable: >-
     A Requirement contract whose `spec` holds a key that this promise does not name, such as
     `appliesTo`, `narrows`, `obliges`, `constituents` or `schema`, is rejected when its package
@@ -186,7 +194,8 @@
     requirements apply to one Conduit, each is an item of its template's `requirements` and each
     applies, and none permits what the Conduit does not, under ACC-008: a bundle of limits is
     written as several items side by side. Which implementation applies a requirement on an open
-    Conduit is reported under ACC-038.
+    Conduit is reported under ACC-038. A repeat that is not dispatched reaches no
+    implementation, so no filter judges it, under ACC-008.
   vectors: []
 
 - id: CTR-006
@@ -304,11 +313,14 @@
     its root and to keep its branches to presence assertions such as `required`: a keyword
     beside them, `$ref` and `oneOf` among them, constrains the arguments or the outputs as a
     whole and adds no input and no output. A `default` stands on a property, where SCH-008
-    accepts it, and never inside `oneOf`, `if` or another of the keywords that SCH-008 names,
-    at the root or below it. A control's root is held to the four keywords, so `oneOf` or `$ref`
-    at the root of its `inputSchema` is rejected: every input of a control but `revision` may be
-    left out, under REV-006, and a keyword at the root such as `oneOf: [{required: [a]},
-    {required: [b]}]` would make one of them required all the same. Inside a property every
-    keyword of the profile may be used, under SCH-002. What a property that is a handle holds is
-    CTR-002.
+    accepts it, and never inside `oneOf`, `if` or another of the keywords that SCH-008 names, at
+    the root or below it. A `default` that the root reaches only through a keyword beside its
+    `properties`, such as one on a property of the schema that a `$ref` written at the root
+    refers to, fills no argument, under SCH-009 and OPS-026, and no output, under SCH-009, as
+    that keyword adds no input and no output. A control's root is held to the four keywords, so
+    `oneOf` or `$ref` at the root of its `inputSchema` is rejected: every input of a control but
+    `revision` may be left out, under REV-006, and a keyword at the root such as `oneOf:
+    [{required: [a]}, {required: [b]}]` would make one of them required all the same. Inside a
+    property every keyword of the profile may be used, under SCH-002. What a property that is a
+    handle holds is CTR-002.
   vectors: []

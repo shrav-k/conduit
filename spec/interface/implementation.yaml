@@ -213,7 +213,13 @@
 # attempt was sent, and now follow OPS-009, OPS-024 and OPS-034 (6-1-02); IFC-012, whose
 # exception for a control that the target does not have holds where the target holds the
 # control's contract, so that a call for an operation of a later release stays refused under
-# NAM-026 (D07); and IFC-033 and IFC-036, a word each, on the reason in IFC-012's error.
+# NAM-026 (D07); and IFC-033 and IFC-036, a word each, on the reason in IFC-012's error. The
+# verification of round 6 (docs/proposals/reaudit/round-6/log-integration.md, "Verification")
+# changed IFC-010, whose table reads an error of a plain server as failed only for an operation
+# that states no `effect`, is not a control and starts no model work, as IFC-033 tests, and
+# IFC-007 and IFC-045 to match (C-01, R-12); and IFC-047, under which such an implementation
+# does not begin a call whose processing may come to need a capability that it lacks (R-04). It
+# added none and removed none.
 
 - id: IFC-001
   layer: interface
@@ -367,7 +373,8 @@
     declares no extension of Conduit's, and what it declares is IFC-045's, so a server that
     needs a capability that the call does not declare, such as elicitation, answers with the
     protocol's error -32021, which IFC-010 reads as it reads any other error: failed for an
-    operation whose contract declares no effect, and unknown for one that declares one.
+    operation whose contract states no `effect`, that is not a control and whose contract is not
+    marked `startsModelWork: true`, and unknown for any other.
   vectors: []
 
 - id: IFC-008
@@ -418,29 +425,34 @@
     An implementation marked `plain` answers a `tools/call` request.
   then: >-
     A complete result that is not an error is the outcome succeeded. An error on an operation
-    whose contract declares no effect, and a JSON-RPC error for invalid parameters, is failed. A
-    result whose `resultType` is `input_required` or is a value the engine does not recognize,
-    any other error but one after which the engine sends the call once more under IFC-046, and
-    no result at all, is unknown.
+    whose contract states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`, as IFC-033 tests for `readOnlyHint`, and a JSON-RPC error for
+    invalid parameters, is failed. A result whose `resultType` is `input_required` or is a value
+    the engine does not recognize, any other error but one after which the engine sends the call
+    once more under IFC-046, and no result at all, is unknown.
   observable: >-
     A result is complete when its `resultType` is `complete` or absent, and is an error when its
     `isError` is true. A protocol error is a JSON-RPC error. The protocol's code for invalid
     parameters is -32602, and an unknown tool is one case of it; arguments that the tool does
-    not accept, and a request whose parameters are malformed, are others. The protocol has a
-    server answer -32021, naming in `data.requiredCapabilities` what it needs, where processing
-    the request needs a capability that the request does not declare, and does not say that the
-    server answers so before it acts: a plain server may have begun the effect by then. So that
-    error is read as any other: failed for an operation whose contract declares no effect, and
-    unknown for one that declares one, whose repeat is then not dispatched to the plain
-    implementation, under OPS-012. The engine declares only what IFC-045 lets it. An error after
-    which the call is sent once more under IFC-046 ends nothing: the outcome is read from the
-    response to the call sent again. The outcome the engine records for a plain server follows
-    that table and nothing else, except that a result in which a declared output fails
-    validation is unknown under OPS-007. Where the protocol's tasks extension is used, under
-    IFC-016, the table applies to what the task ended with: the result of a task that completed,
-    or the error of one that failed, such as -32021 where the task came to need a capability
-    that the call did not declare. A task that was cancelled, and one that the server no longer
-    holds, is no result at all.
+    not accept, and a request whose parameters are malformed, are others. Invalid parameters
+    apart, an error is failed only where the operation does nothing that the error could leave
+    half done: one that states no `effect` changes nothing outside itself, under CTR-002, but a
+    control applies values to its instance's settings, under CTR-006, and model work is the
+    effect of an operation marked `startsModelWork: true`, under IMP-001, whether or not either
+    states an `effect`. The protocol has a server answer -32021, naming in
+    `data.requiredCapabilities` what it needs, where processing the request needs a capability
+    that the request does not declare, and does not say that the server answers so before it
+    acts: a plain server may have begun the effect by then. So that error is read as any other:
+    failed for an operation that the table reads so, and unknown for any other, whose repeat is
+    then not dispatched to the plain implementation, under OPS-012. The engine declares only
+    what IFC-045 lets it. An error after which the call is sent once more under IFC-046 ends
+    nothing: the outcome is read from the response to the call sent again. The outcome the
+    engine records for a plain server follows that table and nothing else, except that a result
+    in which a declared output fails validation is unknown under OPS-007. Where the protocol's
+    tasks extension is used, under IFC-016, the table applies to what the task ended with: the
+    result of a task that completed, or the error of one that failed, such as -32021 where the
+    task came to need a capability that the call did not declare. A task that was cancelled, and
+    one that the server no longer holds, is no result at all.
   vectors: []
 
 - id: IFC-011
@@ -1406,18 +1418,18 @@
     Conduit's extension, where IFC-037 has it declare it, and the tasks extension, where IFC-016
     lets it.
   observable: >-
-    A call to an implementation marked `plain` declares no extension of Conduit's, under
-    IFC-007 and IFC-037, so it declares at most the tasks extension. The engine answers none of
-    the protocol's input requests, under IFC-016, so it declares no capability that one needs,
-    such as elicitation. The protocol has a server rely on no capability that a request does
-    not declare, and answer with the error -32021, whose `data.requiredCapabilities` names what
-    it needs, where processing the request needs one. It does not say that a server answers so
+    A call to an implementation marked `plain` declares no extension of Conduit's, under IFC-007
+    and IFC-037, so it declares at most the tasks extension. The engine answers none of the
+    protocol's input requests, under IFC-016, so it declares no capability that one needs, such
+    as elicitation. The protocol has a server rely on no capability that a request does not
+    declare, and answer with the error -32021, whose `data.requiredCapabilities` names what it
+    needs, where processing the request needs one. It does not say that a server answers so
     before it acts, so the error shows nothing of an effect by itself: from a plain
     implementation it is read as IFC-010 reads any other error, failed for an operation whose
-    contract declares no effect and unknown for one that declares one. An implementation that
-    carries Conduit's keys answers so only where it has performed nothing, under IFC-047, so the
-    outcome is then failed under OPS-007, as for the error of IFC-008 that names Conduit's
-    extension.
+    contract states no `effect`, that is not a control and whose contract is not marked
+    `startsModelWork: true`, and unknown for any other. An implementation that carries Conduit's
+    keys answers so only where it has performed nothing, under IFC-047, so the outcome is then
+    failed under OPS-007, as for the error of IFC-008 that names Conduit's extension.
   vectors: []
 
 - id: IFC-046
@@ -1457,16 +1469,21 @@
     the protocol's error -32021, because processing the call needs a client capability that the
     call does not declare.
   then: >-
-    It answers so only where it has performed nothing for the call.
+    It answers so only where it has performed nothing for the call: it does not begin to perform
+    a call whose processing may come to need a client capability that the call does not declare.
   observable: >-
     The protocol has a server answer -32021 where processing a request needs a capability that
-    the request does not declare, and does not say that the server answers so before it acts,
-    so this is Conduit's own obligation on an implementation written for it, as IFC-008's is
-    for the error that names Conduit's extension. The call states what it declares in
-    `io.modelcontextprotocol/clientCapabilities`, which is little under IFC-045, so such an
-    implementation can tell before it acts whether processing the call needs a capability that
-    the call lacks. Where it answers so, the outcome of a call for a request or a hook is failed
-    under OPS-007, and a repeat of the request is dispatched as a new attempt under OPS-024. A
-    plain implementation, which carries none of Conduit's keys, is bound by no such promise:
-    IFC-010 reads its -32021 as any other error.
+    the request does not declare, and does not say that the server answers so before it acts, so
+    this is Conduit's own obligation on an implementation written for it, as IFC-008's is for
+    the error that names Conduit's extension. The protocol also has a server rely on no
+    capability that a request does not declare, so an implementation keeps both rules, and this
+    promise, only by finding before it acts whether processing the call needs one. It can: the
+    call states what it declares in `io.modelcontextprotocol/clientCapabilities`, which is
+    little under IFC-045, so an implementation written for Conduit relies on nothing beyond it
+    and never comes to need an undeclared capability once it has begun, inside a task or not.
+    One that came to need one after it had begun would break this promise, since the protocol
+    then has it answer -32021. Where it answers so, the outcome of a call for a request or a
+    hook is failed under OPS-007, and a repeat of the request is dispatched as a new attempt
+    under OPS-024. A plain implementation, which carries none of Conduit's keys, is bound by no
+    such promise: IFC-010 reads its -32021 as any other error.
   vectors: []

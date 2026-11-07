@@ -104,7 +104,14 @@
 # (docs/proposals/reaudit/round-6/log-integration.md) changed the observable of OPS-005 again:
 # a call to the tool that a Conduit would give a control its target does not have reports
 # invalid under TPL-013, as IFC-012 now states, and every other call to a tool that is not
-# presented reports refused.
+# presented reports refused. The verification of round 6
+# (docs/proposals/reaudit/round-6/log-integration.md, "Verification") changed OPS-007, whose
+# first case is a missing result from an implementation that carries Conduit's keys, so that a
+# plain server's errors are read by IFC-010 alone (R-03), and whose observable uses IFC-033's
+# test (C-01); OPS-005, whose invalid case holds where the target holds the control's contract
+# (R-07); OPS-008, under which a repeat that OPS-024 dispatches does not report conflict once
+# outputs are not kept (R-06); and OPS-025, which no longer reaches a request that matches a
+# repeat that ended with a reason (R-13). It added none and removed none.
 
 - id: OPS-001
   layer: convention
@@ -176,9 +183,10 @@
     OPS-024 does not dispatch, under OPS-034. A call that names a tool the engine does not
     present is answered with no result: its reason is in the protocol's error, as IFC-012
     states, and is refused, or invalid under TPL-013 where the call names the tool that an open
-    Conduit would give a control that its target does not have. So is a request that the
-    protocol has the engine reject with an error of its own: where the engine could establish
-    the instance that sent it, its reason is invalid and is in that error, under IFC-036.
+    Conduit would give a control that its target does not have, where the target holds the
+    control's contract. So is a request that the protocol has the engine reject with an error of
+    its own: where the engine could establish the instance that sent it, its reason is invalid
+    and is in that error, under IFC-036.
   vectors: []
 
 - id: OPS-006
@@ -199,8 +207,8 @@
   layer: convention
   level: must
   when: >-
-    No result arrives, other than the protocol's error -32021 from an implementation that
-    carries Conduit's keys, whose `data.requiredCapabilities` names Conduit's extension, with
+    No result arrives from an implementation that carries Conduit's keys, other than the
+    protocol's error -32021 whose `data.requiredCapabilities` names Conduit's extension, with
     which IFC-008 has such an implementation say that it performed nothing, or names a
     capability that the call did not declare, which IFC-047 has such an implementation answer
     only where it has performed nothing for the call, and other than an error after which the
@@ -218,17 +226,20 @@
     implementation's result stated it, when an implementation that carries Conduit's keys
     answered with the error of IFC-008, or with -32021 for a capability that the call did not
     declare, under IFC-047, which each give failed, or, for an implementation marked `plain`,
-    when IFC-010 gives it. The -32021 of a plain implementation is not excepted: the protocol
-    does not say that a server that answers so has not acted, and nothing in this specification
-    binds a plain server, so IFC-010 reads it as any other error of such a server, failed for an
-    operation whose contract declares no effect and otherwise unknown, and a repeat of an
-    invocation so left unknown is not dispatched to it, under OPS-012. After an error on which
-    the call is sent once more under IFC-046, the outcome is read from the response to the call
-    sent again. An output that the contract's `outputSchema` lists under `required` and that the
-    result does not hold fails validation in this sense: a plain server that returns a complete
-    result that is not an error, and no `structuredContent`, for an operation with such an
-    output has the outcome unknown. A result that states failed or unknown, and an error of a
-    plain server, hold no outputs to validate, under IFC-009 and IFC-010.
+    when IFC-010 gives it. An error of a plain implementation is read by IFC-010 and not by the
+    first case here, and its -32021 is read as any other: the protocol does not say that a
+    server that answers so has not acted, and nothing in this specification binds a plain
+    server, so IFC-010 gives failed for an operation whose contract states no `effect`, that is
+    not a control and whose contract is not marked `startsModelWork: true`, and otherwise
+    unknown, and a repeat of an invocation so left unknown is not dispatched to it, under
+    OPS-012. A plain server that returns no result at all leaves the outcome unknown under
+    IFC-010, as this promise leaves that of any other. After an error on which the call is sent
+    once more under IFC-046, the outcome is read from the response to the call sent again. An
+    output that the contract's `outputSchema` lists under `required` and that the result does
+    not hold fails validation in this sense: a plain server that returns a complete result that
+    is not an error, and no `structuredContent`, for an operation with such an output has the
+    outcome unknown. A result that states failed or unknown, and an error of a plain server,
+    hold no outputs to validate, under IFC-009 and IFC-010.
   vectors: []
 
 - id: OPS-008
@@ -260,7 +271,7 @@
     attempt. A purge under REC-004 does not change what a repeat or a reconciliation finds. How
     the digest is computed is DL2 of the implementation-defined list, and the outputs of an
     invocation that succeeded are kept for a repeat for as long as DL10 says, under OPS-009,
-    after which a repeat reports conflict, under OPS-034.
+    after which a repeat reports conflict, under OPS-034, unless OPS-024 dispatches it.
   vectors: []
 
 - id: OPS-009
@@ -575,15 +586,19 @@
   when: >-
     A request arrives from the instance that sent an earlier request, with the same caller,
     target, idempotency key and contents as that request, which ended with a reason and no
-    outcome.
+    outcome, and which neither began nor repeated an invocation that OPS-008 keeps.
   then: >-
     It is a new request, and is decided afresh. It is not answered with the earlier reason.
   observable: >-
     The earlier request has no outcome and began no invocation that OPS-008 keeps, whether the
     engine did not dispatch it or the implementation answered with a reason under IFC-026,
-    having performed nothing. The later request is checked as if the earlier one had not been
-    made: it may be dispatched, or may end with a reason again, and each has its own record.
-    Nothing is applied twice, because the earlier request performed nothing.
+    having performed nothing. A request that matches a repeat that ended with a reason, such as
+    one that OPS-034 answered with conflict, or one that OPS-024 dispatched and that a filter
+    then forbade, also matches the request that began the invocation, and is a repeat of that
+    invocation under OPS-009, OPS-012, OPS-024, OPS-032 or OPS-034. The later request is checked
+    as if the earlier one had not been made: it may be dispatched, or may end with a reason
+    again, and each has its own record. Nothing is applied twice, because the earlier request
+    performed nothing.
   vectors: []
 
 # --- Added by the conversion of the older text (decision DA3 of the docs audit; rows GP7 and
